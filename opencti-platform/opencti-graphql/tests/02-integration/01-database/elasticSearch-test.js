@@ -410,7 +410,7 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(42);
+    expect(entityTypeMap.get('Capability')).toBe(48);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
@@ -450,7 +450,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(535 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(541 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -463,8 +463,12 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate everything after', async () => {
+    const page = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
+      first: ES_MAX_PAGINATION,
+    });
+    const last = page.edges[page.edges.length - 3];
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
-      after: 'WyJ2b2NhYnVsYXJ5LS1mZGYyNTVhOC01ZjM3LTVmZWMtYWRmYS0xZGYwYjdkM2QwY2UiXQ==',
+      after: last.cursor,
       first: ES_MAX_PAGINATION,
     });
     expect(data).not.toBeNull();
@@ -479,14 +483,17 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Report')).toBe(1);
-    expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
-    expect(entityTypeMap.get('Campaign')).toBe(1);
+    expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
+    expect(entityTypeMap.get('Organization')).toBe(6);
+    expect(entityTypeMap.get('Sector')).toBe(2);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
+    expect(entityTypeMap.get('Administrative-Area')).toBe(1);
+    expect(entityTypeMap.get('Opinion')).toBe(1);
+    expect(entityTypeMap.get('Malware-Analysis')).toBe(1);
+    expect(entityTypeMap.get('Malware')).toBe(1);
+    expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
     expect(entityTypeMap.get('Individual')).toBe(1);
-    expect(entityTypeMap.get('Sector')).toBe(3);
-    expect(entityTypeMap.get('Organization')).toBe(TESTING_ORGS.length + 6);
-    expect(entityTypeMap.get('Incident')).toBe(1);
-    expect(entityTypeMap.get('Indicator')).toBe(2);
+    expect(entityTypeMap.get('Region')).toBe(2);
     expect(data.edges.length).toEqual(20);
     expect(data.pageInfo.endCursor).toBeDefined();
 
@@ -559,7 +566,7 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(42);
+    expect(entityTypeMap.get('Capability')).toBe(48);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
@@ -598,7 +605,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(544);
+    expect(data.edges.length).toEqual(550);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -693,7 +700,7 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('Capability')).toBe(42);
+    expect(entityTypeMap.get('Capability')).toBe(48);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
     expect(entityTypeMap.get('EntitySetting')).toBe(44);
@@ -735,7 +742,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(13);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
-    expect(data.edges.length).toEqual(555);
+    expect(data.edges.length).toEqual(561);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {

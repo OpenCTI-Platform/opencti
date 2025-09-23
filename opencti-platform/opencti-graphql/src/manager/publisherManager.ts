@@ -181,7 +181,7 @@ export async function handleSimplifiedEmailNotification(
   const renderedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
 
   const emailPayload = {
-    from: settings.platform_email,
+    from: `${settings.platform_title} <${settings.platform_email}>`,
     to: user.user_email,
     subject: renderedTitle,
     html: renderedEmail
@@ -246,6 +246,9 @@ export const internalProcessNotification = async (
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
   try {
+    if (notificationUser.user_service_account) {
+      return { error: 'Cannot send notification to service account user' };
+    }
     const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
     const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
     const triggerIds = triggerList.map((trigger) => trigger?.id).filter((id) => id);
@@ -511,7 +514,7 @@ const initPublisherManager = () => {
       lock = await lockResources([PUBLISHER_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-PUBLISHER] Running publisher manager');
-      const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME };
+      const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME, bufferTime: 5000 };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Publisher manager', publisherStreamHandler, opts);
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {

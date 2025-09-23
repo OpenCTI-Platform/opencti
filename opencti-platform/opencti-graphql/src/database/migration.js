@@ -9,7 +9,7 @@ import { createEntity, createRelation, loadEntity, patchAttribute } from './midd
 import { executionContext, SYSTEM_USER } from '../utils/access';
 // eslint-disable-next-line import/extensions,import/no-unresolved
 import migrations, { filenames as migrationsFilenames } from '../migrations/*.js';
-import { listAllToEntitiesThroughRelations } from './middleware-loader';
+import { fullEntitiesThroughRelationsToList } from './middleware-loader';
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -43,7 +43,7 @@ const migrationStorage = {
     const context = executionContext('migration_manager');
     const migration = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
     const migrationId = migration.internal_id;
-    const dbMigrations = await listAllToEntitiesThroughRelations(
+    const dbMigrations = await fullEntitiesThroughRelationsToList(
       context,
       SYSTEM_USER,
       migrationId,

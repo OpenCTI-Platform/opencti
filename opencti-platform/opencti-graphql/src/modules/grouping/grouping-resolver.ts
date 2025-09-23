@@ -1,7 +1,7 @@
 import type { Resolvers } from '../../generated/graphql';
 import {
   addGrouping,
-  findAll,
+  findGroupingPaginated,
   findById,
   groupingContainsStixObjectOrStixRelationship,
   groupingsDistributionByEntity,
@@ -26,7 +26,7 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
 const groupingResolvers: Resolvers = {
   Query: {
     grouping: (_, { id }, context) => findById(context, context.user, id),
-    groupings: (_, args, context) => findAll(context, context.user, args),
+    groupings: (_, args, context) => findGroupingPaginated(context, context.user, args),
     groupingsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
         return groupingsTimeSeriesByEntity(context, context.user, args);

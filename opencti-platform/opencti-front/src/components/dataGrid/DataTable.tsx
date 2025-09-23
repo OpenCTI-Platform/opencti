@@ -17,7 +17,6 @@ import { useDataTableContext } from './components/DataTableContext';
 import { useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
-| 'additionalFilterKeys'
 | 'additionalFilters'
 | 'entityTypes'> & {
   hideSearch?: boolean
@@ -32,7 +31,6 @@ type DataTableInternalFiltersProps = Pick<DataTableProps,
 };
 
 const DataTableInternalFilters = ({
-  additionalFilterKeys,
   additionalFilters,
   entityTypes,
   hideSearch,
@@ -59,42 +57,46 @@ const DataTableInternalFilters = ({
 
   return (
     <>
-      <div
-        style={{
-          display: 'flex',
-          gap: theme.spacing(1),
-          marginBottom: theme.spacing(2),
-        }}
-      >
-        {!hideSearch && (
-          <SearchInput
-            variant={'small'}
-            onSubmit={helpers.handleSearch}
-            keyword={searchTerm}
-          />
-        )}
+      {/* Wrap div in logic so if there are no filters and no search,
+        * there isn't an empty div block with 16px bottom margin.
+        */}
+      {(!hideFilters || !hideSearch) && (
+        <div
+          style={{
+            display: 'flex',
+            gap: theme.spacing(1),
+            marginBottom: theme.spacing(2),
+          }}
+        >
+          {!hideSearch && (
+            <SearchInput
+              variant={'small'}
+              onSubmit={helpers.handleSearch}
+              keyword={searchTerm}
+            />
+          )}
 
-        {!hideFilters && (
-          <DataTableFilters
-            additionalFilters={additionalFilters}
-            availableFilterKeys={availableFilterKeys}
-            searchContextFinal={searchContextFinal}
-            availableEntityTypes={availableEntityTypes}
-            availableRelationshipTypes={availableRelationshipTypes}
-            availableRelationFilterTypes={availableRelationFilterTypes}
-            exportContext={exportContext}
-            paginationOptions={paginationOptions}
-            additionalHeaderButtons={additionalHeaderButtons}
-            currentView={currentView}
-          />
-        )}
-      </div>
+          {!hideFilters && (
+            <DataTableFilters
+              additionalFilters={additionalFilters}
+              availableFilterKeys={availableFilterKeys}
+              searchContextFinal={searchContextFinal}
+              availableEntityTypes={availableEntityTypes}
+              availableRelationshipTypes={availableRelationshipTypes}
+              availableRelationFilterTypes={availableRelationFilterTypes}
+              exportContext={exportContext}
+              paginationOptions={paginationOptions}
+              additionalHeaderButtons={additionalHeaderButtons}
+              currentView={currentView}
+            />
+          )}
+        </div>
+      )}
       {!hideFilters && (
         <DataTableDisplayFilters
           availableFilterKeys={availableFilterKeys}
           availableRelationFilterTypes={availableRelationFilterTypes}
           availableEntityTypes={availableEntityTypes}
-          additionalFilterKeys={additionalFilterKeys}
           entityTypes={computedEntityTypes}
         />
       )}
@@ -177,6 +179,8 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'additionalFilters'
 | 'variant'
 | 'actions'
+| 'hideHeaders'
+| 'emptyStateMessage'
 | 'icon'
 | 'rootRef'
 | 'onLineClick'
@@ -247,7 +251,6 @@ const DataTable = (props: OCTIDataTableProps) => {
           <DataTableInternalFilters
             entityTypes={entityTypes}
             additionalFilters={additionalFilters}
-            additionalFilterKeys={additionalFilterKeys}
             additionalHeaderButtons={additionalHeaderButtons}
             availableEntityTypes={availableEntityTypes}
             availableRelationFilterTypes={availableRelationFilterTypes}

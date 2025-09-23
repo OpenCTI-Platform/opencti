@@ -1,4 +1,4 @@
-import { listAllToEntitiesThroughRelations, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesThroughRelationsToList, storeLoadById } from '../../database/middleware-loader';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../../schema/stixRefRelationship';
 import { addFilter } from '../../utils/filtering/filtering-utils';
@@ -67,7 +67,7 @@ export const resolveContent = async (context, user, stixCoreObject) => {
     descriptions = [stixCoreObject.description];
     files = await resolveFiles(context, user, stixCoreObject);
   } else {
-    const containers = await listAllToEntitiesThroughRelations(context, user, stixCoreObject.id, RELATION_OBJECT, [ENTITY_TYPE_CONTAINER_REPORT]);
+    const containers = await fullEntitiesThroughRelationsToList(context, user, stixCoreObject.id, RELATION_OBJECT, [ENTITY_TYPE_CONTAINER_REPORT]);
     if (containers) {
       const allFilesPromise = containers.slice(0, 15).map((container) => resolveFiles(context, user, container));
       const allFiles = await Promise.all(allFilesPromise);
@@ -483,9 +483,9 @@ export const generateContainerScenarioWithInjectPlaceholders = async (context, u
   const { id, simulationConfig } = args;
 
   const container = await storeLoadById(context, user, id, ENTITY_TYPE_CONTAINER);
-  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
-  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
-  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
+  const author = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const labels = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const attackPatterns = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN]);
   return generateOpenBasScenarioWithInjectPlaceholders(context, user, container, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };
 
@@ -494,9 +494,9 @@ export const generateThreatScenarioWithInjectPlaceholders = async (context, user
   const { id, simulationConfig } = args;
 
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
-  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
-  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
+  const labels = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const author = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const attackPatterns = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
   return generateOpenBasScenarioWithInjectPlaceholders(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };
 
@@ -505,9 +505,9 @@ export const generateVictimScenarioWithInjectPlaceholders = async (context, user
   const { id, simulationConfig } = args;
 
   const stixCoreObject = await storeLoadById(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const labels = await listAllToEntitiesThroughRelations(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
-  const author = await listAllToEntitiesThroughRelations(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
-  const threats = await listAllToEntitiesThroughRelations(
+  const labels = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_OBJECT_LABEL, [ENTITY_TYPE_LABEL]);
+  const author = await fullEntitiesThroughRelationsToList(context, user, id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+  const threats = await fullEntitiesThroughRelationsToList(
     context,
     user,
     id,
@@ -521,6 +521,6 @@ export const generateVictimScenarioWithInjectPlaceholders = async (context, user
     ]
   );
   const threatsIds = threats.map((n) => n.id);
-  const attackPatterns = await listAllToEntitiesThroughRelations(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
+  const attackPatterns = await fullEntitiesThroughRelationsToList(context, user, threatsIds, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN]);
   return generateOpenBasScenarioWithInjectPlaceholders(context, user, stixCoreObject, attackPatterns, labels, (author && author.length > 0 ? author.at(0) : 'Unknown'), simulationConfig);
 };

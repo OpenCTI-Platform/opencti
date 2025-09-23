@@ -41,6 +41,7 @@ const UserFragment = graphql`
     id
     name
     description
+    user_service_account
   }
 `;
 
@@ -52,6 +53,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const user = useFragment(UserFragment, data);
+  const userServiceAccount = user.user_service_account;
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
     return <EnterpriseEdition feature={'User activity'} />;
@@ -161,6 +163,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
+        {!userServiceAccount && (
         <Grid item xs={4}>
           <AuditsHorizontalBars
             variant={undefined}
@@ -189,6 +192,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
+        )}
         <Grid item xs={4}>
           <AuditsDonut
             variant={''}
@@ -221,102 +225,106 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
             ]}
           />
         </Grid>
-        <Grid item xs={4}>
-          <AuditsRadar
-            variant={undefined}
-            startDate={undefined}
-            endDate={undefined}
-            height={350}
-            parameters={{
-              title: t_i18n('Top authors of read and exported entities'),
-            }}
-            dataSelection={[
-              {
-                attribute: 'context_data.created_by_ref_id',
-                date_attribute: 'created_at',
-                filters: {
-                  mode: 'and',
-                  filters: [
-                    {
-                      key: 'members_user',
-                      values: [user.id],
+        {!userServiceAccount && (
+          <>
+            <Grid item xs={4}>
+              <AuditsRadar
+                variant={undefined}
+                startDate={undefined}
+                endDate={undefined}
+                height={350}
+                parameters={{
+                  title: t_i18n('Top authors of read and exported entities'),
+                }}
+                dataSelection={[
+                  {
+                    attribute: 'context_data.created_by_ref_id',
+                    date_attribute: 'created_at',
+                    filters: {
+                      mode: 'and',
+                      filters: [
+                        {
+                          key: 'members_user',
+                          values: [user.id],
+                        },
+                        {
+                          key: 'event_scope',
+                          values: ['export', 'read'],
+                          operator: 'eq',
+                          mode: 'or',
+                        },
+                      ],
+                      filterGroups: [],
                     },
-                    {
-                      key: 'event_scope',
-                      values: ['export', 'read'],
-                      operator: 'eq',
-                      mode: 'or',
+                  },
+                ]}
+              />
+            </Grid>
+            <Grid item xs={8}>
+              <AuditsList
+                variant={undefined}
+                startDate={undefined}
+                endDate={undefined}
+                height={350}
+                parameters={{
+                  title: t_i18n('Latest exports'),
+                }}
+                dataSelection={[
+                  {
+                    date_attribute: 'created_at',
+                    filters: {
+                      mode: 'and',
+                      filters: [
+                        {
+                          key: 'members_user',
+                          values: [user.id],
+                        },
+                        {
+                          key: 'event_scope',
+                          values: ['export'],
+                        },
+                      ],
+                      filterGroups: [],
                     },
-                  ],
-                  filterGroups: [],
-                },
-              },
-            ]}
-          />
-        </Grid>
-        <Grid item xs={8}>
-          <AuditsList
-            variant={undefined}
-            startDate={undefined}
-            endDate={undefined}
-            height={350}
-            parameters={{
-              title: t_i18n('Latest exports'),
-            }}
-            dataSelection={[
-              {
-                date_attribute: 'created_at',
-                filters: {
-                  mode: 'and',
-                  filters: [
-                    {
-                      key: 'members_user',
-                      values: [user.id],
+                  },
+                ]}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <AuditsHorizontalBars
+                variant={undefined}
+                startDate={undefined}
+                endDate={undefined}
+                height={350}
+                parameters={{
+                  title: t_i18n('Top read or exported entities'),
+                }}
+                dataSelection={[
+                  {
+                    attribute: 'context_data.id',
+                    filters: {
+                      mode: 'and',
+                      filters: [
+                        {
+                          key: 'members_user',
+                          values: [user.id],
+                        },
+                        {
+                          key: 'event_scope',
+                          values: ['export', 'read'],
+                          operator: 'eq',
+                          mode: 'or',
+                        },
+                      ],
+                      filterGroups: [],
                     },
-                    {
-                      key: 'event_scope',
-                      values: ['export'],
-                    },
-                  ],
-                  filterGroups: [],
-                },
-              },
-            ]}
-          />
-        </Grid>
-        <Grid item xs={4}>
-          <AuditsHorizontalBars
-            variant={undefined}
-            startDate={undefined}
-            endDate={undefined}
-            height={350}
-            parameters={{
-              title: t_i18n('Top read or exported entities'),
-            }}
-            dataSelection={[
-              {
-                attribute: 'context_data.id',
-                filters: {
-                  mode: 'and',
-                  filters: [
-                    {
-                      key: 'members_user',
-                      values: [user.id],
-                    },
-                    {
-                      key: 'event_scope',
-                      values: ['export', 'read'],
-                      operator: 'eq',
-                      mode: 'or',
-                    },
-                  ],
-                  filterGroups: [],
-                },
-                number: 20,
-              },
-            ]}
-          />
-        </Grid>
+                    number: 20,
+                  },
+                ]}
+              />
+            </Grid>
+          </>
+        )}
       </Grid>
     </>
   );

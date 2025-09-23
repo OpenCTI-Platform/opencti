@@ -41,7 +41,7 @@ export const findById = (context, user, workId) => {
   return loadWorkById(context, user, workId);
 };
 
-export const findAll = (context, user, args = {}) => {
+export const findWorkPaginated = (context, user, args = {}) => {
   const finalArgs = R.pipe(
     R.assoc('type', ENTITY_TYPE_WORK),
     R.assoc('orderBy', args.orderBy || 'timestamp'),
@@ -252,7 +252,11 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     }
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
-    await elUpdate(currentWork?._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
+    if (currentWork) {
+      await elUpdate(currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
+    } else {
+      logApp.warn('The work cannot be found in database, report expectation cannot be updated.', { workId });
+    }
   }
   return workId;
 };
@@ -267,15 +271,15 @@ export const reportExpectation = async (context, user, workId, errorData) => {
  */
 export const updateExpectationsNumber = async (context, user, workId, expectations) => {
   const currentWork = await loadWorkById(context, user, workId);
-  if (currentWork && currentWork._index) {
-    const params = { updated_at: now(), import_expected_number: expectations };
-    let source = 'ctx._source.updated_at = params.updated_at;';
-    source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
-    await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
-    return redisUpdateActionExpectation(user, workId, expectations);
+  if (!currentWork) { // work is no longer exists
+    logApp.warn('The work cannot be found in database, expectation cannot be updated.', { workId, expectations });
+    return workId;
   }
-  logApp.error(`The work ${workId} cannot be found in database, expectation cannot be updated.`, { expectations });
-  return workId;
+  const params = { updated_at: now(), import_expected_number: expectations };
+  let source = 'ctx._source.updated_at = params.updated_at;';
+  source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
+  await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
+  return redisUpdateActionExpectation(user, workId, expectations);
 };
 
 /**
@@ -288,6 +292,10 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
  */
 export const addDraftContext = async (context, user, workId, draftContext) => {
   const currentWork = await loadWorkById(context, user, workId);
+  if (!currentWork) { // work is no longer exists
+    logApp.warn('The work cannot be found in database, draft context cannot be updated.', { workId, draftContext });
+    return workId;
+  }
   const params = { updated_at: now(), draft_context: draftContext };
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["draft_context"] =  params.draft_context;';
@@ -297,6 +305,10 @@ export const addDraftContext = async (context, user, workId, draftContext) => {
 
 export const updateReceivedTime = async (context, user, workId, message) => {
   const currentWork = await loadWorkById(context, user, workId);
+  if (!currentWork) { // work is no longer exists
+    logApp.warn('The work cannot be found in database, received time cannot be updated.', { workId });
+    return workId;
+  }
   const params = { received_time: now(), message };
   let source = 'ctx._source.status = "progress";';
   source += 'ctx._source["received_time"] = params.received_time;';
@@ -310,6 +322,10 @@ export const updateReceivedTime = async (context, user, workId, message) => {
 
 export const updateProcessedTime = async (context, user, workId, message, inError = false) => {
   const currentWork = await loadWorkById(context, user, workId);
+  if (!currentWork) { // work is no longer exists
+    logApp.warn('The work cannot be found in database, processed time cannot be updated.', { workId });
+    return workId;
+  }
   const params = { processed_time: now(), message };
   let source = 'ctx._source["processed_time"] = params.processed_time;';
   const { isComplete, total } = await isWorkCompleted(workId);

@@ -219,7 +219,7 @@ const Alerting: FunctionComponent = () => {
   };
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="alerting-page">
       <ActivityMenu/>
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Activity') }, { label: t_i18n('Alerting'), current: true }]} />
       {renderLines()}

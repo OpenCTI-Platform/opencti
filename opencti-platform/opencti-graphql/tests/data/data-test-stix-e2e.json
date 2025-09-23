@@ -904,6 +904,21 @@
       "type": "incident"
     },
     {
+      "id": "malware-analysis--51e7716c-3b41-524d-951d-2ceab2d1c8df",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-03T07:57:32.628Z",
+      "modified": "2024-07-03T07:57:32.628Z",
+      "product": "e2e",
+      "result_name": "Test Malware Analysis e2e",
+      "result": "malicious",
+      "labels": ["e2e"],
+      "x_opencti_id": "d628a562-8e41-4d9a-8d8a-ac056b520724",
+      "x_opencti_type": "Malware-Analysis",
+      "type": "malware-analysis"
+    },
+    {
       "id": "grouping--1d2cb936-0259-52f6-ac06-dcb8f5536732",
       "spec_version": "2.1",
       "revoked": false,
@@ -912,9 +927,525 @@
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Navigation test grouping entity",
       "context": "unspecified",
+      "labels": ["e2e"],
       "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d87",
       "x_opencti_type": "Grouping",
       "type": "grouping"
+    },
+    {
+      "id": "note--e2f7c396-c798-5933-bcb0-b933f3c51baa",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-06-23T18:34:04.352Z",
+      "modified": "2025-06-23T18:34:04.519Z",
+      "content": "This is my test note.",
+      "likelihood": 50,
+      "labels": ["e2e"],
+      "x_opencti_workflow_id": "b37573ee-391c-4ba0-8c17-654ec4ca4972",
+      "x_opencti_id": "59a281e4-4943-4081-a328-6121ef48858f",
+      "x_opencti_type": "Note",
+      "type": "note"
+    },
+    {
+      "id": "external-references--1d2cb936-0259-52f6-ac06-dcb8f5536734",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Navigation External Ref Test",
+      "context": "unspecified",
+      "labels": ["e2e"],
+      "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d89",
+      "x_opencti_type": "External-References",
+      "type": "external-references"
+    },
+    {
+      "id": "x-opencti-case-incident--07e60198-2184-560b-9ab0-06b483947114",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "labels": ["e2e"],
+      "response_types": [
+        "Ransomware"
+      ],
+      "name": "Incident Response Name",
+      "x_opencti_id": "91bced0e-63do-4ea6-ab6d-7137706b1d86",
+      "x_opencti_type": "Case-Incident",
+      "type": "x-opencti-case-incident"
+    },
+    {
+      "id": "x-opencti-case-rfi--f5d95240-de55-5ef7-8616-4184bbb84ac1",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "labels": ["e2e"],
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Request For Information Name",
+      "severity": "03 - high",
+      "priority": "P1",
+      "information_types": [
+        "Reports Sharing"
+      ],
+      "x_opencti_workflow_id": "53b0f7b0-7bcd-418c-9ba7-7b99bddb1dc3",
+      "x_opencti_id": "5a4aca53-96d0-4382-8108-c85009af8f44",
+      "x_opencti_type": "Case-Rfi",
+      "type": "x-opencti-case-rfi"
+    },
+    {
+      "id": "x-opencti-case-rft--970eab7e-a87b-5367-8f39-1806e2abd919",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Request for takedown Name",
+      "labels": ["e2e"],
+      "x_opencti_id": "1433a1d0-8bb1-4b2f-ae6f-8f92f037a51e",
+      "x_opencti_type": "Case-Rft",
+      "type": "x-opencti-case-rft"
+    },
+    {
+      "id": "x-opencti-task--ecdfc459-9b51-59ec-9882-d4a426a29e19",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Task Name",
+      "labels": ["e2e"],
+      "x_opencti_id": "f160d791-5996-4f86-a5b3-9e068df362da",
+      "x_opencti_type": "Task",
+      "type": "x-opencti-task"
+    },
+    {
+      "id": "x-opencti-feedback--f1d4c2f5-6b51-5b0b-92f0-e69ecf06c674",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "rating": 5,
+      "created": "2024-07-30T13:15:37.447Z",
+      "modified": "2024-07-30T13:15:37.447Z",
+      "name": "Feedback Name",
+      "labels": [
+        "false-positive",
+        "e2e"
+      ],
+      "x_opencti_id": "ce8429b6-cbf9-44f3-bf1e-773323219843",
+      "x_opencti_type": "Feedback",
+      "type": "x-opencti-feedback"
+    },
+    {
+      "id": "incident--e6fc2d85-c07e-55cc-b0ae-2af54369913e",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-07-22T11:32:09.208Z",
+      "modified": "2024-07-22T11:34:44.813Z",
+      "name": "Incident Name",
+      "incident_type": "compromise",
+      "labels": ["e2e"],
+      "x_opencti_id": "057e0f4e-34cf-45c5-bef4-cf03cf5ae4ec",
+      "x_opencti_type": "Incident",
+      "type": "incident"
+    },
+    {
+      "id": "observed-data--a8fdb0de-a5ac-51f7-a376-3545ebc23da3",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-06-25T20:39:33.142Z",
+      "modified": "2025-06-25T20:39:33.237Z",
+      "first_observed": "2025-06-24T04:00:00.000Z",
+      "last_observed": "2025-06-25T04:00:00.000Z",
+      "number_observed": 1,
+      "labels": ["e2e"],
+      "x_opencti_id": "9ca7ddcf-ae70-467e-ae7c-24ac0d48dc17",
+      "x_opencti_type": "Observed-Data",
+      "type": "observed-data",
+      "object_refs": [
+        "incident--e6fc2d85-c07e-55cc-b0ae-2af54369913e"
+      ]
+    },
+    {
+      "id": "artifact--35b0f4ef-eb2c-552f-b58a-da426bee38cc",
+      "spec_version": "2.1",
+      "x_opencti_description": "Uploaded for e2e",
+      "mime_type": "application/vnd.microsoft.portable-executable",
+      "labels": ["e2e"],
+      "hashes": {
+        "MD5": "79f7781f3ec7af1466be4a0e5c853d14",
+        "SHA-1": "64aab1d1a1bfa2a49c132cf6986b1e6defcd66f0",
+        "SHA-256": "f6fb126672f3561c2b8681a1259da83726f4f990c3e66c87d5e3d3a22b87a144",
+        "SHA-512": "33b839180c40b0e80f722dcfdbe8dfc55d9ed2781ffa7b964b58324bb1e8daccbfa8ab76c3c5c73c8427458939996939a7353bdc56bdd090d15dab02ac6fdc38"
+      },
+      "external_references": [
+        {
+          "source_name": "MalwareBazaar Recent Additions",
+          "description": "MalwareBazaar Recent Additions",
+          "url": "https://bazaar.abuse.ch/sample/f6fb126672f3561c2b8681a1259da83726f4f990c3e66c87d5e3d3a22b87a144/"
+        }
+      ],
+      "x_opencti_id": "f953e65d-6462-4348-a34b-ddb8d4036186",
+      "x_opencti_type": "Artifact",
+      "type": "artifact"
+    },
+    {
+      "id": "indicator--45ef93ad-1596-53a1-a3bd-7b078bbb6ce0",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 50,
+      "labels": ["e2e"],
+      "created": "2025-07-04T11:11:01.195Z",
+      "modified": "2025-07-04T11:11:18.411Z",
+      "pattern_type": "stix",
+      "pattern_version": "2.1",
+      "pattern": "[hostname:value = 'www.sheepster.ru']",
+      "name": "www.sheepster.ru",
+      "valid_from": "2025-07-04T10:34:22.000Z",
+      "valid_until": "2026-04-05T07:53:53.835Z",
+      "x_opencti_score": 50,
+      "x_opencti_detection": false,
+      "x_opencti_main_observable_type": "Hostname",
+      "x_opencti_observable_values": [
+        {
+          "type": "Hostname",
+          "value": "www.sheepster.ru",
+          "hashes": null
+        }
+      ],
+      "x_opencti_id": "ccd2838f-9957-4b2e-9fe3-8248cf0c6cc9",
+      "x_opencti_type": "Indicator",
+      "type": "indicator",
+      "created_by_ref": "identity--e52b2fa3-2af0-5e53-ad38-17d54b3d61cb",
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ]
+    },
+    {
+      "id": "channel--e4c2a9ad-44aa-55f8-9e68-b2da712d0721",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 0,
+      "created": "2024-02-09T13:34:13.638Z",
+      "modified": "2025-03-26T10:45:52.586Z",
+      "name": "channel e2e",
+      "x_opencti_id": "4e2b016c-b0f1-4976-9eb8-06f902348bb3",
+      "x_opencti_type": "Channel",
+      "type": "channel"
+    },
+    {
+      "id": "attack-pattern--9675c42e-1fe3-50da-a185-10f7c669b6f7",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2020-02-11T18:46:56.263Z",
+      "modified": "2025-02-21T15:42:33.534Z",
+      "name": "Attack pattern e2e",
+      "description": "attack pattern e2e description",
+      "labels": [
+        "e2e"
+      ],
+      "kill_chain_phases": [
+        {
+          "kill_chain_name": "mitre-attack",
+          "phase_name": "credential-access",
+          "x_opencti_order": 0
+        },
+        {
+          "kill_chain_name": "operator-chain",
+          "phase_name": "phase1",
+          "x_opencti_order": 0
+        }
+      ],
+      "x_opencti_id": "3ad88983-ba9c-42bb-875e-4627d9ff6dc4",
+      "x_opencti_type": "Attack-Pattern",
+      "type": "attack-pattern"
+    },
+    {
+      "id": "narrative--94e38491-7a58-539a-8d2c-b69d1d560dfc",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-03-07T21:10:00.027Z",
+      "modified": "2024-03-11T10:14:02.509Z",
+      "name": "Narrative e2e",
+      "x_opencti_id": "925675f1-ed8d-45f6-aed1-63aef938e7c0",
+      "x_opencti_type": "Narrative",
+      "type": "narrative"
+    },
+    {
+      "id": "x-mitre-data-component--f58da03c-b2e6-5932-8c27-dce8dec74e74",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2021-10-20T15:05:19.274Z",
+      "modified": "2024-12-11T11:12:41.884Z",
+      "name": "Data component e2e",
+      "description": "Data component e2e",
+      "x_opencti_id": "45daf5bb-76db-4b00-b2f2-45f66a5a3419",
+      "x_opencti_type": "Data-Component",
+      "type": "x-mitre-data-component"
+    },
+    {
+      "id": "x-mitre-data-source--4a901889-b00b-5960-9069-69ff62834a63",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2021-10-20T15:05:19.274Z",
+      "modified": "2024-11-06T08:02:03.069Z",
+      "name": "Data source e2e",
+      "description": "Data source e2e",
+      "x_mitre_platforms": [
+        "Windows",
+        "Identity Provider"
+      ],
+      "x_mitre_collection_layers": [
+        "Cloud Control Plane",
+        "host"
+      ],
+      "x_opencti_id": "1470824f-2eb2-477b-8fb8-3b2b2a60abc7",
+      "x_opencti_type": "Data-Source",
+      "type": "x-mitre-data-source"
+    },
+    {
+      "id": "course-of-action--381caeaf-923c-5809-854f-2d9f1cc06ea3",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 26,
+      "created": "2023-10-19T14:36:24.411Z",
+      "modified": "2024-05-30T12:53:29.121Z",
+      "name": "Course of action e2e",
+      "description": "Course of action e2e",
+      "x_mitre_id": "T1453",
+      "x_opencti_id": "df9724f0-2d51-46bc-bf8d-cdf5cecb1088",
+      "x_opencti_type": "Course-Of-Action",
+      "type": "course-of-action"
+    },
+    {
+      "id": "infrastructure--41b8c3be-db27-55bd-b708-2a877644220b",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "labels": ["e2e"],
+      "created": "2025-04-15T12:07:57.395Z",
+      "modified": "2025-04-15T12:07:57.395Z",
+      "name": "mynewinfratest",
+      "infrastructure_types": [
+        "newinfratype"
+      ],
+      "x_opencti_id": "92112010-122c-4274-966f-420d1a0e9da9",
+      "x_opencti_type": "Infrastructure",
+      "type": "infrastructure"
+    },
+
+    {
+      "id": "tool--dccdb7e3-a5bf-5f10-8ca2-9413c9b0ba75",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 50,
+      "created": "2020-04-29T07:13:03.248Z",
+      "modified": "2025-02-21T09:43:38.058Z",
+      "name": "tool e2e",
+      "description": "e2e test description",
+      "tool_types": [
+        "information-gathering"
+      ],
+      "x_opencti_id": "06debf6c-e38a-464e-be37-383cd82effb7",
+      "x_opencti_type": "Tool",
+      "type": "tool"
+    },
+    {
+      "id": "identity--a18a3229-3a7b-50a8-ad50-1383dee7e1fc",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 55,
+      "created": "2024-08-30T18:16:54.957Z",
+      "modified": "2025-02-21T21:50:31.839Z",
+      "identity_class": "class",
+      "name": "Sector e2e",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "0bc7dbeb-3560-4cb2-9639-3827c0c0a74a",
+      "x_opencti_type": "Sector",
+      "type": "identity"
+    },
+    {
+      "id": "event--26f4afeb-ea5a-5082-a136-5706482ad8c9",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-03-20T22:50:47.976Z",
+      "modified": "2025-06-13T12:47:13.739Z",
+      "name": "Event e2e",
+      "event_types": [
+        "e2e test"
+      ],
+      "x_opencti_id": "1442bc2c-4e12-4a41-bc99-09e0c5561276",
+      "x_opencti_type": "Event",
+      "type": "event"
+    },
+    {
+      "id": "identity--dc69794b-48c9-5530-a68e-e959b0f719a8",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-03-09T19:15:07.856Z",
+      "modified": "2024-03-10T01:59:00.214Z",
+      "identity_class": "organization",
+      "name": "Organization e2e",
+      "x_opencti_id": "bd5b1a4c-251b-482c-921b-0304d3cbab98",
+      "x_opencti_type": "Organization",
+      "type": "identity"
+    },
+    {
+      "id": "identity--c50c511d-8fe3-5c70-a6ad-ffbf02e1295c",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-06-20T06:55:47.841Z",
+      "modified": "2025-06-24T00:45:38.554Z",
+      "identity_class": "securityplatform",
+      "name": "E2e EDR",
+      "description": "a super duper EDR",
+      "security_platform_type": "EDR",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "d36ac2b2-e248-4012-990e-2cb2d864f9af",
+      "x_opencti_type": "SecurityPlatform",
+      "type": "identity"
+    },
+    {
+      "id": "identity--125d469f-c7c0-551f-be83-e3b2532088a6",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-02-27T20:13:32.560Z",
+      "modified": "2025-06-16T16:33:53.689Z",
+      "identity_class": "system",
+      "name": "System e2e",
+      "x_opencti_id": "7545ed1a-a556-4d1e-8369-bac8fd6722ef",
+      "x_opencti_type": "System",
+      "type": "identity"
+    },
+    {
+      "id": "identity--f8bb44a4-f9e5-5c91-b5b5-fed0f2f7795c",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-06-18T07:44:44.067Z",
+      "identity_class": "individual",
+      "name": "Individual e2e",
+      "x_opencti_id": "21d17163-54d4-42a1-87c4-d623dd4bd552",
+      "x_opencti_type": "Individual",
+      "type": "identity"
+    },
+    {
+      "id": "identity--f8bb44a4-f9e5-5c91-b5b5-fed0f2f7765c",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2025-01-01T00:00:00.000Z",
+      "modified": "2025-06-18T07:44:44.067Z",
+      "identity_class": "individual",
+      "name": "Duncan Macleod",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "21d17163-54d4-42a1-87c4-d623dd4bd552",
+      "x_opencti_type": "Individual",
+      "type": "identity"
+    },
+    {
+      "id": "location--7e13827c-720f-5725-978b-907dc66a6f6f",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2021-09-02T12:46:59.351Z",
+      "modified": "2025-04-16T08:47:38.072Z",
+      "name": "Region e2e",
+      "latitude": 11.5024338,
+      "longitude": 17.7578122,
+      "x_opencti_location_type": "Region",
+      "region": "Africa",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "54e835d8-888d-425b-9eb0-6c9b6c059710",
+      "x_opencti_type": "Region",
+      "type": "location"
+    },
+    {
+      "id": "location--757931f5-e0b9-535e-9809-42ff88343a1e",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2021-09-02T12:46:59.380Z",
+      "modified": "2025-06-05T11:37:45.822Z",
+      "name": "Country e2e",
+      "latitude": 33.93911,
+      "longitude": 67.709953,
+      "x_opencti_location_type": "Country",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "4f9a6180-3307-4eda-96c3-92333d8d5445",
+      "x_opencti_type": "Country",
+      "type": "location"
+    },
+    {
+      "id": "location--99ad9bb2-5611-56ce-a047-ff53f5b3c812",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 0,
+      "created": "2023-11-24T16:05:40.509Z",
+      "modified": "2024-09-20T13:48:19.005Z",
+      "name": "Administrative area e2e",
+      "description": "e2e",
+      "latitude": 121,
+      "longitude": 122,
+      "x_opencti_location_type": "Administrative-Area",
+      "x_opencti_id": "d67551cd-17cc-4bc6-a74a-5a90fd7c7056",
+      "x_opencti_type": "Administrative-Area",
+      "type": "location"
+    },
+    {
+      "id": "location--61cb1fb1-25ae-558d-8258-fdd0948f2112",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 75,
+      "created": "2024-08-13T08:04:09.430Z",
+      "modified": "2024-08-13T08:04:09.430Z",
+      "name": "City e2e",
+      "latitude": 55.0443,
+      "longitude": 9.4174,
+      "x_opencti_location_type": "City",
+      "city": "Aabenraa",
+      "x_opencti_id": "189ea0c9-f1af-44ee-9c7e-ee75924811ff",
+      "x_opencti_type": "City",
+      "type": "location"
+    },
+    {
+      "id": "location--9f65922b-b50b-5d5e-8d37-9692c7244a9e",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 55,
+      "created": "2023-10-24T12:54:51.065Z",
+      "modified": "2025-05-07T14:26:46.107Z",
+      "name": "Position e2e",
+      "latitude": 48.85821480740149,
+      "longitude": 2.2944812999999997,
+      "x_opencti_location_type": "Position",
+      "x_opencti_id": "40174351-d2b7-4349-b5e1-f2421a969281",
+      "x_opencti_type": "Position",
+      "type": "location"
     }
   ]
 }

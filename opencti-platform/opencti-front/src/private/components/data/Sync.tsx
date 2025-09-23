@@ -88,7 +88,7 @@ const Sync = () => {
   }
 
   return (
-    <>
+    <div data-testid="streams-page">
       <IngestionMenu />
       <PageContainer withRightMenu>
         <Breadcrumbs
@@ -140,7 +140,7 @@ const Sync = () => {
           />
         </ListLines>
       </PageContainer>
-    </>
+    </div>
   );
 };
 

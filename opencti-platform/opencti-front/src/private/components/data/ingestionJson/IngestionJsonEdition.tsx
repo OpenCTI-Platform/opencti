@@ -12,7 +12,6 @@ import CommitMessage from '@components/common/form/CommitMessage';
 import JsonMapperField, { JsonMapperFieldOption, jsonMapperQuery } from '@components/common/form/JsonMapperField';
 import Button from '@mui/material/Button';
 import IngestionJsonMapperTestDialog from '@components/data/ingestionJson/IngestionJsonMapperTestDialog';
-import makeStyles from '@mui/styles/makeStyles';
 import { IngestionJsonEditionFragment_ingestionJson$key } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionFragment_ingestionJson.graphql';
 import { JsonMapperFieldSearchQuery } from '@components/common/form/__generated__/JsonMapperFieldSearchQuery.graphql';
 import { QueryAttributeFieldAdd } from '@components/common/form/QueryAttributeField';
@@ -21,6 +20,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { IngestionJsonAttributes, IngestionJsonHeader } from '@components/data/ingestionJson/IngestionJsonCreation';
 import IngestionSchedulingField from '@components/data/IngestionSchedulingField';
+import { useTheme } from '@mui/styles';
 import { convertMapper, convertUser } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -33,20 +33,19 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { USER_CHOICE_MARKING_CONFIG } from '../../../../utils/csvMapperUtils';
-import { BASIC_AUTH, BEARER_AUTH, CERT_AUTH, extractCA, extractCert, extractKey, extractPassword, extractUsername } from '../../../../utils/ingestionAuthentificationUtils';
+import {
+  BASIC_AUTH,
+  BEARER_AUTH,
+  CERT_AUTH,
+  extractCA,
+  extractCert,
+  extractKey,
+  extractPassword,
+  extractToken,
+  extractUsername,
+  updateAuthenticationFields,
+} from '../../../../utils/ingestionAuthentificationUtils';
 import PasswordTextField from '../../../../components/PasswordTextField';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
 
 const ingestionJsonEditionPatch = graphql`
   mutation IngestionJsonEditionPatchMutation($id: ID!, $input: IngestionJsonAddInput!) {
@@ -104,7 +103,7 @@ interface IngestionJsonEditionProps {
   enableReferences?: boolean
 }
 
-interface IngestionJsonEditionForm {
+export interface IngestionJsonEditionForm {
   message?: string | null
   references?: ExternalReferencesValues
   name: string,
@@ -125,6 +124,7 @@ interface IngestionJsonEditionForm {
   user_id: string | FieldOption,
   username?: string
   password?: string
+  token?: string
   cert?: string
   key?: string
   ca?: string
@@ -147,7 +147,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
   enableReferences = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme<Theme>();
   const [open, setOpen] = useState(false);
   const [isCreateDisabled, setIsCreateDisabled] = useState(true);
   const ingestionJsonData = useFragment(ingestionJsonEditionFragment, ingestionJson);
@@ -173,6 +173,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     user_id: Yup.mixed().nullable(),
     username: Yup.string().nullable(),
     password: Yup.string().nullable(),
+    token: Yup.string().nullable(),
     cert: Yup.string().nullable(),
     key: Yup.string().nullable(),
     ca: Yup.string().nullable(),
@@ -184,10 +185,12 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
   const [commitUpdate] = useApiMutation(ingestionJsonEditionPatch);
 
   const onSubmit: FormikConfig<IngestionJsonEditionForm>['onSubmit'] = (values, { setSubmitting }) => {
-    let authenticationValue = values.authentication_value;
-    if (values.authentication_type === 'basic') {
+    let authenticationValue;
+    if (values.authentication_type === BASIC_AUTH) {
       authenticationValue = `${values.username}:${values.password}`;
-    } else if (values.authentication_type === 'certificate') {
+    } else if (values.authentication_type === BEARER_AUTH) {
+      authenticationValue = values.token;
+    } else if (values.authentication_type === CERT_AUTH) {
       authenticationValue = `${values.cert}:${values.key}:${values.ca}`;
     }
     const markings = values.markings?.map((option) => option.value);
@@ -232,12 +235,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     pagination_with_sub_page_attribute_path: ingestionJsonData.pagination_with_sub_page_attribute_path,
     query_attributes: (ingestionJsonData.query_attributes ?? []) as IngestionJsonAttributes[],
     authentication_type: ingestionJsonData.authentication_type,
-    authentication_value: ingestionJsonData.authentication_type === BEARER_AUTH ? ingestionJsonData.authentication_value : undefined,
-    username: ingestionJsonData.authentication_type === BASIC_AUTH ? extractUsername(ingestionJsonData.authentication_value) : undefined,
-    password: ingestionJsonData.authentication_type === BASIC_AUTH ? extractPassword(ingestionJsonData.authentication_value) : undefined,
-    cert: ingestionJsonData.authentication_type === CERT_AUTH ? extractCert(ingestionJsonData.authentication_value) : undefined,
-    key: ingestionJsonData.authentication_type === CERT_AUTH ? extractKey(ingestionJsonData.authentication_value) : undefined,
-    ca: ingestionJsonData.authentication_type === CERT_AUTH ? extractCA(ingestionJsonData.authentication_value) : undefined,
+    authentication_value: ingestionJsonData.authentication_value,
     ingestion_running: ingestionJsonData.ingestion_running,
     json_mapper_id: convertMapper(ingestionJsonData, 'jsonMapper'),
     user_id: convertUser(ingestionJsonData, 'user'),
@@ -248,6 +246,33 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
       label: marking.definition ?? '',
       value: marking.id,
     })) ?? [],
+    ...(ingestionJsonData.authentication_type === BEARER_AUTH
+      ? {
+        token: extractToken(ingestionJsonData.authentication_value),
+      }
+      : {
+        token: '',
+      }),
+    ...(ingestionJsonData.authentication_type === BASIC_AUTH
+      ? {
+        username: extractUsername(ingestionJsonData.authentication_value),
+        password: extractPassword(ingestionJsonData.authentication_value),
+      }
+      : {
+        username: '',
+        password: '',
+      }),
+    ...(ingestionJsonData.authentication_type === CERT_AUTH
+      ? {
+        cert: extractCert(ingestionJsonData.authentication_value),
+        key: extractKey(ingestionJsonData.authentication_value),
+        ca: extractCA(ingestionJsonData.authentication_value),
+      }
+      : {
+        cert: '',
+        key: '',
+        ca: '',
+      }),
   };
 
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
@@ -267,6 +292,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     const markings = newHasUserChoiceJsonMapper ? values.markings : defaultMarkingOptions;
     await setFieldValue('markings', markings);
   };
+
   return (
     <Formik<IngestionJsonEditionForm>
       enableReinitialize={true}
@@ -438,6 +464,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               width: '100%',
               marginTop: 20,
             }}
+            onChange={(_: string, value: string) => updateAuthenticationFields(setFieldValue, value)}
           >
             <MenuItem value="none">{t_i18n('None')}</MenuItem>
             <MenuItem value="basic">{t_i18n('Basic user / password')}</MenuItem>
@@ -459,13 +486,15 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               <PasswordTextField
                 name="password"
                 label={t_i18n('Password')}
+                isSecret
               />
             </>
           )}
           {values.authentication_type === BEARER_AUTH && (
             <PasswordTextField
-              name="authentication_value"
+              name="token"
               label={t_i18n('Token')}
+              isSecret
             />
           )}
           {values.authentication_type === CERT_AUTH && (
@@ -481,6 +510,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               <PasswordTextField
                 name="key"
                 label={t_i18n('Key (base64)')}
+                isSecret
               />
               <Field
                 component={TextField}
@@ -512,12 +542,12 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               {t_i18n('Only successful tests allow the ingestion edition.')}
             </Alert>
           </Box>
-          <div className={classes.buttons}>
+          <div style={{ marginTop: 20, textAlign: 'right' }}>
             <Button
               variant="contained"
               onClick={handleReset}
               disabled={isSubmitting}
-              classes={{ root: classes.button }}
+              style={{ marginLeft: theme.spacing(2) }}
             >
               {t_i18n('Cancel')}
             </Button>
@@ -525,7 +555,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               variant="contained"
               color="secondary"
               onClick={() => setOpen(true)}
-              classes={{ root: classes.button }}
+              style={{ marginLeft: theme.spacing(2) }}
               disabled={!(values.uri && values.json_mapper_id)}
             >
               {t_i18n('Verify')}
@@ -535,7 +565,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               color="secondary"
               onClick={submitForm}
               disabled={isSubmitting || isCreateDisabled}
-              classes={{ root: classes.button }}
+              style={{ marginLeft: theme.spacing(2) }}
             >
               {t_i18n('Save')}
             </Button>

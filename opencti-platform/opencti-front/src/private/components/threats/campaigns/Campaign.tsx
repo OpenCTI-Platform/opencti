@@ -72,7 +72,7 @@ const CampaignComponent = ({
   const overviewLayoutCustomization = useOverviewLayoutCustomization(campaign.entity_type);
 
   return (
-    <>
+    <div data-testid="campaign-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -141,7 +141,7 @@ const CampaignComponent = ({
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

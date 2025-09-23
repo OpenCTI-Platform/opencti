@@ -4,7 +4,7 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { lockResources } from '../lock/master-lock';
-import { buildQueryFilters, findAll, updateTask } from '../domain/backgroundTask';
+import { buildQueryFilters, findBackgroundTask, updateTask } from '../domain/backgroundTask';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
@@ -14,7 +14,7 @@ import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
 import { executionContext, isUserInPlatformOrganization, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import { buildEntityFilters, internalFindByIds, internalLoadById, listAllRelations } from '../database/middleware-loader';
+import { buildEntityFilters, internalFindByIds, internalLoadById, fullRelationsList } from '../database/middleware-loader';
 import { getRule } from '../domain/rules';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -75,8 +75,7 @@ const TASK_CONCURRENCY = parseInt(conf.get('task_scheduler:max_concurrency') ?? 
 let running = false;
 
 const findTasksToExecute = async (context) => {
-  return findAll(context, SYSTEM_USER, {
-    connectionFormat: false,
+  return findBackgroundTask(context, SYSTEM_USER, {
     orderBy: 'created_at',
     orderMode: 'asc',
     limit: 1,
@@ -96,7 +95,7 @@ export const taskRule = async (context, user, task, callback) => {
     const { scan } = ruleDefinition;
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
     const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', ...buildEntityFilters(scan.types, scan), after: task_position };
-    const finalOpts = { ...options, connectionFormat: false, callback };
+    const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES_WITHOUT_INFERRED, finalOpts);
   } else {
     const filters = {
@@ -106,7 +105,7 @@ export const taskRule = async (context, user, task, callback) => {
     };
     // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
     const options = { baseData: true, orderMode: 'asc', orderBy: 'updated_at', filters, after: task_position };
-    const finalOpts = { ...options, connectionFormat: false, callback };
+    const finalOpts = { ...options, callback };
     await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, finalOpts);
   }
 };
@@ -114,7 +113,7 @@ export const taskRule = async (context, user, task, callback) => {
 export const taskQuery = async (context, user, task, callback) => {
   const { task_position, task_filters, task_search = null, task_excluded_ids = [], scope, task_order_mode } = task;
   const options = await buildQueryFilters(context, user, task_filters, task_search, task_position, scope, task_order_mode, task_excluded_ids);
-  const finalOpts = { ...options, connectionFormat: false, baseData: true, callback };
+  const finalOpts = { ...options, baseData: true, callback };
   await elList(context, user, READ_DATA_INDICES, finalOpts);
 };
 
@@ -335,7 +334,7 @@ export const buildContainersElementsBundle = async (context, user, containers, e
       });
     };
     const args = { fromOrToId: Array.from(elementIds), baseData: true, callback };
-    await listAllRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
+    await fullRelationsList(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, args);
   }
   // Build limited stix object to limit memory footprint
   const containerOperations = [{

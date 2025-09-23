@@ -131,6 +131,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 # Ordering

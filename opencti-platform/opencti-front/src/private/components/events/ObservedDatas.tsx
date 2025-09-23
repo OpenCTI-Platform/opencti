@@ -182,7 +182,7 @@ const ObservedDatas: FunctionComponent = () => {
   } as UsePreloadedPaginationFragment<ObservedDatasLinesPaginationQuery>;
 
   return (
-    <>
+    <span data-testid="observed-data">
       <Breadcrumbs elements={[{ label: t_i18n('Events') }, { label: t_i18n('Observed datas'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -201,7 +201,7 @@ const ObservedDatas: FunctionComponent = () => {
           )}
         />
       )}
-    </>
+    </span>
   );
 };
 

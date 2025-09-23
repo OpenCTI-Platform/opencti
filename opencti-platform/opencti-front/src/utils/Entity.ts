@@ -10,6 +10,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/techniques/attack_patterns';
     case 'Campaign':
       return '/dashboard/threats/campaigns';
+    case 'Connectors':
+      return '/dashboard/data/ingestion/connectors';
     case 'FintelTemplate':
       return '/dashboard/settings/customization/entity_types';
     case 'FintelDesign':

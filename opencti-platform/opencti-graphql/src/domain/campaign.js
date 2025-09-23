@@ -5,15 +5,15 @@ import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { FROM_START, UNTIL_END } from '../utils/format';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { addFilter } from '../utils/filtering/filtering-utils';
 
 export const findById = (context, user, campaignId) => {
   return storeLoadById(context, user, campaignId, ENTITY_TYPE_CAMPAIGN);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CAMPAIGN], args);
+export const findCampaignPaginated = (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CAMPAIGN], args);
 };
 
 // region time series

@@ -5,7 +5,7 @@ import {
   caseTemplateDelete,
   caseTemplateDeleteRelation,
   caseTemplateEdit,
-  findAll,
+  findCaseTemplatePaginated,
   findById,
   taskTemplatesPaginated
 } from './case-template-domain';
@@ -13,7 +13,7 @@ import {
 const caseTemplateResolvers: Resolvers = {
   Query: {
     caseTemplate: (_, { id }, context) => findById(context, context.user, id),
-    caseTemplates: (_, args, context) => findAll(context, context.user, args),
+    caseTemplates: (_, args, context) => findCaseTemplatePaginated(context, context.user, args),
   },
   CaseTemplate: {
     tasks: (current, args, context) => taskTemplatesPaginated(context, context.user, current.id, args),

@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Readable } from 'stream';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import { defaultValidationMode, deleteFile } from '../database/file-storage';
-import { internalLoadById, listAllEntities } from '../database/middleware-loader';
+import { internalLoadById, fullEntitiesList } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
 import { allFilesMimeTypeDistribution, allRemainingFilesCount } from '../modules/internal/document/document-domain';
@@ -213,9 +213,8 @@ export const batchFileWorks = async (context, user, files) => {
       filters: [{ key: ['event_source_id'], values: files }],
       filterGroups: [],
     };
-    const items = await listAllEntities(context, user, [ENTITY_TYPE_WORK], {
+    const items = await fullEntitiesList(context, user, [ENTITY_TYPE_WORK], {
       indices: [READ_INDEX_HISTORY],
-      connectionFormat: false,
       orderBy: 'timestamp',
       orderMode: OrderingMode.Desc,
       filters,

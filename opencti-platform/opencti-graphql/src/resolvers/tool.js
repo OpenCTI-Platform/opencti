@@ -1,4 +1,4 @@
-import { addTool, findAll, findById } from '../domain/tool';
+import { addTool, findToolPaginated, findById } from '../domain/tool';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -13,7 +13,7 @@ import { INPUT_KILLCHAIN } from '../schema/general';
 const toolResolvers = {
   Query: {
     tool: (_, { id }, context) => findById(context, context.user, id),
-    tools: (_, args, context) => findAll(context, context.user, args),
+    tools: (_, args, context) => findToolPaginated(context, context.user, args),
   },
   Tool: {
     killChainPhases: (tool, _, context) => loadThroughDenormalized(context, context.user, tool, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),

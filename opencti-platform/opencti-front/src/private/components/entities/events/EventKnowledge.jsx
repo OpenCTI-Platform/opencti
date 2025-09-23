@@ -30,7 +30,7 @@ const EventKnowledgeComponent = ({
   const allRelationshipsTypes = getRelationshipTypesForEntityType(event.entity_type, schema);
 
   return (
-    <>
+    <div data-testid="event-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -225,7 +225,7 @@ const EventKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

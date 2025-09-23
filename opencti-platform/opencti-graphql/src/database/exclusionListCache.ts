@@ -2,7 +2,7 @@ import { type BasicStoreEntityExclusionList, ENTITY_TYPE_EXCLUSION_LIST } from '
 import { ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import { checkExclusionLists, convertIpAddr } from '../utils/exclusionLists';
 import type { AuthContext } from '../types/user';
-import { listAllEntities } from './middleware-loader';
+import { fullEntitiesList } from './middleware-loader';
 import { SYSTEM_USER } from '../utils/access';
 import { getFileContent } from './file-storage';
 import { logApp, PLATFORM_INSTANCE_ID } from '../config/conf';
@@ -62,7 +62,7 @@ const buildExclusionListCacheItem = async (exclusionList: BasicStoreEntityExclus
 };
 
 export const buildCacheFromAllExclusionLists = async (context: AuthContext) => {
-  const exclusionLists: BasicStoreEntityExclusionList[] = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_EXCLUSION_LIST]);
+  const exclusionLists: BasicStoreEntityExclusionList[] = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_EXCLUSION_LIST]);
   const enabledExclusionLists = exclusionLists.filter((l) => l.enabled);
   const exclusionListsCount = enabledExclusionLists.length;
   const builtCache: ExclusionListCacheItem[] = [];

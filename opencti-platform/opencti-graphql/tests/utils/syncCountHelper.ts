@@ -29,7 +29,6 @@ testCreatedCounter.grouping = 1;
 testCreatedCounter.identity = 40;
 testCreatedCounter.incident = 2;
 testCreatedCounter.indicator = 44;
-testCreatedCounter['internal-relationship'] = 13;
 testCreatedCounter['intrusion-set'] = 3;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
@@ -58,7 +57,7 @@ testUpdatedCounter['marking-definition'] = 2;
 testUpdatedCounter.relationship = 8;
 testUpdatedCounter.campaign = 7;
 testUpdatedCounter.identity = 25;
-testUpdatedCounter.malware = 22;
+testUpdatedCounter.malware = 20;
 testUpdatedCounter.file = 19;
 testUpdatedCounter['intrusion-set'] = 4;
 testUpdatedCounter['data-component'] = 4;
@@ -127,7 +126,6 @@ testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter['network-traffic'] = 1;
 testDeletedCounter.tool = 2;
 testDeletedCounter.sighting = 1;
-testDeletedCounter['internal-relationship'] = 2;
 testDeletedCounter.vulnerability = 1;
 
 export const doTotal = (eventCounter: Record<string, number>) => {

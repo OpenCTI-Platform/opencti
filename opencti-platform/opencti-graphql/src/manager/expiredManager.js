@@ -46,7 +46,7 @@ const revokedInstances = async (context) => {
     ],
     filterGroups: [],
   };
-  const opts = { filters, noFiltersChecking: true, connectionFormat: false, callback };
+  const opts = { filters, noFiltersChecking: true, callback };
   await elList(context, EXPIRATION_MANAGER_USER, READ_DATA_INDICES, opts);
 };
 
@@ -69,7 +69,7 @@ const expiredAccounts = async (context) => {
     ],
     filterGroups: [],
   };
-  const opts = { filters, connectionFormat: false, callback };
+  const opts = { filters, callback };
   await elList(context, EXPIRATION_MANAGER_USER, [READ_INDEX_INTERNAL_OBJECTS], opts);
 };
 

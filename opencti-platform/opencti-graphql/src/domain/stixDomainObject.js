@@ -11,7 +11,14 @@ import {
   updateAttributeFromLoadedWithRefs,
   validateCreatedBy,
 } from '../database/middleware';
-import { listAllToEntitiesThroughRelations, listEntities, listEntitiesThroughRelationsPaginated, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import {
+  fullEntitiesThroughRelationsToList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
+  topRelationsList,
+  storeLoadById,
+  storeLoadByIds
+} from '../database/middleware-loader';
 import { elCount, elFindByIds } from '../database/engine';
 import { workToExportFile } from './work';
 import { FunctionalError, UnsupportedError } from '../config/errors';
@@ -28,6 +35,7 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, INPUT_CREATED_BY, INPUT_MARKINGS } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
+import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { checkScore, now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
@@ -40,8 +48,9 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { validateMarking } from '../utils/access';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
+import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 
-export const findAll = async (context, user, args) => {
+export const findStixDomainObjectPaginated = async (context, user, args) => {
   let types = [];
   if (isNotEmptyField(args.types)) {
     types = R.filter((type) => isStixDomainObject(type), args.types);
@@ -49,7 +58,7 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
-  return listEntities(context, user, types, args);
+  return pageEntitiesConnection(context, user, types, args);
 };
 
 export const findById = async (context, user, stixDomainObjectId) => storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -61,7 +70,7 @@ export const batchStixDomainObjects = async (context, user, objectsIds) => {
 };
 
 export const assigneesPaginated = async (context, user, stixDomainObjectId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixDomainObjectId, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER, false, args);
+  return pageRegardingEntitiesConnection(context, user, stixDomainObjectId, RELATION_OBJECT_ASSIGNEE, ENTITY_TYPE_USER, false, args);
 };
 
 // region time series
@@ -98,6 +107,31 @@ export const stixDomainObjectAvatar = (stixDomainObject) => {
   return files.sort((a, b) => (a.order || 0) - (b.order || 0)).find((n) => n.mime_type.includes('image/') && !!n.inCarousel);
 };
 // endregion
+
+// region PIR
+export const stixDomainObjectPirInformation = async (context, user, stixDomainObject, pirId) => {
+  // check pir access
+  await getPirWithAccessCheck(context, user, pirId);
+  // fetch stix domain object pir information
+  const pirInformation = (stixDomainObject.pir_information ?? []).find((s) => s.pir_id === pirId);
+  // retrieve asociated in-pir relationship
+  const inPirRelations = await topRelationsList(context, user, RELATION_IN_PIR, {
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: 'fromId', values: [stixDomainObject.id] },
+        { key: 'toId', values: [pirId] },
+      ],
+      filterGroups: [],
+    },
+  });
+  // return pir useful information
+  return {
+    pir_score: pirInformation?.pir_score,
+    last_pir_score_date: pirInformation?.last_pir_score_date,
+    pir_explanation: inPirRelations.length !== 1 ? [] : inPirRelations[0].pir_explanation,
+  };
+};
 
 // region export
 export const stixDomainObjectsExportAsk = async (context, user, args) => {
@@ -226,7 +260,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   const { element: updatedElem } = await updateAttribute(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, opts);
   // If indicator is score patched, we also patch the score of all observables attached to the indicator
   if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
-    const observables = await listAllToEntitiesThroughRelations(context, user, stixObjectId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+    const observables = await fullEntitiesThroughRelationsToList(context, user, stixObjectId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
     await Promise.all(
       observables.map((observable) => updateAttribute(context, user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, opts))
     );

@@ -19,7 +19,7 @@ import {
   playbookDelete,
   playbookEdit,
   findById,
-  findAll,
+  findPlaybookPaginated,
   availableComponents,
   playbookAddNode,
   playbookInsertNode,
@@ -29,7 +29,10 @@ import {
   playbookDeleteLink,
   playbookUpdatePositions,
   findPlaybooksForEntity,
-  getPlaybookDefinition
+  getPlaybookDefinition,
+  playbookExport,
+  playbookImport,
+  playbookDuplicate
 } from './playbook-domain';
 import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
@@ -38,7 +41,7 @@ import { getConnectorQueueSize } from '../../database/rabbitmq';
 const playbookResolvers: Resolvers = {
   Query: {
     playbook: (_, { id }, context) => findById(context, context.user, id),
-    playbooks: (_, args, context) => findAll(context, context.user, args),
+    playbooks: (_, args, context) => findPlaybookPaginated(context, context.user, args),
     playbooksForEntity: (_, { id }, context) => findPlaybooksForEntity(context, context.user, id),
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -47,7 +50,8 @@ const playbookResolvers: Resolvers = {
   Playbook: {
     playbook_definition: async (current, _, context) => getPlaybookDefinition(context, current),
     last_executions: async (current) => getLastPlaybookExecutions(current.id),
-    queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id)
+    queue_messages: async (current, _, context) => getConnectorQueueSize(context, context.user, current.id),
+    toConfigurationExport: (playbook, _, __) => playbookExport(playbook),
   },
   PlaybookComponent: {
     configuration_schema: async (current) => {
@@ -72,6 +76,8 @@ const playbookResolvers: Resolvers = {
     playbookFieldPatch: (_, { id, input }, context) => playbookEdit(context, context.user, id, input),
     playbookStepExecution: (_, args, context) => playbookStepExecution(context, context.user, args),
     playbookExecute: (_, { id, entityId }, context) => executePlaybookOnEntity(context, id, entityId),
+    playbookImport: (_, { file }, context) => playbookImport(context, context.user, file),
+    playbookDuplicate: (_, { id }, context) => playbookDuplicate(context, context.user, id),
   },
 };
 

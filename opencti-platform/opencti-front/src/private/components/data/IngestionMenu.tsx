@@ -7,6 +7,11 @@ const IngestionMenu = () => {
   const isGrantedIngestion = useGranted([INGESTION]);
   const settingsEntries: MenuEntry[] = [
     {
+      path: '/dashboard/data/ingestion/catalog',
+      label: 'Connector catalog',
+      isEE: true,
+    },
+    {
       path: '/dashboard/data/ingestion/sync',
       label: 'OpenCTI Streams',
     },
@@ -35,7 +40,7 @@ const IngestionMenu = () => {
   if (isConnectorReader) {
     entries.unshift({
       path: '/dashboard/data/ingestion/connectors',
-      label: 'Connectors',
+      label: 'Ingestion monitoring',
     });
   }
   return <NavToolbarMenu entries={entries} />;

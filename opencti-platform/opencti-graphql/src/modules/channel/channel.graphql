@@ -127,6 +127,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 # Ordering

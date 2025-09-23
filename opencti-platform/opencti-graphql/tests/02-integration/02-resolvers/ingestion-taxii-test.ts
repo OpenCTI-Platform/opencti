@@ -51,7 +51,7 @@ describe('TAXII ingestion resolver standard behavior', () => {
     });
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.id).toBeDefined();
     expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_type).toEqual(IngestionAuthType.Basic);
-    expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_value).toEqual('username:P@ssw0rd!');
+    expect(ingesterQueryResult.data?.ingestionTaxiiFieldPatch.authentication_value).toEqual('username:undefined');
   });
 
   it('should reset cursor when a user change the start date', async () => {

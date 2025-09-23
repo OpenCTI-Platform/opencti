@@ -1,6 +1,6 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import { createEntity, distributionEntities, timeSeriesEntities } from '../database/middleware';
-import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
@@ -16,8 +16,8 @@ export const findById = (context, user, noteId) => {
   return storeLoadById(context, user, noteId, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_NOTE], args);
+export const findNotePaginated = async (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CONTAINER_NOTE], args);
 };
 
 // region mutations
@@ -42,7 +42,7 @@ export const noteContainsStixObjectOrStixRelationship = async (context, user, no
       filterGroups: [],
     },
   };
-  const noteFound = await findAll(context, user, args);
+  const noteFound = await findNotePaginated(context, user, args);
   return noteFound.edges.length > 0;
 };
 

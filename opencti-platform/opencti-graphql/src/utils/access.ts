@@ -31,6 +31,7 @@ export const BYPASS = 'BYPASS';
 export const KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE = 'KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE';
 export const KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS = 'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS';
 export const SETTINGS_SET_ACCESSES = 'SETTINGS_SETACCESSES';
+export const SETTINGS_SETPARAMETERS = 'SETTINGS_SETPARAMETERS';
 export const SETTINGS_SETMANAGEXTMHUB = 'SETTINGS_SETMANAGEXTMHUB';
 export const SETTINGS_SUPPORT = 'SETTINGS_SUPPORT';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
@@ -46,6 +47,7 @@ export const VIRTUAL_ORGANIZATION_ADMIN = 'VIRTUAL_ORGANIZATION_ADMIN';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SECURITYACTIVITY = 'SETTINGS_SECURITYACTIVITY';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
+export const PIRAPI = 'PIRAPI';
 
 export const CONTAINER_SHARING_USER_UUID = 'cc3aef5c-6f05-434b-8bdf-8d370046f017';
 export const ROLE_DEFAULT = 'Default';
@@ -885,6 +887,9 @@ export const validateMarking = async (context: AuthContext, user: AuthUser, mark
 
 export const isUserInPlatformOrganization = (user: AuthUser, settings: BasicStoreSettings) => {
   if (isBypassUser(user)) {
+    return true;
+  }
+  if (user.user_service_account) {
     return true;
   }
   const userOrganizationIds = (user.organizations ?? []).map((organization) => organization.internal_id);

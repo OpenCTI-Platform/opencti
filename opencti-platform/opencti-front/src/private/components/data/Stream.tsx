@@ -134,7 +134,7 @@ const Stream = () => {
     orderMode: streamState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="sharing-streams-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('Live streams'), current: true }]} />
       <SharingMenu/>
       {streamState.view === 'lines' ? renderLines(paginationOptions) : ''}

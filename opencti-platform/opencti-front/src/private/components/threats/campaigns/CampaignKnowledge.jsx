@@ -36,7 +36,7 @@ const CampaignKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(campaign.entity_type, schema);
   return (
-    <>
+    <div data-testid="campaign-knowledge-page">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -299,7 +299,7 @@ const CampaignKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

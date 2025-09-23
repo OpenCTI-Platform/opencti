@@ -1,14 +1,14 @@
 import type { Resolvers } from '../../generated/graphql';
 import {
   addPublicDashboard,
-  findAll,
+  findPublicDashboardPaginated,
   findById,
   getAllowedMarkings,
   getPublicDashboardByUriKey,
   publicBookmarks,
   publicDashboardDelete,
   publicDashboardEditField,
-  publicStixCoreObjects,
+  publicStixCoreObjectsPaginated,
   publicStixCoreObjectsDistribution,
   publicStixCoreObjectsMultiTimeSeries,
   publicStixCoreObjectsNumber,
@@ -22,7 +22,7 @@ import { findById as findWorkspaceById } from '../workspace/workspace-domain';
 const publicDashboardResolvers: Resolvers = {
   Query: {
     publicDashboard: (_, { id }, context) => findById(context, context.user, id),
-    publicDashboards: (_, args, context) => findAll(context, context.user, args),
+    publicDashboards: (_, args, context) => findPublicDashboardPaginated(context, context.user, args),
     publicDashboardByUriKey: (_, { uri_key }, context) => getPublicDashboardByUriKey(context, uri_key),
     publicStixCoreObjectsNumber: (_, args, context) => publicStixCoreObjectsNumber(context, args),
     publicStixCoreObjectsMultiTimeSeries: (_, args, context) => publicStixCoreObjectsMultiTimeSeries(context, args),
@@ -31,7 +31,7 @@ const publicDashboardResolvers: Resolvers = {
     publicStixCoreObjectsDistribution: (_, args, context) => publicStixCoreObjectsDistribution(context, args),
     publicStixRelationshipsDistribution: (_, args, context) => publicStixRelationshipsDistribution(context, args),
     publicBookmarks: (_, args, context) => publicBookmarks(context, args),
-    publicStixCoreObjects: (_, args, context) => publicStixCoreObjects(context, args),
+    publicStixCoreObjects: (_, args, context) => publicStixCoreObjectsPaginated(context, args),
     publicStixRelationships: (_, args, context) => publicStixRelationships(context, args),
   },
   PublicDashboard: {

@@ -87,7 +87,7 @@ const Retention = () => {
   }
   const queryRef = useQueryLoading<RetentionLinesPaginationQuery>(RetentionLinesQuery, paginationOptions);
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="retention-page">
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Retention'), current: true }]} />
       <ListLines

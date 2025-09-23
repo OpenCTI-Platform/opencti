@@ -1,7 +1,7 @@
 import {
   addWorkspace,
   duplicateWorkspace,
-  findAll,
+  findWorkspacePaginated,
   findById,
   generateWidgetExportConfiguration,
   generateWorkspaceExportConfiguration,
@@ -28,7 +28,7 @@ import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 const workspaceResolvers: Resolvers = {
   Query: {
     workspace: (_, { id }, context) => findById(context, context.user, id),
-    workspaces: (_, args, context) => findAll(context, context.user, args),
+    workspaces: (_, args, context) => findWorkspacePaginated(context, context.user, args),
   },
   Workspace: {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),

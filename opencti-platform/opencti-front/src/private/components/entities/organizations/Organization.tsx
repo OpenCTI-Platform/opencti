@@ -78,7 +78,7 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
     ? { stixCoreObjectOrStixRelationshipId: organization.id }
     : { authorId: organization.id };
   return (
-    <>
+    <div data-testid="organization-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -121,7 +121,7 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
         stixCoreObjectOrStixCoreRelationshipId={organization.id}
         defaultMarkings={organization.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

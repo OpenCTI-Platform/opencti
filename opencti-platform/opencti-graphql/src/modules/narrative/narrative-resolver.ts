@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addNarrative, childNarrativesPaginated, findAll, findById, isSubNarrative, parentNarrativesPaginated } from './narrative-domain';
+import { addNarrative, childNarrativesPaginated, findNarrativePaginated, findById, isSubNarrative, parentNarrativesPaginated } from './narrative-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -13,7 +13,7 @@ import type { BasicStoreEntityNarrative } from './narrative-types';
 const narrativeResolvers: Resolvers = {
   Query: {
     narrative: (_, { id }, context) => findById(context, context.user, id),
-    narratives: (_, args, context) => findAll(context, context.user, args),
+    narratives: (_, args, context) => findNarrativePaginated(context, context.user, args),
   },
   Narrative: {
     parentNarratives: (narrative, args, context) => parentNarrativesPaginated<BasicStoreEntityNarrative>(context, context.user, narrative.id, args),

@@ -11,6 +11,7 @@ import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './S
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import type { Theme } from '../../../../components/Theme';
 
 type StixCoreObjectHistoryProps = {
   stixCoreObjectId: string;
@@ -19,7 +20,7 @@ type StixCoreObjectHistoryProps = {
 
 const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreObjectHistoryProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
 
   const [entitySearchTerm, setEntitySearchTerm] = useState<string>('');
   const [relationsSearchTerm, setRelationsSearchTerm] = useState<string>('');
@@ -102,14 +103,13 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   );
 
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: '100%' }} data-testid='sco-history-content'>
       <Grid
         container
         spacing={3}
         sx={{
           marginBottom: theme.spacing(2),
         }}
-        data-testid='sco-history-content'
       >
         <Grid
           item

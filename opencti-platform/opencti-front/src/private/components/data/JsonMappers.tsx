@@ -1,7 +1,7 @@
 import React, { BaseSyntheticEvent, Suspense, useRef, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import JsonMapperLines from '@components/data/jsonMapper/JsonMapperLines';
-import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
+import { CancelOutlined, CheckCircleOutlined, FileUploadOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import JsonMappersProvider, { mappersQuery } from '@components/data/jsonMapper/jsonMappers.data';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
@@ -11,6 +11,7 @@ import JsonMapperCreationContainer from '@components/data/jsonMapper/JsonMapperC
 import { schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
 import { jsonMappers_SchemaAttributesQuery } from '@components/data/jsonMapper/__generated__/jsonMappers_SchemaAttributesQuery.graphql';
 import Button from '@mui/material/Button';
+import ToggleButton from '@mui/material/ToggleButton';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -114,7 +115,7 @@ const JsonMappers = () => {
     && (
       <Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
         <JsonMappersProvider mappersQueryRef={queryRefMappers} schemaAttributesQueryRef={queryRefSchemaAttributes}>
-          <div className={classes.container}>
+          <div className={classes.container} data-testid="json-mapper-page">
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('JSON mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines
@@ -132,14 +133,15 @@ const JsonMappers = () => {
               createButton={(
                 <>
                   <>
-                    <Button
-                      variant='outlined'
-                      disableElevation
-                      sx={{ marginLeft: 1 }}
-                      onClick={() => inputFileRef?.current?.click()}
+                    <ToggleButton
+                      value="import"
+                      size="small"
+                      onClick={() => inputFileRef.current?.click()}
+                      data-testid='ImporJsonMapper'
+                      title={t_i18n('Import a JSON mapper')}
                     >
-                      {t_i18n('Import a JSON mapper')}
-                    </Button>
+                      <FileUploadOutlined fontSize="small" color={'primary'} />
+                    </ToggleButton>
                     <Button
                       variant='contained'
                       disableElevation

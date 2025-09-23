@@ -2,7 +2,7 @@ import type { Resolvers } from '../../generated/graphql';
 import {
   addDraftWorkspace,
   deleteDraftWorkspace,
-  findAll,
+  findDraftWorkspacePaginated,
   findById,
   getObjectsCount,
   getProcessingCount,
@@ -17,7 +17,7 @@ import { filterMembersWithUsersOrgs } from '../../utils/access';
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
     draftWorkspace: (_, { id }, context) => findById(context, context.user, id),
-    draftWorkspaces: (_, args, context) => findAll(context, context.user, args),
+    draftWorkspaces: (_, args, context) => findDraftWorkspacePaginated(context, context.user, args),
     draftWorkspaceEntities: (_, args, context) => listDraftObjects(context, context.user, args),
     draftWorkspaceRelationships: async (_, args, context) => {
       context.changeDraftContext(args.draftId);

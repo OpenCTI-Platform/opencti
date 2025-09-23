@@ -146,7 +146,7 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
   );
 
   return (
-    <>
+    <div data-testid="rfi-page">
       <Grid
         container={true}
         spacing={3}
@@ -303,7 +303,7 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

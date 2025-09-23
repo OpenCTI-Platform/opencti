@@ -32,7 +32,7 @@ const SystemKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(system.entity_type, schema);
   return (
-    <>
+    <div data-testid="system-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -268,7 +268,7 @@ const SystemKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

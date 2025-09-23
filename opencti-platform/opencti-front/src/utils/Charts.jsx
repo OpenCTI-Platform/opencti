@@ -1,7 +1,8 @@
 import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
-import { isColorCloseToWhite } from './Colors';
+import { isColorCloseToWhite, itemColor } from './Colors';
+import { monthsAgo, now } from './Time';
 
 export const colors = (temp) => [
   C.red[temp],
@@ -54,6 +55,32 @@ const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => (`
     ${w.config.labels[seriesIndex]}
   </div>
 `);
+
+/**
+ * A custom tooltip for ApexChart.
+ * This tooltip display complex data for scatter chart.
+ *
+ * @param {Theme} theme
+ */
+const multipleDataTooltip = (theme) => ({ seriesIndex, dataPointIndex, w }) => {
+  const containerColors = `background:${theme.palette.background.nav}; color:${theme.palette.text.primary};`;
+  const containerLayout = 'padding: 2px 6px; font-size: 12px; display:flex; flex-direction:column;';
+  const { group } = w.config.series[seriesIndex].data[dataPointIndex].meta;
+  const max = 10;
+  const hasMore = group.length > max;
+  const rows = group.slice(0, max).map((data) => `
+    <div style="display:flex; align-items:center; gap:4px">
+      <div style="width:10px; height:10px; background:${itemColor(data.type)}; border-radius:10px;"></div>
+      <span>${data.name}: ${data.score}%</span>
+    </div>
+  `).join('');
+  return (`
+    <div style="${containerColors}${containerLayout}">
+      ${rows}
+      ${hasMore ? '<div>...</div>' : ''}
+    </div>
+  `);
+};
 
 /**
  * @param {Theme} theme
@@ -1053,5 +1080,82 @@ export const heatMapOptions = (
         ranges,
       },
     },
+  },
+});
+
+export const scatterChartOptions = (theme) => ({
+  chart: {
+    type: 'scatter',
+    background: theme.palette.background.accent,
+    toolbar: toolbarOptions,
+    foreColor: theme.palette.text.secondary,
+    width: '100%',
+    height: '100%',
+    zoom: {
+      enabled: false,
+    },
+  },
+  theme: {
+    mode: theme.palette.mode,
+  },
+  dataLabels: {
+    enabled: true,
+    offsetY: 1,
+    background: {
+      enabled: false,
+    },
+    style: {
+      colors: ['#000000'],
+    },
+    formatter(_, opts) {
+      const series = opts.w.config.series[opts.seriesIndex];
+      const data = series.data[opts.dataPointIndex].meta;
+      return data.size > 1 ? data.size : '';
+    },
+  },
+  colors: [
+    theme.palette.primary.main,
+    ...colors(theme.palette.mode === 'dark' ? 400 : 600),
+  ],
+  states: {
+    hover: {
+      filter: {
+        type: 'lighten',
+        value: 0.05,
+      },
+    },
+  },
+  grid: {
+    show: false,
+  },
+  legend: {
+    show: false,
+  },
+  tooltip: {
+    theme: theme.palette.mode,
+    custom: multipleDataTooltip(theme),
+  },
+  xaxis: {
+    type: 'datetime',
+    min: new Date(monthsAgo(2)).getTime(),
+    max: new Date(now()).getTime(),
+    labels: {
+      show: false,
+    },
+    axisBorder: {
+      show: false,
+    },
+    axisTicks: {
+      show: false,
+    },
+  },
+  yaxis: {
+    show: false,
+    min: 0,
+    max: 100,
+  },
+  markers: {
+    size: 10,
+    strokeWidth: 0,
   },
 });

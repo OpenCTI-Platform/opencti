@@ -12,7 +12,7 @@ import { ENTITY_TYPE_INCIDENT } from '../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../src/modules/indicator/indicator-types';
 import RuleSightingIncident from '../../src/rules/sighting-incident/SightingIncidentRule';
 import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../src/schema/stixCoreRelationship';
-import { internalLoadById, listRelations } from '../../src/database/middleware-loader';
+import { internalLoadById, topRelationsList } from '../../src/database/middleware-loader';
 import { RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
 import { wait } from '../../src/database/utils';
 
@@ -45,10 +45,10 @@ describe('Sighting incident rule', () => {
       expect(R.head(inference[RELATION_OBJECT_MARKING])).toBe(clear.internal_id);
       expect(inference.first_seen).toBe('2016-08-06T20:08:31.000Z');
       expect(inference.last_seen).toBe('2016-08-07T20:08:31.000Z');
-      const relArgs = { fromId: inference.id, connectionFormat: false };
-      const related = await listRelations(testContext, SYSTEM_USER, RELATION_RELATED_TO, relArgs);
+      const relArgs = { fromId: inference.id };
+      const related = await topRelationsList(testContext, SYSTEM_USER, RELATION_RELATED_TO, relArgs);
       expect(related.length).toBe(1);
-      const targets = await listRelations(testContext, SYSTEM_USER, RELATION_TARGETS, relArgs);
+      const targets = await topRelationsList(testContext, SYSTEM_USER, RELATION_TARGETS, relArgs);
       expect(targets.length).toBe(1);
       // ---- 02. Test rescan behavior
       await disableRule(RuleSightingIncident.id);

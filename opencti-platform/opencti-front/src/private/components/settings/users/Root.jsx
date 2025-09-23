@@ -9,6 +9,7 @@ import Tab from '@mui/material/Tab';
 import { styled } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
+import ConvertUser from './ConvertUser';
 import UserDeletionDialog from './UserDeletionDialog';
 import UserEmailSend from './UserEmailSend';
 import AccessesMenu from '../AccessesMenu';
@@ -22,6 +23,7 @@ import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import UserEdition from './UserEdition';
 import PopoverMenu from '../../../../components/PopoverMenu';
+import UserHistoryTab from './UserHistoryTab';
 
 const userEditionQuery = graphql`
   query RootUserEditionQuery($id: String!) {
@@ -70,6 +72,7 @@ const userQuery = graphql`
       id
       name
       user_email
+      user_service_account
       ...User_user
         @arguments(
           groupsOrderBy: $groupsOrderBy
@@ -78,6 +81,7 @@ const userQuery = graphql`
           organizationsOrderMode: $organizationsOrderMode
         )
       ...UserAnalytics_user
+      ...UserHistoryTab_user
     }
   }
 `;
@@ -101,7 +105,6 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
     userEditionQuery,
     { id: userId },
   );
-
   const [openDelete, setOpenDelete] = useState(false);
   const handleOpenDelete = () => setOpenDelete(true);
   const handleCloseDelete = () => setOpenDelete(false);
@@ -135,37 +138,39 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               </Typography>
               <div className="clearfix"/>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <UserEmailSend outlined userId={userId} />
-              <div style={{ display: 'flex' }}>
-                <div style={{ marginRight: theme.spacing(0.5) }}>
-                  {canDelete && (
-                    <PopoverMenu>
-                      {({ closeMenu }) => (
-                        <Box>
-                          <MenuItem onClick={() => {
-                            handleOpenDelete();
-                            closeMenu();
-                          }}
-                          >
-                            {t_i18n('Delete')}
-                          </MenuItem>
-                        </Box>
-                      )}
-                    </PopoverMenu>
-                  )}
-                </div>
-                <UserDeletionDialog
-                  userId={data.id}
-                  isOpen={openDelete}
-                  handleClose={handleCloseDelete}
-                />
-                <UserEdition userEditionData={userEditionData} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }} >
+              <div style={{ display: 'flex', gap: theme.spacing(0.5) }}>
+                <UserEmailSend outlined userId={userId}/>
+                {canDelete && (
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <Box>
+                        <MenuItem onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
+                      </Box>
+                    )}
+                  </PopoverMenu>
+                )}
               </div>
+              <ConvertUser
+                userId={data.id}
+                userServiceAccount={data.user_service_account}
+              />
+              <UserDeletionDialog
+                userId={data.id}
+                isOpen={openDelete}
+                handleClose={handleCloseDelete}
+              />
+              <UserEdition userEditionData={userEditionData}/>
             </div>
           </UserHeader>
 
-          <div className="clearfix" />
+          <div className="clearfix"/>
           <Box
             sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3 }}
           >
@@ -182,6 +187,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                 value={`/dashboard/settings/accesses/users/${data.id}/analytics`}
                 label={t_i18n('Analytics')}
               />
+              <Tab
+                component={Link}
+                to={`/dashboard/settings/accesses/users/${data.id}/history`}
+                value={`/dashboard/settings/accesses/users/${data.id}/history`}
+                label={t_i18n('History')}
+              />
             </Tabs>
           </Box>
           <Routes>
@@ -195,6 +206,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
               path="/analytics"
               element={ (
                 <UserAnalytics data={data} refetch={refetch} />
+              )}
+            />
+            <Route
+              path="/history"
+              element={(
+                <UserHistoryTab data={data} refetch={refetch} />
               )}
             />
           </Routes>

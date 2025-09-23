@@ -30,7 +30,7 @@ const PositionKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(position.entity_type, schema);
   return (
-    <>
+    <div data-testid="position-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -304,7 +304,7 @@ const PositionKnowledgeComponent = ({
             }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

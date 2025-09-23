@@ -85,7 +85,7 @@ const AdministrativeArea = ({
     administrativeAreaData,
   );
   return (
-    <>
+    <div data-testid="administrative-area-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -136,7 +136,7 @@ const AdministrativeArea = ({
         stixCoreObjectOrStixCoreRelationshipId={administrativeArea.id}
         defaultMarkings={administrativeArea.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

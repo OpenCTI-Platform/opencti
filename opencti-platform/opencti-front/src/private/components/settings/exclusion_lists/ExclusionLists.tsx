@@ -218,7 +218,7 @@ const ExclusionLists = () => {
   }, [queryRefStatus]);
 
   return (
-    <>
+    <div data-testid="exclusion-lists-page">
       <CustomizationMenu />
       <PageContainer withGap withRightMenu>
         <Breadcrumbs
@@ -246,7 +246,7 @@ const ExclusionLists = () => {
           />
         )}
       </PageContainer>
-    </>
+    </div>
   );
 };
 

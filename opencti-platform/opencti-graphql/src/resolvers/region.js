@@ -1,4 +1,4 @@
-import { addRegion, childRegionsPaginated, countriesPaginated, findAll, findById, parentRegionsPaginated } from '../domain/region';
+import { addRegion, childRegionsPaginated, countriesPaginated, findRegionPaginated, findById, parentRegionsPaginated } from '../domain/region';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const regionResolvers = {
   Query: {
     region: (_, { id }, context) => findById(context, context.user, id),
-    regions: (_, args, context) => findAll(context, context.user, args),
+    regions: (_, args, context) => findRegionPaginated(context, context.user, args),
   },
   Region: {
     parentRegions: (region, args, context) => parentRegionsPaginated(context, context.user, region.id, args),

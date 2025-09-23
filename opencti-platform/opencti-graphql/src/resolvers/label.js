@@ -1,5 +1,5 @@
 import { BUS_TOPICS } from '../config/conf';
-import { addLabel, findAll, findById, labelCleanContext, labelDelete, labelEditContext, labelEditField } from '../domain/label';
+import { addLabel, findLabelPaginated, findById, labelCleanContext, labelDelete, labelEditContext, labelEditField } from '../domain/label';
 import { fetchEditContext } from '../database/redis';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
@@ -7,7 +7,7 @@ import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 const labelResolvers = {
   Query: {
     label: (_, { id }, context) => findById(context, context.user, id),
-    labels: (_, args, context) => findAll(context, context.user, args),
+    labels: (_, args, context) => findLabelPaginated(context, context.user, args),
   },
   Label: {
     editContext: (label) => fetchEditContext(label.id),

@@ -1,4 +1,4 @@
-import { addSecurityPlatform, findAll, findById, securityPlatformDelete } from './securityPlatform-domain';
+import { addSecurityPlatform, findSecurityPlatformPaginated, findById, securityPlatformDelete } from './securityPlatform-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import type { Resolvers } from '../../generated/graphql';
 const securityPlatformResolvers: Resolvers = {
   Query: {
     securityPlatform: (_, { id }, context) => findById(context, context.user, id),
-    securityPlatforms: (_, args, context) => findAll(context, context.user, args),
+    securityPlatforms: (_, args, context) => findSecurityPlatformPaginated(context, context.user, args),
   },
   Mutation: {
     securityPlatformAdd: (_, { input }, context) => addSecurityPlatform(context, context.user, input),

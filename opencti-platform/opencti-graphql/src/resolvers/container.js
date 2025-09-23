@@ -1,6 +1,6 @@
 import {
   containersObjectsOfObject,
-  findAll,
+  findContainerPaginated,
   findById,
   knowledgeAddFromInvestigation,
   objects,
@@ -31,7 +31,7 @@ import { ENTITY_TYPE_CONTAINER } from '../schema/general';
 const containerResolvers = {
   Query: {
     container: (_, { id }, context) => findById(context, context.user, id),
-    containers: (_, args, context) => findAll(context, context.user, args),
+    containers: (_, args, context) => findContainerPaginated(context, context.user, args),
     containersObjectsOfObject: (_, args, context) => containersObjectsOfObject(context, context.user, args),
     containersNumber: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {

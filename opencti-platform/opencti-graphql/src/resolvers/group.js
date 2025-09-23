@@ -3,7 +3,7 @@ import { fetchEditContext } from '../database/redis';
 import { addGroup } from '../domain/grant';
 import {
   defaultMarkingDefinitions,
-  findAll,
+  findGroupPaginated,
   findById,
   groupAddRelation,
   groupAllowedMarkings,
@@ -25,7 +25,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 const groupResolvers = {
   Query: {
     group: (_, { id }, context) => findById(context, context.user, id),
-    groups: (_, args, context) => findAll(context, context.user, args),
+    groups: (_, args, context) => findGroupPaginated(context, context.user, args),
   },
   Group: {
     default_marking: (group, _, context) => defaultMarkingDefinitions(context, group),

@@ -79,7 +79,7 @@ const IngestionRss = () => {
     );
   }
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="rss-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('RSS feeds'), current: true }]} />
       <IngestionMenu/>
       <ListLines

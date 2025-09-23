@@ -10,7 +10,7 @@ const getRequestError = (context) => {
   }
   const currentError = head(context.errors);
   const callError = currentError.originalError ? currentError.originalError : currentError;
-  const isAuthenticationCall = includes(callError.name, [AUTH_REQUIRED, AUTH_FAILURE, FORBIDDEN_ACCESS]);
+  const isAuthenticationCall = callError.name && includes(callError.name, [AUTH_REQUIRED, AUTH_FAILURE, FORBIDDEN_ACCESS]);
   if (isAuthenticationCall) {
     return undefined;
   }

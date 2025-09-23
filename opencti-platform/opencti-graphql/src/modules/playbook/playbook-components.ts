@@ -63,7 +63,7 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, listAllEntities, listAllRelations, storeLoadById } from '../../database/middleware-loader';
+import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
@@ -1062,7 +1062,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       if (isStixCyberObservable(type)) {
         // Observable <-- (based on) -- Indicator
         const relationOpts = { toId: id, fromTypes: [ENTITY_TYPE_INDICATOR], indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
-        const basedOnRelations = await listAllRelations<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
+        const basedOnRelations = await fullRelationsList<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
           const indicators = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
@@ -1077,7 +1077,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         // Indicator (based on) --> Observable
         // eslint-disable-next-line max-len
         const relationOpts = { fromId: id, toTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE], indices: inferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
-        const basedOnRelations = await listAllRelations<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
+        const basedOnRelations = await fullRelationsList<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
           const observables = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
@@ -1144,7 +1144,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         filters: [{ key: ['objects'], values: [id], }],
         filterGroups: []
       };
-      const containers = await listAllEntities(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, connectionFormat: false, baseData: true });
+      const containers = await fullEntitiesList(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, baseData: true });
       const containersToResolve = containers.map((container) => container.id);
       const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, containersToResolve);
       if (elements.length > 0) {
@@ -1153,7 +1153,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       }
     }
     if (rule === RESOLVE_NEIGHBORS) {
-      const relations = await listAllRelations(
+      const relations = await fullRelationsList(
         context,
         AUTOMATION_MANAGER_USER,
         ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -1432,7 +1432,7 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           }
           // Resolve relationships in database
           if (isNotEmptyField(id)) {
-            const relationsOfObservables = await listAllRelations(
+            const relationsOfObservables = await fullRelationsList(
               context,
               AUTOMATION_MANAGER_USER,
               ABSTRACT_STIX_CORE_RELATIONSHIP,

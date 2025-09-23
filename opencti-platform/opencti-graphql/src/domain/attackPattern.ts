@@ -10,10 +10,10 @@ import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
 import {
   type EntityOptions,
   findEntitiesIdsWithRelations,
-  listAllEntities,
-  listAllRelations,
-  listEntities,
-  listEntitiesThroughRelationsPaginated,
+  fullEntitiesList,
+  fullRelationsList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
   storeLoadById
 } from '../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -24,8 +24,8 @@ export const findById = (context: AuthContext, user: AuthUser, attackPatternId: 
   return storeLoadById(context, user, attackPatternId, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntities(context, user, [ENTITY_TYPE_ATTACK_PATTERN], args);
+export const findAttackPatternPaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreCommon>) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_ATTACK_PATTERN], args);
 };
 
 export const addAttackPattern = async (context: AuthContext, user: AuthUser, attackPattern: AttackPatternAddInput) => {
@@ -34,11 +34,11 @@ export const addAttackPattern = async (context: AuthContext, user: AuthUser, att
 };
 
 export const parentAttackPatternsPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, false, args);
+  return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, false, args);
 };
 
 export const childAttackPatternsPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, true, args);
+  return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN, true, args);
 };
 
 export const batchIsSubAttackPattern = async (context: AuthContext, user: AuthUser, attackPatternsIds: string[]) => {
@@ -49,25 +49,24 @@ export const batchIsSubAttackPattern = async (context: AuthContext, user: AuthUs
 };
 
 export const coursesOfActionPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION, true, args);
+  return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION, true, args);
 };
 
 export const dataComponentsPaginated = async (context: AuthContext, user: AuthUser, attackPatternId: string, args: EntityOptions<BasicStoreCommon>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_DETECTS, ENTITY_TYPE_DATA_COMPONENT, true, args);
+  return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_DETECTS, ENTITY_TYPE_DATA_COMPONENT, true, args);
 };
 
 export const getAttackPatternsMatrix = async (context: AuthContext, user: AuthUser) => {
   const attackPatternsOfPhases = [];
   const attackPatternsArgs = {
     withoutRels: false, // Must be replace by relation queries
-    connectionFormat: false,
     indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
     filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['false'] }], filterGroups: [] }
   };
-  const allAttackPatterns = await listAllEntities(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
+  const allAttackPatterns = await fullEntitiesList(context, user, [ENTITY_TYPE_ATTACK_PATTERN], attackPatternsArgs);
   const allAttackPatternsById = new Map(allAttackPatterns.map((a) => [a.id, a]));
-  const allKillChainPhases = await listAllEntities(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { connectionFormat: false, indices: [READ_INDEX_STIX_META_OBJECTS] });
-  const subTechniquesRelations = await listAllRelations<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF, { connectionFormat: false });
+  const allKillChainPhases = await fullEntitiesList(context, user, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
+  const subTechniquesRelations = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_SUBTECHNIQUE_OF);
   for (let index = 0; index < allKillChainPhases.length; index += 1) {
     const killChainPhase = allKillChainPhases[index];
     const phaseAttackPatterns = allAttackPatterns

@@ -1,25 +1,29 @@
 import { type BasicStoreEntityIngestionTaxii, ENTITY_TYPE_INGESTION_TAXII } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
-import { verifyIngestionAuthenticationContent } from './ingestion-common';
+import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 
-export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  return storeLoadById<BasicStoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
+export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
+  const taxiiIngestion = await storeLoadById<BasicStoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
+  if (removeCredentials) {
+    taxiiIngestion.authentication_value = removeAuthenticationCredentials(taxiiIngestion.authentication_type, taxiiIngestion.authentication_value) || '';
+  }
+  return taxiiIngestion;
 };
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntitiesPaginated<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
+export const findTaxiiIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return pageEntitiesConnection<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 
-export const findAllTaxiiIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listAllEntities<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
+export const findAllTaxiiIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return fullEntitiesList<BasicStoreEntityIngestionTaxii>(context, user, [ENTITY_TYPE_INGESTION_TAXII], opts);
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
@@ -63,16 +67,43 @@ export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, 
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
-  if (input.some(((editInput) => editInput.key === 'authentication_value'))) {
-    const ingestionConfiguration = await findById(context, user, ingestionId);
-    const authenticationValueField = input.find(((editInput) => editInput.key === 'authentication_value'));
-    if (authenticationValueField && authenticationValueField.value[0]) {
-      verifyIngestionAuthenticationContent(ingestionConfiguration.authentication_type, authenticationValueField.value[0]);
+  const patchInput = [...input];
+
+  if (input.some((editInput) => editInput.key === 'authentication_value')) {
+    const { authentication_value, authentication_type } = await findById(context, user, ingestionId);
+    const authenticationValueField = input.find((editInput) => editInput.key === 'authentication_value');
+    if (authenticationValueField?.value[0]) {
+      verifyIngestionAuthenticationContent(authentication_type, authenticationValueField?.value[0]);
     }
+    const updatedAuthenticationValue = addAuthenticationCredentials(
+      authentication_value,
+      authenticationValueField?.value[0],
+      authentication_type
+    );
+
+    const updatedInput = patchInput.map((editInput) => {
+      if (editInput.key === 'authentication_value') {
+        return {
+          ...editInput,
+          value: [updatedAuthenticationValue],
+        };
+      }
+      return editInput;
+    });
+
+    patchInput.splice(0, patchInput.length, ...updatedInput);
   }
 
-  const patchInput = input;
-  if (input.some(((editInput) => editInput.key === 'added_after_start'))) {
+  // Reset `authentication_value` on `authentication_type` change
+  if (input.some((editInput) => editInput.key === 'authentication_type')) {
+    const resetAuthenticationValue: EditInput = {
+      key: 'authentication_value',
+      value: [''],
+    };
+    patchInput.push(resetAuthenticationValue);
+  }
+
+  if (input.some((editInput) => editInput.key === 'added_after_start')) {
     const cursorEditInput: EditInput = {
       key: 'current_state_cursor',
       value: [undefined],
@@ -97,7 +128,12 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for taxii ingestion \`${element.name}\``,
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_TAXII, input }
   });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+
+  const notif = await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return {
+    ...notif,
+    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value)
+  };
 };
 
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {

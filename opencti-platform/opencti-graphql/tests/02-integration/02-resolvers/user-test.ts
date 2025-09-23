@@ -25,6 +25,7 @@ import {
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import {
+  adminQueryWithError,
   adminQueryWithSuccess,
   enableCEAndUnSetOrganization,
   enableEEAndSetOrganization,
@@ -34,7 +35,8 @@ import {
   queryAsUserWithSuccess
 } from '../../utils/testQueryHelper';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
-import type { Capability, Member } from '../../../src/generated/graphql';
+import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
+import { storeLoadById } from '../../../src/database/middleware-loader';
 
 const LIST_QUERY = gql`
   query users(
@@ -58,6 +60,7 @@ const LIST_QUERY = gql`
           id
           name
           description
+          user_email
         }
       }
     }
@@ -77,6 +80,10 @@ const READ_QUERY = gql`
       standard_id
       name
       description
+      created_at
+      creator {
+        name
+      }
       user_confidence_level {
         max_confidence
       }
@@ -144,11 +151,20 @@ const CREATE_QUERY = gql`
       user_email
       firstname
       lastname
+      user_service_account
       user_confidence_level {
         max_confidence
         overrides {
           entity_type
           max_confidence
+        }
+      }
+      objectOrganization {
+        edges {
+          node {
+            id
+            name
+          }
         }
       }
       groups {
@@ -168,6 +184,40 @@ const CREATE_QUERY = gql`
             ... on Group { entity_type id name }
           }
         }
+      }
+    }
+  }
+`;
+
+const UPDATE_QUERY = gql`
+  mutation UserEdit(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
+    userEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        name
+        description
+        language
+        user_email
+        api_token
+        user_service_account
+        account_status
+        user_confidence_level {
+          max_confidence
+        }
+        effective_confidence_level {
+          max_confidence
+          source {
+            type
+            object {
+              ... on User { entity_type id name }
+              ... on Group { entity_type id name }
+            }
+          }
+        }
+        
       }
     }
   }
@@ -273,12 +323,6 @@ describe('User resolver standard behavior', () => {
     expect(user2.data.userAdd.effective_confidence_level.source.object.id).toEqual(user2.data.userAdd.id);
     userToDeleteIds.push(user2.data.userAdd.id);
   });
-  it('should user loaded by internal id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data?.user).not.toBeNull();
-    expect(queryResult.data?.user.id).toEqual(userInternalId);
-  });
   it('should user loaded by standard id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
     expect(queryResult).not.toBeNull();
@@ -300,20 +344,20 @@ describe('User resolver standard behavior', () => {
     expect(res.data?.token).toBeDefined();
   });
   it('should list users', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data?.users.edges.length).toEqual(TESTING_USERS.length + 3);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 100 } });
+    const userList = queryResult.data?.users.edges;
+
+    // Verify that some users are in the list
+    // Users in testQuery
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'participate@opencti.io').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'editor@opencti.io').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'security@opencti.io').length).toBe(1);
+
+    // Users from this describe block
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'user_confidence@mail.com').length).toBe(1);
+    expect(userList.filter((userNode: any) => userNode.node.user_email === 'user@mail.com').length).toBe(1);
   });
   it('should update user', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            name
-          }
-        }
-      }
-    `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'name', value: ['User - test'] } },
@@ -321,16 +365,6 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data?.userEdit.fieldPatch.name).toEqual('User - test');
   });
   it('should update language only if the value is valid', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            language
-          }
-        }
-      }
-    `;
     const validQueryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'language', value: ['en-us'] } },
@@ -412,28 +446,6 @@ describe('User resolver standard behavior', () => {
     }
   });
   it('should update user confidence level', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            user_confidence_level {
-              max_confidence
-            }
-            effective_confidence_level {
-              max_confidence
-              source {
-                type
-                object {
-                  ... on User { entity_type id name }
-                  ... on Group { entity_type id name }
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
       variables: {
@@ -545,28 +557,6 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user.effective_confidence_level.source.object.id).toEqual(userInternalId);
   });
   it('should remove user confidence level, effective level should be accurate', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            user_confidence_level {
-              max_confidence
-            }
-            effective_confidence_level {
-              max_confidence
-              source {
-                type
-                object {
-                  ... on User { entity_type id name }
-                  ... on Group { entity_type id name }
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
     const queryResult = await adminQuery({
       query: UPDATE_QUERY,
       variables: {
@@ -641,6 +631,8 @@ describe('User resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.roles.filter((role: any) => role.name === 'Role in group').length).toBe(1);
+    expect(queryResult.data?.user.roles.filter((role: any) => role.name === 'Default').length).toBe(1);
     expect(queryResult.data?.user.roles.length).toEqual(2); // the 2 roles are: 'Role in group' and 'Default'
   });
   it('should add capability in role', async () => {
@@ -870,12 +862,12 @@ describe('User has no settings capability and is organization admin query behavi
   const organizationsIds: string[] = [];
 
   const ORGA_ADMIN_ADD_QUERY = gql`
-        mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
-            organizationAdminAdd(id: $id, memberId: $memberId) {
-                id
-                standard_id
-            }
-        }
+      mutation OrganizationAdminAdd($id: ID!, $memberId: String!) {
+          organizationAdminAdd(id: $id, memberId: $memberId) {
+              id
+              standard_id
+          }
+      }
     `;
 
   const ORGANIZATION_ADD_QUERY = gql`
@@ -890,6 +882,18 @@ describe('User has no settings capability and is organization admin query behavi
             }
         }
     `;
+
+  const UPDATE_ORGANIZATION_QUERY = gql`
+    mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
+      organizationFieldPatch(id: $id, input: $input) {
+        id
+        name
+        grantable_groups {
+          id
+        }
+      }
+    }
+  `;
 
   const ORGANIZATION_DELETE_QUERY = gql`
         mutation UserOrganizationDeleteMutation(
@@ -914,17 +918,6 @@ describe('User has no settings capability and is organization admin query behavi
             }
         `;
 
-    const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
-        `;
     // Delete admin to ORGANIZATION
     await adminQuery({
       query: ORGA_ADMIN_DELETE_QUERY, // +1 update organization
@@ -936,7 +929,7 @@ describe('User has no settings capability and is organization admin query behavi
     for (let i = 0; i < organizationsIds.length; i += 1) {
       // remove granted_groups to ORGANIZATION
       await adminQuery({
-        query: UPDATE_QUERY, // +1 update organization for each (+2 total)
+        query: UPDATE_ORGANIZATION_QUERY, // +1 update organization for each (+2 total)
         variables: { id: organizationsIds[i], input: { key: 'grantable_groups', value: [] } },
       });
     }
@@ -980,19 +973,8 @@ describe('User has no settings capability and is organization admin query behavi
     };
 
     // Need to add granted_groups to TEST_ORGANIZATION because of line 533 in domain/user.js
-    const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
-        `;
     const queryResult = await adminQuery({
-      query: UPDATE_QUERY,
+      query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: testOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
     });
     expect(queryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
@@ -1009,15 +991,6 @@ describe('User has no settings capability and is organization admin query behavi
     userInternalId = user.data.userAdd.id;
   });
   it('should update user from its own organization', async () => {
-    const UPDATE_QUERY = gql`
-            mutation UserEdit($id: ID!, $input: [EditInput]!) {
-                userEdit(id: $id) {
-                    fieldPatch(input: $input) {
-                        account_status
-                    }
-                }
-            }
-        `;
     const queryResult = await queryAsUserWithSuccess(USER_EDITOR.client, {
       query: UPDATE_QUERY,
       variables: { id: userInternalId, input: { key: 'account_status', value: ['Inactive'] } },
@@ -1036,19 +1009,8 @@ describe('User has no settings capability and is organization admin query behavi
   });
   it('should administrate more than 1 organization', async () => {
     // Need to add granted_groups to PLATFORM_ORGANIZATION because of line 533 in domain/user.js
-    const UPDATE_QUERY = gql`
-            mutation OrganizationEdit($id: ID!, $input: [EditInput]!) {
-                organizationFieldPatch(id: $id, input: $input) {
-                    id
-                    name
-                    grantable_groups {
-                        id
-                    }
-                }
-            }
-        `;
     const grantableGroupQueryResult = await adminQuery({
-      query: UPDATE_QUERY,
+      query: UPDATE_ORGANIZATION_QUERY,
       variables: { id: platformOrganizationId, input: { key: 'grantable_groups', value: [amberGroupId] } },
     });
     expect(grantableGroupQueryResult.data.organizationFieldPatch.grantable_groups.length).toEqual(1);
@@ -1233,5 +1195,113 @@ describe('User is impersonated', async () => {
 
     // revert platform orga
     await enableCEAndUnSetOrganization();
+  });
+});
+
+describe('Service account User coverage', async () => {
+  let userInternalId: string;
+  const userToDeleteIds: string[] = [];
+  it('should service account user created', async () => {
+    // Create the user
+    const USER_TO_CREATE: UserAddInput = {
+      name: 'Service account',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [],
+    };
+    const user = await adminQueryWithSuccess({
+      query: CREATE_QUERY,
+      variables: { input: USER_TO_CREATE },
+    });
+    expect(user.data.userAdd).not.toBeNull();
+    userInternalId = user.data.userAdd.id;
+    userToDeleteIds.push(userInternalId);
+
+    expect(user.data.userAdd.name).toEqual('Service account');
+    expect(user.data.userAdd.user_email).toBeDefined();
+    expect(user.data.userAdd.user_email.startsWith('automatic+')).toBeTruthy();
+    expect(user.data.userAdd.user_service_account).toEqual(true);
+  });
+  it('should service account user read', async () => {
+    const QUERY_SERVICE_ACCOUNT_USER = gql`
+      query user($id: String!) {
+        user(id: $id) {
+          id
+          standard_id
+          name
+          user_email
+          description
+          groups {
+            edges {
+              node {
+                id
+                name
+              }
+            }
+          }
+          capabilities {
+            id
+            standard_id
+            name
+            description
+          }
+          api_token
+        }
+      }
+    `;
+
+    const queryResult = await queryAsAdminWithSuccess({ query: QUERY_SERVICE_ACCOUNT_USER, variables: { id: userInternalId } });
+    expect(queryResult.data?.user).not.toBeNull();
+    expect(queryResult.data?.user.id).toEqual(userInternalId);
+  });
+  it('should turn service account into user', async () => {
+    const queryResult = await adminQueryWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: { key: 'user_service_account', value: [false] }
+      },
+    });
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_service_account).toEqual(false);
+    // check password has been created
+    const userCreated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
+    expect(userCreated.password).toBeDefined();
+  });
+  it('should turn user into service account', async () => {
+    const queryResult = await adminQueryWithSuccess({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: [{ key: 'user_service_account', value: [true] }, { key: 'password', value: ['toto'] }]
+      },
+    });
+    const { userEdit } = queryResult.data;
+    expect(userEdit.fieldPatch.user_service_account).toEqual(true);
+    // check password has been removed
+    const userCreated: any = await storeLoadById(testContext, ADMIN_USER, userInternalId, ENTITY_TYPE_USER);
+    expect(userCreated.password).toBeUndefined();
+  });
+  it('should not update password for service account', async () => {
+    await adminQueryWithError({
+      query: UPDATE_QUERY,
+      variables: {
+        id: userInternalId,
+        input: [{ key: 'password', value: ['toto'] }]
+      },
+    }, 'Cannot update password for Service account');
+  });
+  it('should service account user deleted', async () => {
+    // Delete the users
+    for (let i = 0; i < userToDeleteIds.length; i += 1) {
+      const userId = userToDeleteIds[i];
+      await adminQueryWithSuccess({
+        query: DELETE_QUERY,
+        variables: { id: userId },
+      });
+      // Verify is no longer found
+      const queryResult = await adminQueryWithSuccess({ query: READ_QUERY, variables: { id: userId } });
+      expect(queryResult.data.user).toBeNull();
+    }
   });
 });

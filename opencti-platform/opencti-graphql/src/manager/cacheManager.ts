@@ -8,7 +8,7 @@ import { FilterMode, OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
 import { type BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { stixLoadByIds } from '../database/middleware';
-import { type EntityOptions, internalFindByIds, listAllEntities, listAllRelations } from '../database/middleware-loader';
+import { type EntityOptions, internalFindByIds, fullEntitiesList, fullRelationsList } from '../database/middleware-loader';
 import { pubSubSubscription } from '../database/redis';
 import { connectors as findConnectors } from '../database/repository';
 import { buildCompleteUsers, resolveUserById } from '../domain/user';
@@ -61,9 +61,9 @@ const DELETES_TOPIC = `${TOPIC_PREFIX}*DELETE_TOPIC`;
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
-    const templates = await listAllEntities<BasicWorkflowTemplateEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS_TEMPLATE], { connectionFormat: false });
-    const args: EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: OrderingMode.Asc, connectionFormat: false };
-    const statuses = await listAllEntities<BasicWorkflowStatusEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS], args);
+    const templates = await fullEntitiesList<BasicWorkflowTemplateEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS_TEMPLATE]);
+    const args: EntityOptions<BasicWorkflowStatusEntity> = { orderBy: ['order'], orderMode: OrderingMode.Asc };
+    const statuses = await fullEntitiesList<BasicWorkflowStatusEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STATUS], args);
     return statuses.map((status) => {
       const template = templates.find((t) => t.internal_id === status.template_id);
       return { ...status, name: template?.name ?? 'Error with template association', template };
@@ -113,11 +113,11 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
 const platformResolvedFilters = (context: AuthContext) => {
   const reloadFilters = async () => {
     // Fetch streams, triggers, connectors (for enrichment connectors), playbooks and Pirs
-    const streams = await listAllEntities<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
-    const triggers = await listAllEntities<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
-    const connectors = await listAllEntities<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
-    const playbooks = await listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
-    const pirs = await listAllEntities<BasicStoreEntityPir>(context, SYSTEM_USER, [ENTITY_TYPE_PIR], { connectionFormat: false });
+    const streams = await fullEntitiesList<BasicStreamEntity>(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION]);
+    const triggers = await fullEntitiesList<BasicTriggerEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER]);
+    const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR]);
+    const playbooks = await fullEntitiesList<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK]);
+    const pirs = await fullEntitiesList<BasicStoreEntityPir>(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
     // Fetch the filters of those entities
     const filteringIds = [...streams, ...triggers, ...connectors, ...playbooks, ...pirs].map((s) => extractResolvedFiltersFromInstance(s)).flat();
     // Resolve the filters ids
@@ -153,25 +153,25 @@ const platformConnectors = (context: AuthContext) => {
 };
 const platformRules = (context: AuthContext) => {
   const reloadRules = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_RULE], { connectionFormat: false });
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_RULE]);
   };
   return { values: null, fn: reloadRules };
 };
 const platformDecayRules = (context: AuthContext) => {
   const reloadDecayRules = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_RULE], { connectionFormat: false });
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_RULE]);
   };
   return { values: null, fn: reloadDecayRules };
 };
 const platformMarkings = (context: AuthContext) => {
   const reloadMarkings = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_MARKING_DEFINITION], { connectionFormat: false });
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_MARKING_DEFINITION]);
   };
   return { values: null, fn: reloadMarkings };
 };
 const platformTriggers = (context: AuthContext) => {
   const reloadTriggers = () => {
-    return listAllEntities<BasicStoreEntityTrigger>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER], { connectionFormat: false });
+    return fullEntitiesList<BasicStoreEntityTrigger>(context, SYSTEM_USER, [ENTITY_TYPE_TRIGGER]);
   };
   return { values: null, fn: reloadTriggers };
 };
@@ -182,15 +182,15 @@ const platformRunningPlaybooks = (context: AuthContext) => {
       filters: [{ key: ['playbook_running'], values: ['true'] }],
       filterGroups: [],
     };
-    const opts = { filters, noFiltersChecking: true, connectionFormat: false };
-    return listAllEntities<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], opts);
+    const opts = { filters, noFiltersChecking: true };
+    return fullEntitiesList<BasicStoreEntityPlaybook>(context, SYSTEM_USER, [ENTITY_TYPE_PLAYBOOK], opts);
   };
   return { values: null, fn: reloadPlaybooks };
 };
 const platformUsers = (context: AuthContext) => {
   const loadUsers = async (ids?: string[]): Promise<AuthUser[]> => {
     const users = ids ? await internalFindByIds(context, SYSTEM_USER, ids)
-      : await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_USER], { connectionFormat: false });
+      : await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_USER]);
     return buildCompleteUsers(context, users);
   };
   const removeUser = async (values: AuthUser[], instance: BasicStoreCommon) => {
@@ -221,14 +221,14 @@ const platformUsers = (context: AuthContext) => {
 };
 const platformSettings = (context: AuthContext) => {
   const reloadSettings = async () => {
-    const memberOfRelations = await listAllRelations<BasicStoreRelation>(context, SYSTEM_USER, [RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO], { connectionFormat: false });
+    const memberOfRelations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, [RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO]);
     const memberOfGroups = memberOfRelations.filter((m) => m.entity_type === RELATION_MEMBER_OF)
       .map((mr) => ({ group: mr.toId, user: mr.fromId }));
     const membersGroupMap = new Map(Object.entries(R.groupBy((r) => r.group, memberOfGroups)).map(([k, v]) => [k, (v || []).map((t) => t.user)]));
     const memberOfOrgs = memberOfRelations.filter((m) => m.entity_type === RELATION_PARTICIPATE_TO)
       .map((mr) => ({ organization: mr.toId, user: mr.fromId }));
     const membersOrganizationMap = new Map(Object.entries(R.groupBy((r) => r.organization, memberOfOrgs)).map(([k, v]) => [k, (v || []).map((t) => t.user)]));
-    return listAllEntities<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS], { connectionFormat: false }).then((settings) => {
+    return fullEntitiesList<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]).then((settings) => {
       return settings.map((s) => {
         const auditListenerIds = s.activity_listeners_ids ?? [];
         const ee_info = getEnterpriseEditionInfoFromPem(s.internal_id, s.enterprise_license);
@@ -242,32 +242,32 @@ const platformSettings = (context: AuthContext) => {
 };
 const platformEntitySettings = (context: AuthContext) => {
   const reloadEntitySettings = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING], { connectionFormat: false });
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_ENTITY_SETTING]);
   };
   return { values: null, fn: reloadEntitySettings };
 };
 const platformManagerConfigurations = (context: AuthContext) => {
   const reloadManagerConfigurations = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_MANAGER_CONFIGURATION], { connectionFormat: false });
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_MANAGER_CONFIGURATION]);
   };
   return { values: null, fn: reloadManagerConfigurations };
 };
 const platformStreams = (context: AuthContext) => {
   const reloadStreams = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION], { connectionFormat: false });
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_STREAM_COLLECTION]);
   };
   return { values: null, fn: reloadStreams };
 };
 const platformNotifiers = (context: AuthContext) => {
   const reloadNotifiers = async () => {
-    const notifiers = await listAllEntities<BasicStoreEntityNotifier>(context, SYSTEM_USER, [ENTITY_TYPE_NOTIFIER], { connectionFormat: false });
+    const notifiers = await fullEntitiesList<BasicStoreEntityNotifier>(context, SYSTEM_USER, [ENTITY_TYPE_NOTIFIER]);
     return [...notifiers, ...STATIC_NOTIFIERS].sort();
   };
   return { values: null, fn: reloadNotifiers };
 };
 const platformPublicDashboards = (context: AuthContext) => {
   const reloadPublicDashboards = async () => {
-    const publicDashboards = await listAllEntities<BasicStoreEntityPublicDashboard>(context, SYSTEM_USER, [ENTITY_TYPE_PUBLIC_DASHBOARD], { connectionFormat: false });
+    const publicDashboards = await fullEntitiesList<BasicStoreEntityPublicDashboard>(context, SYSTEM_USER, [ENTITY_TYPE_PUBLIC_DASHBOARD]);
     const publicDashboardsForCache: PublicDashboardCached[] = [];
     for (let i = 0; i < publicDashboards.length; i += 1) {
       const dash = publicDashboards[i];
@@ -295,13 +295,13 @@ const platformPublicDashboards = (context: AuthContext) => {
 };
 const platformDraftWorkspaces = (context: AuthContext) => {
   const reloadDraftWorkspaces = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_DRAFT_WORKSPACE], { connectionFormat: false });
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_DRAFT_WORKSPACE]);
   };
   return { values: null, fn: reloadDraftWorkspaces };
 };
 const platformPirs = (context: AuthContext) => {
   const reloadPirs = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_PIR], { connectionFormat: false });
+    return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_PIR]);
   };
   const refreshPirs = (values: BasicStoreEntityPir[], instance: BasicStoreEntityPir) => {
     return values.filter((v) => v.id !== instance.id).concat(instance);

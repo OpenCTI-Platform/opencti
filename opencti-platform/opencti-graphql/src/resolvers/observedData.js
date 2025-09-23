@@ -1,6 +1,6 @@
 import {
   addObservedData,
-  findAll,
+  findObservedDataPaginated,
   findById,
   observedDataContainsStixObjectOrStixRelationship,
   observedDatasDistributionByEntity,
@@ -23,7 +23,7 @@ import {
 const observedDataResolvers = {
   Query: {
     observedData: (_, { id }, context) => findById(context, context.user, id),
-    observedDatas: (_, args, context) => findAll(context, context.user, args),
+    observedDatas: (_, args, context) => findObservedDataPaginated(context, context.user, args),
     observedDatasTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
         return observedDatasTimeSeriesByEntity(context, context.user, args);

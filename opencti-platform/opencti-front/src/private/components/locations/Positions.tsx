@@ -112,10 +112,10 @@ const Positions: FunctionComponent = () => {
     );
   };
   return (
-    <>
+    <div data-testid="position-page">
       <Breadcrumbs elements={[{ label: t_i18n('Locations') }, { label: t_i18n('Positions'), current: true }]} />
       {renderLines()}
-    </>
+    </div>
   );
 };
 

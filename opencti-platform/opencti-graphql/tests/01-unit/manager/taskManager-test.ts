@@ -43,7 +43,7 @@ describe('TaskMananger objectsFromElements tests', () => {
 
   vi.mock('../../../src/database/middleware-loader', () => {
     return {
-      listAllRelations: vi.fn().mockImplementation((_c, _u, _t, args) => {
+      fullRelationsList: vi.fn().mockImplementation((_c, _u, _t, args) => {
         const { callback, fromOrToId } = args;
         const mockRelations = fromOrToId ? fromOrToId.map((id: string) => {
           return { fromId: id, toId: `${id}toId`, id: `${id}rel` };

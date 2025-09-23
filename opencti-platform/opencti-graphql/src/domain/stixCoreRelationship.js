@@ -10,7 +10,7 @@ import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
-import { buildRelationsFilter, listRelations, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
@@ -18,10 +18,10 @@ import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filt
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 
-export const findAll = async (context, user, args) => {
+export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return listRelations(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, fullArgs);
+  return pageRelationsConnection(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, fullArgs);
 };
 
 export const findById = (context, user, stixCoreRelationshipId) => {
@@ -34,7 +34,8 @@ const buildStixCoreRelationshipTypes = (relationshipTypes) => {
   }
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixCoreRelationship(type));
   if (!isValidRelationshipTypes) {
-    throw new GraphQLError('Invalid argument: relationship_type is not a stix-core-relationship', { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
+    const options = { types: relationshipTypes, extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } };
+    throw new GraphQLError('Invalid argument: relationship_type is not a stix-core-relationship', options);
   }
   return relationshipTypes;
 };
@@ -71,11 +72,6 @@ export const stixCoreRelationshipsMultiTimeSeries = async (context, user, args) 
   }));
 };
 // endregion
-
-export const stixRelations = (context, user, stixCoreObjectId, args) => {
-  const finalArgs = R.assoc('fromId', stixCoreObjectId, args);
-  return findAll(context, user, finalArgs);
-};
 
 // region export
 export const stixCoreRelationshipsExportAsk = async (context, user, args) => {

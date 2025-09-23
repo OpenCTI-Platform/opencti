@@ -1,10 +1,10 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addSupportPackage, deleteSupportPackage, findAll, findById, requestZipPackage } from './support-domain';
+import { addSupportPackage, deleteSupportPackage, findSupportPaginated, findById, requestZipPackage } from './support-domain';
 
 const supportResolvers: Resolvers = {
   Query: {
     supportPackage: (_, { id }, context) => findById(context, context.user, id),
-    supportPackages: (_, args, context) => findAll(context, context.user, args),
+    supportPackages: (_, args, context) => findSupportPaginated(context, context.user, args),
   },
   Mutation: {
     supportPackageAdd: (_, { input }, context) => {

@@ -1,6 +1,6 @@
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
-import { ME_FILTER_VALUE, specialFilterKeysWhoseValueToResolve } from '../utils/filtering/filtering-constants';
+import { ME_FILTER_VALUE, SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE } from '../utils/filtering/filtering-constants';
 import { extractFilterGroupValues } from '../utils/filtering/filtering-utils';
 import { storeLoadByIds } from '../database/middleware-loader';
 import { ABSTRACT_BASIC_OBJECT } from '../schema/general';
@@ -29,7 +29,7 @@ export const findFiltersRepresentatives = async (context: AuthContext, user: Aut
   const keysToResolve = schemaRelationsRefDefinition.getAllInputNames()
     .concat(STIX_CORE_RELATIONSHIPS)
     .concat(schemaAttributesDefinition.getIdAttributeNames())
-    .concat(specialFilterKeysWhoseValueToResolve);
+    .concat(SPECIAL_FILTER_KEYS_WHOSE_VALUE_TO_RESOLVE);
   const idsToResolve = extractFilterGroupValues(inputFilters, keysToResolve, false, true);
   const otherIds = extractFilterGroupValues(inputFilters, keysToResolve, true, true);
   // resolve the ids

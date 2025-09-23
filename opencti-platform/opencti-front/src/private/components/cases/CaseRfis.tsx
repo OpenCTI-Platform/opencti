@@ -50,7 +50,7 @@ const caseFragment = graphql`
       value
       color
     }
-    creators {
+    creators {                                                          
       id
       name
     }
@@ -189,7 +189,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   } as UsePreloadedPaginationFragment<CaseRfisLinesCasesPaginationQuery>;
 
   return (
-    <>
+    <div data-testid="rfis-page">
       <Breadcrumbs elements={[{ label: t_i18n('Cases') }, { label: t_i18n('Requests for information'), current: true }]} />
       {queryRef && (
         <DataTable
@@ -208,7 +208,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 

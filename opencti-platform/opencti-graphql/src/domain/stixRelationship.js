@@ -3,7 +3,7 @@ import { GraphQLError } from 'graphql/index';
 import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { deleteElementById, distributionRelations, timeSeriesRelations } from '../database/middleware';
 import { ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
-import { buildRelationsFilter, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { buildRelationsFilter, pageRelationsConnection, storeLoadById } from '../database/middleware-loader';
 import { isEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { elCount } from '../database/engine';
 import { STIX_SPEC_VERSION, stixCoreRelationshipsMapping } from '../database/stix';
@@ -12,10 +12,10 @@ import { schemaTypesDefinition } from '../schema/schema-types';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils';
 
-export const findAll = async (context, user, args) => {
+export const findStixRelationPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return listRelationsPaginated(context, user, ABSTRACT_STIX_RELATIONSHIP, fullArgs);
+  return pageRelationsConnection(context, user, ABSTRACT_STIX_RELATIONSHIP, fullArgs);
 };
 
 export const findById = (context, user, stixRelationshipId) => {
@@ -35,7 +35,8 @@ const buildRelationshipTypes = (relationshipTypes) => {
   const isValidRelationshipTypes = relationshipTypes.every((type) => isStixRelationship(type));
 
   if (!isValidRelationshipTypes) {
-    throw new GraphQLError('Invalid argument: relationship_type is not a stix-relationship', { extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } });
+    const options = { types: relationshipTypes, extensions: { code: ApolloServerErrorCode.BAD_USER_INPUT } };
+    throw new GraphQLError('Invalid argument: relationship_type is not a stix-relationship', options);
   }
   return relationshipTypes;
 };
@@ -65,6 +66,9 @@ export const stixRelationshipsTimeSeries = async (context, user, args) => {
 };
 export const stixRelationshipsMultiTimeSeries = async (context, user, args) => {
   const relationship_type = buildRelationshipTypes(args.relationship_type);
+  if (!args.timeSeriesParameters) {
+    return [];
+  }
   return Promise.all(args.timeSeriesParameters.map(async (timeSeriesParameter) => {
     const filters = addDynamicFromAndToToFilters(timeSeriesParameter);
     const fullArgs = { ...timeSeriesParameter, filters };

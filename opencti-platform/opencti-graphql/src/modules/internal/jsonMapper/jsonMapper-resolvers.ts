@@ -18,7 +18,7 @@ import {
   createJsonMapper,
   deleteJsonMapper,
   fieldPatchJsonMapper,
-  findAll,
+  findJsonMapperPaginated,
   findById,
   getParsedRepresentations,
   jsonMapperExport,
@@ -30,7 +30,7 @@ import { getJsonMapperErrorMessage } from './jsonMapper-utils';
 const jsonMapperResolvers: Resolvers = {
   Query: {
     jsonMapper: (_, { id }, context) => findById(context, context.user, id),
-    jsonMappers: (_, args, context) => findAll(context, context.user, args),
+    jsonMappers: (_, args, context) => findJsonMapperPaginated(context, context.user, args),
   },
   JsonMapper: {
     errors: (jsonMapper, _, context) => getJsonMapperErrorMessage(context, context.user, jsonMapper),

@@ -1,12 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { addAllowedMarkingDefinition } from '../../../src/domain/markingDefinition';
-import { distributionRelations } from '../../../src/database/middleware';
+import { deleteElementById, distributionRelations } from '../../../src/database/middleware';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION, ID_INTERNAL } from '../../../src/schema/general';
-import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import {
   COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
@@ -17,6 +17,10 @@ import {
   SOURCE_RELIABILITY_FILTER
 } from '../../../src/utils/filtering/filtering-constants';
 import { storeLoadById } from '../../../src/database/middleware-loader';
+import { addUser, findById } from '../../../src/domain/user';
+import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { getFakeAuthUser } from '../../utils/domainQueryHelper';
+import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
 
 // test queries involving dynamic filters
 
@@ -56,6 +60,7 @@ const LIST_QUERY = gql`
             edges {
                 node {
                     id
+                    standard_id
                     entity_type
                 }
             }
@@ -2231,5 +2236,345 @@ describe('Complex filters combinations for elastic queries', () => {
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking2StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
+  });
+});
+
+describe('Complex filters regarding of for elastic queries', () => {
+  it('should list entities using basic regarding of filter', async () => {
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              values: ['Malware', 'Intrusion-Set'],
+              operator: 'eq',
+              mode: 'or'
+            }
+          ],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [
+                {
+                  key: 'regardingOf',
+                  operator: 'eq',
+                  values: [
+                    {
+                      key: 'relationship_type',
+                      values: ['uses']
+                    }
+                  ],
+                  mode: 'or'
+                }
+              ],
+              filterGroups: []
+            }
+          ]
+        },
+      }
+    });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(queryResult.data.globalSearch.edges[1].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+  });
+  it('should list entities using complex regarding of filter', async () => {
+    const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              values: ['Malware', 'Intrusion-Set'],
+              operator: 'eq',
+              mode: 'or'
+            }
+          ],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [
+                {
+                  key: 'regardingOf',
+                  operator: 'eq',
+                  values: [
+                    { key: 'id', values: [attackPattern.internal_id] },
+                    { key: 'relationship_type', values: ['uses'] },
+                    { key: 'direction_forced', values: [false] },
+                  ],
+                  mode: 'or'
+                }
+              ],
+              filterGroups: []
+            }
+          ]
+        },
+      }
+    });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+  });
+  it('should list entities using complex regarding of filter with force direction', async () => {
+    const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
+    const genFilters = (reverse) => {
+      return {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware', 'Intrusion-Set'],
+            operator: 'eq',
+            mode: 'or'
+          }
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: [
+              {
+                key: 'regardingOf',
+                operator: 'eq',
+                values: [
+                  { key: 'id', values: [attackPattern.internal_id] },
+                  { key: 'relationship_type', values: ['uses'] },
+                  { key: 'direction_forced', values: [true] },
+                  { key: 'direction_reverse', values: [reverse] },
+                ],
+                mode: 'or'
+              }
+            ],
+            filterGroups: []
+          }
+        ]
+      };
+    };
+    const queryResultReverse = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: genFilters(true) } });
+    expect(queryResultReverse.data.globalSearch.edges.length).toEqual(1);
+    expect(queryResultReverse.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: genFilters(false) } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+  });
+  it('should list entities using basic regarding of dynamic filter', async () => {
+    const queryResult = await queryAsAdmin({
+      query: LIST_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [
+            {
+              key: 'entity_type',
+              values: ['Malware'],
+              operator: 'eq',
+              mode: 'or'
+            }
+          ],
+          filterGroups: [
+            {
+              mode: 'and',
+              filters: [
+                {
+                  key: 'dynamicRegardingOf',
+                  operator: 'eq',
+                  values: [
+                    {
+                      key: 'dynamic',
+                      values: [
+                        {
+                          mode: 'and',
+                          filters: [
+                            {
+                              key: 'entity_type',
+                              operator: 'eq',
+                              values: [ENTITY_TYPE_ATTACK_PATTERN],
+                              mode: 'or'
+                            }
+                          ],
+                          filterGroups: []
+                        }
+                      ]
+                    },
+                    {
+                      key: 'relationship_type',
+                      values: ['uses']
+                    }
+                  ],
+                  mode: 'or'
+                }
+              ],
+              filterGroups: []
+            }
+          ]
+        },
+      }
+    });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+  });
+});
+
+describe('User filter tests', () => {
+  const LIST_USERS_QUERY = gql`
+    query users(
+      $first: Int
+      $after: ID
+      $orderBy: UsersOrdering
+      $orderMode: OrderingMode
+      $filters: FilterGroup
+      $search: String
+    ) {
+      users(
+        first: $first
+        after: $after
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+        search: $search
+      ) {
+        edges {
+          node {
+            id
+            name
+            user_service_account
+          }
+        }
+      }
+    }
+  `;
+  const authUser = getFakeAuthUser('Platform administrator');
+  authUser.capabilities = [{ name: SETTINGS_SET_ACCESSES }];
+  const createdUsers = [];
+
+  beforeAll(async () => {
+    const serviceAccountUser = {
+      user_email: 'serviceAccountUser@opencti',
+      name: 'Service account',
+      user_service_account: true,
+      groups: [],
+      objectOrganization: [],
+    };
+    const serviceAccountUserAddResult = await addUser(testContext, authUser, serviceAccountUser);
+    const serviceAccountUserCreated = await findById(testContext, authUser, serviceAccountUserAddResult.id);
+    createdUsers.push(serviceAccountUserCreated);
+
+    const user = {
+      user_email: 'user@opencti',
+      name: 'user',
+      user_service_account: false,
+      groups: [],
+      objectOrganization: [],
+      password: 'password1',
+    };
+    const userAddResult = await addUser(testContext, authUser, user);
+    const userCreated = await findById(testContext, authUser, userAddResult.id);
+    createdUsers.push(userCreated);
+
+    const userBeforeServiceAccount = {
+      user_email: 'userBeforeServiceAccount@opencti',
+      name: 'userBeforeServiceAccount',
+      groups: [],
+      objectOrganization: [],
+      password: 'password2',
+    };
+    const userBeforeServiceAccountAddResult = await addUser(testContext, authUser, userBeforeServiceAccount);
+    const userBeforeServiceAccountCreated = await findById(testContext, authUser, userBeforeServiceAccountAddResult.id);
+    createdUsers.push(userBeforeServiceAccountCreated);
+  });
+
+  afterAll(async () => {
+    for (let i = 0; i < createdUsers.length; i += 1) {
+      const userId = createdUsers[i].id;
+      // Delete Users
+      await deleteElementById(testContext, authUser, userId, ENTITY_TYPE_USER);
+    }
+  });
+  it('should list one User service account', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['true'],
+            operator: 'eq',
+            mode: 'or'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(1);
+  });
+  it('should list Users with no service account', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['false'],
+            operator: 'eq',
+            mode: 'or'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(9); // 7 + 2 created above
+  });
+  it('should list Users with no service account', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['true'],
+            operator: 'not_eq',
+            mode: 'or'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(9); // 7 + 2 created above
+  });
+  it('should list Users with or without service account === all Users', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['true', 'false'],
+            operator: 'eq',
+            mode: 'or'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(10); // 7 + 3 created above
+  });
+  it('should list Users with and without service account === No User', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: 'user_service_account',
+            values: ['true', 'false'],
+            operator: 'eq',
+            mode: 'and'
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.users.edges.length).toEqual(0);
   });
 });

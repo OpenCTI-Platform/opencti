@@ -1,4 +1,4 @@
-import { type EntityOptions, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { type EntityOptions, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { type BasicStoreEntityCaseTemplate, ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';
 import type { CaseTemplateAddInput, EditInput, StixRefRelationshipAddInput } from '../../../generated/graphql';
 import type { DomainFindById } from '../../../domain/domainTypes';
@@ -16,12 +16,12 @@ import type { BasicStoreEntityCase } from '../case-types';
 export const findById: DomainFindById<BasicStoreEntityCaseTemplate> = (context: AuthContext, user: AuthUser, templateId: string) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CASE_TEMPLATE);
 };
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseTemplate>) => {
-  return listEntitiesPaginated<BasicStoreEntityCaseTemplate>(context, user, [ENTITY_TYPE_CASE_TEMPLATE], opts);
+export const findCaseTemplatePaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseTemplate>) => {
+  return pageEntitiesConnection<BasicStoreEntityCaseTemplate>(context, user, [ENTITY_TYPE_CASE_TEMPLATE], opts);
 };
 
 export const taskTemplatesPaginated = async (context: AuthContext, user: AuthUser, caseId: string, opts: EntityOptions<BasicStoreEntityCase>) => {
-  return listEntitiesThroughRelationsPaginated(context, user, caseId, TEMPLATE_TASK_RELATION, ENTITY_TYPE_TASK_TEMPLATE, false, opts);
+  return pageRegardingEntitiesConnection(context, user, caseId, TEMPLATE_TASK_RELATION, ENTITY_TYPE_TASK_TEMPLATE, false, opts);
 };
 
 export const caseTemplateAdd = async (context: AuthContext, user: AuthUser, input: CaseTemplateAddInput) => {

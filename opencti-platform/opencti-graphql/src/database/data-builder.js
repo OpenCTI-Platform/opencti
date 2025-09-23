@@ -12,7 +12,6 @@ import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
-  RELATION_IN_PIR,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
@@ -26,6 +25,7 @@ import { isStixDomainObject, isStixObjectAliased, resolveAliasesField, STIX_ORGA
 import { getEntitiesListFromCache } from './cache';
 import { isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT } from '../utils/access';
 import { cleanMarkings } from '../utils/markingDefinition-utils';
+import { RELATION_IN_PIR } from '../schema/internalRelationship';
 
 export const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule } = opts;
@@ -288,7 +288,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   }
   if (relationshipType === RELATION_IN_PIR) {
     data.pir_score = input.pir_score;
-    data.pir_explanations = input.pir_explanations;
+    data.pir_explanation = input.pir_explanation;
   }
   // 05. Prepare the final data
   const created = R.pipe(

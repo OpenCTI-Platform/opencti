@@ -28,8 +28,7 @@ import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { replaceFilterKey } from '../utils/filtering/filtering-utils';
 import { CONNECTED_TO_INSTANCE_FILTER, CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER } from '../utils/filtering/filtering-constants';
-import type { FilterGroup } from '../generated/graphql';
-import { DigestPeriod, TriggerEventType, TriggerType } from '../generated/graphql';
+import { DigestPeriod, type FilterGroup, TriggerEventType, TriggerType } from '../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import type { Representative } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
@@ -66,6 +65,7 @@ export interface NotificationUser {
   user_id: string
   user_email: string
   notifiers: Array<string>
+  user_service_account: boolean
 }
 
 export interface KnowledgeNotificationEvent extends StreamNotifEvent {
@@ -243,6 +243,7 @@ export const convertToNotificationUser = (user: AuthUser, notifiers: Array<strin
   return {
     user_id: user.internal_id,
     user_email: user.user_email,
+    user_service_account: user.user_service_account ? user.user_service_account : false,
     notifiers,
   };
 };

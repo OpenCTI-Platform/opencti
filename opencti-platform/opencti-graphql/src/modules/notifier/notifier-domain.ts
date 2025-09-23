@@ -3,7 +3,7 @@ import conf, { BUS_TOPICS } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { internalFindByIds, listAllEntities, listEntitiesPaginated, storeLoadById, } from '../../database/middleware-loader';
+import { internalFindByIds, fullEntitiesList, pageEntitiesConnection, storeLoadById, } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { isEmptyField } from '../../database/utils';
 import type { EditInput, NotifierAddInput, NotifierConnector, NotifierTestInput, QueryNotifiersArgs } from '../../generated/graphql';
@@ -79,7 +79,7 @@ const validateNotifier = (notifier: { notifier_connector_id: string, notifier_co
   const validate = ajv.compile(JSON.parse(notifierConnector.connector_schema ?? '{}'));
   const isValidConfiguration = validate(JSON.parse(notifier.notifier_configuration));
   if (!isValidConfiguration) {
-    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration });
+    throw UnsupportedError('This configuration is invalid', { configuration: notifier.notifier_configuration, errors: validate.errors });
   }
 };
 
@@ -134,7 +134,7 @@ export const notifierDelete = async (context: AuthContext, user: AuthUser, trigg
 };
 
 export const notifiersFind = (context: AuthContext, user: AuthUser, opts: QueryNotifiersArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityNotifier>(context, user, [ENTITY_TYPE_NOTIFIER], { ...opts, includeAuthorities: true });
+  return pageEntitiesConnection<BasicStoreEntityNotifier>(context, user, [ENTITY_TYPE_NOTIFIER], { ...opts, includeAuthorities: true });
 };
 
 export const getNotifiers = async (context: AuthContext, user: AuthUser, ids: string[] = []) => {
@@ -150,7 +150,7 @@ export const getNotifiers = async (context: AuthContext, user: AuthUser, ids: st
 };
 
 export const usableNotifiers = async (context: AuthContext, user: AuthUser) => {
-  const notifiers = await listAllEntities<BasicStoreEntityNotifier>(context, user, [ENTITY_TYPE_NOTIFIER], { includeAuthorities: true });
+  const notifiers = await fullEntitiesList<BasicStoreEntityNotifier>(context, user, [ENTITY_TYPE_NOTIFIER], { includeAuthorities: true });
   return [...notifiers, ...STATIC_NOTIFIERS].sort((a, b) => {
     if (a.name < b.name) return -1;
     if (a.name > b.name) return 1;
@@ -193,6 +193,7 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
     {
       user_id: user.id,
       user_email: user.user_email,
+      user_service_account: user.user_service_account ? user.user_service_account : false,
       notifiers: [],
     },
     notifier,

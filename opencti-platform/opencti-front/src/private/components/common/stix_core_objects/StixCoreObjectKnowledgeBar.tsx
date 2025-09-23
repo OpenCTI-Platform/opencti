@@ -408,6 +408,7 @@ const StixCoreObjectKnowledgeBar = ({
         component="nav"
         style={{
           marginTop: bannerSettings.bannerHeightNumber + settingsMessagesBannerHeight,
+          marginBottom: bannerSettings.bannerHeightNumber,
           paddingBottom: 0,
         }}
       >

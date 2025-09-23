@@ -313,7 +313,7 @@ const StixCoreObjectFileExportForm = ({
                       </Card>
                     </Grid>
                   ))}
-                  {isContainer && (
+                  {isContainer && fullyActive && (
                     <Grid item xs={4}>
                       <Card
                         variant="outlined"

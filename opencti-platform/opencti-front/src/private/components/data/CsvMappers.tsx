@@ -3,7 +3,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import CsvMapperLines from '@components/data/csvMapper/CsvMapperLines';
 import CsvMapperCreationContainer from '@components/data/csvMapper/CsvMapperCreationContainer';
 import { CsvMapperLine_csvMapper$data } from '@components/data/csvMapper/__generated__/CsvMapperLine_csvMapper.graphql';
-import { CancelOutlined, CheckCircleOutlined } from '@mui/icons-material';
+import { CancelOutlined, CheckCircleOutlined, FileUploadOutlined } from '@mui/icons-material';
 import ProcessingMenu from '@components/data/ProcessingMenu';
 import CsvMappersProvider, { mappersQuery, schemaAttributesQuery } from '@components/data/csvMapper/csvMappers.data';
 import { csvMappers_MappersQuery, csvMappers_MappersQuery$variables } from '@components/data/csvMapper/__generated__/csvMappers_MappersQuery.graphql';
@@ -12,6 +12,7 @@ import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
 import { graphql } from 'react-relay';
 import { CsvMappersImportQuery$data } from '@components/data/__generated__/CsvMappersImportQuery.graphql';
 import Button from '@mui/material/Button';
+import ToggleButton from '@mui/material/ToggleButton';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -150,7 +151,7 @@ const CsvMappers = () => {
           mappersQueryRef={queryRefMappers}
           schemaAttributesQueryRef={queryRefSchemaAttributes}
         >
-          <div className={classes.container}>
+          <div className={classes.container} data-testid="csv-mapper-page">
             <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Processing') }, { label: t_i18n('CSV Mappers'), current: true }]} />
             <ProcessingMenu />
             <ListLines
@@ -168,14 +169,16 @@ const CsvMappers = () => {
               createButton={(
                 <>
                   <>
-                    <Button
-                      variant='outlined'
-                      disableElevation
-                      sx={{ marginLeft: 1 }}
-                      onClick={() => inputFileRef?.current?.click()}
+                    <ToggleButton
+                      value="import"
+                      size="small"
+                      onClick={() => inputFileRef.current?.click()}
+
+                      data-testid='ImporCsvMapper'
+                      title={t_i18n('Import a CSV mapper')}
                     >
-                      {t_i18n('Import a CSV mapper')}
-                    </Button>
+                      <FileUploadOutlined fontSize="small" color={'primary'} />
+                    </ToggleButton>
                     <Button
                       variant='contained'
                       disableElevation

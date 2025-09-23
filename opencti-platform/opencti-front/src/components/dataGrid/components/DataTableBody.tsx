@@ -7,6 +7,7 @@ import { useDataTableContext } from './DataTableContext';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
 import { useDataTable } from '../dataTableHooks';
+import DataTableEmptyState from './DataTableEmptyState';
 
 const DataTableBody = ({
   settingsMessagesBannerHeight = 0,
@@ -15,6 +16,7 @@ const DataTableBody = ({
   pageStart,
   pageSize,
   hideHeaders = false,
+  emptyStateMessage,
 }: DataTableBodyProps) => {
   const {
     rootRef,
@@ -154,6 +156,9 @@ const DataTableBody = ({
       </div>
 
       <div style={containerLinesStyle}>
+        {resolvedData.length === 0 && !!emptyStateMessage && (
+          <DataTableEmptyState message={emptyStateMessage} />
+        )}
         {/* If we have perf issues we should find a way to memoize this */}
         {resolvedData.map((row: { id: string }, index: number) => {
           return (

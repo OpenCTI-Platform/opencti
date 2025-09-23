@@ -6,7 +6,7 @@ import { ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_
 import { elBulk, elList } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { RELATION_TARGETS } from '../schema/stixCoreRelationship';
-import { listAllRelations } from '../database/middleware-loader';
+import { fullRelationsList } from '../database/middleware-loader';
 
 export const MIGRATION_MAX_BULK_OPERATIONS = conf.get('migrations:reindex_targets_rel:max_bulk_operations') || 1000;
 export const MIGRATION_BULK_TIMEOUT = conf.get('migrations:reindex_targets_rel:bulk_timeout') || '30m';
@@ -24,7 +24,7 @@ export const up = async (next) => {
       const location = locations[i];
       // Resolve targets relationships
       const args = { toId: location.internal_id, withInferences: true };
-      const targetsRelationships = await listAllRelations(context, SYSTEM_USER, RELATION_TARGETS, args);
+      const targetsRelationships = await fullRelationsList(context, SYSTEM_USER, RELATION_TARGETS, args);
       const fromIds = targetsRelationships.map((rel) => rel.fromId);
       const updateQuery = [
         { update: { _index: location._index, _id: location._id, retry_on_conflict: 5 } },

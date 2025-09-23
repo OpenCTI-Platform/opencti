@@ -6,12 +6,12 @@ import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { isInternalRelationship } from '../schema/internalRelationship';
+import { isInternalRelationship, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import conf from '../config/conf';
 import { now } from '../utils/format';
-import { isStixRefRelationship, RELATION_IN_PIR, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getDraftContext } from '../utils/draftContext';
 import { INPUT_OBJECTS } from '../schema/general';
@@ -48,7 +48,7 @@ export const INDEX_INTERNAL_OBJECTS = `${ES_INDEX_PREFIX}_internal_objects`;
 export const READ_INDEX_INTERNAL_OBJECTS = `${INDEX_INTERNAL_OBJECTS}*`;
 const INDEX_STIX_META_OBJECTS = `${ES_INDEX_PREFIX}_stix_meta_objects`;
 export const READ_INDEX_STIX_META_OBJECTS = `${INDEX_STIX_META_OBJECTS}*`;
-const INDEX_STIX_DOMAIN_OBJECTS = `${ES_INDEX_PREFIX}_stix_domain_objects`;
+export const INDEX_STIX_DOMAIN_OBJECTS = `${ES_INDEX_PREFIX}_stix_domain_objects`;
 export const READ_INDEX_STIX_DOMAIN_OBJECTS = `${INDEX_STIX_DOMAIN_OBJECTS}*`;
 const INDEX_STIX_CYBER_OBSERVABLES = `${ES_INDEX_PREFIX}_stix_cyber_observables`;
 export const READ_INDEX_STIX_CYBER_OBSERVABLES = `${INDEX_STIX_CYBER_OBSERVABLES}*`;
@@ -64,8 +64,6 @@ const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_cyber
 export const READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = `${INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS}*`;
 export const INDEX_STIX_META_RELATIONSHIPS = `${ES_INDEX_PREFIX}_stix_meta_relationships`;
 export const READ_INDEX_STIX_META_RELATIONSHIPS = `${INDEX_STIX_META_RELATIONSHIPS}*`;
-export const INDEX_PIR_RELATIONSHIPS = `${ES_INDEX_PREFIX}_pir_relationships`;
-export const READ_INDEX_PIR_RELATIONSHIPS = `${INDEX_PIR_RELATIONSHIPS}*`;
 
 // Inferences
 export const INDEX_INFERRED_ENTITIES = `${ES_INDEX_PREFIX}_inferred_entities`;
@@ -97,7 +95,6 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_DRAFT_OBJECTS,
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
-  INDEX_PIR_RELATIONSHIPS,
 ];
 
 export const READ_STIX_INDICES = [
@@ -109,7 +106,6 @@ export const READ_STIX_INDICES = [
 export const READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED = [
   READ_INDEX_STIX_META_OBJECTS,
   READ_INDEX_STIX_META_RELATIONSHIPS,
-  READ_INDEX_PIR_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   ...READ_STIX_INDICES,
 ];
@@ -152,7 +148,6 @@ export const READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED = [
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_META_RELATIONSHIPS,
-  READ_INDEX_PIR_RELATIONSHIPS,
 ];
 export const READ_RELATIONSHIPS_INDICES = [
   ...READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
@@ -255,18 +250,10 @@ export const emptyPaginationResult = () => {
   };
 };
 
-export const buildPagination = (limit, searchAfter, instances, globalCount) => {
-  const edges = R.pipe(
-    R.mapObjIndexed((record) => {
-      const { node, sort, types } = record;
-      const cursor = sort ? offsetToCursor(sort) : '';
-      return { node, cursor, types };
-    }),
-    R.values
-  )(instances);
+export const buildPaginationFromEdges = (limit, searchAfter, edges, globalCount) => {
   // Because of stateless approach its difficult to know if its finish
   // this test could lead to an extra round trip sometimes
-  const hasNextPage = instances.length === limit;
+  const hasNextPage = edges.length === limit;
   // For same reason its difficult to know if a previous page exists.
   // Considering for now that if user specific an offset, it should exists a previous page.
   const hasPreviousPage = searchAfter !== undefined && searchAfter !== null;
@@ -280,6 +267,16 @@ export const buildPagination = (limit, searchAfter, instances, globalCount) => {
     globalCount,
   };
   return { edges, pageInfo };
+};
+
+export const buildPagination = (limit, searchAfter, instances, globalCount) => {
+  // TODO Make this transformation async
+  const edges = instances.map((record) => {
+    const { node, sort, types } = record;
+    const cursor = sort ? offsetToCursor(sort) : '';
+    return { node, cursor, types };
+  });
+  return buildPaginationFromEdges(limit, searchAfter, edges, globalCount);
 };
 
 export const inferIndexFromConceptType = (conceptType, inferred = false) => {
@@ -298,13 +295,13 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   if (isStixMetaObject(conceptType)) return INDEX_STIX_META_OBJECTS;
   if (isStixDomainObject(conceptType)) return INDEX_STIX_DOMAIN_OBJECTS;
   if (isStixCyberObservable(conceptType)) return INDEX_STIX_CYBER_OBSERVABLES;
+
   // Relations
   if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONSHIPS;
   if (isStixCoreRelationship(conceptType)) return INDEX_STIX_CORE_RELATIONSHIPS;
   if (isStixSightingRelationship(conceptType)) return INDEX_STIX_SIGHTING_RELATIONSHIPS;
 
   // Use only META Index on new ref relationship
-  if (conceptType === RELATION_IN_PIR) return INDEX_PIR_RELATIONSHIPS;
   if (isStixRefRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
 
   throw DatabaseError('Cant find index', { type: conceptType });

@@ -67,6 +67,8 @@ enum Capabilities {
   INVESTIGATION_INUPDATE_INDELETE
   MODULES
   MODULES_MODMANAGE
+  PIRAPI
+  PIRAPI_PIRUPDATE
   SETTINGS
   SETTINGS_SETMANAGEXTMHUB
   SETTINGS_SETPARAMETERS
@@ -74,6 +76,10 @@ enum Capabilities {
   SETTINGS_SETMARKINGS
   SETTINGS_SETDISSEMINATION
   SETTINGS_SETLABELS
+  SETTINGS_SETVOCABULARIES
+  SETTINGS_SETCASETEMPLATES
+  SETTINGS_SETSTATUSTEMPLATES
+  SETTINGS_SETKILLCHAINPHASES
   SETTINGS_SETCUSTOMIZATION
   SETTINGS_SECURITYACTIVITY
   SETTINGS_FILEINDEXING
@@ -520,6 +526,9 @@ type ContextData {
   commit: String
   external_references: [ExternalReference!]
   workspace_type: String
+  pir_ids: [String!]
+  pir_score: Int
+  pir_match_from: Boolean
 }
 
 type Log {
@@ -534,6 +543,7 @@ type Log {
   raw_data: String
   context_uri: String
   context_data: ContextData
+  user_metadata: JSON
 }
 
 enum AttributesOrdering {
@@ -584,6 +594,7 @@ type TaxiiCollectionEdge {
 }
 
 input TaxiiCollectionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   filters: String
@@ -636,6 +647,7 @@ input FeedAttributeMappingInput {
 }
 
 input FeedAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   filters: String
@@ -694,6 +706,7 @@ type StreamCollectionEdge {
 }
 
 input StreamCollectionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   filters: String
@@ -708,6 +721,14 @@ enum StreamCollectionOrdering {
   id
   stream_live
   _score
+}
+
+type RedisStreamInfo {
+  lastEventId: String!
+  firstEventId: String!
+  firstEventDate: String!
+  lastEventDate: String!
+  streamSize: Int!
 }
 
 enum SubTypesOrdering {
@@ -795,6 +816,7 @@ input StatusAddInput {
 }
 
 input StatusTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   color: String!
 }
@@ -836,9 +858,14 @@ type SynchronizerConnection {
 }
 
 input SynchronizerAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   uri: String!
   token: String
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   stream_id: String!
   user_id: String
   recover: DateTime
@@ -1246,8 +1273,11 @@ input QueryTaskAddInput {
 }
 
 input RetentionRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   filters: String
+
+  "*Constraints:*\n* Minimal value: `1`\n"
   max_retention: Int!
   retention_unit: RetentionUnit
   scope: RetentionRuleScope!
@@ -1404,6 +1434,12 @@ type PlatformProtectedSensitiveConfig {
   platform_organization: PlatformProtectedSubConfig!
 }
 
+enum CGUStatus {
+  pending
+  disabled
+  enabled
+}
+
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -1446,10 +1482,6 @@ type Settings implements InternalObject & BasicObject {
   platform_openerm_url: String
   platform_openmtd_url: String
   platform_xtmhub_url: String
-  platform_ai_enabled: Boolean!
-  platform_ai_type: String
-  platform_ai_model: String
-  platform_ai_has_token: Boolean!
   platform_login_message: String
   platform_consent_message: String
   platform_consent_confirm_text: String
@@ -1488,6 +1520,12 @@ type Settings implements InternalObject & BasicObject {
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
+  platform_ai_enabled: Boolean!
+  platform_ai_type: String
+  platform_ai_model: String
+  platform_ai_has_token: Boolean!
+  filigran_chatbot_ai_url: String
+  filigran_chatbot_ai_cgu_status: CGUStatus!
 }
 
 enum GroupsOrdering {
@@ -1549,6 +1587,7 @@ type Group implements InternalObject & BasicObject {
 }
 
 input GroupAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   default_assignation: Boolean
@@ -1729,6 +1768,7 @@ type User implements BasicObject & InternalObject {
   otp_activated: Boolean
   otp_qr: String
   otp_mandatory: Boolean
+  user_service_account: Boolean
   lastname: String
   theme: String
   language: String
@@ -1755,6 +1795,7 @@ type User implements BasicObject & InternalObject {
   submenu_auto_collapse: Boolean
   monochrome_labels: Boolean
   editContext: [EditUserContext!]
+  creator: Creator
 }
 
 type MeUser implements BasicObject & InternalObject {
@@ -1814,9 +1855,12 @@ type UserSession {
 }
 
 input UserAddInput {
-  user_email: String!
+  "*Constraints:*\n* Minimal length: `5`\n* Must match format: `email`\n"
+  user_email: String
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
-  password: String!
+  password: String
   firstname: String
   lastname: String
   description: String
@@ -1832,6 +1876,7 @@ input UserAddInput {
   groups: [ID!]
   user_confidence_level: ConfidenceLevelInput
   prevent_default_groups: Boolean
+  user_service_account: Boolean
   email_template_id: String
 }
 
@@ -1896,6 +1941,7 @@ type Role implements BasicObject & InternalObject {
 }
 
 input RoleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   clientMutationId: String
@@ -1931,7 +1977,6 @@ enum ConnectorType {
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
   STREAM
-  INTERNAL_INGESTION_PIR
 }
 
 input ConnectorWithConfig {
@@ -1996,11 +2041,13 @@ input StixCyberObservablesExportAskInput {
 
 input ContractConfigInput {
   key: String!
-  value: [String!]
+  value: String!
 }
 
 input RegisterConnectorInput {
   id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   type: ConnectorType!
   scope: [String!]
@@ -2012,22 +2059,31 @@ input RegisterConnectorInput {
 
 input EditManagedConnectorInput {
   id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   connector_user_id: ID!
   manager_contract_configuration: [ContractConfigInput!]!
 }
 
 input AddManagedConnectorInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
-  connector_user_id: ID!
+  connector_user_id: ID
+  user_id: ID!
   catalog_id: ID!
+  automatic_user: Boolean
+  confidence_level: String
   manager_contract_image: String!
   manager_contract_configuration: [ContractConfigInput!]!
 }
 
 input RegisterConnectorsManagerInput {
   id: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+  public_key: String!
 }
 
 input UpdateConnectorManagerStatusInput {
@@ -2047,6 +2103,13 @@ input CurrentConnectorStatusInput {
 input LogsConnectorStatusInput {
   id: ID!
   logs: [String!]!
+}
+
+input HealthConnectorStatusInput {
+  id: ID!
+  restart_count: Int!
+  started_at: DateTime!
+  is_in_reboot_loop: Boolean!
 }
 
 type RabbitMQConnection {
@@ -2105,6 +2168,7 @@ type ConnectorQueueDetails {
 type ConnectorContractConfiguration {
   key: String!
   value: String
+  encrypted: Boolean
 }
 
 enum ConnectorRequestStatus {
@@ -2120,6 +2184,11 @@ enum ConnectorCurrentStatus {
 type ManagerContractConfiguration {
   key: String
   value: String
+}
+
+type ManagerContractExcerpt {
+  title: String!
+  slug: String!
 }
 
 type Connector implements BasicObject & InternalObject {
@@ -2153,9 +2222,12 @@ type Connector implements BasicObject & InternalObject {
   manager_requested_status: String
   manager_contract_image: String
   manager_contract_definition: String
+  manager_contract_excerpt: ManagerContractExcerpt
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String
+  manager_health_metrics: ConnectorHealthMetrics
+  manager_connector_uptime: Int
   built_in: Boolean
   configurations: [ConnectorConfiguration!]
 }
@@ -2176,6 +2248,15 @@ type ManagedConnector implements BasicObject & InternalObject {
   manager_contract_configuration: [ConnectorContractConfiguration!]!
   manager_contract_hash: String!
   manager_connector_logs: [String!]!
+  manager_health_metrics: ConnectorHealthMetrics
+  manager_connector_uptime: Int
+}
+
+type ConnectorHealthMetrics {
+  restart_count: Int!
+  started_at: DateTime!
+  last_update: DateTime!
+  is_in_reboot_loop: Boolean!
 }
 
 type ConnectorManager implements BasicObject & InternalObject {
@@ -2184,6 +2265,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   entity_type: String!
   parent_types: [String]!
   name: String!
+  public_key: String!
   last_sync_execution: DateTime
   about_version: String!
   active: Boolean!
@@ -2482,6 +2564,8 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
 input ExternalReferenceAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   source_name: String!
   description: String
   url: String
@@ -2679,6 +2763,8 @@ enum StixDomainObjectsOrdering {
   result_name
   operatingSystem
   x_opencti_cvss_base_severity
+  pir_score
+  last_pir_score_date
 }
 
 type StixDomainObjectConnection {
@@ -2740,11 +2826,14 @@ interface StixDomainObject {
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input StixDomainObjectAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   confidence: Int
@@ -2851,11 +2940,14 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input AttackPatternAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -2989,11 +3081,14 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input CampaignAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -3034,7 +3129,7 @@ enum ContainersOrdering {
 
 type ContainerConnection {
   pageInfo: PageInfo!
-  edges: [ContainerEdge]
+  edges: [ContainerEdge!]!
 }
 
 type ContainerEdge {
@@ -3178,12 +3273,15 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input NoteAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   attribute_abstract: String
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   content: String!
   authors: [String]
   note_types: [String]
@@ -3209,6 +3307,8 @@ input NoteUserAddInput {
   stix_id: String
   x_opencti_stix_ids: [String]
   attribute_abstract: String
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   content: String!
   note_types: [String]
   likelihood: Int
@@ -3312,6 +3412,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input ObservedDataAddInput {
@@ -3421,11 +3522,14 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input OpinionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   opinion: String!
   explanation: String
   authors: [String]
@@ -3556,11 +3660,14 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   status: Status
   workflowEnabled: Boolean
   deleteWithElementsCount: Int
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input ReportAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
@@ -3667,11 +3774,14 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input CourseOfActionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   x_opencti_aliases: [String]
@@ -3780,6 +3890,8 @@ input IdentityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   type: IdentityType!
+
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -3881,11 +3993,14 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   status: Status
   workflowEnabled: Boolean
   isUser: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input IndividualAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -3993,11 +4108,14 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input SectorAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -4099,11 +4217,14 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input SystemAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -4212,11 +4333,14 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input InfrastructureAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -4324,11 +4448,14 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input IntrusionSetAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -4438,6 +4565,8 @@ input LocationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   type: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4539,11 +4668,14 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input PositionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4648,11 +4780,14 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input CityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4752,11 +4887,14 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input CountryAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4857,11 +4995,14 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input RegionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -4972,11 +5113,14 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input MalwareAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   malware_types: [String]
@@ -5096,6 +5240,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 type ThreatActorEdge {
@@ -5173,11 +5318,14 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input ThreatActorGroupAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -5285,11 +5433,14 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input ToolAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -5439,11 +5590,14 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input VulnerabilityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   x_opencti_aliases: [String]
@@ -5599,11 +5753,14 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input IncidentAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   confidence: Int
@@ -6033,7 +6190,10 @@ input EmailMimePartTypeAddInput {
 }
 
 input HashInput {
+  "*Constraints:*\n* Minimal length: `3`\n"
   algorithm: String!
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   hash: String!
 }
 
@@ -7653,6 +7813,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 }
 
 input PersonaAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   persona_name: String!
   persona_type: String!
 }
@@ -7759,7 +7920,7 @@ enum StixRelationshipsOrdering {
 
 type StixRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRelationshipEdge]
+  edges: [StixRelationshipEdge!]!
 }
 
 type StixRelationshipEdge {
@@ -8043,7 +8204,7 @@ enum StixRefRelationshipsOrdering {
 
 type StixRefRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixRefRelationshipEdge]
+  edges: [StixRefRelationshipEdge!]!
 }
 
 type StixRefRelationshipEdge {
@@ -8085,8 +8246,6 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   toStix: String
-  pir_explanations: [PirExplanation!]
-  pir_score: Int
   creators: [Creator!]
   editContext: [EditUserContext!]
 }
@@ -8114,7 +8273,6 @@ input StixRefRelationshipAddInput {
   clientMutationId: String
   update: Boolean
   file: Upload
-  pir_explanations: [PirExplanationInput!]
 }
 
 input StixRefRelationshipsAddInput {
@@ -8185,6 +8343,7 @@ type Query {
   feed(id: String!): Feed
   feeds(first: Int, after: ID, orderBy: FeedOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FeedConnection
   streamCollections(first: Int, after: ID, orderBy: StreamCollectionOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): StreamCollectionConnection!
+  redisStreamInfo: RedisStreamInfo
   statusTemplate(id: String!): StatusTemplate
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   statusTemplatesByStatusScope(search: String, scope: StatusScope): [StatusTemplate]
@@ -8227,7 +8386,7 @@ type Query {
   stixCoreObjectsMultiDistribution(field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, distributionParameters: StixCoreObjectsDistributionParameters): [MultiDistribution]
   filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]!
   stixDomainObject(id: String!): StixDomainObject
-  stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): StixDomainObjectConnection
+  stixDomainObjects(first: Int, after: ID, types: [String], orderBy: StixDomainObjectsOrdering, pirId: ID, orderMode: OrderingMode, filters: FilterGroup, search: String): StixDomainObjectConnection
   bookmarks(first: Int, after: ID, types: [String], filters: FilterGroup): StixDomainObjectConnection
   stixDomainObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection
   stixDomainObjectsTimeSeries(authorId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, types: [String], onlyInferred: Boolean, filters: FilterGroup, search: String): [TimeSeries]
@@ -8316,7 +8475,7 @@ type Query {
   stixRelationship(id: String): StixRelationship
   stixRelationships(first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, fromOrToId: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup, stix: Boolean): StixRelationshipConnection
   stixRelationshipsTimeSeries(field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): [TimeSeries]
-  stixRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]): [MultiTimeSeries]
+  stixRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [StixRelationshipsTimeSeriesParameters], relationship_type: [String!]): [MultiTimeSeries]
   stixRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
   stixRelationshipsNumber(dateAttribute: String, authorId: String, noDirection: Boolean, endDate: DateTime, onlyInferred: Boolean, fromOrToId: [String], elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, dynamicTo: FilterGroup): Number
   schemaRelationsTypesMapping: [StixRelationshipSchema!]!
@@ -8349,6 +8508,7 @@ type Query {
   channels(first: Int, after: ID, orderBy: ChannelsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ChannelConnection
   catalog(id: String!): Catalog
   catalogs: [Catalog!]!
+  contract(slug: String!): ExtendedContract
   language(id: String!): Language
   languages(first: Int, after: ID, orderBy: LanguagesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LanguageConnection
   event(id: String!): Event
@@ -8416,7 +8576,6 @@ type Query {
   notifiers(first: Int, after: ID, orderBy: NotifierOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): NotifierConnection
   threatActorIndividual(id: String!): ThreatActorIndividual
   threatActorsIndividuals(first: Int, after: ID, orderBy: ThreatActorsIndividualOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThreatActorIndividualConnection
-  threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   playbook(id: String!): Playbook
   playbooks(first: Int, after: ID, orderBy: PlaybooksOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PlaybookConnection
   playbookComponents: [PlaybookComponent]!
@@ -8482,6 +8641,10 @@ type Query {
   savedFilters(first: Int, after: ID, orderBy: SavedFilterOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): SavedFilterConnection
   pir(id: ID!): Pir
   pirs(first: Int, after: ID, orderBy: PirOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): PirConnection
+  pirRelationships(pirId: ID!, first: Int, after: ID, orderBy: PirRelationshipOrdering, orderMode: OrderingMode, fromId: [String], fromRole: String, fromTypes: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, stix: Boolean): PirRelationshipConnection
+  pirRelationshipsDistribution(pirId: ID!, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, fromId: [String], fromTypes: [String], relationship_type: [String], search: String, filters: FilterGroup, dynamicFrom: FilterGroup, aggregateOnConnections: Boolean): [Distribution]
+  pirRelationshipsMultiTimeSeries(operation: StatsOperation!, startDate: DateTime!, endDate: DateTime, interval: String!, onlyInferred: Boolean, timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!, relationship_type: [String!]): [MultiTimeSeries]
+  pirLogs(pirId: ID!, first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): LogConnection
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -9044,6 +9207,7 @@ type Mutation {
   updateConnectorRequestedStatus(input: RequestConnectorStatusInput!): ManagedConnector
   updateConnectorCurrentStatus(input: CurrentConnectorStatusInput!): ManagedConnector
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
+  updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
@@ -9067,7 +9231,7 @@ type Mutation {
   stixBundlePush(connectorId: String!, bundle: String!, work_id: String): Boolean
   stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
-  stixDomainObjectsExportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String], search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
+  stixDomainObjectsExportAsk(format: String!, exportType: String!, contentMaxMarkings: [String], fileMarkings: [String], search: String, exportContext: ExportContext, relationship_type: [String], orderBy: StixDomainObjectsOrdering, pirId: ID, orderMode: OrderingMode, filters: FilterGroup, selectedIds: [String]): [File!]
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(entity_id: String, entity_type: String!, file: Upload!, file_markings: [String]!, listFilters: String): Boolean
   attackPatternAdd(input: AttackPatternAddInput!): AttackPattern
@@ -9268,6 +9432,8 @@ type Mutation {
   playbookDeleteNode(id: ID!, nodeId: ID!): Playbook
   playbookDeleteLink(id: ID!, linkId: ID!): Playbook
   playbookUpdatePositions(id: ID!, positions: String!): ID
+  playbookImport(file: Upload!): String!
+  playbookDuplicate(id: ID!): String!
   playbookFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Playbook
   playbookStepExecution(execution_id: ID!, event_id: ID!, execution_start: DateTime!, data_instance_id: ID!, playbook_id: ID!, previous_step_id: ID!, step_id: ID!, previous_bundle: String!, bundle: String!): Boolean
   playbookExecute(id: ID!, entityId: String!): Boolean
@@ -9371,6 +9537,7 @@ type Mutation {
   requestAccessConfigure(input: RequestAccessConfigureInput!): RequestAccessConfiguration
   pirAdd(input: PirAddInput!): Pir
   pirFieldPatch(id: ID!, input: [EditInput!]!): Pir
+  pirEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): Pir
   pirDelete(id: ID!): ID
   pirFlagElement(id: ID!, input: PirFlagElementInput!): ID
   pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID
@@ -9450,6 +9617,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum ChannelsOrdering {
@@ -9479,6 +9647,8 @@ type ChannelEdge {
 input ChannelAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   channel_types: [String]
@@ -9507,6 +9677,11 @@ type Catalog implements InternalObject & BasicObject {
   name: String!
   description: String!
   contracts: [String!]!
+}
+
+type ExtendedContract {
+  catalog_id: String!
+  contract: String!
 }
 
 enum CatalogsOrdering {
@@ -9576,6 +9751,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum LanguagesOrdering {
@@ -9603,6 +9779,8 @@ type LanguageEdge {
 input LanguageAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -9676,6 +9854,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum EventsOrdering {
@@ -9706,6 +9885,8 @@ type EventEdge {
 input EventAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   event_types: [String!]
@@ -9790,6 +9971,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum GroupingsOrdering {
@@ -9819,10 +10001,14 @@ type GroupingEdge {
 input GroupingAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
   content_mapping: String
+
+  "*Constraints:*\n* Minimal length: `2`\n"
   context: String!
   x_opencti_aliases: [String]
   revoked: Boolean
@@ -9900,6 +10086,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum NarrativesOrdering {
@@ -9928,6 +10115,8 @@ type NarrativeEdge {
 input NarrativeAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   narrative_types: [String!]
@@ -9982,6 +10171,7 @@ enum TriggerEventType {
 }
 
 input TriggerLiveAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   event_types: [TriggerEventType!]!
@@ -9992,6 +10182,7 @@ input TriggerLiveAddInput {
 }
 
 input TriggerDigestAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   trigger_ids: [String!]!
@@ -10045,6 +10236,7 @@ enum TriggerActivityEventType {
 }
 
 input TriggerActivityLiveAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   notifiers: [StixRef!]
@@ -10053,6 +10245,7 @@ input TriggerActivityLiveAddInput {
 }
 
 input TriggerActivityDigestAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   trigger_ids: [String!]!
@@ -10159,6 +10352,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   aliases: [String]
@@ -10202,6 +10396,8 @@ input DataComponentAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -10260,6 +10456,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   aliases: [String]
@@ -10304,6 +10501,8 @@ input DataSourceAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -10423,6 +10622,8 @@ type VocabularyEdge {
 input VocabularyAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   category: VocabularyCategory!
@@ -10490,6 +10691,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum AdministrativeAreasOrdering {
@@ -10517,6 +10719,8 @@ type AdministrativeAreaEdge {
 input AdministrativeAreaAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   latitude: Float
@@ -10595,6 +10799,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   due_date: DateTime
@@ -10629,6 +10834,7 @@ type TaskConnection {
 }
 
 input TaskAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   created: DateTime
@@ -10677,6 +10883,7 @@ type TaskTemplateEdge {
 }
 
 input TaskTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
 }
@@ -10738,6 +10945,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   content: String
@@ -10800,6 +11008,7 @@ type CaseTemplateEdge {
 }
 
 input CaseTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   created: DateTime
@@ -10863,6 +11072,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   content: String
@@ -10905,6 +11115,8 @@ type CaseIncidentEdge {
 input CaseIncidentAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   severity: String
   priority: String
@@ -10978,6 +11190,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  pirInformation(pirId: ID!): PirInformation
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
@@ -11038,6 +11251,8 @@ type CaseRfiEdge {
 input CaseRfiAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
@@ -11107,6 +11322,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectAssignee: [Assignee!]
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
+  pirInformation(pirId: ID!): PirInformation
   authorized_members: [MemberAccess!]
   authorized_members_activation_date: DateTime
   currentUserAccessRight: String
@@ -11165,6 +11381,8 @@ type CaseRftEdge {
 input CaseRftAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
@@ -11250,6 +11468,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
   name: String!
   description: String
   content: String
@@ -11287,6 +11506,8 @@ type FeedbackEdge {
 input FeedbackAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   content: String
@@ -11426,6 +11647,8 @@ type WorkspaceEdge {
 
 input WorkspaceAddInput {
   type: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   tags: [String!]
@@ -11435,6 +11658,8 @@ input WorkspaceAddInput {
 
 input WorkspaceDuplicateInput {
   type: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   manifest: String
@@ -11502,6 +11727,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
   product: String!
   version: String
   hostVm: Software
@@ -11645,6 +11871,7 @@ input NotifierTestInput {
 }
 
 input NotifierAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   notifier_connector_id: String!
@@ -11738,6 +11965,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum ThreatActorsIndividualOrdering {
@@ -11768,6 +11996,8 @@ type ThreatActorIndividualEdge {
 input ThreatActorIndividualAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   aliases: [String]
@@ -11837,6 +12067,7 @@ type Playbook implements InternalObject & BasicObject {
   playbook_definition: String
   last_executions: [PlayBookExecution!]
   queue_messages: Int!
+  toConfigurationExport: String!
 }
 
 type PlaybookComponentPort {
@@ -11877,6 +12108,7 @@ type PlaybookEdge {
 }
 
 input PlaybookAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
 }
@@ -11887,6 +12119,7 @@ input PositionInput {
 }
 
 input PlaybookAddNodeInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   component_id: String!
   position: PositionInput!
@@ -11938,9 +12171,12 @@ type IngestionRssEdge {
 }
 
 input IngestionRssAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   scheduling_period: String
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   uri: String!
   current_state_date: DateTime
   ingestion_running: Boolean
@@ -12006,12 +12242,17 @@ type IngestionTaxiiEdge {
 }
 
 input IngestionTaxiiAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   version: TaxiiVersion!
   authentication_type: IngestionAuthType!
   authentication_value: String
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   uri: String!
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   collection: String!
   added_after_start: DateTime
   ingestion_running: Boolean
@@ -12053,6 +12294,7 @@ type IngestionTaxiiCollectionEdge {
 }
 
 input IngestionTaxiiCollectionAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   user_id: String
@@ -12123,12 +12365,15 @@ type CSVFeedAddInputFromImport {
 }
 
 input IngestionCsvAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   scheduling_period: String
   authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   uri: String!
   csv_mapper_id: String
   csv_mapper: String
@@ -12224,12 +12469,15 @@ input QueryAttribute {
 }
 
 input IngestionJsonAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   scheduling_period: String
   authentication_type: IngestionAuthType!
   authentication_value: String
   current_state_date: DateTime
+
+  "*Constraints:*\n* Minimal length: `5`\n"
   uri: String!
   verb: String!
   body: String
@@ -12375,6 +12623,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 input IndicatorAddInput {
@@ -12383,6 +12632,8 @@ input IndicatorAddInput {
   pattern_type: String!
   pattern_version: String
   pattern: String!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   indicator_types: [String!]
@@ -12391,6 +12642,8 @@ input IndicatorAddInput {
   confidence: Int
   revoked: Boolean
   lang: String
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
@@ -12453,6 +12706,7 @@ type DecayRuleEdge {
 }
 
 input DecayRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   order: Int!
@@ -12535,6 +12789,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum OrganizationsOrdering {
@@ -12563,6 +12818,8 @@ type OrganizationEdge {
 input OrganizationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   contact_information: String
@@ -12573,6 +12830,8 @@ input OrganizationAddInput {
   lang: String
   x_opencti_organization_type: String
   x_opencti_reliability: String
+
+  "*Constraints:*\n* Minimal value: `0`\n* Maximal value: `100`\n"
   x_opencti_score: Int
   createdBy: String
   objectMarking: [String]
@@ -12785,6 +13044,7 @@ input CsvMapperRepresentationInput {
 }
 
 input CsvMapperAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   has_header: Boolean!
   separator: String!
@@ -12891,6 +13151,7 @@ type JsonMapperAddInputFromImport {
 }
 
 input JsonMapperAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   representations: String!
 }
@@ -12946,6 +13207,7 @@ type PublicDashboardEdge {
 }
 
 input PublicDashboardAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   uri_key: String!
   description: String
@@ -13113,10 +13375,12 @@ enum SupportPackageOrdering {
 }
 
 input SupportPackageAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
 }
 
 input SupportPackageForceZipInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   id: String!
 }
 
@@ -13240,11 +13504,13 @@ type FintelTemplate implements BasicObject & InternalObject {
 }
 
 input FintelTemplateWidgetAddInput {
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   variable_name: String!
   widget: Any!
 }
 
 input FintelTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   settings_types: [String!]!
@@ -13297,6 +13563,7 @@ type DisseminationListEdge {
 }
 
 input DisseminationListAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   emails: [String!]!
   description: String
@@ -13388,9 +13655,31 @@ type PirCriterion {
   weight: Int!
 }
 
+type PirScore {
+  pir_id: ID!
+  pir_score: Int!
+}
+
+enum PirType {
+  THREAT_LANDSCAPE
+  THREAT_ORIGIN
+  THREAT_CUSTOM
+}
+
+type PirDependency {
+  element_id: ID!
+  author_id: ID
+}
+
 type PirExplanation {
-  dependency_ids: [ID!]!
+  dependencies: [PirDependency!]!
   criterion: PirCriterion!
+}
+
+type PirInformation {
+  pir_score: Int!
+  last_pir_score_date: DateTime!
+  pir_explanation: [PirExplanation!]!
 }
 
 type Pir implements InternalObject & BasicObject {
@@ -13401,13 +13690,37 @@ type Pir implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   creators: [Creator!]
-  objectMarking: [MarkingDefinition!]
   name: String!
+  pir_type: PirType!
   description: String
   pir_rescan_days: Int!
   pir_criteria: [PirCriterion!]!
   pir_filters: String!
   lastEventId: String!
+  authorizedMembers: [MemberAccess!]!
+  currentUserAccessRight: String
+  pirContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ContainerConnection
+  queue_messages: Int!
+}
+
+type PirRelationship implements BasicRelationship {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  fromRole: String
+  toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
+  fromId: String!
+  toId: String!
+  fromType: String!
+  toType: String!
+  from: StixDomainObject
+  to: Pir
+  creators: [Creator!]
+  pir_explanation: [PirExplanation!]
+  pir_score: Int
 }
 
 enum PirOrdering {
@@ -13415,6 +13728,12 @@ enum PirOrdering {
   created_at
   updated_at
   creator
+}
+
+enum PirRelationshipOrdering {
+  created_at
+  updated_at
+  pir_score
 }
 
 type PirConnection {
@@ -13427,34 +13746,65 @@ type PirEdge {
   node: Pir!
 }
 
+type PirRelationshipConnection {
+  pageInfo: PageInfo!
+  edges: [PirRelationshipEdge!]!
+}
+
+type PirRelationshipEdge {
+  cursor: String!
+  node: PirRelationship!
+}
+
 input PirCriterionInput {
   weight: Int!
   filters: FilterGroup!
 }
 
+input PirDependencyInput {
+  element_id: ID!
+  author_id: ID
+}
+
 input PirExplanationInput {
-  dependency_ids: [ID!]!
+  dependencies: [PirDependencyInput!]!
   criterion: PirCriterionInput!
 }
 
 input PirAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
+  pir_type: PirType!
   description: String
   pir_rescan_days: Int!
   pir_criteria: [PirCriterionInput!]!
   pir_filters: FilterGroup!
-  objectMarking: [String!]
+  authorized_members: [MemberAccessInput!]
 }
 
 input PirFlagElementInput {
   relationshipId: ID!
   sourceId: ID!
   matchingCriteria: [PirCriterionInput!]!
+  relationshipAuthorId: ID
 }
 
 input PirUnflagElementInput {
   relationshipId: ID!
   sourceId: ID!
+}
+
+input PirRelationshipsTimeSeriesParameters {
+  pirId: ID!
+  field: String!
+  elementWithTargetTypes: [String]
+  fromId: [String]
+  fromTypes: [String]
+  relationship_type: [String]
+  confidences: [Int]
+  search: String
+  filters: FilterGroup
+  dynamicFrom: FilterGroup
 }
 
 type FintelDesign implements BasicObject & InternalObject {
@@ -13471,6 +13821,7 @@ type FintelDesign implements BasicObject & InternalObject {
 }
 
 input FintelDesignAddInput {
+  "*Constraints:*\n* Minimal length: `1`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   gradiantFromColor: String
@@ -13553,6 +13904,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
 }
 
 enum SecurityPlatformOrdering {
@@ -13577,6 +13929,7 @@ type SecurityPlatformEdge {
 }
 
 input SecurityPlatformAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
   security_platform_type: String
@@ -13646,8 +13999,11 @@ enum EmailTemplateOrdering {
 }
 
 input EmailTemplateAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   email_object: String!
   sender_email: String!
   template_body: String!

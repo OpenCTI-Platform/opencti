@@ -1,9 +1,9 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addSavedFilter, deleteSavedFilter, fieldPatchSavedFilter, findAll } from './savedFilter-domain';
+import { addSavedFilter, deleteSavedFilter, fieldPatchSavedFilter, findSaveFilterPaginated } from './savedFilter-domain';
 
 const savedFilterResolver: Resolvers = {
   Query: {
-    savedFilters: (_, args, context) => findAll(context, context.user, args),
+    savedFilters: (_, args, context) => findSaveFilterPaginated(context, context.user, args),
   },
   Mutation: {
     savedFilterAdd: (_, { input }, context) => {

@@ -8,7 +8,7 @@ import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEnt
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
-import { generateUniqueItemsArray, isEmptyField } from '../utils';
+import { uniqueArray, isEmptyField } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -47,6 +47,28 @@ export const FiltersVariant = {
   list: 'list',
   dialog: 'dialog',
 };
+
+const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
+
+const pirScoreFilterDefinition = (pirId: string) => ({
+  filterKey: `pir_score.${pirId}`,
+  label: 'PIR Score',
+  multiple: false,
+  type: 'integer',
+  subFilters: [],
+  subEntityTypes: [],
+  elementsForFilterValuesSearch: [],
+});
+
+const lastPirScoreDateFilterDefinition = (pirId: string) => ({
+  filterKey: `last_pir_score_date.${pirId}`,
+  label: 'Last PIR Score date',
+  multiple: false,
+  type: 'date',
+  subFilters: [],
+  subEntityTypes: [],
+  elementsForFilterValuesSearch: [],
+});
 
 // filters which possible values are entity types or relationship types
 export const entityTypesFilters = [
@@ -112,6 +134,10 @@ export const stixFilters = [
 //----------------------------------------------------------------------------------------------------------------------
 // utilities
 
+const getStringFilterKey = (key: string | string[]): string => {
+  return Array.isArray(key) ? key[0] : key;
+};
+
 export const isFilterGroupNotEmpty = (filterGroup?: FilterGroup | null) => {
   return !!(
     filterGroup
@@ -130,7 +156,7 @@ export const isUniqFilter = (key: string, filterKeysSchema: Map<string, Map<stri
 };
 
 // basic text filters are filters of type string or text that are not entity types filters
-// i.e. filters whose values are not pickable from a list but should be enter
+// i.e. filters whose values are not pickable from a list and should be entered manually
 export const isBasicTextFilter = (
   filterDefinition: FilterDefinition | undefined,
 ) => {
@@ -280,11 +306,11 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
 
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
-  inputFilters: FilterGroup | undefined,
+  inputFilters: FilterGroup | undefined | null,
   opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
-  let filters = inputFilters;
+  let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
     filters = removeEntityTypeAllFromFilterGroup(filters);
@@ -427,7 +453,7 @@ export const sanitizeFilterGroupKeysForBackend = (
 };
 
 // reverse operation of sanitizeFilterGroupKeysForBackend
-const sanitizeFilterGroupKeysForFrontend = (
+export const sanitizeFilterGroupKeysForFrontend = (
   filterGroup: GqlFilterGroup,
 ): FilterGroup => {
   return {
@@ -759,7 +785,8 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
       filterKeysMap.set(key, valueToSet);
     });
   });
-  if (entityTypes.length > 0) { // add entity_type filter if several types are given (entity_type filter already present for abstract types)
+  // add entity_type filter if several types are given (entity_type filter already present for abstract types)
+  if (entityTypes.length > 0) {
     filterKeysMap.set('entity_type', {
       filterKey: 'entity_type',
       type: 'string',
@@ -774,7 +801,12 @@ export const useBuildFilterKeysMapFromEntityType = (entityTypes = ['Stix-Core-Ob
 
 export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
-  return generateUniqueItemsArray(filterKeysMap.keys() ?? []);
+  return uniqueArray(filterKeysMap.keys() ?? []);
+};
+
+const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
+  const completedAvailableFilterKeys = availableFilterKeys.concat(NOT_CLEANABLE_FILTER_KEYS);
+  return completedAvailableFilterKeys.includes(key) || key.startsWith('pir_score') || key.startsWith('last_pir_score_date');
 };
 
 export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
@@ -810,11 +842,10 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
   if (!filters) {
     return undefined;
   }
-  const fullAvailableFilterKeys = availableFilterKeys.concat(notCleanableFilterKeys);
   return {
     mode: filters.mode,
     filters: filters.filters
-      .filter((f) => fullAvailableFilterKeys.includes(f.key))
+      .filter((f) => isFilterKeyAvailable(f.key, availableFilterKeys))
       .filter((f) => ['nil', 'not_nil'].includes(f.operator ?? 'eq') || f.values.length > 0)
       .map((f) => {
         const newFilter = { ...f };
@@ -861,7 +892,36 @@ export const useBuildEntityTypeBasedFilterContext = (
   };
 };
 
-export const useFilterDefinition = (filterKey: string, entityTypes = ['Stix-Core-Object', 'stix-core-relationship'], subKey?: string): FilterDefinition | undefined => {
+export const getFilterDefinitionFromFilterKeysMap = (
+  key: string | string[],
+  filterKeysMap: Map<string, FilterDefinition>,
+): FilterDefinition | undefined => {
+  const filterKey = getStringFilterKey(key);
+  if (filterKey.startsWith('pir_score.')) {
+    const pirId = filterKey.split('.')[1];
+    return pirScoreFilterDefinition(pirId);
+  }
+  if (filterKey.startsWith('last_pir_score_date.')) {
+    const pirId = filterKey.split('.')[1];
+    return lastPirScoreDateFilterDefinition(pirId);
+  }
+  return filterKeysMap.get(filterKey);
+};
+
+export const useFilterDefinition = (
+  key: string | string[],
+  entityTypes = ['Stix-Core-Object', 'stix-core-relationship'],
+  subKey?: string,
+): FilterDefinition | undefined => {
+  const filterKey = getStringFilterKey(key);
+  if (filterKey.startsWith('pir_score.')) {
+    const pirId = filterKey.split('.')[1];
+    return pirScoreFilterDefinition(pirId);
+  }
+  if (filterKey.startsWith('last_pir_score_date.')) {
+    const pirId = filterKey.split('.')[1];
+    return lastPirScoreDateFilterDefinition(pirId);
+  }
   const filterDefinition = useBuildFilterKeysMapFromEntityType(entityTypes).get(filterKey);
   if (subKey) {
     const subFilterDefinition = filterDefinition?.subFilters
@@ -995,7 +1055,7 @@ export const extractAllFilters: (filters: FilterGroup) => Filter[] = (filters: F
 };
 
 export const cleanFilters = (filters: FilterGroup, helpers: handleFilterHelpers, types: string[], completeFilterKeysMap: Map<string, Map<string, FilterDefinition>>) => {
-  const newAvailableFilterKeys = generateUniqueItemsArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
+  const newAvailableFilterKeys = uniqueArray(types.flatMap((t) => Array.from(completeFilterKeysMap.get(t)?.keys() ?? [])));
   const allListedFilters = extractAllFilters(filters);
   const filtersToRemoveIds = allListedFilters.filter((f) => !newAvailableFilterKeys.includes(f.key)).map((f) => f.id ?? '');
   filtersToRemoveIds.forEach((id) => helpers.handleRemoveFilterById(id));
@@ -1024,4 +1084,21 @@ export const isRegardingOfFilterWarning = (
     }
   }
   return false;
+};
+
+export const getFilterKeyValues = (filterKey: string, filterGroup: FilterGroup) => {
+  const values: string[] = [];
+  const filtersResult = { ...filterGroup };
+  filtersResult.filters.forEach((filter) => {
+    const { key } = filter;
+    const arrayKeys = Array.isArray(key) ? key : [key];
+    if (arrayKeys.includes(filterKey)) {
+      values.push(...filter.values);
+    }
+  });
+  filtersResult.filterGroups.forEach((fg) => {
+    const vals = getFilterKeyValues(filterKey, fg);
+    values.push(...vals);
+  });
+  return values;
 };

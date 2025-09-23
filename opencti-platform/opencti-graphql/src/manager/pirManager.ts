@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import { Promise as BluePromise } from 'bluebird';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import { executionContext, PIR_MANAGER_USER } from '../utils/access';
@@ -8,17 +23,14 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { AuthContext } from '../types/user';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
-import { parsePir } from '../modules/pir/pir-utils';
+import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
 import { createRedisClient, fetchStreamEventsRangeFromEventId } from '../database/redis';
 import { updatePir } from '../modules/pir/pir-domain';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
-import { connectorIdFromIngestId } from '../domain/connector';
-import { createWork } from '../domain/work';
-import { ConnectorType } from '../generated/graphql';
 import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
-import conf, { booleanConf, isFeatureEnabled } from '../config/conf';
+import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
@@ -26,29 +38,23 @@ const PIR_MANAGER_LABEL = 'Pir Manager';
 const PIR_MANAGER_CONTEXT = 'pir_manager';
 
 const PIR_MANAGER_INTERVAL = conf.get('pir_manager:interval') ?? 10000;
-const PIR_MANAGER_TIME_RANGE = conf.get('pir_manager:time_range') ?? 60000;
+const PIR_MANAGER_STREAM_BATCH_SIZE = conf.get('pir_manager:stream_batch_size') ?? 7500;
 const PIR_MANAGER_LOCK_KEY = conf.get('pir_manager:lock_key');
 const PIR_MANAGER_ENABLED = booleanConf('pir_manager:enabled', false);
+const PIR_MANAGER_MAX_CONCURRENCY = conf.get('pir_manager:max_concurrency') ?? 5;
 
 const pirFlagElementToQueue = async (
-  context: AuthContext,
   pir: BasicStoreEntityPir,
   relationshipId: string,
   sourceId: string,
   matchingCriteria: ParsedPirCriterion[],
+  relationshipAuthorId?: string,
 ) => {
-  const connectorId = connectorIdFromIngestId(pir.id);
-  const work: any = await createWork(
-    context,
-    PIR_MANAGER_USER,
-    { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
-    `Add dependency ${matchingCriteria} for ${sourceId} in pir ${pir.name}`
-  );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_flag_element';
   const pirBundle = {
     ...stixPir,
-    input: { relationshipId, sourceId, matchingCriteria },
+    input: { relationshipId, sourceId, matchingCriteria, relationshipAuthorId },
   };
   const stixPirBundle = buildStixBundle([pirBundle]);
   const jsonBundle = JSON.stringify(stixPirBundle);
@@ -56,26 +62,17 @@ const pirFlagElementToQueue = async (
   const message = {
     type: 'bundle',
     applicant_id: PIR_MANAGER_USER.id,
-    work_id: work.id,
     update: true,
     content,
   };
-  await pushToWorkerForConnector(connectorId, message);
+  await pushToWorkerForConnector(pir.internal_id, message);
 };
 
 const pirUnflagElementFromQueue = async (
-  context: AuthContext,
   pir: BasicStoreEntityPir,
   relationshipId: string,
   sourceId: string,
 ) => {
-  const connectorId = connectorIdFromIngestId(pir.id);
-  const work: any = await createWork(
-    context,
-    PIR_MANAGER_USER,
-    { internal_id: connectorId, connector_type: ConnectorType.InternalIngestionPir },
-    `Remove dependency ${relationshipId} for ${sourceId} in pir ${pir.name}`
-  );
   const stixPir = convertEntityPirToStix(pir as StoreEntityPir);
   stixPir.extensions[STIX_EXT_OCTI].opencti_operation = 'pir_unflag_element';
   const pirBundle = {
@@ -88,11 +85,10 @@ const pirUnflagElementFromQueue = async (
   const message = {
     type: 'bundle',
     applicant_id: PIR_MANAGER_USER.id,
-    work_id: work.id,
     update: true,
     content,
   };
-  await pushToWorkerForConnector(connectorId, message);
+  await pushToWorkerForConnector(pir.internal_id, message);
 };
 
 /**
@@ -106,9 +102,10 @@ const pirUnflagElementFromQueue = async (
  */
 export const checkEventOnPir = async (context: AuthContext, event: SseEvent<any>, pir: ParsedPir) => {
   const { data } = event;
-  const { pir_criteria, pir_filters } = pir;
+  const { pir_type, pir_criteria, pir_filters } = pir;
   // 1. Check Pir filters (filters that do not count as criteria).
-  const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pir_filters);
+  const pirFinalFilters = constructFinalPirFilters(pir_type, pir_filters);
+  const eventMatchesPirFilters = await isStixMatchFilterGroup(context, PIR_MANAGER_USER, data, pirFinalFilters);
   // 2. Check Pir criteria one by one (because we need to know which one matches or not).
   const matchingCriteria: typeof pir_criteria = [];
   if (eventMatchesPirFilters) {
@@ -139,13 +136,14 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
         if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
         const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
         if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
+        const relationshipAuthorId = data.extensions?.[STIX_EXT_OCTI]?.created_by_ref_id;
         switch (event.type) {
           case EVENT_TYPE_CREATE:
           case EVENT_TYPE_UPDATE:
-            await pirFlagElementToQueue(context, pir, relationshipId, sourceId, matchingCriteria);
+            await pirFlagElementToQueue(pir, relationshipId, sourceId, matchingCriteria, relationshipAuthorId);
             break;
           case EVENT_TYPE_DELETE:
-            await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
+            await pirUnflagElementFromQueue(pir, relationshipId, sourceId);
             break;
           default: // Nothing to do
         }
@@ -156,7 +154,7 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
           if (!sourceId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no source id found`);
           const relationshipId: string = data.extensions?.[STIX_EXT_OCTI]?.id;
           if (!relationshipId) throw FunctionalError(`Cannot flag the source with Pir ${pir.id}, no relationship id found`);
-          await pirUnflagElementFromQueue(context, pir, relationshipId, sourceId);
+          await pirUnflagElementFromQueue(pir, relationshipId, sourceId);
         }
       }
     }
@@ -168,23 +166,28 @@ const processStreamEventsForPir = (context:AuthContext, pir: BasicStoreEntityPir
  */
 const pirManagerHandler = async () => {
   const redisClient = await createRedisClient(PIR_MANAGER_LABEL, false);
-  const context = executionContext(PIR_MANAGER_CONTEXT);
-  const allPir = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
+  try {
+    const context = executionContext(PIR_MANAGER_CONTEXT);
+    const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
-  // Loop through all Pir one by one.
-  await BluePromise.map(allPir, async (pir) => {
-    // Fetch stream events since last event id caught by the Pir.
-    const { lastEventId } = await fetchStreamEventsRangeFromEventId(
-      redisClient,
-      pir.lastEventId,
-      processStreamEventsForPir(context, pir),
-      { streamBatchTime: PIR_MANAGER_TIME_RANGE }
-    );
-    // Update pir last event id.
-    if (lastEventId !== pir.lastEventId) {
-      await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
-    }
-  }, { concurrency: 5 });
+    // Loop through all Pirs by group
+    await BluePromise.map(allPirs, async (pir) => {
+      // Fetch stream events since last event id caught by the Pir.
+      const { lastEventId } = await fetchStreamEventsRangeFromEventId(
+        redisClient,
+        pir.lastEventId,
+        processStreamEventsForPir(context, pir),
+        { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE }
+      );
+      // Update pir last event id.
+      if (lastEventId !== pir.lastEventId) {
+        await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
+      }
+    }, { concurrency: PIR_MANAGER_MAX_CONCURRENCY });
+  } finally {
+    // close redis client connexion
+    await redisClient.quit();
+  }
 };
 
 // Configuration of the manager.
@@ -199,11 +202,13 @@ const PIR_MANAGER_DEFINITION: ManagerDefinition = {
   enabledToStart(): boolean {
     return this.enabledByConfig && !!PIR_MANAGER_LOCK_KEY;
   },
+  enterpriseEditionOnly: true,
   cronSchedulerHandler: {
     handler: pirManagerHandler,
     interval: PIR_MANAGER_INTERVAL,
     lockKey: PIR_MANAGER_LOCK_KEY,
   }
 };
+
 // Automatically register manager on start.
-if (isFeatureEnabled('Pir')) registerManager(PIR_MANAGER_DEFINITION);
+registerManager(PIR_MANAGER_DEFINITION);

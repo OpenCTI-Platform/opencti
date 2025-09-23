@@ -1,5 +1,5 @@
 import type { BasicStoreEntity } from './store';
-import type { XtmHubRegistrationStatus } from '../generated/graphql';
+import type { XtmHubRegistrationStatus, CguStatus } from '../generated/graphql';
 
 export interface BasicStoreSettingsMessage {
   id: string
@@ -11,6 +11,7 @@ export interface BasicStoreSettingsMessage {
 }
 
 export interface BasicStoreSettings extends BasicStoreEntity {
+  platform_url: string
   platform_email: string
   platform_organization: string
   platform_theme_dark_background: string
@@ -20,6 +21,8 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   activity_listeners_ids?: string[]
   activity_listeners_users?: string[]
   messages?: BasicStoreSettingsMessage[]
+  filigran_chatbot_ai_url?: string
+  filigran_agentic_ai_url?: string
   xtm_hub_token?: string
   xtm_hub_registration_status?: XtmHubRegistrationStatus
   xtm_hub_registration_user_id?: string
@@ -27,4 +30,6 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_registration_date?: Date
   xtm_hub_last_connectivity_check?: Date
   xtm_hub_should_send_connectivity_email?: boolean
+  platform_ai_enabled: boolean
+  filigran_chatbot_ai_cgu_status: CguStatus
 }

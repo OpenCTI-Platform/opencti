@@ -3,7 +3,7 @@ import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format'
 import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
 import { createRuleContent } from './rules-utils';
 import { computeAverage } from '../database/utils';
-import { listAllRelations } from '../database/middleware-loader';
+import { fullRelationsList } from '../database/middleware-loader';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { BasicStoreRelation, StoreObject } from '../types/store';
 import type { StixRelation } from '../types/stix-2-1-sro';
@@ -53,7 +53,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
         }
       };
       const listFromArgs = { toId: sourceRef, callback: listFromCallback };
-      await listAllRelations(context, RULE_MANAGER_USER, leftType, listFromArgs);
+      await fullRelationsList(context, RULE_MANAGER_USER, leftType, listFromArgs);
     }
     // Need to discover on the from and the to if attributed-to also exists
     // (A) -> leftType -> (B)
@@ -83,7 +83,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
         }
       };
       const listToArgs = { fromId: targetRef, callback: listToCallback };
-      await listAllRelations(context, RULE_MANAGER_USER, rightType, listToArgs);
+      await fullRelationsList(context, RULE_MANAGER_USER, rightType, listToArgs);
     }
   };
   // Contract

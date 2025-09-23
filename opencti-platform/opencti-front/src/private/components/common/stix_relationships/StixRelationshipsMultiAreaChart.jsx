@@ -15,6 +15,7 @@ const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
+    $relationship_type: [String!]
     $timeSeriesParameters: [StixRelationshipsTimeSeriesParameters]
   ) {
     stixRelationshipsMultiTimeSeries(
@@ -22,6 +23,7 @@ const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
+      relationship_type: $relationship_type
       timeSeriesParameters: $timeSeriesParameters
     ) {
       data {
@@ -34,7 +36,7 @@ const stixRelationshipsMultiAreaChartTimeSeriesQuery = graphql`
 
 const StixRelationshipsMultiAreaChart = ({
   variant,
-  title,
+  title = undefined,
   height,
   startDate,
   endDate,
@@ -42,6 +44,8 @@ const StixRelationshipsMultiAreaChart = ({
   parameters = {},
   withExportPopover = false,
   isReadOnly = false,
+  withoutTitle = false,
+  relationshipTypes,
 }) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
@@ -66,6 +70,7 @@ const StixRelationshipsMultiAreaChart = ({
           startDate: startDate ?? monthsAgo(12),
           endDate: endDate ?? now(),
           interval: parameters.interval ?? 'day',
+          relationship_type: relationshipTypes,
           timeSeriesParameters,
         }}
         render={({ props }) => {
@@ -102,6 +107,7 @@ const StixRelationshipsMultiAreaChart = ({
       height={height}
       title={parameters.title ?? title ?? t_i18n('Entities history')}
       variant={variant}
+      withoutTitle={withoutTitle}
     >
       {renderContent()}
     </WidgetContainer>

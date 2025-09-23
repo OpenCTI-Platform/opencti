@@ -75,7 +75,7 @@ const SubTypes = () => {
     selectAll,
   } = useEntityToggle(LOCAL_STORAGE_KEY_SUB_TYPES);
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="subtypes-page">
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Entity types'), current: true }]} />
       <ListLines

@@ -9,10 +9,10 @@ import {
   casesPaginated,
   containersPaginated,
   externalReferencesPaginated,
-  findAll,
-  findAllAuthMemberRestricted,
+  findStixCoreObjectPaginated,
+  findStixCoreObjectRestrictedPaginated,
   findById,
-  globalSearch,
+  globalSearchPaginated,
   groupingsPaginated,
   notesPaginated,
   observedDataPaginated,
@@ -44,7 +44,7 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationships
+  stixCoreRelationshipsPaginated
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -62,12 +62,12 @@ import { loadThroughDenormalized } from './stix';
 
 const stixCoreObjectResolvers = {
   Query: {
-    globalSearch: (_, args, context) => globalSearch(context, context.user, args),
+    globalSearch: (_, args, context) => globalSearchPaginated(context, context.user, args),
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
-    stixCoreObjects: (_, args, context) => findAll(context, context.user, args),
+    stixCoreObjects: (_, args, context) => findStixCoreObjectPaginated(context, context.user, args),
     stixCoreBackgroundActiveOperations: (_, { id }, context) => stixCoreBackgroundActiveOperations(context, context.user, id),
-    stixCoreObjectsRestricted: (_, args, context) => findAllAuthMemberRestricted(context, context.user, args),
+    stixCoreObjectsRestricted: (_, args, context) => findStixCoreObjectRestrictedPaginated(context, context.user, args),
     stixCoreObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
         return stixCoreObjectsTimeSeriesByAuthor(context, context.user, args);
@@ -113,7 +113,7 @@ const stixCoreObjectResolvers = {
     objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
     // endregion
     // region inner listing - cant be batch loaded
-    stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationships(context, context.user, stixCoreObject.id, args),
+    stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationshipsPaginated(context, context.user, stixCoreObject.id, args),
     externalReferences: (stixCoreObject, args, context) => externalReferencesPaginated(context, context.user, stixCoreObject.id, args),
     containers: (stixCoreObject, args, context) => containersPaginated(context, context.user, stixCoreObject.id, args),
     reports: (stixCoreObject, args, context) => reportsPaginated(context, context.user, stixCoreObject.id, args),

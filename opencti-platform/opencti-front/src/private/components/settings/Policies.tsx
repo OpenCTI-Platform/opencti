@@ -185,7 +185,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   };
   const authProviders = settings.platform_providers;
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="policies-settings-page">
       <AccessesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Policies'), current: true }]} />
       <Grid container={true} spacing={3}>
@@ -214,6 +214,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                             {t_i18n('When you set a platform organization you enable the organization sharing and segregation feature.')}
                             <br/>
                             {t_i18n('Therefore all pieces of knowledge which are not explicitly shared with any organization won\'t be accessible to user(s) not member of the platform organization.')}
+                            <br/>
+                            {t_i18n('Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation')}
                           </Alert>
                           <EETooltip>
                             <ObjectOrganizationField

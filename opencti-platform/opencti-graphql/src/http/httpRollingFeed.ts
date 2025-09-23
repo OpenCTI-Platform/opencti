@@ -7,7 +7,7 @@ import { basePath } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { isUserHasCapability, SYSTEM_USER } from '../utils/access';
 import { findById as findFeed } from '../domain/feed';
-import { listAllThings } from '../database/middleware';
+import { fullEntitiesOrRelationsList } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
@@ -67,8 +67,8 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       const field = feed.feed_date_attribute ?? 'created_at';
       const extraOptions = { defaultTypes: feed.feed_types, field, orderMode: 'desc', after: fromDate };
       const options = await convertFiltersToQueryOptions(filters, extraOptions);
-      const args = { connectionFormat: false, maxSize: SIZE_LIMIT, ...options };
-      const paginateElements = await listAllThings(context, user, feed.feed_types, args);
+      const args = { maxSize: SIZE_LIMIT, ...options };
+      const paginateElements = await fullEntitiesOrRelationsList(context, user, feed.feed_types, args);
       const elements = R.take(SIZE_LIMIT, paginateElements); // Due to pagination, number of results can be slightly superior
       if (feed.include_header) {
         res.write(`${feed.feed_attributes.map((a) => a.attribute).join(feed.separator)}\r\n`);

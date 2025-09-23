@@ -2,7 +2,7 @@ import { expect, afterAll, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { now } from '../../../src/utils/format';
-import { listAllEntities } from '../../../src/database/middleware-loader';
+import { fullEntitiesList } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
 import { deleteElementById } from '../../../src/database/middleware';
 
@@ -277,7 +277,7 @@ describe('Grouping resolver standard behavior', () => {
   });
   describe('investigationAdd', () => {
     afterAll(async () => {
-      const investigations = await listAllEntities(
+      const investigations = await fullEntitiesList(
         testContext,
         ADMIN_USER,
         [ENTITY_TYPE_WORKSPACE],

@@ -1,6 +1,6 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { roleCapabilities } from '../domain/user';
 import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { createRelation } from '../database/middleware';
@@ -14,7 +14,7 @@ export const up = async (next) => {
     description: 'Security Activity',
     attribute_order: 3500
   });
-  const roles = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_ROLE], {});
+  const roles = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_ROLE], {});
   for (let i = 0; i < roles.length; i += 1) {
     const role = roles[i].id;
     const getRoleCapabilities = await roleCapabilities(context, SYSTEM_USER, role);

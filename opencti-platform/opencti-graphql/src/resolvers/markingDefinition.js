@@ -1,7 +1,7 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addAllowedMarkingDefinition,
-  findAll,
+  findMarkingsPaginated,
   findById,
   markingDefinitionCleanContext,
   markingDefinitionDelete,
@@ -16,7 +16,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 const markingDefinitionResolvers = {
   Query: {
     markingDefinition: (_, { id }, context) => findById(context, context.user, id),
-    markingDefinitions: (_, args, context) => findAll(context, context.user, args),
+    markingDefinitions: (_, args, context) => findMarkingsPaginated(context, context.user, args),
   },
   MarkingDefinition: {
     toStix: (markingDefinition, _, context) => stixLoadByIdStringify(context, context.user, markingDefinition.id),

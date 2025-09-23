@@ -72,7 +72,7 @@ const Notifiers = () => {
     paginationOptions,
   );
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="notifiers-page">
       <CustomizationMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Notifiers'), current: true }]} />
       <ListLines

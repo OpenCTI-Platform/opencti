@@ -1,15 +1,19 @@
 import { filter, includes, map, pipe } from 'ramda';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { BACKGROUND_TASK_QUEUES, connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
-import { listAllEntities, listEntities, storeLoadById } from './middleware-loader';
+import { fullEntitiesList, topEntitiesList, storeLoadById } from './middleware-loader';
 import { isEmptyField, isNotEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
 import { builtInConnector, builtInConnectorsRuntime } from '../connector/connector-domain';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { shortHash } from '../schema/schemaUtils';
 import { getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { getEntitiesMapFromCache } from './cache';
+import { SYSTEM_USER } from '../utils/access';
+import { logApp } from '../config/conf';
 
 export const completeConnector = (connector) => {
   if (connector) {
@@ -41,14 +45,45 @@ export const computeManagerConnectorContract = async (_context, _user, cn) => {
   return contract ? JSON.stringify(contract) : contract;
 };
 
-export const computeManagerConnectorConfiguration = async (context, _user, cn) => {
-  const config = [...cn.manager_contract_configuration ?? []];
-  return config.sort();
+export const computeManagerConnectorExcerpt = async (_context, _user, cn) => {
+  if (!cn.manager_contract_image) {
+    return null;
+  }
+
+  const contracts = getSupportedContractsByImage();
+  const contract = contracts.get(cn.manager_contract_image);
+
+  if (!contract) {
+    logApp.warn('No contract found for', { connectorName: cn.name });
+    return null;
+  }
+
+  return {
+    title: contract.title,
+    slug: contract.slug
+  };
+};
+
+export const computeManagerConnectorConfiguration = async (context, _user, cn, hideEncryptedConfigs = false) => {
+  if (!cn.catalog_id) {
+    return [];
+  }
+  const currentContractConfig = structuredClone(cn.manager_contract_configuration) ?? [];
+  const fullContractConfig = hideEncryptedConfigs ? currentContractConfig.filter((c) => !c.encrypted) : currentContractConfig;
+  const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  fullContractConfig.push({ key: 'CONNECTOR_ID', value: cn.internal_id });
+  fullContractConfig.push({ key: 'CONNECTOR_NAME', value: cn.name });
+  fullContractConfig.push({ key: 'CONNECTOR_TYPE', value: cn.connector_type });
+  if (!hideEncryptedConfigs) {
+    fullContractConfig.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
+  }
+  return fullContractConfig.sort();
 };
 
 export const computeManagerConnectorImage = (cn) => {
   const contracts = getSupportedContractsByImage();
   const contract = contracts.get(cn.manager_contract_image);
+  if (!contract) return '';
   return isNotEmptyField(cn.manager_contract_image) ? `${cn.manager_contract_image}:${contract.container_version}` : null;
 };
 
@@ -60,7 +95,7 @@ export const computeManagerContractHash = async (context, user, cn) => {
 };
 
 export const connectors = async (context, user) => {
-  const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false });
+  const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR]);
   const builtInElements = await builtInConnectorsRuntime(context, user);
   return map((conn) => completeConnector(conn), [...elements, ...builtInElements]);
 };
@@ -70,7 +105,7 @@ export const connectorManager = async (context, user, managerId) => {
 };
 
 export const connectorManagers = async (context, user) => {
-  return listAllEntities(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER], { connectionFormat: false });
+  return fullEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR_MANAGER]);
 };
 
 export const connectorsForManagers = async (context, user) => {
@@ -80,10 +115,9 @@ export const connectorsForManagers = async (context, user) => {
       filters: [{ key: 'catalog_id', values: ['EXISTS'] }],
       filterGroups: [],
     },
-    noFiltersChecking: true,
-    connectionFormat: false
+    noFiltersChecking: true
   };
-  const elements = await listEntities(context, user, [ENTITY_TYPE_CONNECTOR], args);
+  const elements = await topEntitiesList(context, user, [ENTITY_TYPE_CONNECTOR], args);
   return elements.map((conn) => completeConnector(conn));
 };
 
@@ -108,7 +142,7 @@ export const connectorsForWorker = async (context, user) => {
   });
   // endregion
   // Expose syncs
-  const syncs = await listAllEntities(context, user, [ENTITY_TYPE_SYNC], { connectionFormat: false });
+  const syncs = await fullEntitiesList(context, user, [ENTITY_TYPE_SYNC]);
   for (let i = 0; i < syncs.length; i += 1) {
     const sync = syncs[i];
     registeredConnectors.push({
@@ -120,7 +154,7 @@ export const connectorsForWorker = async (context, user) => {
     });
   }
   // Expose playbooks
-  const playbooks = await listAllEntities(context, user, [ENTITY_TYPE_PLAYBOOK], { connectionFormat: false });
+  const playbooks = await fullEntitiesList(context, user, [ENTITY_TYPE_PLAYBOOK]);
   for (let i = 0; i < playbooks.length; i += 1) {
     const playbook = playbooks[i];
     registeredConnectors.push({
@@ -138,6 +172,18 @@ export const connectorsForWorker = async (context, user) => {
       name: `Background task ${i} queue`,
       connector_scope: [],
       config: connectorConfig(`background-task-${i}`),
+      active: true
+    });
+  }
+  // Expose pirs
+  const pirs = await fullEntitiesList(context, user, [ENTITY_TYPE_PIR]);
+  for (let i = 0; i < pirs.length; i += 1) {
+    const pir = pirs[i];
+    registeredConnectors.push({
+      id: pir.internal_id,
+      name: `Pir ${pir.internal_id} queue`,
+      connector_scope: [],
+      config: connectorConfig(pir.internal_id),
       active: true
     });
   }

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
 import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
-import { type EntityOptions, listAllEntities, listEntitiesPaginated, listEntitiesThroughRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
@@ -35,7 +35,7 @@ import {
   type QueryIndicatorsNumberArgs,
   type StixCyberObservable
 } from '../../generated/graphql';
-import type { BasicStoreCommon, NumberResult } from '../../types/store';
+import type { BasicStoreEntity, NumberResult } from '../../types/store';
 import {
   computeChartDecayAlgoSerie,
   type ComputeDecayChartInput,
@@ -65,8 +65,8 @@ export const findById = (context: AuthContext, user: AuthUser, indicatorId: stri
   return storeLoadById<BasicStoreEntityIndicator>(context, user, indicatorId, ENTITY_TYPE_INDICATOR);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
+export const findIndicatorPaginated = (context: AuthContext, user: AuthUser, args: QueryIndicatorsArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
 /**
@@ -158,7 +158,7 @@ export const findIndicatorsForDecay = (context: AuthContext, user: AuthUser, max
     filters,
     maxSize,
   };
-  return listAllEntities<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
+  return fullEntitiesList<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], args);
 };
 
 export const createObservablesFromIndicator = async (
@@ -618,6 +618,6 @@ export const indicatorsDistributionByEntity = async (context: AuthContext, user:
 };
 // endregion
 
-export const observablesPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, indicatorId: string, args: EntityOptions<T>) => {
-  return listEntitiesThroughRelationsPaginated<T>(context, user, indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE, false, args);
+export const observablesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, indicatorId: string, args: EntityOptions<T>) => {
+  return pageRegardingEntitiesConnection<T>(context, user, indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE, false, args);
 };

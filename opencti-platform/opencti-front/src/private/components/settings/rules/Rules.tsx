@@ -65,7 +65,7 @@ const Rules = () => {
   );
 
   return (
-    <div style={{ paddingRight: 200 }}>
+    <div style={{ paddingRight: 200 }} data-testid="rules-page">
       <CustomizationMenu />
       <Breadcrumbs elements={breadcrumb} />
 

@@ -1,12 +1,12 @@
 import { logMigration } from '../config/conf';
 import { elCreateIndex, engineMappingGenerator } from '../database/engine';
-import { INDEX_PIR_RELATIONSHIPS } from '../database/utils';
+import { ES_INDEX_PREFIX } from '../database/utils';
 
 const message = '[MIGRATION] Create index for PIR meta re';
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
   const mappingProperties = engineMappingGenerator();
-  await elCreateIndex(INDEX_PIR_RELATIONSHIPS, mappingProperties);
+  await elCreateIndex(`${ES_INDEX_PREFIX}_pir_relationships`, mappingProperties);
   logMigration.info(`${message} > done`);
   next();
 };

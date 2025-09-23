@@ -120,15 +120,17 @@ const Feed = () => {
     orderMode: feedState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
-    <Box sx={{
-      margin: 0,
-      padding: '0 200px 50px 0',
-    }}
-    >
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
-      <SharingMenu/>
-      {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
-    </Box>
+    <div data-testid="data-sharing-csv-feeds-page">
+      <Box sx={{
+        margin: 0,
+        padding: '0 200px 50px 0',
+      }}
+      >
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
+        <SharingMenu/>
+        {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
+      </Box>
+    </div>
   );
 };
 

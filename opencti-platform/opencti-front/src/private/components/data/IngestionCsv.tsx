@@ -168,7 +168,7 @@ const IngestionCsv = () => {
   }
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="csv-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
       <IngestionMenu/>
       {renderLines()}

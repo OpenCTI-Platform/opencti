@@ -115,7 +115,6 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     search: String
     filters: FilterGroup
   ): FileConnection
-
     pendingFiles(
     first: Int
     after: ID
@@ -130,6 +129,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 # Ordering

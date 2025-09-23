@@ -27,7 +27,8 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import DialogTitle from '@mui/material/DialogTitle';
 import ToggleButton from '@mui/material/ToggleButton';
 import { useNavigate } from 'react-router-dom';
-import { commitMutation } from '../../../../relay/environment';
+import fileDownload from 'js-file-download';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { playbookMutationFieldPatch } from './PlaybookEditionForm';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
@@ -36,10 +37,26 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { resolveLink } from '../../../../utils/Entity';
 
 const playbookPopoverDeletionMutation = graphql`
   mutation PlaybookPopoverDeletionMutation($id: ID!) {
     playbookDelete(id: $id)
+  }
+`;
+
+const playbookPopoverDuplicateMutation = graphql`
+  mutation PlaybookPopoverDuplicateMutation($id: ID!) {
+    playbookDuplicate(id: $id)
+  }
+`;
+
+const playbookExportQuery = graphql`
+  query PlaybookPopoverExportQuery($id: String!) {
+    playbook(id: $id) {
+      name
+      toConfigurationExport
+    }
   }
 `;
 
@@ -74,11 +91,6 @@ const PlaybookPopover = (props) => {
     handleClose(event);
   };
 
-  const deleteSuccessMessage = t_i18n('', {
-    id: '... successfully deleted',
-    values: { entity_type: t_i18n('entity_Playbook') },
-  });
-
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete } = deletion;
 
@@ -87,16 +99,50 @@ const PlaybookPopover = (props) => {
     stopEvent(event);
   };
 
-  const [commit] = useApiMutation(
-    playbookPopoverDeletionMutation,
-    undefined,
-    { successMessage: deleteSuccessMessage },
-  );
+  const deleteSuccessMessage = t_i18n('', {
+    id: '... successfully deleted',
+    values: { entity_type: t_i18n('entity_Playbook') },
+  });
+  const [commitDelete] = useApiMutation(playbookPopoverDeletionMutation, undefined, { successMessage: deleteSuccessMessage });
+
+  const duplicatedSuccessMessage = t_i18n('', {
+    id: '... successfully duplicated',
+    values: { entity_type: t_i18n('entity_Playbook') },
+  });
+  const [commitDuplicate] = useApiMutation(playbookPopoverDuplicateMutation, undefined, { successMessage: duplicatedSuccessMessage });
+
+  const exportPlaybook = async () => {
+    const { playbook } = await fetchQuery(playbookExportQuery, { id: playbookId }).toPromise();
+    if (playbook) {
+      const blob = new Blob([playbook.toConfigurationExport], { type: 'text/json' });
+      const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
+      const fileName = `${year}${month}${day}_playbook_${playbook.name}.json`;
+      fileDownload(blob, fileName);
+    }
+  };
+
+  const onExport = async (e) => {
+    stopEvent(e);
+    setAnchorEl(undefined);
+    await exportPlaybook();
+  };
+
+  // -- Duplication --
+  const submitDuplicate = () => {
+    commitDuplicate({
+      variables: {
+        id: playbookId,
+      },
+      onCompleted: (data) => {
+        navigate(`${resolveLink('Playbook')}/${data.playbookDuplicate}`);
+      },
+    });
+  };
 
   const submitDelete = (event) => {
     setDeleting(true);
     stopEvent(event);
-    commit({
+    commitDelete({
       variables: {
         id: playbookId,
       },
@@ -174,7 +220,9 @@ const PlaybookPopover = (props) => {
         ) : (
           <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>
         )}
+        <MenuItem onClick={submitDuplicate}>{t_i18n('Duplicate')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
       </Menu>
       <DeleteDialog
         deletion={deletion}

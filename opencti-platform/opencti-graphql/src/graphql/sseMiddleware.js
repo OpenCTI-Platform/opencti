@@ -35,7 +35,7 @@ import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { listAllRelations } from '../database/middleware-loader';
+import { fullRelationsList } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
@@ -417,7 +417,7 @@ const createSseMiddleware = () => {
         callback: allRelCallback
       };
       const relationTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP];
-      await listAllRelations(context, req.user, relationTypes, allRelOptions);
+      await fullRelationsList(context, req.user, relationTypes, allRelOptions);
     }
     return isValidResolution;
   };

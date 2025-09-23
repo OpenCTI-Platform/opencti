@@ -10,10 +10,11 @@ import {
   CONTEXT_ENTITY_TYPE_FILTER,
   CONTEXT_OBJECT_LABEL_FILTER,
   CONTEXT_OBJECT_MARKING_FILTER,
-  filterKeysWithMeValue,
+  FILTER_KEYS_WITH_ME_VALUE,
   INSTANCE_DYNAMIC_REGARDING_OF,
   INSTANCE_REGARDING_OF,
   LABEL_FILTER,
+  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
   ME_FILTER_VALUE,
   MEMBERS_GROUP_FILTER,
   MEMBERS_ORGANIZATION_FILTER,
@@ -22,10 +23,11 @@ import {
   OPINIONS_METRICS_MEAN_FILTER,
   OPINIONS_METRICS_MIN_FILTER,
   OPINIONS_METRICS_TOTAL_FILTER,
+  PIR_SCORE_FILTER_PREFIX,
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_TO_FILTER,
   SIGHTED_BY_FILTER,
-  specialFilterKeys
+  SPECIAL_FILTER_KEYS
 } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
@@ -138,6 +140,16 @@ export const extractFilterKeys = (filterGroup: FilterGroup): string[] => {
     keys = keys.concat(filterGroup.filterGroups.map((group) => extractFilterKeys(group)).flat());
   }
   return keys;
+};
+
+/**
+ * extract all the filters from a filter group for specified keys
+ */
+export const extractFiltersFromGroup = (inputFilters: FilterGroup, keysToKeep: string[]): Filter[] => {
+  const { filters = [], filterGroups = [] } = inputFilters;
+  const filteredFilters = filters.filter((f) => (Array.isArray(f.key) ? f.key.some((k) => keysToKeep.includes(k)) : keysToKeep.includes(f.key)));
+  filteredFilters.push(...filterGroups.map((group) => extractFiltersFromGroup(group, keysToKeep)).flat());
+  return filteredFilters;
 };
 
 /**
@@ -262,7 +274,7 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
         mode: localMode
       },
     ],
-    filterGroups: filterGroup ? [filterGroup] : [],
+    filterGroups: filterGroup && isFilterGroupNotEmpty(filterGroup) ? [filterGroup] : [],
   } as FilterGroup;
 };
 
@@ -379,7 +391,7 @@ export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: s
   filtersResult.filters.forEach((filter) => {
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
-    if (arrayKeys.some((filterKey) => filterKeysWithMeValue.includes(filterKey))) {
+    if (arrayKeys.some((filterKey) => FILTER_KEYS_WITH_ME_VALUE.includes(filterKey))) {
       // replace ME_FILTER_VALUE with the id of the user
       if (filter.values.includes(ME_FILTER_VALUE)) {
         // eslint-disable-next-line no-param-reassign
@@ -419,7 +431,7 @@ const getAvailableKeys = () => {
       .concat(availableConvertedStixCoreRelationships)
       .concat(INTERNAL_RELATIONSHIPS)
       .concat(availableConvertedInternalRelations)
-      .concat(specialFilterKeys);
+      .concat(SPECIAL_FILTER_KEYS);
     availableKeysCache = new Set(availableKeys);
   }
   return availableKeysCache;
@@ -432,7 +444,11 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
   // TODO improvement: check filters keys correspond to the entity types if types is given
   const incorrectKeys = extractFilterKeys(filterGroup)
     .map((k) => k.split('.')[0]) // keep only the first part of the key to handle composed keys
-    .filter((k) => !(getAvailableKeys().has(k) || k.startsWith(RULE_PREFIX)));
+    .filter((k) => !(getAvailableKeys().has(k)
+      || k.startsWith(RULE_PREFIX)
+      || k.startsWith(PIR_SCORE_FILTER_PREFIX)
+      || k.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
+    ));
 
   if (incorrectKeys.length > 0) {
     throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });

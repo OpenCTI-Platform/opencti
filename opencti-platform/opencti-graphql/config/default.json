@@ -53,7 +53,8 @@
       "logs_console": true,
       "logs_max_files": 7,
       "logs_directory": "./logs",
-      "logs_in_transports": ["administration"]
+      "logs_in_transports": ["administration"],
+      "trace_request_headers": ["user-agent", "x-forwarded-for"]
     },
     "event_loop_logs": {
       "enabled": false,
@@ -211,7 +212,6 @@
     }
   },
   "ai": {
-    "enabled": true,
     "type": "mistralai",
     "endpoint": "",
     "token": "",
@@ -225,6 +225,7 @@
     "timeout": 60000
   },
   "xtm": {
+    "xtm_one_url": "https://common.xtm1.filigran.io",
     "openbas_url": "",
     "openbas_token": "",
     "openbas_reject_unauthorized": false,
@@ -351,7 +352,8 @@
     "enabled": true,
     "lock_key": "pir_manager_lock",
     "interval": 30000,
-    "time_range": 180000
+    "stream_batch_size": 7500,
+    "max_concurrency": 5
   },
   "exclusion_list_cache_build_manager": {
     "enabled": true,

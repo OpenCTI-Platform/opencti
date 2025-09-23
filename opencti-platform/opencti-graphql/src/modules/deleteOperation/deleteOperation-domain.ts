@@ -2,7 +2,7 @@ import { type BasicStoreEntityDeleteOperation, ENTITY_TYPE_DELETE_OPERATION } fr
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { elDeleteElements, elDeleteInstances, elFindByIds } from '../../database/engine';
 import { deleteAllObjectFiles } from '../../database/file-storage-helper';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { INDEX_DELETED_OBJECTS, isNotEmptyField, READ_INDEX_DELETED_OBJECTS } from '../../database/utils';
 import { FilterMode, FilterOperator, OrderingMode, type QueryDeleteOperationsArgs } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -206,8 +206,8 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
   return storeLoadById<BasicStoreEntityDeleteOperation>(context, user, id, ENTITY_TYPE_DELETE_OPERATION);
 };
 
-export const findAll = async (context: AuthContext, user: AuthUser, args: QueryDeleteOperationsArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityDeleteOperation>(context, user, [ENTITY_TYPE_DELETE_OPERATION], args);
+export const findDeleteOperationPaginated = async (context: AuthContext, user: AuthUser, args: QueryDeleteOperationsArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityDeleteOperation>(context, user, [ENTITY_TYPE_DELETE_OPERATION], args);
 };
 
 export const findOldDeleteOperations = (context: AuthContext, user: AuthUser, daysOld: number, maxSize: number) => {
@@ -226,7 +226,7 @@ export const findOldDeleteOperations = (context: AuthContext, user: AuthUser, da
     filters,
     maxSize,
   };
-  return listAllEntities<BasicStoreEntityDeleteOperation>(context, user, [ENTITY_TYPE_DELETE_OPERATION], args);
+  return fullEntitiesList<BasicStoreEntityDeleteOperation>(context, user, [ENTITY_TYPE_DELETE_OPERATION], args);
 };
 
 /**

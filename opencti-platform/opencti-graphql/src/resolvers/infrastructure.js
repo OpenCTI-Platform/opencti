@@ -1,4 +1,4 @@
-import { addInfrastructure, findAll, findById } from '../domain/infrastructure';
+import { addInfrastructure, findInfrastructurePaginated, findById } from '../domain/infrastructure';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -13,7 +13,7 @@ import { INPUT_KILLCHAIN } from '../schema/general';
 const infrastructureResolvers = {
   Query: {
     infrastructure: (_, { id }, context) => findById(context, context.user, id),
-    infrastructures: (_, args, context) => findAll(context, context.user, args),
+    infrastructures: (_, args, context) => findInfrastructurePaginated(context, context.user, args),
   },
   Infrastructure: {
     killChainPhases: (infrastructure, _, context) => loadThroughDenormalized(context, context.user, infrastructure, INPUT_KILLCHAIN, { sortBy: 'phase_name' }),

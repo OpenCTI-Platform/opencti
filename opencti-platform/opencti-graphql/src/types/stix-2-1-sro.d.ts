@@ -19,6 +19,7 @@ export interface RelationExtension extends StixOpenctiExtension {
   target_ref_granted_refs: Array<string>;
   target_ref_pir_refs: Array<string>;
   kill_chain_phases: Array<StixKillChainPhase>;
+  pir_score?: number;
 }
 export interface StixRelation extends StixRelationshipObject {
   relationship_type: string;

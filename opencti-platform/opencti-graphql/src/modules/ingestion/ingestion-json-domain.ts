@@ -15,9 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import * as JSONPath from 'jsonpath-plus';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type BasicStoreEntityIngestionJson, type DataParam, ENTITY_TYPE_INGESTION_JSON } from './ingestion-types';
-import { verifyIngestionAuthenticationContent } from './ingestion-common';
+import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -171,16 +171,21 @@ export const executeJsonQuery = async (context: AuthContext, ingestion: BasicSto
   return { bundle, variables, nextExecutionState };
 };
 
-export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  return storeLoadById<BasicStoreEntityIngestionJson>(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON);
+export const findById = async (context: AuthContext, user: AuthUser, ingestionId: string, removeCredentials = false) => {
+  const jsonIngestion = await storeLoadById<BasicStoreEntityIngestionJson>(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON);
+
+  if (removeCredentials) {
+    jsonIngestion.authentication_value = removeAuthenticationCredentials(jsonIngestion.authentication_type, jsonIngestion.authentication_value) || '';
+  }
+  return jsonIngestion;
 };
 
-export const findAllPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listEntitiesPaginated<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
+export const findJsonIngestionPaginated = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return pageEntitiesConnection<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
 };
 
-export const findAllJsonIngestions = async (context: AuthContext, user: AuthUser, opts = {}) => {
-  return listAllEntities<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
+export const findAllJsonIngestion = async (context: AuthContext, user: AuthUser, opts = {}) => {
+  return fullEntitiesList<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
 };
 
 export const findJsonMapperForIngestionById = (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
@@ -227,23 +232,65 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
 };
 
 export const editIngestionJson = async (context: AuthContext, user: AuthUser, id: string, input: IngestionJsonAddInput) => {
-  if (input.authentication_value) {
-    verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
+  let authenticationValue = input.authentication_value;
+  if (authenticationValue && input.authentication_type) {
+    const { authentication_value } = await findById(context, user, id);
+    verifyIngestionAuthenticationContent(input.authentication_type, authenticationValue);
+    authenticationValue = addAuthenticationCredentials(
+      authentication_value,
+      authenticationValue,
+      input.authentication_type,
+    );
   }
-  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_INGESTION_JSON, input);
-  return element;
+
+  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_INGESTION_JSON, {
+    ...input,
+    authentication_value: authenticationValue
+  });
+  return {
+    ...element,
+    authentication_value: removeAuthenticationCredentials(input.authentication_type as IngestionAuthType, authenticationValue)
+  };
 };
 
 export const ingestionJsonEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
-  if (input.some(((editInput) => editInput.key === 'authentication_value'))) {
-    const ingestionConfiguration = await findById(context, user, ingestionId);
-    const authenticationValueField = input.find(((editInput) => editInput.key === 'authentication_value'));
-    if (authenticationValueField && authenticationValueField.value[0]) {
-      verifyIngestionAuthenticationContent(ingestionConfiguration.authentication_type, authenticationValueField.value[0]);
+  const patchInput = [...input];
+
+  if (input.some((editInput) => editInput.key === 'authentication_value')) {
+    const { authentication_value, authentication_type } = await findById(context, user, ingestionId);
+    const authenticationValueField = input.find((editInput) => editInput.key === 'authentication_value');
+    if (authenticationValueField?.value[0]) {
+      verifyIngestionAuthenticationContent(authentication_type, authenticationValueField?.value[0]);
     }
+    const updatedAuthenticationValue = addAuthenticationCredentials(
+      authentication_value,
+      authenticationValueField?.value[0],
+      authentication_type
+    );
+
+    const updatedInput = patchInput.map((editInput) => {
+      if (editInput.key === 'authentication_value') {
+        return {
+          ...editInput,
+          value: [updatedAuthenticationValue],
+        };
+      }
+      return editInput;
+    });
+
+    patchInput.splice(0, patchInput.length, ...updatedInput);
   }
 
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON, input);
+  // Reset `authentication_value` on `authentication_type` change
+  if (input.some((editInput) => editInput.key === 'authentication_type')) {
+    const resetAuthenticationValue: EditInput = {
+      key: 'authentication_value',
+      value: [''],
+    };
+    patchInput.push(resetAuthenticationValue);
+  }
+
+  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_JSON, patchInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'JSON',
@@ -259,7 +306,12 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for json ingestion \`${element.name}\``,
     context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_JSON, input }
   });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+
+  const notif = await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return {
+    ...notif,
+    authentication_value: removeAuthenticationCredentials(notif.authentication_type, notif.authentication_value)
+  };
 };
 
 export const patchJsonIngestion = async (context: AuthContext, user: AuthUser, id: string, patch: object) => {

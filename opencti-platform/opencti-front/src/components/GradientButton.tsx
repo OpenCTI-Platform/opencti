@@ -1,9 +1,13 @@
 import React from 'react';
-import { ButtonProps, Button } from '@mui/material';
+import { Button, ButtonProps } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from './Theme';
 
-type GradientVariant = 'default';
+export enum GradientVariant {
+  default = 'default',
+  ai = 'ai',
+  disabled = 'disabled',
+}
 
 interface GradientButtonProps extends ButtonProps {
   gradientVariant?: GradientVariant;
@@ -11,7 +15,7 @@ interface GradientButtonProps extends ButtonProps {
 }
 
 const GradientButton = ({
-  gradientVariant = 'default',
+  gradientVariant = GradientVariant.default,
   children,
   sx,
   ...otherProps
@@ -21,6 +25,14 @@ const GradientButton = ({
   let startColor;
   let endColor;
   switch (gradientVariant) {
+    case 'ai':
+      startColor = theme.palette.ai.light;
+      endColor = theme.palette.ai.dark;
+      break;
+    case 'disabled':
+      startColor = theme.palette.action?.disabled;
+      endColor = theme.palette.action?.disabled;
+      break;
     case 'default':
     default:
       startColor = theme.palette.primary.main;
@@ -75,7 +87,14 @@ const GradientButton = ({
       sx={{
         transition: 'all 0.3s ease-in-out',
         ...bgGradientStyle(),
-        '.text': textGradientStyle(),
+        '.text': {
+          ...textGradientStyle(),
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          width: '100%',
+          textTransform: 'none',
+        },
         '&:hover': bgGradientStyle({ hover: true }),
         '&:active': bgGradientStyle({ active: true }),
         ...sx,

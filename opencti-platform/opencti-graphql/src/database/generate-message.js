@@ -9,6 +9,8 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FROM_START_STR, truncate, UNTIL_END_STR } from '../utils/format';
 import { authorizedMembers, creators as creatorsAttribute } from '../schema/attribute-definition';
 import { X_WORKFLOW_ID } from '../schema/identifier';
+import { isStoreRelationPir } from '../schema/internalRelationship';
+import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
 
 export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityRepresentativeName(instance);
@@ -18,6 +20,14 @@ export const generateMergeMessage = (instance, sources) => {
 
 const generateCreateDeleteMessage = (type, instance) => {
   const name = extractEntityRepresentativeName(instance);
+  if (isStoreRelationPir(instance)) {
+    const action = type === EVENT_TYPE_CREATE ? 'added to' : 'removed from';
+    const from = extractEntityRepresentativeName(instance.from);
+    const fromType = instance.from.entity_type;
+    const to = extractEntityRepresentativeName(instance.to);
+    const toType = instance.to.entity_type;
+    return `${fromType} \`${from}\` ${action} ${toType} \`${to}\``;
+  }
   if (isStixObject(instance.entity_type)) {
     let entityType = instance.entity_type;
     if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
@@ -52,7 +62,7 @@ export const generateRestoreMessage = (instance) => {
   return generateCreateDeleteMessage('restore', instance);
 };
 
-const ACTION_KEYS = ['x_opencti_request_access'];
+const ACTION_KEYS = ['x_opencti_request_access', pirExplanation.name];
 export const MAX_PATCH_ELEMENTS_FOR_MESSAGE = 3;
 export const MAX_OPERATIONS_FOR_MESSAGE = 3;
 export const generateUpdatePatchMessage = (patchElements, entityType, data = {}) => {
@@ -61,9 +71,10 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
   const generatedMessage = patchElements
     .slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).map(([type, operations]) => {
       const actionRequestAccess = operations.find((op) => op.key === 'x_opencti_request_access');
+      const pirExplanations = operations.find((op) => op.key === pirExplanation.name);
       return `${type}s ${operations
         .filter((op) => !ACTION_KEYS.includes(op.key))
-        .slice(0, MAX_OPERATIONS_FOR_MESSAGE).map(({ key, value, object_path }) => {
+        .slice(0, MAX_OPERATIONS_FOR_MESSAGE).map(({ key, value, object_path, previous }) => {
           let message = 'nothing';
           let convertedKey;
           const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
@@ -75,6 +86,11 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
           }
           const fromArray = Array.isArray(value) ? value : [value];
           const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
+          if (key === 'pir_score' && type === 'replace' && pirExplanations) {
+            // case in-pir relationship update: the message should only display the variation of score
+            const previousArray = Array.isArray(previous) ? previous : [previous];
+            return `\`${previousArray.join(', ')}\` to \`${values.join(', ')}\` in \`${convertedKey}\``;
+          }
           if (isNotEmptyField(values)) {
             // If update is based on internal ref, we need to extract the value
             if (relationsRefDefinition) {

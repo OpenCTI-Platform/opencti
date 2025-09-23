@@ -75,11 +75,27 @@ export const SETTINGS_CAPABILITIES = {
     { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     { name: 'SETDISSEMINATION', description: 'Manage dissemination lists', attribute_order: 3320 },
     { name: 'SETCUSTOMIZATION', description: 'Manage customization', attribute_order: 3350 },
-    { name: 'SETLABELS', description: 'Manage taxonomies', attribute_order: 3400 },
+    { name: 'SETLABELS', description: 'Manage labels', attribute_order: 3400 },
+    { name: 'SETVOCABULARIES', description: 'Manage vocabularies', attribute_order: 3410 },
+    { name: 'SETCASETEMPLATES', description: 'Manage case templates', attribute_order: 3420 },
+    { name: 'SETSTATUSTEMPLATES', description: 'Manage status templates', attribute_order: 3430 },
+    { name: 'SETKILLCHAINPHASES', description: 'Manage kill chain phases', attribute_order: 3440 },
     { name: 'SETMANAGEXTMHUB', description: 'Manage XTM Hub', attribute_order: 3450 },
     { name: 'SECURITYACTIVITY', description: 'Access security activity', attribute_order: 3500 },
     { name: 'FILEINDEXING', description: 'Access to file indexing', attribute_order: 3600 },
     { name: 'SUPPORT', description: 'Access to support data', attribute_order: 3700 },
+  ],
+};
+const PIR_CAPABILITIES = {
+  name: 'PIRAPI',
+  description: 'Access PIR',
+  attribute_order: 2900,
+  dependencies: [
+    {
+      name: 'PIRUPDATE',
+      description: 'Create / Update / Delete PIR',
+      attribute_order: 2950,
+    },
   ],
 };
 export const CAPABILITIES = [
@@ -123,6 +139,7 @@ export const CAPABILITIES = [
     dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
   },
   TAXII_CAPABILITIES,
+  PIR_CAPABILITIES,
   SETTINGS_CAPABILITIES,
   {
     name: 'CONNECTORAPI',

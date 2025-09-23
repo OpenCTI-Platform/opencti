@@ -188,6 +188,7 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#006064';
       }
       return '#00acc1';
+    case 'Threat-Actor':
     case 'Threat-Actor-Group':
       if (dark) {
         return '#880e4f';

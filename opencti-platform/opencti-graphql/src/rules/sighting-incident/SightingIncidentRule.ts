@@ -7,7 +7,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { generateInternalType } from '../../schema/schemaUtils';
 import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
-import { listAllRelations } from '../../database/middleware-loader';
+import { fullRelationsList } from '../../database/middleware-loader';
 import type { StixSighting } from '../../types/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
@@ -39,7 +39,7 @@ const ruleSightingIncidentBuilder = () => {
     const { name, pattern, revoked, object_marking_refs, confidence } = indicator;
     if (!revoked) {
       const sightingsArgs = { toType: ENTITY_TYPE_IDENTITY, fromId: indicatorId };
-      const sightingsRelations = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, sightingsArgs);
+      const sightingsRelations = await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, sightingsArgs);
       for (let index = 0; index < sightingsRelations.length; index += 1) {
         const { internal_id: sightingId, toId: identityId, first_seen, last_seen } = sightingsRelations[index];
         const dependencies = generateDependencies(indicatorId, identityId, sightingId);

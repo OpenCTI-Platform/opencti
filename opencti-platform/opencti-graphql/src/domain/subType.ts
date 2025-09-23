@@ -14,7 +14,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
 
 // -- ENTITY TYPES --
 
-export const queryDefaultSubTypes = async (context: AuthContext, user: AuthUser, search : string | null = null) => {
+export const queryDefaultSubTypesPaginated = async (context: AuthContext, user: AuthUser, search : string | null = null) => {
   const queryDefaultSubTypesFn = async () => {
     const sortByLabel = R.sortBy(R.toLower);
     const types = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT).filter((n) => n.includes(search ?? ''));
@@ -44,9 +44,9 @@ const querySubType = async (subTypeId: string) => {
   }
   return null;
 };
-const querySubTypes = async (context: AuthContext, user: AuthUser, { type = null, search = null } : { type: string | null, search?: string | null }) => {
+const querySubTypesPaginated = async (context: AuthContext, user: AuthUser, { type = null, search = null } : { type: string | null, search?: string | null }) => {
   if (type === null) {
-    return queryDefaultSubTypes(context, user, search);
+    return queryDefaultSubTypesPaginated(context, user, search);
   }
   const sortByLabel = R.sortBy(R.toLower);
 
@@ -66,6 +66,6 @@ const querySubTypes = async (context: AuthContext, user: AuthUser, { type = null
 
 export const findById = (subTypeId: string) => querySubType(subTypeId);
 
-export const findAll = (context: AuthContext, user: AuthUser, args : { type: string | null, search?: string | null }) => {
-  return querySubTypes(context, user, args);
+export const findSubTypePaginated = (context: AuthContext, user: AuthUser, args : { type: string | null, search?: string | null }) => {
+  return querySubTypesPaginated(context, user, args);
 };

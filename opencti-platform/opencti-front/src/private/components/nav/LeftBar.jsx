@@ -43,11 +43,11 @@ import {
   SubjectOutlined,
   SurroundSoundOutlined,
   TaskAltOutlined,
+  TrackChanges,
   VisibilityOutlined,
   WebAssetOutlined,
   WifiTetheringOutlined,
   WorkspacesOutlined,
-  TrackChanges,
 } from '@mui/icons-material';
 import {
   AccountMultipleOutline,
@@ -76,6 +76,8 @@ import {
 } from 'mdi-material-ui';
 import Popover from '@mui/material/Popover';
 import Collapse from '@mui/material/Collapse';
+import { CGUStatus } from '../settings/Experience';
+import AskArianeButton from '../chatbox/AskArianeButton';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
@@ -90,27 +92,28 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   MODULES,
+  PIRAPI,
   SETTINGS_FILEINDEXING,
   SETTINGS_SECURITYACTIVITY,
   SETTINGS_SETACCESSES,
+  SETTINGS_SETCASETEMPLATES,
   SETTINGS_SETCUSTOMIZATION,
+  SETTINGS_SETKILLCHAINPHASES,
   SETTINGS_SETLABELS,
   SETTINGS_SETMANAGEXTMHUB,
   SETTINGS_SETMARKINGS,
   SETTINGS_SETPARAMETERS,
+  SETTINGS_SETSTATUSTEMPLATES,
+  SETTINGS_SETVOCABULARIES,
   SETTINGS_SUPPORT,
   TAXIIAPI,
   VIRTUAL_ORGANIZATION_ADMIN,
 } from '../../../utils/hooks/useGranted';
-import { fileUri, MESSAGING$ } from '../../../relay/environment';
+import { MESSAGING$ } from '../../../relay/environment';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useAuth from '../../../utils/hooks/useAuth';
 import useHelper from '../../../utils/hooks/useHelper';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import logoFiligranDark from '../../../static/images/logo_filigran_dark.png';
-import logoFiligranLight from '../../../static/images/logo_filigran_light.png';
-import logoFiligranTextDark from '../../../static/images/logo_filigran_text_dark.png';
-import logoFiligranTextLight from '../../../static/images/logo_filigran_text_light.png';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import useDimensions from '../../../utils/hooks/useDimensions';
 
@@ -217,10 +220,9 @@ const LeftBar = () => {
   const { t_i18n } = useFormatter();
   const {
     me: { submenu_auto_collapse, submenu_show_icons, draftContext },
-    settings: { platform_whitemark },
+    settings: { filigran_chatbot_ai_cgu_status },
   } = useAuth();
   const navigate = useNavigate();
-  const { isFeatureEnable } = useHelper();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
@@ -228,7 +230,12 @@ const LeftBar = () => {
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
-  const isGrantedToTaxonomies = useGranted([SETTINGS_SETLABELS]);
+  const isGrantedToLabels = useGranted([SETTINGS_SETLABELS]);
+  const isGrantedToVocabularies = useGranted([SETTINGS_SETVOCABULARIES]);
+  const isGrantedToKillChainPhases = useGranted([SETTINGS_SETKILLCHAINPHASES]);
+  const isGrantedToCaseTemplates = useGranted([SETTINGS_SETCASETEMPLATES]);
+  const isGrantedToStatusTemplates = useGranted([SETTINGS_SETSTATUSTEMPLATES]);
+  const isGrantedToTaxonomies = isGrantedToLabels || isGrantedToVocabularies || isGrantedToKillChainPhases || isGrantedToCaseTemplates || isGrantedToStatusTemplates;
   const isGrantedToFileIndexing = useGranted([SETTINGS_FILEINDEXING]);
   const isGrantedToExperience = useGranted([SETTINGS_SETPARAMETERS, SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
@@ -370,6 +377,9 @@ const LeftBar = () => {
   const { dimension } = useDimensions();
 
   const isMobile = dimension.width < 768;
+
+  const askArianeButtonRef = useRef();
+
   const generateSubMenu = (menu, entries) => {
     return navOpen ? (
       <Collapse in={selectedMenu.includes(menu)} timeout="auto" unmountOnExit={true}>
@@ -462,9 +472,17 @@ const LeftBar = () => {
       classes={{
         paper: navOpen ? classes.drawerPaperOpen : classes.drawerPaper,
       }}
+      slotProps={{
+        paper: {
+          sx: {
+            display: 'grid',
+            gridAutoRows: '90% 1fr',
+          },
+        },
+      }}
       sx={{
         width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
-        zIndex: 2,
+        zIndex: 999,
         background: theme.palette.background.nav,
         position: 'sticky',
         top: 0,
@@ -473,9 +491,10 @@ const LeftBar = () => {
           easing: theme.transitions.easing.easeInOut,
           duration: theme.transitions.duration.enteringScreen,
         }),
+        overflow: 'hidden',
       }}
     >
-      <div ref={ref} aria-label="Main navigation">
+      <div ref={ref} aria-label="Main navigation" style={{ overflowY: 'auto' }}>
         <MenuList
           component="nav"
           style={{ marginTop: `calc( ${bannerHeightNumber}px + ${settingsMessagesBannerHeight}px + 66px )` }}
@@ -512,7 +531,7 @@ const LeftBar = () => {
                   onClick={(e) => (isMobile || navOpen
                     ? handleSelectedMenuToggle('dashboards')
                     : handleGoToPage(e, '/dashboard/workspaces/dashboards'))
-                }
+                  }
                   onMouseEnter={() => !navOpen && handleSelectedMenuOpen('dashboards')}
                   onMouseLeave={() => !navOpen && handleSelectedMenuClose()}
                 >
@@ -520,10 +539,10 @@ const LeftBar = () => {
                     <InsertChartOutlinedOutlined />
                   </ListItemIcon>
                   {navOpen && (
-                  <ListItemText
-                    classes={{ primary: classes.menuItemText }}
-                    primary={t_i18n('Dashboards')}
-                  />
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Dashboards')}
+                    />
                   )}
                   {navOpen && (selectedMenu.includes('dashboards') ? <ExpandLessOutlined /> : <ExpandMoreOutlined />)}
                 </MenuItem>
@@ -539,25 +558,25 @@ const LeftBar = () => {
           </Security>
           <Security needs={[INVESTIGATION]}>
             {!draftContext && (
-            <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
-              <MenuItem
-                component={Link}
-                to="/dashboard/workspaces/investigations"
-                selected={location.pathname.includes('/dashboard/workspaces/investigations')}
-                dense={true}
-                classes={{ root: classes.menuItem }}
-              >
-                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <ExploreOutlined />
-                </ListItemIcon>
-                {navOpen && (
-                <ListItemText
-                  classes={{ primary: classes.menuItemText }}
-                  primary={t_i18n('Investigations')}
-                />
-                )}
-              </MenuItem>
-            </StyledTooltip>
+              <StyledTooltip title={!navOpen && t_i18n('Investigations')} placement="right">
+                <MenuItem
+                  component={Link}
+                  to="/dashboard/workspaces/investigations"
+                  selected={location.pathname.includes('/dashboard/workspaces/investigations')}
+                  dense={true}
+                  classes={{ root: classes.menuItem }}
+                >
+                  <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                    <ExploreOutlined />
+                  </ListItemIcon>
+                  {navOpen && (
+                    <ListItemText
+                      classes={{ primary: classes.menuItemText }}
+                      primary={t_i18n('Investigations')}
+                    />
+                  )}
+                </MenuItem>
+              </StyledTooltip>
             )}
           </Security>
           {draftContext && (
@@ -581,8 +600,8 @@ const LeftBar = () => {
               </MenuItem>
             </StyledTooltip>
           )}
-          <Security needs={[KNOWLEDGE]}>
-            {!draftContext && isFeatureEnable('Pir') && (
+          <Security needs={[PIRAPI]}>
+            {!draftContext && (
               <StyledTooltip title={!navOpen && t_i18n('PIR')} placement="right">
                 <MenuItem
                   component={Link}
@@ -951,25 +970,25 @@ const LeftBar = () => {
               isTrashEnable() && (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   {!draftContext && (
-                  <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
-                    <MenuItem
-                      component={Link}
-                      to="/dashboard/trash"
-                      selected={location.pathname.includes('/dashboard/trash')}
-                      dense={true}
-                      classes={{ root: classes.menuItem }}
-                    >
-                      <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                        <DeleteOutlined />
-                      </ListItemIcon>
-                      {navOpen && (
-                      <ListItemText
-                        classes={{ primary: classes.menuItemText }}
-                        primary={t_i18n('Trash')}
-                      />
-                      )}
-                    </MenuItem>
-                  </StyledTooltip>
+                    <StyledTooltip title={!navOpen && t_i18n('Trash')} placement="right">
+                      <MenuItem
+                        component={Link}
+                        to="/dashboard/trash"
+                        selected={location.pathname.includes('/dashboard/trash')}
+                        dense={true}
+                        classes={{ root: classes.menuItem }}
+                      >
+                        <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
+                          <DeleteOutlined />
+                        </ListItemIcon>
+                        {navOpen && (
+                          <ListItemText
+                            classes={{ primary: classes.menuItemText }}
+                            primary={t_i18n('Trash')}
+                          />
+                        )}
+                      </MenuItem>
+                    </StyledTooltip>
                   )}
                 </Security>
               )
@@ -983,6 +1002,10 @@ const LeftBar = () => {
           SETTINGS_SETMARKINGS,
           SETTINGS_SETCUSTOMIZATION,
           SETTINGS_SETLABELS,
+          SETTINGS_SETVOCABULARIES,
+          SETTINGS_SETCASETEMPLATES,
+          SETTINGS_SETSTATUSTEMPLATES,
+          SETTINGS_SETKILLCHAINPHASES,
           SETTINGS_SECURITYACTIVITY,
           SETTINGS_FILEINDEXING,
           SETTINGS_SUPPORT,
@@ -991,7 +1014,7 @@ const LeftBar = () => {
         >
           <Divider />
           {!draftContext && (
-            <MenuList component="nav">
+            <MenuList component="nav" style={{ marginBottom: 48 }}>
               <MenuItem
                 ref={anchors.settings}
                 selected={!navOpen && location.pathname.includes('/dashboard/settings')}
@@ -1028,34 +1051,45 @@ const LeftBar = () => {
           )}
         </Security>
       </div>
-      <div style={{ marginTop: 'auto' }}>
-        <MenuList component="nav">
-          {(!platform_whitemark || !isEnterpriseEdition) && (
+      <div
+        style={{
+          marginTop: 'auto',
+          position: 'fixed',
+          bottom: 0,
+          borderRight: theme.palette.mode === 'dark'
+            ? '1px solid rgba(255, 255, 255, 0.12)'
+            : '1px solid rgba(0, 0, 0, 0.12)',
+          background: theme.palette.background.paper,
+          width: navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH,
+        }}
+      >
+        <Divider />
+        <MenuList>
+          {filigran_chatbot_ai_cgu_status !== CGUStatus.disabled && (
             <MenuItem
-              dense={true}
-              classes={{
-                root: navOpen ? classes.menuLogoOpen : classes.menuLogo,
+              style={{
+                color: theme.palette.ai.main,
+                paddingBlock: navOpen ? undefined : '10px',
+                paddingInline: navOpen ? theme.spacing(1.25) : undefined,
               }}
-              onClick={() => window.open('https://filigran.io/', '_blank')}
+              onKeyDown={(e) => {
+                if (['a', 'A', 'c', 'C'].includes(e.key)) {
+                  e.stopPropagation();
+                }
+              }}
             >
-              <Tooltip title={'By Filigran'}>
-                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20 }}>
-                  <img
-                    src={fileUri(theme.palette.mode === 'dark' ? logoFiligranDark : logoFiligranLight)}
-                    alt="logo"
-                    width={20}
-                  />
-                </ListItemIcon>
-              </Tooltip>
-              {navOpen && (
-                <ListItemIcon classes={{ root: classes.menuItemIcon }} style={{ minWidth: 20, padding: '4px 0 0 15px' }}>
-                  <img
-                    src={fileUri(theme.palette.mode === 'dark' ? logoFiligranTextDark : logoFiligranTextLight)}
-                    alt="logo"
-                    width={50}
-                  />
-                </ListItemIcon>
-              )}
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  position: 'absolute',
+                  left: 0,
+                }}
+                onClick={() => {
+                  askArianeButtonRef.current?.toggleChatbot();
+                }}
+              />
+              <AskArianeButton ref={askArianeButtonRef} />
             </MenuItem>
           )}
           <MenuItem

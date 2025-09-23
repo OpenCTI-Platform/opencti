@@ -1,7 +1,7 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCoreRelationship,
-  findAll,
+  findStixCoreRelationshipsPaginated,
   findById,
   stixCoreRelationshipAddRelation,
   stixCoreRelationshipAddRelations,
@@ -42,7 +42,7 @@ import { filterMembersWithUsersOrgs } from '../utils/access';
 const stixCoreRelationshipResolvers = {
   Query: {
     stixCoreRelationship: (_, { id }, context) => findById(context, context.user, id),
-    stixCoreRelationships: (_, args, context) => findAll(context, context.user, args),
+    stixCoreRelationships: (_, args, context) => findStixCoreRelationshipsPaginated(context, context.user, args),
     stixCoreRelationshipsTimeSeries: (_, args, context) => timeSeriesRelations(context, context.user, args),
     stixCoreRelationshipsMultiTimeSeries: (_, args, context) => stixCoreRelationshipsMultiTimeSeries(context, context.user, args),
     stixCoreRelationshipsDistribution: (_, args, context) => stixCoreRelationshipsDistribution(context, context.user, args),

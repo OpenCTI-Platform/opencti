@@ -46,6 +46,7 @@ const ThemeDark = (
       primary: hexToRGB((primary || THEME_DARK_DEFAULT_PRIMARY), 0.3),
       secondary: hexToRGB((secondary || THEME_DARK_DEFAULT_SECONDARY), 0.3),
       pagination: hexToRGB('#ffffff', 0.5),
+      paper: hexToRGB('#ffffff', 0.12),
     },
     pagination: {
       main: '#ffffff',
@@ -63,7 +64,7 @@ const ThemeDark = (
       paper: paper || THEME_DARK_DEFAULT_PAPER,
       nav: nav || THEME_DARK_DEFAULT_NAV,
       accent: accent || THEME_DARK_DEFAULT_ACCENT,
-      shadow: 'rgba(255, 255, 255, 0)',
+      shadow: 'rgba(200, 200, 200, 0.15)',
     },
   },
   typography: {

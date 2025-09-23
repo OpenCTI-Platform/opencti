@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { isIndividualAssociatedToUser } from '../database/data-consistency';
 import { notify } from '../database/redis';
@@ -13,8 +13,8 @@ export const findById = (context, user, individualId) => {
   return storeLoadById(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
+export const findIndividualPaginated = (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
 };
 
 export const addIndividual = async (context, user, individual, opts = {}) => {
@@ -24,7 +24,7 @@ export const addIndividual = async (context, user, individual, opts = {}) => {
 };
 
 export const partOfOrganizationsPaginated = async (context, user, individualId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
+  return pageRegardingEntitiesConnection(context, user, individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 
 export const isUser = async (context, individual) => {

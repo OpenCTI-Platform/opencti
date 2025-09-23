@@ -128,6 +128,24 @@ export const formatSeconds = (seconds) => {
 };
 
 /**
+ * Returns a string of the format "1 day 3 hours 58 minutes" from a given number of minutes.
+ *
+ * @param {number} minutes
+ */
+export const stringFormatMinutes = (input, t_i18n) => {
+  const ONE_HOUR = 60;
+  const ONE_DAY = ONE_HOUR * 24;
+  const days = Math.floor(input / ONE_DAY);
+  let minutesLeft = input % ONE_DAY;
+  const hours = Math.floor(minutesLeft / ONE_HOUR);
+  minutesLeft = Math.floor(minutesLeft % ONE_HOUR);
+  const formattedDays = days ? `${String(days)} ${t_i18n('days')}` : '';
+  const formattedHours = hours || days ? `${String(hours)} ${t_i18n('hours')}` : '';
+  const formattedMins = `${String(minutesLeft)} ${t_i18n('minutes')}`;
+  return `${formattedDays} ${formattedHours} ${formattedMins}`;
+};
+
+/**
  * Get a past date in a string format based on a relative string
  * used to compute how much time we go before.
  *
@@ -145,4 +163,39 @@ export const computerRelativeDate = (relativeDate) => {
     return yearsAgo(relativeDate.split('-')[1]);
   }
   return null;
+};
+
+export const streamEventIdToDate = (streamEventId) => {
+  return parse(parseInt((streamEventId || '-').split('-')[0], 10));
+};
+
+/**
+ * Returns a human-readable string format from a given number of seconds (uptime).
+ * Format: "2 days, 3 hours, 15 minutes" or "45 seconds" for short durations
+ *
+ * @param {number | null | undefined} uptimeInSeconds - The uptime in seconds
+ * @param {function} t_i18n - Translation function for internationalization
+ * @returns {string} Formatted uptime string or 'Not available' if input is null/undefined
+ */
+export const formatUptime = (uptimeInSeconds, t_i18n) => {
+  if (uptimeInSeconds == null) {
+    return t_i18n('Not available');
+  }
+
+  const days = Math.floor(uptimeInSeconds / 86400);
+  const hours = Math.floor((uptimeInSeconds % 86400) / 3600);
+  const minutes = Math.floor((uptimeInSeconds % 3600) / 60);
+  const seconds = uptimeInSeconds % 60;
+
+  const parts = [];
+  if (days > 0) parts.push(`${days} ${t_i18n(days === 1 ? 'day' : 'days')}`);
+  if (hours > 0) parts.push(`${hours} ${t_i18n(hours === 1 ? 'hour' : 'hours')}`);
+  if (minutes > 0) parts.push(`${minutes} ${t_i18n(minutes === 1 ? 'minute' : 'minutes')}`);
+
+  // If uptime is less than a minute, show seconds
+  if (parts.length === 0) {
+    parts.push(`${seconds} ${t_i18n(seconds === 1 ? 'second' : 'seconds')}`);
+  }
+
+  return parts.join(', ');
 };

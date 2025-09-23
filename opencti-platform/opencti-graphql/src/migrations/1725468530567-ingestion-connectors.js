@@ -1,5 +1,5 @@
 import { logApp } from '../config/conf';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_INGESTION_CSV, ENTITY_TYPE_INGESTION_RSS, ENTITY_TYPE_INGESTION_TAXII } from '../modules/ingestion/ingestion-types';
 import { registerConnectorForIngestion } from '../domain/connector';
@@ -18,7 +18,7 @@ const generateConnectorInput = async (context, type, element) => {
 };
 
 const generateConnectorsForIngestEntityType = async (context, entityType, connectorType) => {
-  const csvIngests = await listAllEntities(context, SYSTEM_USER, [entityType]);
+  const csvIngests = await fullEntitiesList(context, SYSTEM_USER, [entityType]);
   for (let index = 0; index < csvIngests.length; index += 1) {
     const element = csvIngests[index];
     await generateConnectorInput(context, connectorType, element);

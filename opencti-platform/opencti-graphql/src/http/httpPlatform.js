@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import express from 'express';
 import bodyParser from 'body-parser';
-import compression from 'compression';
+import compression, { filter as compressionFilter } from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
 import showdown from 'showdown';
@@ -13,7 +13,8 @@ import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, AUTH_PAYLOAD_BODY_SIZE } from '../config/conf';
+import { printSchema } from 'graphql/utilities';
+import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
@@ -30,15 +31,8 @@ import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
-
-const setCookieError = (res, message) => {
-  res.cookie('opencti_flash', message || 'Unknown error', {
-    maxAge: 10000,
-    httpOnly: false,
-    secure: booleanConf('app:https_cert:cookie_secure', false),
-    sameSite: 'strict',
-  });
-};
+import { setCookieError } from './httpUtils';
+import { getChatbotProxy } from './httpChatbotProxy';
 
 const extractRefererPathFromReq = (req) => {
   if (isNotEmptyField(req.headers.referer)) {
@@ -80,7 +74,7 @@ const publishFileRead = async (executeContext, auth, file) => {
   });
 };
 
-const createApp = async (app) => {
+const createApp = async (app, schema) => {
   const limiter = rateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     limit: nconf.get('app:rate_protection:max_requests'),
@@ -161,7 +155,9 @@ const createApp = async (app) => {
     }
   });
 
-  app.use(compression({}));
+  app.use(compression({
+    filter: (req, res) => res.getHeader('Content-Type') !== 'text/event-stream' && compressionFilter(req, res),
+  }));
 
   if (ENABLED_UI) {
     // -- Serv flags resources
@@ -185,6 +181,18 @@ const createApp = async (app) => {
 
   // -- Register the encryption module
   archiver.registerFormat('zip-encrypted', archiverZipEncrypted);
+
+  // -- API schema
+  app.get(`${basePath}/schema`, async (req, res) => {
+    const context = await createAuthenticatedContext(req, res, 'schema_get');
+    if (!context.user) {
+      res.sendStatus(403);
+      return;
+    }
+    res.set('Cache-Control', 'public, max-age=3600'); // 1 hour cache
+    res.set('Vary', 'X-OPENCTI-SCHEMA-VARY-CACHE'); // Way for client to invalidate cache
+    res.json({ version: PLATFORM_VERSION, schema: printSchema(schema) });
+  });
 
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
@@ -505,6 +513,9 @@ const createApp = async (app) => {
       res.status(503).send({ status: 'error', error: e.message });
     }
   });
+
+  // -- Chatbot Proxy
+  app.post(`${basePath}/chatbot`, getChatbotProxy);
 
   // Other routes - Render index.html
   app.get('*', async (_, res) => {

@@ -1,5 +1,5 @@
 import { BUS_TOPICS } from '../../config/conf';
-import { type EntityOptions, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -14,8 +14,8 @@ export const findById = (context: AuthContext, user: AuthUser, caseId: string): 
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE) as unknown as BasicStoreEntityCase;
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCase>) => {
-  return listEntitiesPaginated<BasicStoreEntityCase>(context, user, [ENTITY_TYPE_CONTAINER_CASE], opts);
+export const findCasesPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCase>) => {
+  return pageEntitiesConnection<BasicStoreEntityCase>(context, user, [ENTITY_TYPE_CONTAINER_CASE], opts);
 };
 
 export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser, id: string, caseTemplateId: string) => {
@@ -28,7 +28,7 @@ export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser
       filterGroups: [],
     }
   };
-  const templateTasks = await listAllEntities<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
+  const templateTasks = await fullEntitiesList<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
   // Convert template to real task
   const tasks = templateTasks.map((template) => {
     return { name: template.name, description: template.description, objects: [id], objectMarking: currentCase[RELATION_OBJECT_MARKING] };

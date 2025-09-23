@@ -23,6 +23,7 @@ export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
 export const ENTITY_TYPE_CONNECTOR_MANAGER = 'ConnectorManager';
 export const ENTITY_TYPE_HISTORY = 'History';
+export const ENTITY_TYPE_PIR_HISTORY = 'PirHistory';
 export const ENTITY_TYPE_ACTIVITY = 'Activity';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_BACKGROUND_TASK = 'BackgroundTask';
@@ -37,6 +38,7 @@ export const ENTITY_TYPE_FEED = 'Feed';
 export const ENTITY_TYPE_STREAM_COLLECTION = 'StreamCollection';
 export const ENTITY_TYPE_STATUS_TEMPLATE = 'StatusTemplate';
 export const ENTITY_TYPE_STATUS = 'Status';
+export const ENTITY_TYPE_THEME = 'Theme';
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_GROUP,
@@ -76,6 +78,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_WORKSPACE,
   ENTITY_TYPE_PUBLIC_DASHBOARD,
   ENTITY_TYPE_HISTORY,
+  ENTITY_TYPE_PIR_HISTORY,
   ENTITY_TYPE_ACTIVITY,
   ENTITY_TYPE_INTERNAL_FILE,
   ENTITY_TYPE_WORK,

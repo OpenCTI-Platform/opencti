@@ -21,7 +21,7 @@ const sourceMapFile = readFileSync(isExecTypeBack ? BACKEND_MAP : FRONT_MAP, 'ut
 const sourceMapContent = JSON.parse(sourceMapFile);
 
 const specificErrorKeys = ['componentStack', 'codeStack'];
-const specificStartErrorMessages = ['Error', 'GraphQLError'];
+const specificStartErrorMessages = ['Error', 'GraphQLError', 'TypeError'];
 const getAllLogStacks = (obj, results = []) => {
   if (typeof obj === 'object' && obj !== null) {
     // eslint-disable-next-line no-restricted-syntax

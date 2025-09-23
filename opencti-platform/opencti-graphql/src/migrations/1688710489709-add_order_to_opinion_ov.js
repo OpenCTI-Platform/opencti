@@ -5,7 +5,7 @@ import { elRawUpdateByQuery, elReplace, ES_MAX_CONCURRENCY } from '../database/e
 import { READ_INDEX_STIX_META_OBJECTS } from '../database/utils';
 import { openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { VocabularyCategory } from '../generated/graphql';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { DatabaseError } from '../config/errors';
 
@@ -49,9 +49,8 @@ export const up = async (next) => {
     }],
     filterGroups: [],
   };
-  const vocabularies = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], {
+  const vocabularies = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], {
     indices: [READ_INDEX_STIX_META_OBJECTS],
-    connectionFormat: false,
     filters,
     noFiltersChecking: true,
   });

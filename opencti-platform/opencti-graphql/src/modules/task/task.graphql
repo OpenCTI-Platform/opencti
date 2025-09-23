@@ -155,6 +155,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
   # Task
   name: String!
   description: String

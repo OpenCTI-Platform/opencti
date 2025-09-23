@@ -2,7 +2,7 @@ import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCyberObservable,
   artifactImport,
-  findAll,
+  findStixCyberObservablePaginated,
   findById,
   indicatorsPaginated,
   promoteObservableToIndicator,
@@ -23,7 +23,7 @@ import {
   vulnerabilitiesPaginated
 } from '../domain/stixCyberObservable';
 import { subscribeToInstanceEvents } from '../graphql/subscriptionWrapper';
-import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationships } from '../domain/stixCoreObject';
+import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush, stixCoreRelationshipsPaginated } from '../domain/stixCoreObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
@@ -35,7 +35,7 @@ import { countriesPaginated } from '../domain/region';
 const stixCyberObservableResolvers = {
   Query: {
     stixCyberObservable: (_, { id }, context) => findById(context, context.user, id),
-    stixCyberObservables: (_, args, context) => findAll(context, context.user, args),
+    stixCyberObservables: (_, args, context) => findStixCyberObservablePaginated(context, context.user, args),
     stixCyberObservablesTimeSeries: (_, args, context) => {
       return stixCyberObservablesTimeSeries(context, context.user, args);
     },
@@ -66,7 +66,7 @@ const stixCyberObservableResolvers = {
       return 'Unknown';
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
-    stixCoreRelationships: (rel, args, context) => stixCoreRelationships(context, context.user, rel.id, args),
+    stixCoreRelationships: (rel, args, context) => stixCoreRelationshipsPaginated(context, context.user, rel.id, args),
     toStix: (stixCyberObservable, _, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id),
     importFiles: (stixCyberObservable, { first }, context) => {
       const path = `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;

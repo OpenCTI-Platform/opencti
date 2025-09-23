@@ -3,7 +3,7 @@ import {
   childAttackPatternsPaginated,
   coursesOfActionPaginated,
   dataComponentsPaginated,
-  findAll,
+  findAttackPatternPaginated,
   findById,
   getAttackPatternsMatrix,
   parentAttackPatternsPaginated
@@ -22,7 +22,7 @@ import { INPUT_KILLCHAIN } from '../schema/general';
 const attackPatternResolvers = {
   Query: {
     attackPattern: (_, { id }, context) => findById(context, context.user, id),
-    attackPatterns: (_, args, context) => findAll(context, context.user, args),
+    attackPatterns: (_, args, context) => findAttackPatternPaginated(context, context.user, args),
     attackPatternsMatrix: (_, __, context) => getAttackPatternsMatrix(context, context.user),
   },
   AttackPattern: {

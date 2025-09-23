@@ -1,4 +1,4 @@
-import { addCity, locatedAtCountry, findAll, findById } from '../domain/city';
+import { addCity, locatedAtCountry, findCityPaginated, findById } from '../domain/city';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const cityResolvers = {
   Query: {
     city: (_, { id }, context) => findById(context, context.user, id),
-    cities: (_, args, context) => findAll(context, context.user, args),
+    cities: (_, args, context) => findCityPaginated(context, context.user, args),
   },
   City: {
     country: (city, _, context) => locatedAtCountry(context, context.user, city.id),

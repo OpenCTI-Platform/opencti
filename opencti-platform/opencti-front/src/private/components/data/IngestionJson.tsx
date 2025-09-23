@@ -158,7 +158,7 @@ const IngestionJson = () => {
   }
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="json-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON Feeds'), current: true }]} />
       <IngestionMenu/>
       <>{renderLines()}</>

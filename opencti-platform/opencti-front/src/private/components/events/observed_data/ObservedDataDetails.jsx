@@ -43,7 +43,7 @@ class ObservedDataDetailsComponent extends Component {
       },
     ];
     return (
-      <div style={{ height: '100%' }}>
+      <div style={{ height: '100%' }} data-testid="observed-data-details-page">
         <Typography variant="h4" gutterBottom={true}>
           {t('Entity details')}
         </Typography>

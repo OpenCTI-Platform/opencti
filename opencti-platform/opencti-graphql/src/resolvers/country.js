@@ -1,4 +1,4 @@
-import { addCountry, findAll, findById, locatedAtRegion } from '../domain/country';
+import { addCountry, findCountryPaginated, findById, locatedAtRegion } from '../domain/country';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const countryResolvers = {
   Query: {
     country: (_, { id }, context) => findById(context, context.user, id),
-    countries: (_, args, context) => findAll(context, context.user, args),
+    countries: (_, args, context) => findCountryPaginated(context, context.user, args),
   },
   Country: {
     region: (country, _, context) => locatedAtRegion(context, context.user, country.id),

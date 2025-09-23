@@ -49,6 +49,8 @@ jobs:
           command: yarn install
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
+          environment:
+            TAG_VERSION: $CIRCLE_TAG
           command: yarn build
       - slack/notify:
           event: fail
@@ -778,6 +780,15 @@ jobs:
       - kubernetes/install-kubectl
       - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_DEV -n customer-dev rollout restart deployment -l app=opencti
 
+# Automation of deployment on PIR instance during dev of https://github.com/OpenCTI-Platform/opencti/issues/11149
+  deploy_pir:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - kubernetes/install-kubectl
+      - run: kubectl --server=https://api.staging.eu-west.filigran.io --token=$K8S_TOKEN_PIR -n customer-pir rollout restart deployment -l app=opencti
+
   notify_rolling:
     docker:
       - image: "cimg/base:stable"
@@ -962,11 +973,18 @@ workflows:
           requires:
             - docker_build_platform_prerelease
             - docker_build_worker_prerelease
+# Automation of deployment on PIR instance during dev of https://github.com/OpenCTI-Platform/opencti/issues/11149
+      - deploy_pir:
+          requires:
+            - docker_build_platform_prerelease
+            - docker_build_worker_prerelease
       - notify_rolling:
           requires:
             - deploy_testing
             - deploy_prerelease
             - deploy_dev
+# Automation of deployment on PIR instance during dev of https://github.com/OpenCTI-Platform/opencti/issues/11149
+            - deploy_pir
             - docker_build_platform_fips_rolling
             - docker_build_worker_fips_rolling
             - package_rolling

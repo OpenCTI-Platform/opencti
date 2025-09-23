@@ -21,7 +21,7 @@ import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import type { ActivityStreamEvent, SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
-import { listEntities } from '../database/middleware-loader';
+import { topEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import type { AuthContext, AuthUser } from '../types/user';
 import { FilterMode, OrderingMode } from '../generated/graphql';
@@ -157,7 +157,7 @@ const initActivityManager = () => {
       lock = await lockResources([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running activity manager');
-      const streamOpts = { streamName: ACTIVITY_STREAM_NAME };
+      const streamOpts = { streamName: ACTIVITY_STREAM_NAME, bufferTime: 5000 };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Activity manager', activityStreamHandler, streamOpts);
       await streamProcessor.start(lastEventId);
       while (!shutdown && streamProcessor.running()) {
@@ -183,10 +183,9 @@ const initActivityManager = () => {
       // To start the manager we need to find the last event id indexed
       // and restart the stream consumption from this point.
       const context = executionContext('activity_manager');
-      const histoElements = await listEntities<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_ACTIVITY], {
+      const histoElements = await topEntitiesList<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_ACTIVITY], {
         first: 1,
         indices: [INDEX_HISTORY],
-        connectionFormat: false,
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
         filters: {

@@ -44,7 +44,7 @@ export const getFileUri = (id: string) => {
   return `${APP_BASE_PATH}/storage/view/${encodedFilePath}`;
 };
 
-export const generateUniqueItemsArray = <T>(submittedArray: IterableIterator<T> | Array<T>) => Array.from(new Set(submittedArray));
+export const uniqueArray = <T>(items: IterableIterator<T> | Array<T>) => Array.from(new Set(items));
 
 export const getCurrentTab = (locationPath: string, entityId: string, entityTypePath: string) => {
   if (locationPath.includes(`${entityTypePath}/${entityId}/knowledge`)) return `${entityTypePath}/${entityId}/knowledge`;

@@ -158,6 +158,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
 }
 
 enum ThreatActorsIndividualOrdering {
@@ -237,7 +238,6 @@ type Query {
     search: String
     toStix: Boolean
   ): ThreatActorIndividualConnection @auth(for: [KNOWLEDGE])
-  threatActorIndividualContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
 }
 
 type Mutation {

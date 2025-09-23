@@ -1,4 +1,4 @@
-import { addIngestion, findAllPaginated, findById, ingestionDelete, ingestionEditField, } from './ingestion-rss-domain';
+import { addIngestion, findRssIngestionPaginated, findById, ingestionDelete, ingestionEditField, } from './ingestion-rss-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { storeLoadByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
@@ -8,7 +8,7 @@ import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 const ingestionRssResolvers: Resolvers = {
   Query: {
     ingestionRss: (_, { id }, context) => findById(context, context.user, id),
-    ingestionRsss: (_, args, context) => findAllPaginated(context, context.user, args),
+    ingestionRsss: (_, args, context) => findRssIngestionPaginated(context, context.user, args),
   },
   IngestionRss: {
     defaultCreatedBy: (ingestionRss, _, context) => context.batch.idsBatchLoader.load({ id: ingestionRss.created_by_ref, type: ENTITY_TYPE_IDENTITY }),

@@ -1,5 +1,5 @@
-import React, { Dispatch, FunctionComponent, useState } from 'react';
-import { graphql } from 'react-relay';
+import React, { Dispatch, FunctionComponent, Suspense, useState } from 'react';
+import { graphql, useQueryLoader } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -10,11 +10,11 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { IngestionTaxiiLinesPaginationQuery$variables } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiLinesPaginationQuery.graphql';
-import { IngestionTaxiiPopoverEditionQuery$data } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiPopoverEditionQuery.graphql';
 import { PopoverProps } from '@mui/material/Popover';
+import IngestionTaxiiEditionContainer, { ingestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/IngestionTaxiiEditionContainer';
+import { IngestionTaxiiEditionContainerQuery } from '@components/data/ingestionTaxii/__generated__/IngestionTaxiiEditionContainerQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
-import IngestionTaxiiEdition, { ingestionTaxiiMutationFieldPatch } from './IngestionTaxiiEdition';
+import { ingestionTaxiiMutationFieldPatch } from './IngestionTaxiiEdition';
 import { deleteNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Transition from '../../../../components/Transition';
@@ -35,20 +35,6 @@ const ingestionTaxiiPopoverResetStateMutation = graphql`
     }
 `;
 
-const ingestionTaxiiEditionQuery = graphql`
-  query IngestionTaxiiPopoverEditionQuery($id: String!) {
-    ingestionTaxii(id: $id) {
-      id
-      name
-      description
-      uri
-      version
-      ingestion_running
-      ...IngestionTaxiiEdition_ingestionTaxii
-    }
-  }
-`;
-
 interface IngestionTaxiiPopoverProps {
   ingestionTaxiiId: string;
   running?: boolean | null;
@@ -64,7 +50,6 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
-  const [displayUpdate, setDisplayUpdate] = useState(false);
   const [displayStart, setDisplayStart] = useState(false);
   const [starting, setStarting] = useState(false);
   const [displayStop, setDisplayStop] = useState(false);
@@ -80,13 +65,13 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
     setAnchorEl(event.currentTarget);
   };
 
+  // -- Edition --
+  const [queryRef, loadQuery] = useQueryLoader<IngestionTaxiiEditionContainerQuery>(ingestionTaxiiEditionContainerQuery);
+  const [displayUpdate, setDisplayUpdate] = useState(false);
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
+    loadQuery({ id: ingestionTaxiiId });
     handleClose();
-  };
-
-  const handleCloseUpdate = () => {
-    setDisplayUpdate(false);
   };
 
   const handleOpenResetState = () => {
@@ -221,22 +206,15 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
           {t_i18n('Reset state')}
         </MenuItem>
       </Menu>
-      <QueryRenderer
-        query={ingestionTaxiiEditionQuery}
-        variables={{ id: ingestionTaxiiId }}
-        render={({ props }: { props: IngestionTaxiiPopoverEditionQuery$data }) => {
-          if (props) {
-            return (
-              <IngestionTaxiiEdition
-                ingestionTaxii={props.ingestionTaxii}
-                handleClose={handleCloseUpdate}
-                open={displayUpdate}
-              />
-            );
-          }
-          return <div />;
-        }}
-      />
+      {displayUpdate && queryRef && (
+        <Suspense>
+          <IngestionTaxiiEditionContainer
+            queryRef={queryRef}
+            handleClose={() => setDisplayUpdate(false)}
+            open={displayUpdate}
+          />
+        </Suspense>
+      )}
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}

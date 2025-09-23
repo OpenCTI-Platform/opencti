@@ -78,7 +78,7 @@ const Role = ({
   );
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="role-details-page">
       <Grid
         container={true}
         spacing={3}

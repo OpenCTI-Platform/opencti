@@ -1,5 +1,5 @@
 import { createEntity } from '../database/middleware';
-import { listEntities, listEntitiesThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
@@ -10,8 +10,8 @@ export const findById = (context, user, courseOfActionId) => {
   return storeLoadById(context, user, courseOfActionId, ENTITY_TYPE_COURSE_OF_ACTION);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_COURSE_OF_ACTION], args);
+export const findCourseOfActionPaginated = (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_COURSE_OF_ACTION], args);
 };
 
 export const addCourseOfAction = async (context, user, courseOfAction) => {
@@ -20,5 +20,5 @@ export const addCourseOfAction = async (context, user, courseOfAction) => {
 };
 
 export const attackPatternsPaginated = async (context, user, attackPatternId, args) => {
-  return listEntitiesThroughRelationsPaginated(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN, false, args);
+  return pageRegardingEntitiesConnection(context, user, attackPatternId, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN, false, args);
 };

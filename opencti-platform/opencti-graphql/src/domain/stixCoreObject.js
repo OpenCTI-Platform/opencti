@@ -12,13 +12,13 @@ import {
 import {
   internalFindByIds,
   internalLoadById,
-  listAllEntities,
-  listEntitiesPaginated,
-  listEntitiesThroughRelationsPaginated,
+  fullEntitiesList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
   storeLoadById,
   storeLoadByIds
 } from '../database/middleware-loader';
-import { findAll as relationFindAll } from './stixCoreRelationship';
+import { findStixCoreRelationshipsPaginated } from './stixCoreRelationship';
 import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -139,7 +139,7 @@ const extractStixCoreObjectTypesFromArgs = (args) => {
 export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
   const stixElement = await stixLoadById(context, user, id);
   // Get all not completed works associated to background task
-  const workBackgrounds = await listAllEntities(context, user, [ENTITY_TYPE_WORK], {
+  const workBackgrounds = await fullEntitiesList(context, user, [ENTITY_TYPE_WORK], {
     indices: [READ_INDEX_HISTORY],
     filters: {
       mode: 'and',
@@ -170,18 +170,18 @@ export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
   return activeTasks;
 };
 
-export const findAll = async (context, user, args) => {
+export const findStixCoreObjectPaginated = async (context, user, args) => {
   const types = extractStixCoreObjectTypesFromArgs(args);
-  return listEntitiesPaginated(context, user, types, args);
+  return pageEntitiesConnection(context, user, types, args);
 };
 
-export const globalSearch = async (context, user, args) => {
+export const globalSearchPaginated = async (context, user, args) => {
   const context_data = { input: args, search: args.search };
   await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
-  return findAll(context, user, args);
+  return findStixCoreObjectPaginated(context, user, args);
 };
 
-export const findAllAuthMemberRestricted = async (context, user, args) => {
+export const findStixCoreObjectRestrictedPaginated = async (context, user, args) => {
   if (!isBypassUser(user)) {
     throw ForbiddenAccess();
   }
@@ -193,7 +193,7 @@ export const findAllAuthMemberRestricted = async (context, user, args) => {
     filters,
   };
 
-  return listEntitiesPaginated(context, user, types, finalArgs);
+  return pageEntitiesConnection(context, user, types, finalArgs);
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {
@@ -268,40 +268,40 @@ export const containersPaginated = async (context, user, stixCoreObjectId, opts)
   if (!finalEntityTypes.every((t) => isStixDomainObjectContainer(t))) {
     throw FunctionalError(`Only ${ENTITY_TYPE_CONTAINER} can be query through this method.`);
   }
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, finalEntityTypes, true, opts);
+  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, finalEntityTypes, true, opts);
 };
 
 export const reportsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, true, opts);
+  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT, true, opts);
 };
 
 export const groupingsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_GROUPING, true, opts);
+  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_GROUPING, true, opts);
 };
 
 export const casesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE, true, opts);
+  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_CASE, true, opts);
 };
 
 export const notesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, true, opts);
+  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, true, opts);
 };
 
 export const opinionsPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, true, opts);
+  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION, true, opts);
 };
 
 export const observedDataPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, true, opts);
+  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, true, opts);
 };
 
 export const externalReferencesPaginated = async (context, user, stixCoreObjectId, opts) => {
-  return listEntitiesThroughRelationsPaginated(context, user, stixCoreObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE, false, opts);
+  return pageRegardingEntitiesConnection(context, user, stixCoreObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE, false, opts);
 };
 
-export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => {
+export const stixCoreRelationshipsPaginated = (context, user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('fromOrToId', stixCoreObjectId, args);
-  return relationFindAll(context, user, finalArgs);
+  return findStixCoreRelationshipsPaginated(context, user, finalArgs);
 };
 
 // region relation ref
@@ -855,7 +855,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, args = {
     const fileMarkings = R.uniq(R.flatten(files.filter((f) => f.file_markings).map((f) => f.file_markings)));
     let fileMarkingsPromise = Promise.resolve();
     if (fileMarkings.length > 0) {
-      const argsMarkings = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, connectionFormat: false, baseData: true };
+      const argsMarkings = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, baseData: true };
       fileMarkingsPromise = elFindByIds(context, SYSTEM_USER, R.uniq(fileMarkings), argsMarkings);
     }
     const fileMarkingsMap = await fileMarkingsPromise;

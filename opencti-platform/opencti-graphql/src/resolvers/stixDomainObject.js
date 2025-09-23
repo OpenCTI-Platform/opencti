@@ -1,7 +1,7 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixDomainObject,
-  findAll,
+  findStixDomainObjectPaginated,
   findById,
   stixDomainObjectAddRelation,
   stixDomainObjectAvatar,
@@ -13,6 +13,7 @@ import {
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
   stixDomainObjectFileEdit,
+  stixDomainObjectPirInformation,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
@@ -32,7 +33,7 @@ import { filterMembersWithUsersOrgs } from '../utils/access';
 const stixDomainObjectResolvers = {
   Query: {
     stixDomainObject: (_, { id }, context) => findById(context, context.user, id),
-    stixDomainObjects: (_, args, context) => findAll(context, context.user, args),
+    stixDomainObjects: (_, args, context) => findStixDomainObjectPaginated(context, context.user, args),
     stixDomainObjectsTimeSeries: (_, args, context) => {
       if (args.authorId && args.authorId.length > 0) {
         return stixDomainObjectsTimeSeriesByAuthor(context, context.user, args);
@@ -73,6 +74,7 @@ const stixDomainObjectResolvers = {
       const statusesType = await findByType(context, context.user, stixDomainObject.entity_type);
       return statusesType.length > 0;
     },
+    pirInformation: (stixDomainObject, { pirId }, context) => stixDomainObjectPirInformation(context, context.user, stixDomainObject, pirId),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, context) => ({

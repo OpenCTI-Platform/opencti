@@ -1,10 +1,10 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findAll, findById, restoreDelete, confirmDelete } from './deleteOperation-domain';
+import { findDeleteOperationPaginated, findById, restoreDelete, confirmDelete } from './deleteOperation-domain';
 
 const deleteOperationResolvers: Resolvers = {
   Query: {
     deleteOperation: (_, { id }, context) => findById(context, context.user, id),
-    deleteOperations: (_, args, context) => findAll(context, context.user, args),
+    deleteOperations: (_, args, context) => findDeleteOperationPaginated(context, context.user, args),
   },
   DeleteOperation: {
     objectMarking: (deleteOperation, _, context) => context.batch.markingsBatchLoader.load(deleteOperation),

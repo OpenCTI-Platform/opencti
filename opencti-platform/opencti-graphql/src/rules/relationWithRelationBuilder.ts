@@ -3,7 +3,7 @@ import { createInferredRelation, deleteInferredRuleElement } from '../database/m
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
 import { createRuleContent } from './rules-utils';
 import { computeAverage } from '../database/utils';
-import { listAllRelations } from '../database/middleware-loader';
+import { fullRelationsList } from '../database/middleware-loader';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -55,7 +55,7 @@ const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationT
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
-    await listAllRelations(context, RULE_MANAGER_USER, relationTypeToFind, listFromArgs);
+    await fullRelationsList(context, RULE_MANAGER_USER, relationTypeToFind, listFromArgs);
   };
   // Contract
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {

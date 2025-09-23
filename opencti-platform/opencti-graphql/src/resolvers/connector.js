@@ -2,13 +2,16 @@ import {
   computeWorkStatus,
   connectorDelete,
   connectorForWork,
+  connectorGetHealth,
+  connectorGetUptime,
   connectorsForExport,
   connectorTriggerUpdate,
+  connectorUpdateHealth,
   connectorUpdateLogs,
   connectorUser,
   fetchRemoteStreams,
-  findAllSync,
   findSyncById,
+  findSyncPaginated,
   managedConnectorAdd,
   managedConnectorEdit,
   patchSync,
@@ -32,8 +35,8 @@ import {
   createWork,
   deleteWork,
   deleteWorkForConnector,
-  findAll,
   findById,
+  findWorkPaginated,
   pingWork,
   reportExpectation,
   updateExpectationsNumber,
@@ -43,8 +46,9 @@ import {
 } from '../domain/work';
 import { now, sinceNowInMinutes } from '../utils/format';
 import {
-  computeManagerConnectorContract,
   computeManagerConnectorConfiguration,
+  computeManagerConnectorContract,
+  computeManagerConnectorExcerpt,
   computeManagerConnectorImage,
   computeManagerContractHash,
   connector,
@@ -60,8 +64,6 @@ import {
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
-import { COMPOSER_FF } from '../modules/catalog/catalog-types';
-import { enforceEnableFeatureFlag } from '../utils/access';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -75,10 +77,10 @@ const connectorResolvers = {
     connectorsForImport: (_, __, context) => connectorsForImport(context, context.user),
     connectorsForAnalysis: (_, __, context) => connectorsForAnalysis(context, context.user),
     connectorsForNotification: (_, __, context) => connectorsForNotification(context, context.user),
-    works: (_, args, context) => findAll(context, context.user, args),
+    works: (_, args, context) => findWorkPaginated(context, context.user, args),
     work: (_, { id }, context) => findById(context, context.user, id),
-    synchronizer: (_, { id }, context) => findSyncById(context, context.user, id),
-    synchronizers: (_, args, context) => findAllSync(context, context.user, args),
+    synchronizer: (_, { id }, context) => findSyncById(context, context.user, id, true),
+    synchronizers: (_, args, context) => findSyncPaginated(context, context.user, args),
     synchronizerFetch: (_, { input }, context) => fetchRemoteStreams(context, context.user, input),
     // region new managed connectors
     connectorManager: (_, { managerId }, context) => connectorManager(context, context.user, managerId),
@@ -90,13 +92,18 @@ const connectorResolvers = {
     connector_queue_details: (cn) => queueDetails(cn.id),
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
+    manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
+    manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_definition: (cn, _, context) => computeManagerConnectorContract(context, context.user, cn),
-    manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
+    manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn, true),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
+    manager_contract_excerpt: (cn, _, context) => computeManagerConnectorExcerpt(context, context.user, cn),
   },
   ManagedConnector: {
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
+    manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
+    manager_connector_uptime: (cn, _, context) => connectorGetUptime(context, context.user, cn.id),
     manager_contract_hash: (cn, _, context) => computeManagerContractHash(context, context.user, cn),
     manager_contract_configuration: (cn, _, context) => computeManagerConnectorConfiguration(context, context.user, cn),
     manager_contract_image: (cn) => computeManagerConnectorImage(cn),
@@ -123,32 +130,28 @@ const connectorResolvers = {
     updateConnectorTrigger: (_, { id, input }, context) => connectorTriggerUpdate(context, context.user, id, input),
     // region new managed connectors
     managedConnectorAdd: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return managedConnectorAdd(context, context.user, input);
     },
     managedConnectorEdit: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return managedConnectorEdit(context, context.user, input);
     },
     updateConnectorManagerStatus: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return updateConnectorManagerStatus(context, context.user, input);
     },
     registerConnectorsManager: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return registerConnectorsManager(context, context.user, input);
     },
     updateConnectorRequestedStatus: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return updateConnectorRequestedStatus(context, context.user, input);
     },
     updateConnectorCurrentStatus: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return updateConnectorCurrentStatus(context, context.user, input);
     },
     updateConnectorLogs: (_, { input }, context) => {
-      enforceEnableFeatureFlag(COMPOSER_FF);
       return connectorUpdateLogs(context, context.user, input);
+    },
+    updateConnectorHealth: (_, { input }, context) => {
+      return connectorUpdateHealth(context, context.user, input);
     },
     // endregion
     // Work part

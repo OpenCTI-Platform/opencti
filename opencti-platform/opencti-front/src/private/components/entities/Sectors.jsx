@@ -51,7 +51,7 @@ const Sectors = () => {
   }, [sectorsState]);
 
   return (
-    <>
+    <div data-testid="sector-page">
       <Breadcrumbs variant="list" elements={[{ label: t_i18n('Entities') }, { label: t_i18n('Sectors'), current: true }]} />
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <SearchInput
@@ -73,7 +73,7 @@ const Sectors = () => {
           <SectorsLines data={props} keyword={sectorsState.searchTerm} />
         )}
       />
-    </>
+    </div>
   );
 };
 

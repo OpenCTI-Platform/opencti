@@ -1,5 +1,5 @@
 import { createEntity } from '../database/middleware';
-import { listEntities, loadEntityThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, loadEntityThroughRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_POSITION } from '../schema/stixDomainObject';
@@ -10,8 +10,8 @@ export const findById = (context, user, positionId) => {
   return storeLoadById(context, user, positionId, ENTITY_TYPE_LOCATION_POSITION);
 };
 
-export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_LOCATION_POSITION], args);
+export const findPositionPaginated = (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_LOCATION_POSITION], args);
 };
 
 export const locatedAtCity = async (context, user, positionId) => {

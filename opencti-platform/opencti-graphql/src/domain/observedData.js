@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity, distributionEntities, timeSeriesEntities, } from '../database/middleware';
-import { internalLoadById, listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, topRelationsList, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
@@ -17,13 +17,13 @@ export const findById = (context, user, observedDataId) => {
   return storeLoadById(context, user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
 };
 
-export const findAll = async (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
+export const findObservedDataPaginated = async (context, user, args) => {
+  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
 };
 
 export const resolveName = async (context, user, observedData) => {
-  const relationArgs = { first: 1, fromId: observedData.id, toTypes: [ABSTRACT_STIX_CORE_OBJECT], connectionFormat: false, baseData: true };
-  const observedDataRelations = await listRelations(context, user, RELATION_OBJECT, relationArgs);
+  const relationArgs = { first: 1, fromId: observedData.id, toTypes: [ABSTRACT_STIX_CORE_OBJECT], baseData: true };
+  const observedDataRelations = await topRelationsList(context, user, RELATION_OBJECT, relationArgs);
   if (observedDataRelations.length === 1) {
     const firstElement = await internalLoadById(context, user, observedDataRelations[0].toId);
     return extractEntityRepresentativeName(firstElement);
@@ -44,7 +44,7 @@ export const observedDataContainsStixObjectOrStixRelationship = async (context, 
       filterGroups: [],
     },
   };
-  const observedDataFound = await findAll(context, user, args);
+  const observedDataFound = await findObservedDataPaginated(context, user, args);
   return observedDataFound.edges.length > 0;
 };
 

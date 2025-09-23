@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import {
   addNote,
-  findAll,
+  findNotePaginated,
   findById,
   noteContainsStixObjectOrStixRelationship,
   notesDistributionByEntity,
@@ -40,7 +40,7 @@ const checkUserAccess = async (context, user, id) => {
 const noteResolvers = {
   Query: {
     note: (_, { id }, context) => findById(context, context.user, id),
-    notes: (_, args, context) => findAll(context, context.user, args),
+    notes: (_, args, context) => findNotePaginated(context, context.user, args),
     notesTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
         return notesTimeSeriesByEntity(context, context.user, args);

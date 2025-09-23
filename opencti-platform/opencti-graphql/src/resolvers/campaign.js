@@ -1,4 +1,4 @@
-import { addCampaign, campaignsTimeSeries, campaignsTimeSeriesByEntity, findAll, findById } from '../domain/campaign';
+import { addCampaign, campaignsTimeSeries, campaignsTimeSeriesByEntity, findCampaignPaginated, findById } from '../domain/campaign';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -11,7 +11,7 @@ import {
 const campaignResolvers = {
   Query: {
     campaign: (_, { id }, context) => findById(context, context.user, id),
-    campaigns: (_, args, context) => findAll(context, context.user, args),
+    campaigns: (_, args, context) => findCampaignPaginated(context, context.user, args),
     campaignsTimeSeries: (_, args, context) => {
       if (args.objectId && args.objectId.length > 0) {
         return campaignsTimeSeriesByEntity(context, context.user, args);

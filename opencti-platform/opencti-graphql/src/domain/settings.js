@@ -1,12 +1,12 @@
 import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
-import { createEntity, listAllThings, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
+import { createEntity, fullEntitiesOrRelationsList, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
 import conf, { ACCOUNT_STATUSES, booleanConf, BUS_TOPICS, ENABLED_DEMO_MODE, ENABLED_FEATURE_FLAGS, getBaseUrl, PLATFORM_VERSION, PLAYGROUND_ENABLED } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SYSTEM_USER } from '../utils/access';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -19,6 +19,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
+import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -103,6 +104,7 @@ export const getSettings = async (context) => {
   const platformSettings = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const clusterInfo = await getClusterInformation();
   const eeInfo = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
+
   return {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),
@@ -121,12 +123,12 @@ export const getSettings = async (context) => {
     platform_openerm_url: nconf.get('xtm:openerm_url'),
     platform_openmtd_url: nconf.get('xtm:openmtd_url'),
     platform_xtmhub_url: nconf.get('xtm:xtmhub_url'),
-    platform_ai_enabled: nconf.get('ai:enabled') ?? false,
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
+    filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
       ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))
@@ -163,6 +165,11 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'password_policy_min_uppercase',
 ];
 
+const PARAMETERS_SETTINGS_RESTRICTED_KEYS = [
+  'filigran_chatbot_ai_cgu_status',
+  'platform_ai_enabled',
+];
+
 const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
   'xtm_hub_token',
   'xtm_hub_registration_user_id',
@@ -175,9 +182,11 @@ const ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS = [
 
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
+  const hasSetParameterCapability = isUserHasCapability(user, SETTINGS_SETPARAMETERS);
   const hasSetXTMHubCapability = isUserHasCapability(user, SETTINGS_SETMANAGEXTMHUB);
   const keysUserCannotModify = [
     ...(hasSetAccessCapability ? [] : ACCESS_SETTINGS_RESTRICTED_KEYS),
+    ...(hasSetParameterCapability ? [] : PARAMETERS_SETTINGS_RESTRICTED_KEYS),
     ...(hasSetXTMHubCapability ? [] : ACCESS_SETTINGS_MANAGE_XTMHUB_KEYS),
   ];
 
@@ -284,7 +293,7 @@ export const getCriticalAlerts = async (context, user) => {
   // only 1 critical alert is checked: null confidence level on groups
   // it's for admins only (only them can take action)
   if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-    const allGroups = await listAllThings(context, user, [ENTITY_TYPE_GROUP], {});
+    const allGroups = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_GROUP], {});
     // if at least one have a null effective confidence level, it's an issue
     const groupsWithNull = allGroups.filter((group) => !group.group_confidence_level);
     if (groupsWithNull.length === 0) {

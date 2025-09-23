@@ -35,7 +35,7 @@ const RegionKnowledgeComponent = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(region.entity_type, schema);
   return (
-    <>
+    <div data-testid="region-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -298,7 +298,7 @@ const RegionKnowledgeComponent = ({
           }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

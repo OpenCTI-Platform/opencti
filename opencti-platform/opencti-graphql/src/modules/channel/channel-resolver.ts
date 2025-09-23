@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addChannel, findAll, findById } from './channel-domain';
+import { addChannel, findChannelPaginated, findById } from './channel-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -12,7 +12,7 @@ import {
 const channelResolvers: Resolvers = {
   Query: {
     channel: (_, { id }, context) => findById(context, context.user, id),
-    channels: (_, args, context) => findAll(context, context.user, args),
+    channels: (_, args, context) => findChannelPaginated(context, context.user, args),
   },
   Mutation: {
     channelAdd: (_, { input }, context) => {

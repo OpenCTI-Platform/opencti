@@ -204,6 +204,7 @@ export default defineConfig({
 
   optimizeDeps: {
     include: depsToOptimize,
+    exclude: ['filigran-chatbot']
   },
 
   customLogger: logger,
@@ -243,12 +244,14 @@ export default defineConfig({
       '/logout': backProxy(),
       '/stream': backProxy(),
       '/storage': backProxy(),
+      '/schema': backProxy(),
       '^/.*/embedded/.*': backProxy(),
       '/taxii2': backProxy(),
       '/feeds': backProxy(),
       '/graphql': backProxy(true),
       '/auth': backProxy(),
       '/static/flags': backProxy(),
+      '/chatbot': backProxy(),
     },
   },
 });

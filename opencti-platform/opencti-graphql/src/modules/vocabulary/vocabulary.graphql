@@ -111,7 +111,7 @@ type VocabularyEdge {
 
 # Queries
 type Query {
-  vocabulary(id: String!): Vocabulary @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETLABELS])
+  vocabulary(id: String!): Vocabulary @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETVOCABULARIES])
   vocabularyCategories: [VocabularyDefinition!]! @auth
   vocabularies(
     category: VocabularyCategory
@@ -121,7 +121,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): VocabularyConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, INGESTION_SETINGESTIONS, INVESTIGATION_INUPDATE])
+  ): VocabularyConnection @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETVOCABULARIES, INGESTION_SETINGESTIONS, INVESTIGATION_INUPDATE])
 }
 
 # Mutations
@@ -139,7 +139,7 @@ input VocabularyAddInput {
 }
 
 type Mutation {
-  vocabularyAdd(input: VocabularyAddInput!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
-  vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary @auth(for: [SETTINGS_SETLABELS])
-  vocabularyDelete(id: ID!): ID @auth(for: [SETTINGS_SETLABELS])
+  vocabularyAdd(input: VocabularyAddInput!): Vocabulary @auth(for: [SETTINGS_SETVOCABULARIES])
+  vocabularyFieldPatch(id: ID!, input: [EditInput!]!): Vocabulary @auth(for: [SETTINGS_SETVOCABULARIES])
+  vocabularyDelete(id: ID!): ID @auth(for: [SETTINGS_SETVOCABULARIES])
 }

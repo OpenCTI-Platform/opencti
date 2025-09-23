@@ -3,10 +3,30 @@ type PirCriterion {
     weight: Int!
 }
 
+type PirScore {
+    pir_id: ID!
+    pir_score: Int!
+}
+
 # Used in StixRefRelationship
+enum PirType {
+    THREAT_LANDSCAPE
+    THREAT_ORIGIN
+    THREAT_CUSTOM
+}
+
+type PirDependency {
+    element_id: ID!
+    author_id: ID
+}
 type PirExplanation {
-    dependency_ids: [ID!]!
+    dependencies: [PirDependency!]!
     criterion: PirCriterion!
+}
+type PirInformation {
+    pir_score: Int!
+    last_pir_score_date: DateTime!
+    pir_explanation: [PirExplanation!]!
 }
 
 type Pir implements InternalObject & BasicObject {
@@ -17,14 +37,48 @@ type Pir implements InternalObject & BasicObject {
     created_at: DateTime!
     updated_at: DateTime!
     creators: [Creator!]
-    objectMarking: [MarkingDefinition!]
     # Pir
     name: String!
+    pir_type: PirType!
     description: String
     pir_rescan_days: Int!
     pir_criteria: [PirCriterion!]!
     pir_filters: String!
     lastEventId: String!
+    authorizedMembers: [MemberAccess!]!
+    currentUserAccessRight: String
+    pirContainers(
+        first: Int
+        after: ID
+        orderBy: ContainersOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): ContainerConnection
+    queue_messages: Int!
+}
+
+type PirRelationship implements BasicRelationship {
+    # BasicRelationship
+    id: ID! # internal_id
+    standard_id: String!
+    entity_type: String!
+    parent_types: [String]!
+    fromRole: String
+    toRole: String
+    created_at: DateTime!
+    updated_at: DateTime!
+    fromId: String!
+    toId: String!
+    fromType: String!
+    toType: String!
+    # InternalRelationship
+    from: StixDomainObject
+    to: Pir
+    creators: [Creator!]
+    # in-pir relationship
+    pir_explanation: [PirExplanation!]
+    pir_score: Int
 }
 
 # Ordering
@@ -33,6 +87,12 @@ enum PirOrdering {
     created_at
     updated_at
     creator
+}
+
+enum PirRelationshipOrdering {
+    created_at
+    updated_at
+    pir_score
 }
 
 # Relay connections
@@ -45,9 +105,18 @@ type PirEdge {
     node: Pir!
 }
 
+type PirRelationshipConnection {
+    pageInfo: PageInfo!
+    edges: [PirRelationshipEdge!]!
+}
+type PirRelationshipEdge {
+    cursor: String!
+    node: PirRelationship!
+}
+
 # Queries
 type Query {
-    pir(id: ID!): Pir @auth(for: [KNOWLEDGE])
+    pir(id: ID!): Pir @auth(for: [PIRAPI])
     pirs(
         first: Int
         after: ID
@@ -55,7 +124,68 @@ type Query {
         orderMode: OrderingMode
         filters: FilterGroup
         search: String
-    ): PirConnection @auth(for: [KNOWLEDGE])
+    ): PirConnection @auth(for: [PIRAPI])
+    pirRelationships(
+        pirId: ID!
+        first: Int
+        after: ID
+        orderBy: PirRelationshipOrdering
+        orderMode: OrderingMode
+        fromId: [String]
+        fromRole: String
+        fromTypes: [String]
+        startTimeStart: DateTime
+        startTimeStop: DateTime
+        stopTimeStart: DateTime
+        stopTimeStop: DateTime
+        firstSeenStart: DateTime
+        firstSeenStop: DateTime
+        lastSeenStart: DateTime
+        lastSeenStop: DateTime
+        startDate: DateTime
+        endDate: DateTime
+        confidences: [Int]
+        search: String
+        filters: FilterGroup
+        dynamicFrom: FilterGroup
+        stix: Boolean
+    ): PirRelationshipConnection @auth(for: [KNOWLEDGE, PIRAPI])
+    pirRelationshipsDistribution(
+        pirId: ID!
+        field: String!
+        operation: StatsOperation!
+        startDate: DateTime
+        endDate: DateTime
+        dateAttribute: String
+        isTo: Boolean
+        limit: Int
+        order: String
+        fromId: [String]
+        fromTypes: [String]
+        relationship_type: [String]
+        search: String
+        filters: FilterGroup
+        dynamicFrom: FilterGroup
+        aggregateOnConnections: Boolean
+    ): [Distribution] @auth(for: [KNOWLEDGE, PIRAPI])
+    pirRelationshipsMultiTimeSeries(
+        operation: StatsOperation!
+        startDate: DateTime!
+        endDate: DateTime
+        interval: String!
+        onlyInferred: Boolean
+        timeSeriesParameters: [PirRelationshipsTimeSeriesParameters!]!
+        relationship_type: [String!]
+    ): [MultiTimeSeries] @auth(for: [KNOWLEDGE, PIRAPI])
+    pirLogs(
+        pirId: ID!
+        first: Int
+        after: ID
+        orderBy: LogsOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): LogConnection @auth(for: [KNOWLEDGE, PIRAPI])
 }
 
 # Mutations inputs
@@ -65,24 +195,30 @@ input PirCriterionInput {
 }
 
 # Used in StixRefRelationshipAddInput
+input PirDependencyInput {
+    element_id: ID!
+    author_id: ID
+}
 input PirExplanationInput {
-    dependency_ids: [ID!]!
+    dependencies: [PirDependencyInput!]!
     criterion: PirCriterionInput!
 }
 
 input PirAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")
+    pir_type: PirType!
     description: String
     pir_rescan_days: Int!
     pir_criteria: [PirCriterionInput!]!
     pir_filters: FilterGroup!
-    objectMarking: [String!]
+    authorized_members: [MemberAccessInput!]
 }
 
 input PirFlagElementInput {
     relationshipId: ID!
     sourceId: ID!
     matchingCriteria: [PirCriterionInput!]!
+    relationshipAuthorId: ID
 }
 
 input PirUnflagElementInput {
@@ -90,11 +226,25 @@ input PirUnflagElementInput {
     sourceId: ID!
 }
 
+input PirRelationshipsTimeSeriesParameters {
+    pirId: ID!
+    field: String!
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+    dynamicFrom: FilterGroup
+}
+
 # Mutations
 type Mutation {
-    pirAdd(input: PirAddInput!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
-    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [KNOWLEDGE_KNUPDATE])
-    pirDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
-    pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
+    pirAdd(input: PirAddInput!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirFieldPatch(id: ID!, input: [EditInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Pir @auth(for: [PIRAPI_PIRUPDATE])
+    pirDelete(id: ID!): ID @auth(for: [PIRAPI_PIRUPDATE])
+    pirFlagElement(id: ID!, input: PirFlagElementInput!): ID @auth(for: [BYPASS])
+    pirUnflagElement(id: ID!, input: PirUnflagElementInput!): ID @auth(for: [BYPASS])
 }

@@ -36,7 +36,7 @@ const AdministrativeAreaKnowledge = ({
   const { schema } = useAuth();
   const allRelationshipsTypes = getRelationshipTypesForEntityType(administrativeArea.entity_type, schema);
   return (
-    <>
+    <div data-testid="administrative-area-knowledge">
       <Routes>
         <Route
           path="/relations/:relationId"
@@ -286,7 +286,7 @@ const AdministrativeAreaKnowledge = ({
           }
         />
       </Routes>
-    </>
+    </div>
   );
 };
 

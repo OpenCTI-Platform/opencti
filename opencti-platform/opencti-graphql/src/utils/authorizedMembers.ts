@@ -63,8 +63,6 @@ export const getAuthorizedMembers = async (
   const membersIds = entityRestrictedMembers.map((e) => e.id);
   const groupsRestrictionIds = entityRestrictedMembers.flatMap((e) => e.groups_restriction_ids ?? []);
   const args = {
-    connectionFormat: false,
-    first: 100,
     filters: {
       mode: 'and',
       filters: [{ key: 'internal_id', values: [...membersIds, ...groupsRestrictionIds] }],

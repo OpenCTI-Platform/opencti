@@ -1,10 +1,10 @@
 import { expect } from 'vitest';
 import gql from 'graphql-tag';
-import { listThings } from '../../src/database/middleware';
+import { topEntitiesOrRelationsList } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { isNotEmptyField, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
-import { internalFindByIds, internalLoadById, listEntities } from '../../src/database/middleware-loader';
+import { internalFindByIds, internalLoadById, topEntitiesList } from '../../src/database/middleware-loader';
 import { queryAsAdmin, testContext } from './testQuery';
 import { fetchStreamInfo } from '../../src/database/redis';
 import { logApp } from '../../src/config/conf';
@@ -26,8 +26,8 @@ export const inferenceLookup = async (inferences, fromStandardId, toStandardId, 
 };
 
 export const getInferences = (type) => {
-  const opts = { indices: [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_INFERRED_ENTITIES], connectionFormat: false };
-  return listThings(testContext, SYSTEM_USER, [type], opts);
+  const opts = { indices: [READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_INFERRED_ENTITIES] };
+  return topEntitiesOrRelationsList(testContext, SYSTEM_USER, [type], opts);
 };
 
 const RULE_MUTATION = gql`
@@ -46,7 +46,7 @@ export const changeRule = async (ruleId, active) => {
   let ruleActivated = false;
   while (ruleActivated !== true) {
     // Handle tasks
-    const tasks = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK], { connectionFormat: false });
+    const tasks = await topEntitiesList(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK]);
     const ruleActivationTask = tasks.filter((t) => t.type === TASK_TYPE_RULE && t.rule === ruleId && t.enable === active);
     ruleActivationTask.forEach((t) => {
       if (t.errors.length > 0) {

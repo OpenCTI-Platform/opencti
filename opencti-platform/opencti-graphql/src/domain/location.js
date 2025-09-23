@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createEntity } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/general';
@@ -12,7 +12,7 @@ export const findById = async (context, user, locationId) => {
   return storeLoadById(context, user, locationId, ENTITY_TYPE_LOCATION);
 };
 
-export const findAll = async (context, user, args) => {
+export const findLocationPaginated = async (context, user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = args.types.filter((type) => isStixDomainObjectLocation(type));
@@ -20,7 +20,7 @@ export const findAll = async (context, user, args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_LOCATION);
   }
-  return listEntities(context, user, types, args);
+  return pageEntitiesConnection(context, user, types, args);
 };
 
 export const addLocation = async (context, user, location) => {

@@ -5,7 +5,7 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { getEntitiesMapFromCache } from '../../../database/cache';
 import type { StixObject } from '../../../types/stix-2-1-common';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../../schema/stixDomainObject';
-import type { Filter, FilterGroup } from '../../../generated/graphql';
+import { type Filter, type FilterGroup } from '../../../generated/graphql';
 import type { FilterResolutionMap } from '../filtering-resolution';
 import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filtering-resolution';
 import { UnsupportedError } from '../../../config/errors';
@@ -87,7 +87,12 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
  * @param filterGroup
  * @throws {Error} on invalid filter keys
  */
-export const isStixMatchFilterGroup = async (context: AuthContext, user: AuthUser, stix: any, filterGroup?: FilterGroup) : Promise<boolean> => {
+export const isStixMatchFilterGroup = async (
+  context: AuthContext,
+  user: AuthUser,
+  stix: any,
+  filterGroup?: FilterGroup
+) : Promise<boolean> => {
   // resolve some of the ids as we filter on their corresponding values or standard-id for instance
   // the provided map will contain replacements for filter values, if any necessary.
   // we use the entities stored in cache for the "Resolved-Filters" (all the entities used by the saved filters - stream, trigger, playbooks)

@@ -1,6 +1,6 @@
 import { groupBy } from 'ramda';
 import { logApp } from '../config/conf';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../schema/internalObject';
 import { elDeleteInstances, elIndexGetAlias } from '../database/engine';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -15,7 +15,7 @@ export const up = async (next) => {
   const internalObjectsIndexAlias = await elIndexGetAlias(READ_INDEX_INTERNAL_OBJECTS);
   if (internalObjectsIndexAlias && Object.keys(internalObjectsIndexAlias).length > 1) {
     logApp.info(`${message} > multiple indices found for internal objects, running migration`);
-    const allFiles = await listAllEntities(
+    const allFiles = await fullEntitiesList(
       context,
       SYSTEM_USER,
       [ENTITY_TYPE_INTERNAL_FILE],

@@ -38,13 +38,13 @@ import { READ_DATA_INDICES } from '../../../src/database/utils';
 import { executionContext, SYSTEM_USER } from '../../../src/utils/access';
 import { checkObservableSyntax } from '../../../src/utils/syntax';
 import { FunctionalError } from '../../../src/config/errors';
-import { internalLoadById, listAllRelations, listEntities, listRelations, storeLoadById } from '../../../src/database/middleware-loader';
+import { internalLoadById, fullRelationsList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../../src/database/middleware-loader';
 import { addThreatActorGroup } from '../../../src/domain/threatActorGroup';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { addIndicator } from '../../../src/modules/indicator/indicator-domain';
-import { findAll } from '../../../src/domain/subType';
+import { findSubTypePaginated } from '../../../src/domain/subType';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
 import { addReport } from '../../../src/domain/report';
 import { addIndividual } from '../../../src/domain/individual';
@@ -79,7 +79,7 @@ describe('Basic and utils', () => {
 
 describe('Loaders', () => {
   it('should load subTypes values', async () => {
-    const stixObservableSubTypes = await findAll(testContext, ADMIN_USER, { type: 'Stix-Cyber-Observable' });
+    const stixObservableSubTypes = await findSubTypePaginated(testContext, ADMIN_USER, { type: 'Stix-Cyber-Observable' });
     expect(stixObservableSubTypes).not.toBeNull();
     expect(stixObservableSubTypes.edges.length).toEqual(STIX_CYBER_OBSERVABLES.length);
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);
@@ -165,7 +165,7 @@ describe('Entities listing', () => {
   // const { first = 1000, after, orderBy, orderMode = 'asc' }
   // filters part. Definition -> { key, values, fromRole, toRole }
   it('should list entities', async () => {
-    const malwares = await listEntities(testContext, ADMIN_USER, ['Malware']);
+    const malwares = await pageEntitiesConnection(testContext, ADMIN_USER, ['Malware']);
     expect(malwares).not.toBeNull();
     expect(malwares.edges.length).toEqual(2);
     const dataMap = new Map(malwares.edges.map((i) => [R.head(i.node.x_opencti_stix_ids), i.node]));
@@ -183,7 +183,7 @@ describe('Entities listing', () => {
     expect(malware._index).not.toBeNull();
   });
   it('should list multiple entities', async () => {
-    const entities = await listEntities(testContext, ADMIN_USER, ['Malware', 'Organization']);
+    const entities = await pageEntitiesConnection(testContext, ADMIN_USER, ['Malware', 'Organization']);
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(TESTING_ORGS.length + 6 + 2); // 2 malwares + 6 organizations from data init
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
@@ -194,23 +194,23 @@ describe('Entities listing', () => {
   });
   it('should list entities with basic filtering', async () => {
     const options = { first: 1, orderBy: 'created', orderMode: 'desc' };
-    const indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    const indicators = await pageEntitiesConnection(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     const indicator = R.head(indicators.edges).node;
     expect(indicator.name).toEqual('www.xolod-teplo.ru');
   });
   it('should list entities with search', async () => {
     let options = { search: 'xolod' };
-    let indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    let indicators = await pageEntitiesConnection(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(0);
     options = { search: 'www.xolod' };
-    indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    indicators = await pageEntitiesConnection(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     options = { search: 'location' };
-    indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    indicators = await pageEntitiesConnection(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(2);
     options = { search: 'i want a location' };
-    indicators = await listEntities(testContext, ADMIN_USER, ['Indicator'], options);
+    indicators = await pageEntitiesConnection(testContext, ADMIN_USER, ['Indicator'], options);
     expect(indicators.edges.length).toEqual(3);
   });
   it('should list entities with attribute filters', async () => {
@@ -223,7 +223,7 @@ describe('Entities listing', () => {
       filterGroups: [],
     };
     const options = { filters };
-    const attacks = await listEntities(testContext, ADMIN_USER, ['Attack-Pattern'], options);
+    const attacks = await pageEntitiesConnection(testContext, ADMIN_USER, ['Attack-Pattern'], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
     expect(R.head(attacks.edges).node.standard_id).toEqual('attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
@@ -239,7 +239,7 @@ describe('Entities listing', () => {
       filterGroups: [],
     };
     const options = { filters };
-    const entities = await listEntities(testContext, ADMIN_USER, ['Attack-Pattern', 'Intrusion-Set'], options);
+    const entities = await pageEntitiesConnection(testContext, ADMIN_USER, ['Attack-Pattern', 'Intrusion-Set'], options);
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(3);
   });
@@ -251,10 +251,10 @@ describe('Relations listing', () => {
   // const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, confidences = [] }
   // uses: { user: ROLE_FROM, usage: ROLE_TO }
   it('should list relations', async () => {
-    const stixCoreRelationships = await listRelations(testContext, ADMIN_USER, 'stix-core-relationship');
+    const stixCoreRelationships = await pageRelationsConnection(testContext, ADMIN_USER, 'stix-core-relationship');
     expect(stixCoreRelationships).not.toBeNull();
     expect(stixCoreRelationships.edges.length).toEqual(24);
-    const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
+    const stixRefRelationships = await pageRelationsConnection(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
     const entityTypeMap = mapEdgesCountPerEntityType(stixRefRelationships);
     expect(entityTypeMap.get('created-by')).toBe(22);
@@ -267,7 +267,7 @@ describe('Relations listing', () => {
     expect(stixRefRelationships.edges.length).toEqual(130);
   });
   it('should list relations with roles', async () => {
-    const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {
+    const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', {
       fromRole: 'uses_from',
       toRole: 'uses_to',
     });
@@ -285,7 +285,7 @@ describe('Relations listing', () => {
     const intrusionSet = await internalLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     expect(intrusionSet.entity_type).toEqual('Intrusion-Set');
     const options = { fromId: intrusionSet.internal_id, fromTypes: ['Intrusion-Set'] };
-    const stixRelations = await listRelations(testContext, ADMIN_USER, 'targets', options);
+    const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'targets', options);
     expect(stixRelations.edges.length).toEqual(2);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
@@ -297,7 +297,7 @@ describe('Relations listing', () => {
     // "name": "Paradise Ransomware"
     const malware = await internalLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = { fromId: malware.internal_id, toTypes: ['Attack-Pattern'] };
-    const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
+    const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(2);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
@@ -309,7 +309,7 @@ describe('Relations listing', () => {
   });
   it('should list relations with first and order filtering', async () => {
     const options = { first: 6, orderBy: 'created', orderMode: 'asc' };
-    const stixRelations = await listRelations(testContext, ADMIN_USER, 'stix-core-relationship', options);
+    const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'stix-core-relationship', options);
     expect(stixRelations).not.toBeNull();
     expect(stixRelations.edges.length).toEqual(6);
     // Every relations must have natural ordering for from and to
@@ -324,7 +324,7 @@ describe('Relations listing', () => {
     expect(relation.created).toEqual('2019-04-25T20:53:08.446Z');
   });
   it('should list relations with relation filtering', async () => {
-    let stixRelations = await listRelations(testContext, ADMIN_USER, 'uses');
+    let stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses');
     expect(stixRelations).not.toBeNull();
     expect(stixRelations.edges.length).toEqual(3);
     // Filter the list through relation filter
@@ -346,7 +346,7 @@ describe('Relations listing', () => {
       id: indicatorId,
     };
     const options = { relationFilter };
-    stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
+    stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(0);
   });
   it('should list relations with relation filtering on report', async () => {
@@ -358,19 +358,19 @@ describe('Relations listing', () => {
       id: report.internal_id,
     };
     const args = { relationFilter };
-    const stixRelations = await listRelations(testContext, ADMIN_USER, 'stix-core-relationship', args);
+    const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'stix-core-relationship', args);
     expect(stixRelations.edges.length).toEqual(11);
     const relation = await elLoadById(testContext, ADMIN_USER, 'relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c');
     const argsWithRelationId = {
       relationFilter: R.assoc('relationId', relation.internal_id, relationFilter),
     };
-    const stixRelationsWithInternalId = await listRelations(testContext, ADMIN_USER, 'stix-core-relationship', argsWithRelationId);
+    const stixRelationsWithInternalId = await pageRelationsConnection(testContext, ADMIN_USER, 'stix-core-relationship', argsWithRelationId);
     expect(stixRelationsWithInternalId.edges.length).toEqual(1);
   });
   it('should list relations with search', async () => {
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = { fromId: malware.internal_id, search: 'Spear phishing' };
-    const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
+    const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(2);
     const relTargets = await Promise.all(R.map((s) => elLoadById(testContext, ADMIN_USER, s.node.toId), stixRelations.edges));
     for (let index = 0; index < relTargets.length; index += 1) {
@@ -382,22 +382,22 @@ describe('Relations listing', () => {
     // Uses relations first seen
     // 0 = "2020-02-29T23:00:00.000Z" | 1 = "2020-02-29T23:00:00.000Z" | 2 = "2020-02-28T23:00:00.000Z"
     const options = { startTimeStart: '2020-02-29T22:00:00.000Z', stopTimeStop: '2020-02-29T23:30:00.000Z' };
-    const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
+    const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(2);
   });
   it('should list relations stop time', async () => {
     // Uses relations last seen
     // 0 = "2020-02-29T23:00:00.000Z" | 1 = "2020-02-29T23:00:00.000Z" | 2 = "2020-02-29T23:00:00.000Z"
     let options = { startTimeStart: '2020-02-29T23:00:00.000Z', stopTimeStop: '2020-02-29T23:00:00.000Z' };
-    let stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
+    let stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(0);
     options = { startTimeStart: '2020-02-29T22:59:59.000Z', stopTimeStop: '2020-02-29T23:00:01.000Z' };
-    stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
+    stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(1);
   });
   it('should list relations with confidence', async () => {
     const options = { confidences: [20] };
-    const stixRelations = await listRelations(testContext, ADMIN_USER, 'indicates', options);
+    const stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'indicates', options);
     expect(stixRelations.edges.length).toEqual(2);
   });
   it.skip('should list relations with filters', async () => {
@@ -408,7 +408,7 @@ describe('Relations listing', () => {
     };
     const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     let options = { fromId: malware.internal_id, filters };
-    let stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
+    let stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(1);
     const relation = R.head(stixRelations.edges).node;
     const target = await elLoadById(testContext, ADMIN_USER, relation.toId);
@@ -420,11 +420,11 @@ describe('Relations listing', () => {
       filterGroups: [],
     };
     options = { fromId: malware.internal_id, filters };
-    stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', options);
+    stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses', options);
     expect(stixRelations.edges.length).toEqual(0);
   });
   it('should list sightings', async () => {
-    const stixSightings = await listRelations(testContext, ADMIN_USER, 'stix-sighting-relationship');
+    const stixSightings = await pageRelationsConnection(testContext, ADMIN_USER, 'stix-sighting-relationship');
     expect(stixSightings).not.toBeNull();
     expect(stixSightings.edges.length).toEqual(2);
   });
@@ -1129,9 +1129,9 @@ describe('Upsert and merge entities', () => {
     expect(markingIds.includes(mitreMarking)).toBeTruthy();
     expect(loadedThreat.objectLabel.length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
     // expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
-    const froms = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { fromId: loadedThreat.internal_id });
+    const froms = await fullRelationsList(testContext, ADMIN_USER, 'stix-core-relationship', { fromId: loadedThreat.internal_id });
     expect(froms.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
-    const tos = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { toId: loadedThreat.internal_id });
+    const tos = await fullRelationsList(testContext, ADMIN_USER, 'stix-core-relationship', { toId: loadedThreat.internal_id });
     expect(tos.length).toEqual(1); // [MALWARE_TEST_02]
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, organizationThreatTarget.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);

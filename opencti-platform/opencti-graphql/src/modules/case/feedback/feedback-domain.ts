@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { createEntity } from '../../../database/middleware';
 import type { EntityOptions } from '../../../database/middleware-loader';
-import { internalLoadById, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
@@ -21,8 +21,8 @@ export const findById: DomainFindById<BasicStoreEntityFeedback> = (context: Auth
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_FEEDBACK);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFeedback>) => {
-  return listEntitiesPaginated<BasicStoreEntityFeedback>(context, user, [ENTITY_TYPE_CONTAINER_FEEDBACK], opts);
+export const findFeedbackPaginated = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityFeedback>) => {
+  return pageEntitiesConnection<BasicStoreEntityFeedback>(context, user, [ENTITY_TYPE_CONTAINER_FEEDBACK], opts);
 };
 
 export const addFeedback = async (context: AuthContext, user: AuthUser, feedbackAdd: FeedbackAddInput) => {
@@ -47,7 +47,7 @@ export const feedbackContainsStixObjectOrStixRelationship = async (context: Auth
       filterGroups: [],
     },
   };
-  const feedbackFound = await findAll(context, user, args);
+  const feedbackFound = await findFeedbackPaginated(context, user, args);
   return feedbackFound.edges.length > 0;
 };
 

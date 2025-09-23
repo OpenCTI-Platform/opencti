@@ -9,7 +9,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetti
 import { elRawUpdateByQuery } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { DatabaseError } from '../config/errors';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
 
@@ -71,7 +71,7 @@ export const up = async (next) => {
   const context = executionContext('migration');
 
   // region Split cases to 'Feedback' and 'Case-Incident'
-  const cases = await listAllEntities(context, SYSTEM_USER, ['Case']);
+  const cases = await fullEntitiesList(context, SYSTEM_USER, ['Case']);
   logApp.info(`${message} > Migrating cases 0/${cases.length}`);
   let processNumber = 0;
   for (let index = 0; index < cases.length; index += 1) {

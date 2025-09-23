@@ -147,7 +147,7 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
   const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
 
   return (
-    <>
+    <div data-testid="threat-actor-individual-details-page">
       <Grid
         container
         columnSpacing={2}
@@ -241,7 +241,7 @@ const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatAct
           })
         }
       </Grid>
-    </>
+    </div>
   );
 };
 

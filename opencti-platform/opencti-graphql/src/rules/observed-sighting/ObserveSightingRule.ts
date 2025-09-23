@@ -14,7 +14,7 @@ import type { StixObservedData } from '../../types/stix-2-1-sdo';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../../types/store';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { internalLoadById, listAllRelations } from '../../database/middleware-loader';
+import { internalLoadById, fullRelationsList } from '../../database/middleware-loader';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import { ENTITY_TYPE_INDICATOR, type StixIndicator } from '../../modules/indicator/indicator-types';
@@ -49,12 +49,12 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
     const { id: indicatorId } = indicator.extensions[STIX_EXT_OCTI];
     const { object_marking_refs: indicatorMarkings } = indicator;
     const baseOnArgs = { toType: ABSTRACT_STIX_CYBER_OBSERVABLE, fromId: indicatorId };
-    const baseOnRelations = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
+    const baseOnRelations = await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
     for (let index = 0; index < baseOnRelations.length; index += 1) {
       const { internal_id: baseOnId, toId: observableId } = baseOnRelations[index];
       // Get the observed-data
       const objectsArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], toId: observableId };
-      const objectsRelations = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, objectsArgs);
+      const objectsRelations = await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, objectsArgs);
       for (let objectIndex = 0; objectIndex < objectsRelations.length; objectIndex += 1) {
         const { internal_id: objectId, fromId: observedDataId } = objectsRelations[objectIndex];
         const observedData = (await internalLoadById(context, RULE_MANAGER_USER, observedDataId)) as unknown as BasicStoreEntity;
@@ -96,12 +96,12 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
       const { [RELATION_OBJECT_MARKING]: organizationMarkings } = organization;
       // Get all observable of this observed-data
       const listFromArgs = { fromTypes: [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], fromId: observedDataId };
-      const objectsRelations = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, listFromArgs);
+      const objectsRelations = await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_OBJECT, listFromArgs);
       for (let objectIndex = 0; objectIndex < objectsRelations.length; objectIndex += 1) {
         const { internal_id: objectId, toId: observableId } = objectsRelations[objectIndex];
         // Get all base-on indicators of this observable
         const baseOnArgs = { fromTypes: [ENTITY_TYPE_INDICATOR], toId: observableId };
-        const baseOnRelations = await listAllRelations<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
+        const baseOnRelations = await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, RELATION_BASED_ON, baseOnArgs);
         for (let index = 0; index < baseOnRelations.length; index += 1) {
           const { internal_id: baseOnId, fromId: indicatorId } = baseOnRelations[index];
           const indicator = (await internalLoadById(context, RULE_MANAGER_USER, indicatorId)) as unknown as BasicStoreEntity;
@@ -133,7 +133,9 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const handleObservableRelationUpsert = async (context: AuthContext, baseOnRelation: StixRelation) => {
     const { source_ref: indicatorId } = baseOnRelation.extensions[STIX_EXT_OCTI];
     const baseOnIndicator = (await stixLoadById(context, RULE_MANAGER_USER, indicatorId)) as unknown as StixIndicator;
-    return handleIndicatorUpsert(context, baseOnIndicator);
+    if (baseOnIndicator) {
+      await handleIndicatorUpsert(context, baseOnIndicator);
+    }
   };
   const applyUpsert = async (data: StixObject): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);

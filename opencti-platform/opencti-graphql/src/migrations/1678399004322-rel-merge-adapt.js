@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { READ_INDEX_HISTORY } from '../database/utils';
@@ -10,7 +10,7 @@ import { logApp } from '../config/conf';
 export const up = async (next) => {
   const context = executionContext('migration');
   logApp.info('[OPENCTI] Migration denormalized cleanup started');
-  const mergedEvents = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
+  const mergedEvents = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
     indices: [READ_INDEX_HISTORY],
     filters: {
       mode: 'and',

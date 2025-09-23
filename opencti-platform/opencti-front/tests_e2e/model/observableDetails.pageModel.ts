@@ -16,4 +16,8 @@ export default class ObservableDetailsPage {
   getEnrichButton() {
     return this.page.getByLabel('Enrichment');
   }
+
+  closeEnrichment() {
+    return this.page.getByRole('button', { name: 'Close' }).click();
+  }
 }

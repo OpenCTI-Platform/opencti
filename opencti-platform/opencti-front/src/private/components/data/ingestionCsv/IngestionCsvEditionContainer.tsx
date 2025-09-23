@@ -4,7 +4,6 @@ import Drawer, { DrawerVariant } from '@components/common/drawer/Drawer';
 import IngestionCsvEdition from '@components/data/ingestionCsv/IngestionCsvEdition';
 import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv/__generated__/IngestionCsvEditionContainerQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 export const ingestionCsvEditionContainerQuery = graphql`
@@ -31,7 +30,7 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
   const { ingestionCsv } = usePreloadedQuery(ingestionCsvEditionContainerQuery, queryRef);
 
   if (!ingestionCsv) {
-    return <Loader variant={LoaderVariant.inline} />;
+    return <div/>;
   }
   return (
     <Drawer

@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type EntityOptions, listAllEntities, listEntitiesPaginated, listRelationsPaginated, storeLoadById } from '../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
 import {
   type DraftWorkspaceAddInput,
   FilterMode,
@@ -20,7 +20,7 @@ import { isStixCoreObject } from '../../schema/stixCoreObject';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
-import { elAggregationCount, elCount, elList } from '../../database/engine';
+import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { SYSTEM_USER } from '../../utils/access';
@@ -45,8 +45,8 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
+export const findDraftWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
 };
 
 export const getObjectsCount = async (context: AuthContext, user: AuthUser, draft: BasicStoreEntityDraftWorkspace) => {
@@ -147,7 +147,7 @@ export const listDraftObjects = (context: AuthContext, user: AuthUser, args: Que
   }
   const newArgs: EntityOptions<BasicStoreEntity> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };
   const draftContext = { ...context, draft_context: draftId };
-  return listEntitiesPaginated<BasicStoreEntity>(draftContext, user, types, newArgs);
+  return pageEntitiesConnection<BasicStoreEntity>(draftContext, user, types, newArgs);
 };
 
 export const listDraftRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceRelationshipsArgs) => {
@@ -161,7 +161,7 @@ export const listDraftRelations = (context: AuthContext, user: AuthUser, args: Q
   }
   const newArgs: EntityOptions<BasicStoreRelation> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };
   const draftContext = { ...context, draft_context: draftId };
-  return listRelationsPaginated<BasicStoreRelation>(draftContext, user, types, newArgs);
+  return pageRelationsConnection<BasicStoreRelation>(draftContext, user, types, newArgs);
 };
 
 export const listDraftSightingRelations = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspaceSightingRelationshipsArgs) => {
@@ -175,7 +175,7 @@ export const listDraftSightingRelations = (context: AuthContext, user: AuthUser,
   }
   const newArgs: EntityOptions<BasicStoreRelation> = { ...listArgs, types, indices: [READ_INDEX_DRAFT_OBJECTS], includeDeletedInDraft: true };
   const draftContext = { ...context, draft_context: draftId };
-  return listRelationsPaginated<BasicStoreRelation>(draftContext, user, types, newArgs);
+  return pageRelationsConnection<BasicStoreRelation>(draftContext, user, types, newArgs);
 };
 
 export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, input: DraftWorkspaceAddInput) => {
@@ -185,6 +185,13 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
   };
   const draftWorkspaceInput = { ...input, ...defaultOps };
   const createdDraftWorkspace = await createEntity(context, user, draftWorkspaceInput, ENTITY_TYPE_DRAFT_WORKSPACE);
+  if (createdDraftWorkspace && input.entity_id) {
+    const contextInDraft = { ...context, draft_context: createdDraftWorkspace.id };
+    const draftInEntity = await elLoadById(contextInDraft, user, input.entity_id);
+    if (draftInEntity) {
+      await loadDraftElement(contextInDraft, user, draftInEntity);
+    }
+  }
   await addDraftCreationCount();
   await publishUserAction({
     user,
@@ -204,11 +211,10 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
 
 const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const listArgs = {
-    connectionFormat: false,
     indices: [READ_INDEX_INTERNAL_OBJECTS],
     filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] }
   };
-  return listAllEntities(context, user, [ENTITY_TYPE_USER], listArgs);
+  return fullEntitiesList(context, user, [ENTITY_TYPE_USER], listArgs);
 };
 
 // When deleting a draft, we need to move all users that are still in the draft context back to the live context
@@ -222,11 +228,10 @@ const deleteDraftContextFromUsers = async (context: AuthContext, user: AuthUser,
 
 const findAllWorksWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const listArgs = {
-    connectionFormat: false,
     indices: [READ_INDEX_HISTORY],
     filters: { mode: FilterMode.And, filters: [{ key: ['draft_context'], values: [draftId] }], filterGroups: [] }
   };
-  return listAllEntities(context, user, [ENTITY_TYPE_WORK], listArgs);
+  return fullEntitiesList(context, user, [ENTITY_TYPE_WORK], listArgs);
 };
 
 // When deleting a draft, we need to remove all draft_ids from works currently linked to this draft

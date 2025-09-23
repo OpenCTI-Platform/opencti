@@ -1,7 +1,7 @@
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixSightingRelationship,
-  findAll,
+  findStixSightingsPaginated,
   findById,
   stixSightingRelationshipAddRelation,
   stixSightingRelationshipAddRelations,
@@ -28,7 +28,7 @@ import { filterMembersWithUsersOrgs } from '../utils/access';
 const stixSightingRelationshipResolvers = {
   Query: {
     stixSightingRelationship: (_, { id }, context) => findById(context, context.user, id),
-    stixSightingRelationships: (_, args, context) => findAll(context, context.user, args),
+    stixSightingRelationships: (_, args, context) => findStixSightingsPaginated(context, context.user, args),
     stixSightingRelationshipsTimeSeries: (_, args, context) => timeSeriesRelations(
       context,
       context.user,

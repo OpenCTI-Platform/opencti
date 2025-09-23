@@ -1,9 +1,7 @@
 import * as R from 'ramda';
 import {
   buildPagination,
-  emptyPaginationResult,
   isEmptyField,
-  isInferredIndex,
   isNotEmptyField,
   READ_DATA_INDICES,
   READ_DATA_INDICES_WITHOUT_INFERRED,
@@ -17,9 +15,10 @@ import {
   elCount,
   elFindByIds,
   elList,
+  elConnection,
   elLoadById,
   elPaginate,
-  ES_MINIMUM_FIXED_PAGINATION,
+  ES_DEFAULT_PAGINATION,
   UNIMPACTED_ENTITIES_ROLE
 } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
@@ -27,7 +26,6 @@ import type { AuthContext, AuthUser } from '../types/user';
 import type {
   BasicStoreBase,
   BasicStoreCommon,
-  BasicStoreCommonEdge,
   BasicStoreEntity,
   BasicStoreObject,
   BasicStoreRelation,
@@ -38,10 +36,21 @@ import type {
 } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMaybe, OrderingMode } from '../generated/graphql';
-import { ASSIGNEE_FILTER, CREATOR_FILTER, INSTANCE_REGARDING_OF, PARTICIPANT_FILTER } from '../utils/filtering/filtering-constants';
+import {
+  ASSIGNEE_FILTER,
+  CREATOR_FILTER,
+  ID_FILTER,
+  INSTANCE_REGARDING_OF,
+  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
+  PARTICIPANT_FILTER,
+  RELATION_TYPE_FILTER
+} from '../utils/filtering/filtering-constants';
 import type { UserReadActionContextData } from '../listener/UserActionListener';
 import { completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName } from './entity-representative';
+import { asyncMap } from '../utils/data-processing';
+import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 export interface FiltersWithNested extends Filter {
   nested?: Array<{
@@ -71,12 +80,8 @@ export interface ListFilter<T extends BasicStoreCommon> {
   callback?: (result: Array<T>) => Promise<boolean | void>
 }
 
-type InternalListEntities = <T extends BasicStoreCommon>
-(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>) => Promise<Array<T>>;
-
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
-  connectionFormat?: boolean;
   fromOrToId?: string | Array<string>;
   fromId?: string | Array<string>;
   fromRole?: string;
@@ -100,7 +105,6 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
 
 // relations
 interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
-  connectionFormat?: boolean;
   relationFilter?: {
     relation: string;
     id: string;
@@ -282,7 +286,7 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: 
     computedFilters = {
       mode: FilterMode.And,
       filters: filtersFromOptionsContent,
-      filterGroups: filters && isNotEmptyField(filters) ? [filters] : [],
+      filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
     };
   }
   return {
@@ -292,26 +296,23 @@ export const buildRelationsFilter = <T extends BasicStoreCommon>(relationTypes: 
   };
 };
 
-export const listRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
+export const topRelationsList = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, type);
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(context, user, computedIndices, paginateArgs);
+  return elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: false });
 };
 
-export const listRelationsPaginated = async <T extends BasicStoreRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
+export const pageRelationsConnection = async <T extends BasicStoreRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<StoreRelationConnection<T>> => {
-  const { indices, connectionFormat } = args;
+  const { indices } = args;
   const computedIndices = computeQueryIndices(indices, type);
-  if (connectionFormat === false) {
-    throw UnsupportedError('List connection require connectionFormat option to true');
-  }
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(context, user, computedIndices, paginateArgs);
+  return elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: true });
 };
 
-export const listAllRelations = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
+export const fullRelationsList = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
   args: RelationOptions<T> = {}): Promise<Array<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, type, args.withInferences);
@@ -341,7 +342,7 @@ const entitiesAggregations = [
   { name: ASSIGNEE_FILTER, field: 'rel_object-assignee.internal_id.keyword' },
   { name: PARTICIPANT_FILTER, field: 'rel_object-participant.internal_id.keyword' }
 ];
-export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthUser, filter: string, type: string, args = {}) => {
+export const fullEntitiesThoughAggregationConnection = async (context: AuthContext, user: AuthUser, filter: string, type: string, args = {}) => {
   const aggregation = entitiesAggregations.find((agg) => agg.name === filter);
   if (!aggregation) {
     throw FunctionalError('Filter is not supported as an aggregation', { filter });
@@ -354,13 +355,7 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 
-export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}) => {
-  const { indices } = args;
-  const computedIndices = computeQueryIndices(indices, entityTypes);
-  const paginateArgs = buildEntityFilters(entityTypes, args);
-  return elPaginate(context, user, computedIndices, paginateArgs);
-};
-export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+export const fullEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<Array<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
@@ -368,7 +363,7 @@ export const listAllEntities = async <T extends BasicStoreEntity>(context: AuthC
   return elList(context, user, computedIndices, paginateArgs);
 };
 
-export interface ListAllEntitiesThroughRelation {
+export interface FullEntitiesThroughRelation {
   type: string | string[]
   fromOrToId: string | string[]
   fromOrToType: string | string[]
@@ -378,9 +373,9 @@ export interface ListAllEntitiesThroughRelation {
 }
 
 // This method is designed to fetch all entities
-// If you need to paginate, order and sort, use listEntitiesThroughRelationsPaginated
-export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
-  relation: ListAllEntitiesThroughRelation): Promise<Array<T>> => {
+// If you need to paginate, order and sort, use pageEntitiesConnection
+export const fullEntitiesListThroughRelations = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
+  relation: FullEntitiesThroughRelation): Promise<Array<T>> => {
   const { type, sourceSide, fromOrToId, fromOrToType, withInferences = false, filters: argsFilters } = relation;
   if (isEmptyField(fromOrToId) || isEmptyField(fromOrToType)) {
     return [];
@@ -412,10 +407,9 @@ export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon
   };
   // region Resolve all relations (can be inferred or not)
   const indices = withInferences ? READ_RELATIONSHIPS_INDICES : READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED;
-  const relations = await listAllRelations<BasicStoreRelation>(context, user, type, {
+  const relations = await fullRelationsList<BasicStoreRelation>(context, user, type, {
     filters,
     indices,
-    connectionFormat: false,
     noFiltersChecking: true,
   });
   // region Resolved all targets for all relations
@@ -424,14 +418,14 @@ export const listAllEntitiesThroughRelations = async <T extends BasicStoreCommon
   return await elFindByIds(context, user, targetIds, { type: targetTypes }) as unknown as Array<T>;
 };
 
-interface ListAllOpts {
+interface fullOptsList {
   withInferences?: boolean,
   filters?: FilterGroupWithNested | null
 }
 
-export const listAllToEntitiesThroughRelations = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
-  fromId: string | string[], relationship_type: string, toType: string | string[], opts: ListAllOpts = {}): Promise<Array<T>> => {
-  const rel: ListAllEntitiesThroughRelation = {
+export const fullEntitiesThroughRelationsToList = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser,
+  fromId: string | string[], relationship_type: string, toType: string | string[], opts: fullOptsList = {}): Promise<Array<T>> => {
+  const rel: FullEntitiesThroughRelation = {
     type: relationship_type,
     fromOrToId: fromId,
     fromOrToType: toType,
@@ -439,11 +433,11 @@ export const listAllToEntitiesThroughRelations = async <T extends BasicStoreComm
     withInferences: opts.withInferences ?? false,
     filters: opts.filters
   };
-  return listAllEntitiesThroughRelations(context, user, rel);
+  return fullEntitiesListThroughRelations(context, user, rel);
 };
-export const listAllFromEntitiesThroughRelations = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser,
-  toId: string | string[], relationship_type: string, fromType: string | string[], opts: ListAllOpts = {}): Promise<Array<T>> => {
-  const rel: ListAllEntitiesThroughRelation = {
+export const fullEntitiesThroughRelationsFromList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser,
+  toId: string | string[], relationship_type: string, fromType: string | string[], opts: fullOptsList = {}): Promise<Array<T>> => {
+  const rel: FullEntitiesThroughRelation = {
     type: relationship_type,
     fromOrToId: toId,
     fromOrToType: fromType,
@@ -451,28 +445,28 @@ export const listAllFromEntitiesThroughRelations = async <T extends BasicStoreEn
     withInferences: opts.withInferences ?? false,
     filters: opts.filters
   };
-  return listAllEntitiesThroughRelations(context, user, rel);
+  return fullEntitiesListThroughRelations(context, user, rel);
 };
 
-export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+export const pageEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
   args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
-  const { indices, connectionFormat } = args;
-  if (connectionFormat === false) {
-    throw UnsupportedError('List connection require connectionFormat option to true');
-  }
+  const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
-  const paginateArgs = buildEntityFilters(entityTypes, args);
-  return elPaginate(context, user, computedIndices, paginateArgs);
+  const first = args.first ?? ES_DEFAULT_PAGINATION;
+  // maxSize MUST be aligned with first in this method.
+  // As using elConnection is repaginate, removing maxSize will lead to major api breaking
+  const paginateArgs = { ...buildEntityFilters(entityTypes, args), first, maxSize: first };
+  return elConnection(context, user, computedIndices, paginateArgs);
 };
 
-export const listEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
+export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: string[], args: EntityOptions<T> = {}) => {
+  const data = await pageEntitiesConnection(context, user, entityTypes, args);
+  return asyncMap(data.edges, (edge) => edge.node);
+};
+
+export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, connectedEntityId: string,
   relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-  const { indices, connectionFormat } = args;
-  const computedIndices = computeQueryIndices(indices, entityTypes);
-  if (connectionFormat === false) {
-    throw UnsupportedError('List connected entities paginated require connectionFormat option to true');
-  }
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
     throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
   }
@@ -482,83 +476,16 @@ export const listEntitiesThroughRelationsPaginated = async <T extends BasicStore
       {
         key: [INSTANCE_REGARDING_OF],
         values: [
-          { key: 'id', values: [connectedEntityId] },
-          { key: 'relationship_type', values: [relationType] }
+          { key: ID_FILTER, values: [connectedEntityId] },
+          { key: RELATION_TYPE_FILTER, values: [relationType] },
+          { key: INSTANCE_REGARDING_OF_DIRECTION_FORCED, values: [true] },
+          { key: INSTANCE_REGARDING_OF_DIRECTION_REVERSE, values: [reverse_relation] },
         ]
       }
     ],
-    filterGroups: args.filters && isNotEmptyField(args.filters) ? [args.filters] : [],
+    filterGroups: args.filters && isFilterGroupNotEmpty(args.filters) ? [args.filters] : [],
   };
-  const paginateArgs = buildEntityFilters(entityType, {
-    ...args,
-    first: args.first ?? ES_MINIMUM_FIXED_PAGINATION,
-    orderBy: args.orderBy ?? 'created_at',
-    orderMode: args.orderMode ?? OrderingMode.Desc,
-    filters: connectedFilters
-  });
-  const entityPagination = await elPaginate(context, user, computedIndices, { ...paginateArgs }) as StoreCommonConnection<T>;
-  if (entityPagination.edges.length === 0) {
-    // no result, just return entityPagination, there is no relationships to find
-    return entityPagination;
-  }
-  // As rel de-normalization are currently not directional, we need to post filters the result
-  // Some entities could be found because of the none-directionality.
-  const entityIds = entityPagination.edges.map((e) => e.node.internal_id);
-  const filters: FilterGroupWithNested = {
-    mode: FilterMode.And,
-    filters: [
-      {
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: reverse_relation ? entityIds : [connectedEntityId] },
-          ...(reverse_relation ? [{ key: 'types', values: entityTypes }] : []),
-          { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard },
-        ]
-      }, {
-        key: ['connections'],
-        values: [],
-        nested: [
-          { key: 'internal_id', values: reverse_relation ? [connectedEntityId] : entityIds },
-          ...(reverse_relation ? [] : [{ key: 'types', values: entityTypes }]),
-          { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard },
-        ],
-      }],
-    filterGroups: [],
-  };
-  const connectedRelations = await listAllRelations<BasicStoreRelation>(context, user, relationType, { withInferences: args.withInferences, filters, connectionFormat: false });
-  if (connectedRelations.length === 0) {
-    // no connection found (because of relation direction), just return an empty result
-    return emptyPaginationResult();
-  }
-  const relationsEntityMap = new Map();
-  connectedRelations.forEach((relation) => {
-    const id = reverse_relation ? relation.fromId : relation.toId;
-    if (relationsEntityMap.has(id)) {
-      relationsEntityMap.set(id, [...relationsEntityMap.get(id), relation]);
-    } else {
-      relationsEntityMap.set(id, [relation]);
-    }
-  });
-  const rebuildEdges: BasicStoreCommonEdge<T>[] = [];
-  entityPagination.edges.forEach((edge) => {
-    const relatedRelations = relationsEntityMap.get(edge.node.id);
-    if (relatedRelations) {
-      const types = relatedRelations.map((relation: BasicStoreRelation) => (isInferredIndex(relation._index) ? 'inferred' : 'manual'));
-      const newEdge: BasicStoreCommonEdge<T> = { types, node: edge.node, cursor: edge.cursor };
-      rebuildEdges.push(newEdge);
-    }
-  });
-  return {
-    edges: rebuildEdges,
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    baseCount: entityPagination.edges.length, // Keep the base count to enforce pagination
-    pageInfo: {
-      ...entityPagination.pageInfo,
-      globalCount: entityPagination.pageInfo.globalCount - (entityPagination.edges.length - rebuildEdges.length)
-    },
-  };
+  return pageEntitiesConnection(context, user, entityTypes, { ...args, filters: connectedFilters });
 };
 
 export const findEntitiesIdsWithRelations = async (
@@ -597,23 +524,11 @@ export const findEntitiesIdsWithRelations = async (
     .filter((id: string) => connectedEntitiesIds.includes(id)); // keep only ids we were looking for
   return resultEntityIds;
 };
-export const batchListEntitiesThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntitiesIds: string[],
-  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}) => {
-  const resultMap = new Map();
-  for (let i = 0; i < connectedEntitiesIds.length; i += 1) {
-    const entityId = connectedEntitiesIds[i];
-    const result = await listEntitiesThroughRelationsPaginated(context, user, entityId, relationType, entityType, reverse_relation, args);
-    resultMap.set(entityId, result);
-  }
-  return connectedEntitiesIds.map((entityId) => {
-    return resultMap.get(entityId);
-  });
-};
 
-export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, connectedEntityId: string,
+export const loadEntityThroughRelationsPaginated = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, connectedEntityId: string,
   relationType: string, entityType: string | string[], reverse_relation: boolean): Promise<T> => {
   const args = { first: 1 };
-  const pagination = await listEntitiesThroughRelationsPaginated<T>(context, user, connectedEntityId, relationType, entityType, reverse_relation, args);
+  const pagination = await pageRegardingEntitiesConnection<T>(context, user, connectedEntityId, relationType, entityType, reverse_relation, args);
   return pagination.edges[0]?.node;
 };
 

@@ -16,12 +16,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { type EditInput, FilterMode, type JsonMapperAddInput, type QueryJsonMappersArgs } from '../../../generated/graphql';
-import { listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import { type BasicStoreEntityJsonMapper, ENTITY_TYPE_JSON_MAPPER, type JsonMapperRepresentation, type StoreEntityJsonMapper } from './jsonMapper-types';
 import { extractContentFrom } from '../../../utils/fileToContent';
 import { createEntity } from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
-import { checkConfigurationImport } from '../../workspace/workspace-domain';
 import pjson from '../../../../package.json';
 import { type BasicStoreEntityIngestionJson, ENTITY_TYPE_INGESTION_JSON } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
@@ -31,13 +30,16 @@ import type { FileUploadData } from '../../../database/file-storage-helper';
 import { streamConverter } from '../../../database/file-storage';
 import jsonMappingExecution from '../../../parser/json-mapper';
 import { convertRepresentationsIds } from '../mapper-utils';
+import { isCompatibleVersionWithMinimal } from '../../../utils/version';
+
+const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
 export const findById = async (context: AuthContext, user: AuthUser, jsonMapperId: string) => {
   return storeLoadById<BasicStoreEntityJsonMapper>(context, user, jsonMapperId, ENTITY_TYPE_JSON_MAPPER);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryJsonMappersArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityJsonMapper>(context, user, [ENTITY_TYPE_JSON_MAPPER], opts);
+export const findJsonMapperPaginated = (context: AuthContext, user: AuthUser, opts: QueryJsonMappersArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityJsonMapper>(context, user, [ENTITY_TYPE_JSON_MAPPER], opts);
 };
 
 export const jsonMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, fileUpload: Promise<FileUploadData>) => {
@@ -67,7 +69,13 @@ export const getParsedRepresentations = async (context: AuthContext, user: AuthU
 
 export const jsonMapperImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
-  checkConfigurationImport('jsonMapper', parsedData);
+  // check platform version compatibility
+  if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
+  }
   const config = parsedData.configuration;
   const importData = {
     name: config.name,
@@ -114,7 +122,7 @@ export const deleteJsonMapper = async (context: AuthContext, user: AuthUser, jso
       filters: [{ key: ['json_mapper_id'], values: [jsonMapperId] }]
     }
   };
-  const ingesters = await listAllEntities<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
+  const ingesters = await fullEntitiesList<BasicStoreEntityIngestionJson>(context, user, [ENTITY_TYPE_INGESTION_JSON], opts);
   // prevent deletion if an ingester uses the mapper
   if (ingesters.length > 0) {
     throw FunctionalError('Cannot delete this JSON Mapper: it is used by one or more IngestionJson ingester(s)', { id: jsonMapperId });

@@ -1,14 +1,15 @@
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { distributionEntities, listAllThings, timeSeriesEntities } from '../database/middleware';
+import { distributionEntities, fullEntitiesOrRelationsList, timeSeriesEntities } from '../database/middleware';
 import {
   internalFindByIds,
   internalLoadById,
-  listAllEntities,
-  listAllToEntitiesThroughRelations,
-  listEntities,
-  listEntitiesThroughRelationsPaginated,
+  fullEntitiesList,
+  fullEntitiesThroughRelationsToList,
+  topEntitiesList,
+  pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
   storeLoadById
 } from '../database/middleware-loader';
 import {
@@ -47,10 +48,10 @@ export const findById = async (context, user, containerId) => {
   return storeLoadById(context, user, containerId, ENTITY_TYPE_CONTAINER);
 };
 
-export const findAll = async (context, user, args) => {
+export const findContainerPaginated = async (context, user, args) => {
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
-  return listEntities(context, user, types, args);
+  return pageEntitiesConnection(context, user, types, args);
 };
 
 export const numberOfContainersForObject = (context, user, args) => {
@@ -91,8 +92,8 @@ export const objects = async (context, user, containerId, args) => {
     while (hasNextPage) {
       // Force options to prevent connection format and manage search after
       const paginateOpts = { ...baseOpts, first: args.first ?? ES_DEFAULT_PAGINATION, after: searchAfter };
-      const currentPagination = await listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, paginateOpts);
-      const noMoreElements = (currentPagination.baseCount ?? 0) === 0 || currentPagination.baseCount < paginateOpts.first;
+      const currentPagination = await pageRegardingEntitiesConnection(context, user, containerId, RELATION_OBJECT, types, false, paginateOpts);
+      const noMoreElements = currentPagination.edges.length < paginateOpts.first;
       if (noMoreElements) {
         hasNextPage = false;
         paginatedElements.pageInfo = currentPagination.pageInfo;
@@ -106,7 +107,7 @@ export const objects = async (context, user, containerId, args) => {
     }
     return paginatedElements;
   }
-  return listEntitiesThroughRelationsPaginated(context, user, containerId, RELATION_OBJECT, types, false, baseOpts);
+  return pageRegardingEntitiesConnection(context, user, containerId, RELATION_OBJECT, types, false, baseOpts);
 };
 
 export const containersNumber = (context, user, args) => {
@@ -181,14 +182,14 @@ export const relatedContainers = async (context, user, containerId, args) => {
     filters: [{ key, values: [containerId] }],
     filterGroups: [],
   };
-  const elements = await listAllThings(context, user, types, { filters, maxSize: MAX_RELATED_CONTAINER_RESOLUTION, baseData: true });
+  const elements = await fullEntitiesOrRelationsList(context, user, types, { filters, maxSize: MAX_RELATED_CONTAINER_RESOLUTION, baseData: true });
   if (elements.length === 0) {
     return buildPagination(0, null, [], 0);
   }
   const elementsIds = elements.map((element) => element.id);
   const queryFilters = addFilter(args.filters, buildRefRelationKey(RELATION_OBJECT), elementsIds);
   const queryArgs = { ...args, filters: queryFilters };
-  return findAll(context, user, queryArgs);
+  return findContainerPaginated(context, user, queryArgs);
 };
 
 // Starting an object, get 1000 containers that have this object
@@ -197,7 +198,7 @@ export const containersObjectsOfObject = async (context, user, { id, types, filt
   const element = await internalLoadById(context, user, id);
   const queryFilters = addFilter(filters, buildRefRelationKey(RELATION_OBJECT), element.internal_id);
   const args = { filters: queryFilters, maxSize: MAX_RELATED_CONTAINER_RESOLUTION, search, withoutRels: false };
-  const containers = await listAllThings(context, user, [ENTITY_TYPE_CONTAINER], args);
+  const containers = await fullEntitiesOrRelationsList(context, user, [ENTITY_TYPE_CONTAINER], args);
   let objectIds = [];
   let hasMoreThanMaxObject = false;
   let loadedReportsCount = 0;
@@ -313,7 +314,7 @@ export const getFintelTemplates = async (context, user, container) => {
     ],
     filterGroups: [],
   };
-  return listAllEntities(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
+  return fullEntitiesList(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { filters });
 };
 
 export const aiSummary = async (context, user, args) => {
@@ -322,7 +323,7 @@ export const aiSummary = async (context, user, args) => {
   const { busId = null, language = 'English', forceRefresh = false } = args;
   const hasTypesArgs = args.types && args.types.length > 0;
   const types = hasTypesArgs ? args.types.filter((type) => isStixDomainObjectContainer(type)) : [ENTITY_TYPE_CONTAINER];
-  const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10, connectionFormat: false };
+  const finalArgs = { ...args, first: args.first && args.first <= 10 ? args.first : 10 };
   const identifier = toB64(R.dissoc('busId', finalArgs));
   if (!forceRefresh && aiResponseCache[identifier] && utcDate(aiResponseCache[identifier].updatedAt).isAfter(minutesAgo(AI_INSIGHTS_REFRESH_TIMEOUT))) {
     logApp.info('Response found in cache', { busId });
@@ -331,13 +332,13 @@ export const aiSummary = async (context, user, args) => {
   }
   logApp.info('Response not found in cache, querying LLM', { busId });
   const content = [];
-  const containers = await listEntities(context, user, types, finalArgs);
+  const containers = await topEntitiesList(context, user, types, finalArgs);
   if (!containers.length) {
     throw FunctionalError('Not enough data to summarize the containers attached to the entity.');
   }
   // eslint-disable-next-line no-restricted-syntax
   for (const container of containers) {
-    const author = await listAllToEntitiesThroughRelations(context, user, container.id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
+    const author = await fullEntitiesThroughRelationsToList(context, user, container.id, RELATION_CREATED_BY, [ENTITY_TYPE_IDENTITY]);
     const files = await resolveFiles(context, user, container);
     const { relationshipsSentences, entitiesInvolved } = await getContainerKnowledge(context, user, container.id);
     content.push({

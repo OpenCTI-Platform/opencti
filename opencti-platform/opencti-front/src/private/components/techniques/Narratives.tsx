@@ -212,9 +212,11 @@ const Narratives: FunctionComponent = () => {
   };
   return (
     <ExportContextProvider>
-      <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
-      {view === 'lines' ? renderLines() : ''}
-      {view === 'subEntityLines' ? renderSubEntityLines() : ''}
+      <div data-testid="narrative-page">
+        <Breadcrumbs elements={[{ label: t_i18n('Techniques') }, { label: t_i18n('Narratives'), current: true }]} />
+        {view === 'lines' ? renderLines() : ''}
+        {view === 'subEntityLines' ? renderSubEntityLines() : ''}
+      </div>
     </ExportContextProvider>
   );
 };

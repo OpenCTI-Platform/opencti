@@ -53,6 +53,7 @@ interface AuthorizedMembersFieldProps
   adminDefault?: boolean;
   dynamicKeysForPlaybooks?: boolean;
   isCanUseEnable?: boolean;
+  customInfoMessage?: string;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -91,6 +92,7 @@ const AuthorizedMembersField = ({
   adminDefault = false,
   dynamicKeysForPlaybooks = false,
   isCanUseEnable = false,
+  customInfoMessage,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
@@ -277,7 +279,7 @@ const AuthorizedMembersField = ({
     changeMemberAccess(CREATOR_AUTHORIZED_CONFIG.id, accessRight);
   };
 
-  let accessInfoMessage = t_i18n('info_authorizedmembers_workspace');
+  let accessInfoMessage = customInfoMessage;
   if (canDeactivate) {
     accessInfoMessage = applyAccesses
       ? t_i18n('info_authorizedmembers_knowledge_off')
@@ -323,9 +325,13 @@ const AuthorizedMembersField = ({
           setFieldValue: setField,
         }) => (
           <>
-            {!hideInfo && <Alert severity="info">{accessInfoMessage}</Alert>}
+            {(!hideInfo && !!accessInfoMessage) && (
+              <Alert severity="info">{accessInfoMessage}</Alert>
+            )}
             {!!draftContext && (
-            <Alert style={{ marginTop: 15 }} severity="warning">{t_i18n('Not available in draft')}</Alert>
+              <Alert style={{ marginTop: 15 }} severity="warning">
+                {t_i18n('Not available in draft')}
+              </Alert>
             )}
             {canDeactivate && (
               <Field

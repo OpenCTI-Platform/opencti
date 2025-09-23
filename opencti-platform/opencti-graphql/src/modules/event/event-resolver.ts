@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addEvent, findAll, findById } from './event-domain';
+import { addEvent, findEventPaginated, findById } from './event-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -12,7 +12,7 @@ import {
 const eventResolvers: Resolvers = {
   Query: {
     event: (_, { id }, context) => findById(context, context.user, id),
-    events: (_, args, context) => findAll(context, context.user, args),
+    events: (_, args, context) => findEventPaginated(context, context.user, args),
   },
   Mutation: {
     eventAdd: (_, { input }, context) => {

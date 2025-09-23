@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { dataComponentsPaginated, dataSourceAdd, dataSourceDataComponentAdd, dataSourceDataComponentDelete, findAll, findById } from './dataSource-domain';
+import { dataComponentsPaginated, dataSourceAdd, dataSourceDataComponentAdd, dataSourceDataComponentDelete, findDatasourcePaginated, findById } from './dataSource-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -13,7 +13,7 @@ import type { BasicStoreEntityDataComponent } from '../dataComponent/dataCompone
 const dataSourceResolvers: Resolvers = {
   Query: {
     dataSource: (_, { id }, context) => findById(context, context.user, id),
-    dataSources: (_, args, context) => findAll(context, context.user, args),
+    dataSources: (_, args, context) => findDatasourcePaginated(context, context.user, args),
   },
   DataSource: {
     dataComponents: (dataSource, args, context) => dataComponentsPaginated<BasicStoreEntityDataComponent>(context, context.user, dataSource.id, args),

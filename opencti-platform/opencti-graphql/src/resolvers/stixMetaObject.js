@@ -1,9 +1,9 @@
-import { findAll, findById } from '../domain/stixMetaObject';
+import { findStixMetaObjectPaginated, findById } from '../domain/stixMetaObject';
 
 const stixMetaObjectResolvers = {
   Query: {
     stixMetaObject: (_, { id }, context) => findById(context, context.user, id),
-    stixMetaObjects: (_, args, context) => findAll(context, context.user, args),
+    stixMetaObjects: (_, args, context) => findStixMetaObjectPaginated(context, context.user, args),
   },
   StixMetaObject: {
     // eslint-disable-next-line

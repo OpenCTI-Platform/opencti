@@ -1,9 +1,9 @@
-import { checkRetentionRule, createRetentionRule, deleteRetentionRule, findAll, findById, retentionRuleEditField } from '../domain/retentionRule';
+import { checkRetentionRule, createRetentionRule, deleteRetentionRule, findRetentionRulePaginated, findById, retentionRuleEditField } from '../domain/retentionRule';
 
 const retentionResolvers = {
   Query: {
     retentionRule: (_, { id }, context) => findById(context, context.user, id),
-    retentionRules: (_, args, context) => findAll(context, context.user, args),
+    retentionRules: (_, args, context) => findRetentionRulePaginated(context, context.user, args),
   },
   Mutation: {
     retentionRuleAdd: (_, { input }, context) => createRetentionRule(context, context.user, input),

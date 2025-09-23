@@ -238,7 +238,7 @@ export const translateDateInterval = (filterValues, t_i18n) => {
 /**
  * Convert an entity type value in a translatable string
  *
- * @param {string}
+ * @param {string|undefined} value The entity type to translate
  * @returns {string} Translation in a translatable string
  */
 export const displayEntityTypeForTranslation = (value) => {
@@ -246,4 +246,38 @@ export const displayEntityTypeForTranslation = (value) => {
   return value.toString()[0] === value.toString()[0].toUpperCase()
     ? `entity_${value.toString()}`
     : `relationship_${value.toString()}`;
+};
+
+/**
+ * Extract urls from a string
+ *
+ * @returns {*[]}
+ * @param text
+ */
+export const extractUrlsFromText = (text) => {
+  const extractUrlsregex = /\b(?:https?:\/\/|www\.)\S+\b/gm;
+  const matches = [...text.matchAll(extractUrlsregex)];
+  const parts = [];
+  let lastIndex = 0;
+
+  matches.forEach((match) => {
+    if (match.index > lastIndex) {
+      parts.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex, match.index)}</span>);
+    }
+    const url = match[0];
+    const href = url.startsWith('www.') ? `http://${url}` : url;
+
+    parts.push(
+      <a key={`url-${match.index}`} href={href} target="_blank" rel="noopener noreferrer">
+        {url}
+      </a>,
+    );
+    lastIndex = match.index + url.length;
+  });
+
+  if (lastIndex < text.length) {
+    parts.push(<span key={`text-${lastIndex}`}>{text.substring(lastIndex)}</span>);
+  }
+
+  return parts;
 };

@@ -121,7 +121,7 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
     },
   ];
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ height: '100%' }} data-testid="incident-details-page">
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>

@@ -1,6 +1,6 @@
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { internalFindByIdsMapped, listAllEntities, listEntitiesPaginated, storeLoadById } from '../../../database/middleware-loader';
+import { internalFindByIdsMapped, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import {
   type BasicStoreEntityCsvMapper,
   type CsvMapperParsed,
@@ -32,8 +32,9 @@ import { extractContentFrom } from '../../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../../utils/version';
 import { convertRepresentationsIds } from '../mapper-utils';
 
-// -- UTILS --
+const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
 
+// -- UTILS --
 export const csvMapperTest = async (context: AuthContext, user: AuthUser, configuration: string, fileUpload: Promise<FileUploadData>) => {
   let parsedConfiguration;
   try {
@@ -65,8 +66,8 @@ export const findById = async (context: AuthContext, user: AuthUser, csvMapperId
   return storeLoadById<BasicStoreEntityCsvMapper>(context, user, csvMapperId, ENTITY_TYPE_CSV_MAPPER);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], opts);
+export const findCsvMapperPaginated = (context: AuthContext, user: AuthUser, opts: QueryCsvMappersArgs) => {
+  return pageEntitiesConnection<BasicStoreEntityCsvMapper>(context, user, [ENTITY_TYPE_CSV_MAPPER], opts);
 };
 
 export const createCsvMapper = async (context: AuthContext, user: AuthUser, csvMapperInput: CsvMapperAddInput) => {
@@ -90,7 +91,7 @@ export const deleteCsvMapper = async (context: AuthContext, user: AuthUser, csvM
       filters: [{ key: ['csv_mapper_id'], values: [csvMapperId] }]
     }
   };
-  const ingesters = await listAllEntities<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
+  const ingesters = await fullEntitiesList<BasicStoreEntityIngestionCsv>(context, user, [ENTITY_TYPE_INGESTION_CSV], opts);
   // prevent deletion if an ingester uses the mapper
   if (ingesters.length > 0) {
     throw FunctionalError('Cannot delete this CSV Mapper: it is used by one or more IngestionCsv feed(s)', { id: csvMapperId });
@@ -127,8 +128,6 @@ export const csvMapperExport = async (context: AuthContext, user: AuthUser, csvM
   });
 };
 
-const MINIMAL_COMPATIBLE_VERSION = '6.6.0';
-
 export const transformCsvMapperConfig = async (configuration: CsvMapperParsed, context: AuthContext, user: AuthUser): Promise<CsvMapperResolved> => {
   const { representations } = configuration;
   await convertRepresentationsIds(context, user, representations, 'stix');
@@ -146,15 +145,13 @@ export const transformCsvMapperConfig = async (configuration: CsvMapperParsed, c
 
 export const csvMapperAddInputFromImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
   const parsedData = await extractContentFrom(file);
-
   // check platform version compatibility
   if (!isCompatibleVersionWithMinimal(parsedData.openCTI_version, MINIMAL_COMPATIBLE_VERSION)) {
-    // throw FunctionalError(
-    //   `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
-    //   { reason: parsedData.openCTI_version },
-    // );
+    throw FunctionalError(
+      `Invalid version of the platform. Please upgrade your OpenCTI. Minimal version required: ${MINIMAL_COMPATIBLE_VERSION}`,
+      { reason: parsedData.openCTI_version },
+    );
   }
-
   // convert default values ids in representations
   return transformCsvMapperConfig(parsedData.configuration, context, user);
 };

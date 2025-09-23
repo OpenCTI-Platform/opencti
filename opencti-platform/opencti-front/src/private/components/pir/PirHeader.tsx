@@ -1,19 +1,62 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import { graphql, useFragment } from 'react-relay';
 import React, { useState } from 'react';
 import { Box, Button, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import PirDeletion from '@components/pir/PirDeletion';
+import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
 import PirPopover from './PirPopover';
-import PirEdition from './PirEdition';
+import PirEdition from './pir_form/PirEdition';
 import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import { PirEditionFragment$key } from './__generated__/PirEditionFragment.graphql';
+import { PirEditionFragment$key } from './pir_form/__generated__/PirEditionFragment.graphql';
+import { authorizedMembersToOptions, useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import { PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const headerFragment = graphql`
   fragment PirHeaderFragment on Pir {
     id
     name
+    creators {
+      id
+      name
+      entity_type
+    }
+    currentUserAccessRight
+    authorizedMembers {
+      id
+      name
+      entity_type
+      access_right
+      member_id
+      groups_restriction {
+        id
+        name
+      }
+    }
+    ...PirPopoverFragment
+  }
+`;
+
+const pirHeaderEditAuthorizedMembersMutation = graphql`
+  mutation PirHeaderEditAuthorizedMembersMutation($id: ID!, $input: [MemberAccessInput!]!) {
+    pirEditAuthorizedMembers(id: $id, input: $input) {
+      ...PirHeaderFragment
+    }
   }
 `;
 
@@ -23,11 +66,12 @@ interface PirHeaderProps {
 }
 
 const PirHeader = ({ data, editionData }: PirHeaderProps) => {
-  const navigate = useNavigate();
   const { t_i18n } = useFormatter();
-  const { name, id } = useFragment(headerFragment, data);
+  const pir = useFragment(headerFragment, data);
+  const { name, id, authorizedMembers, creators, currentUserAccessRight } = pir;
+  const { canManage, canEdit } = useGetCurrentUserAccessRight(currentUserAccessRight);
 
-  const [isFormOpen, setFormOpen] = useState(false);
+  const [isEditionOpen, setIsEditionOpen] = useState(false);
 
   const breadcrumb = [
     { label: t_i18n('PIR'), link: '/dashboard/pirs' },
@@ -35,21 +79,35 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
   ];
 
   return (
-    <PirDeletion
-      pirId={id}
-      onDeleteComplete={() => navigate('/dashboard/pirs')}
-    >
-      {({ handleOpenDelete, deleting }) => (
-        <>
-          <Breadcrumbs elements={breadcrumb} />
+    <>
+      <Breadcrumbs elements={breadcrumb} />
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
-              {name}
-            </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Typography variant="h1" sx={{ marginBottom: 0, flex: 1 }}>
+          {name}
+        </Typography>
+
+        <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
+          <>
+            <div>
+              <Security matchAll needs={[PIRAPI_PIRUPDATE, SETTINGS_SETACCESSES]} hasAccess={canManage}>
+                <FormAuthorizedMembersDialog
+                  id={id}
+                  owner={creators?.[0]}
+                  mutation={pirHeaderEditAuthorizedMembersMutation}
+                  authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
+                  canDeactivate={false}
+                  customInfoMessage={t_i18n('info_authorizedmembers_pir')}
+                />
+              </Security>
+
+              <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canManage}>
+                <PirPopover data={pir} />
+              </Security>
+            </div>
 
             <Button
-              onClick={() => setFormOpen(true)}
+              onClick={() => setIsEditionOpen(true)}
               color="primary"
               variant="contained"
               aria-label={t_i18n('Update')}
@@ -57,23 +115,16 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
             >
               {t_i18n('Update')}
             </Button>
+          </>
+        </Security>
+      </Box>
 
-            <PirPopover
-              deleting={deleting}
-              handleOpenDelete={handleOpenDelete}
-            />
-          </Box>
-
-          <PirEdition
-            isOpen={isFormOpen}
-            onClose={() => setFormOpen(false)}
-            data={editionData}
-            deleting={deleting}
-            handleOpenDelete={handleOpenDelete}
-          />
-        </>
-      )}
-    </PirDeletion>
+      <PirEdition
+        isOpen={isEditionOpen}
+        onClose={() => setIsEditionOpen(false)}
+        data={editionData}
+      />
+    </>
   );
 };
 

@@ -47,6 +47,7 @@ const ThemeLight = (
       primary: hexToRGB((primary || THEME_LIGHT_DEFAULT_PRIMARY), 0.3),
       secondary: hexToRGB((secondary || THEME_LIGHT_DEFAULT_SECONDARY), 0.3),
       pagination: hexToRGB('#000000', 0.5),
+      paper: hexToRGB('#000000', 0.12),
     },
     pagination: {
       main: '#000000',
@@ -64,7 +65,7 @@ const ThemeLight = (
       paper: paper || THEME_LIGHT_DEFAULT_PAPER,
       nav: nav || THEME_LIGHT_DEFAULT_NAV,
       accent: accent || THEME_LIGHT_DEFAULT_ACCENT,
-      shadow: 'rgba(0, 0, 0, .05)',
+      shadow: 'rgba(0, 0, 0, .15)',
     },
   },
   typography: {

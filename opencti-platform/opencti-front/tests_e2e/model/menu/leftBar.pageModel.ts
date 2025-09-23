@@ -23,8 +23,13 @@ export default class LeftBarPage {
 
     await this.page.getByRole('menuitem', { name: menuName, exact: true }).click();
     if (subMenuItem) {
+      expect(await this.page.getByRole('menuitem', { name: subMenuItem }).isVisible());
       await this.page.getByRole('menuitem', { name: subMenuItem }).click();
     }
+  }
+
+  async getSubItem(subMenuItem: string) {
+    await this.page.getByLabel(subMenuItem, { exact: true }).click();
   }
 
   async expectBreadcrumb(...items: string[]) {

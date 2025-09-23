@@ -1,0 +1,382 @@
+{
+  "id": "test-catalog-id",
+  "name": "Test Connectors Catalog",
+  "description": "Dummy catalog for testing purposes",
+  "version": "test-1.0.0",
+  "contracts": [
+    {
+      "title": "Test External Connector",
+      "slug": "test-external",
+      "description": "This is a dummy external connector for testing purposes. It simulates an external data import connector with various configuration options.",
+      "short_description": "A test external connector for importing dummy threat intelligence data",
+      "logo": "https://example.com/logos/test-external.png",
+      "use_cases": [
+        "Test Import",
+        "Dummy Data"
+      ],
+      "verified": true,
+      "last_verified_date": "2024-01-01",
+      "playbook_supported": false,
+      "max_confidence_level": 80,
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://example.com/subscription/test-external",
+      "source_code": "https://github.com/example/connector-test-external",
+      "manager_supported": true,
+      "container_version": "rolling",
+      "container_image": "opencti/connector-cve",
+      "container_type": "EXTERNAL_IMPORT",
+      "config_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://example.com/schemas/test_external.schema.json",
+        "type": "object",
+        "properties": {
+          "OPENCTI_URL": {
+            "description": "The OpenCTI platform URL.",
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          "OPENCTI_TOKEN": {
+            "description": "The authentication token for OpenCTI.",
+            "type": "string"
+          },
+          "CONNECTOR_ID": {
+            "default": "test-external--12345678-1234-1234-1234-123456789abc",
+            "description": "A unique UUID identifier for this connector instance.",
+            "type": "string"
+          },
+          "CONNECTOR_NAME": {
+            "default": "Test External Connector",
+            "description": "Name of the connector.",
+            "type": "string"
+          },
+          "CONNECTOR_SCOPE": {
+            "default": "test-data",
+            "description": "The scope of data the connector imports.",
+            "type": "string"
+          },
+          "CONNECTOR_TYPE": {
+            "default": "EXTERNAL_IMPORT",
+            "description": "Should always be set to EXTERNAL_IMPORT for this connector.",
+            "type": "string"
+          },
+          "CONNECTOR_LOG_LEVEL": {
+            "default": "error",
+            "description": "Logging verbosity level.",
+            "enum": [
+              "debug",
+              "info",
+              "warn",
+              "error"
+            ],
+            "type": "string"
+          },
+          "CONNECTOR_DURATION_PERIOD": {
+            "default": "PT24H",
+            "description": "Duration between connector runs (ISO 8601 format).",
+            "format": "duration",
+            "type": "string"
+          },
+          "TEST_API_URL": {
+            "default": "https://api.example.com/test/v1",
+            "description": "URL for the test API.",
+            "type": "string"
+          },
+          "TEST_API_KEY": {
+            "description": "API Key for the test service.",
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
+          },
+          "TEST_INTERVAL": {
+            "default": 6,
+            "description": "Interval in hours to check for new test data.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "TEST_MAX_ITEMS": {
+            "default": 100,
+            "description": "Maximum number of items to import per run.",
+            "exclusiveMinimum": 0,
+            "type": "integer"
+          },
+          "TEST_ENABLE_FEATURE": {
+            "default": true,
+            "description": "Enable test feature flag.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "OPENCTI_URL",
+          "OPENCTI_TOKEN",
+          "TEST_API_KEY"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "title": "Test Email Connector",
+      "slug": "test-email",
+      "description": "A dummy email connector that simulates importing threat intelligence from email sources. This connector demonstrates complex configuration with arrays and optional fields.",
+      "short_description": "Test connector for email-based threat intelligence import",
+      "logo": "https://example.com/logos/test-email.png",
+      "use_cases": [
+        "Email Import",
+        "Test Processing"
+      ],
+      "verified": true,
+      "last_verified_date": "2024-02-15",
+      "playbook_supported": false,
+      "max_confidence_level": 50,
+      "support_version": ">= 6.5.1",
+      "subscription_link": null,
+      "source_code": "https://github.com/example/connector-test-email",
+      "manager_supported": true,
+      "container_version": "rolling",
+      "container_image": "opencti/connector-email-intel-imap",
+      "container_type": "EXTERNAL_IMPORT",
+      "config_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://example.com/schemas/test_email.schema.json",
+        "type": "object",
+        "properties": {
+          "OPENCTI_URL": {
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          "OPENCTI_TOKEN": {
+            "type": "string"
+          },
+          "CONNECTOR_ID": {
+            "type": "string"
+          },
+          "CONNECTOR_NAME": {
+            "default": "Test Email Connector",
+            "type": "string"
+          },
+          "CONNECTOR_TYPE": {
+            "const": "EXTERNAL_IMPORT",
+            "default": "EXTERNAL_IMPORT",
+            "type": "string"
+          },
+          "CONNECTOR_SCOPE": {
+            "default": [
+              "test-email-scope"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "CONNECTOR_DURATION_PERIOD": {
+            "default": "PT1H",
+            "format": "duration",
+            "type": "string"
+          },
+          "CONNECTOR_LOG_LEVEL": {
+            "enum": [
+              "debug",
+              "info",
+              "warning",
+              "error",
+              "critical"
+            ],
+            "type": "string"
+          },
+          "EMAIL_TLP_LEVEL": {
+            "default": "amber",
+            "enum": [
+              "white",
+              "clear",
+              "green",
+              "amber",
+              "amber+strict",
+              "red"
+            ],
+            "type": "string"
+          },
+          "EMAIL_SERVER_HOST": {
+            "default": "mail.example.com",
+            "type": "string"
+          },
+          "EMAIL_SERVER_PORT": {
+            "default": 993,
+            "type": "integer"
+          },
+          "EMAIL_USERNAME": {
+            "type": "string"
+          },
+          "EMAIL_PASSWORD": {
+            "default": null,
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
+          },
+          "EMAIL_MAILBOX": {
+            "default": "INBOX",
+            "type": "string"
+          },
+          "EMAIL_ATTACHMENTS_TYPES": {
+            "default": [
+              "application/pdf",
+              "text/csv",
+              "text/plain"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "OPENCTI_URL",
+          "OPENCTI_TOKEN",
+          "CONNECTOR_ID",
+          "EMAIL_SERVER_HOST",
+          "EMAIL_USERNAME"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "title": "Test Enrichment Connector",
+      "slug": "test-enrichment",
+      "description": "Dummy enrichment connector for testing IP address and domain enrichment functionality",
+      "short_description": "Test IP and domain enrichment service",
+      "logo": "https://example.com/logos/test-enrichment.png",
+      "use_cases": [
+        "Test Enrichment",
+        "IP Analysis"
+      ],
+      "verified": true,
+      "last_verified_date": "2024-03-10",
+      "playbook_supported": true,
+      "max_confidence_level": 75,
+      "support_version": ">= 6.5.1",
+      "subscription_link": "https://example.com/subscription/test-enrichment",
+      "source_code": "https://github.com/example/connector-test-enrichment",
+      "manager_supported": true,
+      "container_version": "rolling",
+      "container_image": "opencti/connector-ipinfo",
+      "container_type": "INTERNAL_ENRICHMENT",
+      "config_schema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://example.com/schemas/test_enrichment.schema.json",
+        "type": "object",
+        "properties": {
+          "OPENCTI_URL": {
+            "description": "The OpenCTI platform URL.",
+            "format": "uri",
+            "maxLength": 2083,
+            "minLength": 1,
+            "type": "string"
+          },
+          "OPENCTI_TOKEN": {
+            "description": "The authentication token.",
+            "type": "string"
+          },
+          "CONNECTOR_ID": {
+            "default": "test-enrichment--87654321-4321-4321-4321-210987654321",
+            "description": "Unique identifier for this connector.",
+            "type": "string"
+          },
+          "CONNECTOR_NAME": {
+            "default": "Test Enrichment",
+            "description": "Name of the connector.",
+            "type": "string"
+          },
+          "CONNECTOR_SCOPE": {
+            "default": "IPv4-Addr,IPv6-Addr,Domain-Name",
+            "description": "Types of observables to enrich.",
+            "type": "string"
+          },
+          "CONNECTOR_TYPE": {
+            "default": "INTERNAL_ENRICHMENT",
+            "description": "Should always be INTERNAL_ENRICHMENT.",
+            "type": "string"
+          },
+          "CONNECTOR_LOG_LEVEL": {
+            "default": "error",
+            "description": "Log verbosity.",
+            "enum": [
+              "debug",
+              "info",
+              "warn",
+              "error"
+            ],
+            "type": "string"
+          },
+          "CONNECTOR_AUTO": {
+            "default": true,
+            "description": "Enable automatic enrichment.",
+            "type": "boolean"
+          },
+          "CONNECTOR_LISTEN_PROTOCOL_API_PORT": {
+            "default": null,
+            "description": "Port for API listening.",
+            "type": "integer"
+          },
+          "CONNECTOR_LISTEN_PROTOCOL_API_SSL": {
+            "default": null,
+            "description": "Enable SSL for API.",
+            "type": "boolean"
+          },
+          "IPINFO_TOKEN": {
+            "description": "API token for the enrichment service.",
+            "format": "password",
+            "type": "string",
+            "writeOnly": true
+          },
+          "ENRICHMENT_MAX_TLP": {
+            "default": "TLP:AMBER",
+            "description": "Maximum TLP level.",
+            "enum": [
+              "TLP:CLEAR",
+              "TLP:GREEN",
+              "TLP:AMBER",
+              "TLP:AMBER+STRICT",
+              "TLP:RED"
+            ],
+            "type": "string"
+          },
+          "ENRICHMENT_USE_CACHE": {
+            "default": true,
+            "description": "Enable caching of enrichment results.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "OPENCTI_URL",
+          "OPENCTI_TOKEN",
+          "IPINFO_TOKEN"
+        ],
+        "additionalProperties": true
+      }
+    },
+    {
+      "title": "Test Stream Connector",
+      "slug": "test-stream",
+      "description": "A dummy stream connector that simulates exporting OpenCTI data to external systems. Used for testing stream connector functionality.",
+      "short_description": "Test connector for streaming data to external systems",
+      "logo": "https://example.com/logos/test-stream.png",
+      "use_cases": [
+        "Data Export",
+        "Stream Testing"
+      ],
+      "verified": true,
+      "last_verified_date": "2024-04-20",
+      "playbook_supported": false,
+      "max_confidence_level": 80,
+      "support_version": ">= 6.5.1",
+      "subscription_link": null,
+      "source_code": "https://github.com/example/connector-test-stream",
+      "manager_supported": false,
+      "container_version": "rolling",
+      "container_image": "opencti/connector-google-secops-siem",
+      "container_type": "STREAM"
+    }
+  ]
+}

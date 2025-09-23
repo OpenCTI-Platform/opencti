@@ -27,9 +27,9 @@ import { useFormatter } from '../../../../components/i18n';
 // eslint-disable-next-line import/no-cycle
 import ResponseDialog from '../../../../utils/ai/ResponseDialog';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
-import useAI from '../../../../utils/hooks/useAI';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
+import useAI from '../../../../utils/hooks/useAI';
 
 // region types
 interface TextFieldAskAiProps {
@@ -88,8 +88,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
-  const { enabled, configured } = useAI();
-
+  const { fullyActive } = useAI();
   const [content, setContent] = useState('');
   const [disableResponse, setDisableResponse] = useState(false);
   const [openToneOptions, setOpenToneOptions] = useState(false);
@@ -98,7 +97,6 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   const [menuOpen, setMenuOpen] = useState<{ open: boolean; anchorEl: HTMLButtonElement | null; }>({ open: false, anchorEl: null });
   const [busId, setBusId] = useState<string | null>(null);
   const [displayAskAI, setDisplayAskAI] = useState(false);
-
   const handleOpenMenu = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     if (isEnterpriseEdition) {
       event.preventDefault();
@@ -247,11 +245,11 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
         <EETooltip forAi={true} title={t_i18n('Ask AI')}>
           <IconButton
             size="small"
-            onClick={(event) => ((isEnterpriseEdition && enabled && configured) ? handleOpenMenu(event) : null)}
+            onClick={(event) => ((isEnterpriseEdition && fullyActive) ? handleOpenMenu(event) : null)}
             disabled={disabled || currentValue.length < 10}
             style={{ color: theme.palette.ai.main }}
           >
-            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" />
+            <FiligranIcon icon={LogoXtmOneIcon} size='small'color="ai" />
           </IconButton>
         </EETooltip>
         <Menu
@@ -338,24 +336,24 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
       </>
     );
   };
-
   if (variant === 'markdown') {
     return (
       <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
-        {renderButton()}
+        {fullyActive && renderButton()}
       </div>
     );
   }
   if (variant === 'html') {
     return (
       <div style={style || { position: 'absolute', top: -12, right: 30, paddingTop: 4 }}>
-        {renderButton()}
+        {fullyActive && renderButton()}
       </div>
     );
   }
+
   return (
     <InputAdornment position="end" style={{ position: 'absolute', right: 0 }}>
-      {renderButton()}
+      {fullyActive && renderButton()}
     </InputAdornment>
   );
 };

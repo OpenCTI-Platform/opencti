@@ -120,16 +120,18 @@ const Taxii = () => {
     orderMode: taxiiState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
-    <Box sx={{
-      margin: 0,
-      padding: '0 200px 50px 0',
-    }}
-      aria-label="TaxiiCollections"
-    >
-      <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
-      <SharingMenu/>
-      {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
-    </Box>
+    <div data-testid="taxii-collections-page">
+      <Box sx={{
+        margin: 0,
+        padding: '0 200px 50px 0',
+      }}
+        aria-label="TaxiiCollections"
+      >
+        <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />
+        <SharingMenu/>
+        {taxiiState.view === 'lines' ? renderLines(paginationOptions) : null}
+      </Box>
+    </div>
   );
 };
 

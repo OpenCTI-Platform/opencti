@@ -8,13 +8,13 @@ import {
   READ_INDEX_STIX_META_OBJECTS,
   READ_INDEX_STIX_META_RELATIONSHIPS
 } from '../database/utils';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 async function fetchPersistedInvestigations() {
   const context = executionContext('migration');
-  return await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_WORKSPACE], { type: 'investigation' });
+  return await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_WORKSPACE], { type: 'investigation' });
 }
 
 async function removeInvestigationsReferencesFromInvestigatedEntities(investigationIds) {

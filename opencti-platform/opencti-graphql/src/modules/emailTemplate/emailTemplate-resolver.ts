@@ -14,12 +14,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import type { Resolvers } from '../../generated/graphql';
-import { findById, findAll, sendTestEmail, addEmailTemplate, deleteEmailTemplate, fieldPatchEmailTemplate } from './emailTemplate-domain';
+import { findById, findEmailTemplatePaginated, sendTestEmail, addEmailTemplate, deleteEmailTemplate, fieldPatchEmailTemplate } from './emailTemplate-domain';
 
 const emailTemplateResolver: Resolvers = {
   Query: {
     emailTemplate: (_, { id }, context) => findById(context, context.user, id),
-    emailTemplates: (_, args, context) => findAll(context, context.user, args),
+    emailTemplates: (_, args, context) => findEmailTemplatePaginated(context, context.user, args),
   },
   EmailTemplate: {},
   Mutation: {

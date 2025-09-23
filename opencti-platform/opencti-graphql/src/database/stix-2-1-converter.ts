@@ -35,7 +35,6 @@ import {
   INPUT_SRC_PAYLOAD,
   INPUT_VALUES,
   RELATION_GRANTED_TO,
-  RELATION_IN_PIR,
   RELATION_OBJECT_MARKING
 } from '../schema/stixRefRelationship';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
@@ -119,16 +118,18 @@ import {
   INPUT_PARTICIPANT
 } from '../schema/general';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
-import { isInternalRelationship } from '../schema/internalRelationship';
+import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
 import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
+import { type StoreRelationPir } from '../modules/pir/pir-types';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
   const [, uuid] = segments;
   return uuidVersion(uuid) !== 1;
 };
+
 export const convertTypeToStixType = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
     return 'identity';
@@ -1270,6 +1271,41 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
     }
   };
 };
+const convertInPirRelToStix = (instance: StoreRelationPir): SRO.StixRelation => {
+  checkInstanceCompletion(instance);
+  const stixRelationship = buildStixRelationship(instance);
+  const isBuiltin = isRelationBuiltin(instance);
+  return {
+    ...stixRelationship,
+    relationship_type: instance.relationship_type,
+    description: instance.description,
+    source_ref: instance.from.standard_id,
+    target_ref: instance.to.standard_id,
+    start_time: convertToStixDate(instance.start_time),
+    stop_time: convertToStixDate(instance.stop_time),
+    extensions: {
+      [STIX_EXT_OCTI]: cleanObject({
+        ...stixRelationship.extensions[STIX_EXT_OCTI],
+        extension_type: isBuiltin ? 'property-extension' : 'new-sro',
+        source_value: extractEntityRepresentativeName(instance.from),
+        source_ref: instance.from.internal_id,
+        source_type: instance.from.entity_type,
+        source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
+        source_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
+        source_ref_pir_refs: instance.from[RELATION_IN_PIR] ?? [],
+        target_value: extractEntityRepresentativeName(instance.to),
+        target_ref: instance.to.internal_id,
+        target_type: instance.to.entity_type,
+        target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
+        target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
+        target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
+        kill_chain_phases: [],
+        pir_score: instance.pir_score,
+        pir_explanation: instance.pir_explanation,
+      })
+    }
+  };
+};
 
 // SMO - SDO
 const convertMarkingToStix = (instance: StoreEntity): SMO.StixMarkingDefinition => {
@@ -1391,6 +1427,9 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
   }
   // SRO: relations and sightings
   if (isBasicRelationship(type)) {
+    if (isStoreRelationPir(instance)) {
+      return convertInPirRelToStix(instance);
+    }
     const basic = instance as StoreRelation;
     if (isInternalRelationship(type)) {
       return convertRelationToStix(basic);

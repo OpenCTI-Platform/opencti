@@ -11,7 +11,7 @@ import { addOrganization } from '../../src/modules/organization/organization-dom
 import { elDeleteElements } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../src/schema/general';
-import { listEntities } from '../../src/database/middleware-loader';
+import { topEntitiesList } from '../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../src/schema/stixDomainObject';
 
 describe('Report refs identity rule', () => {
@@ -40,7 +40,7 @@ describe('Report refs identity rule', () => {
       // 4. Remove a ref from report
       // 5. Remove a part of relation
       // Delete all reports
-      const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT], { connectionFormat: false });
+      const reports = await topEntitiesList(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT]);
       await elDeleteElements(testContext, SYSTEM_USER, reports);
 
       // Check that no inferences exists

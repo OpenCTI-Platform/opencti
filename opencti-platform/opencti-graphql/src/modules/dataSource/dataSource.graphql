@@ -123,6 +123,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     jobs(first: Int): [Work]
     status: Status
     workflowEnabled: Boolean
+    pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
     # Data Source
     name: String!
     description: String

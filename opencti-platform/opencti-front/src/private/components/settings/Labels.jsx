@@ -156,7 +156,7 @@ const Labels = () => {
   };
 
   return (
-    <div className={classes.container}>
+    <div className={classes.container} data-testid="labels-page">
       <LabelsVocabulariesMenu />
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Taxonomies') }, { label: t_i18n('Labels'), current: true }]} />
       {queryRef && (

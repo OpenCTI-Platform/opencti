@@ -10,7 +10,7 @@ import { addReport } from '../../src/domain/report';
 import { elDeleteElements } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../src/schema/general';
-import { listEntities } from '../../src/database/middleware-loader';
+import { topEntitiesList } from '../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../src/schema/stixDomainObject';
 import { addStixCyberObservable } from '../../src/domain/stixCyberObservable';
 import { ENTITY_IPV4_ADDR } from '../../src/schema/stixCyberObservable';
@@ -40,7 +40,7 @@ describe('Report refs observable rule', () => {
       // 4. Remove a ref from report
       // 5. Remove a based ib relation
       // Delete all reports
-      const reports = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT], { connectionFormat: false });
+      const reports = await topEntitiesList(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_REPORT]);
       await elDeleteElements(testContext, SYSTEM_USER, reports);
 
       // Check that no inferences exists

@@ -32,9 +32,14 @@ const getExtensionValue = (clientCrt, extension) => {
   return clientCrt.extensions.find((ext) => ext.id === extension)?.value;
 };
 
+export const getEnterpriseEditionActivePem = (rawPem) => {
+  const pemFromConfig = conf.get('app:enterprise_edition_license');
+  return isNotEmptyField(pemFromConfig) ? pemFromConfig : rawPem;
+};
+
 export const getEnterpriseEditionInfoFromPem = (platformInstanceId, rawPem) => {
   const pemFromConfig = conf.get('app:enterprise_edition_license');
-  const pem = isNotEmptyField(pemFromConfig) ? pemFromConfig : rawPem;
+  const pem = getEnterpriseEditionActivePem(rawPem);
   const license_enterprise = isNotEmptyField(pem);
   if (isNotEmptyField(pem)) {
     try {

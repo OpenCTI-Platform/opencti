@@ -10,7 +10,7 @@ import { EVENT_CURRENT_VERSION } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { utcDate } from '../utils/format';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { topEntitiesList, storeLoadById } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
@@ -177,7 +177,7 @@ const initSyncManager = () => {
   const processStep = async () => {
     // Get syncs definition
     const context = executionContext('sync_manager');
-    const syncs = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_SYNC], { connectionFormat: false });
+    const syncs = await topEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SYNC]);
     // region Handle management of existing synchronizer
     for (let index = 0; index < syncs.length; index += 1) {
       const { id, running } = syncs[index];

@@ -40,7 +40,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
     },
   );
   return (
-    <>
+    <div data-testid="position-details-page">
       <Grid
         container={true}
         spacing={3}
@@ -93,7 +93,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
         stixCoreObjectOrStixCoreRelationshipId={position.id}
         defaultMarkings={position.objectMarking ?? []}
       />
-    </>
+    </div>
   );
 };
 

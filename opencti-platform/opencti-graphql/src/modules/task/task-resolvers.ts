@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { findAll, findById, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
+import { findTaskPaginated, findById, taskAdd, taskAddRelation, taskContainsStixObjectOrStixRelationship, taskDelete, taskDeleteRelation, taskEdit } from './task-domain';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_PARTICIPANT } from '../../schema/general';
 import { filterMembersWithUsersOrgs } from '../../utils/access';
@@ -7,7 +7,7 @@ import { filterMembersWithUsersOrgs } from '../../utils/access';
 const taskResolvers: Resolvers = {
   Query: {
     task: (_, { id }, context) => findById(context, context.user, id),
-    tasks: (_, args, context) => findAll(context, context.user, args),
+    tasks: (_, args, context) => findTaskPaginated(context, context.user, args),
     taskContainsStixObjectOrStixRelationship: (_, args, context) => {
       return taskContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },

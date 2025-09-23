@@ -11,7 +11,7 @@ import {
 } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
-import { listAllEntities } from '../database/middleware-loader';
+import { fullEntitiesList } from '../database/middleware-loader';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/general';
 import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-utils';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
@@ -85,8 +85,8 @@ const createIndividualThreatCategories = async (context) => {
       filters: [{ key: 'category', values: [group] }],
       filterGroups: [],
     };
-    const args = { connectionFormat: false, filters, noFiltersChecking: true };
-    const vocabsFromGroup = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], args);
+    const args = { filters, noFiltersChecking: true };
+    const vocabsFromGroup = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_VOCABULARY], args);
     const groupExistingVocabs = (vocabsFromGroup ?? []).map((v) => ({ key: v.name, description: v.description, aliases: v.aliases }));
     const groupVocabToMaintains = groupExistingVocabs.filter((g) => !individualVocabKeys.includes(g.key));
     logApp.info(`${message} > Create ${groupVocabToMaintains.length} vocabularies for category ${individual}`);
