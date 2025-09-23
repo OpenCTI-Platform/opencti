@@ -201,9 +201,14 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
       percentWidth: 6,
       isSortable: true,
       render: ({ pirInformation }: { pirInformation: PirInformation }) => {
-        const criteria: FilterGroup[] = pirInformation.pir_explanation.map(
-          (e) => JSON.parse(e.criterion.filters),
-        );
+        // Used to keep only one explanation for a given filter.
+        const uniqueFilters = new Set<string>();
+        const criteria: FilterGroup[] = pirInformation.pir_explanation.flatMap((e) => {
+          const filter = e.criterion.filters;
+          const shouldKeep = !uniqueFilters.has(filter);
+          if (shouldKeep) uniqueFilters.add(filter);
+          return shouldKeep ? JSON.parse(e.criterion.filters) : [];
+        });
         return (
           <PirCriteriaDisplay criteria={criteria}>
             <PirRadialScore value={pirInformation.pir_score}/>
