@@ -836,7 +836,7 @@ describe('Elasticsearch pagination', () => {
     const internalRelationships = groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].map((m) => m.node);
     const internalRelationshipsByType = R.groupBy((m) => m.entity_type, internalRelationships);
     expect(internalRelationshipsByType['accesses-to'].length).toEqual(28);
-    expect(internalRelationshipsByType['has-capability'].length).toEqual(56);
+    expect(internalRelationshipsByType['has-capability'].length).toEqual(57);
     expect(internalRelationshipsByType['has-role'].length).toEqual(9);
     expect(internalRelationshipsByType['member-of'].length).toEqual(13);
     expect(internalRelationshipsByType['participate-to'].length).toEqual(4);
