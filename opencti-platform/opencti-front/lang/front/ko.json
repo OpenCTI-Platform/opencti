@@ -1317,6 +1317,7 @@
   "Enter code": "코드 입력",
   "Enter date in ISO format (e.g., 2024-01-01 or 2024-01-01T10:00:00.000Z)": "ISO 형식으로 날짜를 입력합니다(예: 2024-01-01 또는 2024-01-01T10:00:00.000Z)",
   "Enter justification for requesting access to this knowledge": "이 지식에 대한 액세스 요청의 정당성을 입력하세요",
+  "Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.": "관찰 가능한 간단한 값(예: IP 주소, 도메인, 해시)을 입력합니다. 이 값은 자동으로 STIX 패턴으로 변환됩니다.",
   "Enterprise": "기업",
   "Enterprise Edition": "엔터프라이즈 에디션",
   "entitie(s)": "엔터티(들)",

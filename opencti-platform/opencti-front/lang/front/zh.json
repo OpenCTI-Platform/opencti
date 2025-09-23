@@ -1317,6 +1317,7 @@
   "Enter code": "输入密码",
   "Enter date in ISO format (e.g., 2024-01-01 or 2024-01-01T10:00:00.000Z)": "以 ISO 格式输入日期（例如，2024-01-01 或 2024-01-01T10:00:00.000Z）",
   "Enter justification for requesting access to this knowledge": "输入请求访问该知识的理由",
+  "Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.": "输入简单的可观测值（如 IP 地址、域、哈希值）。它们将自动转换为 STIX 模式。",
   "Enterprise": "企业",
   "Enterprise Edition": "企业版",
   "entitie(s)": "实体",

@@ -1317,6 +1317,7 @@
   "Enter code": "Enter code",
   "Enter date in ISO format (e.g., 2024-01-01 or 2024-01-01T10:00:00.000Z)": "Enter date in ISO format (e.g., 2024-01-01 or 2024-01-01T10:00:00.000Z)",
   "Enter justification for requesting access to this knowledge": "Enter justification for requesting access to this knowledge",
+  "Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.": "Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.",
   "Enterprise": "Enterprise",
   "Enterprise Edition": "Enterprise Edition",
   "entitie(s)": "entitie(s)",

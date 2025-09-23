@@ -1317,6 +1317,7 @@
   "Enter code": "コードを入力",
   "Enter date in ISO format (e.g., 2024-01-01 or 2024-01-01T10:00:00.000Z)": "ISOフォーマットで日付を入力 (例: 2024-01-01 または 2024-01-01T10:00:00.000Z)",
   "Enter justification for requesting access to this knowledge": "この知識へのアクセスを要求する正当な理由を入力してください",
+  "Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.": "単純な観測値（IPアドレス、ドメイン、ハッシュなど）を入力します。これらは自動的にSTIXパターンに変換されます。",
   "Enterprise": "企業",
   "Enterprise Edition": "エンタープライズ版",
   "entitie(s)": "エンティティ",

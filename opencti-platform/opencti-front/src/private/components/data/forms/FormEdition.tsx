@@ -125,7 +125,6 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         mainEntityParseMode: schema.mainEntityParseMode || 'comma',
         mainEntityParseFieldMapping: schema.mainEntityParseFieldMapping || undefined,
         mainEntityAutoConvertToStixPattern: schema.mainEntityAutoConvertToStixPattern || false,
-        mainEntityGenerateIndicatorFromObservable: schema.mainEntityGenerateIndicatorFromObservable || false,
         additionalEntities: schema.additionalEntities || [],
         fields,
         relationships: schema.relationships || [],

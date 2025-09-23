@@ -695,20 +695,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 style={{ marginTop: 20 }}
               />
             )}
-
-            {/* Show generate indicator toggle for Observable types */}
-            {entity.entityType && entity.entityType.includes('Observable') && (
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={entity.generateIndicatorFromObservable || false}
-                    onChange={() => handleFieldChange(`additionalEntities.${entityIndex}.generateIndicatorFromObservable`, !entity.generateIndicatorFromObservable)}
-                  />
-                }
-                label={t_i18n('Generate indicators from observables')}
-                style={{ marginTop: 20 }}
-              />
-            )}
           </>
         )}
 
@@ -1010,20 +996,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                     />
                   }
                   label={t_i18n('Automatically convert to STIX patterns')}
-                  style={{ marginTop: 20 }}
-                />
-              )}
-
-              {/* Show generate indicator toggle for Observable types */}
-              {formData.mainEntityType && formData.mainEntityType.includes('Observable') && (
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.mainEntityGenerateIndicatorFromObservable || false}
-                      onChange={() => handleFieldChange('mainEntityGenerateIndicatorFromObservable', !formData.mainEntityGenerateIndicatorFromObservable)}
-                    />
-                  }
-                  label={t_i18n('Generate indicators from observables')}
                   style={{ marginTop: 20 }}
                 />
               )}
