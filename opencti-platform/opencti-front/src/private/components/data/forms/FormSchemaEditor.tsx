@@ -140,6 +140,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       description: '',
       mainEntityType: defaultEntityType,
       includeInContainer: isDefaultContainer, // Default to true for containers
+      isDraftByDefault: false, // Default to false
+      allowDraftOverride: false, // Default to false (checkbox disabled by default)
       mainEntityMultiple: false,
       mainEntityLookup: false,
       mainEntityFieldMode: 'multiple',
@@ -868,6 +870,30 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 />
               }
               label={t_i18n('Include entities in container')}
+              style={{ marginTop: 20, display: 'block' }}
+            />
+          )}
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={formData.isDraftByDefault}
+                onChange={(e) => handleFieldChange('isDraftByDefault', e.target.checked)}
+              />
+            }
+            label={t_i18n('Create as draft by default')}
+            style={{ marginTop: 20, display: 'block' }}
+          />
+
+          {formData.isDraftByDefault && (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.allowDraftOverride}
+                  onChange={(e) => handleFieldChange('allowDraftOverride', e.target.checked)}
+                />
+              }
+              label={t_i18n('Allow users to uncheck draft mode')}
               style={{ marginTop: 20, display: 'block' }}
             />
           )}

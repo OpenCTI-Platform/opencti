@@ -48,6 +48,8 @@ export interface FormBuilderData {
   description?: string;
   mainEntityType: string;
   includeInContainer: boolean; // Whether to include entities in container (only for container types)
+  isDraftByDefault: boolean; // Whether forms should be created as draft by default
+  allowDraftOverride: boolean; // Whether users can override the draft setting
   mainEntityMultiple: boolean; // Whether main entity allows multiple
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing entities)
   mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
@@ -78,6 +80,8 @@ export interface FormSchemaDefinition {
   version: string;
   mainEntityType: string;
   includeInContainer?: boolean;
+  isDraftByDefault?: boolean; // Whether forms should be created as draft by default
+  allowDraftOverride?: boolean; // Whether users can override the draft setting
   mainEntityMultiple?: boolean;
   mainEntityLookup?: boolean;
   mainEntityFieldMode?: 'multiple' | 'parsed';

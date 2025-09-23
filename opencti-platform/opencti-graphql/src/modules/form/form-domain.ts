@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Ajv from 'ajv';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { BasicStoreEntityForm, FormSchemaDefinition, FormSubmissionData, StoreEntityForm } from './form-types';
+import type { BasicStoreEntityForm, FormSchemaDefinition, StoreEntityForm } from './form-types';
 import { ENTITY_TYPE_FORM, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
@@ -12,8 +12,8 @@ import { generateStandardId } from '../../schema/identifier';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorType } from '../../generated/graphql';
-import { now } from '../../utils/format';
+import { ConnectorType, type FormSubmissionInput } from '../../generated/graphql';
+import { now, nowTime } from '../../utils/format';
 import { SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
@@ -180,7 +180,7 @@ export const formDelete = async (
   context: AuthContext,
   user: AuthUser,
   formId: string
-): Promise<boolean> => {
+) => {
   // Get form details before deletion for the user action message
   const form = await findById(context, user, formId);
 
@@ -202,7 +202,7 @@ export const formDelete = async (
     });
   }
 
-  return true;
+  return formId;
 };
 
 export interface FormParsed extends Omit<StoreEntityForm, 'form_schema'> {
@@ -222,33 +222,48 @@ const completeEntity = (entityType: string, entity: StoreEntity) => {
 };
 
 // Submit a form and convert to STIX bundle
-export const submitForm = async (
+export const formSubmit = async (
   context: AuthContext,
   user: AuthUser,
-  submission: FormSubmissionData,
+  input: FormSubmissionInput,
   isDraft: boolean = false
 ): Promise<any> => {
-  const form = await findById(context, user, submission.formId);
+  const form = await findById(context, user, input.formId);
   if (!form) {
     throw FunctionalError('Form not found');
+  }
+
+  let values = {} as Record<string, any>;
+  try {
+    values = JSON.parse(input.values);
+  } catch (error) {
+    throw FunctionalError('Cannot read values', { error });
   }
 
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
   const errors: string[] = [];
 
+  // Enforce draft settings from schema
+  let finalIsDraft = isDraft;
+  if (schema.isDraftByDefault === true) {
+    if (schema.allowDraftOverride === false) {
+      finalIsDraft = true;
+    }
+  }
+
   // Validation
   // Main entity
-  if (schema.mainEntityLookup && isEmptyField(submission.values.mainEntityLookup)) {
+  if (schema.mainEntityLookup && isEmptyField(values.mainEntityLookup)) {
     errors.push('Required field "mainEntityLookup" is missing');
   }
   if (!schema.mainEntityLookup && schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
     schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
       if (field.isMandatory || field.required) {
-        if (isEmptyField(submission.values.mainEntityGroups)) {
+        if (isEmptyField(values.mainEntityGroups)) {
           errors.push('Required field "mainEntityGroups" is missing');
         } else {
-          for (let index = 0; index < submission.values.mainEntityGroups.length; index += 1) {
-            const fieldValue = submission.values.mainEntityGroups[index][field.name];
+          for (let index = 0; index < values.mainEntityGroups.length; index += 1) {
+            const fieldValue = values.mainEntityGroups[index][field.name];
             if (isEmptyField(fieldValue)) {
               errors.push(`Required field "${field.label || field.name}" is missing`);
             }
@@ -258,14 +273,14 @@ export const submitForm = async (
     });
   }
   if (!schema.mainEntityLookup && schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
-    if (isEmptyField(submission.values.mainEntityParsed)) {
+    if (isEmptyField(values.mainEntityParsed)) {
       errors.push('Required field "mainEntityParsed" is missing');
     }
   }
   if (!schema.mainEntityLookup && !schema.mainEntityMultiple) {
     schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
       if (field.isMandatory || field.required) {
-        const fieldValue = submission.values[field.name];
+        const fieldValue = values[field.name];
         if (isEmptyField(fieldValue)) {
           errors.push(`Required field "${field.label || field.name}" is missing`);
         }
@@ -277,17 +292,17 @@ export const submitForm = async (
   if (schema.additionalEntities) {
     for (let index = 0; index < schema.additionalEntities.length; index += 1) {
       const additionalEntity = schema.additionalEntities[index];
-      if (additionalEntity.lookup && isEmptyField(submission.values[`additional_${additionalEntity.id}_lookup`])) {
+      if (additionalEntity.lookup && isEmptyField(values[`additional_${additionalEntity.id}_lookup`]) && (additionalEntity?.minAmount ?? 0) > 0) {
         errors.push(`Required field "additional_${additionalEntity.id}_lookup" is missing`);
       }
       if (!additionalEntity.lookup && additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
         schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
           if (field.isMandatory || field.required) {
-            if (!submission.values[`additional_${additionalEntity.id}_groups`]) {
+            if (!values[`additional_${additionalEntity.id}_groups`]) {
               errors.push(`Required field "additional_${additionalEntity.id}_groups" is missing`);
             } else {
-              for (let index2 = 0; index2 < submission.values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
-                const fieldValue = submission.values[`additional_${additionalEntity.id}_groups`][index2][field.name];
+              for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
+                const fieldValue = values[`additional_${additionalEntity.id}_groups`][index2][field.name];
                 if (isEmptyField(fieldValue)) {
                   errors.push(`Required field "${field.label || field.name}" is missing`);
                 }
@@ -296,15 +311,15 @@ export const submitForm = async (
           }
         });
       }
-      if (!additionalEntity.lookup && additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
-        if (!submission.values[`additional_${additionalEntity.id}_parsed`]) {
+      if (!additionalEntity.lookup && additionalEntity.multiple && additionalEntity.fieldMode === 'parsed' && (additionalEntity?.minAmount ?? 0) > 0) {
+        if (!values[`additional_${additionalEntity.id}_parsed`]) {
           errors.push(`Required field "additional_${additionalEntity.id}_parsed" is missing`);
         }
       }
       if (!additionalEntity.lookup && !additionalEntity.multiple) {
         schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
           if (field.isMandatory || field.required) {
-            const fieldValue = submission.values[field.name];
+            const fieldValue = values[field.name];
             if (isEmptyField(fieldValue)) {
               errors.push(`Required field "${field.label || field.name}" is missing`);
             }
@@ -331,8 +346,8 @@ export const submitForm = async (
   const { mainEntityType } = schema;
   let mainEntityStixId;
   if (schema.mainEntityLookup) {
-    const values = Array.isArray(submission.values.mainEntityLookup) ? submission.values.mainEntityLookup : [submission.values.mainEntityLookup];
-    const mainEntities = await Promise.all(values.map((id: string) => {
+    const vals = Array.isArray(values.mainEntityLookup) ? values.mainEntityLookup : [values.mainEntityLookup];
+    const mainEntities = await Promise.all(vals.map((id: string) => {
       return storeLoadById<StoreEntityForm>(context, user, id, mainEntityType);
     }));
     for (let index = 0; index < mainEntities.length; index += 1) {
@@ -342,22 +357,22 @@ export const submitForm = async (
   } else {
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
     if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
-      for (let index = 0; index < submission.values.mainEntityGroups.length; index += 1) {
+      for (let index = 0; index < values.mainEntityGroups.length; index += 1) {
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         for (let i = 0; i < mainEntityFields.length; i += 1) {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
-          mainEntity[mainEntityFields[i].attributeMapping.attributeName] = submission.values.mainEntityGroups[index][mainEntityFields[i].name];
+          mainEntity[mainEntityFields[i].attributeMapping.attributeName] = values.mainEntityGroups[index][mainEntityFields[i].name];
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
         mainStixEntities.push(convertStoreToStix(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
       }
     } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
-      for (let index = 0; index < submission.values.mainEntityParsed.length; index += 1) {
+      for (let index = 0; index < values.mainEntityParsed.length; index += 1) {
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         if (isStixObjectAliased(mainEntityType)) {
-          mainEntity.name = submission.values.mainEntityParsed[index];
+          mainEntity.name = values.mainEntityParsed[index];
         }
         if (mainEntityType === ENTITY_TYPE_MALWARE) {
           mainEntity.is_family = true;
@@ -374,7 +389,7 @@ export const submitForm = async (
       for (let i = 0; i < mainEntityFields.length; i += 1) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
-        mainEntity[mainEntityFields[i].attributeMapping.attributeName] = submission.values[mainEntityFields[i].name];
+        mainEntity[mainEntityFields[i].attributeMapping.attributeName] = values[mainEntityFields[i].name];
       }
       mainEntity = completeEntity(mainEntityType, mainEntity);
       mainStixEntities.push(convertStoreToStix(mainEntity));
@@ -389,8 +404,8 @@ export const submitForm = async (
       const additionalEntity = schema.additionalEntities[index];
       const additionalEntityType = additionalEntity.entityType;
       if (additionalEntity.lookup) {
-        const values = Array.isArray(submission.values[`additional_${additionalEntity.id}_lookup`]) ? submission.values[`additional_${additionalEntity.id}_lookup`] : [submission.values[`additional_${additionalEntity.id}_lookup`]];
-        const additionalEntities = await Promise.all(values.map((id: string) => {
+        const vals = Array.isArray(values[`additional_${additionalEntity.id}_lookup`]) ? values[`additional_${additionalEntity.id}_lookup`] : [values[`additional_${additionalEntity.id}_lookup`]];
+        const additionalEntities = await Promise.all(vals.map((id: string) => {
           return storeLoadById<StoreEntityForm>(context, user, id, additionalEntityType);
         }));
         for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
@@ -405,12 +420,12 @@ export const submitForm = async (
       } else {
         const additionalEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
         if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
-          for (let index2 = 0; index2 < submission.values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
+          for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
             let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
             for (let i = 0; i < additionalEntityFields.length; i += 1) {
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
-              newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = submission.values[`additional_${additionalEntity.id}_groups`][index2][additionalEntityFields[i].name];
+              newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[`additional_${additionalEntity.id}_groups`][index2][additionalEntityFields[i].name];
             }
             newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
             const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
@@ -422,10 +437,10 @@ export const submitForm = async (
             }
           }
         } else if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
-          for (let index2 = 0; index2 < submission.values[`additional_${additionalEntity.id}_parsed`].length; index2 += 1) {
+          for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_parsed`].length; index2 += 1) {
             let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
             if (isStixObjectAliased(additionalEntityType)) {
-              newAdditionalEntity.name = submission.values[`additional_${additionalEntity.id}_parsed`][index2];
+              newAdditionalEntity.name = values[`additional_${additionalEntity.id}_parsed`][index2];
             }
             if (mainEntityType === ENTITY_TYPE_MALWARE) {
               newAdditionalEntity.is_family = true;
@@ -447,7 +462,7 @@ export const submitForm = async (
           for (let i = 0; i < additionalEntityFields.length; i += 1) {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error
-            newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = submission.values[additionalEntityFields[i].name];
+            newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[additionalEntityFields[i].name];
           }
           newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
           const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
@@ -548,8 +563,8 @@ export const submitForm = async (
     }
 
     let draftId = null;
-    if (isDraft) {
-      const draft = await addDraftWorkspace(context, user, { name: form.name });
+    if (finalIsDraft) {
+      const draft = await addDraftWorkspace(context, user, { name: `${form.name} - ${nowTime()}` });
       draftId = draft.id;
     }
     await pushToWorkerForConnector(connectorId, {
@@ -557,7 +572,7 @@ export const submitForm = async (
       applicant_id: user.id,
       content,
       work_id: work.id,
-      draft_context: draftId,
+      draft_id: draftId,
       update: true
     });
 
@@ -567,7 +582,7 @@ export const submitForm = async (
       success: true,
       bundleId: bundle.id,
       message: 'Form submitted successfully and sent for processing',
-      entityId: mainEntityStixId
+      entityId: finalIsDraft ? draftId : mainEntityStixId
     };
   } catch (error) {
     logApp.error('[FORM] Error sending bundle to connector queue', { error });

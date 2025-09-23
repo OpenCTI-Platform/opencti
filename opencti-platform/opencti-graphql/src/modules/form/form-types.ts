@@ -30,6 +30,8 @@ export interface AdditionalEntity {
   fieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   parseField?: 'text' | 'textarea'; // Type of field when using parsed mode
   parseMode?: 'comma' | 'line'; // How to parse the field (comma-separated or line-by-line)
+  required?: boolean;
+  minAmount?: number;
 }
 
 // Relationship configuration
@@ -80,6 +82,8 @@ export interface FormSchemaDefinition {
   version: string; // Schema version for future compatibility
   mainEntityType: string; // Main entity type this form creates (e.g., 'Report', 'Incident')
   includeInContainer?: boolean; // Whether to include entities in container (only for container types)
+  isDraftByDefault?: boolean; // Whether forms should be created as draft by default
+  allowDraftOverride?: boolean; // Whether users can override the draft setting
   mainEntityMultiple?: boolean; // Whether main entity allows multiple instances
   mainEntityLookup?: boolean; // Whether main entity is an entity lookup (select existing)
   mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
@@ -123,19 +127,6 @@ export interface StixForm extends StixObject {
   };
 }
 
-// Parsed form with schema object
-export type FormParsed = Omit<BasicStoreEntityForm, 'form_schema'> & {
-  form_schema: FormSchemaDefinition;
-};
-
-// Form submission data
-export interface FormSubmissionData {
-  formId: string;
-  values: Record<string, any>;
-  confidence?: number;
-  userId?: string;
-}
-
 // JSON Schema for validation
 export const FormSchemaDefinitionSchema: Record<string, any> = {
   type: 'object',
@@ -157,6 +148,8 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
       enum: ['comma', 'line']
     },
     includeInContainer: { type: 'boolean' },
+    isDraftByDefault: { type: 'boolean' },
+    allowDraftOverride: { type: 'boolean' },
     additionalEntities: {
       type: 'array',
       items: {

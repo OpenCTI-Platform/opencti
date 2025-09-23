@@ -122,6 +122,8 @@ const entityCheckQuery = graphql`
 
 interface FormViewInnerProps {
   queryRef: PreloadedQuery<FormViewQuery>;
+  embedded?: boolean;
+  onSuccess?: () => void;
 }
 
 interface EntityCheckResult {
@@ -134,15 +136,15 @@ interface FormInitialValues {
   [key: string]: string | boolean | string[] | Date | Record<string, unknown> | Record<string, unknown>[] | number | null;
 }
 
-const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
+const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedded = false, onSuccess }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [isDraft, setIsDraft] = useState(false);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
   const [pollingEntityType, setPollingEntityType] = useState<string | null>(null);
+  const [pollingTimeout, setPollingTimeout] = useState(false);
   const isConnectorReader = useGranted([MODULES]);
   const isGrantedIngestion = useGranted([INGESTION]);
 
@@ -171,6 +173,9 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
   const validationSchema = convertFormSchemaToYupSchema(schema, t_i18n);
   const initialValues: FormInitialValues = {};
+
+  // Initialize isDraft based on schema settings
+  const [isDraft, setIsDraft] = useState(schema.isDraftByDefault || false);
 
   // Initialize values for main entity fields
   const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
@@ -264,9 +269,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
     });
   }
 
-  // Poll for entity existence
+  // Poll for entity existence with timeout
   useEffect(() => {
     if (!pollingEntityId || !pollingEntityType) return undefined;
+
+    const startTime = Date.now();
+    const TIMEOUT = 30000; // 30 seconds timeout
+    let interval: NodeJS.Timeout;
 
     const checkEntity = async () => {
       try {
@@ -276,20 +285,42 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
           { id: pollingEntityId },
         ).toPromise() as EntityCheckResult | null;
         if (result?.stixCoreObject?.id) {
+          if (onSuccess) onSuccess(); // Close dialog before navigating
           navigate(`/dashboard/id/${pollingEntityId}`);
+          if (interval) clearInterval(interval);
+          return true;
         }
       } catch {
         // Entity doesn't exist yet, continue polling
       }
+
+      // Check if timeout reached
+      if (Date.now() - startTime >= TIMEOUT) {
+        // Timeout reached, set flag and redirect to fallback
+        setPollingTimeout(true);
+        setTimeout(() => {
+          if (onSuccess) onSuccess(); // Close dialog before navigating
+          const fallbackPath = isConnectorReader
+            ? '/dashboard/data/ingestion/connectors'
+            : '/dashboard';
+          navigate(fallbackPath);
+        }, 2000); // Give user time to see the timeout message
+        if (interval) clearInterval(interval);
+        return true;
+      }
+
+      return false;
     };
 
     // Start polling
     checkEntity();
-    const interval = setInterval(checkEntity, 2000); // Check every 2 seconds
+    interval = setInterval(checkEntity, 2000); // Check every 2 seconds
 
     // Cleanup
-    return () => clearInterval(interval);
-  }, [pollingEntityId, pollingEntityType, navigate]);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [pollingEntityId, pollingEntityType, navigate, isConnectorReader, onSuccess]);
 
   const handleSubmit = async (values: Record<string, string | string[] | { value: string } | { value: string }[]>, { setSubmitting }: FormikHelpers<Record<string, unknown>>) => {
     setSubmitError(null);
@@ -308,8 +339,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
             setSubmitted(true);
             setSubmitting(false);
             if (response.formSubmit.entityId) {
-              setPollingEntityId(response.formSubmit.entityId);
-              setPollingEntityType(schema.mainEntityType || 'StixDomainObject');
+              if (isDraft) {
+                navigate(`/dashboard/data/import/draft/${response.formSubmit.entityId}`);
+              } else {
+                setPollingEntityId(response.formSubmit.entityId);
+                setPollingEntityType(schema.mainEntityType || 'StixDomainObject');
+              }
             }
           } else {
             setSubmitError(response?.formSubmit?.message || 'Submission failed');
@@ -329,13 +364,15 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
 
   if (submitted && (pollingEntityId || pollingEntityType)) {
     return (
-      <div className={classes.pollingContainer}>
+      <div className={classes.pollingContainer} style={embedded ? { height: '400px' } : undefined}>
         <CircularProgress size={60} className={classes.pollingLoader} />
         <Typography variant="h6" gutterBottom>
-          {t_i18n('Creating entities...')}
+          {pollingTimeout ? t_i18n('Processing is taking longer than expected...') : t_i18n('Creating entities...')}
         </Typography>
         <Typography variant="body2" color="textSecondary">
-          {t_i18n('Please wait while we process your submission.')}
+          {pollingTimeout
+            ? t_i18n('Redirecting you to the dashboard...')
+            : t_i18n('Please wait while we process your submission.')}
         </Typography>
       </div>
     );
@@ -343,14 +380,16 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
 
   return (
     <div className={classes.container}>
-      <Breadcrumbs
-        elements={[
-          { label: t_i18n('Data') },
-          { label: t_i18n('Ingestion'), link: isConnectorReader ? '/dashboard/data/ingestion' : undefined },
-          { label: t_i18n('Form intakes'), link: isGrantedIngestion ? '/dashboard/data/ingestion/forms' : undefined },
-          { label: form.name, current: true },
-        ]}
-      />
+      {!embedded && (
+        <Breadcrumbs
+          elements={[
+            { label: t_i18n('Data') },
+            { label: t_i18n('Ingestion'), link: isConnectorReader ? '/dashboard/data/ingestion' : undefined },
+            { label: t_i18n('Form intakes'), link: isGrantedIngestion ? '/dashboard/data/ingestion/forms' : undefined },
+            { label: form.name, current: true },
+          ]}
+        />
+      )}
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Typography variant="h1" gutterBottom={true}>
           {form.name}
@@ -659,7 +698,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
                     <Checkbox
                       checked={isDraft}
                       onChange={(e) => setIsDraft(e.target.checked)}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
                     />
                   }
                   label={t_i18n('Create as draft')}
@@ -683,8 +722,15 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   );
 };
 
-const FormView: FunctionComponent = () => {
-  const { formId } = useParams<{ formId: string }>();
+interface FormViewProps {
+  formId?: string;
+  embedded?: boolean;
+  onSuccess?: () => void;
+}
+
+const FormView: FunctionComponent<FormViewProps> = ({ formId: propFormId, embedded = false, onSuccess }) => {
+  const { formId: routeFormId } = useParams<{ formId: string }>();
+  const formId = propFormId || routeFormId;
   const [queryRef, loadQuery] = useQueryLoader<FormViewQuery>(formViewQuery);
 
   React.useEffect(() => {
@@ -699,7 +745,7 @@ const FormView: FunctionComponent = () => {
 
   return (
     <React.Suspense fallback={<Loader variant={LoaderVariant.container} />}>
-      <FormViewInner queryRef={queryRef} />
+      <FormViewInner queryRef={queryRef} embedded={embedded} onSuccess={onSuccess} />
     </React.Suspense>
   );
 };

@@ -3,7 +3,7 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Assignment } from '@mui/icons-material';
+import { AssignmentOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { StixCoreObjectFormsFormsQuery$data } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFormsFormsQuery.graphql';
 import Drawer from '../drawer/Drawer';
@@ -38,7 +38,7 @@ const StixCoreObjectFormSelector: FunctionComponent<StixCoreObjectFormSelectorPr
                 divider
               >
                 <ListItemIcon>
-                  <Assignment color="primary" />
+                  <AssignmentOutlined color="primary" />
                 </ListItemIcon>
                 <ListItemText
                   primary={formEdge.node.name}

@@ -100,6 +100,8 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         description: form.description || '',
         mainEntityType: schema.mainEntityType,
         includeInContainer: schema.includeInContainer || false,
+        isDraftByDefault: schema.isDraftByDefault || false,
+        allowDraftOverride: schema.allowDraftOverride || false,
         mainEntityMultiple: schema.mainEntityMultiple || false,
         mainEntityLookup: schema.mainEntityLookup || false,
         mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',

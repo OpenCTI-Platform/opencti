@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery, useQueryLoader } from 'reac
 import { StixCoreObjectFormsFormsQuery, StixCoreObjectFormsFormsQuery$variables } from '@components/common/stix_core_objects/__generated__/StixCoreObjectFormsFormsQuery.graphql';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { Assignment } from '@mui/icons-material';
+import { AssignmentOutlined } from '@mui/icons-material';
 import StixCoreObjectFormSelector from '@components/common/stix_core_objects/StixCoreObjectFormSelector';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -52,7 +52,7 @@ const StixCoreObjectFormsComponent: FunctionComponent<StixCoreObjectFormsCompone
               marginLeft: '6px',
             }}
           >
-            <Assignment />
+            <AssignmentOutlined />
           </IconButton>
         </Tooltip>
       )}

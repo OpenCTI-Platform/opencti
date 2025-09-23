@@ -1,6 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addForm, findFormPaginated, findById, formDelete, formEditField, submitForm } from './form-domain';
-import { logApp } from '../../config/conf';
+import { addForm, findFormPaginated, findById, formDelete, formEditField, formSubmit } from './form-domain';
 
 const formResolvers: Resolvers = {
   Query: {
@@ -16,26 +15,10 @@ const formResolvers: Resolvers = {
       return formEditField(context, context.user, id, input);
     },
     formDelete: async (_, { id }, context) => {
-      await formDelete(context, context.user, id);
-      return id;
+      return formDelete(context, context.user, id);
     },
-    formSubmit: async (_, { input }, context) => {
-      try {
-        const submission = {
-          formId: input.formId,
-          values: JSON.parse(input.values),
-          userId: context.user?.id,
-        };
-        const result = await submitForm(context, context.user, submission);
-        return result;
-      } catch (error: any) {
-        logApp.error('[FORM] Failed to submit', { error });
-        return {
-          success: false,
-          bundleId: null,
-          message: error.message || 'Form submission failed',
-        };
-      }
+    formSubmit: async (_, { input, isDraft }, context) => {
+      return formSubmit(context, context.user, input, isDraft);
     },
   },
 };
