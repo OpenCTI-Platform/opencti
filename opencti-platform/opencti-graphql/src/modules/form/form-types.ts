@@ -30,6 +30,9 @@ export interface AdditionalEntity {
   fieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   parseField?: 'text' | 'textarea'; // Type of field when using parsed mode
   parseMode?: 'comma' | 'line'; // How to parse the field (comma-separated or line-by-line)
+  parseFieldMapping: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
+  autoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  generateIndicatorFromObservable?: boolean; // For Observable types: generate associated indicators
   required?: boolean;
   minAmount?: number;
 }
@@ -89,6 +92,9 @@ export interface FormSchemaDefinition {
   mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   mainEntityParseField?: 'text' | 'textarea'; // Type of field when using parsed mode for main entity
   mainEntityParseMode?: 'comma' | 'line'; // How to parse the field for main entity
+  mainEntityParseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
+  mainEntityAutoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  mainEntityGenerateIndicatorFromObservable?: boolean; // For Observable types: generate associated indicators
   additionalEntities?: AdditionalEntity[]; // Additional entities to include in the form
   fields: FormFieldDefinition[];
   relationships?: FormRelationshipDefinition[]; // Relationships between entities
@@ -147,6 +153,9 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
       type: 'string',
       enum: ['comma', 'line']
     },
+    mainEntityParseFieldMapping: { type: 'string' },
+    mainEntityAutoConvertToStixPattern: { type: 'boolean' },
+    mainEntityGenerateIndicatorFromObservable: { type: 'boolean' },
     includeInContainer: { type: 'boolean' },
     isDraftByDefault: { type: 'boolean' },
     allowDraftOverride: { type: 'boolean' },
@@ -174,6 +183,9 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
             type: 'string',
             enum: ['comma', 'line']
           },
+          parseFieldMapping: { type: 'string' },
+          autoConvertToStixPattern: { type: 'boolean' },
+          generateIndicatorFromObservable: { type: 'boolean' },
         },
         required: ['id', 'entityType', 'label'],
       },

@@ -19,11 +19,13 @@ import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixId } from '../../types/stix-2-1-common';
-import { isEmptyField } from '../../database/utils';
-import { ENTITY_TYPE_MALWARE, isStixDomainObject, isStixDomainObjectContainer, isStixObjectAliased } from '../../schema/stixDomainObject';
+import { isEmptyField, isNotEmptyField } from '../../database/utils';
+import { ENTITY_TYPE_MALWARE, isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import type { StixRelation } from '../../types/stix-2-1-sro';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+import { detectObservableType } from '../../utils/observable';
+import { createStixPattern } from '../../python/pythonBridge';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -371,8 +373,19 @@ export const formSubmit = async (
     } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
       for (let index = 0; index < values.mainEntityParsed.length; index += 1) {
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
-        if (isStixObjectAliased(mainEntityType)) {
-          mainEntity.name = values.mainEntityParsed[index];
+        if (schema.mainEntityParseFieldMapping === 'pattern' && schema.mainEntityAutoConvertToStixPattern) {
+          // Auto convert the value
+          const observableType = detectObservableType(values.mainEntityParsed[index]);
+          const observableValue = values.mainEntityParsed[index];
+          const pattern = await createStixPattern(context, user, observableType, observableValue);
+          mainEntity[schema.mainEntityParseFieldMapping] = pattern;
+          mainEntity.pattern_type = 'stix';
+          mainEntity.name = observableValue;
+          mainEntity.x_opencti_main_observable_type = observableType;
+        } else {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
+          mainEntity[schema.mainEntityParseFieldMapping] = values.mainEntityParsed[index];
         }
         if (mainEntityType === ENTITY_TYPE_MALWARE) {
           mainEntity.is_family = true;
@@ -404,57 +417,74 @@ export const formSubmit = async (
       const additionalEntity = schema.additionalEntities[index];
       const additionalEntityType = additionalEntity.entityType;
       if (additionalEntity.lookup) {
-        const vals = Array.isArray(values[`additional_${additionalEntity.id}_lookup`]) ? values[`additional_${additionalEntity.id}_lookup`] : [values[`additional_${additionalEntity.id}_lookup`]];
-        const additionalEntities = await Promise.all(vals.map((id: string) => {
-          return storeLoadById<StoreEntityForm>(context, user, id, additionalEntityType);
-        }));
-        for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
-          const stixAdditionalEntity = convertStoreToStix(additionalEntities[index2]);
-          bundle.objects.push(stixAdditionalEntity);
-          if (additionalEntitiesMap[additionalEntity.id]) {
-            additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
-          } else {
-            additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+        if (isNotEmptyField(values[`additional_${additionalEntity.id}_lookup`])) {
+          const vals = Array.isArray(values[`additional_${additionalEntity.id}_lookup`]) ? values[`additional_${additionalEntity.id}_lookup`] : [values[`additional_${additionalEntity.id}_lookup`]];
+          const additionalEntities = await Promise.all(vals.map((id: string) => {
+            return storeLoadById<StoreEntityForm>(context, user, id, additionalEntityType);
+          }));
+          for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
+            const stixAdditionalEntity = convertStoreToStix(additionalEntities[index2]);
+            bundle.objects.push(stixAdditionalEntity);
+            if (additionalEntitiesMap[additionalEntity.id]) {
+              additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
+            } else {
+              additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+            }
           }
         }
       } else {
         const additionalEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
         if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
-          for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
-            let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
-            for (let i = 0; i < additionalEntityFields.length; i += 1) {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-expect-error
-              newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[`additional_${additionalEntity.id}_groups`][index2][additionalEntityFields[i].name];
-            }
-            newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-            const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
-            bundle.objects.push(stixAdditionalEntity);
-            if (additionalEntitiesMap[additionalEntity.id]) {
-              additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
-            } else {
-              additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+          if (isNotEmptyField(values[`additional_${additionalEntity.id}_groups`])) {
+            for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
+              let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
+              for (let i = 0; i < additionalEntityFields.length; i += 1) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[`additional_${additionalEntity.id}_groups`][index2][additionalEntityFields[i].name];
+              }
+              newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
+              const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
+              bundle.objects.push(stixAdditionalEntity);
+              if (additionalEntitiesMap[additionalEntity.id]) {
+                additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
+              } else {
+                additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+              }
             }
           }
         } else if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
-          for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_parsed`].length; index2 += 1) {
-            let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
-            if (isStixObjectAliased(additionalEntityType)) {
-              newAdditionalEntity.name = values[`additional_${additionalEntity.id}_parsed`][index2];
-            }
-            if (mainEntityType === ENTITY_TYPE_MALWARE) {
-              newAdditionalEntity.is_family = true;
-            }
-            if (mainEntityType === ENTITY_TYPE_CONTAINER_GROUPING) {
-              newAdditionalEntity.context = 'form';
-            }
-            newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-            const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
-            bundle.objects.push(stixAdditionalEntity);
-            if (additionalEntitiesMap[additionalEntity.id]) {
-              additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
-            } else {
-              additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+          if (isNotEmptyField(values[`additional_${additionalEntity.id}_parsed`])) {
+            for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_parsed`].length; index2 += 1) {
+              let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
+              if (additionalEntity.parseFieldMapping === 'pattern' && additionalEntity.autoConvertToStixPattern) {
+                // Auto convert the value
+                const observableType = detectObservableType(values[`additional_${additionalEntity.id}_parsed`][index2]);
+                const observableValue = values[`additional_${additionalEntity.id}_parsed`][index2];
+                const pattern = await createStixPattern(context, user, observableType, observableValue);
+                newAdditionalEntity[additionalEntity.parseFieldMapping] = pattern;
+                newAdditionalEntity.pattern_type = 'stix';
+                newAdditionalEntity.name = observableValue;
+                newAdditionalEntity.x_opencti_main_observable_type = observableType;
+              } else {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                newAdditionalEntity[additionalEntity.parseFieldMapping] = values[`additional_${additionalEntity.id}_parsed`][index2];
+              }
+              if (additionalEntityType === ENTITY_TYPE_MALWARE) {
+                newAdditionalEntity.is_family = true;
+              }
+              if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING) {
+                newAdditionalEntity.context = 'form';
+              }
+              newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
+              const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
+              bundle.objects.push(stixAdditionalEntity);
+              if (additionalEntitiesMap[additionalEntity.id]) {
+                additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
+              } else {
+                additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+              }
             }
           }
         } else {

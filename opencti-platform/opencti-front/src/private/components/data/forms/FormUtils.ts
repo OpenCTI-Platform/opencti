@@ -311,8 +311,8 @@ export const getInitialMandatoryFields = (
  */
 type EntitySettingNode = {
   target_type: string;
-  mandatoryAttributes: ReadonlyArray<string>;
-  attributesDefinitions: ReadonlyArray<{
+  mandatoryAttributes?: ReadonlyArray<string>;
+  attributesDefinitions?: ReadonlyArray<{
     type: string;
     name: string;
     label?: string | null;
@@ -331,18 +331,7 @@ export const buildEntityTypes = (
   const { sdos, scos, smos } = schema;
 
   // Create a map of entity settings for quick lookup
-  const settingsMap = new Map<string, {
-    mandatoryAttributes: ReadonlyArray<string>;
-    attributesDefinitions: ReadonlyArray<{
-      type: string;
-      name: string;
-      label?: string | null;
-      mandatory: boolean;
-      mandatoryType?: string;
-      multiple?: boolean | null;
-      defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
-    }>;
-  }>();
+  const settingsMap = new Map<string, EntitySettingNode>();
   entitySettings?.edges?.forEach(({ node }) => {
     if (node && 'target_type' in node) {
       settingsMap.set(node.target_type, node);
@@ -405,6 +394,9 @@ export const convertFormBuilderDataToSchema = (
     mainEntityFieldMode: values.mainEntityFieldMode,
     mainEntityParseField: values.mainEntityParseField,
     mainEntityParseMode: values.mainEntityParseMode,
+    mainEntityParseFieldMapping: values.mainEntityParseFieldMapping,
+    mainEntityAutoConvertToStixPattern: values.mainEntityAutoConvertToStixPattern,
+    mainEntityGenerateIndicatorFromObservable: values.mainEntityGenerateIndicatorFromObservable,
     additionalEntities: values.additionalEntities,
     fields: values.fields.map((field) => ({
       id: field.id,

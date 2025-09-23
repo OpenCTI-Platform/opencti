@@ -81,7 +81,7 @@ const ImportFilesFormSelectorContent: React.FC<ImportFilesFormSelectorContentPro
               />
             </ListItem>
           ) : (
-            forms.map((edge: any) => {
+            forms.map((edge) => {
               const form = edge.node;
               const schema = form.form_schema ? JSON.parse(form.form_schema) : null;
               const mainEntityType = schema?.mainEntityType || '';

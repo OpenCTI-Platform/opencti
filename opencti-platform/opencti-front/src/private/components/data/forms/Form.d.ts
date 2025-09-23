@@ -33,6 +33,9 @@ export interface AdditionalEntity {
   fieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   parseField?: 'text' | 'textarea'; // Type of field when using parsed mode
   parseMode?: 'comma' | 'line'; // How to parse the field (comma-separated or line-by-line)
+  parseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
+  autoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  generateIndicatorFromObservable?: boolean; // For Observable types: generate associated indicators
 }
 
 export interface EntityRelationship {
@@ -55,6 +58,9 @@ export interface FormBuilderData {
   mainEntityFieldMode?: 'multiple' | 'parsed'; // Whether to have multiple fields or parse a single field
   mainEntityParseField?: 'text' | 'textarea'; // Type of field when using parsed mode for main entity
   mainEntityParseMode?: 'comma' | 'line'; // How to parse the field for main entity
+  mainEntityParseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
+  mainEntityAutoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  mainEntityGenerateIndicatorFromObservable?: boolean; // For Observable types: generate associated indicators
   additionalEntities: AdditionalEntity[];
   fields: FormFieldAttribute[];
   relationships: EntityRelationship[];
@@ -87,6 +93,9 @@ export interface FormSchemaDefinition {
   mainEntityFieldMode?: 'multiple' | 'parsed';
   mainEntityParseField?: 'text' | 'textarea';
   mainEntityParseMode?: 'comma' | 'line';
+  mainEntityParseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
+  mainEntityAutoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  mainEntityGenerateIndicatorFromObservable?: boolean; // For Observable types: generate associated indicators
   additionalEntities: AdditionalEntity[];
   fields: FormFieldDefinition[];
   relationships: FormRelationshipDefinition[];

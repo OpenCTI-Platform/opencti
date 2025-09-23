@@ -51,29 +51,21 @@ interface FormCreationProps {
 
 export const formCreationQuery = graphql`
   query FormCreationQuery {
-    entitySettings {
-      edges {
-        node {
+    schemaAttributes {
+      type
+      attributes {
+        name
+        type
+        label
+        mandatory
+        mandatoryType
+        editDefault
+        multiple
+        upsert
+        scale
+        defaultValues {
           id
-          target_type
-          platform_entity_files_ref
-          platform_hidden_type
-          enforce_reference
-          availableSettings
-          mandatoryAttributes
-          attributesDefinitions {
-            type
-            name
-            label
-            mandatory
-            mandatoryType
-            multiple
-            scale
-            defaultValues {
-              id
-              name
-            }
-          }
+          name
         }
       }
     }
@@ -90,10 +82,23 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
   const { t_i18n } = useFormatter();
   const [formBuilderData, setFormBuilderData] = useState<FormBuilderData | null>(null);
 
-  const { entitySettings } = usePreloadedQuery(formCreationQuery, queryRef);
-  if (!entitySettings) {
+  const data = usePreloadedQuery(formCreationQuery, queryRef);
+  const { schemaAttributes } = data;
+  if (!schemaAttributes) {
     return null;
   }
+
+  // Convert schemaAttributes to the expected format for FormSchemaEditor
+  const mergedEntitySettings = {
+    edges: schemaAttributes
+      .filter((typeAttributes) => typeAttributes != null)
+      .map((typeAttributes) => ({
+        node: {
+          target_type: typeAttributes.type || '',
+          attributesDefinitions: typeAttributes.attributes || [],
+        },
+      })),
+  };
 
   const initialValues: FormAddInput = useMemo(() => {
     if (formData) {
@@ -126,6 +131,23 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
     // Get the schema from the FormSchemaEditor state
     if (!formBuilderData) {
       setFieldError('form_schema', t_i18n('Form schema is required'));
+      setSubmitting(false);
+      return;
+    }
+
+    // Validate that mainEntityParseFieldMapping is set when fieldMode is parsed
+    if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
+      setFieldError('form_schema', t_i18n('Map parsed values to attribute is required when using parsed mode'));
+      setSubmitting(false);
+      return;
+    }
+
+    // Validate additionalEntities parseFieldMapping
+    const missingMappings = formBuilderData.additionalEntities
+      .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
+      .map((entity) => entity.label);
+    if (missingMappings.length > 0) {
+      setFieldError('form_schema', t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '));
       setSubmitting(false);
       return;
     }
@@ -227,7 +249,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
 
             <FormSchemaEditor
               initialValues={initialFormBuilderData}
-              entitySettings={entitySettings}
+              entitySettings={mergedEntitySettings}
               onChange={setFormBuilderData}
             />
 

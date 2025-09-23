@@ -1098,6 +1098,12 @@ export type AttributeRefInput = {
   multiple?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+export type AttributesMap = {
+  __typename?: 'AttributesMap';
+  attributes: Array<TypeAttribute>;
+  type: Scalars['String']['output'];
+};
+
 export enum AttributesOrdering {
   Score = '_score',
   Value = 'value'
@@ -21315,6 +21321,7 @@ export type Query = {
   runtimeAttributes?: Maybe<AttributeConnection>;
   savedFilters?: Maybe<SavedFilterConnection>;
   schemaAttributeNames?: Maybe<AttributeConnection>;
+  schemaAttributes?: Maybe<Array<Maybe<AttributesMap>>>;
   schemaRelationsRefTypesMapping: Array<StixRelationshipRefSchema>;
   schemaRelationsTypesMapping: Array<StixRelationshipSchema>;
   sector?: Maybe<Sector>;
@@ -22027,6 +22034,7 @@ export type QueryEntitySettingsArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  includeObservables?: InputMaybe<Scalars['Boolean']['input']>;
   orderBy?: InputMaybe<EntitySettingsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -31251,6 +31259,7 @@ export type TypeAttribute = {
   name: Scalars['String']['output'];
   scale?: Maybe<Scalars['String']['output']>;
   type: Scalars['String']['output'];
+  upsert: Scalars['Boolean']['output'];
 };
 
 export enum UnitSystem {
@@ -33654,6 +33663,7 @@ export type ResolversTypes = ResolversObject<{
   AttributePath: ResolverTypeWrapper<AttributePath>;
   AttributeRef: ResolverTypeWrapper<AttributeRef>;
   AttributeRefInput: AttributeRefInput;
+  AttributesMap: ResolverTypeWrapper<AttributesMap>;
   AttributesOrdering: AttributesOrdering;
   AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
   AutonomousSystem: ResolverTypeWrapper<Omit<AutonomousSystem, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -34661,6 +34671,7 @@ export type ResolversParentTypes = ResolversObject<{
   AttributePath: AttributePath;
   AttributeRef: AttributeRef;
   AttributeRefInput: AttributeRefInput;
+  AttributesMap: AttributesMap;
   AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
   AutonomousSystem: Omit<AutonomousSystem, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   AutonomousSystemAddInput: AutonomousSystemAddInput;
@@ -35898,6 +35909,12 @@ export type AttributeRefResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   multiple?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AttributesMapResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributesMap'] = ResolversParentTypes['AttributesMap']> = ResolversObject<{
+  attributes?: Resolver<Array<ResolversTypes['TypeAttribute']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42615,6 +42632,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   runtimeAttributes?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QueryRuntimeAttributesArgs, 'attributeName'>>;
   savedFilters?: Resolver<Maybe<ResolversTypes['SavedFilterConnection']>, ParentType, ContextType, Partial<QuerySavedFiltersArgs>>;
   schemaAttributeNames?: Resolver<Maybe<ResolversTypes['AttributeConnection']>, ParentType, ContextType, RequireFields<QuerySchemaAttributeNamesArgs, 'elementType'>>;
+  schemaAttributes?: Resolver<Maybe<Array<Maybe<ResolversTypes['AttributesMap']>>>, ParentType, ContextType>;
   schemaRelationsRefTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipRefSchema']>, ParentType, ContextType>;
   schemaRelationsTypesMapping?: Resolver<Array<ResolversTypes['StixRelationshipSchema']>, ParentType, ContextType>;
   sector?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<QuerySectorArgs>>;
@@ -45156,6 +45174,7 @@ export type TypeAttributeResolvers<ContextType = any, ParentType extends Resolve
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  upsert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -45950,6 +45969,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   AttributeEditMutations?: AttributeEditMutationsResolvers<ContextType>;
   AttributePath?: AttributePathResolvers<ContextType>;
   AttributeRef?: AttributeRefResolvers<ContextType>;
+  AttributesMap?: AttributesMapResolvers<ContextType>;
   AutonomousSystem?: AutonomousSystemResolvers<ContextType>;
   BackgroundTask?: BackgroundTaskResolvers<ContextType>;
   BackgroundTaskAction?: BackgroundTaskActionResolvers<ContextType>;

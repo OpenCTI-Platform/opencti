@@ -1,22 +1,7 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Add, DeleteOutlined, AddCircleOutlined } from '@mui/icons-material';
-import {
-  Box,
-  IconButton,
-  MenuItem,
-  Tab,
-  Tabs,
-  Typography,
-  TextField as MuiTextField,
-  Alert,
-  Button,
-  Select,
-  FormControl,
-  InputLabel,
-  Switch,
-  FormControlLabel,
-} from '@mui/material';
+import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import {
@@ -88,15 +73,16 @@ interface FormSchemaEditorProps {
   entitySettings: {
     edges: ReadonlyArray<{
       node: {
-        id: string;
+        id?: string;
         target_type: string;
-        mandatoryAttributes: ReadonlyArray<string>;
-        attributesDefinitions: ReadonlyArray<{
+        mandatoryAttributes?: ReadonlyArray<string>;
+        attributesDefinitions?: ReadonlyArray<{
           type: string;
           name: string;
           label?: string | null;
           mandatory: boolean;
           multiple?: boolean | null;
+          upsert?: boolean;
           defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
         }>;
       };
@@ -356,7 +342,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           )}
         </div>
 
-        <MuiTextField
+        <TextField
           variant="standard"
           label={t_i18n('Field Label')}
           fullWidth
@@ -409,7 +395,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <Typography variant="caption">{t_i18n('Options')}</Typography>
             {field.options?.map((option, optIndex) => (
               <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
-                <MuiTextField
+                <TextField
                   variant="standard"
                   label={t_i18n('Label')}
                   value={option.label}
@@ -420,7 +406,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                   }}
                   style={{ flex: 1, marginRight: 10 }}
                 />
-                <MuiTextField
+                <TextField
                   variant="standard"
                   label={t_i18n('Value')}
                   value={option.value}
@@ -459,7 +445,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
         {/* Default value field for text, number, textarea, select, and date fields */}
         {(field.type === 'text' || field.type === 'textarea' || field.type === 'number' || field.type === 'date' || field.type === 'datetime' || field.type === 'select') && (
-          <MuiTextField
+          <TextField
             variant="standard"
             label={t_i18n('Default value')}
             fullWidth
@@ -573,7 +559,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Select>
         </FormControl>
 
-        <MuiTextField
+        <TextField
           variant="standard"
           label={t_i18n('Label for entities')}
           fullWidth
@@ -605,7 +591,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         />
 
         {entity.multiple ? (
-          <MuiTextField
+          <TextField
             variant="standard"
             label={t_i18n('Minimum amount (0 for optional)')}
             type="number"
@@ -672,6 +658,57 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 )}
               </Select>
             </FormControl>
+            <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+              <InputLabel>{t_i18n('Map parsed values to attribute')}</InputLabel>
+              <Select
+                value={entity.parseFieldMapping || ''}
+                onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.parseFieldMapping`, e.target.value)}
+                label={t_i18n('Map parsed values to attribute')}
+              >
+                {(() => {
+                  const entityTypeSettings = entitySettings?.edges.find((e) => e.node.target_type === entity.entityType);
+                  const availableAttributes = entityTypeSettings?.node.attributesDefinitions
+                    ?.filter((attr) => attr.type === 'string' && attr.upsert === true)
+                    .map((attr) => ({
+                      value: attr.name,
+                      label: attr.label || attr.name,
+                    })) || [];
+                  return availableAttributes.map((attr) => (
+                    <MenuItem key={attr.value} value={attr.value}>
+                      {attr.label}
+                    </MenuItem>
+                  ));
+                })()}
+              </Select>
+            </FormControl>
+
+            {/* Show auto-convert to STIX pattern toggle for Indicator type */}
+            {entity.entityType === 'Indicator' && (
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={entity.autoConvertToStixPattern || false}
+                    onChange={() => handleFieldChange(`additionalEntities.${entityIndex}.autoConvertToStixPattern`, !entity.autoConvertToStixPattern)}
+                  />
+                }
+                label={t_i18n('Automatically convert to STIX patterns')}
+                style={{ marginTop: 20 }}
+              />
+            )}
+
+            {/* Show generate indicator toggle for Observable types */}
+            {entity.entityType && entity.entityType.includes('Observable') && (
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={entity.generateIndicatorFromObservable || false}
+                    onChange={() => handleFieldChange(`additionalEntities.${entityIndex}.generateIndicatorFromObservable`, !entity.generateIndicatorFromObservable)}
+                  />
+                }
+                label={t_i18n('Generate indicators from observables')}
+                style={{ marginTop: 20 }}
+              />
+            )}
           </>
         )}
 
@@ -938,6 +975,58 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                   )}
                 </Select>
               </FormControl>
+              <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+                <InputLabel>{t_i18n('Map parsed values to attribute')}</InputLabel>
+                <Select
+                  value={formData.mainEntityParseFieldMapping || ''}
+                  onChange={(e) => handleFieldChange('mainEntityParseFieldMapping', e.target.value)}
+                  label={t_i18n('Map parsed values to attribute')}
+                >
+                  {(() => {
+                    const { mainEntityType } = formData;
+                    const entityTypeSettings = entitySettings?.edges.find((e) => e.node.target_type === mainEntityType);
+                    const availableAttributes = entityTypeSettings?.node.attributesDefinitions
+                      ?.filter((attr) => attr.type === 'string' && attr.upsert === true)
+                      .map((attr) => ({
+                        value: attr.name,
+                        label: attr.label || attr.name,
+                      })) || [];
+                    return availableAttributes.map((attr) => (
+                      <MenuItem key={attr.value} value={attr.value}>
+                        {attr.label}
+                      </MenuItem>
+                    ));
+                  })()}
+                </Select>
+              </FormControl>
+
+              {/* Show auto-convert to STIX pattern toggle for Indicator type */}
+              {formData.mainEntityType === 'Indicator' && (
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.mainEntityAutoConvertToStixPattern || false}
+                      onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                    />
+                  }
+                  label={t_i18n('Automatically convert to STIX patterns')}
+                  style={{ marginTop: 20 }}
+                />
+              )}
+
+              {/* Show generate indicator toggle for Observable types */}
+              {formData.mainEntityType && formData.mainEntityType.includes('Observable') && (
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.mainEntityGenerateIndicatorFromObservable || false}
+                      onChange={() => handleFieldChange('mainEntityGenerateIndicatorFromObservable', !formData.mainEntityGenerateIndicatorFromObservable)}
+                    />
+                  }
+                  label={t_i18n('Generate indicators from observables')}
+                  style={{ marginTop: 20 }}
+                />
+              )}
             </>
           )}
 

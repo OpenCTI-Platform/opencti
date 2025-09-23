@@ -435,6 +435,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     }
                     if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
                       // Parsed mode - single text field to parse
+                      let helperText;
+                      if (schema.mainEntityType === 'Indicator' && schema.mainEntityAutoConvertToStixPattern) {
+                        helperText = t_i18n('Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.');
+                      } else if (schema.mainEntityType === 'Indicator') {
+                        helperText = t_i18n('Enter valid STIX patterns (e.g., [ipv4-addr:value = \'192.168.1.1\'])');
+                      }
                       return schema.mainEntityParseField === 'textarea' ? (
                         <Field
                           component={TextField}
@@ -448,6 +454,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           fullWidth={true}
                           variant="standard"
                           style={{ marginTop: 20 }}
+                          helperText={helperText}
                         />
                       ) : (
                         <Field
@@ -459,6 +466,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                             : 'Enter values separated by commas')}
                           variant="standard"
                           fullWidth
+                          helperText={helperText}
                         />
                       );
                     }
@@ -573,6 +581,12 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
                             // Parsed mode - single text field to parse
                             const fieldName = `additional_${additionalEntity.id}_parsed`;
+                            let helperText;
+                            if (additionalEntity.entityType === 'Indicator' && additionalEntity.autoConvertToStixPattern) {
+                              helperText = t_i18n('Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.');
+                            } else if (additionalEntity.entityType === 'Indicator') {
+                              helperText = t_i18n('Enter valid STIX patterns (e.g., [ipv4-addr:value = \'192.168.1.1\'])');
+                            }
                             return additionalEntity.parseField === 'textarea' ? (
                               <Field
                                 component={TextField}
@@ -586,6 +600,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 fullWidth={true}
                                 variant="standard"
                                 style={{ marginTop: 20 }}
+                                helperText={helperText}
                               />
                             ) : (
                               <Field
@@ -597,6 +612,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   : 'Enter values separated by commas')}
                                 variant="standard"
                                 fullWidth
+                                helperText={helperText}
                               />
                             );
                           }

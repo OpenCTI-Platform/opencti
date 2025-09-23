@@ -80,10 +80,26 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   const [formDescription, setFormDescription] = useState(form.description || '');
   const [formActive, setFormActive] = useState(form.active);
   const [formBuilderData, setFormBuilderData] = useState<FormBuilderData | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Use the preloaded query
   const data = usePreloadedQuery(formCreationQuery, queryRef);
-  const entitySettings = data?.entitySettings;
+  const { schemaAttributes } = data;
+
+  // Convert schemaAttributes to the expected format for FormSchemaEditor
+  const mergedEntitySettings = useMemo(() => {
+    if (!schemaAttributes) return { edges: [] };
+    return {
+      edges: schemaAttributes
+        .filter((typeAttributes) => typeAttributes != null)
+        .map((typeAttributes) => ({
+          node: {
+            target_type: typeAttributes.type || '',
+            attributesDefinitions: typeAttributes.attributes || [],
+          },
+        })),
+    };
+  }, [schemaAttributes]);
 
   // Parse the initial form schema to FormBuilderData
   const initialFormData: FormBuilderData | null = useMemo(() => {
@@ -107,6 +123,9 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',
         mainEntityParseField: schema.mainEntityParseField || 'text',
         mainEntityParseMode: schema.mainEntityParseMode || 'comma',
+        mainEntityParseFieldMapping: schema.mainEntityParseFieldMapping || undefined,
+        mainEntityAutoConvertToStixPattern: schema.mainEntityAutoConvertToStixPattern || false,
+        mainEntityGenerateIndicatorFromObservable: schema.mainEntityGenerateIndicatorFromObservable || false,
         additionalEntities: schema.additionalEntities || [],
         fields,
         relationships: schema.relationships || [],
@@ -125,6 +144,24 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   // Handle form submission
   const handleSubmit = () => {
     if (!formBuilderData) return;
+
+    // Validate that mainEntityParseFieldMapping is set when fieldMode is parsed
+    if (formBuilderData.mainEntityFieldMode === 'parsed' && !formBuilderData.mainEntityParseFieldMapping) {
+      setValidationError(t_i18n('Map parsed values to attribute is required when using parsed mode'));
+      return;
+    }
+
+    // Validate additionalEntities parseFieldMapping
+    const missingMappings = formBuilderData.additionalEntities
+      .filter((entity) => entity.fieldMode === 'parsed' && !entity.parseFieldMapping)
+      .map((entity) => entity.label);
+    if (missingMappings.length > 0) {
+      setValidationError(t_i18n('Map parsed values to attribute is required for: ') + missingMappings.join(', '));
+      return;
+    }
+
+    // Clear any existing validation errors
+    setValidationError(null);
 
     setIsSaving(true);
 
@@ -173,7 +210,7 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
   };
 
   // Check conditions for early return
-  if (!initialFormData || !entitySettings) {
+  if (!initialFormData || !mergedEntitySettings) {
     return <Loader />;
   }
 
@@ -212,10 +249,16 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
       <React.Suspense fallback={<Loader />}>
         <FormSchemaEditor
           initialValues={initialFormData}
-          entitySettings={entitySettings}
+          entitySettings={mergedEntitySettings}
           onChange={setFormBuilderData}
         />
       </React.Suspense>
+
+      {validationError && (
+        <div style={{ marginTop: 20, color: '#f44336', textAlign: 'center' }}>
+          {validationError}
+        </div>
+      )}
 
       <div className={classes.buttons}>
         <Button
