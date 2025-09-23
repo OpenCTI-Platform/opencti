@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from 'react';
+import React, { BaseSyntheticEvent, useContext, useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
@@ -7,10 +7,13 @@ import { FileUploadOutlined } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
 import ToggleButton from '@mui/material/ToggleButton';
+import { FormikConfig } from 'formik/dist/types';
+import { WorkspacesLinesPaginationQuery$variables } from './__generated__/WorkspacesLinesPaginationQuery.graphql';
+import { WorkspaceCreationImportMutation } from './__generated__/WorkspaceCreationImportMutation.graphql';
 import VisuallyHiddenInput from '../common/VisuallyHiddenInput';
 import Drawer from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
-import { handleError } from '../../../relay/environment';
+import { handleError, handleErrorInForm } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import MarkdownField from '../../../components/fields/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
@@ -22,6 +25,7 @@ import GradientButton from '../../../components/GradientButton';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import Security from '../../../utils/Security';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
+import type { Theme } from '../../../components/Theme';
 
 const workspaceMutation = graphql`
   mutation WorkspaceCreationMutation($input: WorkspaceAddInput!) {
@@ -38,42 +42,52 @@ export const importMutation = graphql`
   }
 `;
 
-const workspaceValidation = (t_i18n) => Yup.object().shape({
+const workspaceValidation = (t_i18n: (s: string) => string) => Yup.object().shape({
   name: Yup.string().trim().min(2, t_i18n('Name must be at least 2 characters')).required(t_i18n('This field is required')),
   description: Yup.string().nullable(),
 });
 
-const WorkspaceCreation = ({ paginationOptions, type }) => {
-  const theme = useTheme();
+interface WorkspaceCreationForm {
+  name: string,
+  description: string,
+}
+
+interface WorskpaceCreationProps {
+  paginationOptions: WorkspacesLinesPaginationQuery$variables,
+  type: string,
+}
+
+const WorkspaceCreation = ({ paginationOptions, type }: WorskpaceCreationProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const inputRef = useRef();
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const { settings, isXTMHubAccessible } = useContext(UserContext);
   const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings.platform_xtmhub_url}/redirect/octi_custom_dashboards?platform_id=${settings.id}`
     : '';
 
-  const [commitImportMutation] = useApiMutation(importMutation);
+  const [commitImportMutation] = useApiMutation<WorkspaceCreationImportMutation>(importMutation);
   const [commitCreationMutation] = useApiMutation(workspaceMutation);
   const navigate = useNavigate();
 
-  const handleImport = (event) => {
+  const handleImport = (event: BaseSyntheticEvent) => {
     const importedFile = event.target.files[0];
     commitImportMutation({
       variables: { file: importedFile },
       onCompleted: (data) => {
-        inputRef.current.value = null; // Reset the input uploader ref
+        if (inputRef.current) inputRef.current.value = ''; // Reset the input uploader ref
         navigate(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
       },
       onError: (error) => {
-        inputRef.current.value = null; // Reset the input uploader ref
+        if (inputRef.current) inputRef.current.value = ''; // Reset the input uploader ref
         handleError(error);
       },
     });
   };
 
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<WorkspaceCreationForm>['onSubmit'] = (values, { setSubmitting, resetForm, setErrors }) => {
     commitCreationMutation({
       variables: {
         input: {
@@ -89,7 +103,10 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
           'workspaceAdd',
         );
       },
-      setSubmitting,
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
+      },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -97,25 +114,26 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
     });
   };
 
-  const createInvestigationButton = (props) => (
+  const createInvestigationButton = (props: { onOpen: () => void }) => (
     <Security needs={[INVESTIGATION_INUPDATE]}>
       <CreateEntityControlledDial entityType='Investigation' {...props} />
     </Security>
   );
 
-  const createDashboardButton = (props) => (
+  const createDashboardButton = (props: { onOpen: () => void }) => (
     <Security needs={[EXPLORE_EXUPDATE]}>
-      <ToggleButton
-        value="import"
-        size="small"
-        onClick={() => inputRef.current?.click()}
-        sx={{ marginLeft: theme.spacing(1) }}
-        data-testid='ImportDashboard'
-        title={t_i18n('Import dashboard')}
-      >
-        <FileUploadOutlined fontSize="small" color={'primary'} />
-      </ToggleButton>
-      {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+      <>
+        <ToggleButton
+          value="import"
+          size="small"
+          onClick={() => inputRef.current?.click()}
+          sx={{ marginLeft: theme.spacing(1) }}
+          data-testid='ImportDashboard'
+          title={t_i18n('Import dashboard')}
+        >
+          <FileUploadOutlined fontSize="small" color={'primary'} />
+        </ToggleButton>
+        {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
         <GradientButton
           size="small"
           sx={{ marginLeft: theme.spacing(1) }}
@@ -125,8 +143,9 @@ const WorkspaceCreation = ({ paginationOptions, type }) => {
         >
           {t_i18n('Import from Hub')}
         </GradientButton>
-      )}
-      <CreateEntityControlledDial entityType='Dashboard' {...props} />
+        )}
+        <CreateEntityControlledDial entityType='Dashboard' {...props} />
+      </>
     </Security>
   );
 
