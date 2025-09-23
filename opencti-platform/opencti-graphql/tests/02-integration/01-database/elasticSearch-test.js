@@ -884,7 +884,7 @@ describe('Elasticsearch pagination', () => {
     data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
     const entityTypeMap = mapCountPerEntityType(data);
-    expect(entityTypeMap.get('has-capability')).toBe(56);
+    expect(entityTypeMap.get('has-capability')).toBe(57);
     expect(entityTypeMap.get('accesses-to')).toBe(28);
     expect(entityTypeMap.get('member-of')).toBe(13);
     expect(entityTypeMap.get('has-role')).toBe(9);
@@ -905,7 +905,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('external-reference')).toBe(7);
     expect(entityTypeMap.get('operating-system')).toBe(1);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(2);
-    expect(data.length).toEqual(265);
+    expect(data.length).toEqual(266);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
