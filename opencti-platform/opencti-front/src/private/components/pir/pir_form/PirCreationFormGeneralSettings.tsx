@@ -50,7 +50,7 @@ const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGenera
 
   const dateOfRescanStart = daysAgo(pir_rescan_days);
   const diffBetweenStreamStartAndRescan = minutesBetweenDates(firstEventDate, dateOfRescanStart);
-  const showRescanAlert = diffBetweenStreamStartAndRescan < 0; // true if first stream event date is more recent than rescan start date
+  const showRescanAlert = pir_rescan_days > 0 && diffBetweenStreamStartAndRescan < 0; // true if first stream event date is more recent than rescan start date
 
   return (
     <>

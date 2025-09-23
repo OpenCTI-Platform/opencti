@@ -90,10 +90,19 @@ export const constructFinalPirFilters = (pirType: PirType, pirFilters: FilterGro
  */
 export const computePirScore = async (context: AuthContext, user: AuthUser, pirId: string, explanations: PirExplanation[]) => {
   const pir = await getPirWithAccessCheck(context, user, pirId);
+  // Used to keep only one explanation for a given filter.
+  const uniqueFilters = new Set<string>();
+  // List of criteria matching by at least one explanation.
+  const uniqueCriteria = explanations.flatMap((explanation) => {
+    const filter = explanation.criterion.filters;
+    const shouldKeep = !uniqueFilters.has(filter);
+    if (shouldKeep) uniqueFilters.add(filter);
+    return shouldKeep ? explanation.criterion : [];
+  });
   const maxScore = pir.pir_criteria.reduce((acc, val) => acc + val.weight, 0);
-  const depScore = explanations.reduce((acc, val) => acc + val.criterion.weight, 0);
+  const criteriaCount = uniqueCriteria.reduce((acc, val) => acc + val.weight, 0);
   if (maxScore <= 0) return 0;
-  return Math.round((depScore / maxScore) * 100);
+  return Math.round((criteriaCount / maxScore) * 100);
 };
 
 /**
