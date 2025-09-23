@@ -27,6 +27,7 @@ import useEntitySettings from '../../../../../utils/hooks/useEntitySettings';
 import { convertFormSchemaToYupSchema, formatFormDataForSubmission } from './FormViewUtils';
 import { environment } from '../../../../../relay/environment';
 import StixCoreObjectsField from '../../../common/form/StixCoreObjectsField';
+import useGranted, { INGESTION, MODULES } from '../../../../../utils/hooks/useGranted';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -142,6 +143,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
   const [isDraft, setIsDraft] = useState(false);
   const [pollingEntityId, setPollingEntityId] = useState<string | null>(null);
   const [pollingEntityType, setPollingEntityType] = useState<string | null>(null);
+  const isConnectorReader = useGranted([MODULES]);
+  const isGrantedIngestion = useGranted([INGESTION]);
 
   const data = usePreloadedQuery(formViewQuery, queryRef);
   const { form } = data;
@@ -343,8 +346,8 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef }) => {
       <Breadcrumbs
         elements={[
           { label: t_i18n('Data') },
-          { label: t_i18n('Ingestion'), link: '/dashboard/data/ingestion' },
-          { label: t_i18n('Form intakes'), link: '/dashboard/data/ingestion/forms' },
+          { label: t_i18n('Ingestion'), link: isConnectorReader ? '/dashboard/data/ingestion' : undefined },
+          { label: t_i18n('Form intakes'), link: isGrantedIngestion ? '/dashboard/data/ingestion/forms' : undefined },
           { label: form.name, current: true },
         ]}
       />
