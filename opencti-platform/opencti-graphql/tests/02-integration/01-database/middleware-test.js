@@ -1224,8 +1224,8 @@ describe('Upsert and merge entities', () => {
     expect(malwareAfterUpsert.createdBy).not.toBeUndefined();
     expect(malwareAfterUpsert.createdBy.id).toEqual(organization2.id);
     // Cleanup
-    await deleteElementById(testContext, ADMIN_USER, malwareA.id, ENTITY_TYPE_CONTAINER_REPORT);
-    await deleteElementById(testContext, ADMIN_USER, malwareB.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, malwareA.id, ENTITY_TYPE_MALWARE);
+    await deleteElementById(testContext, ADMIN_USER, malwareB.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
