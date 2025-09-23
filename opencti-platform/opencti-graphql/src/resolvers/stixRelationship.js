@@ -20,7 +20,7 @@ import { filterMembersWithUsersOrgs } from '../utils/access';
 const stixRelationshipResolvers = {
   Query: {
     stixRelationship: (_, { id }, context) => findById(context, context.user, id),
-    stixRelationships: (_, args, context) => findAll(context, context.user, args, true),
+    stixRelationships: (_, args, context) => findAll(context, context.user, args),
     stixRelationshipsTimeSeries: (_, args, context) => stixRelationshipsTimeSeries(context, context.user, args),
     stixRelationshipsMultiTimeSeries: (_, args, context) => stixRelationshipsMultiTimeSeries(context, context.user, args),
     stixRelationshipsDistribution: (_, args, context) => stixRelationshipsDistribution(context, context.user, args),

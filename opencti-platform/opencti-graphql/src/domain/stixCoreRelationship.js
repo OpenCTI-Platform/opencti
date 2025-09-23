@@ -8,7 +8,7 @@ import { FunctionalError, UnsupportedError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
 import { buildRelationsFilter, listRelationsPaginated, storeLoadById } from '../database/middleware-loader';
 import { askListExport, exportTransformFilters } from './stix';
@@ -18,18 +18,15 @@ import { addDynamicFromAndToToFilters, addFilter } from '../utils/filtering/filt
 import { stixRelationshipsDistribution } from './stixRelationship';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
 
-export const findAll = async (context, user, args, coreOnly = false) => {
+export const findAll = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  const abstractType = coreOnly ? ABSTRACT_STIX_CORE_RELATIONSHIP : ABSTRACT_STIX_RELATIONSHIP;
-  const type = isEmptyField(fullArgs.relationship_type) ? abstractType : fullArgs.relationship_type;
+  const type = isEmptyField(fullArgs.relationship_type) ? ABSTRACT_STIX_CORE_RELATIONSHIP : fullArgs.relationship_type;
   const types = Array.isArray(type) ? type : [type];
-  if (coreOnly && !types.every((t) => isStixCoreRelationship(t))) {
+  if (!types.every((t) => isStixCoreRelationship(t))) {
     throw UnsupportedError('This API only support Stix core relationships', { type });
   }
-  const argsWithoutRelationshipType = { ...fullArgs };
-  delete argsWithoutRelationshipType.relationship_type;
-  return listRelationsPaginated(context, user, type, argsWithoutRelationshipType);
+  return listRelationsPaginated(context, user, type, R.dissoc('relationship_type', fullArgs));
 };
 
 export const findById = (context, user, stixCoreRelationshipId) => {
