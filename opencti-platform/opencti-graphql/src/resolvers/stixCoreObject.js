@@ -113,7 +113,7 @@ const stixCoreObjectResolvers = {
     objectMarking: (stixCoreObject, _, context) => context.batch.markingsBatchLoader.load(stixCoreObject),
     // endregion
     // region inner listing - cant be batch loaded
-    stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationshipsPaginated(context, context.user, stixCoreObject.id, args),
+    stixCoreRelationships: (stixCoreObject, args, context) => stixCoreRelationshipsPaginated(context, context.user, stixCoreObject.id, args, true),
     externalReferences: (stixCoreObject, args, context) => externalReferencesPaginated(context, context.user, stixCoreObject.id, args),
     containers: (stixCoreObject, args, context) => containersPaginated(context, context.user, stixCoreObject.id, args),
     reports: (stixCoreObject, args, context) => reportsPaginated(context, context.user, stixCoreObject.id, args),
