@@ -3044,6 +3044,7 @@
   "Renew": "Erneuern",
   "REPLACE": "ERSETZEN",
   "Replace": "Ersetzen Sie",
+  "Replace operation will effectively replace the author if the confidence level of the entity with the new author is superior to the one of the entity with the old author.": "Die Operation \"Ersetzen\" ersetzt den Autor effektiv, wenn die Vertrauensstufe der Entität mit dem neuen Autor höher ist als die der Entität mit dem alten Autor.",
   "Replace operation will effectively replace this field values added in the context of this playbook such as enrichment or other knowledge manipulations but it will only append them if values are already written in the platform.": "Die Operation \"Ersetzen\" ersetzt die im Kontext dieses Playbooks hinzugefügten Feldwerte, z. B. durch Anreicherung oder andere Wissensmanipulationen, aber nur dann, wenn die Werte bereits in die Plattform geschrieben wurden.",
   "Report": "Bericht",
   "Report actions": "Aktionen melden",

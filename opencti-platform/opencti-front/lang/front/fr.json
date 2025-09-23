@@ -3044,6 +3044,7 @@
   "Renew": "Renouveler",
   "REPLACE": "REMPLACER",
   "Replace": "Remplacer",
+  "Replace operation will effectively replace the author if the confidence level of the entity with the new author is superior to the one of the entity with the old author.": "L'opération de remplacement remplacera effectivement l'auteur si le niveau de confiance de l'entité avec le nouvel auteur est supérieur à celui de l'entité avec l'ancien auteur.",
   "Replace operation will effectively replace this field values added in the context of this playbook such as enrichment or other knowledge manipulations but it will only append them if values are already written in the platform.": "L'opération de remplacement, ne remplacera effectivement que les valeurs de ce champ ajoutées dans le contexte de ce playbook tel que l'enrichissement ou d'autres manipulations de connaissances, mais elle ne les ajoutera que si les valeurs sont déjà écrites dans la plateforme.",
   "Report": "Report",
   "Report actions": "Rapport d'actions",

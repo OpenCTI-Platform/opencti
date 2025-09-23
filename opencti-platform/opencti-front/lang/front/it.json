@@ -3044,6 +3044,7 @@
   "Renew": "Rinnova",
   "REPLACE": "SOSTITUIRE",
   "Replace": "Sostituisci",
+  "Replace operation will effectively replace the author if the confidence level of the entity with the new author is superior to the one of the entity with the old author.": "L'operazione Replace sostituisce effettivamente l'autore se il livello di confidenza dell'entità con il nuovo autore è superiore a quello dell'entità con il vecchio autore.",
   "Replace operation will effectively replace this field values added in the context of this playbook such as enrichment or other knowledge manipulations but it will only append them if values are already written in the platform.": "Rimpiazzare l'operazione sostituirà effettivamente i valori di questo campo aggiunti nel contesto di questo playbook, come arricchimento o altre manipolazioni della conoscenza, ma li aggiungerà solo se i valori sono già scritti nella piattaforma.",
   "Report": "Report",
   "Report actions": "Azioni del report",

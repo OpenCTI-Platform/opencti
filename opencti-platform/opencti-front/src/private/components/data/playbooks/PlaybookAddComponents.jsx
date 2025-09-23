@@ -761,6 +761,11 @@ const PlaybookAddComponentsContent = ({
                                   {t_i18n('Replace operation will effectively replace this field values added in the context of this playbook such as enrichment or other knowledge manipulations but it will only append them if values are already written in the platform.')}
                                 </Alert>
                               )}
+                              {(actionsInputs[i]?.op === 'replace' && actionsInputs[i]?.attribute === 'createdBy') && (
+                                <Alert severity="warning" style={{ marginBottom: 20 }}>
+                                  {t_i18n('Replace operation will effectively replace the author if the confidence level of the entity with the new author is superior to the one of the entity with the old author.')}
+                                </Alert>
+                              )}
                               {(actionsInputs[i]?.op === 'remove') && (
                                 <Alert severity="warning" style={{ marginBottom: 20 }}>
                                   {t_i18n('Remove operation will only apply on field values added in the context of this playbook such as enrichment or other knowledge manipulations but not if values are already written in the platform.')}
