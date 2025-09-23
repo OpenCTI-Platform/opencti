@@ -8,6 +8,13 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Grouping:
+    """Main Grouping class for OpenCTI
+
+    Manages STIX grouping objects in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """

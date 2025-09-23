@@ -9,6 +9,13 @@ from pycti.utils.constants import IdentityTypes
 
 
 class Identity:
+    """Main Identity class for OpenCTI
+
+    Manages individual, organization, and system identities in OpenCTI.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -258,6 +265,15 @@ class Identity:
 
     @staticmethod
     def generate_id(name, identity_class):
+        """Generate a STIX ID for an Identity.
+
+        :param name: The name of the identity
+        :type name: str
+        :param identity_class: The class of the identity (individual, group, organization, etc.)
+        :type identity_class: str
+        :return: STIX ID for the identity
+        :rtype: str
+        """
         data = {"name": name.lower().strip(), "identity_class": identity_class.lower()}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
@@ -265,20 +281,32 @@ class Identity:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from identity data.
+
+        :param data: Dictionary containing 'name' and 'identity_class' keys
+        :type data: dict
+        :return: STIX ID for the identity
+        :rtype: str
+        """
         return Identity.generate_id(data["name"], data["identity_class"])
 
-    """
-        List Identity objects
+    def list(self, **kwargs):
+        """List Identity objects.
 
         :param types: the list of types
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Identity objects
-    """
-
-    def list(self, **kwargs):
+        :param orderBy: field to order results by
+        :param orderMode: ordering mode (asc/desc)
+        :param customAttributes: custom attributes to return
+        :param getAll: whether to retrieve all results
+        :param withPagination: whether to include pagination info
+        :param withFiles: whether to include files
+        :return: List of Identity objects
+        :rtype: list
+        """
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)

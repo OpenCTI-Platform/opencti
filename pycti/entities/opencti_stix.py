@@ -1,4 +1,11 @@
 class Stix:
+    """Main Stix class for OpenCTI
+
+    Provides generic STIX object operations in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
 

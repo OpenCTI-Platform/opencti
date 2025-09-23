@@ -7,6 +7,11 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class AttackPattern:
+    """Main AttackPattern class for OpenCTI
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -238,6 +243,15 @@ class AttackPattern:
 
     @staticmethod
     def generate_id(name, x_mitre_id=None):
+        """Generate a STIX ID for an Attack Pattern.
+
+        :param name: The name of the attack pattern
+        :type name: str
+        :param x_mitre_id: Optional MITRE ATT&CK ID
+        :type x_mitre_id: str or None
+        :return: STIX ID for the attack pattern
+        :rtype: str
+        """
         if x_mitre_id is not None:
             data = {"x_mitre_id": x_mitre_id.strip()}
         else:
@@ -248,20 +262,32 @@ class AttackPattern:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from attack pattern data.
+
+        :param data: Dictionary containing 'name' and optionally 'x_mitre_id' keys
+        :type data: dict
+        :return: STIX ID for the attack pattern
+        :rtype: str
+        """
         external_id = data.get("x_mitre_id") or data.get("x_opencti_external_id")
         return AttackPattern.generate_id(data.get("name"), external_id)
 
-    """
-        List Attack-Pattern objects
+    def list(self, **kwargs):
+        """List Attack Pattern objects.
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Attack-Pattern objects
-    """
-
-    def list(self, **kwargs):
+        :param orderBy: field to order results by
+        :param orderMode: ordering mode (asc/desc)
+        :param customAttributes: custom attributes to return
+        :param getAll: whether to retrieve all results
+        :param withPagination: whether to include pagination info
+        :param withFiles: whether to include files
+        :return: List of Attack Pattern objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)

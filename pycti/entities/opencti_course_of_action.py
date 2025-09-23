@@ -7,6 +7,13 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class CourseOfAction:
+    """Main CourseOfAction class for OpenCTI
+
+    Manages courses of action (mitigations) in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """

@@ -34,6 +34,11 @@ def is_id_supported(key):
 
 
 class OpenCTIStix2Splitter:
+    """STIX2 bundle splitter for OpenCTI
+
+    Splits large STIX2 bundles into smaller chunks for processing.
+    """
+
     def __init__(self):
         self.cache_index = {}
         self.cache_refs = {}

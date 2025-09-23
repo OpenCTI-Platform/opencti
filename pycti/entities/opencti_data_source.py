@@ -7,6 +7,13 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class DataSource:
+    """Main DataSource class for OpenCTI
+
+    Manages MITRE ATT&CK data sources in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """

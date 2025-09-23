@@ -7,6 +7,11 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class Campaign:
+    """Main Campaign class for OpenCTI
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -226,6 +231,13 @@ class Campaign:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for a Campaign.
+
+        :param name: The name of the campaign
+        :type name: str
+        :return: STIX ID for the campaign
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -234,19 +246,31 @@ class Campaign:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from campaign data.
+
+        :param data: Dictionary containing 'name' key
+        :type data: dict
+        :return: STIX ID for the campaign
+        :rtype: str
+        """
         return Campaign.generate_id(data["name"])
 
-    """
-        List Campaign objects
+    def list(self, **kwargs):
+        """List Campaign objects.
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Campaign objects
-    """
-
-    def list(self, **kwargs):
+        :param orderBy: field to order results by
+        :param orderMode: ordering mode (asc/desc)
+        :param customAttributes: custom attributes to return
+        :param getAll: whether to retrieve all results
+        :param withPagination: whether to include pagination info
+        :param withFiles: whether to include files
+        :return: List of Campaign objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)

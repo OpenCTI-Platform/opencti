@@ -7,6 +7,13 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class IntrusionSet:
+    """Main IntrusionSet class for OpenCTI
+
+    Manages intrusion sets (APT groups) in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -232,6 +239,13 @@ class IntrusionSet:
 
     @staticmethod
     def generate_id(name):
+        """Generate a STIX ID for an Intrusion Set.
+
+        :param name: The name of the intrusion set
+        :type name: str
+        :return: STIX ID for the intrusion set
+        :rtype: str
+        """
         name = name.lower().strip()
         data = {"name": name}
         data = canonicalize(data, utf8=False)
@@ -240,19 +254,31 @@ class IntrusionSet:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from intrusion set data.
+
+        :param data: Dictionary containing 'name' key
+        :type data: dict
+        :return: STIX ID for the intrusion set
+        :rtype: str
+        """
         return IntrusionSet.generate_id(data["name"])
 
-    """
-        List Intrusion-Set objects
+    def list(self, **kwargs):
+        """List Intrusion Set objects.
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Intrusion-Set objects
-    """
-
-    def list(self, **kwargs):
+        :param orderBy: field to order results by
+        :param orderMode: ordering mode (asc/desc)
+        :param customAttributes: custom attributes to return
+        :param getAll: whether to retrieve all results
+        :param withPagination: whether to include pagination info
+        :param withFiles: whether to include files
+        :return: List of Intrusion Set objects
+        :rtype: list
+        """
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
         first = kwargs.get("first", 500)
@@ -328,15 +354,16 @@ class IntrusionSet:
                 result["data"]["intrusionSets"], with_pagination
             )
 
-    """
-        Read a Intrusion-Set object
-
-        :param id: the id of the Intrusion-Set
-        :param filters: the filters to apply if no id provided
-        :return Intrusion-Set object
-    """
-
     def read(self, **kwargs):
+        """Read an Intrusion Set object.
+
+        :param id: the id of the Intrusion Set
+        :param filters: the filters to apply if no id provided
+        :param customAttributes: custom attributes to return
+        :param withFiles: whether to include files
+        :return: Intrusion Set object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
@@ -372,14 +399,26 @@ class IntrusionSet:
             )
             return None
 
-    """
-        Create a Intrusion-Set object
+    def create(self, **kwargs):
+        """Create an Intrusion Set object.
 
         :param name: the name of the Intrusion Set
-        :return Intrusion-Set object
-    """
-
-    def create(self, **kwargs):
+        :param description: description of the intrusion set
+        :param aliases: list of aliases
+        :param first_seen: first seen date
+        :param last_seen: last seen date
+        :param goals: goals of the intrusion set
+        :param resource_level: resource level
+        :param primary_motivation: primary motivation
+        :param secondary_motivations: secondary motivations
+        :param createdBy: creator identity
+        :param objectMarking: marking definitions
+        :param objectLabel: labels
+        :param externalReferences: external references
+        :param update: whether to update existing intrusion set
+        :return: Intrusion Set object
+        :rtype: dict or None
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)

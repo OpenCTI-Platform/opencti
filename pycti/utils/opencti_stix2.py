@@ -98,6 +98,11 @@ class OpenCTIStix2:
     ######### UTILS
     # region utils
     def unknown_type(self, stix_object: Dict) -> None:
+        """Log an error for unknown STIX object types.
+
+        :param stix_object: STIX object with unknown type
+        :type stix_object: Dict
+        """
         self.opencti.app_logger.error(
             "Unknown object type, doing nothing...", {"type": stix_object["type"]}
         )
@@ -116,6 +121,13 @@ class OpenCTIStix2:
             return None
 
     def format_date(self, date: Any = None) -> str:
+        """Format a date to ISO 8601 string format.
+
+        :param date: Date to format (various formats supported)
+        :type date: Any
+        :return: ISO 8601 formatted date string
+        :rtype: str
+        """
         """converts multiple input date formats to OpenCTI style dates
 
         :param date: input date
@@ -814,6 +826,11 @@ class OpenCTIStix2:
 
     # Please use get_reader instead of this definition
     def get_readers(self):
+        """Get a dictionary mapping entity types to their read methods.
+
+        :return: Dictionary mapping entity types to read functions
+        :rtype: dict
+        """
         return {
             "Attack-Pattern": self.opencti.attack_pattern.read,
             "Campaign": self.opencti.campaign.read,
@@ -861,6 +878,13 @@ class OpenCTIStix2:
         }
 
     def get_reader(self, entity_type: str):
+        """Get the appropriate reader function for a given entity type.
+
+        :param entity_type: Type of the entity
+        :type entity_type: str
+        :return: Reader function for the entity type
+        :rtype: callable or None
+        """
         # Map types
         if entity_type == "StixFile":
             entity_type = "File"
@@ -881,6 +905,11 @@ class OpenCTIStix2:
     # endregion
 
     def get_stix_helper(self):
+        """Get a dictionary mapping STIX types to their helper functions.
+
+        :return: Dictionary mapping STIX types to generate_id functions
+        :rtype: dict
+        """
         # Import
         return {
             # entities
@@ -929,6 +958,11 @@ class OpenCTIStix2:
         }
 
     def get_internal_helper(self):
+        """Get a dictionary mapping internal types to their helper functions.
+
+        :return: Dictionary mapping internal types to generate_id functions
+        :rtype: dict
+        """
         # Import
         return {
             "user": self.opencti.user,
@@ -947,6 +981,13 @@ class OpenCTIStix2:
         }
 
     def generate_standard_id_from_stix(self, data):
+        """Generate a standard ID from STIX data.
+
+        :param data: STIX data dictionary
+        :type data: dict
+        :return: Generated standard ID or None
+        :rtype: str or None
+        """
         stix_helpers = self.get_stix_helper()
         helper = stix_helpers.get(data["type"])
         return helper.generate_id_from_data(data)

@@ -7,6 +7,13 @@ from stix2.canonicalization.Canonicalize import canonicalize
 
 
 class CaseIncident:
+    """Main CaseIncident class for OpenCTI
+
+    Manages incident response cases in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """

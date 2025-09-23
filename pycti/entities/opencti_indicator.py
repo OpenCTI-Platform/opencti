@@ -24,6 +24,13 @@ class Indicator:
 
     @staticmethod
     def generate_id(pattern):
+        """Generate a STIX ID for an Indicator.
+
+        :param pattern: The STIX pattern
+        :type pattern: str
+        :return: STIX ID for the indicator
+        :rtype: str
+        """
         data = {"pattern": pattern.strip()}
         data = canonicalize(data, utf8=False)
         id = str(uuid.uuid5(uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7"), data))
@@ -31,6 +38,13 @@ class Indicator:
 
     @staticmethod
     def generate_id_from_data(data):
+        """Generate a STIX ID from indicator data.
+
+        :param data: Dictionary containing 'pattern' key
+        :type data: dict
+        :return: STIX ID for the indicator
+        :rtype: str
+        """
         return Indicator.generate_id(data["pattern"])
 
     def list(self, **kwargs):
@@ -301,14 +315,14 @@ class Indicator:
                 "name or pattern or pattern_type or x_opencti_main_observable_type"
             )
 
-    """
-        Update an Indicator object field
+    def update_field(self, **kwargs):
+        """Update an Indicator object field.
 
         :param id: the Indicator id
         :param input: the input of the field
-    """
-
-    def update_field(self, **kwargs):
+        :return: Updated indicator object
+        :rtype: dict or None
+        """
         id = kwargs.get("id", None)
         input = kwargs.get("input", None)
         if id is not None and input is not None:

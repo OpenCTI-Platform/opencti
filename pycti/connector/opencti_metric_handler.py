@@ -4,7 +4,14 @@ from prometheus_client import Counter, Enum, start_http_server
 
 
 class OpenCTIMetricHandler:
-    def __init__(self, connector_logger, activated: bool = False, port: int = 9095):
+    def __init__(
+        self,
+        connector_logger,
+        activated: bool = False,
+        namespace: str = "",
+        subsystem: str = "",
+        port: int = 9095,
+    ):
         """
         Init of OpenCTIMetricHandler class.
 
@@ -12,6 +19,10 @@ class OpenCTIMetricHandler:
         ----------
         activated : bool, default False
             If True use metrics in client and connectors.
+        namespace: str, default empty
+            Namespace for the prometheus metrics.
+        subsystem: str, default empty
+            Subsystem for the prometheus metrics.
         port : int, default 9095
             Port for prometheus server.
         """
@@ -22,35 +33,53 @@ class OpenCTIMetricHandler:
             start_http_server(port)
             self._metrics = {
                 "bundle_send": Counter(
-                    "bundle_send",
-                    "Number of bundle send",
+                    "bundles_sent_total",
+                    "Number of bundles sent",
+                    namespace=namespace,
+                    subsystem=subsystem,
                 ),
                 "record_send": Counter(
-                    "record_send",
-                    "Number of record (objects per bundle) send",
+                    "records_sent_total",
+                    "Number of records (objects per bundle) sent",
+                    namespace=namespace,
+                    subsystem=subsystem,
                 ),
                 "run_count": Counter(
-                    "run_count",
+                    "runs_total",
                     "Number of run",
+                    namespace=namespace,
+                    subsystem=subsystem,
                 ),
                 "ping_api_count": Counter(
-                    "ping_api_count",
-                    "Number of ping to the api",
+                    "ping_api_total",
+                    "Number of pings to the API",
+                    namespace=namespace,
+                    subsystem=subsystem,
                 ),
                 "ping_api_error": Counter(
-                    "ping_api_error",
-                    "Number of error when pinging the api",
+                    "ping_api_errors_total",
+                    "Number of errors when pinging the API",
+                    namespace=namespace,
+                    subsystem=subsystem,
                 ),
                 "error_count": Counter(
-                    "error_count",
-                    "Number of error",
+                    "errors_total",
+                    "Number of errors",
+                    namespace=namespace,
+                    subsystem=subsystem,
                 ),
                 "client_error_count": Counter(
-                    "client_error_count",
-                    "Number of client error",
+                    "client_errors_total",
+                    "Number of client errors",
+                    namespace=namespace,
+                    subsystem=subsystem,
                 ),
                 "state": Enum(
-                    "state", "State of connector", states=["idle", "running", "stopped"]
+                    "state",
+                    "State of connector",
+                    states=["idle", "running", "stopped"],
+                    namespace=namespace,
+                    subsystem=subsystem,
                 ),
             }
 

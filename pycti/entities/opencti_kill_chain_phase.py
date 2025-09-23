@@ -6,6 +6,13 @@ from pycti.utils.opencti_stix2_identifier import kill_chain_phase_generate_id
 
 
 class KillChainPhase:
+    """Main KillChainPhase class for OpenCTI
+
+    Manages kill chain phases (ATT&CK tactics) in the OpenCTI platform.
+
+    :param opencti: instance of :py:class:`~pycti.api.opencti_api_client.OpenCTIApiClient`
+    """
+
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
