@@ -122,7 +122,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import {
