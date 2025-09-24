@@ -25,7 +25,7 @@ import {
   storeLoadById,
   topRelationsList
 } from '../../database/middleware-loader';
-import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation } from './pir-types';
+import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation, type StoreEntityPir } from './pir-types';
 import {
   type EditInput,
   EditOperation,
@@ -247,7 +247,7 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
   if (keys.some((k) => !allowedKeys.includes(k))) {
     throw FunctionalError('Error while updating the PIR, invalid or forbidden key.');
   }
-  return editInternalObject(context, user, pirId, ENTITY_TYPE_PIR, input);
+  return editInternalObject<StoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR, input);
 };
 
 /**

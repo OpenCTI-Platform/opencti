@@ -196,7 +196,7 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
   const emailsInput = input.find((editInput) => editInput.key === 'emails');
   if (emailsInput) validationEmails(emailsInput.value);
   // Update the list
-  return editInternalObject(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);
+  return editInternalObject<StoreEntityDisseminationList>(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);
 };
 
 export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {
