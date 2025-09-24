@@ -3450,8 +3450,12 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   let event;
   const element = await storeLoadByIdWithRefs(context, user, id, { ...opts, includeDeletedInDraft: true });
 
+  if (element === undefined) {
+    throw AlreadyDeletedError({ id });
+  }
+
   if (!(element.entity_type === type || element.relationship_type === type)) {
-    throw FunctionalError('Cant find element for deletion', { id, type });
+    throw FunctionalError('Cant find element type for deletion', { id, type });
   }
 
   if (!element) {
