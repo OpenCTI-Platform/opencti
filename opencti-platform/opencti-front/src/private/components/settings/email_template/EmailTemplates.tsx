@@ -172,7 +172,7 @@ const EmailTemplates = () => {
               disableLineSelection
               preloadedPaginationProps={preloadedPaginationProps}
               createButton={<EmailTemplateCreation paginationOptions={queryPaginationOptions} />}
-              icon={() => <ItemIcon color={'#afb505'} type="email-templates" />}
+              icon={() => <ItemIcon color={'#afb505'} type="EmailTemplate" />}
             />
             )}
           </>

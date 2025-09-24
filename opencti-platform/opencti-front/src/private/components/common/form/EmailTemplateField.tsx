@@ -88,7 +88,7 @@ const EmailTemplateFieldComponent: FunctionComponent<EmailTemplateFieldComponent
           option: EmailTemplateFieldOption,
         ) => (
           <li {...props} key={option.value.id} style={{ display: 'flex', alignItems: 'center' }}>
-            <ItemIcon color={'#afb505'} type='email-templates' />
+            <ItemIcon color={'#afb505'} type='EmailTemplate' />
             <div style={{ flexGrow: 1, marginLeft: 10 }}>{option.label}</div>
           </li>
         )}
