@@ -15,12 +15,12 @@ import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils
 export const findAll = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  const type = isEmptyField(fullArgs.relationship_type) ? ABSTRACT_STIX_RELATIONSHIP : fullArgs.relationship_type;
-  const types = Array.isArray(type) ? type : [type];
-  if (!types.every((t) => isStixRelationship(t))) {
-    throw UnsupportedError('This API only support Stix relationships', { type });
+  let relationshipTypesInput = fullArgs.relationship_type;
+  if (!Array.isArray(relationshipTypesInput)) {
+    relationshipTypesInput = relationshipTypesInput ? [relationshipTypesInput] : [];
   }
-  return listRelationsPaginated(context, user, type, R.dissoc('relationship_type', fullArgs));
+  const relationshipTypes = buildRelationshipTypes(relationshipTypesInput);
+  return listRelationsPaginated(context, user, relationshipTypes, R.dissoc('relationship_type', fullArgs));
 };
 
 export const findById = (context, user, stixRelationshipId) => {

@@ -4,7 +4,7 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createRelation, deleteElementById, deleteRelationsByFromAndTo, timeSeriesRelations, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
-import { FunctionalError, UnsupportedError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_INFERRED_RELATIONSHIPS, READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
@@ -21,12 +21,12 @@ import { elRemoveElementFromDraft } from '../database/draft-engine';
 export const findAll = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  const type = isEmptyField(fullArgs.relationship_type) ? ABSTRACT_STIX_CORE_RELATIONSHIP : fullArgs.relationship_type;
-  const types = Array.isArray(type) ? type : [type];
-  if (!types.every((t) => isStixCoreRelationship(t))) {
-    throw UnsupportedError('This API only support Stix core relationships', { type });
+  let relationshipTypesInput = fullArgs.relationship_type;
+  if (!Array.isArray(relationshipTypesInput)) {
+    relationshipTypesInput = relationshipTypesInput ? [relationshipTypesInput] : [];
   }
-  return listRelationsPaginated(context, user, type, R.dissoc('relationship_type', fullArgs));
+  const relationshipTypes = buildStixCoreRelationshipTypes(relationshipTypesInput);
+  return listRelationsPaginated(context, user, relationshipTypes, R.dissoc('relationship_type', fullArgs));
 };
 
 export const findById = (context, user, stixCoreRelationshipId) => {
