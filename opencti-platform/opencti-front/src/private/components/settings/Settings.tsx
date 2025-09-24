@@ -355,7 +355,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       onClick={() => setOpenEEChanges(true)}
                       disabled={disabled}
                       style={{
-                        color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.nullable,
+                        color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
                         borderColor: theme.palette.dangerZone.main,
                       }}
                     >
