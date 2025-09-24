@@ -50,7 +50,7 @@ const CreateStatusTemplateControlledDial = (
   props: DrawerControlledDialProps,
 ) => (
   <CreateEntityControlledDial
-    entityType="Status-Template"
+    entityType="StatusTemplate"
     {...props}
   />
 );

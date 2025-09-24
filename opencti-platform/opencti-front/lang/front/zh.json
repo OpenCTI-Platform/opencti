@@ -1429,7 +1429,7 @@
   "entity_SecurityPlatform": "安全平台",
   "entity_Sighting": "目击",
   "entity_Software": "软件",
-  "entity_Status-Template": "状态模板",
+  "entity_StatusTemplate": "状态模板",
   "entity_Stix-Core-Object": "实体和观测对象",
   "entity_Stix-Core-Objects": "STIX核心对象",
   "entity_Stix-Core-Relationship": "STIX核心关系",

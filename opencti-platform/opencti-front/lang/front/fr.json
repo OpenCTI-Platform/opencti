@@ -1429,7 +1429,7 @@
   "entity_SecurityPlatform": "Plateforme de sécurité",
   "entity_Sighting": "Détection",
   "entity_Software": "Logiciel",
-  "entity_Status-Template": "Modèle de statut",
+  "entity_StatusTemplate": "Modèle de statut",
   "entity_Stix-Core-Object": "Entité et observable",
   "entity_Stix-Core-Objects": "Entités et observables",
   "entity_Stix-Core-Relationship": "Relations",

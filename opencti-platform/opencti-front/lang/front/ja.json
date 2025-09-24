@@ -1429,7 +1429,7 @@
   "entity_SecurityPlatform": "セキュリティ・プラットフォーム",
   "entity_Sighting": "一斑",
   "entity_Software": "ソフトウェア",
-  "entity_Status-Template": "ステータステンプレート",
+  "entity_StatusTemplate": "ステータステンプレート",
   "entity_Stix-Core-Object": "エンティティと観測可能",
   "entity_Stix-Core-Objects": "エンティティと観測結果",
   "entity_Stix-Core-Relationship": "リレーションシップ",

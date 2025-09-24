@@ -728,7 +728,7 @@ const useSearchEntities = ({
               value: n.label,
               type: n.label,
             })),
-            ...['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList'].map((n) => ({
+            ...['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList', 'DecayRule', 'EmailTemplate', 'CsvMapper', 'JsonMapper', 'StatusTemplate'].map((n) => ({
               label: t_i18n(`entity_${n}`),
               value: n,
               type: n,
