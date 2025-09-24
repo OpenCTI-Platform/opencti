@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Button from '@mui/material/Button';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -332,7 +332,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
       {isEnterpriseEditionActivated && (
       <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Enterprise Edition')}
@@ -446,7 +446,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </List>
           </Paper>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('License')}
@@ -512,7 +512,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       </Grid>
       )}
       <Grid container={true} spacing={3}>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Configuration')}
           </Typography>
@@ -627,7 +627,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </Formik>
           </Paper>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('OpenCTI platform')}
@@ -749,10 +749,10 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </Formik>
           </Paper>
         </Grid>
-        <Grid item xs={8}>
+        <Grid size={8}>
           <SettingsMessages settings={settings}/>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <SettingsAnalytics
             settings={settings}
             handleChangeFocus={handleChangeFocus}
@@ -760,7 +760,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             isEnterpriseEdition={isEnterpriseEditionValid}
           />
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Dark theme')}
           </Typography>
@@ -969,7 +969,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </Formik>
           </Paper>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Light theme')}
           </Typography>
@@ -1185,7 +1185,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </Formik>
           </Paper>
         </Grid>
-        <Grid item xs={4}>
+        <Grid size={4}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Tools')}
           </Typography>
@@ -1231,7 +1231,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           </Paper>
         </Grid>
       </Grid>
-
     </div>
   );
 };
