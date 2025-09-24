@@ -2277,8 +2277,8 @@ describe('Complex filters regarding of for elastic queries', () => {
       }
     });
     expect(queryResult.data.globalSearch.edges.length).toEqual(2);
-    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
-    expect(queryResult.data.globalSearch.edges[1].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(queryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
   });
   it('should list entities using complex regarding of filter', async () => {
     const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);

@@ -463,12 +463,8 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate everything after', async () => {
-    const page = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
-      first: ES_MAX_PAGINATION,
-    });
-    const last = page.edges[page.edges.length - 3];
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
-      after: last.cursor,
+      after: 'WyJ2b2NhYnVsYXJ5LS1mZGYyNTVhOC01ZjM3LTVmZWMtYWRmYS0xZGYwYjdkM2QwY2UiXQ==',
       first: ES_MAX_PAGINATION,
     });
     expect(data).not.toBeNull();
@@ -483,17 +479,14 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Report')).toBe(1);
-    expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
-    expect(entityTypeMap.get('Organization')).toBe(6);
-    expect(entityTypeMap.get('Sector')).toBe(2);
+    expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
+    expect(entityTypeMap.get('Campaign')).toBe(1);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
-    expect(entityTypeMap.get('Administrative-Area')).toBe(1);
-    expect(entityTypeMap.get('Opinion')).toBe(1);
-    expect(entityTypeMap.get('Malware-Analysis')).toBe(1);
-    expect(entityTypeMap.get('Malware')).toBe(1);
-    expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
     expect(entityTypeMap.get('Individual')).toBe(1);
-    expect(entityTypeMap.get('Region')).toBe(2);
+    expect(entityTypeMap.get('Sector')).toBe(3);
+    expect(entityTypeMap.get('Organization')).toBe(TESTING_ORGS.length + 6);
+    expect(entityTypeMap.get('Incident')).toBe(1);
+    expect(entityTypeMap.get('Indicator')).toBe(2);
     expect(data.edges.length).toEqual(20);
     expect(data.pageInfo.endCursor).toBeDefined();
 

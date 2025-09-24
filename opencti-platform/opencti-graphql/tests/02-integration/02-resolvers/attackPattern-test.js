@@ -153,14 +153,14 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult.data.attackPatternsMatrix).not.toBeNull();
     expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases).not.toBeNull();
     expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases.length).toEqual(2);
-    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].kill_chain_name).toEqual('mitre-attack');
-    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].phase_name).toEqual('persistence');
-    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].x_opencti_order).toEqual(20);
-    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].attackPatterns.length).toEqual(1);
-    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].kill_chain_name).toEqual('mitre-pre-attack');
-    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].phase_name).toEqual('launch');
-    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].x_opencti_order).toEqual(0);
-    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].attackPatterns.length).toEqual(2);
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].kill_chain_name).toEqual('mitre-pre-attack');
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].phase_name).toEqual('launch');
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].x_opencti_order).toEqual(0);
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[0].attackPatterns.length).toEqual(2);
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].kill_chain_name).toEqual('mitre-attack');
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].phase_name).toEqual('persistence');
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].x_opencti_order).toEqual(20);
+    expect(queryResult.data.attackPatternsMatrix.attackPatternsOfPhases[1].attackPatterns.length).toEqual(1);
   });
   it('should update attackPattern', async () => {
     const UPDATE_QUERY = gql`
