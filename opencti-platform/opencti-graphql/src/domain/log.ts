@@ -56,6 +56,13 @@ export const auditsDistribution = async (context: AuthContext, user: AuthUser, a
   return distributionHistory(context, user, types ?? [ENTITY_TYPE_HISTORY], args);
 };
 
+export const auditsMultiDistribution = async (context: AuthContext, user: AuthUser, args: any) => {
+  return Promise.all(args.distributionParameters.map((distributionParameterSet: any) => {
+    const { types } = distributionParameterSet;
+    return { data: distributionHistory(context, user, types ?? [ENTITY_TYPE_HISTORY], { ...args, ...distributionParameterSet }) };
+  }));
+};
+
 export const logsWorkerConfig = () => {
   const elasticSearchUrl = conf.get('elasticsearch:url');
   return {

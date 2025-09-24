@@ -165,6 +165,7 @@ export const lineChartOptions = (
   yaxis: {
     labels: {
       formatter: (value) => (yFormatter ? yFormatter(value) : value),
+      // maxWidth: 80,
       style: {
         fontSize: '14px',
         fontFamily: '"IBM Plex Sans", sans-serif',
@@ -273,6 +274,7 @@ export const areaChartOptions = (
   yaxis: {
     labels: {
       formatter: (value) => (yFormatter ? yFormatter(value) : value),
+      // maxWidth: 80,
       style: {
         fontSize: '14px',
         fontFamily: '"IBM Plex Sans", sans-serif',
@@ -366,6 +368,9 @@ export const verticalBarsChartOptions = (
   yaxis: {
     labels: {
       formatter: (value) => (yFormatter ? yFormatter(value) : value),
+      align: 'bottom',
+      // maxWidth: "80px",
+      // offsetY: "-20px",
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
       },
@@ -563,6 +568,7 @@ export const horizontalBarsChartOptions = (
     labels: {
       show: stackType !== '100%',
       formatter: (value) => (yFormatter ? yFormatter(value) : value),
+      // maxWidth: 80,
       style: {
         fontFamily: '"IBM Plex Sans", sans-serif',
       },

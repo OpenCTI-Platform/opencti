@@ -12,6 +12,8 @@ import AuditsRadar from '@components/common/audits/AuditsRadar';
 import AuditsMultiHeatMap from '@components/common/audits/AuditsMultiHeatMap';
 import AuditsTreeMap from '@components/common/audits/AuditsTreeMap';
 import AuditsWordCloud from '@components/common/audits/AuditsWordCloud';
+import MetricsChart from '@components/settings/metrics/MetricsChart';
+import MetricsUnique from '@components/settings/metrics/MetricsUnique';
 import { computerRelativeDate, dayStartDate, formatDate } from '../../../../utils/Time';
 import type { Widget } from '../../../../utils/widget/widget';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
@@ -52,8 +54,36 @@ const DashboardAuditsViz = ({
     dynamicTo: useRemoveIdAndIncorrectKeysFromFilterGroupObject(data.dynamicTo, ['Stix-Core-Object']),
   }));
 
+  const isUniqueUser = widget.parameters?.uniqueUsers === true;
+  const isWeekly = widget.parameters?.intervalUniqueUsers === 'weeks';
+  const isMonthly = widget.parameters?.intervalUniqueUsers === 'months';
+
   switch (widget.type) {
     case 'number':
+      if (isUniqueUser && isWeekly) {
+        return (
+          <MetricsUnique
+            variant="inLine"
+            interval="week"
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
+            parameters={widget.parameters as object}
+          />
+        );
+      }
+      if (isUniqueUser && isMonthly) {
+        return (
+          <MetricsUnique
+            variant="inLine"
+            interval="week"
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
+            parameters={widget.parameters as object}
+          />
+        );
+      }
       return (
         <AuditsNumber
           variant="inLine"
@@ -87,6 +117,30 @@ const DashboardAuditsViz = ({
         />
       );
     case 'vertical-bar':
+      if (isUniqueUser && isWeekly) {
+        return (
+          <MetricsChart
+            variant="inLine"
+            interval="week"
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
+            parameters={widget.parameters as object}
+          />
+        );
+      }
+      if (isUniqueUser && isMonthly) {
+        return (
+          <MetricsChart
+            variant="inLine"
+            interval="month"
+            endDate={endDate}
+            startDate={startDate}
+            dataSelection={dataSelection}
+            parameters={widget.parameters as object}
+          />
+        );
+      }
       return (
         <AuditsMultiVerticalBars
           variant="inLine"
