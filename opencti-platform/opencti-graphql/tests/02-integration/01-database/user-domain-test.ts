@@ -30,6 +30,7 @@ import { addSector } from '../../../src/domain/sector';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../../../src/schema/stixDomainObject';
+import type { BasicStoreEntityWorkspace, StoreEntityWorkspace } from '../../../src/modules/workspace/workspace-types';
 
 /**
  * Create a new user in elastic for this test purpose using domain APIs only.
@@ -104,7 +105,11 @@ describe('Testing user delete on cascade [issue/3720]', () => {
       description: 'this investigation will be shared to another user with admin rights.',
       type: 'investigation'
     };
-    let sharedWithAdminRightsInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedWithAdminRightsInvestigationInput);
+    let sharedWithAdminRightsInvestigationData: StoreEntityWorkspace | BasicStoreEntityWorkspace = await addWorkspace(
+      userToDeleteContext,
+      userToDeletedAuth,
+      sharedWithAdminRightsInvestigationInput
+    );
     const sharedIAuthMembers: MemberAccessInput[] = sharedWithAdminRightsInvestigationData.restricted_members;
     sharedIAuthMembers.push({ id: 'ALL', access_right: 'admin' });
 
@@ -118,7 +123,7 @@ describe('Testing user delete on cascade [issue/3720]', () => {
       description: 'this investigation will be shared to another user with view rights.',
       type: 'investigation'
     };
-    let sharedInvestigationData = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedReadOnlyInvestigationInput);
+    let sharedInvestigationData: StoreEntityWorkspace | BasicStoreEntityWorkspace = await addWorkspace(userToDeleteContext, userToDeletedAuth, sharedReadOnlyInvestigationInput);
     const sharedInvestigationAuthMembers: MemberAccessInput[] = sharedInvestigationData.restricted_members;
     sharedInvestigationAuthMembers.push({ id: 'ALL', access_right: 'view' });
 
