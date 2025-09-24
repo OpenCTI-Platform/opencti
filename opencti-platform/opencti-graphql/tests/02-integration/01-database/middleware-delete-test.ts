@@ -31,7 +31,7 @@ describe('Delete functional errors behaviors', async () => {
     const decayRuleCreated = await addDecayRule(testContext, ADMIN_USER, decayRule);
 
     await expect(() => deleteElementById(testContext, ADMIN_USER, decayRuleCreated.id, ENTITY_TYPE_GROUP))
-      .rejects.toThrowError('Cant find element for deletion');
+      .rejects.toThrowError('Cant find element type for deletion');
 
     // But delete with the right entity type is fine:
     const deleted = await deleteElementById(testContext, ADMIN_USER, decayRuleCreated.id, ENTITY_TYPE_DECAY_RULE);
