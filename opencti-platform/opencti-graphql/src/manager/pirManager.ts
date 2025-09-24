@@ -186,7 +186,7 @@ const pirManagerHandler = async () => {
     }, { concurrency: PIR_MANAGER_MAX_CONCURRENCY });
   } finally {
     // close redis client connexion
-    await redisClient.quit();
+    redisClient.disconnect();
   }
 };
 
