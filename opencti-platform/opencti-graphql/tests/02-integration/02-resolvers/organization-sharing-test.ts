@@ -105,7 +105,9 @@ describe('Organization sharing standard behavior for container', () => {
     });
     expect(queryResult.data.report).toBeNull();
   });
-  it('should share Report with Organization', async () => {
+
+  // If this test fails, please check that one worker is running.
+  it('should share Report with Organization - WORKER REQUIRED', async () => {
     // Get organization id
     organizationId = await getOrganizationIdByName(TEST_ORGANIZATION.name);
     const organizationSharingQueryResult = await adminQueryWithSuccess({
