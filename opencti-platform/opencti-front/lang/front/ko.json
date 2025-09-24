@@ -1389,6 +1389,7 @@
   "entity_Ipv4-Addr": "IPv4 주소",
   "entity_IPv6-Addr": "IPv6 주소",
   "entity_Ipv6-Addr": "IPv6 주소",
+  "entity_JsonMapper": "Json 매퍼",
   "entity_Kill-Chain-Phase": "킬 체인 단계",
   "entity_Label": "라벨",
   "entity_Language": "언어",

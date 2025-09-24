@@ -1389,6 +1389,7 @@
   "entity_Ipv4-Addr": "IPv4-Adresse",
   "entity_IPv6-Addr": "IPv6-Adresse",
   "entity_Ipv6-Addr": "IPv6-Adresse",
+  "entity_JsonMapper": "Json Mapper",
   "entity_Kill-Chain-Phase": "Kill Chain Phase",
   "entity_Label": "Kennzeichnung",
   "entity_Language": "Sprache",
