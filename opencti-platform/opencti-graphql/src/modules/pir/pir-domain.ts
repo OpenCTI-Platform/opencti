@@ -40,11 +40,11 @@ import {
   type QueryPirRelationshipsDistributionArgs,
   type QueryPirRelationshipsMultiTimeSeriesArgs,
 } from '../../generated/graphql';
-import { createEntity, deleteRelationsByFromAndTo, distributionRelations, timeSeriesRelations, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteRelationsByFromAndTo, distributionRelations, timeSeriesRelations } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
-import { deleteInternalObject } from '../../domain/internalObject';
+import { deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 import type { BasicStoreCommon, BasicStoreObject } from '../../types/store';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { createPirRelation, serializePir, updatePirExplanations } from './pir-utils';
@@ -218,7 +218,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     user,
     event_type: 'mutation',
     event_scope: 'create',
-    event_access: 'extended',
+    event_access: 'administration',
     message: `creates Pir \`${created.name}\``,
     context_data: { id: pirId, entity_type: ENTITY_TYPE_PIR, input: finalInput },
   });
@@ -247,8 +247,7 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
   if (keys.some((k) => !allowedKeys.includes(k))) {
     throw FunctionalError('Error while updating the PIR, invalid or forbidden key.');
   }
-  const { element } = await updateAttribute(context, user, pirId, ENTITY_TYPE_PIR, input);
-  return notify(BUS_TOPICS[ENTITY_TYPE_PIR].EDIT_TOPIC, element, user);
+  return editInternalObject(context, user, pirId, ENTITY_TYPE_PIR, input);
 };
 
 /**

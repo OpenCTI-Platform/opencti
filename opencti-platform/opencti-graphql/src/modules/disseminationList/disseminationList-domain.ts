@@ -19,12 +19,10 @@ import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../d
 import { type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
 import { type BasicStoreEntityDisseminationList, ENTITY_TYPE_DISSEMINATION_LIST, type StoreEntityDisseminationList } from './disseminationList-types';
 import { completeContextDataForEntity, publishUserAction, type UserDisseminateActionContextData } from '../../listener/UserActionListener';
-import conf, { BUS_TOPICS, logApp } from '../../config/conf';
+import conf, { logApp } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
-import { updateAttribute } from '../../database/middleware';
-import { notify } from '../../database/redis';
+import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
 import { downloadFile, getFileContent, loadFile } from '../../database/file-storage';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -198,17 +196,7 @@ export const fieldPatchDisseminationList = async (context: AuthContext, user: Au
   const emailsInput = input.find((editInput) => editInput.key === 'emails');
   if (emailsInput) validationEmails(emailsInput.value);
   // Update the list
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);
-  // Publish Activity
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for dissemination list \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_DISSEMINATION_LIST, input }
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_DISSEMINATION_LIST].EDIT_TOPIC, element, user);
+  return editInternalObject(context, user, id, ENTITY_TYPE_DISSEMINATION_LIST, input);
 };
 
 export const deleteDisseminationList = async (context: AuthContext, user: AuthUser, id: string) => {
