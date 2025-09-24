@@ -328,7 +328,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       .catch(() => false);
   };
   return (
-    <div style={{ margin: '0 0 60px 0' }} data-testid="setting-page">
+    <div style={{ height: '100vh', overflow: 'auto' }}>
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
       {isEnterpriseEditionActivated && (
       <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
@@ -410,13 +410,13 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           </Box>
           <div className="clearfix" />
           <Paper
+            className='paper-for-grid'
             style={{
               marginTop: 6,
               padding: 20,
               borderRadius: 4,
             }}
             variant="outlined"
-            className='paper-for-grid'
           >
             <List style={{ marginTop: -20 }}>
               <ListItem divider={true}>
@@ -459,13 +459,13 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           </Box>
           <div className="clearfix"/>
           <Paper
+            className='paper-for-grid'
             style={{
               marginTop: 6,
               padding: 20,
               borderRadius: 4,
             }}
             variant="outlined"
-            className='paper-for-grid'
           >
             <List style={{ marginTop: -20 }}>
               {!settings.platform_enterprise_edition.license_expired && settings.platform_enterprise_edition.license_expiration_prevention && (
@@ -511,19 +511,19 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         </Grid>
       </Grid>
       )}
-      <Grid container={true} spacing={3}>
+      <Grid container={true} spacing={3} style={{ marginBottom: 60 }}>
         <Grid size={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Configuration')}
           </Typography>
           <Paper
+            className='paper-for-grid'
             style={{
               marginTop: theme.spacing(1),
               padding: 20,
               borderRadius: 4,
             }}
             variant="outlined"
-            className='paper-for-grid'
           >
             <Formik
               onSubmit={() => {
@@ -640,12 +640,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           </Box>
           <div className="clearfix"/>
           <Paper
+            className='paper-for-grid'
             style={{
               marginTop: 4,
               padding: 20,
               borderRadius: 4,
             }}
-            className='paper-for-grid'
             variant="outlined"
           >
             <Formik
