@@ -179,7 +179,7 @@ const DisseminationLists = () => {
                 preloadedPaginationProps={preloadedPaginationProps}
                 actions={(row) => <DisseminationListPopover data={row} paginationOptions={queryPaginationOptions} />}
                 createButton={<DisseminationListCreation paginationOptions={queryPaginationOptions} />}
-                icon={() => <ItemIcon type="dissemination-list" />}
+                icon={() => <ItemIcon type="DisseminationList" />}
               />
             )}
           </>

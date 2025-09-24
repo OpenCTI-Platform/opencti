@@ -280,6 +280,8 @@ const iconSelector = (
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'malware':
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
+    case 'pir':
+      return <TrackChanges style={style} fontSize={fontSize} role="img" />;
     case 'in-pir':
       return <TrackChanges style={style} fontSize={fontSize} role="img" />;
     case 'malware-analysis':
@@ -369,9 +371,7 @@ const iconSelector = (
         />
       );
     case 'investigation':
-      return (
-        <TravelExploreOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <TravelExploreOutlined style={style} fontSize={fontSize} role="img" />;
     case 'session':
       return <ReceiptOutlined style={style} fontSize={fontSize} role="img" />;
     case 'playbook':
@@ -572,9 +572,9 @@ const iconSelector = (
       return <ViewStreamTwoTone style={style} fontSize={fontSize} role="img" />;
     case 'draft_context':
       return <ArchitectureOutlined style={style} fontSize={fontSize} role="img" />;
-    case 'exclusion-list':
+    case 'exclusionlist':
       return <PlaylistRemoveOutlined style={style} fontSize={fontSize} role="img" />;
-    case 'dissemination-list':
+    case 'disseminationlist':
       return <AlternateEmailOutlined style={style} fontSize={fontSize} role="img" />;
     case 'email-templates':
       return <EmailOutlined style={style} fontSize={fontSize} role="img" />;

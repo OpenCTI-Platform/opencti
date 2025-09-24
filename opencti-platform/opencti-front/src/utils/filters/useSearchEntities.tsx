@@ -728,16 +728,11 @@ const useSearchEntities = ({
               value: n.label,
               type: n.label,
             })),
-            {
-              label: t_i18n('User'),
-              value: 'User',
-              type: 'User',
-            },
-            {
-              label: t_i18n('Group'),
-              value: 'Group',
-              type: 'Group',
-            },
+            ...['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList'].map((n) => ({
+              label: t_i18n(`entity_${n}`),
+              value: n,
+              type: n,
+            })),
           ];
           const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
           unionSetEntities(filterKey, elementTypeTypes);
