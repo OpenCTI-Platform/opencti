@@ -71,8 +71,8 @@ interface EntitySettingHidden {
 }
 
 interface HiddenTypesFieldProps {
-  initialValues: string[]
-  handleChange: (newValues: string[]) => void
+  initialValues?: string[]
+  handleChange?: (newValues: string[]) => void
 }
 
 const HiddenTypesField: FunctionComponent<HiddenTypesFieldProps> = ({
