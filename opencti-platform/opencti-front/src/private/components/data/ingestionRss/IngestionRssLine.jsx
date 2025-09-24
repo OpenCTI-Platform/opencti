@@ -15,6 +15,7 @@ import inject18n from '../../../../components/i18n';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import Security from '../../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
+import IngestionTooltip from '../../../../components/IngestionTooltip';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -114,7 +115,9 @@ class IngestionRssLineLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_execution_date.width }}
               >
-                {nsdt(node.last_execution_date) || '-'}
+                <IngestionTooltip logs={node.ingestionLogs}>
+                  {nsdt(node.last_execution_date) || '-'}
+                </IngestionTooltip>
               </div>
               <div
                 className={classes.bodyItem}
@@ -150,6 +153,7 @@ const IngestionRssLineFragment = createFragmentContainer(
         ingestion_running
         current_state_date
         last_execution_date
+        ingestionLogs
       }
     `,
   },
