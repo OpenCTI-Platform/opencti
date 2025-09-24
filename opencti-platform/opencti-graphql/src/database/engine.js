@@ -590,7 +590,7 @@ const buildUserMemberAccessFilter = (user, opts) => {
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
+  const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: {} } } } } };
   // condition on authorizedMembers id
   const authorizedMembersIdsTerms = { terms: { [`${authorizedMembers.name}.id.keyword`]: [MEMBER_ACCESS_ALL, ...userAccessIds] } };
   // condition on group restriction ids
@@ -1230,8 +1230,8 @@ export const initializeSchema = async () => {
   const isInternalIndexExists = await elIndexExists(INDEX_INTERNAL_OBJECTS);
   if (isInternalIndexExists) {
     throw ConfigurationError('Fail initialize schema, index already exists, previous initialization fail '
-        + 'because you kill the platform before the end of the initialization. Please remove your '
-        + 'elastic/opensearch data and restart.');
+      + 'because you kill the platform before the end of the initialization. Please remove your '
+      + 'elastic/opensearch data and restart.');
   }
   // Create default indexes
   await elCreateIndices();
@@ -1277,7 +1277,8 @@ export const RUNTIME_ATTRIBUTES = {
     field: 'observable_value.keyword',
     type: 'keyword',
     getSource: async () => runtimeFieldObservableValueScript(),
-    getParams: async () => {},
+    getParams: async () => {
+    },
   },
   createdBy: {
     field: 'createdBy.keyword',
@@ -1756,7 +1757,12 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     }
     let searchAfter;
     let hasNextPage = true;
+    let compteur = 0;
     while (hasNextPage) {
+      if (compteur > 2) {
+        logApp.info('[PERF_INVEST] Compteur de page de degug', { compteur, length: idsArray.length });
+      }
+      compteur += 1;
       if (searchAfter) {
         body.search_after = searchAfter;
       }
@@ -3023,8 +3029,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
       if (filterKey === RELATION_FROM_FILTER || filterKey === RELATION_DYNAMIC_FROM_FILTER
-          || filterKey === RELATION_TO_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER
-          || filterKey === RELATION_TO_SIGHTING_FILTER) {
+        || filterKey === RELATION_TO_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER
+        || filterKey === RELATION_TO_SIGHTING_FILTER) {
         const isDynamic = filterKey === RELATION_DYNAMIC_FROM_FILTER || filterKey === RELATION_DYNAMIC_TO_FILTER;
         const dynamicIds = [];
         if (isDynamic) {
