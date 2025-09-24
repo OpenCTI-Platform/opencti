@@ -57,7 +57,7 @@ export const platformStop = async () => {
   // Destroy the modules
   await shutdownModules();
   // Shutdown the redis clients
-  await shutdownRedisClients();
+  shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);
 };
 // endregion

@@ -77,7 +77,7 @@ const testPlatformStop = async () => {
   // Destroy the modules
   await shutdownModules();
   // Shutdown the redis clients
-  await shutdownRedisClients();
+  shutdownRedisClients();
   logApp.info(`[vitest-global-setup] Platform stopped in ${new Date().getTime() - stopTime} ms`);
 };
 

@@ -187,10 +187,11 @@ export const initializeRedisClients = async () => {
     })
   };
 };
-export const shutdownRedisClients = async () => {
-  await redisClients.base?.quit().catch(() => { /* Dont care */ });
-  await redisClients.lock?.quit().catch(() => { /* Dont care */ });
-  await redisClients.pubsub?.close().catch(() => { /* Dont care */ });
+export const shutdownRedisClients = () => {
+  redisClients.base?.disconnect();
+  redisClients.lock?.disconnect();
+  redisClients.pubsub?.getPublisher()?.disconnect();
+  redisClients.pubsub?.getSubscriber()?.disconnect();
 };
 // endregion
 
