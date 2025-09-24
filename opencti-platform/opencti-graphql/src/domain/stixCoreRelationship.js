@@ -98,7 +98,7 @@ export const addStixCoreRelationship = async (context, user, stixCoreRelationshi
 };
 
 export const stixCoreRelationshipDelete = async (context, user, stixCoreRelationshipId) => {
-  const stixCoreRelationship = await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  const stixCoreRelationship = await findById(context, user, stixCoreRelationshipId);
   await deleteElementById(context, user, stixCoreRelationshipId, stixCoreRelationship.relationship_type);
   return stixCoreRelationshipId;
 };

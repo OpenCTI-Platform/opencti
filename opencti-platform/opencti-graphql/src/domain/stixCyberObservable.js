@@ -245,7 +245,7 @@ export const addStixCyberObservable = async (context, user, input) => {
 };
 
 export const stixCyberObservableDelete = async (context, user, stixCyberObservableId) => {
-  const sco = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const sco = await findById(context, user, stixCyberObservableId);
   await deleteElementById(context, user, stixCyberObservableId, sco.entity_type);
   return stixCyberObservableId;
 };
