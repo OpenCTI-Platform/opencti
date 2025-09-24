@@ -10,6 +10,7 @@ import {
   id,
   internalId,
   parentTypes,
+  refreshedAt,
   standardId,
   updatedAt
 } from '../../schema/attribute-definition';
@@ -28,6 +29,7 @@ const basicObjectAttributes: Array<AttributeDefinition> = [
   entityType,
   createdAt,
   updatedAt,
+  refreshedAt,
   creators,
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_OBJECT, basicObjectAttributes);
