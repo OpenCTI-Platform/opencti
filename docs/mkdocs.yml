@@ -236,7 +236,7 @@ nav:
         - Activity triggers: administration/audit/triggers.md
       - File indexing:  administration/file-indexing.md
       - Support package:  administration/support-package.md
-      - XTM Hub: administration/hub.md
+      - XTM Hub: administration/hub.md # Warning: page is linked in XTM Hub documentation
   - Reference:
     - Data:
       - Data model: reference/data-model.md

@@ -12,7 +12,7 @@ To register your OpenCTI platform into the XTM Hub, follow these steps:
 
 1. **Access the Settings:**
     - Ensure you have the necessary permissions.
-    - Navigate to the XTM Hub settings.
+    - Navigate to the Filigran Experience page in settings section.
 
 2. **Initiate Registration:**
     - Click on the "Register in XTM Hub" button.

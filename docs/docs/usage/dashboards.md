@@ -131,7 +131,7 @@ _Connect to the XTM Hub to download a JSON file that can be easily imported into
 
 #### One-click dashboard deployment
 From the XTM Hub, you can effortlessly deploy your desired dashboard with just a single click.
-To get started, simply enroll your OpenCTI platform following the instructions in our [OpenCTI registration documentation](/administration/hub/).
+To get started, simply register your OpenCTI platform following the instructions in our [OpenCTI registration documentation](/administration/hub/).
 Next, navigate to your preferred dashboard and click the ```Deploy in OpenCTI``` button located in the top right corner.
 If you have multiple OpenCTI platforms registered, choose the platform where you wish to deploy the dashboard.
 You will then be redirected to the OpenCTI platform, where the process will proceed automatically.
