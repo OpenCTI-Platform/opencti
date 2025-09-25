@@ -58,6 +58,7 @@ describe('StixRefRelationship', () => {
             created_at
             updated_at
             confidence
+            refreshed_at
           }
         }
       }
@@ -76,6 +77,8 @@ describe('StixRefRelationship', () => {
     // should modify updated_at
     expect(editionStartDatetime < stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at).toBeTruthy();
     expect(stixRefRelationshipCreatedAt < stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at).toBeTruthy();
+    // should modify refreshed_at
+    expect(stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at === stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.refreshed_at).toBeTruthy();
   });
   it('should stixRefRelationship deleted', async () => {
     const READ_QUERY = gql`
