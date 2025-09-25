@@ -23,10 +23,10 @@ Here's a step-by-step guide to configure RSS ingesters:
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this RSS feed. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
+- User responsible for data creation: Define the user responsible for creating data received from this RSS feed. Best practice is to dedicate one user per source for organizational clarity. Please [go to the page ](../getting-started.md) for more information.
 - Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 - Default report types: Indicate the report type to be applied to the imported report.
-- Default author: Indicate the default author to be applied to the imported report. Please [see the section "Best practices" below](../import-automated.md#best-practices-section) for more information.
+- Default author: Indicate the default author to be applied to the imported report. Please [go to the page](../getting-started.md) for more information.
 - Default marking definitions: Indicate the default markings to be applied to the imported reports.
 
 ![RSS feed configuration](../assets/rss-feed-configuration.png)

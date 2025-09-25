@@ -31,7 +31,7 @@ Here's a step-by-step guide to configure Csv Feeds:
 
 !!! note "CSV mapper"
 
-    CSV feed functionality is based on CSV mappers. It is necessary to create the appropriate CSV mapper to import the data contained in the file. See the page dedicated to the [CSV mapper](../administration/csv-mappers.md).
+    CSV feed functionality is based on CSV mappers. It is necessary to create the appropriate CSV mapper to import the data contained in the file. See the page dedicated to the [CSV mapper](../../administration/csv-mappers.md).
 
 Additional configuration options:
 

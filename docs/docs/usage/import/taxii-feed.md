@@ -28,7 +28,7 @@ Here's a step-by-step guide to configure TAXII ingesters:
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](../import-automated.md#best-practices-section) for more information.
+- User responsible for data creation: Define the user responsible for creating data received from this TAXII feed. Best practice is to dedicate one user per source for organizational clarity. Please [go to the page](../getting-started.md) for more information.
 - Import from date: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 
 ![TAXII feed configuration](../assets/taxii-feed-configuration.png)

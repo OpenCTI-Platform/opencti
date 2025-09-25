@@ -13,7 +13,7 @@ The level of configuration granularity regarding the imported data type varies w
 Resetting the connector state enables you to restart the ingestion process from the very beginning.
 Additionally, resetting the connector state will purge the RabbitMQ queue for this specific connector.
 
-However, this action requires the "Manage connector state" capability (more details about capabilities: [List of capabilities](../administration/users.md#list-of-capabilities)). Without this specific capability, you will not be able to reset the connector state.
+However, this action requires the "Manage connector state" capability (more details about capabilities: [List of capabilities](../../administration/users.md#list-of-capabilities)). Without this specific capability, you will not be able to reset the connector state.
 
 When the action is performed, a message is displayed confirming the reset and inform you about the number of messages that will be purged
 
@@ -25,6 +25,6 @@ By purging the queue, you ensure that the connector starts with a clean slate, p
 
 ### Connector Ecosystem
 
-OpenCTI's connector ecosystem covers a broad spectrum of sources, enhancing the platform's capability to integrate data from various contexts, from threat intelligence providers to specialized databases. The list of available connectors can be found in our [connectors catalog](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76#c94bf651e08146c4855a25efeaabc574). Connectors are categorized into three types: import connectors (the focus here), [enrichment connectors](enrichment.md), and stream consumers. Further documentation on connectors is available on [the dedicated documentation page](../deployment/connectors.md).
+OpenCTI's connector ecosystem covers a broad spectrum of sources, enhancing the platform's capability to integrate data from various contexts, from threat intelligence providers to specialized databases. The list of available connectors can be found in our [connectors catalog](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76#c94bf651e08146c4855a25efeaabc574). Connectors are categorized into three types: import connectors (the focus here), [enrichment connectors](../enrichment.md), and stream consumers. Further documentation on connectors is available on ![the dedicated documentation page](../../deployment/connectors.md).
 
 In summary, automated imports through connectors empower OpenCTI users with a scalable, efficient, and customizable mechanism for data ingestion, ensuring that the platform remains enriched with the latest and most relevant intelligence.

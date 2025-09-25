@@ -58,7 +58,7 @@ More information can be found [here](../usage/notifications.md).
 
 The ingestion manager in OpenCTI is a component that manages the ingestion of data from RSS, TAXII and CSV feeds.
 
-More information can be found [here](../usage/import-automated.md).
+More information can be found [here](../usage/getting-started.md).
 
 ## Playbook manager
 

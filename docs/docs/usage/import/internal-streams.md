@@ -27,7 +27,7 @@ Live Streams enable users to consume data from another OpenCTI platform, fosteri
 
 Additional configuration options:
 
-- User responsible for data creation: Define the user responsible for creating data received from this stream. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](import-automated.md#best-practices-section) for more information.
+- User responsible for data creation: Define the user responsible for creating data received from this stream. Best practice is to dedicate one user per source for organizational clarity. Please [see the section "Best practices" below](../getting-started.md) for more information.
 - Starting synchronization: Specify the date of the oldest data to retrieve. Leave the field empty to import everything.
 - Take deletions into account: Enable this option to delete data from your platform if it was deleted on the providing stream. (Note: Data won't be deleted if another source has imported it previously.)
 - Verify SSL certificate: Check the validity of the certificate of the domain hosting the remote platform.

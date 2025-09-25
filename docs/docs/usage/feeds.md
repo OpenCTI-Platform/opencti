@@ -51,7 +51,7 @@ Given a live stream with filters *Entity type: Indicator* `AND` *Label: detectio
 | 4. Add the label `detection`    | Create the indicator                                           | Create the indicator, create the relationship `indicates`                                                                        |
 | 5. Delete the indicator         | Delete the indicator                                           | Delete the indicator  and the relationship                                                                                       |
 
-Details on how to consume these Live streams can be found on [the dedicated page](import-automated.md).
+Details on how to consume these Live streams can be found on [the dedicated page](getting-started.md).
 
 
 ## TAXII Collections
