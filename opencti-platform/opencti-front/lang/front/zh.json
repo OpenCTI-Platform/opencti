@@ -3044,6 +3044,7 @@
   "Renew": "更新",
   "REPLACE": "替换",
   "Replace": "替换",
+  "Replace operation will effectively replace the author if the confidence level of the entity with the new author is superior to the one of the entity with the old author.": "如果新作者实体的置信度高于旧作者实体的置信度，则替换操作将有效替换作者。",
   "Replace operation will effectively replace this field values added in the context of this playbook such as enrichment or other knowledge manipulations but it will only append them if values are already written in the platform.": "替换（Replace）操作将有效地替换在此播放列表中添加的字段值，如充实或其他知识操作，但只有在值已写入平台的情况下才会附加这些值。",
   "Report": "报告",
   "Report actions": "报告行动",
