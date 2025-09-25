@@ -181,7 +181,7 @@
     "@graphql-codegen/client-preset": "4.8.3",
     "@graphql-codegen/introspection": "4.0.3",
     "@graphql-codegen/typescript": "4.1.6",
-    "@graphql-codegen/typescript-resolvers": "4.5.1",
+    "@graphql-codegen/typescript-resolvers": "4.5.2",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.5",
     "@types/add": "2.0.3",

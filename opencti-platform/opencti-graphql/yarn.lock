@@ -2408,9 +2408,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/typescript-resolvers@npm:4.5.1":
-  version: 4.5.1
-  resolution: "@graphql-codegen/typescript-resolvers@npm:4.5.1"
+"@graphql-codegen/typescript-resolvers@npm:4.5.2":
+  version: 4.5.2
+  resolution: "@graphql-codegen/typescript-resolvers@npm:4.5.2"
   dependencies:
     "@graphql-codegen/plugin-helpers": "npm:^5.1.0"
     "@graphql-codegen/typescript": "npm:^4.1.6"
@@ -2424,7 +2424,7 @@ __metadata:
   peerDependenciesMeta:
     graphql-sock:
       optional: true
-  checksum: 10/0159ae5362bfd45690fac4104153bedf1243494159f7ea9cc72c23e80f0191c889aa24bb34ef7810f1de600d668687ad5b247b5c2c3d419c001379cf0e3fc4ce
+  checksum: 10/35f0094e441c21a7aa7da80c298f0d6edd64b95e524837a8308cf90ee19244982e9f9edf29e43076be44bb95f558cae99dd0b1da97a822a8d619aa5ca24e80b0
   languageName: node
   linkType: hard
 
@@ -12128,7 +12128,7 @@ __metadata:
     "@graphql-codegen/client-preset": "npm:4.8.3"
     "@graphql-codegen/introspection": "npm:4.0.3"
     "@graphql-codegen/typescript": "npm:4.1.6"
-    "@graphql-codegen/typescript-resolvers": "npm:4.5.1"
+    "@graphql-codegen/typescript-resolvers": "npm:4.5.2"
     "@graphql-tools/import": "npm:7.0.21"
     "@graphql-tools/merge": "npm:9.1.1"
     "@graphql-tools/schema": "npm:10.0.25"
