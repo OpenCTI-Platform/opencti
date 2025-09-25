@@ -22,7 +22,7 @@ interface EntityStixCoreRelationshipsProps {
   defaultStopTime?: string;
   relationshipTypes: string[];
   stixCoreObjectTypes?: string[];
-  currentView: string;
+  currentView: 'entities' | 'relationships';
   enableNestedView?: boolean;
   enableContextualView: boolean;
   enableEntitiesView?: boolean;
@@ -54,6 +54,7 @@ EntityStixCoreRelationshipsProps
 }) => {
   const classes = useStyles();
   const LOCAL_STORAGE_KEY = `relationships-${entityId}-${stixCoreObjectTypes?.join('-')}-${relationshipTypes?.join('-')}`;
+
   const localStorage = usePaginationLocalStorage<PaginationOptions>(
     LOCAL_STORAGE_KEY,
     {
@@ -67,6 +68,7 @@ EntityStixCoreRelationshipsProps
   );
   const { view } = localStorage.viewStorage;
   const finalView = !enableEntitiesView && (currentView === 'entities' || view === 'entities') ? 'relationships' : currentView || view;
+
   return (
     <ExportContextProvider>
       <div className={classes.container}>
@@ -78,7 +80,7 @@ EntityStixCoreRelationshipsProps
             defaultStopTime={defaultStopTime}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={stixCoreObjectTypes}
-            currentView={currentView}
+            currentView={finalView}
             enableNestedView={enableNestedView}
             enableContextualView={enableContextualView}
             isRelationReversed={isRelationReversed}
@@ -86,6 +88,7 @@ EntityStixCoreRelationshipsProps
             handleChangeView={handleChangeView}
           />
         )}
+
         {finalView === 'relationships' && (
           <EntityStixCoreRelationshipsRelationshipsView
             localStorage={localStorage}
@@ -95,7 +98,7 @@ EntityStixCoreRelationshipsProps
             defaultStopTime={defaultStopTime}
             relationshipTypes={relationshipTypes}
             stixCoreObjectTypes={stixCoreObjectTypes}
-            currentView={currentView}
+            currentView={finalView}
             enableNestedView={enableNestedView}
             enableContextualView={enableContextualView}
             enableEntitiesView={enableEntitiesView}

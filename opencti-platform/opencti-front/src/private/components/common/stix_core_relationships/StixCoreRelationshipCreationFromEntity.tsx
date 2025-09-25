@@ -31,7 +31,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import { isNodeInConnection } from '../../../../utils/store';
+import { insertNode, isNodeInConnection } from '../../../../utils/store';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import { UserContext } from '../../../../utils/hooks/useAuth';
@@ -476,6 +476,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   onCreate?: () => void;
   openExports?: boolean;
   handleReverseRelation?: () => void;
+  currentView?: 'entities' | 'relationships';
 }
 
 interface StixCoreRelationshipCreationFromEntityForm {
@@ -511,7 +512,9 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     onCreate = undefined,
     openExports = false,
     handleReverseRelation = undefined,
+    currentView,
   } = props;
+
   const LOCAL_STORAGE_KEY = `stixCoreRelationshipCreationFromEntity-${entityId}-${targetStixDomainObjectTypes?.join('-')}-${targetStixCyberObservableTypes?.join('-')}`;
 
   let isOnlySDOs = false;
@@ -625,36 +628,28 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           : stixCoreRelationshipCreationFromEntityFromMutation,
         variables: { input: finalValues },
         updater: (store: RecordSourceSelectorProxy) => {
-          if (typeof onCreate !== 'function') {
-            const userProxy = store.get(store.getRoot().getDataID());
-            const payload = store.getRootField('stixCoreRelationshipAdd');
+          const connKey = connectionKey || 'Pagination_stixCoreRelationships';
 
-            const createdNode = connectionKey && payload !== null
-              ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
-              : payload;
-            const connKey = connectionKey || 'Pagination_stixCoreRelationships';
-            let conn;
-            // When using connectionKey we use less props of PaginationOptions (ex: count),
-            // we need to filter them to prevent getConnection to fail
-            const { count: _, ...options } = paginationOptions;
+          if (currentView === 'entities') {
+            insertNode(
+              store,
+              connKey,
+              paginationOptions,
+              'stixCoreRelationshipAdd',
+              null,
+              null,
+              null,
+              isRelationReversed ? 'from' : 'to',
+            );
+          }
 
-            if (userProxy) {
-              conn = ConnectionHandler.getConnection(
-                userProxy,
-                connKey,
-                options,
-              );
-            }
-
-            if (conn && payload !== null
-              && !isNodeInConnection(payload, conn)
-              && !isNodeInConnection(payload.getLinkedRecord(isRelationReversed ? 'from' : 'to'), conn)
-            ) {
-              const newEdge = payload.setLinkedRecord(createdNode, 'node');
-              ConnectionHandler.insertEdgeBefore(conn, newEdge);
-
-              helpers.handleSetNumberOfElements({ });
-            }
+          if (currentView === 'relationships') {
+            insertNode(
+              store,
+              connKey,
+              paginationOptions,
+              'stixCoreRelationshipAdd',
+            );
           }
         },
         optimisticUpdater: undefined,

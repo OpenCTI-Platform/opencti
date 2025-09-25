@@ -24,7 +24,7 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   stixCoreObjectTypes?: string[]
   relationshipTypes: string[]
   localStorage: PaginationLocalStorage<PaginationOptions>
-  currentView: string
+  currentView: 'entities' | 'relationships'
   allDirections?: boolean
   isRelationReversed?: boolean
   enableContextualView: boolean
@@ -280,6 +280,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
           defaultStopTime={defaultStopTime}
           paginationOptions={paginationOptions}
           paddingRight={paddingRightButtonAdd ?? 220}
+          currentView={finalView}
         />
       </Security>
     </>
