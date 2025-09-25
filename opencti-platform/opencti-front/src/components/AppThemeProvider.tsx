@@ -78,7 +78,7 @@ export const ConnectedThemeProvider = createFragmentContainer(
   AppThemeProvider,
   {
     settings: graphql`
-      fragment AppThemeProvider_settings on Settings {
+      fragment AppThemeProvider_settings on ThemeSettings {
         platform_title
         platform_favicon
         platform_theme

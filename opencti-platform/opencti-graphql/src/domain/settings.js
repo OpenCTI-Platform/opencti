@@ -133,6 +133,17 @@ export const getSettings = async (context) => {
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
       ...(ENABLED_FEATURE_FLAGS.map((feature) => ({ id: feature, enable: true })))
     ],
+    playground_enabled: PLAYGROUND_ENABLED,
+  };
+};
+
+export const getPublicSettings = async (context) => {
+  const { platform_enterprise_edition, platform_providers, ...settings } = await getSettings(context);
+
+  return {
+    ...settings,
+    platform_enterprise_edition_license_validated: platform_enterprise_edition.license_validated,
+    platform_providers: platform_providers.filter((p) => p.type === 'SSO' || p.type === 'FORM'),
   };
 };
 
@@ -248,10 +259,6 @@ export const getMessagesFilteredByRecipients = (user, settings) => {
     // eslint-disable-next-line max-len
     return isEmptyField(recipients) || recipients.some((recipientId) => [user.id, ...user.groups.map(({ id }) => id), ...user.organizations.map(({ id }) => id)].includes(recipientId));
   });
-};
-
-export const isPlaygroundEnabled = () => {
-  return PLAYGROUND_ENABLED;
 };
 
 export const settingEditMessage = async (context, user, settingsId, message) => {

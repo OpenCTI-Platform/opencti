@@ -1348,19 +1348,94 @@ enum CGUStatus {
   disabled
   enabled
 }
-type Settings implements InternalObject & BasicObject {
+
+type PublicProvider {
+    name: String!
+    type: String!
+    provider: String!
+}
+
+interface ThemeSettings {
+    platform_title: String
+    platform_favicon: String
+    platform_theme: String
+    platform_theme_dark_background: String
+    platform_theme_dark_paper: String
+    platform_theme_dark_nav: String
+    platform_theme_dark_primary: String
+    platform_theme_dark_secondary: String
+    platform_theme_dark_accent: String
+    platform_theme_dark_logo: String
+    platform_theme_dark_logo_collapsed: String
+    platform_theme_dark_logo_login: String
+    platform_theme_light_background: String
+    platform_theme_light_paper: String
+    platform_theme_light_nav: String
+    platform_theme_light_primary: String
+    platform_theme_light_secondary: String
+    platform_theme_light_accent: String
+    platform_theme_light_logo: String
+    platform_theme_light_logo_collapsed: String
+    platform_theme_light_logo_login: String
+}
+
+interface IntlSettings {
+    platform_language: String
+    platform_translations: String
+}
+
+type PublicSettings implements ThemeSettings & IntlSettings {
+    id: ID!
+    platform_title: String
+    platform_favicon: String
+    platform_login_message: String
+    platform_consent_message: String
+    platform_consent_confirm_text: String
+    platform_banner_text: String
+    platform_banner_level: String
+    platform_theme: String
+    platform_theme_dark_background: String
+    platform_theme_dark_paper: String
+    platform_theme_dark_nav: String
+    platform_theme_dark_primary: String
+    platform_theme_dark_secondary: String
+    platform_theme_dark_accent: String
+    platform_theme_dark_logo: String
+    platform_theme_dark_logo_collapsed: String
+    platform_theme_dark_logo_login: String
+    platform_theme_light_background: String
+    platform_theme_light_paper: String
+    platform_theme_light_nav: String
+    platform_theme_light_primary: String
+    platform_theme_light_secondary: String
+    platform_theme_light_accent: String
+    platform_theme_light_logo: String
+    platform_theme_light_logo_collapsed: String
+    platform_theme_light_logo_login: String
+    platform_map_tile_server_dark: String
+    platform_map_tile_server_light: String
+    platform_whitemark: Boolean
+    platform_language: String
+    platform_translations: String
+
+    platform_providers: [PublicProvider!]!
+    platform_enterprise_edition_license_validated: Boolean!
+    playground_enabled: Boolean!
+}
+
+type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
-  standard_id: String! @auth
-  entity_type: String! @auth
-  parent_types: [String!]! @auth
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
   # Settings
   platform_enterprise_edition: PlatformEE!
   platform_organization: Organization
   platform_title: String
   platform_favicon: String
-  platform_email: String @auth
-  platform_cluster: Cluster! @auth
-  platform_modules: [Module!] @auth
+  platform_email: String
+  platform_cluster: Cluster!
+  platform_modules: [Module!]
   platform_url: String
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
@@ -1400,44 +1475,44 @@ type Settings implements InternalObject & BasicObject {
   platform_session_timeout: Int
   platform_whitemark: Boolean
   platform_demo: Boolean
-  platform_reference_attachment: Boolean @auth
-  platform_feature_flags: [Module!] @auth
+  platform_reference_attachment: Boolean
+  platform_feature_flags: [Module!]
   platform_critical_alerts: [PlatformCriticalAlert!]!
   platform_trash_enabled: Boolean!
   platform_translations: String
-  platform_protected_sensitive_config: PlatformProtectedSensitiveConfig! @auth
-  created_at: DateTime! @auth
-  updated_at: DateTime! @auth
+  platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
+  created_at: DateTime!
+  updated_at: DateTime!
   activity_listeners: [Member!] @auth(for: [SETTINGS_SECURITYACTIVITY])
-  otp_mandatory: Boolean @auth
-  password_policy_min_length: Int @auth
-  password_policy_max_length: Int @auth
-  password_policy_min_symbols: Int @auth
-  password_policy_min_numbers: Int @auth
-  password_policy_min_words: Int @auth
-  password_policy_min_lowercase: Int @auth
-  password_policy_min_uppercase: Int @auth
-  platform_messages: [SettingsMessage!] @auth
+  otp_mandatory: Boolean
+  password_policy_min_length: Int
+  password_policy_max_length: Int
+  password_policy_min_symbols: Int
+  password_policy_min_numbers: Int
+  password_policy_min_words: Int
+  password_policy_min_lowercase: Int
+  password_policy_min_uppercase: Int
+  platform_messages: [SettingsMessage!]
   messages_administration: [SettingsMessage!] @auth(for: [SETTINGS_SETPARAMETERS])
-  analytics_google_analytics_v4: String @auth
+  analytics_google_analytics_v4: String
   playground_enabled: Boolean!
-  request_access_enabled: Boolean! @auth
+  request_access_enabled: Boolean!
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
   # XTM Hub
-  xtm_hub_token: String @auth
-  xtm_hub_registration_user_id: String @auth
-  xtm_hub_registration_user_name: ID @auth
-  xtm_hub_last_connectivity_check: DateTime @auth
-  xtm_hub_registration_date: DateTime @auth
-  xtm_hub_registration_status: XTMHubRegistrationStatus @auth
+  xtm_hub_token: String
+  xtm_hub_registration_user_id: String
+  xtm_hub_registration_user_name: ID
+  xtm_hub_last_connectivity_check: DateTime
+  xtm_hub_registration_date: DateTime
+  xtm_hub_registration_status: XTMHubRegistrationStatus
   # AI insight
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
   platform_ai_has_token: Boolean!
   # XTM1 AI
-  filigran_chatbot_ai_url: String @auth
+  filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
 }
 
@@ -13128,8 +13203,8 @@ type Query {
   ###### ENTITIES
 
   ######## INTERNAL OBJECT ENTITIES
-
-  settings: Settings! @public # Some inner information are public
+  publicSettings: PublicSettings! @public # All returned information are public
+  settings: Settings! @auth
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
   @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])

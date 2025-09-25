@@ -23,7 +23,7 @@ const PublicSettingsProvider = createFragmentContainer(
   },
   {
     settings: graphql`
-      fragment PublicSettingsProvider_settings on Settings {
+      fragment PublicSettingsProvider_settings on PublicSettings {
         platform_map_tile_server_light
         platform_map_tile_server_dark
       }

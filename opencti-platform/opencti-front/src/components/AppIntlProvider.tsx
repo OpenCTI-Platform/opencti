@@ -123,7 +123,7 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
 
 export const ConnectedIntlProvider = createFragmentContainer(AppIntlProvider, {
   settings: graphql`
-    fragment AppIntlProvider_settings on Settings {
+    fragment AppIntlProvider_settings on IntlSettings {
       platform_language
       platform_translations
     }

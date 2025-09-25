@@ -10,10 +10,8 @@ import { LoginRootPublicQuery } from './__generated__/LoginRootPublicQuery.graph
 
 export const rootPublicQuery = graphql`
   query LoginRootPublicQuery {
-    settings {
-      platform_enterprise_edition {
-        license_validated
-      }
+    publicSettings {
+      platform_enterprise_edition_license_validated
       platform_theme
       platform_login_message
       platform_consent_message
@@ -43,11 +41,10 @@ const queryRef = loadQuery<LoginRootPublicQuery>(
 );
 
 const LoginRoot = ({ type }: { type: string }) => {
-  const data = usePreloadedQuery<LoginRootPublicQuery>(
+  const { publicSettings: settings } = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
   );
-  const { settings } = data;
   return (
     <StyledEngineProvider injectFirst={true}>
       <ConnectedThemeProvider settings={settings}>
