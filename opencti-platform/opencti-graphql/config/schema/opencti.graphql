@@ -13173,7 +13173,7 @@ type Query {
     type: String
     includeParents: Boolean
     search: String
-  ): SubTypeConnection! @auth
+  ): SubTypeConnection! @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   file(id: String!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   importFiles(
     first: Int
@@ -13205,7 +13205,7 @@ type Query {
   ######## INTERNAL OBJECT ENTITIES
   publicSettings: PublicSettings! @public # All returned information are public
   settings: Settings! @auth
-  group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
   @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
@@ -13329,7 +13329,7 @@ type Query {
     includeAuthorities: Boolean
     filters: FilterGroup
     search: String
-  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE])
+  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   rule(id: String!): Rule @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
@@ -13355,7 +13355,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): StixMetaObjectConnection @auth(for: [KNOWLEDGE])
-  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE, SETTINGS_SETMARKINGS])
+  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS])
   markingDefinitions(
     first: Int
     after: ID

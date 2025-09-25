@@ -104,7 +104,7 @@ input JsonMapperAddInput {
 
 # Queries
 type Query {
-    jsonMapper(id: ID!): JsonMapper @auth(for: [CSVMAPPERS])
+    jsonMapper(id: ID!): JsonMapper @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
     jsonMappers(
         first: Int
         after: ID

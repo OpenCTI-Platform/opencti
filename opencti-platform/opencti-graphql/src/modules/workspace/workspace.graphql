@@ -50,7 +50,7 @@ type WorkspaceConnection {
 
 # Queries
 type Query {
-    workspace(id: String!): Workspace @auth(for: [EXPLORE, INVESTIGATION])
+    workspace(id: String!): Workspace @auth(for: [EXPLORE, SETTINGS_SETACCESSES, INVESTIGATION])
     workspaces(
         first: Int
         after: ID

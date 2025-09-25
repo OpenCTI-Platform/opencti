@@ -181,7 +181,7 @@ type OrganizationEdge {
 
 # Queries
 type Query {
-  organization(id: String!): Organization @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN])
+  organization(id: String!): Organization @auth(for: [KNOWLEDGE, SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   organizations(
     first: Int
     after: ID
