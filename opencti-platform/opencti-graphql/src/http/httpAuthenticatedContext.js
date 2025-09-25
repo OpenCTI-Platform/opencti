@@ -13,25 +13,25 @@ import { batchEntitySettingsByType } from '../modules/entitySetting/entitySettin
 import { batchIsSubAttackPattern } from '../domain/attackPattern';
 import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 
-export const computeLoaders = (executeContext, user) => {
+export const computeLoaders = (executeContext) => {
   // Generic loaders
   return {
-    relsBatchLoader: batchLoader(batchInternalRels, executeContext, user),
-    creatorsBatchLoader: batchLoader(batchCreators, executeContext, user),
-    creatorBatchLoader: batchLoader(batchCreator, executeContext, user),
-    idsBatchLoader: batchLoader(elBatchIds, executeContext, user),
-    idsBatchLoaderWithCount: batchLoader(elBatchIdsWithRelCount, executeContext, user),
-    markingsBatchLoader: batchLoader(batchMarkingDefinitions, executeContext, user),
+    relsBatchLoader: batchLoader(batchInternalRels, executeContext),
+    creatorsBatchLoader: batchLoader(batchCreators, executeContext),
+    creatorBatchLoader: batchLoader(batchCreator, executeContext),
+    idsBatchLoader: batchLoader(elBatchIds, executeContext),
+    idsBatchLoaderWithCount: batchLoader(elBatchIdsWithRelCount, executeContext),
+    markingsBatchLoader: batchLoader(batchMarkingDefinitions, executeContext),
     // Specific loaders
-    domainsBatchLoader: batchLoader(batchStixDomainObjects, executeContext, user), // Could be change to use idsBatchLoader?
-    userRolesBatchLoader: batchLoader(batchRolesForUsers, executeContext, user),
-    userEffectiveConfidenceBatchLoader: batchLoader(batchUserEffectiveConfidenceLevel, executeContext, user),
-    fileMarkingsBatchLoader: batchLoader(batchFileMarkingDefinitions, executeContext, user),
-    fileWorksBatchLoader: batchLoader(batchFileWorks, executeContext, user),
-    globalStatusBatchLoader: batchLoader(batchGlobalStatusesByType, executeContext, user),
-    requestAccessStatusBatchLoader: batchLoader(batchRequestAccessStatusesByType, executeContext, user),
-    entitySettingsBatchLoader: batchLoader(batchEntitySettingsByType, executeContext, user),
-    isSubAttachPatternBatchLoader: batchLoader(batchIsSubAttackPattern, executeContext, user),
+    domainsBatchLoader: batchLoader(batchStixDomainObjects, executeContext), // Could be change to use idsBatchLoader?
+    userRolesBatchLoader: batchLoader(batchRolesForUsers, executeContext),
+    userEffectiveConfidenceBatchLoader: batchLoader(batchUserEffectiveConfidenceLevel, executeContext),
+    fileMarkingsBatchLoader: batchLoader(batchFileMarkingDefinitions, executeContext),
+    fileWorksBatchLoader: batchLoader(batchFileWorks, executeContext),
+    globalStatusBatchLoader: batchLoader(batchGlobalStatusesByType, executeContext),
+    requestAccessStatusBatchLoader: batchLoader(batchRequestAccessStatusesByType, executeContext),
+    entitySettingsBatchLoader: batchLoader(batchEntitySettingsByType, executeContext),
+    isSubAttachPatternBatchLoader: batchLoader(batchIsSubAttackPattern, executeContext),
   };
 };
 
@@ -67,6 +67,8 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   // endregion
   // Return with batch loaders
   executeContext.changeDraftContext = (draftId) => { executeContext.draft_context = draftId; };
-  executeContext.batch = computeLoaders(executeContext, executeContext.user);
+  executeContext.batch = computeLoaders(executeContext);
+  executeContext.sharedData = { impersonatedUser: executeContext.user };
+  executeContext.getUser = () => executeContext.sharedData.impersonatedUser ?? executeContext.user;
   return executeContext;
 };
