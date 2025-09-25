@@ -220,7 +220,7 @@
     "graphql-tag": "2.12.6",
     "ts-loader": "9.5.2",
     "typescript": "5.9.2",
-    "vitest": "2.0.5"
+    "vitest": "2.1.9"
   },
   "resolutions": {
     "axios": "1.12.0",
