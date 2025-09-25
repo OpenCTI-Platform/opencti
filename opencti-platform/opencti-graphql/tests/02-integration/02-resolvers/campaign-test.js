@@ -164,7 +164,6 @@ describe('Campaign resolver standard behavior', () => {
     expect(queryResult.data.campaignsTimeSeries[1].value).toEqual(1);
   });
   it('should update campaign', async () => {
-    const editionStartDatetime = now();
     const UPDATE_QUERY = gql`
       mutation CampaignEdit($id: ID!, $input: [EditInput]!) {
         campaignEdit(id: $id) {
@@ -178,6 +177,7 @@ describe('Campaign resolver standard behavior', () => {
         }
       }
     `;
+    const editionStartDatetime = now();
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: campaignInternalId, input: { key: 'name', value: ['Campaign - test'] } },
@@ -186,7 +186,7 @@ describe('Campaign resolver standard behavior', () => {
     expect(queryResult.data.campaignEdit.fieldPatch.created_at).toEqual(campaignCreatedAt);
     // should modify updated_at and refreshed_at
     campaignUpdatedAt = queryResult.data.campaignEdit.fieldPatch.updated_at;
-    expect(campaignUpdatedAt).toEqual(queryResult.data.campaignEdit.fieldPatch.refreshed_at);
+    expect(queryResult.data.campaignEdit.fieldPatch.refreshed_at).toEqual(campaignUpdatedAt);
     expect(campaignCreatedAt < campaignUpdatedAt).toBeTruthy();
     expect(editionStartDatetime < campaignUpdatedAt).toBeTruthy();
   });
@@ -251,12 +251,12 @@ describe('Campaign resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.campaignEdit.relationAdd.from.objectMarking.length).toEqual(1);
-    // should update refreshed_at but not updated_at
+    // should update updated_at and refreshed_at (because ref relationship creation)
     const campaignQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: campaignStixId } });
     expect(campaignQueryResult).not.toBeNull();
     expect(campaignQueryResult.data.campaign.id).toEqual(campaignInternalId);
     expect(campaignQueryResult.data.campaign.created_at).toEqual(campaignCreatedAt);
-    expect(campaignQueryResult.data.campaign.updated_at).toEqual(campaignUpdatedAt);
+    expect(relationCreationStartDatetime < campaignQueryResult.data.campaign.updated_at).toBeTruthy();
     expect(relationCreationStartDatetime < campaignQueryResult.data.campaign.refreshed_at).toBeTruthy();
   });
   it('should delete relation in campaign', async () => {
