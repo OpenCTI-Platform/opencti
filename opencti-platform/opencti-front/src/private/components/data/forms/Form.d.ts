@@ -43,6 +43,7 @@ export interface EntityRelationship {
   toEntity: string; // Entity ID (main_entity or additional entity ID)
   relationshipType: string; // Relationship type
   required?: boolean; // Whether this relationship is required
+  fields?: FormFieldAttribute[]; // Additional fields for the relationship
 }
 
 export interface FormBuilderData {
@@ -125,6 +126,8 @@ export interface FormRelationshipDefinition {
   fromEntity: string;
   toEntity: string;
   relationshipType: string;
+  required?: boolean;
+  fields?: FormFieldDefinition[];
 }
 
 // Entity type definition for UI display

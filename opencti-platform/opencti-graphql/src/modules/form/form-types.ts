@@ -77,6 +77,7 @@ export interface FormRelationshipDefinition {
   toEntity: string; // Entity ID (main_entity or additional entity ID)
   relationshipType: string; // Relationship type
   required?: boolean; // Whether this relationship is required
+  fields?: FormFieldDefinition[]; // Additional fields for the relationship
 }
 
 // Form schema definition

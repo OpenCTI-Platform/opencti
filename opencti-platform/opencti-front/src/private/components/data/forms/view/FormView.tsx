@@ -190,6 +190,20 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
   } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
     // For parsed mode, just initialize a single text field
     initialValues.mainEntityParsed = '';
+    // Also initialize additional fields for parsed mode
+    const fieldsObj: Record<string, unknown> = {};
+    mainEntityFields.forEach((field) => {
+      if (field.type === 'checkbox' || field.type === 'toggle') {
+        fieldsObj[field.name] = false;
+      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+        fieldsObj[field.name] = field.defaultValue || [];
+      } else if (field.type === 'datetime') {
+        fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
+      } else {
+        fieldsObj[field.name] = field.defaultValue || '';
+      }
+    });
+    initialValues.mainEntityFields = fieldsObj;
   } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
     // For multi mode, initialize an array with one set of fields
     const fieldGroup: Record<string, unknown> = {};
@@ -220,6 +234,29 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     });
   }
 
+  // Initialize values for relationships if any
+  if (schema.relationships) {
+    schema.relationships.forEach((relationship) => {
+      initialValues[`relationship_${relationship.id}`] = {};
+      // Initialize fields for each relationship
+      if (relationship.fields) {
+        const relationshipFields: Record<string, unknown> = {};
+        relationship.fields.forEach((field) => {
+          if (field.type === 'checkbox' || field.type === 'toggle') {
+            relationshipFields[field.name] = false;
+          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel') {
+            relationshipFields[field.name] = field.defaultValue || [];
+          } else if (field.type === 'datetime') {
+            relationshipFields[field.name] = field.defaultValue || new Date().toISOString();
+          } else {
+            relationshipFields[field.name] = field.defaultValue || '';
+          }
+        });
+        initialValues[`relationship_${relationship.id}`] = relationshipFields;
+      }
+    });
+  }
+
   // Initialize values for additional entities if any
   if (schema.additionalEntities) {
     schema.additionalEntities.forEach((entity) => {
@@ -235,6 +272,20 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
       } else if (entity.multiple && entity.fieldMode === 'parsed') {
         // Parsed mode
         initialValues[`additional_${entity.id}_parsed`] = '';
+        // Also initialize additional fields for parsed mode
+        const fieldsObj: Record<string, unknown> = {};
+        entityFields.forEach((field) => {
+          if (field.type === 'checkbox' || field.type === 'toggle') {
+            fieldsObj[field.name] = false;
+          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+            fieldsObj[field.name] = field.defaultValue || [];
+          } else if (field.type === 'datetime') {
+            fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
+          } else {
+            fieldsObj[field.name] = field.defaultValue || '';
+          }
+        });
+        initialValues[`additional_${entity.id}_fields`] = fieldsObj;
       } else if (entity.multiple && entity.fieldMode === 'multiple') {
         // Multi mode
         const fieldGroup: Record<string, unknown> = {};
@@ -441,33 +492,59 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                       } else if (schema.mainEntityType === 'Indicator') {
                         helperText = t_i18n('Enter valid STIX patterns (e.g., [ipv4-addr:value = \'192.168.1.1\'])');
                       }
-                      return schema.mainEntityParseField === 'textarea' ? (
-                        <Field
-                          component={TextField}
-                          className={classes.parsedField}
-                          name="mainEntityParsed"
-                          placeholder={t_i18n(schema.mainEntityParseMode === 'line'
-                            ? 'Enter values separated by new lines'
-                            : 'Enter values separated by commas')}
-                          rows={10}
-                          multiline={true}
-                          fullWidth={true}
-                          variant="standard"
-                          style={{ marginTop: 20 }}
-                          helperText={helperText}
-                        />
-                      ) : (
-                        <Field
-                          component={TextField}
-                          className={classes.parsedField}
-                          name="mainEntityParsed"
-                          placeholder={t_i18n(schema.mainEntityParseMode === 'line'
-                            ? 'Enter values separated by new lines'
-                            : 'Enter values separated by commas')}
-                          variant="standard"
-                          fullWidth
-                          helperText={helperText}
-                        />
+                      return (
+                        <>
+                          {schema.mainEntityParseField === 'textarea' ? (
+                            <Field
+                              component={TextField}
+                              className={classes.parsedField}
+                              name="mainEntityParsed"
+                              placeholder={t_i18n(schema.mainEntityParseMode === 'line'
+                                ? 'Enter values separated by new lines'
+                                : 'Enter values separated by commas')}
+                              rows={10}
+                              multiline={true}
+                              fullWidth={true}
+                              variant="standard"
+                              style={{ marginTop: 20 }}
+                              helperText={helperText}
+                            />
+                          ) : (
+                            <Field
+                              component={TextField}
+                              className={classes.parsedField}
+                              name="mainEntityParsed"
+                              placeholder={t_i18n(schema.mainEntityParseMode === 'line'
+                                ? 'Enter values separated by new lines'
+                                : 'Enter values separated by commas')}
+                              variant="standard"
+                              fullWidth
+                              helperText={helperText}
+                            />
+                          )}
+                          {mainEntityFields.length > 0 && (
+                            <>
+                              <Divider style={{ marginTop: 20, marginBottom: 10 }} />
+                              <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>
+                                {t_i18n('Additional fields (will be applied to all created entities)')}
+                              </Typography>
+                              {mainEntityFields.map((field) => (
+                                <FormFieldRenderer
+                                  key={`mainEntityFields.${field.name}`}
+                                  field={{
+                                    ...field,
+                                    name: `mainEntityFields.${field.name}`,
+                                  }}
+                                  values={values}
+                                  errors={errors as Record<string, string>}
+                                  touched={touched as Record<string, boolean>}
+                                  setFieldValue={setFieldValue}
+                                  entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                />
+                              ))}
+                            </>
+                          )}
+                        </>
                       );
                     }
                     if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
@@ -587,33 +664,59 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                             } else if (additionalEntity.entityType === 'Indicator') {
                               helperText = t_i18n('Enter valid STIX patterns (e.g., [ipv4-addr:value = \'192.168.1.1\'])');
                             }
-                            return additionalEntity.parseField === 'textarea' ? (
-                              <Field
-                                component={TextField}
-                                className={classes.parsedField}
-                                name={fieldName}
-                                placeholder={t_i18n(additionalEntity.parseMode === 'line'
-                                  ? 'Enter values separated by new lines'
-                                  : 'Enter values separated by commas')}
-                                rows={10}
-                                multiline={true}
-                                fullWidth={true}
-                                variant="standard"
-                                style={{ marginTop: 20 }}
-                                helperText={helperText}
-                              />
-                            ) : (
-                              <Field
-                                component={TextField}
-                                className={classes.parsedField}
-                                name={fieldName}
-                                placeholder={t_i18n(additionalEntity.parseMode === 'line'
-                                  ? 'Enter values separated by new lines'
-                                  : 'Enter values separated by commas')}
-                                variant="standard"
-                                fullWidth
-                                helperText={helperText}
-                              />
+                            return (
+                              <>
+                                {additionalEntity.parseField === 'textarea' ? (
+                                  <Field
+                                    component={TextField}
+                                    className={classes.parsedField}
+                                    name={fieldName}
+                                    placeholder={t_i18n(additionalEntity.parseMode === 'line'
+                                      ? 'Enter values separated by new lines'
+                                      : 'Enter values separated by commas')}
+                                    rows={10}
+                                    multiline={true}
+                                    fullWidth={true}
+                                    variant="standard"
+                                    style={{ marginTop: 20 }}
+                                    helperText={helperText}
+                                  />
+                                ) : (
+                                  <Field
+                                    component={TextField}
+                                    className={classes.parsedField}
+                                    name={fieldName}
+                                    placeholder={t_i18n(additionalEntity.parseMode === 'line'
+                                      ? 'Enter values separated by new lines'
+                                      : 'Enter values separated by commas')}
+                                    variant="standard"
+                                    fullWidth
+                                    helperText={helperText}
+                                  />
+                                )}
+                                {entityFields.length > 0 && (
+                                  <>
+                                    <Divider style={{ marginTop: 20, marginBottom: 10 }} />
+                                    <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>
+                                      {t_i18n('Additional fields (will be applied to all created entities)')}
+                                    </Typography>
+                                    {entityFields.map((field) => (
+                                      <FormFieldRenderer
+                                        key={`additional_${additionalEntity.id}_fields.${field.name}`}
+                                        field={{
+                                          ...field,
+                                          name: `additional_${additionalEntity.id}_fields.${field.name}`,
+                                        }}
+                                        values={values}
+                                        errors={errors as Record<string, string>}
+                                        touched={touched as Record<string, boolean>}
+                                        setFieldValue={setFieldValue}
+                                        entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                      />
+                                    ))}
+                                  </>
+                                )}
+                              </>
                             );
                           }
                           if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
@@ -706,6 +809,46 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     );
                   })}
                 </>
+                )}
+
+                {/* Relationships */}
+                {schema.relationships && schema.relationships.length > 0 && (
+                  <>
+                    <Typography variant="h6" className={classes.sectionTitle} style={{ marginTop: 30 }}>
+                      {t_i18n('Relationships')}
+                    </Typography>
+                    {schema.relationships.map((relationship) => {
+                      // Find the entities involved
+                      const fromEntityLabel = relationship.fromEntity === 'main_entity'
+                        ? schema.mainEntityType
+                        : schema.additionalEntities?.find((e) => e.id === relationship.fromEntity)?.label || relationship.fromEntity;
+                      const toEntityLabel = relationship.toEntity === 'main_entity'
+                        ? schema.mainEntityType
+                        : schema.additionalEntities?.find((e) => e.id === relationship.toEntity)?.label || relationship.toEntity;
+                      if (relationship.fields && relationship.fields.length > 0) {
+                        return (
+                          <div key={relationship.id} className={classes.section}>
+                            <Typography variant="subtitle1" style={{ marginBottom: 10 }}>
+                              {`${fromEntityLabel} → ${t_i18n(`relationship_${relationship.relationshipType}`)} → ${toEntityLabel}`}
+                            </Typography>
+                            {relationship.fields && relationship.fields.map((field) => (
+                              <FormFieldRenderer
+                                key={`relationship_${relationship.id}_${field.name}`}
+                                field={field}
+                                values={values[`relationship_${relationship.id}`] as Record<string, unknown> || {}}
+                                errors={(errors as unknown as Record<string, Record<string, string>>)[`relationship_${relationship.id}`] || {}}
+                                touched={(touched as unknown as Record<string, Record<string, boolean>>)[`relationship_${relationship.id}`] || {}}
+                                setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`relationship_${relationship.id}.${field.name}`, value)}
+                                entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                fieldPrefix={`relationship_${relationship.id}`}
+                              />
+                            ))}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  </>
                 )}
 
                 <FormControlLabel

@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import Ajv from 'ajv';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { BasicStoreEntityForm, FormSchemaDefinition, StoreEntityForm } from './form-types';
+import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import type { BasicStoreEntityForm, FormFieldDefinition, FormSchemaDefinition, StoreEntityForm } from './form-types';
 import { ENTITY_TYPE_FORM, FormSchemaDefinitionSchema } from './form-types';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
@@ -211,13 +211,98 @@ export interface FormParsed extends Omit<StoreEntityForm, 'form_schema'> {
   form_schema: FormSchemaDefinition;
 }
 
+// Helper function to transform special fields for STIX conversion (entities and relationships)
+const transformSpecialFields = async (
+  context: AuthContext,
+  user: AuthUser,
+  data: any,
+  fields: FormFieldDefinition[],
+  isRelationship: boolean = false
+): Promise<any> => {
+  const transformed = { ...data };
+
+  // For relationships, the field values come from the 'fields' property
+  const fieldsSource = isRelationship && data.fields ? data.fields : data;
+
+  // Find special fields that need transformation
+  for (const field of fields) {
+    const attrName = field.attributeMapping.attributeName;
+    const value = (fieldsSource as any)[attrName];
+
+    if (!value) continue;
+
+    if (field.type === 'createdBy' && typeof value === 'string') {
+      // Transform createdBy from internal_id
+      const createdByEntity = await internalLoadById(context, user, value);
+      if (createdByEntity) {
+        if (isRelationship) {
+          // For relationships, use STIX ref format
+          transformed.created_by_ref = createdByEntity.standard_id;
+        } else {
+          // For entities, use object format
+          (transformed as any).createdBy = {
+            internal_id: createdByEntity.internal_id,
+            standard_id: createdByEntity.standard_id
+          };
+        }
+      }
+    } else if (field.type === 'objectMarking' && Array.isArray(value)) {
+      // Transform objectMarking from array of internal_ids
+      const markings = [];
+      for (const markingId of value) {
+        if (typeof markingId === 'string') {
+          const markingEntity = await internalLoadById(context, user, markingId);
+          if (markingEntity) {
+            if (isRelationship) {
+              // For relationships, just collect standard_ids
+              markings.push(markingEntity.standard_id);
+            } else {
+              // For entities, use object format
+              markings.push({
+                internal_id: markingEntity.internal_id,
+                standard_id: markingEntity.standard_id
+              });
+            }
+          }
+        }
+      }
+      if (isRelationship) {
+        transformed.object_marking_refs = markings;
+      } else {
+        (transformed as any).objectMarking = markings;
+      }
+    } else if (field.type === 'objectLabel' && Array.isArray(value)) {
+      // Transform labels
+      if (isRelationship) {
+        transformed.labels = value; // For relationships, labels are simple strings
+      } else {
+        (transformed as any).objectLabel = value.map((label: any) => ({ value: label }));
+      }
+    } else if (isRelationship && attrName && value !== undefined) {
+      // For relationships, apply other fields directly
+      transformed[attrName] = value;
+    }
+  }
+
+  // For relationships, remove the fields object after processing
+  if (isRelationship) {
+    delete transformed.fields;
+  }
+
+  return transformed;
+};
+
 const completeEntity = (entityType: string, entity: StoreEntity) => {
   const finalEntity = entity;
   finalEntity.standard_id = generateStandardId(entityType, entity) as StixId;
   finalEntity.internal_id = uuidv4();
   if (isStixDomainObject(entityType)) {
-    finalEntity.created = new Date();
-    finalEntity.modified = new Date();
+    if (isEmptyField(finalEntity.created)) {
+      finalEntity.created = new Date();
+    }
+    if (isEmptyField(finalEntity.modified)) {
+      finalEntity.modified = new Date();
+    }
   }
   finalEntity.id = finalEntity.internal_id;
   return finalEntity;
@@ -278,6 +363,17 @@ export const formSubmit = async (
     if (isEmptyField(values.mainEntityParsed)) {
       errors.push('Required field "mainEntityParsed" is missing');
     }
+    // Validate additional fields in parsed mode
+    if (values.mainEntityFields) {
+      schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
+        if (field.isMandatory || field.required) {
+          const fieldValue = values.mainEntityFields[field.attributeMapping.attributeName];
+          if (isEmptyField(fieldValue)) {
+            errors.push(`Required field "${field.label || field.name}" is missing`);
+          }
+        }
+      });
+    }
   }
   if (!schema.mainEntityLookup && !schema.mainEntityMultiple) {
     schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity').forEach((field) => {
@@ -313,9 +409,20 @@ export const formSubmit = async (
           }
         });
       }
-      if (!additionalEntity.lookup && additionalEntity.multiple && additionalEntity.fieldMode === 'parsed' && (additionalEntity?.minAmount ?? 0) > 0) {
-        if (!values[`additional_${additionalEntity.id}_parsed`]) {
+      if (!additionalEntity.lookup && additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
+        if ((additionalEntity?.minAmount ?? 0) > 0 && !values[`additional_${additionalEntity.id}_parsed`]) {
           errors.push(`Required field "additional_${additionalEntity.id}_parsed" is missing`);
+        }
+        // Validate additional fields in parsed mode
+        if (values[`additional_${additionalEntity.id}_fields`]) {
+          schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
+            if (field.isMandatory || field.required) {
+              const fieldValue = values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
+              if (isEmptyField(fieldValue)) {
+                errors.push(`Required field "${field.label || field.name}" is missing`);
+              }
+            }
+          });
         }
       }
       if (!additionalEntity.lookup && !additionalEntity.multiple) {
@@ -387,10 +494,26 @@ export const formSubmit = async (
           // @ts-expect-error
           mainEntity[schema.mainEntityParseFieldMapping] = values.mainEntityParsed[index];
         }
-        if (mainEntityType === ENTITY_TYPE_MALWARE) {
+
+        // Apply additional fields to all parsed entities
+        if (values.mainEntityFields) {
+          const additionalMainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+          for (let i = 0; i < additionalMainEntityFields.length; i += 1) {
+            const fieldValue = values.mainEntityFields[additionalMainEntityFields[i].attributeMapping.attributeName];
+            if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-expect-error
+              mainEntity[additionalMainEntityFields[i].attributeMapping.attributeName] = fieldValue;
+            }
+          }
+          // Transform special fields after applying all field values
+          mainEntity = await transformSpecialFields(context, user, mainEntity, additionalMainEntityFields, false);
+        }
+
+        if (mainEntityType === ENTITY_TYPE_MALWARE && isEmptyField(mainEntity.is_family)) {
           mainEntity.is_family = true;
         }
-        if (mainEntityType === ENTITY_TYPE_CONTAINER_GROUPING) {
+        if (mainEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(mainEntity.context)) {
           mainEntity.context = 'form';
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
@@ -471,10 +594,25 @@ export const formSubmit = async (
                 // @ts-expect-error
                 newAdditionalEntity[additionalEntity.parseFieldMapping] = values[`additional_${additionalEntity.id}_parsed`][index2];
               }
-              if (additionalEntityType === ENTITY_TYPE_MALWARE) {
+
+              // Apply additional fields to all parsed entities
+              if (values[`additional_${additionalEntity.id}_fields`]) {
+                for (let i = 0; i < additionalEntityFields.length; i += 1) {
+                  const fieldValue = values[`additional_${additionalEntity.id}_fields`][additionalEntityFields[i].attributeMapping.attributeName];
+                  if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-expect-error
+                    newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = fieldValue;
+                  }
+                }
+                // Transform special fields after applying all field values
+                newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
+              }
+
+              if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
                 newAdditionalEntity.is_family = true;
               }
-              if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING) {
+              if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
                 newAdditionalEntity.context = 'form';
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
@@ -508,13 +646,15 @@ export const formSubmit = async (
   }
 
   // Create relationships
-  if (schema.relationships && schema.relationships.length > 0) {
+  if (schema.relationships && schema.relationships.length > 0 && values.relationships) {
     for (let i = 0; i < schema.relationships.length; i += 1) {
       const rel = schema.relationships[i];
+      // Find the relationship data from submitted values
+      const submittedRel = (values.relationships as any[])?.find((r: any) => r.id === rel.id);
       if (rel.fromEntity === 'main_entity') {
         for (let j = 0; j < mainStixEntities.length; j += 1) {
           for (let k = 0; k < (additionalEntitiesMap[rel.toEntity] ?? []).length; k += 1) {
-            const relationshipData: Partial<StixRelation> = {
+            let relationshipData: Partial<StixRelation> = {
               id: `relationship--${uuidv4()}`,
               type: 'relationship',
               spec_version: '2.1',
@@ -524,13 +664,18 @@ export const formSubmit = async (
               source_ref: mainStixEntities[j].id,
               target_ref: additionalEntitiesMap[rel.toEntity][k]
             };
+            // Apply additional fields from submitted data
+            if (submittedRel?.fields && rel.fields) {
+              // Transform and apply relationship fields
+              relationshipData = await transformSpecialFields(context, user, { ...relationshipData, fields: submittedRel.fields }, rel.fields, true);
+            }
             bundle.objects.push(relationshipData);
           }
         }
       } else if (rel.toEntity === 'main_entity') {
         for (let j = 0; j < mainStixEntities.length; j += 1) {
           for (let k = 0; k < (additionalEntitiesMap[rel.fromEntity] ?? []).length; k += 1) {
-            const relationshipData: Partial<StixRelation> = {
+            let relationshipData: Partial<StixRelation> = {
               id: `relationship--${uuidv4()}`,
               type: 'relationship',
               spec_version: '2.1',
@@ -540,13 +685,18 @@ export const formSubmit = async (
               source_ref: additionalEntitiesMap[rel.fromEntity][k],
               target_ref: mainStixEntities[j].id
             };
+            // Apply additional fields from submitted data
+            if (submittedRel?.fields && rel.fields) {
+              // Transform and apply relationship fields
+              relationshipData = await transformSpecialFields(context, user, { ...relationshipData, fields: submittedRel.fields }, rel.fields, true);
+            }
             bundle.objects.push(relationshipData);
           }
         }
       } else {
         for (let j = 0; j < (additionalEntitiesMap[rel.fromEntity] ?? []).length; j += 1) {
           for (let k = 0; k < (additionalEntitiesMap[rel.toEntity] ?? []).length; k += 1) {
-            const relationshipData: Partial<StixRelation> = {
+            let relationshipData: Partial<StixRelation> = {
               id: `relationship--${uuidv4()}`,
               type: 'relationship',
               spec_version: '2.1',
@@ -556,6 +706,11 @@ export const formSubmit = async (
               source_ref: additionalEntitiesMap[rel.fromEntity][j],
               target_ref: additionalEntitiesMap[rel.toEntity][k]
             };
+            // Apply additional fields from submitted data
+            if (submittedRel?.fields && rel.fields) {
+              // Transform and apply relationship fields
+              relationshipData = await transformSpecialFields(context, user, { ...relationshipData, fields: submittedRel.fields }, rel.fields, true);
+            }
             bundle.objects.push(relationshipData);
           }
         }

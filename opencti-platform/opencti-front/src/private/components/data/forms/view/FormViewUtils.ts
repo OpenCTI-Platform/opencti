@@ -70,11 +70,21 @@ export const convertFormSchemaToYupSchema = (
   } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
     // For parsed mode, validate the text field
     shape.mainEntityParsed = Yup.string().required(t_i18n('This field is required'));
+
+    // Also add validation for additional fields in parsed mode
+    const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+    const fieldsShape: Record<string, Yup.Schema<unknown>> = {};
+    mainEntityFields.forEach((field: FormFieldDefinition) => {
+      fieldsShape[field.name] = getYupValidationForField(field, t_i18n);
+    });
+    if (Object.keys(fieldsShape).length > 0) {
+      shape.mainEntityFields = Yup.object().shape(fieldsShape);
+    }
   } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
     // For multi mode, validate the field groups
     const fieldShape: Record<string, Yup.Schema<unknown>> = {};
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-    mainEntityFields.forEach((field) => {
+    mainEntityFields.forEach((field: FormFieldDefinition) => {
       fieldShape[field.name] = getYupValidationForField(field, t_i18n);
     });
     shape.mainEntityGroups = Yup.array()
@@ -82,7 +92,7 @@ export const convertFormSchemaToYupSchema = (
       .min(1, t_i18n('At least one entity is required'));
   } else {
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-    mainEntityFields.forEach((field) => {
+    mainEntityFields.forEach((field: FormFieldDefinition) => {
       shape[field.name] = getYupValidationForField(field, t_i18n);
     });
   }
@@ -116,10 +126,19 @@ export const convertFormSchemaToYupSchema = (
           validation = validation.required(t_i18n('This field is required'));
         }
         shape[`additional_${entity.id}_parsed`] = validation;
+
+        // Also add validation for additional fields in parsed mode
+        const fieldsShape: Record<string, Yup.Schema<unknown>> = {};
+        entityFields.forEach((field: FormFieldDefinition) => {
+          fieldsShape[field.name] = getYupValidationForField(field, t_i18n);
+        });
+        if (Object.keys(fieldsShape).length > 0) {
+          shape[`additional_${entity.id}_fields`] = Yup.object().shape(fieldsShape);
+        }
       } else if (entity.multiple && entity.fieldMode === 'multiple') {
         // Multi mode
         const fieldShape: Record<string, Yup.Schema<unknown>> = {};
-        entityFields.forEach((field) => {
+        entityFields.forEach((field: FormFieldDefinition) => {
           fieldShape[field.name] = getYupValidationForField(field, t_i18n);
         });
         const minAmount = entity.minAmount || 0;
@@ -131,7 +150,7 @@ export const convertFormSchemaToYupSchema = (
       } else {
         // Single entity mode
         const entityShape: Record<string, Yup.Schema<unknown>> = {};
-        entityFields.forEach((field) => {
+        entityFields.forEach((field: FormFieldDefinition) => {
           entityShape[field.name] = getYupValidationForField(field, t_i18n);
         });
 
@@ -141,7 +160,7 @@ export const convertFormSchemaToYupSchema = (
         } else {
           // For optional entities, we don't add validation - fields are optional
           const optionalEntityShape: Record<string, Yup.Schema<unknown>> = {};
-          entityFields.forEach((field) => {
+          entityFields.forEach((field: FormFieldDefinition) => {
             // Only validate if field is mandatory regardless of entity requirement
             if (field.isMandatory) {
               optionalEntityShape[field.name] = getYupValidationForField(field, t_i18n);
@@ -149,6 +168,19 @@ export const convertFormSchemaToYupSchema = (
           });
           shape[`additional_${entity.id}`] = Yup.object().shape(optionalEntityShape);
         }
+      }
+    });
+  }
+
+  // Add validation for relationships
+  if (schema.relationships && schema.relationships.length > 0) {
+    schema.relationships.forEach((relationship) => {
+      if (relationship.fields && relationship.fields.length > 0) {
+        const relationshipFieldsShape: Record<string, Yup.Schema<unknown>> = {};
+        relationship.fields.forEach((field: FormFieldDefinition) => {
+          relationshipFieldsShape[field.name] = getYupValidationForField(field, t_i18n);
+        });
+        shape[`relationship_${relationship.id}`] = Yup.object().shape(relationshipFieldsShape);
       }
     });
   }
@@ -217,6 +249,22 @@ export const formatFormDataForSubmission = (
         .map((v) => v.trim())
         .filter((v) => v);
     }
+    // Also handle additional fields for main entity in parsed mode
+    const mainEntityAdditionalFields = values.mainEntityFields as Record<string, unknown>;
+    if (mainEntityAdditionalFields) {
+      const processedFields: Record<string, unknown> = {};
+      const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
+      mainEntityFields.forEach((field: FormFieldDefinition) => {
+        const extractedValue = extractFieldValue(field, mainEntityAdditionalFields[field.name]);
+        if (extractedValue !== undefined) {
+          // Use the attribute mapping name instead of the field name
+          processedFields[field.attributeMapping.attributeName] = extractedValue;
+        }
+      });
+      if (Object.keys(processedFields).length > 0) {
+        formattedData.mainEntityFields = processedFields;
+      }
+    }
   } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'multiple') {
     // Handle field groups
     const groups = values.mainEntityGroups as Record<string, unknown>[];
@@ -236,7 +284,7 @@ export const formatFormDataForSubmission = (
   } else if (!schema.mainEntityLookup) {
     // Process main entity fields (only if not in lookup mode)
     const mainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
-    mainEntityFields.forEach((field) => {
+    mainEntityFields.forEach((field: FormFieldDefinition) => {
       const extractedValue = extractFieldValue(field, values[field.name]);
       if (extractedValue !== undefined) {
         formattedData[field.name] = extractedValue;
@@ -269,6 +317,22 @@ export const formatFormDataForSubmission = (
             .map((v) => v.trim())
             .filter((v) => v);
         }
+        // Also handle additional fields for parsed mode
+        const additionalFields = values[`additional_${entity.id}_fields`] as Record<string, unknown>;
+        if (additionalFields) {
+          const processedFields: Record<string, unknown> = {};
+          const additionalEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === entity.id);
+          additionalEntityFields.forEach((field: FormFieldDefinition) => {
+            const extractedValue = extractFieldValue(field, additionalFields[field.name]);
+            if (extractedValue !== undefined) {
+              // Use the attribute mapping name instead of the field name
+              processedFields[field.attributeMapping.attributeName] = extractedValue;
+            }
+          });
+          if (Object.keys(processedFields).length > 0) {
+            formattedData[`additional_${entity.id}_fields`] = processedFields;
+          }
+        }
       } else if (entity.multiple && entity.fieldMode === 'multiple') {
         // Handle field groups
         const groups = values[`additional_${entity.id}_groups`] as Record<string, unknown>[];
@@ -288,7 +352,7 @@ export const formatFormDataForSubmission = (
       } else {
         // Single entity mode
         const entityValues = values[`additional_${entity.id}`] || {};
-        entityFields.forEach((field) => {
+        entityFields.forEach((field: FormFieldDefinition) => {
           const value = (entityValues as Record<string, unknown>)[field.name];
           const extractedValue = extractFieldValue(field, value);
           if (extractedValue !== undefined) {
@@ -297,6 +361,46 @@ export const formatFormDataForSubmission = (
         });
       }
     });
+  }
+
+  // Process relationships
+  if (schema.relationships && schema.relationships.length > 0) {
+    const relationshipsData: Record<string, unknown>[] = [];
+    schema.relationships.forEach((relationship) => {
+      const relationshipData: Record<string, unknown> = {
+        id: relationship.id,
+        fromEntity: relationship.fromEntity,
+        toEntity: relationship.toEntity,
+        relationshipType: relationship.relationshipType,
+        required: relationship.required,
+      };
+
+      // Process relationship fields
+      if (relationship.fields && relationship.fields.length > 0) {
+        const relationshipFieldsData: Record<string, unknown> = {};
+        const relationshipValues = values[`relationship_${relationship.id}`] as Record<string, unknown>;
+
+        if (relationshipValues) {
+          relationship.fields.forEach((field: FormFieldDefinition) => {
+            const extractedValue = extractFieldValue(field, relationshipValues[field.name]);
+            if (extractedValue !== undefined) {
+              // Use the attribute mapping name for the field
+              relationshipFieldsData[field.attributeMapping.attributeName] = extractedValue;
+            }
+          });
+        }
+
+        if (Object.keys(relationshipFieldsData).length > 0) {
+          relationshipData.fields = relationshipFieldsData;
+        }
+      }
+
+      relationshipsData.push(relationshipData);
+    });
+
+    if (relationshipsData.length > 0) {
+      formattedData.relationships = relationshipsData;
+    }
   }
 
   return formattedData;

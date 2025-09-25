@@ -3,6 +3,7 @@ import { graphql } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { IndicatorsLinesPaginationQuery, IndicatorsLinesPaginationQuery$variables } from '@components/observations/__generated__/IndicatorsLinesPaginationQuery.graphql';
 import { IndicatorsLines_data$data } from '@components/observations/__generated__/IndicatorsLines_data.graphql';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import IndicatorCreation from './indicators/IndicatorCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -207,7 +208,10 @@ const Indicators = () => {
           exportContext={{ entity_type: 'Indicator' }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IndicatorCreation paginationOptions={queryPaginationOptions} />
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Threat-Actor-Group' />
+                <IndicatorCreation paginationOptions={queryPaginationOptions} />
+              </div>
             </Security>
           )}
         />

@@ -190,7 +190,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
   const handleMainEntityTypeChange = (value: string) => {
     updateFormData((prev) => {
-      const newMandatoryFields = getInitialMandatoryFields(value, entityTypes, t_i18n);
+      // Don't add mandatory fields if we're in parsed mode
+      const shouldAddMandatoryFields = prev.mainEntityFieldMode !== 'parsed';
+      const newMandatoryFields = shouldAddMandatoryFields ? getInitialMandatoryFields(value, entityTypes, t_i18n) : [];
       const nonMandatoryFields = prev.fields.filter(
         (f) => !f.isMandatory || f.attributeMapping.entity !== 'main_entity',
       );
@@ -321,10 +323,130 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     }));
   };
 
+  const renderRelationshipField = (field: FormFieldAttribute, index: number, relationshipIndex: number) => {
+    const fieldPath = `relationships.${relationshipIndex}.fields.${index}`;
+    const availableFieldTypes = [
+      { value: 'text', label: t_i18n('Text') },
+      { value: 'textarea', label: t_i18n('Textarea') },
+      { value: 'number', label: t_i18n('Number') },
+      { value: 'datetime', label: t_i18n('Date/Time') },
+      { value: 'checkbox', label: t_i18n('Checkbox') },
+      { value: 'select', label: t_i18n('Select') },
+      { value: 'multiselect', label: t_i18n('Multi-Select') },
+    ];
+
+    // Available attributes for relationships
+    const availableAttributes = [
+      { value: 'description', label: t_i18n('Description') },
+      { value: 'start_time', label: t_i18n('Start time') },
+      { value: 'stop_time', label: t_i18n('Stop time') },
+      { value: 'confidence', label: t_i18n('Confidence') },
+      { value: 'x_opencti_workflow_id', label: t_i18n('Status') },
+      { value: 'createdBy', label: t_i18n('Author') },
+      { value: 'objectMarking', label: t_i18n('Marking definitions') },
+      { value: 'objectLabel', label: t_i18n('Labels') },
+    ];
+
+    return (
+      <Box key={field.id} className={classes.fieldGroup}>
+        <div className={classes.fieldHeader}>
+          <Typography className={classes.fieldTitle}>
+            {field.label || t_i18n('New Field')}
+          </Typography>
+          <IconButton
+            size="small"
+            onClick={() => {
+              const updatedRelationships = [...formData.relationships];
+              updatedRelationships[relationshipIndex].fields = updatedRelationships[relationshipIndex].fields?.filter((_field, i) => i !== index);
+              updateFormData((prev) => ({ ...prev, relationships: updatedRelationships }));
+            }}
+          >
+            <DeleteOutlined color="primary" />
+          </IconButton>
+        </div>
+
+        <TextField
+          fullWidth
+          variant="standard"
+          label={t_i18n('Field Name')}
+          value={field.name}
+          onChange={(e) => handleFieldChange(`${fieldPath}.name`, e.target.value)}
+          style={{ marginTop: 20 }}
+        />
+
+        <TextField
+          fullWidth
+          variant="standard"
+          label={t_i18n('Label')}
+          value={field.label}
+          onChange={(e) => handleFieldChange(`${fieldPath}.label`, e.target.value)}
+          style={{ marginTop: 20 }}
+        />
+
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+          <InputLabel>{t_i18n('Field Type')}</InputLabel>
+          <Select
+            value={field.type}
+            onChange={(e) => handleFieldChange(`${fieldPath}.type`, e.target.value)}
+            label={t_i18n('Field Type')}
+          >
+            {availableFieldTypes.map((type) => (
+              <MenuItem key={type.value} value={type.value}>
+                {type.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+          <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
+          <Select
+            value={field.attributeMapping.attributeName}
+            onChange={(e) => handleFieldChange(`${fieldPath}.attributeMapping.attributeName`, e.target.value)}
+            label={t_i18n('Map to attribute')}
+          >
+            {availableAttributes.map((attr) => (
+              <MenuItem key={attr.value} value={attr.value}>
+                {attr.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={field.required}
+              onChange={(e) => handleFieldChange(`${fieldPath}.required`, e.target.checked)}
+            />
+          }
+          label={t_i18n('Required')}
+          style={{ marginTop: 20 }}
+        />
+      </Box>
+    );
+  };
+
   const renderField = (field: FormFieldAttribute, index: number, entityType: string) => {
     const availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes);
-    const availableAttributes = field.type ? getAttributesForEntityType(entityType, field.type) : [];
+    let availableAttributes = field.type ? getAttributesForEntityType(entityType, field.type) : [];
     const fieldIndex = formData.fields.findIndex((f) => f.id === field.id);
+
+    // Check if we're in parsed mode
+    let isInParsedMode = false;
+
+    // Filter out parsed field mapping if in parsed mode
+    if (field.attributeMapping.entity === 'main_entity' && formData.mainEntityFieldMode === 'parsed' && formData.mainEntityParseFieldMapping) {
+      availableAttributes = availableAttributes.filter((attr) => attr.value !== formData.mainEntityParseFieldMapping);
+      isInParsedMode = true;
+    } else if (field.attributeMapping.entity !== 'main_entity') {
+      // For additional entities, check if they're in parsed mode
+      const additionalEntity = formData.additionalEntities.find((e) => e.id === field.attributeMapping.entity);
+      if (additionalEntity?.fieldMode === 'parsed' && additionalEntity.parseFieldMapping) {
+        availableAttributes = availableAttributes.filter((attr) => attr.value !== additionalEntity.parseFieldMapping);
+        isInParsedMode = true;
+      }
+    }
 
     return (
       <Box key={field.id} className={classes.fieldGroup}>
@@ -332,7 +454,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <Typography className={classes.fieldTitle}>
             {field.isMandatory ? `${t_i18n('Field')} ${index + 1} (${t_i18n('Mandatory')})` : `${t_i18n('Field')} ${index + 1}`}
           </Typography>
-          {!field.isMandatory && (
+          {(!field.isMandatory || isInParsedMode) && (
             <IconButton
               size="small"
               onClick={() => handleRemoveField(field.id)}
@@ -357,7 +479,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           style={{ marginTop: 20 }}
         />
 
-        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory}>
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
           <InputLabel>{t_i18n('Field Type')}</InputLabel>
           <Select
             value={field.type}
@@ -375,7 +497,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Select>
         </FormControl>
 
-        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory}>
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
           <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
           <Select
             value={field.attributeMapping.attributeName}
@@ -491,7 +613,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <Switch
               checked={field.required}
               onChange={(e) => handleFieldChange(`fields.${fieldIndex}.required`, e.target.checked)}
-              disabled={field.isMandatory}
+              disabled={field.isMandatory && !isInParsedMode}
             />
           }
           label={t_i18n('Required')}
@@ -530,16 +652,21 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               const newEntityType = e.target.value;
               handleFieldChange(`additionalEntities.${entityIndex}.entityType`, newEntityType);
               updateFormData((prev) => {
-                // Get mandatory fields for the new entity type
-                const newMandatoryFields = getInitialMandatoryFields(newEntityType, entityTypes, t_i18n)
-                  .map((field) => ({
-                    ...field,
-                    attributeMapping: {
-                      ...field.attributeMapping,
-                      entity: entity.id,
-                      mappingType: 'nested' as const,
-                    },
-                  }));
+                // Don't add mandatory fields if entity is in parsed mode
+                const currentEntity = prev.additionalEntities.find((ent) => ent.id === entity.id);
+                const shouldAddMandatoryFields = currentEntity?.fieldMode !== 'parsed';
+
+                const newMandatoryFields = shouldAddMandatoryFields
+                  ? getInitialMandatoryFields(newEntityType, entityTypes, t_i18n)
+                    .map((field) => ({
+                      ...field,
+                      attributeMapping: {
+                        ...field.attributeMapping,
+                        entity: entity.id,
+                        mappingType: 'nested' as const,
+                      },
+                    }))
+                  : [];
 
                 // Remove old fields for this entity and add new mandatory fields
                 const fieldsWithoutEntity = prev.fields.filter((f) => f.attributeMapping.entity !== entity.id);
@@ -662,7 +789,37 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               <InputLabel>{t_i18n('Map parsed values to attribute')}</InputLabel>
               <Select
                 value={entity.parseFieldMapping || ''}
-                onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.parseFieldMapping`, e.target.value)}
+                onChange={(e) => {
+                  const newMapping = e.target.value;
+                  updateFormData((prev) => {
+                    const currentEntity = prev.additionalEntities[entityIndex];
+                    const wasFirstSelection = !currentEntity.parseFieldMapping;
+                    let updatedFields = prev.fields;
+
+                    if (newMapping) {
+                      if (wasFirstSelection) {
+                        // First time selecting: remove ALL pre-provisioned fields for this entity
+                        updatedFields = prev.fields.filter((f) => f.attributeMapping.entity !== entity.id);
+                      } else {
+                        // Changing selection: remove any field that maps to the newly selected attribute
+                        updatedFields = prev.fields.filter((f) => !(f.attributeMapping.entity === entity.id && f.attributeMapping.attributeName === newMapping));
+                      }
+                    }
+
+                    // Update the entity's parseFieldMapping
+                    const updatedEntities = [...prev.additionalEntities];
+                    updatedEntities[entityIndex] = {
+                      ...currentEntity,
+                      parseFieldMapping: newMapping,
+                    };
+
+                    return {
+                      ...prev,
+                      additionalEntities: updatedEntities,
+                      fields: updatedFields,
+                    };
+                  });
+                }}
                 label={t_i18n('Map parsed values to attribute')}
               >
                 {(() => {
@@ -704,6 +861,25 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               {t_i18n('Fields')}
             </Typography>
             {entityFields.map((field, idx) => renderField(field, idx, entity.entityType))}
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              onClick={() => handleAddField(entity.id, entity.entityType)}
+              className={classes.addButton}
+            >
+              {t_i18n('Add field')}
+            </Button>
+          </>
+        )}
+
+        {!entity.lookup && entity.fieldMode === 'parsed' && entity.parseFieldMapping && (
+          <>
+            <Typography variant="subtitle1" style={{ marginTop: 20, marginBottom: 10 }}>
+              {t_i18n('Additional Fields (will be applied to all created entities)')}
+            </Typography>
+            {entityFields
+              .filter((field) => field.attributeMapping.attributeName !== entity.parseFieldMapping)
+              .map((field, idx) => renderField(field, idx, entity.entityType))}
             <Button
               variant="outlined"
               startIcon={<Add />}
@@ -832,6 +1008,62 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             ))}
           </Select>
         </FormControl>
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={relationship.required || false}
+              onChange={(e) => handleFieldChange(`relationships.${relationshipIndex}.required`, e.target.checked)}
+            />
+          }
+          label={t_i18n('Required')}
+          style={{ marginTop: 20 }}
+        />
+
+        {/* Additional fields for relationship */}
+        {relationship.relationshipType && (
+          <>
+            <Typography variant="subtitle1" style={{ marginTop: 20, marginBottom: 10 }}>
+              {t_i18n('Additional Fields')}
+            </Typography>
+            {(relationship.fields || []).map((field, fieldIdx) => renderRelationshipField(
+              field,
+              fieldIdx,
+              relationshipIndex,
+            ))}
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              onClick={() => {
+                const fieldId = generateFieldId();
+                const newField: FormFieldAttribute = {
+                  id: fieldId,
+                  name: `field_${fieldId.slice(0, 8)}`,
+                  label: '',
+                  type: 'text',
+                  required: false,
+                  attributeMapping: {
+                    entity: relationship.id,
+                    attributeName: '',
+                  },
+                };
+                const updatedRelationships = [...formData.relationships];
+                updatedRelationships[relationshipIndex] = {
+                  ...relationship,
+                  fields: [...(relationship.fields || []), newField],
+                };
+                updateFormData((prev) => ({
+                  ...prev,
+                  relationships: updatedRelationships,
+                }));
+              }}
+              className={classes.addButton}
+              disabled={!relationship.relationshipType}
+            >
+              {t_i18n('Add field')}
+            </Button>
+          </>
+        )}
 
       </Box>
     );
@@ -965,7 +1197,29 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 <InputLabel>{t_i18n('Map parsed values to attribute')}</InputLabel>
                 <Select
                   value={formData.mainEntityParseFieldMapping || ''}
-                  onChange={(e) => handleFieldChange('mainEntityParseFieldMapping', e.target.value)}
+                  onChange={(e) => {
+                    const newMapping = e.target.value;
+                    updateFormData((prev) => {
+                      const wasFirstSelection = !prev.mainEntityParseFieldMapping;
+                      let updatedFields = prev.fields;
+
+                      if (newMapping) {
+                        if (wasFirstSelection) {
+                          // First time selecting: remove ALL pre-provisioned fields for main entity
+                          updatedFields = prev.fields.filter((f) => f.attributeMapping.entity !== 'main_entity');
+                        } else {
+                          // Changing selection: remove any field that maps to the newly selected attribute
+                          updatedFields = prev.fields.filter((f) => !(f.attributeMapping.entity === 'main_entity' && f.attributeMapping.attributeName === newMapping));
+                        }
+                      }
+
+                      return {
+                        ...prev,
+                        mainEntityParseFieldMapping: newMapping,
+                        fields: updatedFields,
+                      };
+                    });
+                  }}
                   label={t_i18n('Map parsed values to attribute')}
                 >
                   {(() => {
@@ -1012,9 +1266,29 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             }
             if (formData.mainEntityFieldMode === 'parsed' && formData.mainEntityMultiple) {
               return (
-                <Alert severity="info" className={classes.alert} style={{ marginTop: 20 }}>
-                  {t_i18n('Parsed mode enabled. A single field will be provided to enter multiple entity names.')}
-                </Alert>
+                <>
+                  <Alert severity="info" className={classes.alert} style={{ marginTop: 20 }}>
+                    {t_i18n('Parsed mode enabled. Users can enter multiple values in a single field. Additional fields can be defined that will apply to all created entities.')}
+                  </Alert>
+                  {formData.mainEntityParseFieldMapping && (
+                    <div style={{ marginTop: 20 }}>
+                      <Typography variant="h6" gutterBottom>
+                        {t_i18n('Additional Fields (will be applied to all created entities)')}
+                      </Typography>
+                      {(fieldsByEntity.main_entity || [])
+                        .filter((field) => field.attributeMapping.attributeName !== formData.mainEntityParseFieldMapping)
+                        .map((field, idx) => renderField(field, idx, formData.mainEntityType))}
+                      <Button
+                        variant="outlined"
+                        startIcon={<Add />}
+                        onClick={() => handleAddField('main_entity', formData.mainEntityType)}
+                        className={classes.addButton}
+                      >
+                        {t_i18n('Add field')}
+                      </Button>
+                    </div>
+                  )}
+                </>
               );
             }
             return (
