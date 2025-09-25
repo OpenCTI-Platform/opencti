@@ -61,9 +61,7 @@ const DefaultValueField = ({
           variant="outlined"
           style={{ margin: '20px 0 10px 0' }}
         >
-          {t_i18n(
-            'When enabling a default value for marking definitions, it will put the group default markings of the user which created the entity if nothing is provided.',
-          )}
+          {t_i18n('When enabling a default value for marking definitions, it will put the group default markings of the user which created the entity if nothing is provided.')}
         </Alert>
       </>
     );

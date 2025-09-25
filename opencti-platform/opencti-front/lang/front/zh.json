@@ -4073,6 +4073,7 @@
   "Weight (Kilograms)": "重量（公斤）",
   "Weight (Pounds)": "重量（磅）",
   "When an event happens on a knowledge your participate, you will receive notification through your personal notifiers": "当您参与的知识发生事件时，您将通过个人通知器收到通知",
+  "When enabling a default value for marking definitions, it will put the group default markings of the user which created the entity if nothing is provided.": "在为标记定义启用默认值时，如果没有提供任何值，它将使用创建实体的用户的组默认标记。",
   "When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.": "当强制执行双因素认证时，所有用户都将被要求启用双因素认证才能登录平台。",
   "When you set a platform organization you enable the organization sharing and segregation feature.": "设置平台组织时，将启用组织共享和隔离功能。",
   "When you set a platform organization, organization segregation is enabled: users without an organization will no longer be able to log in, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.": "当您设置平台组织时，组织隔离将被启用：没有组织的用户将无法登录，所有未与任何组织共享的知识片段将只能由平台组织的用户访问。",
