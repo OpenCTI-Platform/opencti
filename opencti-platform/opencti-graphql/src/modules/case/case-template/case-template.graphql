@@ -48,7 +48,7 @@ input CaseTemplateAddInput {
 }
 
 type Mutation {
-  caseTemplateAdd(input: CaseTemplateAddInput!): CaseTemplate @auth
+  caseTemplateAdd(input: CaseTemplateAddInput!): CaseTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
   caseTemplateDelete(id: ID!): ID @auth(for: [SETTINGS_SETCASETEMPLATES])
   caseTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTemplate @auth(for: [SETTINGS_SETCASETEMPLATES])
   caseTemplateRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): CaseTemplate @auth(for: [KNOWLEDGE_KNUPDATE])

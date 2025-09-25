@@ -13320,7 +13320,7 @@ type Query {
     search: String
     scope: StatusScope
   ): StatusConnection @auth
-  backgroundTask(id: String!): BackgroundTask @auth(for: [KNOWLEDGE])
+  backgroundTask(id: String!): BackgroundTask @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   backgroundTasks(
     first: Int
     after: ID
@@ -13329,8 +13329,8 @@ type Query {
     includeAuthorities: Boolean
     filters: FilterGroup
     search: String
-  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
-  rule(id: String!): Rule @auth(for: [KNOWLEDGE])
+  ): BackgroundTaskConnection @auth(for: [KNOWLEDGE])
+  rule(id: String!): Rule @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   rules: [Rule] @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   ruleManagerInfo: RuleManager @auth(for: [SETTINGS_SETCUSTOMIZATION])
   synchronizer(id: String!): Synchronizer @auth(for: [INGESTION])
