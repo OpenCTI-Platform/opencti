@@ -14,7 +14,7 @@ import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
-import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE } from '../config/conf';
+import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
@@ -459,6 +459,15 @@ const createApp = async (app, schema) => {
   // -- Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
+    if (req.body.RelayState) {
+      const refererUrl = new URL(req.body.RelayState, getBaseUrl());
+      if (refererUrl.pathname !== req.body.RelayState) {
+        logApp.error('Error auth provider callback : RelayState has been altered', { relayState: req.body.RelayState });
+        setCookieError(res, 'Invalid authentication, please ask your administrator');
+        res.redirect('/');
+        return;
+      }
+    }
     const referer = req.body.RelayState ?? req.session.referer;
     const { provider } = req.params;
     const callbackLogin = () => new Promise((accept, reject) => {
