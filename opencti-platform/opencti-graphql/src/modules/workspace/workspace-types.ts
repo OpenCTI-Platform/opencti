@@ -28,6 +28,7 @@ export interface StoreEntityWorkspace extends StoreEntity {
   type: string;
   restricted_members: Array<AuthorizedMember>;
   object_refs: Array<string>;
+  investigated_entities_ids: Array<string>;
 }
 // endregion
 

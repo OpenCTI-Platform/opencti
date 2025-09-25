@@ -47,7 +47,12 @@ export const editInternalObject = async <T extends StoreEntity>(context: AuthCon
   return notify(notifyTopic, element, user);
 };
 
-export const deleteInternalObject = async (context: AuthContext, user: AuthUser, id: string, entityType: string) => {
+export const deleteInternalObject = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  entityType: string,
+) => {
   const internalObject = await storeLoadById(context, user, id, entityType);
   if (!internalObject) {
     throw FunctionalError(`${entityType} ${id} cant be found`);

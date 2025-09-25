@@ -184,7 +184,7 @@ const FintelDesigns = () => {
               disableLineSelection
               preloadedPaginationProps={preloadedPaginationProps}
               createButton={<FintelDesignCreation paginationOptions={queryPaginationOptions} />}
-              icon={() => <ItemIcon type="fintel-design" />}
+              icon={() => <ItemIcon type="FintelDesign" />}
             />
             )}
           </>

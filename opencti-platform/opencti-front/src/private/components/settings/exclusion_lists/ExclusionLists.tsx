@@ -242,7 +242,7 @@ const ExclusionLists = () => {
             preloadedPaginationProps={preloadedPaginationProps}
             actions={(row) => <ExclusionListPopover data={row} paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
             createButton={<ExclusionListCreation paginationOptions={queryPaginationOptions} refetchStatus={refetchStatus} />}
-            icon={() => <ItemIcon type="exclusion-list" />}
+            icon={() => <ItemIcon type="ExclusionList" />}
           />
         )}
       </PageContainer>

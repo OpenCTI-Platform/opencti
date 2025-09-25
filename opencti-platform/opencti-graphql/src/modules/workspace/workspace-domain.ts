@@ -2,11 +2,11 @@ import * as R from 'ramda';
 import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
-import { createEntity, deleteElementById, fullEntitiesOrRelationsConnection, updateAttribute, pageEntitiesOrRelationsConnection } from '../../database/middleware';
+import { createEntity, deleteElementById, fullEntitiesOrRelationsConnection, pageEntitiesOrRelationsConnection, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
-import { ENTITY_TYPE_WORKSPACE, type BasicStoreEntityWorkspace, type WidgetConfiguration } from './workspace-types';
+import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace, type WidgetConfiguration } from './workspace-types';
 import { DatabaseError, FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
@@ -33,6 +33,7 @@ import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 import { convertWidgetsIds } from './workspace-utils';
 import { fromB64, toB64 } from '../../utils/base64';
+import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -166,21 +167,7 @@ export const addWorkspace = async (
     user,
   );
   const workspaceToCreate = { ...input, restricted_members: authorizedMembers };
-  const created = await createEntity(
-    context,
-    user,
-    workspaceToCreate,
-    ENTITY_TYPE_WORKSPACE,
-  );
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `creates ${created.type} workspace \`${created.name}\``,
-    context_data: { id: created.id, entity_type: ENTITY_TYPE_WORKSPACE, input },
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
+  return createInternalObject<StoreEntityWorkspace>(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
 };
 
 export const workspaceDelete = async (
@@ -249,14 +236,7 @@ export const workspaceEditField = async (
   inputs: EditInput[],
 ) => {
   await checkInvestigatedEntitiesInputs(context, user, inputs);
-  const { element } = await updateAttribute(
-    context,
-    user,
-    workspaceId,
-    ENTITY_TYPE_WORKSPACE,
-    inputs,
-  );
-  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
+  return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
 };
 
 export const workspaceCleanContext = async (
