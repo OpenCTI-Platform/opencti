@@ -442,24 +442,24 @@ type AiActivity {
   result: String
   trend: String
   updated_at: DateTime
-refreshed_at: DateTime
+  refreshed_at: DateTime
 }
 type AiSummary {
   result: String
   topics: [String]
   updated_at: DateTime
-refreshed_at: DateTime
+  refreshed_at: DateTime
 }
 type AiForecast {
   result: String
   confidence: Int
   updated_at: DateTime
-refreshed_at: DateTime
+  refreshed_at: DateTime
 }
 type AiHistory {
   result: String
   updated_at: DateTime
-refreshed_at: DateTime
+  refreshed_at: DateTime
 }
 
 ### INTERFACES & TYPES
@@ -1499,7 +1499,7 @@ type Group implements InternalObject & BasicObject {
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime
   updated_at: DateTime
-refreshed_at: DateTime
+  refreshed_at: DateTime
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
@@ -2128,7 +2128,7 @@ type Connector implements BasicObject & InternalObject {
   connector_queue_details: ConnectorQueueDetails!
   connector_info: ConnectorInfo
   updated_at: DateTime
-refreshed_at: DateTime
+  refreshed_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
   works(status: String): [Work]
