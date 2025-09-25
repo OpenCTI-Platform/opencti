@@ -12,6 +12,7 @@ import { RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
 import { wait } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
 import { logApp } from '../../src/config/conf';
+import { ENTITY_TYPE_LOCATION_CITY } from '../../src/schema/stixDomainObject';
 
 const RULE = RULE_PREFIX + LocatedAtLocatedRule.id;
 const FRANCE = 'location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d';
@@ -114,8 +115,8 @@ describe('Located at located rule', () => {
       const afterRecreationRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterRecreationRelations.length).toBe(7);
       // Remove the city
-      logApp.info('[TEST LOCATED_AT] REMOVING PARIS');
-      await internalDeleteElementById(testContext, SYSTEM_USER, paris.internal_id, RELATION_LOCATED_AT);
+      logApp.info(`[TEST LOCATED_AT] REMOVING PARIS ${paris.internal_id}`);
+      await internalDeleteElementById(testContext, SYSTEM_USER, paris.internal_id, ENTITY_TYPE_LOCATION_CITY);
       await wait(TEN_SECONDS); // let some time to rule manager to delete the elements
       const afterParisDeletionRelations = await getInferences(RELATION_LOCATED_AT);
       expect(afterParisDeletionRelations.length).toBe(5);
