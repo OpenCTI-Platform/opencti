@@ -1776,10 +1776,14 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const body = {
       sort: [{ [orderBy]: orderMode }],
       query: {
-        bool: {
-          must: [...mustTerms, ...draftMust],
-          must_not: markingRestrictions.must_not,
-        },
+        // Put everything under filter to prevent score computation
+        // Search without score when no sort is applied is faster
+        filter: [{
+          bool: {
+            must: [...mustTerms, ...draftMust],
+            must_not: markingRestrictions.must_not,
+          },
+        }]
       },
     };
     if (relCount) {
@@ -1799,6 +1803,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const query = {
         index: computedIndices,
         size: ES_MAX_PAGINATION,
+        track_total_hits: false,
         _source,
         body,
       };
@@ -3721,7 +3726,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    track_total_hits: true,
+    track_total_hits: false,
     _source: false,
     body,
   };
