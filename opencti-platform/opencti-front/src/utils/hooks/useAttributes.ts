@@ -20,6 +20,7 @@ const ignoredAttributes = [
   'created_at',
   'x_opencti_score',
   'updated_at',
+  'refreshed_at',
   'observable_value',
   'indicators',
   'importFiles',
