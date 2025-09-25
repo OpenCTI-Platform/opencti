@@ -170,7 +170,7 @@ export const statusTemplateEditField = async (context: AuthContext, user: AuthUs
 };
 export const statusDelete = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string) => {
   validateSetting(subTypeId, 'workflow_configuration');
-  const { element: deleted } = await internalDeleteElementById(context, user, statusId);
+  const { element: deleted } = await internalDeleteElementById(context, user, statusId, ENTITY_TYPE_STATUS);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -189,7 +189,7 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
     filterGroups: [],
   };
   const result = await fullEntitiesList(context, user, [ENTITY_TYPE_STATUS], { filters });
-  await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id)
+  await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id, ENTITY_TYPE_STATUS)
     .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
   const deleted = await deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
   await publishUserAction({

@@ -10,6 +10,7 @@ import { addCaseRfi, findById as findRfiById } from '../../../src/modules/case/c
 import type { Group } from '../../../src/types/group';
 import { internalDeleteElementById } from '../../../src/database/middleware';
 import { now } from '../../../src/utils/format';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 
 describe('Middleware test coverage on restricted_members configuration', () => {
   let userPlatformOrgGreenGroup: AuthUser;
@@ -59,7 +60,7 @@ describe('Middleware test coverage on restricted_members configuration', () => {
 
   afterAll(async () => {
     for (let i = 0; i < idToDelete.length; i += 1) {
-      await internalDeleteElementById(testContext, SYSTEM_USER, idToDelete[i]); // +5 RFI deleted
+      await internalDeleteElementById(testContext, SYSTEM_USER, idToDelete[i], ENTITY_TYPE_CONTAINER_CASE_RFI); // +5 RFI deleted
     }
     await enableCEAndUnSetOrganization();
   });

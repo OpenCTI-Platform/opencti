@@ -43,7 +43,7 @@ import {
   SETTINGS_SECURITYACTIVITY,
   isOnlyOrgaAdmin
 } from '../../utils/access';
-import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
+import { AlreadyDeletedError, ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { validateFilterGroupForActivityEventMatch } from '../../utils/filtering/filtering-activity-event/activity-event-filtering';
@@ -312,6 +312,9 @@ export const myUnreadNotificationsCount = async (context: AuthContext, user: Aut
 };
 export const notificationDelete = async (context: AuthContext, user: AuthUser, notificationId: string) => {
   const notification = await notificationGet(context, user, notificationId);
+  if (!notification) {
+    throw AlreadyDeletedError({ notificationId });
+  }
   await deleteElementById(context, user, notificationId, ENTITY_TYPE_NOTIFICATION);
   const unreadNotificationsCount = await myUnreadNotificationsCount(context, user);
   await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: notification.user_id }, user);

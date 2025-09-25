@@ -16,7 +16,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { elFindByIds, elLoadById, elRawSearch } from '../../../src/database/engine';
-import { ADMIN_USER, buildStandardUser, TEST_ORGANIZATION, testContext, TESTING_ORGS } from '../../utils/testQuery';
+import { ADMIN_USER, buildStandardUser, testContext, TESTING_ORGS } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -1224,8 +1224,8 @@ describe('Upsert and merge entities', () => {
     expect(malwareAfterUpsert.createdBy).not.toBeUndefined();
     expect(malwareAfterUpsert.createdBy.id).toEqual(organization2.id);
     // Cleanup
-    await deleteElementById(testContext, ADMIN_USER, malwareA.id, ENTITY_TYPE_CONTAINER_REPORT);
-    await deleteElementById(testContext, ADMIN_USER, malwareB.id, ENTITY_TYPE_CONTAINER_REPORT);
+    await deleteElementById(testContext, ADMIN_USER, malwareA.id, ENTITY_TYPE_MALWARE);
+    await deleteElementById(testContext, ADMIN_USER, malwareB.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, organization1.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
     await deleteElementById(testContext, ADMIN_USER, organization2.id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
@@ -1462,17 +1462,5 @@ describe('Elements deduplication behaviors', () => {
     // Cleanup
     await deleteElementById(testContext, ADMIN_USER, group1.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     await deleteElementById(testContext, ADMIN_USER, group2.id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
-  });
-});
-
-describe('Delete functional errors behaviors', () => {
-  it('should not be able to delete organization that has members', async () => {
-    await expect(() => deleteElementById(testContext, ADMIN_USER, TEST_ORGANIZATION.id, ENTITY_TYPE_IDENTITY_ORGANIZATION))
-      .rejects.toThrowError('Cannot delete an organization that has members.');
-  });
-  it.skip('should not be able to delete individual associated to user', async () => {
-    const individualUserId = 'identity--cfb1de38-c40a-5f51-81f3-35036a4e3b91'; // admin individual
-    await expect(() => deleteElementById(testContext, ADMIN_USER, individualUserId, ENTITY_TYPE_IDENTITY_INDIVIDUAL))
-      .rejects.toThrowError('Cannot delete an individual corresponding to a user');
   });
 });

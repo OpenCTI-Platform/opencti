@@ -93,7 +93,7 @@ describe('Observed sighting rule', () => {
       expect(cbrickToMitreRescan.i_inference_weight).toBe(1);
       expect((cbrickToMitreRescan.object_marking_refs || []).length).toBe(0);
       // Cleanup
-      await internalDeleteElementById(testContext, SYSTEM_USER, cbrickToFile.internal_id);
+      await internalDeleteElementById(testContext, SYSTEM_USER, cbrickToFile.internal_id, RELATION_BASED_ON);
       inferences = await fetchInferences();
       expect(inferences.length).toBe(0);
       // Disable the rule

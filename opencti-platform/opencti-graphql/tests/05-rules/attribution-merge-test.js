@@ -8,6 +8,7 @@ import AttributionUseRule from '../../src/rules/attribution-use/AttributionUseRu
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
 import { ADMIN_USER, testContext, FIVE_MINUTES, TEN_SECONDS } from '../utils/testQuery';
 import { wait } from '../../src/database/utils';
+import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../src/schema/stixDomainObject';
 
 const RULE = RULE_PREFIX + AttributionUseRule.id;
 const APT41 = 'intrusion-set--d12c5319-f308-5fef-9336-20484af42084';
@@ -61,7 +62,7 @@ describe('Attribute use rule when merging', () => {
       // Disable the rule
       await disableRule(AttributionUseRule.id);
       // Clean
-      await internalDeleteElementById(testContext, SYSTEM_USER, threat.internal_id);
+      await internalDeleteElementById(testContext, SYSTEM_USER, threat.internal_id, ENTITY_TYPE_THREAT_ACTOR_GROUP);
     },
     FIVE_MINUTES
   );

@@ -114,7 +114,8 @@ export const stixRefRelationshipEditField = async (context, user, stixRefRelatio
   return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 export const stixRefRelationshipDelete = async (context, user, stixRefRelationshipId) => {
-  await deleteElementById(context, user, stixRefRelationshipId, ABSTRACT_STIX_REF_RELATIONSHIP);
+  const stixRefRelationship = await findById(context, user, stixRefRelationshipId);
+  await deleteElementById(context, user, stixRefRelationshipId, stixRefRelationship.relationship_type);
   return stixRefRelationshipId;
 };
 

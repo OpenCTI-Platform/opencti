@@ -25,6 +25,7 @@ import type { BasicWorkflowStatus } from '../../../src/types/store';
 import { internalDeleteElementById } from '../../../src/database/middleware';
 import { MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_EDIT } from '../../../src/utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 
 export const CREATE_REQUEST_ACCESS_QUERY = gql`
     mutation RequestAccessAdd($input: RequestAccessAddInput!) {
@@ -603,9 +604,9 @@ describe('Add Request Access to an entity and create an RFI.', async () => {
   });
 
   it('should remove platform organization and test data', async () => {
-    await internalDeleteElementById(testContext, ADMIN_USER, malwareId);
-    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForApproval);
-    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject);
+    await internalDeleteElementById(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
+    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForApproval, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    await internalDeleteElementById(testContext, ADMIN_USER, caseRfiIdForReject, ENTITY_TYPE_CONTAINER_CASE_RFI);
 
     // revert platform orga
     await enableCEAndUnSetOrganization();
