@@ -275,11 +275,11 @@ export const canRequestAccess = async (context, user, elements) => {
 // end region request access
 
 // region Loader common
-export const batchLoader = (loader, context, user) => {
+export const batchLoader = (loader, context) => {
   const dataLoader = new DataLoader(
     (elements) => {
       const elementsToLoad = elements.map((e) => e.elementToLoad);
-      return loader(context, user, elementsToLoad);
+      return loader(context, context.getUser(), elementsToLoad);
     },
     { maxBatchSize: MAX_BATCH_SIZE, cache: false }
   );
