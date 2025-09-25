@@ -4801,17 +4801,20 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         script += `ctx._source['${field}'].addAll(params['${field}'])`;
         const fromSide = R.find((e) => e.side === 'from', t.elements);
-        if (fromSide && isStixRefRelationship(t.relation)) {
+        if (fromSide) {
+          // updated_at and modified only updated for ref relationships
+          if (isStixRefRelationship(t.relation)) {
+            if (isUpdatedAtObject(fromSide.type)) {
+              script += '; ctx._source[\'updated_at\'] = params.updated_at';
+            }
+            if (isModifiedObject(fromSide.type)) {
+              script += '; ctx._source[\'modified\'] = params.updated_at';
+            }
+          }
+          // freshness of an entity updated for any relationship
           if (isUpdatedAtObject(fromSide.type)) {
-            script += '; ctx._source[\'updated_at\'] = params.updated_at';
+            script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
           }
-          if (isModifiedObject(fromSide.type)) {
-            script += '; ctx._source[\'modified\'] = params.updated_at';
-          }
-        }
-        // freshness of an entity
-        if (isUpdatedAtObject(fromSide.type)) {
-          script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
         }
         // Add Pir information for in-pir relationships
         if (t.relation === RELATION_IN_PIR) {
