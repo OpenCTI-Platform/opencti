@@ -3450,7 +3450,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   let event;
   const element = await storeLoadByIdWithRefs(context, user, id, { ...opts, includeDeletedInDraft: true });
 
-  if (element === undefined) {
+  if (!element) {
     throw AlreadyDeletedError({ id });
   }
 
@@ -3458,9 +3458,6 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
     throw FunctionalError('Cant find element type for deletion', { id, type });
   }
 
-  if (!element) {
-    throw AlreadyDeletedError({ id });
-  }
   if (getDraftContext(context, user)) {
     return draftInternalDeleteElement(context, user, element);
   }
