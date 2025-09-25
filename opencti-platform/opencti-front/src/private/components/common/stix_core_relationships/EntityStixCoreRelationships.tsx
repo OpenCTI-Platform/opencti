@@ -22,7 +22,7 @@ interface EntityStixCoreRelationshipsProps {
   defaultStopTime?: string;
   relationshipTypes: string[];
   stixCoreObjectTypes?: string[];
-  currentView: 'entities' | 'relationships';
+  currentView: string;
   enableNestedView?: boolean;
   enableContextualView: boolean;
   enableEntitiesView?: boolean;

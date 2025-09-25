@@ -476,7 +476,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   onCreate?: () => void;
   openExports?: boolean;
   handleReverseRelation?: () => void;
-  currentView?: 'entities' | 'relationships';
+  currentView?: string;
 }
 
 interface StixCoreRelationshipCreationFromEntityForm {

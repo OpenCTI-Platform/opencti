@@ -24,7 +24,7 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   stixCoreObjectTypes?: string[]
   relationshipTypes: string[]
   localStorage: PaginationLocalStorage<PaginationOptions>
-  currentView: 'entities' | 'relationships'
+  currentView: string
   allDirections?: boolean
   isRelationReversed?: boolean
   enableContextualView: boolean
