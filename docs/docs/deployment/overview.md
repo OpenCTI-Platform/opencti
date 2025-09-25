@@ -56,6 +56,7 @@ roles on the platform:
 | OpenCTI Core     | 2 cores     | ≥ 8GB        | None (stateless)                  | -               |
 | Worker(s)        | 1 core      | ≥ 128MB      | None (stateless)                  | -               |
 | Connector(s)     | 1 core      | ≥ 128MB      | None (stateless)                  | -               |
+| XTM composer     | 1 core      | ≥ 128MB      | None (stateless)                  | -               |
 
 !!! note "Clustering"
     

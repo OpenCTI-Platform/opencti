@@ -120,6 +120,14 @@ nav:
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
+      - Manager:
+        - Overview: deployment/integration-manager.md
+        - Quick start: deployment/integration-manager/quick-start.md
+        - Architecture: deployment/integration-manager/architecture.md
+        - Installation guide: deployment/integration-manager/installation.md
+        - Configuration: deployment/integration-manager/configuration.md
+        - Migration guide: deployment/integration-manager/migration.md
+        - Troubleshooting guide: deployment/integration-manager/troubleshooting.md
       - Other resources: deployment/resources.md
     - Advanced:
       - Platform managers: deployment/managers.md
@@ -258,6 +266,7 @@ nav:
     - Platform: development/platform.md
     - Python library: development/python.md
     - Connectors: development/connectors.md
+    - Integration Manager: development/integration-manager.md
     - Playground: development/api-usage.md
 
 
