@@ -130,7 +130,12 @@ const SettingsOrganization = ({
   const parentOrganizations = organization.parentOrganizations?.edges ?? [];
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
-  ).some(({ id }) => id.startsWith('ALL') || organization.id === id);
+  ).some(({ id }) => {
+    if (id.startsWith('ALL')) return true;
+    const baseId = id.substring(0, id.lastIndexOf('_'));
+    return baseId === organization.id;
+  });
+
   const capabilitiesPerGroup = new Map(
     organization.grantable_groups?.map((group) => [
       group.id,

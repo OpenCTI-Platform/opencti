@@ -139,7 +139,11 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   );
   const canAccessDashboard = (
     group.default_dashboard?.authorizedMembers || []
-  ).some(({ id }) => ['ALL', group.id].includes(id));
+  ).some(({ id }) => {
+    if (id.startsWith('ALL')) return true;
+    const baseId = id.substring(0, id.lastIndexOf('_'));
+    return baseId === group.id;
+  });
 
   return (
     <div className={classes.container} data-testid="group-details-page">
