@@ -2745,6 +2745,7 @@ enum StixDomainObjectsOrdering {
   modified
   created_at
   updated_at
+  refreshed_at
   published
   valid_from
   valid_until

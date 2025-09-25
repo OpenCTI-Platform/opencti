@@ -34,7 +34,7 @@ const pirThreatMapFragment = graphql`
   fragment PirThreatMapFragment on Query {
     stixDomainObjects(
       first: 100
-      orderBy: pir_score
+      orderBy: refreshed_at
       orderMode: desc
       pirId: $pirId
       filters: $filters
