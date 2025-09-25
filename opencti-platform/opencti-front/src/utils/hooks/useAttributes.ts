@@ -74,6 +74,7 @@ const ignoredAttributesInDashboards = [
   'created_at',
   'modified',
   'updated_at',
+  'refreshed_at',
   'internal_id',
   'standard_id',
   'published',
