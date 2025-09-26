@@ -46,11 +46,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       if (!feed) {
         throw ForbiddenAccess();
       }
-      // If feed is not public, user must be authenticated
-      if (!feed.feed_public && !context.user) {
-        throw ForbiddenAccess();
-      }
-      // If feed is not public, we need to ensure the user access
+      // If feed is not public, user must be authenticated and we need to ensure the user access
       if (!feed.feed_public) {
         if (!context.user) {
           throw ForbiddenAccess();
