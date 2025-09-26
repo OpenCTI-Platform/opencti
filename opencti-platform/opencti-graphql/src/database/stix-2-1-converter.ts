@@ -114,14 +114,13 @@ import {
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_OBJECTS,
   INPUT_PARTICIPANT
 } from '../schema/general';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
-import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
+import { assertType, cleanObject, convertObjectReferences, convertToStixDate } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 
 export const isTrustedStixId = (stixId: string): boolean => {
@@ -157,16 +156,6 @@ export const convertTypeToStixType = (type: string): string => {
 const isValidStix = (data: S.StixObject): boolean => {
   // TODO @JRI @SAM
   return !R.isEmpty(data);
-};
-
-export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
-  const objectRefs = instance[INPUT_OBJECTS] ?? [];
-  return objectRefs.filter((r) => {
-    // If related relation not available, it's just a creation, so inferred false
-    if (!r.i_relation) return !isInferred;
-    // If related relation is available, select accordingly
-    return isInferredIndex(r.i_relation._index) === isInferred;
-  }).map((m) => m.standard_id);
 };
 
 // Extensions
