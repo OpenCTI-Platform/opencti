@@ -8324,6 +8324,11 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   workflowEnabled: Boolean
 }
 
+input SecurityCoverageExpectation {
+  name: String!
+  score: Int!
+}
+
 input StixCoreRelationshipAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
@@ -8345,6 +8350,7 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  coverage: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
 }
@@ -10872,6 +10878,7 @@ enum VocabularyCategory {
   hair_color_ov
   eye_color_ov
   persona_type_ov
+  coverage_ov
 }
 
 type VocabularyFieldDefinition {
@@ -14414,11 +14421,6 @@ type SecurityCoverageConnection {
 type SecurityCoverageEdge {
   cursor: String!
   node: SecurityCoverage!
-}
-
-input SecurityCoverageExpectation {
-  name: String!
-  score: Int!
 }
 
 input SecurityCoverageAddInput {

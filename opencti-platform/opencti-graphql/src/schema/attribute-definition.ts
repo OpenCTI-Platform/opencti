@@ -403,6 +403,36 @@ export const errors: AttributeDefinition = {
   ]
 };
 
+const elementCoverageScore: AttributeDefinition = {
+  name: 'coverage_name',
+  label: 'Coverage name',
+  type: 'string',
+  format: 'vocabulary',
+  vocabularyCategory: 'coverage_ov',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: false
+};
+
+export const elementCoverage: AttributeDefinition = {
+  name: 'coverage',
+  label: 'Coverage',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  upsert_force_replace: true,
+  isFilterable: false, // Filter will be done by a special key
+  mappings: [
+    elementCoverageScore,
+    { name: 'coverage_score', label: 'Expectation score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+  ]
+};
+
 export const opinionsMetrics: AttributeDefinition = {
   name: 'opinions_metrics',
   label: 'Opinion metrics',
