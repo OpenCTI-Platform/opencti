@@ -12,6 +12,7 @@ import CaseTemplateLines, { caseTemplatesLinesQuery } from './CaseTemplateLines'
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -51,7 +52,7 @@ const CaseTemplates = () => {
         label: 'Description',
         width: '50%',
         isSortable: false,
-        render: (data: CaseTemplateLine_node$data) => data.description,
+        render: (data: CaseTemplateLine_node$data) => (<FieldOrEmpty source={data.description}>{data.description}</FieldOrEmpty>),
       },
       tasks: {
         label: 'Tasks',
