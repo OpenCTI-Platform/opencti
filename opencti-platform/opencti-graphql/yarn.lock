@@ -2697,17 +2697,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-tools/import@npm:7.0.21":
-  version: 7.0.21
-  resolution: "@graphql-tools/import@npm:7.0.21"
+"@graphql-tools/import@npm:7.1.2":
+  version: 7.1.2
+  resolution: "@graphql-tools/import@npm:7.1.2"
   dependencies:
     "@graphql-tools/utils": "npm:^10.9.1"
-    "@theguild/federation-composition": "npm:^0.19.0"
+    "@theguild/federation-composition": "npm:^0.20.1"
     resolve-from: "npm:5.0.0"
     tslib: "npm:^2.4.0"
   peerDependencies:
     graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
-  checksum: 10/436a475b4d60b15663c77e285b2353ea6189728161aec5bf4ab25d154d2ce14827708ed10d6a9e94dd07bc5e6887d1a086dd7b8a021714eb8d68bbd99bcc46e2
+  checksum: 10/5f49a4680d6beb3f69ccf59c57eababc8fc3011021df7b59201dcce55e5804f914ff621f6850cb4b7559c1744e4d15b4e5602c86feaff6384037548846c813e3
   languageName: node
   linkType: hard
 
@@ -4636,9 +4636,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@theguild/federation-composition@npm:^0.19.0":
-  version: 0.19.1
-  resolution: "@theguild/federation-composition@npm:0.19.1"
+"@theguild/federation-composition@npm:^0.20.1":
+  version: 0.20.1
+  resolution: "@theguild/federation-composition@npm:0.20.1"
   dependencies:
     constant-case: "npm:^3.0.4"
     debug: "npm:4.4.1"
@@ -4646,7 +4646,7 @@ __metadata:
     lodash.sortby: "npm:^4.7.0"
   peerDependencies:
     graphql: ^16.0.0
-  checksum: 10/0eac5fb03b49c82d25ae9900f029be4256462f7fe84442704c156c5de8ee25681dbac6749940bf14ff7b04a96ea7ddf0f8e63a23fdd6e3b936413cca4b76c506
+  checksum: 10/b1a3dda26c5a7d2f2bddc6b94470c2a1f36df3177a5c6dfc4dc1cdc806078d25a38887a7b9be6f895bb795b2b43c857f9b524cd122992d1170d48e90ec33fd91
   languageName: node
   linkType: hard
 
@@ -12129,7 +12129,7 @@ __metadata:
     "@graphql-codegen/introspection": "npm:4.0.3"
     "@graphql-codegen/typescript": "npm:4.1.6"
     "@graphql-codegen/typescript-resolvers": "npm:4.5.1"
-    "@graphql-tools/import": "npm:7.0.21"
+    "@graphql-tools/import": "npm:7.1.2"
     "@graphql-tools/merge": "npm:9.1.1"
     "@graphql-tools/schema": "npm:10.0.25"
     "@graphql-tools/utils": "npm:10.9.1"
