@@ -58,6 +58,7 @@ const settingsResolvers = {
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
+    platform_validation_mode: (settings) => settings.platform_validation_mode,
   },
   AppInfo: {
     memory: getMemoryStatistics(),
