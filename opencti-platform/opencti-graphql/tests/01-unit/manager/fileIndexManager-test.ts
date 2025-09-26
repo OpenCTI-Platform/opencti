@@ -70,6 +70,7 @@ describe.concurrent('Testing exception management in FileIndexManager', () => {
       tracing: {},
       user_inside_platform_organization: false,
       user: mockAuthUser as AuthUser,
+      sharedData: {},
     };
 
     // WHEN the fileIndexManager main process is call

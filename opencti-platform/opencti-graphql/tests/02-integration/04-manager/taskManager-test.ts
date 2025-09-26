@@ -8,7 +8,14 @@ import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../src/utils/acces
 import { executeRemoveAuthMembers } from '../../../src/domain/stixCoreObject';
 
 describe('TaskManager executeRemoveAuthMembers tests', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false, user_inside_platform_organization: false };
+  const adminContext: AuthContext = {
+    user: ADMIN_USER,
+    tracing: undefined,
+    source: 'taskManager-integration-test',
+    otp_mandatory: false,
+    user_inside_platform_organization: false,
+    sharedData: {},
+  };
   let reportId: string;
   afterAll(async () => {
     await stixDomainObjectDelete(adminContext, adminContext.user, reportId); // + 1 delete
