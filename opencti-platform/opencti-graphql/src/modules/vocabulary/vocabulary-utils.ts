@@ -109,6 +109,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   // C
+  coverage_ov: [
+    { key: 'prevention', description: 'Prevention' },
+    { key: 'detection', description: 'Detection' },
+  ],
   case_severity_ov: [
     { key: 'low', description: 'Low impact', aliases: ['low'], order: 1 },
     { key: 'medium', description: 'Medium impact', aliases: ['medium'], order: 2 },

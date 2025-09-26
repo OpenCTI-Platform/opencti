@@ -1235,7 +1235,8 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
         target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
         target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
-        kill_chain_phases: buildKillChainPhases(instance)
+        kill_chain_phases: buildKillChainPhases(instance),
+        coverage: instance.coverage,
       })
     }
   };
@@ -1300,6 +1301,7 @@ const convertInPirRelToStix = (instance: StoreRelationPir): SRO.StixRelation => 
         target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
         target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
         kill_chain_phases: [],
+        coverage: instance.coverage,
         pir_score: instance.pir_score,
       })
     }
