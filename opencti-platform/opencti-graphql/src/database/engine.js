@@ -1776,14 +1776,16 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const body = {
       sort: [{ [orderBy]: orderMode }],
       query: {
-        // Put everything under filter to prevent score computation
-        // Search without score when no sort is applied is faster
-        filter: [{
-          bool: {
-            must: [...mustTerms, ...draftMust],
-            must_not: markingRestrictions.must_not,
-          },
-        }]
+        bool: {
+          // Put everything under filter to prevent score computation
+          // Search without score when no sort is applied is faster
+          filter: [{
+            bool: {
+              must: [...mustTerms, ...draftMust],
+              must_not: markingRestrictions.must_not,
+            },
+          }]
+        }
       },
     };
     if (relCount) {
