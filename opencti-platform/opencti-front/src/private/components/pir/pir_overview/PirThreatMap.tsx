@@ -163,12 +163,12 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
             <WidgetScatter series={series} />
           </div>
           <div style={xLegendStyle}>
-            <span>Less recent</span>
-            <span>Most recent</span>
+            <span>{t_i18n('Two months ago')}</span>
+            <span>{t_i18n('Today')}</span>
           </div>
           <div style={yLegendStyle}>
-            <span>0 - Less relevant</span>
-            <span>Most relevant - 100</span>
+            <span>{t_i18n('0 - Less relevant')}</span>
+            <span>{t_i18n('Most relevant - 100')}</span>
           </div>
         </div>
         <PirThreatMapLegend
