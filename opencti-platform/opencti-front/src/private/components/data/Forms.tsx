@@ -102,7 +102,7 @@ const Forms = () => {
               paginationOptions={paginationOptions}
               triggerButton={true}
             />
-            </Security>
+          </Security>
           }
       >
         {queryRef && (
