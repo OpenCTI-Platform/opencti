@@ -5,6 +5,7 @@ type DecayRule implements InternalObject & BasicObject {
   parent_types: [String]!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   # DecayRule
   name: String!
   description: String

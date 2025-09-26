@@ -12,6 +12,7 @@ type Workspace implements InternalObject & BasicObject {
     manifest: String
     created_at: DateTime
     updated_at: DateTime
+    refreshed_at: DateTime
     editContext: [EditUserContext!]
     investigated_entities_ids: [String]
     objects(

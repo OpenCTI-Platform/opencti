@@ -4207,6 +4207,10 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
               source += 'ctx._source[\'modified\'] = params.updated_at;';
             }
           }
+          // freshness of an entity
+          if (isUpdatedAtObject(sideType)) {
+            source += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
+          }
           // Remove the pir information concerning the Pir in case of in-pir rel deletion
           if (relationType === RELATION_IN_PIR && entityPirInformation) {
             source += `
@@ -4215,9 +4219,6 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
               }
             `;
           }
-          // if (isStixRelationship(relationType)) {
-          //   source += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
-          // }
           const script = { source, params: { rel_key, cleanupIds, updated_at: now() } };
           updates.push([
             { update: { _index: fromIndex, _id: elId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
@@ -4800,17 +4801,21 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         script += `ctx._source['${field}'].addAll(params['${field}'])`;
         const fromSide = R.find((e) => e.side === 'from', t.elements);
-        if (fromSide && isStixRefRelationship(t.relation)) {
-          if (isUpdatedAtObject(fromSide.type)) {
-            script += '; ctx._source[\'updated_at\'] = params.updated_at';
+        if (fromSide) {
+          // updated_at and modified only updated for ref relationships
+          if (isStixRefRelationship(t.relation)) {
+            if (isUpdatedAtObject(fromSide.type)) {
+              script += '; ctx._source[\'updated_at\'] = params.updated_at';
+            }
+            if (isModifiedObject(fromSide.type)) {
+              script += '; ctx._source[\'modified\'] = params.updated_at';
+            }
           }
-          if (isModifiedObject(fromSide.type)) {
-            script += '; ctx._source[\'modified\'] = params.updated_at';
+          // freshness of an entity updated for any relationship
+          if (isUpdatedAtObject(fromSide.type)) {
+            script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
           }
         }
-        // if (isStixRelationship(t.relation)) {
-        //   script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
-        // }
         // Add Pir information for in-pir relationships
         if (t.relation === RELATION_IN_PIR) {
           // remove pir_information concerning the pir and add the new pir_information
