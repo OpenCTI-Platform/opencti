@@ -6,11 +6,12 @@ import type { StixForm, StoreEntityForm } from './form-types';
 import { ENTITY_TYPE_FORM } from './form-types';
 import { convertFormToStix } from './form-converter';
 
-const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
+export const FORM_DEFINITION: ModuleDefinition<StoreEntityForm, StixForm> = {
   type: {
     id: 'forms',
     name: ENTITY_TYPE_FORM,
     category: ABSTRACT_INTERNAL_OBJECT,
+    aliased: false
   },
   identifier: {
     definition: {

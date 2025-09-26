@@ -96,14 +96,14 @@ const Forms = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
-        createButton={
-          <Security needs={[INGESTION_SETINGESTIONS]}>
-            <FormCreationContainer
-              paginationOptions={paginationOptions}
-              triggerButton={true}
-            />
-          </Security>
-        }
+          createButton={
+            <Security needs={[INGESTION_SETINGESTIONS]}>
+              <FormCreationContainer
+                paginationOptions={paginationOptions}
+                triggerButton={true}
+              />
+            </Security>
+          }
       >
         {queryRef && (
           <React.Suspense

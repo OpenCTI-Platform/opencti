@@ -1,12 +1,14 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addForm, findFormPaginated, findById, formDelete, formEditField, formSubmit } from './form-domain';
+import { addForm, findById, findFormPaginated, formDelete, formEditField, formSubmit, generateFormExportConfiguration, importFormConfiguration } from './form-domain';
 
 const formResolvers: Resolvers = {
   Query: {
     form: (_, { id }, context) => findById(context, context.user, id),
     forms: (_, args, context) => findFormPaginated(context, context.user, args),
   },
-  Form: {},
+  Form: {
+    toConfigurationExport: (form, _, context) => generateFormExportConfiguration(context, context.user, form),
+  },
   Mutation: {
     formAdd: (_, { input }, context) => {
       return addForm(context, context.user, input);
@@ -14,11 +16,14 @@ const formResolvers: Resolvers = {
     formFieldPatch: (_, { id, input }, context) => {
       return formEditField(context, context.user, id, input);
     },
-    formDelete: async (_, { id }, context) => {
+    formDelete: (_, { id }, context) => {
       return formDelete(context, context.user, id);
     },
-    formSubmit: async (_, { input, isDraft }, context) => {
+    formSubmit: (_, { input, isDraft }, context) => {
       return formSubmit(context, context.user, input, isDraft);
+    },
+    formImport: (_, { file }, context) => {
+      return importFormConfiguration(context, context.user, file);
     },
   },
 };

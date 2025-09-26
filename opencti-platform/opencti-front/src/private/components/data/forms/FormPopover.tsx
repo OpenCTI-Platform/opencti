@@ -16,6 +16,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
+import handleExportJson from './FormExportHandler';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -32,11 +33,13 @@ const formPopoverDeletionMutation = graphql`
 interface FormPopoverProps {
   formId: string;
   paginationOptions: FormLinesPaginationQuery$variables;
+  formName?: string;
 }
 
 const FormPopover: FunctionComponent<FormPopoverProps> = ({
   formId,
   paginationOptions,
+  formName = '',
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -64,6 +67,12 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
   const handleOpenDuplicate = () => {
     setDisplayDuplicate(true);
     loadQuery({ id: formId });
+    handleClose();
+  };
+
+  // -- Export --
+  const handleExportForm = () => {
+    handleExportJson({ id: formId, name: formName });
     handleClose();
   };
 
@@ -127,6 +136,9 @@ const FormPopover: FunctionComponent<FormPopoverProps> = ({
         </MenuItem>
         <MenuItem onClick={handleOpenDuplicate}>
           {t_i18n('Duplicate')}
+        </MenuItem>
+        <MenuItem onClick={handleExportForm}>
+          {t_i18n('Export')}
         </MenuItem>
         <MenuItem onClick={handleOpenDelete}>
           {t_i18n('Delete')}

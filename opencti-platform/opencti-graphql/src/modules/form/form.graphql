@@ -11,6 +11,7 @@ type Form implements BasicObject & InternalObject {
   description: String!
   form_schema: String!
   active: Boolean!
+  toConfigurationExport: String!
 }
 
 # Relay connections
@@ -70,4 +71,5 @@ type Mutation {
   formFieldPatch(id: ID!, input: [EditInput!]!): Form @auth(for: [INGESTION_SETINGESTIONS])
   formDelete(id: ID!): ID @auth(for: [INGESTION_SETINGESTIONS])
   formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse @auth(for: [KNOWLEDGE_KNUPDATE])
+  formImport(file: Upload!): Form @auth(for: [INGESTION_SETINGESTIONS])
 }

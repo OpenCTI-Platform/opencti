@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import Ajv from 'ajv';
+import type { FileHandle } from 'fs/promises';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntityForm, FormFieldDefinition, FormSchemaDefinition, StoreEntityForm } from './form-types';
@@ -26,6 +27,8 @@ import type { StixContainer } from '../../types/stix-2-1-sdo';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { detectObservableType } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
+import pjson from '../../../package.json';
+import { extractContentFrom } from '../../utils/fileToContent';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -96,9 +99,8 @@ export const findById = async (
   context: AuthContext,
   user: AuthUser,
   formId: string
-): Promise<StoreEntityForm> => {
-  const form = await storeLoadById<StoreEntityForm>(context, user, formId, ENTITY_TYPE_FORM);
-  return form;
+): Promise<BasicStoreEntityForm> => {
+  return storeLoadById<BasicStoreEntityForm>(context, user, formId, ENTITY_TYPE_FORM);
 };
 
 export const findFormPaginated = async (
@@ -225,11 +227,15 @@ const transformSpecialFields = async (
   const fieldsSource = isRelationship && data.fields ? data.fields : data;
 
   // Find special fields that need transformation
+  // eslint-disable-next-line no-restricted-syntax
   for (const field of fields) {
     const attrName = field.attributeMapping.attributeName;
     const value = (fieldsSource as any)[attrName];
 
-    if (!value) continue;
+    if (!value) {
+      // eslint-disable-next-line no-continue
+      continue;
+    }
 
     if (field.type === 'createdBy' && typeof value === 'string') {
       // Transform createdBy from internal_id
@@ -249,6 +255,7 @@ const transformSpecialFields = async (
     } else if (field.type === 'objectMarking' && Array.isArray(value)) {
       // Transform objectMarking from array of internal_ids
       const markings = [];
+      // eslint-disable-next-line no-restricted-syntax
       for (const markingId of value) {
         if (typeof markingId === 'string') {
           const markingEntity = await internalLoadById(context, user, markingId);
@@ -773,4 +780,52 @@ export const formSubmit = async (
     logApp.error('[FORM] Error sending bundle to connector queue', { error });
     throw FunctionalError('Failed to process form submission', { cause: error });
   }
+};
+
+// Export and Import functionality
+export const generateFormExportConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  form: BasicStoreEntityForm,
+) => {
+  const exportConfiguration = {
+    openCTI_version: pjson.version,
+    type: 'form',
+    configuration: {
+      name: form.name,
+      description: form.description,
+      form_schema: form.form_schema,
+      active: form.active,
+    },
+  };
+  return JSON.stringify(exportConfiguration);
+};
+
+export const importFormConfiguration = async (
+  context: AuthContext,
+  user: AuthUser,
+  file: Promise<FileHandle>
+) => {
+  const parsedData = await extractContentFrom(file);
+  if (parsedData.type !== 'form') {
+    throw FunctionalError('Invalid import file type', { expected: 'form', received: parsedData.type });
+  }
+  const { configuration } = parsedData;
+  // Create a new form with the imported configuration
+  const formToCreate = {
+    name: configuration.name,
+    description: configuration.description || '',
+    form_schema: configuration.form_schema,
+    active: configuration.active !== undefined ? configuration.active : true,
+  };
+  const createdForm = await addForm(context, user, formToCreate);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
+    message: `imports form \`${createdForm.name}\``,
+    context_data: { id: createdForm.id, entity_type: ENTITY_TYPE_FORM, input: formToCreate }
+  });
+  return createdForm;
 };

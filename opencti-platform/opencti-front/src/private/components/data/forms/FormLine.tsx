@@ -82,6 +82,7 @@ export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({
       secondaryAction={
         <FormPopover
           formId={data.id}
+          formName={data.name}
           paginationOptions={paginationOptions}
         />
       }

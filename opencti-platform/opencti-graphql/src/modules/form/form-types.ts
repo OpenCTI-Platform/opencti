@@ -118,6 +118,7 @@ export interface StoreEntityForm extends StoreEntity {
   main_entity_type: string;
   form_schema: string;
   active: boolean;
+
 }
 
 // STIX representation
