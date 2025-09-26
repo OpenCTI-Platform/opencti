@@ -185,7 +185,7 @@ type Query {
         search: String
     ): TriggerConnection @auth(for: [SETTINGS_SECURITYACTIVITY])
     # Notifications
-    notification(id: String!): Notification @auth(for: [SETTINGS_SETACCESSES])
+    notification(id: String!): Notification @auth
     notifications(
         first: Int
         after: ID
