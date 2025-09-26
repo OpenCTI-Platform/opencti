@@ -4017,6 +4017,7 @@
   "Validate this workbench": "Valida questo workbench",
   "Validated": "Convalidato",
   "Validation mode": "Modalità di validazione",
+  "Validation mode has already been setted in platform configuration": "La modalità di convalida è già stata impostata nella configurazione della piattaforma",
   "Validation progress": "Progresso della convalida",
   "Validator group membership:": "Gruppo di appartenenza del validatore:",
   "Validator membership:": "Appartenenza al validatore:",

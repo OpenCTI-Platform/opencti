@@ -4017,6 +4017,7 @@
   "Validate this workbench": "Validar este espacio de trabajo",
   "Validated": "Validado",
   "Validation mode": "Modo de validación",
+  "Validation mode has already been setted in platform configuration": "El modo de validación ya se ha establecido en la configuración de la plataforma",
   "Validation progress": "Progreso de la validación",
   "Validator group membership:": "Pertenencia al grupo de validadores:",
   "Validator membership:": "Pertenencia al validador:",

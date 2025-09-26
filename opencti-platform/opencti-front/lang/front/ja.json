@@ -4017,6 +4017,7 @@
   "Validate this workbench": "このワークスペースを検証する",
   "Validated": "有効",
   "Validation mode": "バリデーション・モード",
+  "Validation mode has already been setted in platform configuration": "プラットフォーム設定でバリデーションモードがすでに設定されている",
   "Validation progress": "検証の進捗状況",
   "Validator group membership:": "バリデータグループのメンバー",
   "Validator membership:": "バリデータのメンバーシップ：",
