@@ -5,8 +5,9 @@ import { useFormatter } from '../../../../../components/i18n';
 
 const ImportFilesStepper = () => {
   const { t_i18n } = useFormatter();
-  const { canSelectImportMode, activeStep, setActiveStep, files, importMode } = useImportFilesContext();
+  const { canSelectImportMode, activeStep, setActiveStep, files, importMode, selectedFormId } = useImportFilesContext();
   const hasSelectedFiles = files.length > 0;
+  const hasSelectedForm = !!selectedFormId;
 
   return (
     // If canSelectImportMode is true activeStep is initialised to 1 instead of 0 (we have 2 step instead of 3)
@@ -17,14 +18,14 @@ const ImportFilesStepper = () => {
           {t_i18n('Import mode')}
         </StepButton>
       </Step>)}
-      <Step key={'select_file'} disabled={!importMode}>
+      <Step key={'select_file_or_form'} disabled={!importMode}>
         <StepButton color="inherit" onClick={() => setActiveStep(1)}>
-          {t_i18n('Select files')}
+          {importMode === 'form' ? t_i18n('Select form') : t_i18n('Select files')}
         </StepButton>
       </Step>
-      <Step key={'import_options'} disabled={!hasSelectedFiles}>
+      <Step key={'import_options_or_fill_form'} disabled={importMode === 'form' ? !hasSelectedForm : !hasSelectedFiles}>
         <StepButton color="inherit" onClick={() => setActiveStep(2)}>
-          { t_i18n('Import options') }
+          {importMode === 'form' ? t_i18n('Fill form') : t_i18n('Import options')}
         </StepButton>
       </Step>
     </Stepper>

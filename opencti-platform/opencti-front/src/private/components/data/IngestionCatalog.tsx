@@ -168,16 +168,13 @@ const IngestionCatalogComponent = ({
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
-
         <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
-
         <Stack flexDirection="row">
           <IngestionCatalogFilters
             contracts={allContracts}
             filters={filters}
             onFiltersChange={setFilters}
           />
-
           <BrowseMoreButton />
         </Stack>
 

@@ -35,6 +35,7 @@ export interface EntitySettingSchemaAttribute {
   mandatoryType: MandatoryType
   multiple: boolean
   editDefault: boolean
+  upsert: boolean
   label?: string
   defaultValues?: { id: string, name:string }[]
   scale?: string

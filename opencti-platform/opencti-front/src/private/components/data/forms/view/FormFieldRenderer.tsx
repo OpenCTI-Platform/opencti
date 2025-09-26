@@ -1,0 +1,356 @@
+import React, { FunctionComponent } from 'react';
+import { Field } from 'formik';
+import Chip from '@mui/material/Chip';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import { CloudUpload } from '@mui/icons-material';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormHelperText from '@mui/material/FormHelperText';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import makeStyles from '@mui/styles/makeStyles';
+// Custom field components
+import TextField from '../../../../../components/TextField';
+import SelectField from '../../../../../components/fields/SelectField';
+import SwitchField from '../../../../../components/fields/SwitchField';
+import DateTimePickerField from '../../../../../components/DateTimePickerField';
+import MarkdownField from '../../../../../components/fields/MarkdownField';
+import CreatedByField from '../../../common/form/CreatedByField';
+import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
+import ObjectLabelField from '../../../common/form/ObjectLabelField';
+import { FormFieldDefinition } from '../Form.d';
+import { useFormatter } from '../../../../../components/i18n';
+import type { Theme } from '../../../../../components/Theme';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+
+// Styles
+const useStyles = makeStyles<Theme>(() => ({
+  field: {
+    marginBottom: 20,
+  },
+  fileUpload: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 10,
+  },
+  fileList: {
+    marginTop: 10,
+  },
+  fileChip: {
+    marginRight: 5,
+    marginBottom: 5,
+  },
+}));
+
+export interface FormFieldRendererProps {
+  field: FormFieldDefinition;
+  values: Record<string, unknown>;
+  errors: Record<string, string>;
+  touched: Record<string, boolean>;
+  setFieldValue: (field: string, value: string | number | boolean | string[] | Date | null | FieldOption[] | { name?: string; data?: string }[]) => void;
+  entitySettings?: {
+    edges: ReadonlyArray<{
+      node: {
+        id: string;
+        target_type: string;
+        mandatoryAttributes: ReadonlyArray<string>;
+        attributesDefinitions: ReadonlyArray<{
+          type: string;
+          name: string;
+          label?: string | null;
+          mandatory: boolean;
+        }>;
+      };
+    }>;
+  };
+  fieldPrefix?: string;
+}
+
+const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
+  field,
+  values,
+  setFieldValue,
+  fieldPrefix,
+}) => {
+  const classes = useStyles();
+  const { t_i18n } = useFormatter();
+
+  const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
+  const fieldValue = values[field.name] || '';
+  const displayLabel = field.label || field.attributeMapping.attributeName;
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { files } = event.target;
+    if (files && files.length > 0) {
+      const filePromises = Array.from(files).map((file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            resolve({
+              name: file.name,
+              data: reader.result?.toString().split(',')[1], // Remove data:type;base64, prefix
+              size: file.size,
+              type: file.type,
+            });
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      });
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      Promise.all(filePromises).then((fileData: { name?: string; data?: string }[]) => {
+        const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
+        setFieldValue(field.name, [...currentFiles, ...fileData]);
+      });
+    }
+  };
+
+  const handleFileRemove = (index: number) => {
+    const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
+    const newFiles = currentFiles.filter((_: { name?: string; data?: string }, i: number) => i !== index);
+    setFieldValue(field.name, newFiles);
+  };
+
+  // Render based on field type
+  switch (field.type) {
+    case 'text':
+      return (
+        <Field
+          component={TextField}
+          name={fieldName}
+          label={displayLabel}
+          fullWidth={true}
+          required={field.isMandatory}
+          helperText={field.description}
+          style={fieldSpacingContainerStyle}
+        />
+      );
+
+    case 'textarea':
+      return (
+        <Field
+          component={MarkdownField}
+          name={fieldName}
+          label={displayLabel}
+          fullWidth={true}
+          required={field.isMandatory}
+          style={fieldSpacingContainerStyle}
+        />
+      );
+
+    case 'number':
+      return (
+        <Field
+          component={TextField}
+          name={fieldName}
+          label={displayLabel}
+          type="number"
+          fullWidth={true}
+          required={field.isMandatory}
+          helperText={field.description}
+          style={fieldSpacingContainerStyle}
+        />
+      );
+
+    case 'checkbox':
+      return (
+        <FormControlLabel
+          control={
+            <Field
+              component={Checkbox}
+              type="checkbox"
+              name={fieldName}
+            />
+          }
+          label={displayLabel}
+          style={fieldSpacingContainerStyle}
+        />
+      );
+
+    case 'toggle':
+      return (
+        <Field
+          component={SwitchField}
+          name={fieldName}
+          label={displayLabel}
+          containerstyle={fieldSpacingContainerStyle}
+          helpertext={field.description}
+        />
+      );
+
+    case 'select':
+      return (
+        <Field
+          component={SelectField}
+          name={fieldName}
+          label={displayLabel}
+          fullWidth={true}
+          required={field.isMandatory}
+          containerstyle={fieldSpacingContainerStyle}
+          variant="standard"
+          helpertext={field.description}
+        >
+          <MenuItem value="">
+            <em>{t_i18n('None')}</em>
+          </MenuItem>
+          {field.options?.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Field>
+      );
+
+    case 'multiselect':
+      return (
+        <Field
+          component={SelectField}
+          name={fieldName}
+          label={displayLabel}
+          fullWidth={true}
+          multiple={true}
+          required={field.isMandatory}
+          containerstyle={fieldSpacingContainerStyle}
+          variant="standard"
+          helpertext={field.description}
+          renderValue={(selected: string[]) => (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {selected.map((value) => {
+                const option = field.options?.find((o) => o.value === value);
+                return <Chip key={value} label={option?.label || value} />;
+              })}
+            </Box>
+          )}
+        >
+          {field.options?.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Field>
+      );
+
+    case 'date':
+      return (
+        <Field
+          component={DateTimePickerField}
+          name={fieldName}
+          withSeconds={false}
+          textFieldProps={{
+            label: displayLabel,
+            required: field.isMandatory,
+            variant: 'standard',
+            fullWidth: true,
+            style: fieldSpacingContainerStyle,
+            helperText: field.description,
+          }}
+        />
+      );
+
+    case 'datetime':
+      return (
+        <Field
+          component={DateTimePickerField}
+          name={fieldName}
+          withSeconds={true}
+          textFieldProps={{
+            label: displayLabel,
+            required: field.isMandatory,
+            variant: 'standard',
+            fullWidth: true,
+            style: fieldSpacingContainerStyle,
+            helperText: field.description,
+          }}
+        />
+      );
+
+    case 'createdBy':
+      return (
+        <CreatedByField
+          name={fieldName}
+          label={displayLabel}
+          style={fieldSpacingContainerStyle}
+          required={field.isMandatory}
+          setFieldValue={setFieldValue}
+        />
+      );
+
+    case 'objectMarking':
+      return (
+        <ObjectMarkingField
+          name={fieldName}
+          label={displayLabel}
+          style={fieldSpacingContainerStyle}
+          required={field.isMandatory}
+          setFieldValue={setFieldValue}
+        />
+      );
+
+    case 'objectLabel':
+      return (
+        <ObjectLabelField
+          name={fieldName}
+          style={fieldSpacingContainerStyle}
+          required={field.isMandatory}
+          setFieldValue={setFieldValue}
+          values={fieldValue as FieldOption[]}
+        />
+      );
+
+    case 'files':
+      return (
+        <div className={classes.field}>
+          <InputLabel>{displayLabel}</InputLabel>
+          <div className={classes.fileUpload}>
+            <input
+              accept="*/*"
+              style={{ display: 'none' }}
+              id={`file-upload-${fieldName}`}
+              multiple
+              type="file"
+              onChange={handleFileUpload}
+            />
+            <label htmlFor={`file-upload-${fieldName}`}>
+              <IconButton color="primary" component="span">
+                <CloudUpload />
+              </IconButton>
+            </label>
+            <span>{t_i18n('Upload files')}</span>
+          </div>
+          {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 && (
+            <div className={classes.fileList}>
+              {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
+                <Chip
+                  key={index}
+                  label={file.name}
+                  onDelete={() => handleFileRemove(index)}
+                  className={classes.fileChip}
+                />
+              ))}
+            </div>
+          )}
+          {field.description && (
+            <FormHelperText>{field.description}</FormHelperText>
+          )}
+        </div>
+      );
+
+    default:
+      return (
+        <Field
+          component={TextField}
+          name={fieldName}
+          label={displayLabel}
+          fullWidth={true}
+          required={field.isMandatory}
+          helperText={field.description}
+          style={fieldSpacingContainerStyle}
+        />
+      );
+  }
+};
+
+export default FormFieldRenderer;

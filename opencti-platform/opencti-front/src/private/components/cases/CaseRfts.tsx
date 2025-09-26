@@ -2,11 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { CaseRftsLinesCasesPaginationQuery, CaseRftsLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRftsLinesCasesPaginationQuery.graphql';
 import { CaseRftsLinesCases_data$data } from '@components/cases/__generated__/CaseRftsLinesCases_data.graphql';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CaseRftCreation from './case_rfts/CaseRftCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -15,6 +14,8 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 interface CaseRftsProps {
   inputValue?: string;
@@ -128,9 +129,7 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Takedown | Cases'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -210,7 +209,10 @@ const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
           exportContext={{ entity_type: 'Case-Rft' }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <CaseRftCreation paginationOptions={queryPaginationOptions} />
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Case-Rft' />
+                <CaseRftCreation paginationOptions={queryPaginationOptions} />
+              </div>
             </Security>
           )}
         />

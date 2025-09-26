@@ -10,6 +10,7 @@ import { ENTITY_TYPE_SAVED_FILTER } from '../modules/savedFilter/savedFilter-typ
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
+import { ENTITY_TYPE_FORM } from '../modules/form/form-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -53,7 +54,8 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_DRAFT_WORKSPACE,
   ENTITY_TYPE_EXCLUSION_LIST,
   ENTITY_TYPE_SAVED_FILTER,
-  ENTITY_TYPE_PIR
+  ENTITY_TYPE_PIR,
+  ENTITY_TYPE_FORM,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -88,7 +90,8 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SAVED_FILTER,
   ENTITY_TYPE_PIR,
   ENTITY_TYPE_FINTEL_DESIGN,
-  ENTITY_TYPE_EMAIL_TEMPLATE
+  ENTITY_TYPE_EMAIL_TEMPLATE,
+  ENTITY_TYPE_FORM
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 

@@ -546,6 +546,11 @@ type Log {
   user_metadata: JSON
 }
 
+type AttributesMap {
+  type: String!
+  attributes: [TypeAttribute!]!
+}
+
 enum AttributesOrdering {
   value
   _score
@@ -8409,6 +8414,7 @@ type Query {
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
+  schemaAttributes: [AttributesMap]
   retentionRule(id: String!): RetentionRule
   retentionRules(first: Int, after: ID, search: String, orderBy: RetentionRuleOrdering, orderMode: OrderingMode): RetentionRuleConnection
   taxiiCollection(id: String!): TaxiiCollection
@@ -8637,7 +8643,7 @@ type Query {
   feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   entitySetting(id: String!): EntitySetting
   entitySettingByType(targetType: String!): EntitySetting
-  entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EntitySettingConnection
+  entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, includeObservables: Boolean): EntitySettingConnection
   workspace(id: String!): Workspace
   workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: FilterGroup, includeAuthorities: Boolean, search: String): WorkspaceConnection
   malwareAnalysis(id: String!): MalwareAnalysis
@@ -8725,6 +8731,8 @@ type Query {
   securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
+  form(id: ID!): Form
+  forms(search: String, first: Int, after: ID, orderBy: FormsOrdering, orderMode: OrderingMode, filters: FilterGroup): FormConnection
 }
 
 type Subscription {
@@ -9634,6 +9642,11 @@ type Mutation {
   emailTemplateDelete(id: ID!): ID
   emailTemplateFieldPatch(id: ID!, input: [EditInput!]!): EmailTemplate
   emailTemplateTestSend(id: ID!): Boolean
+  formAdd(input: FormAddInput!): Form
+  formFieldPatch(id: ID!, input: [EditInput!]!): Form
+  formDelete(id: ID!): ID
+  formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
+  formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
 }
 
@@ -11617,6 +11630,7 @@ type TypeAttribute {
   mandatoryType: String!
   editDefault: Boolean!
   multiple: Boolean
+  upsert: Boolean!
   label: String
   defaultValues: [DefaultValue!]
   scale: String
@@ -14081,6 +14095,58 @@ input EmailTemplateAddInput {
   email_object: String!
   sender_email: String!
   template_body: String!
+}
+
+type Form implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  description: String!
+  form_schema: String!
+  active: Boolean!
+  toConfigurationExport: String!
+}
+
+type FormEdge {
+  cursor: String!
+  node: Form!
+}
+
+type FormConnection {
+  pageInfo: PageInfo!
+  edges: [FormEdge!]!
+}
+
+enum FormsOrdering {
+  name
+  created_at
+  updated_at
+  active
+}
+
+input FormAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String!
+  form_schema: String!
+  active: Boolean
+}
+
+input FormSubmissionInput {
+  formId: String!
+  values: String!
+}
+
+type FormSubmissionResponse {
+  success: Boolean!
+  bundleId: String
+  message: String
+  entityId: String
 }
 
 type CheckXTMHubConnectivityResponse {

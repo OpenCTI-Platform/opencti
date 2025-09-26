@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import IconButton from '@mui/material/IconButton';
-import { CloudUploadOutlined } from '@mui/icons-material';
+import { UploadFileOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import { useFormatter } from './i18n';
@@ -29,7 +29,7 @@ const UploadImport = ({
 }: UploadImportProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const title = t_i18n('Import files');
+  const title = t_i18n('Import data');
   const [openImportFilesDialog, setOpenImportFilesDialog] = useState(false);
 
   return (
@@ -52,7 +52,7 @@ const UploadImport = ({
             aria-haspopup="true"
             onClick={() => setOpenImportFilesDialog(true)}
           >
-            <CloudUploadOutlined fontSize={fontSize}/>
+            <UploadFileOutlined fontSize={fontSize}/>
           </IconButton>
         </Tooltip>
       ) : (

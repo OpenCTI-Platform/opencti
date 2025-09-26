@@ -26,3 +26,33 @@ export const getSchemaAttributeNames = (elementTypes: string[]) => {
   )(attributes);
   return buildPagination(0, null, finalResult, finalResult.length);
 };
+
+export const getSchemaAttributes = () => {
+  const allTypes = schemaAttributesDefinition.getRegisteredTypes();
+
+  return allTypes.map((entityType) => {
+    const attributes = schemaAttributesDefinition.getAttributes(entityType);
+    const attributesArray = Array.from(attributes.values());
+
+    // Map attributes to TypeAttribute format
+    const typeAttributes = attributesArray.map((attr) => ({
+      name: attr.name,
+      type: attr.type,
+      label: attr.label || attr.name,
+      mandatory: attr.mandatoryType === 'external',
+      mandatoryType: attr.mandatoryType,
+      editDefault: attr.editDefault,
+      multiple: attr.multiple || false,
+      upsert: attr.upsert || false,
+      // For numeric attributes with scalable property
+      scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
+      // Default values would need to be fetched from entity settings if needed
+      defaultValues: undefined
+    }));
+
+    return {
+      type: entityType,
+      attributes: typeAttributes
+    };
+  });
+};

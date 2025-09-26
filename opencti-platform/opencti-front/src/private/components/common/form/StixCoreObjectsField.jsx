@@ -218,6 +218,7 @@ const StixCoreObjectsField = (props) => {
     multiple = true,
     label,
     disabled = false,
+    types = null,
   } = props;
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -238,7 +239,7 @@ const StixCoreObjectsField = (props) => {
   const searchStixCoreObjects = (event) => {
     fetchQuery(stixCoreObjectsFieldSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
-      types: searchScope[name] ?? [],
+      types: types ?? searchScope[name] ?? [],
     })
       .toPromise()
       .then((data) => {
@@ -260,6 +261,7 @@ const StixCoreObjectsField = (props) => {
       type: n,
     })),
     R.sortWith([R.ascend(R.prop('label'))]),
+    R.filter((type) => (types ? types.includes(type.value) : true)),
   )(entityTypes);
   return (
     <>

@@ -9,6 +9,8 @@ import { Link } from 'react-router-dom';
 import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
 import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
 import ImportFilesToggleMode from '@components/common/files/import_files/ImportFilesToggleMode';
+import ImportFilesFormSelector from '@components/common/files/import_files/ImportFilesFormSelector';
+import ImportFilesFormView from '@components/common/files/import_files/ImportFilesFormView';
 import { draftCreationMutation } from '@components/drafts/DraftCreation';
 import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
@@ -128,7 +130,9 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     setDraftId,
     inDraftContext,
     queryRef,
+    selectedFormId,
   } = useImportFilesContext();
+
   const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
   const { stixCoreObject: entity, connectorsForImport } = usePreloadedQuery<ImportFilesContextQuery>(
     importFilesQuery,
@@ -333,11 +337,16 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
 
   // Check if a file is selected and CSV connector have a configuration mapper selected
   const isValid = useMemo(() => {
+    // For form mode, check if form is selected
+    if (importMode === 'form') {
+      return !!selectedFormId;
+    }
+    // For file modes, check if files are selected
     return files.length > 0 && (importMode === 'auto' || files.every((file) => {
       const hasCsvMapperConnector = file.connectors?.some((connector) => connector.name === CSV_MAPPER_NAME);
       return hasCsvMapperConnector ? !!file.configuration : true;
     }));
-  }, [files, importMode]);
+  }, [files, importMode, selectedFormId]);
 
   const isValidImport = useMemo(() => {
     return (optionsContext.values.validationMode === 'draft' && optionsContext.values.name.length > 0) || draftId || optionsContext.values.validationMode === 'workbench' || importMode === 'auto';
@@ -355,14 +364,18 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           {t_i18n('Next')}
         </Button>
       ) : (
-        // Import button to submit the form
+        importMode !== 'form' && (
+        // Import button for file import mode
         <Button
-          onClick={optionsContext.submitForm}
+          onClick={() => {
+            optionsContext.submitForm();
+          }}
           color="secondary"
           disabled={!isValidImport}
         >
           {t_i18n('Import')}
         </Button>
+        )
       );
     }
 
@@ -434,10 +447,16 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     activeStep,
     isValid,
     isValidImport,
+    importMode,
     optionsContext.values.validationMode,
     optionsContext.values.associatedEntity,
-    draftId,
     optionsContext.submitForm,
+    draftId,
+    inDraftContext,
+    handleClose,
+    setDraftContext,
+    entityId,
+    t_i18n,
   ]);
 
   return (
@@ -457,7 +476,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       }}
     >
       <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h5">{t_i18n('Import files')}</Typography>
+        <Typography variant="h5">{t_i18n('Import data')}</Typography>
         <IconButton
           aria-label="Close"
           onClick={handleClose}
@@ -474,9 +493,16 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
             {/* Remove stepper height (25px) */}
             <Box sx={{ paddingBlock: 5, height: 'calc(100% - 25px)' }}>
               {activeStep === 0 && (<ImportFilesToggleMode/>)}
-              {activeStep === 1 && (<ImportFilesUploader connectorsForImport={connectorsForImport}/>)}
+              {activeStep === 1 && (
+                importMode === 'form'
+                  ? <ImportFilesFormSelector />
+                  : <ImportFilesUploader connectorsForImport={connectorsForImport}/>
+              )}
               {activeStep === 2 && (
-                <ImportFilesOptions optionsFormikContext={optionsContext} draftContext={draftContext}/>)}
+                importMode === 'form'
+                  ? <ImportFilesFormView onSuccess={handleClose} />
+                  : <ImportFilesOptions optionsFormikContext={optionsContext} draftContext={draftContext}/>
+              )}
             </Box>
           </>
         ) : (

@@ -2,9 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { GroupingsLinesPaginationQuery, GroupingsLinesPaginationQuery$variables } from '@components/analyses/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingsLines_data$data } from '@components/analyses/__generated__/GroupingsLines_data.graphql';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import GroupingCreation from './groupings/GroupingCreation';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -15,6 +14,8 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'groupings';
 
@@ -144,9 +145,7 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Groupings | Analyses'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
     filters: {
@@ -216,7 +215,10 @@ const Groupings: FunctionComponent<GroupingsProps> = () => {
           exportContext={{ entity_type: 'Grouping' }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <GroupingCreation paginationOptions={queryPaginationOptions} />
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Grouping' />
+                <GroupingCreation paginationOptions={queryPaginationOptions} />
+              </div>
             </Security>
           )}
         />

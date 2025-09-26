@@ -10,6 +10,7 @@ type TypeAttribute {
   mandatoryType: String!
   editDefault: Boolean!
   multiple: Boolean
+  upsert: Boolean!
   label: String
   defaultValues: [DefaultValue!]
   scale: String
@@ -90,6 +91,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
+    includeObservables: Boolean
   ): EntitySettingConnection @auth
 }
 

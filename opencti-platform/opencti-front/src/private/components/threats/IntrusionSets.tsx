@@ -6,12 +6,11 @@ import Tooltip from '@mui/material/Tooltip';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { IntrusionSetCardFragment } from '@components/threats/intrusion_sets/IntrusionSetCard';
 import { IntrusionSetsCards_data$data } from '@components/threats/intrusion_sets/__generated__/IntrusionSetsCards_data.graphql';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { IntrusionSetsCardsPaginationQuery, IntrusionSetsCardsPaginationQuery$variables } from './intrusion_sets/__generated__/IntrusionSetsCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
 import IntrusionSetsCards, { intrusionSetsCardsFragment, intrusionSetsCardsQuery } from './intrusion_sets/IntrusionSetsCards';
 import IntrusionSetCreation from './intrusion_sets/IntrusionSetCreation';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -20,6 +19,8 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'intrusionSets';
 
@@ -94,7 +95,10 @@ const IntrusionSets = () => {
         handleChangeView={helpers.handleChangeView}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Intrusion-Set' />
+              <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+            </div>
           </Security>
         )}
       >
@@ -175,7 +179,10 @@ const IntrusionSets = () => {
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+                <div style={{ display: 'flex' }}>
+                  <StixCoreObjectForms entityType='Intrusion-Set' />
+                  <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
+                </div>
               </Security>
             )}
           />

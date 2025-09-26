@@ -63,6 +63,7 @@ generates:
         Pir: ../modules/pir/pir-types#BasicStoreEntityPir
         SecurityPlatform: ../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform
         EmailTemplate: ../modules/emailTemplate/emailTemplate-types#BasicStoreEntityEmailTemplate
+        Form: ../modules/form/form-types#BasicStoreEntityForm
 
   ./graphql.schema.json:
     plugins:
