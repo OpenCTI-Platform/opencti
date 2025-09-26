@@ -1915,6 +1915,7 @@
   "Import dashboard": "Importer un tableau de bord personnalisé",
   "Import data": "Importer des données",
   "Import files": "Importer des fichiers",
+  "Import form intake": "Importation du formulaire d'admission",
   "Import from date (empty = all Csv possible items)": "Importer à partir de la date (vide = tous les éléments Csv possibles)",
   "Import from Hub": "Importer depuis le Hub",
   "Import knowledge": "Importer des connaissances",

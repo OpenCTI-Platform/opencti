@@ -1915,6 +1915,7 @@
   "Import dashboard": "ダッシュボードのインポート",
   "Import data": "インポート対象データ",
   "Import files": "ファイルをインポート",
+  "Import form intake": "取り込みフォーム",
   "Import from date (empty = all Csv possible items)": "日付からインポート (空 = すべてのCsv可能項目)",
   "Import from Hub": "Hubからインポート",
   "Import knowledge": "知識をインポート",
