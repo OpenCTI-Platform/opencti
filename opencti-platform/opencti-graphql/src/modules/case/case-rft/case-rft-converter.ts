@@ -1,10 +1,11 @@
 import { buildStixDomain } from '../../../database/stix-2-1-converter';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { INPUT_OBJECTS } from '../../../schema/general';
-import type { StixCaseRft, StoreEntityCaseRft } from './case-rft-types';
-import { cleanObject } from '../../../database/stix-converter-utils';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT, type Stix2CaseRft, type StixCaseRft, type StoreEntityCaseRft, type StoreEntityCaseRft2 } from './case-rft-types';
+import { assertType, cleanObject, convertObjectReferences } from '../../../database/stix-converter-utils';
+import { buildStixDomain as buildStixDomain2 } from '../../../database/stix-2-0-converter';
 
-const convertCaseRftToStix = (instance: StoreEntityCaseRft): StixCaseRft => {
+export const convertCaseRftToStix_2_1 = (instance: StoreEntityCaseRft): StixCaseRft => {
   const caseRft = buildStixDomain(instance);
   return {
     ...caseRft,
@@ -25,4 +26,16 @@ const convertCaseRftToStix = (instance: StoreEntityCaseRft): StixCaseRft => {
   };
 };
 
-export default convertCaseRftToStix;
+export const convertCaseRftToStix_2_0 = (instance: StoreEntityCaseRft2, type: string): Stix2CaseRft => {
+  assertType(ENTITY_TYPE_CONTAINER_CASE_RFT, type);
+  const caseRft = buildStixDomain2(instance);
+  return {
+    ...caseRft,
+    name: instance.name,
+    description: instance.description,
+    severity: instance.severity,
+    priority: instance.priority,
+    takedown_types: instance.takedown_types,
+    object_refs: convertObjectReferences(instance),
+  };
+};
