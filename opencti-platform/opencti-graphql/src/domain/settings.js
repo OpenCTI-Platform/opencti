@@ -128,6 +128,7 @@ export const getSettings = async (context) => {
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
+    platform_validation_mode: conf.get('app:validation_mode'),
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },

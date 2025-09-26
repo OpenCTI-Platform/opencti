@@ -133,6 +133,7 @@ const rootSettingsFragment = graphql`
     }
     xtm_hub_token
     xtm_hub_registration_status
+    platform_validation_mode
   }
 `;
 
