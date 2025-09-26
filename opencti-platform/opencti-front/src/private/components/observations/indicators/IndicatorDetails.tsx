@@ -29,6 +29,7 @@ import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/St
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -148,13 +149,15 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             >
               {t_i18n('Indicator types')}
             </Typography>
-            {indicator.indicator_types && indicator.indicator_types.map((indicatorType) => (
-              <Chip
-                key={indicatorType}
-                classes={{ root: classes.chip }}
-                label={indicatorType}
-              />
-            ))}
+            <FieldOrEmpty source={indicator.indicator_types}>
+              {indicator.indicator_types?.map((indicatorType) => (
+                <Chip
+                  key={indicatorType}
+                  classes={{ root: classes.chip }}
+                  label={indicatorType}
+                />
+              ))}
+            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -183,17 +186,19 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             >
               {t_i18n('Platforms')}
             </Typography>
-            <List>
-              { (indicator.x_mitre_platforms ?? []).map((platform) => (
-                platform
-                && <ListItem key={platform} dense={true} divider={true}>
-                  <ListItemIcon>
-                    <SettingsApplications />
-                  </ListItemIcon>
-                  <ListItemText primary={platform} />
-                </ListItem>
-              ))}
-            </List>
+            <FieldOrEmpty source={indicator.x_mitre_platforms}>
+              <List>
+                {indicator.x_mitre_platforms?.map((platform) => (
+                  platform
+                  && <ListItem key={platform} dense={true} divider={true}>
+                    <ListItemIcon>
+                      <SettingsApplications />
+                    </ListItemIcon>
+                    <ListItemText primary={platform} />
+                  </ListItem>
+                ))}
+              </List>
+            </FieldOrEmpty>
           </Grid>
         </Grid>
         <Divider />

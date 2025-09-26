@@ -69,7 +69,7 @@ const ExternalReferenceDetailsComponent = ({
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('External ID')}
             </Typography>
-            {externalReference.external_id}
+            {externalReference.external_id ?? '-'}
             <Typography
               variant="h3"
               gutterBottom={true}
