@@ -13056,6 +13056,12 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
 }
+
+input SecurityCoverageExpectation {
+    name: String!
+    score: Int!
+}
+
 input StixCoreRelationshipAddInput {
   # StixRelationship
   stix_id: StixId
@@ -13079,6 +13085,7 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  coverage: [SecurityCoverageExpectation!]
   # Technical
   clientMutationId: String
   update: Boolean

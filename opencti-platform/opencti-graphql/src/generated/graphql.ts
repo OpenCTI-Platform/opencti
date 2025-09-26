@@ -27515,6 +27515,7 @@ export type StixCoreRelationshipStixCoreRelationshipsArgs = {
 export type StixCoreRelationshipAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
+  coverage?: InputMaybe<Array<SecurityCoverageExpectation>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -32782,6 +32783,7 @@ export enum VocabularyCategory {
   CaseSeverityOv = 'case_severity_ov',
   ChannelTypesOv = 'channel_types_ov',
   CollectionLayersOv = 'collection_layers_ov',
+  CoverageOv = 'coverage_ov',
   EventTypeOv = 'event_type_ov',
   EyeColorOv = 'eye_color_ov',
   GenderOv = 'gender_ov',
