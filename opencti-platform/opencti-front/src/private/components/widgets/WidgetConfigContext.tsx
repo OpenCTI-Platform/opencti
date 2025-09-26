@@ -2,6 +2,7 @@ import React, { createContext, Dispatch, ReactNode, useContext, useEffect, useSt
 import { FintelTemplateWidget } from '@components/settings/sub_types/fintel_templates/FintelTemplateWidgetsList';
 import type { Widget, WidgetContext, WidgetDataSelection, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
+import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
 
 export interface WidgetConfigType {
   fintelVariableName: string | null;
@@ -116,11 +117,26 @@ export const WidgetConfigProvider = ({
   }, [open]);
 
   const setConfigWidget = (widget: WidgetConfigType['widget']) => {
+    // Check if widget type is changing and validate dataSelection
+    let adjustedWidget = widget;
+
+    if (widget.type && widget.type !== conf.widget.type) {
+      const newLimit = getCurrentDataSelectionLimit(widget.type);
+
+      // If there's a limit and current dataSelection exceeds it
+      if (newLimit > 0 && conf.widget.dataSelection.length > newLimit) {
+        adjustedWidget = {
+          ...widget,
+          dataSelection: conf.widget.dataSelection.slice(0, newLimit),
+        };
+      }
+    }
+
     setConfig((oldConf) => ({
       ...oldConf,
       widget: {
         ...oldConf.widget,
-        ...widget,
+        ...adjustedWidget,
       },
     }));
   };
