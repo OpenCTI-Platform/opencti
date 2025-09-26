@@ -1,11 +1,17 @@
 import React from 'react';
-import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { resolveLink } from '../utils/Entity';
 
-const ItemAuthor = (props) => {
-  const { createdBy } = props;
+interface ItemAuthorProps {
+  createdBy: {
+    id: string,
+    name: string,
+    entity_type: string,
+  } | null | undefined
+}
+
+const ItemAuthor = ({ createdBy }: ItemAuthorProps) => {
   return (
     <>
       {createdBy ? (
@@ -25,10 +31,6 @@ const ItemAuthor = (props) => {
       )}
     </>
   );
-};
-
-ItemAuthor.propTypes = {
-  createdBy: PropTypes.object,
 };
 
 export default ItemAuthor;

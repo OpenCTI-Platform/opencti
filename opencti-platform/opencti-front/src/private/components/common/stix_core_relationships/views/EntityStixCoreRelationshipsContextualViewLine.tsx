@@ -64,6 +64,10 @@ const contextualViewLineFragment = graphql`
       id
       name
     }
+    createdBy {
+      name
+      id
+    }
     ... on StixCoreObject {
       containers {
         edges {

@@ -9,6 +9,7 @@ import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   paper: {
@@ -47,13 +48,15 @@ class ChannelDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Channel types')}
               </Typography>
-              {R.propOr(['-'], 'channel_types', channel).map((channelType) => (
-                <Chip
-                  key={channelType}
-                  classes={{ root: classes.chip }}
-                  label={channelType}
-                />
-              ))}
+              <FieldOrEmpty source={channel.channel_types}>
+                {channel.chanel_types?.map((channelType) => (
+                  <Chip
+                    key={channelType}
+                    classes={{ root: classes.chip }}
+                    label={channelType}
+                  />
+                ))}
+              </FieldOrEmpty>
             </Grid>
           </Grid>
         </Paper>

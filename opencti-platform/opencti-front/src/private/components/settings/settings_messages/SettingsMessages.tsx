@@ -16,6 +16,7 @@ import SettingsMessageCreation from './SettingsMessageCreation';
 import SettingsMessagesLines from './SettingsMessagesLines';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import ColumnsLinesTitles from '../../../../components/ColumnsLinesTitles';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -111,9 +112,11 @@ const SettingsMessages = ({
       width: '15%',
       isSortable: false,
       render: (data: SettingsMessagesLine_settingsMessage$data) => (
-        <Tooltip title={data.recipients?.map(({ name }) => name).join(', ')}>
-          <span>{data.recipients?.map(({ name }) => name).join(', ')}</span>
-        </Tooltip>
+        <FieldOrEmpty source={data.recipients}>
+          <Tooltip title={data.recipients?.map(({ name }) => name).join(', ')}>
+            <span>{data.recipients?.map(({ name }) => name).join(', ')}</span>
+          </Tooltip>
+        </FieldOrEmpty>
       ),
     },
   };

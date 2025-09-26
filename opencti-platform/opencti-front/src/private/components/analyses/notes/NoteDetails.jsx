@@ -10,6 +10,7 @@ import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const styles = (theme) => ({
   paper: {
@@ -63,14 +64,16 @@ class NoteDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Note types')}
               </Typography>
-              {note.note_types?.map((noteType) => (
-                <Chip
-                  key={noteType}
-                  classes={{ root: classes.chip }}
-                  label={noteType}
-                  color="primary"
-                />
-              ))}
+              <FieldOrEmpty source={note.note_types}>
+                {note.note_types?.map((noteType) => (
+                  <Chip
+                    key={noteType}
+                    classes={{ root: classes.chip }}
+                    label={noteType}
+                    color="primary"
+                  />
+                ))}
+              </FieldOrEmpty>
               <Typography
                 variant="h3"
                 gutterBottom={true}

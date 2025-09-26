@@ -1,6 +1,5 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -106,7 +105,7 @@ const EntitiesStixDomainObjectLineComponent = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {R.pathOr('', ['createdBy', 'name'], node)}
+              {node.createdBy?.name ?? '-'}
             </div>
             <div
               className={classes.bodyItem}

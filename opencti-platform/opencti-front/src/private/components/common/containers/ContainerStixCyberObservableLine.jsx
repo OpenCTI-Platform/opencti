@@ -1,5 +1,4 @@
 import React from 'react';
-import * as R from 'ramda';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
@@ -175,7 +174,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {R.pathOr('', ['createdBy', 'name'], node)}
+                {node.createdBy?.name ?? '-'}
               </div>
               <div
                 className={classes.bodyItem}
