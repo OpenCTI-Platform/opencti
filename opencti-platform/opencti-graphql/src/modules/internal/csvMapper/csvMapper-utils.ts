@@ -133,7 +133,7 @@ export const validateCsvMapper = async (context: AuthContext, user: AuthUser, ma
 
     // Validate required attributes
     const entitySetting = await getEntitySettingFromCache(context, representation.target.entity_type);
-    const defaultValues = fillDefaultValues(user, {}, entitySetting);
+    const defaultValues = fillDefaultValues(context, user, {}, entitySetting);
     const attributesDefs = [
       ...schemaAttributesDefinition.getAttributes(representation.target.entity_type).values(),
     ].map((def) => ({
