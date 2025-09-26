@@ -71,11 +71,38 @@ export const deleteNodeFromId = (store, containerId, key, filters, id) => {
   const params = { ...filters };
   delete params.count;
   delete params.id;
-  const conn = ConnectionHandler.getConnection(record, key, params);
-  if (conn) {
-    ConnectionHandler.deleteNode(conn, id);
+
+  let conn;
+  if (Object.keys(params).length === 0) {
+    conn = ConnectionHandler.getConnection(record, key);
   } else {
-    throw new Error(`Delete node ${id} connection ${key} not found`);
+    conn = ConnectionHandler.getConnection(record, key, params);
+  }
+
+  if (!conn) {
+    throw new Error(`Delete node ${id}, connection ${key} not found.`);
+  }
+
+  const edges = conn.getLinkedRecords('edges') || [];
+  const nodeExists = edges.some((edge) => {
+    const node = edge.getLinkedRecord('node');
+    return node.getValue('id') === id;
+  });
+
+  if (!nodeExists) {
+    throw new Error(`Node with id ${id} not found, nothing to delete`);
+  }
+
+  ConnectionHandler.deleteNode(conn, id);
+
+  const pageInfo = conn.getLinkedRecord('pageInfo');
+  if (pageInfo) {
+    const globalCount = pageInfo.getValue('globalCount');
+
+    if (Number.isInteger(globalCount) && globalCount > 0) {
+      const newCount = globalCount - 1;
+      pageInfo.setValue(newCount, 'globalCount');
+    }
   }
 };
 

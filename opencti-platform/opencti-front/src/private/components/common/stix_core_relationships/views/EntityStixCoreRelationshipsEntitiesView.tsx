@@ -110,6 +110,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
 
   // Filters due to screen context
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, stixCoreObjectTypes.length > 0 ? stixCoreObjectTypes : ['Stix-Core-Object']);
+
   const stixCoreObjectFilter: Filter[] = stixCoreObjectTypes.length > 0
     ? [{ key: 'entity_type', operator: 'eq', mode: 'or', values: stixCoreObjectTypes }]
     : [];
@@ -152,6 +153,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   };
 
   const finalView = currentView || view;
+
   return (
     <>
       <ListLines
@@ -256,6 +258,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
           paginationOptions={paginationOptions}
           connectionKey="Pagination_stixCoreObjects"
           paddingRight={paddingRightButtonAdd ?? 220}
+          currentView={finalView}
         />
       </Security>
     </>
