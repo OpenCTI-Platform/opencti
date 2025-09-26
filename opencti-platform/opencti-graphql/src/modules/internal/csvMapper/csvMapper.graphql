@@ -132,7 +132,7 @@ type JsonMapperEdge {
 
 # Queries
 type Query {
-  csvMapper(id: ID!): CsvMapper @auth(for: [CSVMAPPERS])
+  csvMapper(id: ID!): CsvMapper @auth(for: [CSVMAPPERS, INGESTION_SETINGESTIONS])
   csvMappers(
     first: Int
     after: ID

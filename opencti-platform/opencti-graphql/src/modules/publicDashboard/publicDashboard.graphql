@@ -48,7 +48,7 @@ type PublicDashboardConnection {
 
 # Queries
 type Query {
-  publicDashboard(id: String!): PublicDashboard  @auth(for: [KNOWLEDGE, EXPLORE])
+  publicDashboard(id: String!): PublicDashboard  @auth(for: [EXPLORE])
   publicDashboards(
     first: Int
     after: ID
