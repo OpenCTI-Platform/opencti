@@ -4075,6 +4075,7 @@
   "Weight (Kilograms)": "무게 (킬로그램)",
   "Weight (Pounds)": "무게 (파운드)",
   "When an event happens on a knowledge your participate, you will receive notification through your personal notifiers": "참여하는 지식에서 이벤트가 발생하면 개인 알림을 통해 알림을 받습니다.",
+  "When enabling a default value for marking definitions, it will put the group default markings of the user which created the entity if nothing is provided.": "마킹 정의의 기본값을 활성화할 때 아무것도 제공하지 않으면 엔티티를 만든 사용자의 그룹 기본 마킹을 적용합니다.",
   "When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.": "2FA 인증을 강제하면 모든 사용자는 플랫폼에 로그인할 수 있도록 2FA를 활성화하라는 요청을 받습니다.",
   "When you set a platform organization you enable the organization sharing and segregation feature.": "플랫폼 조직을 설정하면 조직 공유 및 분리 기능이 활성화됩니다.",
   "When you set a platform organization, organization segregation is enabled: users without an organization will no longer be able to log in, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.": "플랫폼 조직을 설정하면 조직 분리가 활성화되어 조직이 없는 사용자는 더 이상 로그인할 수 없으며, 어떤 조직과도 공유되지 않는 모든 지식은 플랫폼 조직에 속한 사용자만 액세스할 수 있습니다.",

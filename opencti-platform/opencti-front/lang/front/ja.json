@@ -4075,6 +4075,7 @@
   "Weight (Kilograms)": "重量 (キログラム)",
   "Weight (Pounds)": "重量 (ポンド)",
   "When an event happens on a knowledge your participate, you will receive notification through your personal notifiers": "あなたが参加しているナレッジでイベントが発生すると、あなたの個人通知を通して通知が届きます。",
+  "When enabling a default value for marking definitions, it will put the group default markings of the user which created the entity if nothing is provided.": "マーキング定義のデフォルト値を有効にすると、何も指定されていない場合、エンティティを作成したユーザーのグループデフォルトのマーキングが適用されます。",
   "When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.": "2要素認証を強制する場合、すべてのユーザーは、プラットフォームにログインできるように2要素認証を有効にするように求められます。",
   "When you set a platform organization you enable the organization sharing and segregation feature.": "プラットフォーム組織を設定すると、組織の共有と分離機能が有効になります。",
   "When you set a platform organization, organization segregation is enabled: users without an organization will no longer be able to log in, all the pieces of knowledge which are not shared with any organization will be accessible only for users part of the platform one.": "プラットフォームの組織を設定すると、組織の分離が有効になります：組織のないユーザーはもはやログインすることはできません、どの組織と共有されていない知識のすべての作品は、プラットフォームの1つのユーザーのみにアクセスできるようになります。",
