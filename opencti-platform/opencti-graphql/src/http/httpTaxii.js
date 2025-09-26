@@ -40,8 +40,15 @@ const errorConverter = (e) => {
 const extractContextFromRequest = async (req, res) => {
   // noinspection UnnecessaryLocalVariableJS
   const context = await createAuthenticatedContext(req, res, 'taxii');
+  const { id } = req.params || {};
   if (!context.user) {
     res.setHeader('WWW-Authenticate', 'Basic, Bearer');
+    if (id) {
+      const collection = await findById(executionContext('taxii'), SYSTEM_USER, id);
+      if (collection && collection.taxii_public === true) {
+        return context;
+      }
+    }
     throw AuthRequired();
   }
   if (!isUserHasCapability(context.user, TAXIIAPI)) {
@@ -49,6 +56,7 @@ const extractContextFromRequest = async (req, res) => {
   }
   return context;
 };
+
 const rebuildParamsForObject = (id, req) => {
   // Rebuild options
   const { added_after, limit, next, match = {} } = req.query;
