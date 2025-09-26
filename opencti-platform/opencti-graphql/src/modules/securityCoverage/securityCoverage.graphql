@@ -181,10 +181,7 @@ type Query {
   ): SecurityCoverageConnection @auth(for: [KNOWLEDGE])
 }
 
-input SecurityCoverageExpectation {
-  name: String!
-  score: Int!
-}
+
 
 # Mutations
 input SecurityCoverageAddInput {
