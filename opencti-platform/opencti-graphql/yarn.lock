@@ -3056,6 +3056,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ioredis/commands@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@ioredis/commands@npm:1.4.0"
+  checksum: 10/ea299f22057139261ebd7dbc7fc85615e90c254e667620a276d3cf771b9d9190ffbdf25af6586c3f52598a2c830d64bee17f32c3ce734db403e93f73548d54d4
+  languageName: node
+  linkType: hard
+
 "@ioredis/commands@npm:^1.1.1":
   version: 1.2.0
   resolution: "@ioredis/commands@npm:1.2.0"
@@ -9942,7 +9949,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ioredis@npm:5.4.1, ioredis@npm:^5.3.2":
+"ioredis@npm:5.8.0":
+  version: 5.8.0
+  resolution: "ioredis@npm:5.8.0"
+  dependencies:
+    "@ioredis/commands": "npm:1.4.0"
+    cluster-key-slot: "npm:^1.1.0"
+    debug: "npm:^4.3.4"
+    denque: "npm:^2.1.0"
+    lodash.defaults: "npm:^4.2.0"
+    lodash.isarguments: "npm:^3.1.0"
+    redis-errors: "npm:^1.2.0"
+    redis-parser: "npm:^3.0.0"
+    standard-as-callback: "npm:^2.1.0"
+  checksum: 10/cf28889012e18d83b1e1762801426a653ac2f958cd3d79afb71005659a5b3e850acc18cf9315e0525a48c0f6cc948198b26b1339491309c71e62c3f2c47f2f20
+  languageName: node
+  linkType: hard
+
+"ioredis@npm:^5.3.2":
   version: 5.4.1
   resolution: "ioredis@npm:5.4.1"
   dependencies:
@@ -12237,7 +12261,7 @@ __metadata:
     helmet: "npm:8.1.0"
     http-proxy-agent: "npm:7.0.2"
     https-proxy-agent: "npm:7.0.6"
-    ioredis: "npm:5.4.1"
+    ioredis: "npm:5.8.0"
     ipaddr.js: "npm:2.2.0"
     iterall: "npm:1.3.0"
     js-deep-equals: "npm:2.1.1"
