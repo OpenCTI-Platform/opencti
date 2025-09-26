@@ -96,12 +96,12 @@ const Forms = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
-          createButton={
-            <Security needs={[INGESTION_SETINGESTIONS]}>
-              <FormCreationContainer
-                paginationOptions={paginationOptions}
-                triggerButton={true}
-              />
+        createButton={
+          <Security needs={[INGESTION_SETINGESTIONS]}>
+            <FormCreationContainer
+              paginationOptions={paginationOptions}
+              triggerButton={true}
+            />
             </Security>
           }
       >
