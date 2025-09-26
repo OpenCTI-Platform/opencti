@@ -114,7 +114,14 @@ const DELETE_QUERY = gql`
 const TEST_IP_DECAY_RULE = BUILT_IN_DECAY_RULE_IP_URL;
 const TEST_FALLBACK_DECAY_RULE = FALLBACK_DECAY_RULE;
 describe('DecayRule resolver standard behavior', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'decay-integration-test', otp_mandatory: false, user_inside_platform_organization: false };
+  const adminContext: AuthContext = {
+    user: ADMIN_USER,
+    tracing: undefined,
+    source: 'decay-integration-test',
+    otp_mandatory: false,
+    user_inside_platform_organization: false,
+    sharedData: {},
+  };
   let customDecayRuleId = '';
   const indicatorsToCleanup: string [] = [];
   let defaultDecayRuleId: string = '';

@@ -750,7 +750,7 @@ const serverFromUser = new ApolloServer<AuthContext>({
 export const queryAsAdmin = async <T = Record<string, any>>(request: any, draftContext?: any) => {
   const execContext = executionContext('test', ADMIN_USER, draftContext ?? undefined);
   execContext.changeDraftContext = (draftId) => { execContext.draft_context = draftId; };
-  execContext.batch = computeLoaders(execContext, ADMIN_USER);
+  execContext.batch = computeLoaders(execContext);
   const { body } = await serverFromUser.executeOperation<T>(request, { contextValue: execContext });
   if (body.kind === 'single') {
     return body.singleResult;
