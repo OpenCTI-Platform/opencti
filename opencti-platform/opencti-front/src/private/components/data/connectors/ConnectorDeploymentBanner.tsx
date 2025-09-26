@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
-const URL = 'https://docs.opencti.io/latest/';
+const URL = 'https://docs.opencti.io/latest/deployment/integration-manager/';
 
 type ConnectorDeploymentBannerProps = {
   hasRegisteredManagers: boolean;
