@@ -33,13 +33,11 @@ import { extractContentFrom } from '../../utils/fileToContent';
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
 
-// CRUD operations
 export const addForm = async (
   context: AuthContext,
   user: AuthUser,
   input: any
 ): Promise<BasicStoreEntityForm> => {
-  // Parse and validate the JSON schema
   let parsedSchema: FormSchemaDefinition;
   try {
     parsedSchema = JSON.parse(input.form_schema);
@@ -53,7 +51,6 @@ export const addForm = async (
     throw FunctionalError(`Invalid form schema: ${JSON.stringify(validateSchema.errors)}`);
   }
 
-  // Create the form entity
   const formToCreate: Partial<BasicStoreEntityForm> = {
     name: input.name,
     description: input.description,
@@ -62,7 +59,6 @@ export const addForm = async (
     active: input.active ?? true,
   };
 
-  // Create entity following the ingestion pattern
   const { element, isCreation } = await createEntity(
     context,
     user,
@@ -72,7 +68,6 @@ export const addForm = async (
   );
 
   if (isCreation) {
-    // Register connector for this form ingestion
     await registerConnectorForIngestion(context, {
       id: element.id,
       type: 'FORM',
@@ -81,7 +76,6 @@ export const addForm = async (
       connector_user_id: user.id
     });
 
-    // Publish user action
     await publishUserAction({
       user,
       event_type: 'mutation',
