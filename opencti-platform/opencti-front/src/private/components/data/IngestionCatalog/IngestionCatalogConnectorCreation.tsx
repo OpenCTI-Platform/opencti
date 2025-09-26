@@ -302,15 +302,16 @@ const IngestionCatalogConnectorCreation = ({
           initialValues={{
             name: connectorName,
             confidence_level: connector.max_confidence_level.toString(),
-            user_id: '',
+            user_id: { label: '', value: '' },
             automatic_user: true,
             ...configDefaults,
           }}
-          validateOnMount
           onSubmit={() => {}}
         >
           {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
             const errors = compiledValidator?.validate(values)?.errors;
+
+            const disableCreate = !isValid || isSubmitting || !!errors?.[0];
 
             return (
               <Form>
@@ -419,7 +420,7 @@ const IngestionCatalogConnectorCreation = ({
                             resetForm,
                           });
                         }}
-                        disabled={!isValid || isSubmitting || !!errors?.[0]}
+                        disabled={disableCreate}
                       >
                         {t_i18n('Create')}
                       </Button>
