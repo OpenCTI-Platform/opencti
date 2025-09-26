@@ -100,7 +100,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
       </Box>
 
       <Box sx={{ paddingTop: 1 }}>
-        {isFilterGroupNotEmpty(filtersDynamicFrom) && (<div style={{ marginTop: 8, color: 'orange' }}>
+        {isFilterGroupNotEmpty(filtersDynamicFrom) && (<div style={{ marginTop: 8, color: 'orange', marginBottom: 4 }}>
           {t_i18n('Pre-query to get data to be used as source entity of the relationship (limited to 5000)')}
         </div>)}
         <FilterIconButton
@@ -117,7 +117,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         />
 
         {isFilterGroupNotEmpty(filtersDynamicTo)
-          && (<div style={{ marginTop: 8, color: '#03A847' }}>
+          && (<div style={{ marginTop: 8, color: '#03A847', marginBottom: 4 }}>
             {t_i18n('Pre-query to get data to be used as target entity of the relationship (limited to 5000)')}
           </div>)
         }
@@ -135,7 +135,7 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         />
 
         {isFilterGroupNotEmpty(filters) && perspective === 'relationships' && (
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 8, marginBottom: 4 }}>
             {t_i18n('Result: the relationships with source respecting the source pre-query, target respecting the target pre-query, and matching:')}
           </div>
         )}
