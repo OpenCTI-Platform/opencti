@@ -313,6 +313,7 @@ describe('Threat actor individual resolver standard behavior', () => {
     const UPDATE_QUERY = gql`
       mutation threatActorIndividualEditDemographics($id: ID!, $input: [EditInput]!) {
         threatActorIndividualFieldPatch(id:$id, input:$input) {
+          updated_at
           bornIn {
             name
           }
@@ -347,6 +348,8 @@ describe('Threat actor individual resolver standard behavior', () => {
     expect(threatActorIndividual.marital_status).toEqual('annulled');
     expect(threatActorIndividual.gender).toEqual('male');
     expect(threatActorIndividual.job_title).toEqual('A test hacker');
+    expect(threatActorIndividualUpdatedAt < threatActorIndividual.updated_at).toBeTruthy();
+    threatActorIndividualUpdatedAt = threatActorIndividual.updated_at;
   });
   it('should update threat actor individual core relationships', async () => {
     const getCoreRelationshipsAndFunctionalDates = gql`
@@ -391,18 +394,19 @@ describe('Threat actor individual resolver standard behavior', () => {
       query: getCoreRelationshipsAndFunctionalDates,
       variables: { id: threatActorIndividualInternalId },
     });
-    expect(data?.threatActorIndividual?.stixCoreRelationships?.edges).toHaveLength(3);
-    const stixCoreRelationships = data?.threatActorIndividual
-      ?.stixCoreRelationships?.edges?.map((
-        { node }: { node : { relationship_type: string, toId: string } }
-      ) => ({ ...node }));
+    const threatActorIndividual = data?.threatActorIndividual;
+    expect(threatActorIndividual).not.toBeNull();
+    expect(threatActorIndividual.stixCoreRelationships?.edges).toHaveLength(3);
+    const stixCoreRelationships = threatActorIndividual.stixCoreRelationships?.edges?.map((
+      { node }: { node : { relationship_type: string, toId: string } }
+    ) => ({ ...node }));
     expect(stixCoreRelationships).toHaveLength(3);
     // should modify refreshed_at but not updated_at
-    expect(data?.threatActorIndividual?.created_at).toEqual(threatActorIndividualCreatedAt);
-    expect(data?.threatActorIndividual?.updated_at).toEqual(threatActorIndividualUpdatedAt);
-    expect(threatActorIndividualCreatedAt < data?.threatActorIndividual?.refreshed_at).toBeTruthy();
-    expect(threatActorIndividualUpdatedAt < data?.threatActorIndividual?.refreshed_at).toBeTruthy();
-    expect(coreRelationshipCreationStartDatetime < data?.threatActorIndividual?.refreshed_at).toBeTruthy();
+    expect(threatActorIndividual.created_at).toEqual(threatActorIndividualCreatedAt);
+    expect(threatActorIndividual.updated_at).toEqual(threatActorIndividualUpdatedAt);
+    expect(threatActorIndividualCreatedAt < threatActorIndividual.refreshed_at).toBeTruthy();
+    expect(threatActorIndividualUpdatedAt < threatActorIndividual.refreshed_at).toBeTruthy();
+    expect(coreRelationshipCreationStartDatetime < threatActorIndividual.refreshed_at).toBeTruthy();
   });
   it('should update threat actor individual biographics', async () => {
     const UPDATE_QUERY = gql`
