@@ -22,7 +22,7 @@ const queryRef = loadQuery<LoginRootPublicQuery>(
 );
 
 const PublicRoot = () => {
-  const { settings } = usePreloadedQuery<LoginRootPublicQuery>(
+  const { publicSettings: settings } = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
   );

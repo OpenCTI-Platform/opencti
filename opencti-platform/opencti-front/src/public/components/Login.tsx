@@ -120,7 +120,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface LoginProps {
   type: string;
-  settings: LoginRootPublicQuery$data['settings'];
+  settings: LoginRootPublicQuery$data['publicSettings'];
 }
 
 const FLASH_COOKIE = 'opencti_flash';
@@ -129,7 +129,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { dimension } = useDimensions();
-  const isEnterpriseEdition = settings.platform_enterprise_edition.license_validated;
+  const isEnterpriseEdition = settings.platform_enterprise_edition_license_validated;
   const [resetPassword, setResetPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [cookies, , removeCookie] = useCookies([FLASH_COOKIE]);
@@ -166,7 +166,6 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     authButtons?: Array<{
       provider?: string | null;
       name: string;
-      type?: string | null;
     }>,
   ) => (
     <div style={{ marginTop: 10, marginBottom: 20 }}>

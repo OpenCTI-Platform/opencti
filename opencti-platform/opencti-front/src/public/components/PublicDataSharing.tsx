@@ -37,7 +37,7 @@ const PublicDataSharing = () => {
   const theme = useTheme<Theme>();
   const classes = useStyles();
 
-  const { settings } = usePreloadedQuery<LoginRootPublicQuery>(
+  const { publicSettings: settings } = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
   );
