@@ -5,22 +5,41 @@ import type * as SMO from '../types/stix-2-0-smo';
 import { INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS } from '../schema/general';
 import { INPUT_OPERATING_SYSTEM, INPUT_SAMPLE } from '../schema/stixRefRelationship';
 import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
+  ENTITY_TYPE_INCIDENT,
   ENTITY_TYPE_MALWARE,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
+import { assertType, checkInstanceCompletion, cleanObject, convertObjectReferences, convertToStixDate } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
+import type * as SRO from '../types/stix-2-0-sro';
+
+const CUSTOM_ENTITY_TYPES = [
+  ENTITY_TYPE_CONTAINER_TASK,
+  ENTITY_TYPE_CONTAINER_FEEDBACK,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+  ENTITY_TYPE_CONTAINER_CASE_RFI,
+  ENTITY_TYPE_CONTAINER_CASE_RFT
+];
+
+export const buildStixId = (instanceType: string, standard_id: S.StixId): S.StixId => {
+  const isCustomContainer = CUSTOM_ENTITY_TYPES.includes(instanceType);
+  return isCustomContainer ? `x-opencti-${standard_id}` : standard_id as S.StixId;
+};
 
 export const convertTypeToStix2Type = (type: string): string => {
   if (isStixDomainObjectIdentity(type)) {
@@ -82,7 +101,7 @@ const buildExternalReferences = (instance: StoreObject): Array<SMO.StixInternalE
 // Builders
 const buildStixObject = (instance: StoreObject): S.StixObject => {
   return {
-    id: instance.standard_id,
+    id: buildStixId(instance.entity_type, instance.standard_id),
     x_opencti_id: instance.id,
     spec_version: '2.0',
     x_opencti_type: instance.entity_type,
@@ -100,7 +119,7 @@ const buildStixObject = (instance: StoreObject): S.StixObject => {
 };
 
 // General
-const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
+export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
   return {
     ...buildStixObject(instance),
     created: convertToStixDate(instance.created),
@@ -112,6 +131,27 @@ const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObj
     object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
+  };
+};
+const buildStixRelationship = (instance: StoreRelation): S.StixRelationshipObject => {
+  // As 14/03/2022, relationship share same common information with domain
+  return buildStixDomain(instance);
+};
+
+export const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixIncident => {
+  assertType(ENTITY_TYPE_INCIDENT, type);
+  const incident = buildStixDomain(instance);
+  return {
+    ...incident,
+    name: instance.name,
+    description: instance.description,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
+    aliases: instance.aliases,
+    objective: instance.objective,
+    incident_type: instance.incident_type,
+    severity: instance.severity,
+    source: instance.source,
   };
 };
 
@@ -132,5 +172,71 @@ export const convertMalwareToStix = (instance: StoreEntity, type: string): SDO.S
     capabilities: instance.capabilities,
     operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
     sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+  };
+};
+
+export const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixReport => {
+  assertType(ENTITY_TYPE_CONTAINER_REPORT, type);
+  const report = buildStixDomain(instance);
+  return {
+    ...report,
+    name: instance.name,
+    description: instance.description,
+    report_types: instance.report_types,
+    published: convertToStixDate(instance.published),
+    object_refs: convertObjectReferences(instance),
+    x_opencti_reliability: instance.x_opencti_reliability,
+  };
+};
+
+export const convertNoteToStix = (instance: StoreEntity, type: string): SDO.StixNote => {
+  assertType(ENTITY_TYPE_CONTAINER_NOTE, type);
+  const note = buildStixDomain(instance);
+  return {
+    ...note,
+    abstract: instance.attribute_abstract,
+    content: instance.content,
+    object_refs: convertObjectReferences(instance),
+    note_types: instance.note_types,
+    likelihood: instance.likelihood,
+  };
+};
+
+export const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.StixObservedData => {
+  assertType(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, type);
+  const observedData = buildStixDomain(instance);
+  return {
+    ...observedData,
+    first_observed: convertToStixDate(instance.first_observed),
+    last_observed: convertToStixDate(instance.last_observed),
+    number_observed: instance.number_observed,
+    object_refs: convertObjectReferences(instance),
+  };
+};
+
+export const convertOpinionToStix = (instance: StoreEntity, type: string): SDO.StixOpinion => {
+  assertType(ENTITY_TYPE_CONTAINER_OPINION, type);
+  const opinion = buildStixDomain(instance);
+  return {
+    ...opinion,
+    explanation: instance.explanation,
+    opinion: instance.opinion,
+    object_refs: convertObjectReferences(instance),
+  };
+};
+
+// SRO
+export const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
+  checkInstanceCompletion(instance);
+  const stixRelationship = buildStixRelationship(instance);
+  return {
+    ...stixRelationship,
+    description: instance.description,
+    first_seen: convertToStixDate(instance.first_seen),
+    last_seen: convertToStixDate(instance.last_seen),
+    count: instance.attribute_count,
+    sighting_of_ref: instance.from.standard_id,
+    where_sighted_refs: [instance.to.standard_id],
+    x_opencti_negative: instance.x_opencti_negative,
   };
 };
