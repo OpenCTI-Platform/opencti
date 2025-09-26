@@ -162,7 +162,14 @@ describe('SupportPackage rights management checks', () => {
 });
 
 describe('Testing STIX conversion for the day when Internal object will be exported.', () => {
-  const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'supportPackageListener-test', otp_mandatory: false, user_inside_platform_organization: false };
+  const adminContext: AuthContext = {
+    user: ADMIN_USER,
+    tracing: undefined,
+    source: 'supportPackageListener-test',
+    otp_mandatory: false,
+    user_inside_platform_organization: false,
+    sharedData: {},
+  };
   it('should be STIX converted', async () => {
     const supportPackage = await addSupportPackage(adminContext, ADMIN_USER, { name: 'testing-stix-converter' });
 

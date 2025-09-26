@@ -590,6 +590,7 @@ export const publicStixCoreObjectsPaginated = async (
   const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
   context.user = user; // context.user is used in standard api
   context.user_inside_platform_organization = true;
+  context.sharedData.impersonatedUser = user;
 
   const selection = dataSelection[0];
   const { filters } = selection;
