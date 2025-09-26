@@ -22,6 +22,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import ConnectorPopover from '@components/data/connectors/ConnectorPopover';
 import ConnectorStatusChip from '@components/data/connectors/ConnectorStatusChip';
+import ConnectorLogs from '@components/data/connectors/ConnectorLogs';
 import Filters from '../../common/lists/Filters';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import { useFormatter } from '../../../../components/i18n';
@@ -668,28 +669,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     </>
   );
 
-  // Component for Logs content
-  const ConnectorLogs = () => {
-    // calculating the full viewport height minus some space for elements above
-    const logsContainerHeight = 'calc(100vh - 280px)';
-    return (<Box sx={{ marginBottom: '20px', height: logsContainerHeight }}>
-      <pre
-        style={{
-          height: '100%',
-          overflowX: 'scroll',
-          overflowY: 'auto',
-          paddingBottom: theme.spacing(2),
-          backgroundColor: theme.palette.background.paper,
-          padding: theme.spacing(2),
-          borderRadius: 4,
-          border: `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        {connector.manager_connector_logs?.join('\n') || t_i18n('No logs available')}
-      </pre>
-    </Box>
-    );
-  };
+  // calculating the full viewport height minus some space for elements above
+  const logsContainerHeight = 'calc(100vh - 280px)';
 
   return (
     <>
@@ -773,7 +754,12 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 <ConnectorWorksSection connectorId={connector.id} />
               </>
             )}
-            {tabValue === 1 && <ConnectorLogs />}
+            {tabValue === 1 && (
+              <ConnectorLogs
+                connectorId={connector.id}
+                height={logsContainerHeight}
+              />
+            )}
           </Box>
         </>
       ) : (
@@ -820,7 +806,6 @@ const Connector = createRefetchContainer(
         manager_current_status
         manager_requested_status
         manager_contract_image
-        manager_connector_logs
         manager_connector_uptime
         manager_health_metrics {
           restart_count
