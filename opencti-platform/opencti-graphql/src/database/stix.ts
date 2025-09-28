@@ -524,7 +524,7 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_CONTROLS, type: REL_BUILT_IN },
     { name: RELATION_USES, type: REL_BUILT_IN },
     { name: RELATION_DERIVED_FROM, type: REL_BUILT_IN },
-    { name: RELATION_SUPPORTS, type: REL_EXTENDED}
+    { name: RELATION_SUPPORTS, type: REL_EXTENDED }
   ],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
     { name: RELATION_LOCATED_AT, type: REL_BUILT_IN }
