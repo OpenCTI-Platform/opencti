@@ -3009,6 +3009,7 @@
   "relationship_technology-from": "技術",
   "relationship_technology-to": "技術",
   "relationship_to": "to",
+  "relationship_transferred-to": "に譲渡された。",
   "relationship_type": "リレーションシップ種別",
   "relationship_uses": "使用",
   "relationship_values": "値",
