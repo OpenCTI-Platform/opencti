@@ -219,13 +219,13 @@ class StixDomainObjectsField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, helpertext, onChange } = this.props;
+    const { t, name, style, classes, helpertext, onChange, multiple = true } = this.props;
     return (
       <Field
         component={AutocompleteField}
         style={style}
         name={name}
-        multiple={true}
+        multiple={multiple}
         textfieldprops={{
           variant: 'standard',
           label: t('Entities'),

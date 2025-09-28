@@ -152,7 +152,7 @@ const importFilesContextGuessMimeTypeQuery = graphql`
   }
 `;
 
-export type ImportMode = 'auto' | 'manual';
+export type ImportMode = 'auto' | 'manual' | 'form';
 export type UploadStatus = 'uploading' | 'success' | undefined;
 
 interface InitialValues {
@@ -171,6 +171,8 @@ type ImportFilesContextProps = InitialValues & {
   setUploadStatus: (uploadStatus: UploadStatus) => void;
   draftId?: string;
   setDraftId: (draftId?: string) => void;
+  selectedFormId?: string;
+  setSelectedFormId: (formId?: string) => void;
   inDraftContext: boolean;
   guessMimeType: (fileId: string) => Promise<string | null>;
   queryRef: PreloadedQuery<ImportFilesContextQuery>;
@@ -190,6 +192,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   const [files, setFiles] = useState<FileWithConnectors[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | UploadStatus>();
   const [draftId, setDraftId] = useState<string | undefined>(draftContext?.id);
+  const [selectedFormId, setSelectedFormId] = useState<string | undefined>();
   const queryRef = useQueryLoading<ImportFilesContextQuery>(importFilesQuery, {
     id: initialValue.entityId || '',
   });
@@ -218,6 +221,8 @@ export const ImportFilesProvider = ({ children, initialValue }: {
           setUploadStatus,
           draftId,
           setDraftId,
+          selectedFormId,
+          setSelectedFormId,
           inDraftContext: !!draftContext?.id,
           guessMimeType,
           queryRef,

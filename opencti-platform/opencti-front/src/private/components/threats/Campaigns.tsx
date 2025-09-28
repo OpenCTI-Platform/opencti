@@ -6,12 +6,11 @@ import Tooltip from '@mui/material/Tooltip';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { CampaignsCards_data$data } from '@components/threats/campaigns/__generated__/CampaignsCards_data.graphql';
 import { CampaignCardFragment } from '@components/threats/campaigns/CampaignCard';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { CampaignsCardsPaginationQuery, CampaignsCardsPaginationQuery$variables } from './campaigns/__generated__/CampaignsCardsPaginationQuery.graphql';
 import ListCards from '../../../components/list_cards/ListCards';
 import CampaignsCards, { campaignsCardsFragment, campaignsCardsQuery } from './campaigns/CampaignsCards';
 import CampaignCreation from './campaigns/CampaignCreation';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
@@ -20,6 +19,8 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY = 'campaigns';
 
@@ -93,7 +94,10 @@ const Campaigns = () => {
         handleChangeView={helpers.handleChangeView}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <CampaignCreation paginationOptions={queryPaginationOptions} />
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Campaign' />
+              <CampaignCreation paginationOptions={queryPaginationOptions} />
+            </div>
           </Security>
         )}
       >
@@ -179,7 +183,10 @@ const Campaigns = () => {
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <CampaignCreation paginationOptions={queryPaginationOptions} />
+                <div style={{ display: 'flex' }}>
+                  <StixCoreObjectForms entityType='Campaign' />
+                  <CampaignCreation paginationOptions={queryPaginationOptions} />
+                </div>
               </Security>
             )}
           />

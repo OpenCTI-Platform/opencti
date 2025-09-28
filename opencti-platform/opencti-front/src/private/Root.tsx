@@ -215,10 +215,10 @@ const meUserFragment = graphql`
       definition_type
       x_opencti_order
     }
-    personal_notifiers {
-      id
-      name
-    }
+    # personal_notifiers {
+    #   id
+    #   name
+    # }
     can_manage_sensitive_config
   }
 `;

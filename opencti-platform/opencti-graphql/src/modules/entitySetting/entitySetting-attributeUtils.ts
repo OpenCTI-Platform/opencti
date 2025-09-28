@@ -52,6 +52,7 @@ export const getEntitySettingSchemaAttributes = async (
           editDefault: attr.editDefault,
           multiple: attr.multiple,
           mandatory: attr.mandatoryType === 'external',
+          upsert: attr.upsert || false,
           scale: (attr.type === 'numeric' && attr.scalable) ? defaultScale : undefined
         })),
       // Configs for refs definition
@@ -68,6 +69,7 @@ export const getEntitySettingSchemaAttributes = async (
           mandatoryType: ref.mandatoryType,
           multiple: ref.multiple,
           mandatory: ref.mandatoryType === 'external',
+          upsert: ref.upsert || false,
         })),
     ];
 

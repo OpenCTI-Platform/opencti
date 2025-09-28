@@ -5,11 +5,10 @@ import {
   CaseIncidentsLinesCasesPaginationQuery$variables,
 } from '@components/cases/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import { CaseIncidentsLinesCases_data$data } from '@components/cases/__generated__/CaseIncidentsLinesCases_data.graphql';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CaseIncidentCreation from './case_incidents/CaseIncidentCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -18,6 +17,8 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 interface CaseIncidentsProps {
   inputValue?: string;
@@ -132,9 +133,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incident Responses | Cases'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -207,7 +206,10 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           exportContext={{ entity_type: 'Case-Incident' }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Case-Incident' />
+                <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
+              </div>
             </Security>
           )}
         />

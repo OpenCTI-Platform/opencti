@@ -5,11 +5,10 @@ import Tooltip from '@mui/material/Tooltip';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { ThreatActorIndividualCardFragment } from '@components/threats/threat_actors_individual/ThreatActorIndividualCard';
 import { ThreatActorsIndividualCards_data$data } from '@components/threats/threat_actors_individual/__generated__/ThreatActorsIndividualCards_data.graphql';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import ListCards from '../../../components/list_cards/ListCards';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import Security from '../../../utils/Security';
 import { GenericAttackCardDummy } from '../common/cards/GenericAttackCard';
 import ThreatActorsIndividualCards, {
   ThreatActorsIndividualCardsFragment,
@@ -26,6 +25,8 @@ import { useFormatter } from '../../../components/i18n';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL = 'threatActorsIndividuals';
 
@@ -99,7 +100,10 @@ const ThreatActorsIndividual = () => {
         handleChangeView={helpers.handleChangeView}
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+            <div style={{ display: 'flex' }}>
+              <StixCoreObjectForms entityType='Threat-Actor-Individual' />
+              <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+            </div>
           </Security>
         )}
       >
@@ -183,7 +187,10 @@ const ThreatActorsIndividual = () => {
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+                <div style={{ display: 'flex' }}>
+                  <StixCoreObjectForms entityType='Threat-Actor-Individual' />
+                  <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
+                </div>
               </Security>
             )}
           />

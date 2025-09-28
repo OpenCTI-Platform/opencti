@@ -1,11 +1,10 @@
 import React, { FunctionComponent } from 'react';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { IncidentsLinesQuery, IncidentsLinesQuery$variables } from './incidents/__generated__/IncidentsLinesQuery.graphql';
 import { IncidentsLines_data$data } from './incidents/__generated__/IncidentsLines_data.graphql';
 import { incidentLineFragment } from './incidents/IncidentLine';
 import { incidentsLinesFragment, incidentsLinesQuery } from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useAuth from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -16,12 +15,13 @@ import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 
 export const LOCAL_STORAGE_KEY = 'incidents';
 
 const Incidents: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
-
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Incidents | Events'));
   const {
@@ -90,7 +90,10 @@ const Incidents: FunctionComponent = () => {
           availableEntityTypes={['Incident']}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IncidentCreation paginationOptions={queryPaginationOptions} />
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Incident' />
+                <IncidentCreation paginationOptions={queryPaginationOptions} />
+              </div>
             </Security>
           )}
         />

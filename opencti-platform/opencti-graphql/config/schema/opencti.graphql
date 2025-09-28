@@ -518,6 +518,10 @@ type Log {
 }
 
 ############## Attributes
+type AttributesMap {
+  type: String!
+  attributes: [TypeAttribute!]!
+}
 enum AttributesOrdering {
   value
   _score
@@ -13262,6 +13266,7 @@ type Query {
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributeNames(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS])
+  schemaAttributes: [AttributesMap] @auth(for: [KNOWLEDGE])
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS_SETCUSTOMIZATION])
   retentionRules(
     first: Int,

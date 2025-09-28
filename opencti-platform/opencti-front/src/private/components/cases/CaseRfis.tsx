@@ -2,11 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { CaseRfisLinesCasesPaginationQuery, CaseRfisLinesCasesPaginationQuery$variables } from '@components/cases/__generated__/CaseRfisLinesCasesPaginationQuery.graphql';
 import { CaseRfisLinesCases_data$data } from '@components/cases/__generated__/CaseRfisLinesCases_data.graphql';
+import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreObjectForms';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
-import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -14,6 +13,8 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 interface CaseRfisProps {
   inputValue?: string;
@@ -127,9 +128,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Information | Cases'));
-  const {
-    platformModuleHelpers: { isRuntimeFieldEnable },
-  } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
     searchTerm: '',
@@ -203,7 +202,10 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           exportContext={{ entity_type: 'Case-Rfi' }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <CaseRfiCreation paginationOptions={queryPaginationOptions} />
+              <div style={{ display: 'flex' }}>
+                <StixCoreObjectForms entityType='Case-Rfi' />
+                <CaseRfiCreation paginationOptions={queryPaginationOptions} />
+              </div>
             </Security>
           )}
         />

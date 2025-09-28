@@ -326,6 +326,17 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     color="inherit"
                   />
                 </Security>
+                <Tooltip title={t_i18n('Triggers')}>
+                  <IconButton
+                    size="medium"
+                    aria-haspopup="true"
+                    component={Link}
+                    to="/dashboard/profile/triggers"
+                    color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
+                  >
+                    <AlarmOnOutlined fontSize="medium" />
+                  </IconButton>
+                </Tooltip>
                 <Tooltip title={t_i18n('Notifications')}>
                   <IconButton
                     size="medium"
@@ -341,17 +352,6 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     >
                       <NotificationsOutlined fontSize="medium"/>
                     </Badge>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t_i18n('Triggers')}>
-                  <IconButton
-                    size="medium"
-                    aria-haspopup="true"
-                    component={Link}
-                    to="/dashboard/profile/triggers"
-                    color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
-                  >
-                    <AlarmOnOutlined fontSize="medium" />
                   </IconButton>
                 </Tooltip>
               </>
