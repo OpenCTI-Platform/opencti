@@ -47,7 +47,7 @@ const KNOWLEDGE_CAPABILITIES = {
       attribute_order: 200,
       dependencies: [
         { name: 'KNORGARESTRICT', attribute_order: 290, description: 'Restrict organization access' },
-        { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 },
+        { name: KNOWLEDGE_DELETE, description: 'Delete / Merge knowledge', attribute_order: 300 },
         { name: KNOWLEDGE_MANAGE_AUTH_MEMBERS, description: 'Manage authorized members', attribute_order: 310 },
         { name: 'KNBYPASSREFERENCE', description: 'Bypass enforced reference', attribute_order: 320 },
         { name: 'KNBYPASSFIELDS', description: 'Bypass mandatory fields', attribute_order: 330 },
