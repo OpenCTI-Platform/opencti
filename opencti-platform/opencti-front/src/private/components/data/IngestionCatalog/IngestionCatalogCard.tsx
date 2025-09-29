@@ -61,8 +61,6 @@ const IngestionCatalogCard = ({
   const theme = useTheme<Theme>();
   const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
 
-  console.log('connector.container_type', connector.title, ' ----', connector.container_type);
-
   const renderConnectorUseCases = ({
     useCases,
     withTooltip = true,
