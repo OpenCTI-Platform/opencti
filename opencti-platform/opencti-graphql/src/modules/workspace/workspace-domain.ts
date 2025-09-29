@@ -2,11 +2,22 @@ import * as R from 'ramda';
 import type { FileHandle } from 'fs/promises';
 import { v4 as uuidv4 } from 'uuid';
 import pjson from '../../../package.json';
-import { createEntity, deleteElementById, fullEntitiesOrRelationsConnection, pageEntitiesOrRelationsConnection, updateAttribute } from '../../database/middleware';
+import {
+  createEntity,
+  deleteElementById,
+  fullEntitiesOrRelationsConnection,
+  pageEntitiesOrRelationsConnection,
+  updateAttribute
+} from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
 import { delEditContext, notify, setEditContext } from '../../database/redis';
-import { type BasicStoreEntityWorkspace, ENTITY_TYPE_WORKSPACE, type StoreEntityWorkspace, type WidgetConfiguration } from './workspace-types';
+import {
+  type BasicStoreEntityWorkspace,
+  ENTITY_TYPE_WORKSPACE,
+  type StoreEntityWorkspace,
+  type WidgetConfiguration
+} from './workspace-types';
 import { DatabaseError, ForbiddenAccess, FunctionalError } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type {
@@ -20,12 +31,18 @@ import type {
   WorkspaceDuplicateInput,
   WorkspaceObjectsArgs
 } from '../../generated/graphql';
-import { getUserAccessRight, isUserHasCapabilities, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicStoreEntity } from '../../types/store';
-import { buildPagination, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import {
+  buildPagination,
+  isEmptyField,
+  isNotEmptyField,
+  READ_DATA_INDICES_WITHOUT_INTERNAL,
+  READ_INDEX_INTERNAL_OBJECTS
+} from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
@@ -165,9 +182,9 @@ export const addWorkspace = async (
   // check capabilities according to workspace type
   let hasCapa;
   if (input.type === 'investigation') {
-    hasCapa = isUserHasCapabilities(user, ['INVESTIGATION_INUPDATE']);
+    hasCapa = isUserHasCapability(user, 'INVESTIGATION_INUPDATE');
   } else if (input.type === 'dashboard') {
-    hasCapa = isUserHasCapabilities(user, ['EXPLORE_EXUPDATE']);
+    hasCapa = isUserHasCapability(user, 'EXPLORE_EXUPDATE');
   }
   if (!hasCapa) {
     throw ForbiddenAccess();

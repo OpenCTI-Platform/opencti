@@ -52,12 +52,12 @@ interface WorkspaceCreationForm {
   description: string,
 }
 
-interface WorskpaceCreationProps {
+interface WorkspaceCreationProps {
   paginationOptions: WorkspacesLinesPaginationQuery$variables,
   type: string,
 }
 
-const WorkspaceCreation = ({ paginationOptions, type }: WorskpaceCreationProps) => {
+const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement | null>(null);
