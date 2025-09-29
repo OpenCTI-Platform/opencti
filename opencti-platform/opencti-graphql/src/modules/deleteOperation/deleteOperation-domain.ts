@@ -97,7 +97,7 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
   // check that the element cluster can be fully restored, throw error otherwise
   const { main_entity_id, main_entity_type, deleted_elements } = deleteOperation;
   const deletedElementsIds = deleted_elements.map((deleted) => deleted.id);
-  const deletedElements = await elFindByIds(context, user, deletedElementsIds, { indices: [INDEX_DELETED_OBJECTS] }) as BasicStoreObject[];
+  const deletedElements = await elFindByIds(context, user, deletedElementsIds, { indices: [INDEX_DELETED_OBJECTS], withoutRels: false }) as BasicStoreObject[];
   const deletedRelationships = deletedElements.filter((e) => e.id !== main_entity_id) as BasicStoreRelation[];
   const mainElementToRestore = deletedElements.find((e) => e.id === main_entity_id);
 
@@ -156,7 +156,9 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
 
   // filter out the refs registered in the schema for the main entity (they are recreated already when restoring the main entity)
   const availableRefAttributesDatabaseNames = schemaRelationsRefDefinition.getRelationsRef(main_entity_type).map((attr) => attr.databaseName);
+
   const relationshipsToRestore = deletedRelationships.filter((r) => !availableRefAttributesDatabaseNames.includes(r.entity_type));
+
   const availableElementsIds = [
     main_entity_id, // already restored
     ...targetIdsToFind, // already in database
