@@ -6,7 +6,7 @@ import { useTheme } from '@mui/styles';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
-import { ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import { getConnectorMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -23,6 +23,8 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
+  const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
+
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: theme.spacing(2) }}>
@@ -31,23 +33,25 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
           <div>
             <div style={{ display: 'flex', gap: 20 }}>
               <Typography variant="h1" style={{ fontSize: 30, textTransform: 'uppercase' }}>{connector.title}</Typography>
-              {connector.verified && (
-              <ItemBoolean
-                status={true}
-                label={
-                  <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-                    <VerifiedOutlined color="success" fontSize="small" />
-                    {t_i18n('Verified')}
-                  </div>
-                }
-              />
-              )}
+              {
+                connector.verified && (
+                  <ItemBoolean
+                    status={true}
+                    label={
+                      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                        <VerifiedOutlined color="success" fontSize="small" />
+                        {t_i18n('Verified')}
+                      </div>
+                    }
+                  />
+                )
+              }
             </div>
             <div style={{ display: 'flex' }}>
               <IngestionCatalogChip
                 isInlist
-                label={t_i18n(ingestionConnectorTypeMetadata[connector.container_type].label)}
-                color={ingestionConnectorTypeMetadata[connector.container_type].color}
+                label={connectorMetadata.label}
+                color={connectorMetadata.color}
               />
               {connector.use_cases.map((useCase: string) => <IngestionCatalogChip key={useCase} label={useCase} isInlist />)}
             </div>

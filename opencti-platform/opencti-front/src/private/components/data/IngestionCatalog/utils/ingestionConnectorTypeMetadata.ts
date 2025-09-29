@@ -1,5 +1,6 @@
 export type IngestionConnectorType =
   | 'INTERNAL_ENRICHMENT'
+  | 'INTERNAL_INGESTION'
   | 'EXTERNAL_IMPORT'
   | 'INTERNAL_EXPORT_FILE'
   | 'INTERNAL_IMPORT_FILE'
@@ -30,14 +31,20 @@ export const getConnectorMetadata = (
         label: t_i18n('Internal import file'),
         color: 'success' as const,
       };
+    case 'INTERNAL_INGESTION':
+      return {
+        label: t_i18n('Internal ingestion'),
+        color: 'success' as const,
+      };
     case 'STREAM':
       return {
         label: t_i18n('Stream'),
         color: 'primary' as const,
       };
     default:
+      // return raw type if type not handled
       return {
-        label: t_i18n('Unknown connector'),
+        label: containerType,
         color: 'primary' as const,
       };
   }

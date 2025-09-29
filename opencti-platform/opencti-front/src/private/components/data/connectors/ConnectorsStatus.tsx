@@ -27,6 +27,7 @@ import ConnectorsList, { connectorsListQuery } from '@components/data/connectors
 import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
+import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -337,6 +338,11 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                   } else if (connector.built_in) {
                     ConnectorIcon = DeveloperBoardOutlined;
                   }
+
+                  const connectorType = connector.connector_type
+                    ? getConnectorMetadata(connector.connector_type as IngestionConnectorType, t_i18n).label
+                    : '-';
+
                   return (
                     <ListItem
                       key={connector.id}
@@ -399,11 +405,15 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 gridTemplateColumns: gridColumns,
                               }}
                             >
+                              <Tooltip title={connector.name} placement={'top'}>
+                                <div className={classes.bodyItem}>
+                                  {
+                                    connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name
+                                  }
+                                </div>
+                              </Tooltip>
                               <div className={classes.bodyItem}>
-                                {connector.name}
-                              </div>
-                              <div className={classes.bodyItem}>
-                                {t_i18n(connector.connector_type)}
+                                {connectorType}
                               </div>
                               <div className={classes.bodyItem}>
                                 <ItemBoolean

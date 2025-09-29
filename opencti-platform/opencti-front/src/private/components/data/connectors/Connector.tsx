@@ -712,7 +712,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             margin: 0,
           }}
         >
-          {connector.name}
+          {connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name}
           <div style={{ display: 'inline-block' }}>
             <ConnectorStatusChip connector={connector} />
           </div>
@@ -815,6 +815,9 @@ const Connector = createRefetchContainer(
         manager_contract_configuration {
           key
           value
+        }
+        manager_contract_excerpt {
+            title
         }
         manager_contract_definition
         manager_current_status
