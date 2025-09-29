@@ -11,7 +11,7 @@ import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { truncate } from 'src/utils/String';
-import { IngestionConnectorType, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import { getConnectorMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
@@ -118,6 +118,8 @@ const IngestionCatalogCard = ({
     });
   };
 
+  const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
+
   return (
     <>
       <Card
@@ -186,12 +188,8 @@ const IngestionCatalogCard = ({
         </div>
         <CardActions style={{ justifyContent: 'space-between', padding: 16 }}>
           <IngestionCatalogChip
-            label={t_i18n(
-              ingestionConnectorTypeMetadata[connector.container_type as IngestionConnectorType].label,
-            )}
-            color={
-                ingestionConnectorTypeMetadata[connector.container_type as IngestionConnectorType].color
-              }
+            label={connectorMetadata.label}
+            color={connectorMetadata.color}
           />
           <div style={{ display: 'flex', gap: 4 }}>
             <Button variant="outlined" size="small" component={Link} to={link}>

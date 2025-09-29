@@ -191,7 +191,10 @@ const IngestionCatalogConnectorCreation = ({
       if (key === 'CONNECTOR_NAME') {
         if (value.default !== undefined) {
           // Apply sanitization to the default connector name
-          defaultConnectorName = sanitizeContainerName(value.default.toString());
+          const baseName = sanitizeContainerName(value.default.toString());
+          defaultConnectorName = deploymentCount > 0
+            ? `${baseName}-${deploymentCount + 1}`
+            : baseName;
         }
         return;
       }
@@ -223,7 +226,7 @@ const IngestionCatalogConnectorCreation = ({
       configDefaults: defaults,
       connectorName: defaultConnectorName,
     };
-  }, [connector]);
+  }, [connector, deploymentCount]);
 
   const hasRequiredProperties = Object.keys(requiredProperties.properties || {}).length > 0;
   const hasOptionalProperties = Object.keys(optionalProperties.properties || {}).length > 0;

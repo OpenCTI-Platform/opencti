@@ -24,7 +24,7 @@ const IngestionCatalogChip = ({ label, variant, color, withTooltip = false, isIn
         color={color ?? 'default'}
         style={{
           fontSize: 12,
-          lineHeight: '12px',
+          lineHeight: '14px',
           borderRadius: 4,
           marginRight: isInlist ? theme.spacing(1) : 0,
           border: `2px solid ${color ? theme.palette[color].main : theme.palette.chip.main}`,
