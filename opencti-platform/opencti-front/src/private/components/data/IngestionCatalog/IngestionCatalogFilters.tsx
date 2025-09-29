@@ -3,7 +3,7 @@ import { Autocomplete, Stack, TextField } from '@mui/material';
 import { FilterListOffOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { IngestionConnectorType, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -107,8 +107,9 @@ const IngestionCatalogFilters: React.FC<IngestionCatalogFiltersProps> = ({
         value={filterOptions.types.find((o) => o.value === filters.type) || null}
         onChange={(event, option) => handleFilterChange('type', option?.value || '')}
         getOptionLabel={(option) => {
-          const metadata = ingestionConnectorTypeMetadata[option.label as IngestionConnectorType];
-          return metadata ? t_i18n(metadata.label) : t_i18n(option.label);
+          const metadata = getConnectorMetadata(option.label as IngestionConnectorType, t_i18n);
+          // metadata.label is translated from getConnectorMetadata
+          return metadata ? metadata.label : t_i18n(option.label);
         }}
         isOptionEqualToValue={(option, value) => option.value === value.value}
         renderInput={(params) => (

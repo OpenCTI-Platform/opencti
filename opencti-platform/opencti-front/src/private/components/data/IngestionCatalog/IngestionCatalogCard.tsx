@@ -11,7 +11,7 @@ import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { truncate } from 'src/utils/String';
-import { IngestionConnectorType, ingestionConnectorTypeMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import { getConnectorMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import Box from '@mui/material/Box';
 import { useFormatter } from '../../../../components/i18n';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
@@ -60,6 +60,8 @@ const IngestionCatalogCard = ({
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
+
+  console.log('connector.container_type', connector.title, ' ----', connector.container_type);
 
   const renderConnectorUseCases = ({
     useCases,
@@ -117,6 +119,8 @@ const IngestionCatalogCard = ({
       withBadge: hasMoreThanTwoUseCases,
     });
   };
+
+  const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
 
   return (
     <>
@@ -186,12 +190,8 @@ const IngestionCatalogCard = ({
         </div>
         <CardActions style={{ justifyContent: 'space-between', padding: 16 }}>
           <IngestionCatalogChip
-            label={t_i18n(
-              ingestionConnectorTypeMetadata[connector.container_type as IngestionConnectorType].label,
-            )}
-            color={
-                ingestionConnectorTypeMetadata[connector.container_type as IngestionConnectorType].color
-              }
+            label={connectorMetadata.label}
+            color={connectorMetadata.color}
           />
           <div style={{ display: 'flex', gap: 4 }}>
             <Button variant="outlined" size="small" component={Link} to={link}>
