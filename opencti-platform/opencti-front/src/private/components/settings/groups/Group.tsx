@@ -74,7 +74,8 @@ const groupFragment = graphql`
       id
       name
       authorizedMembers {
-        id
+        id  
+        member_id
       }
     }
     roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
@@ -139,10 +140,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   );
   const canAccessDashboard = (
     group.default_dashboard?.authorizedMembers || []
-  ).some(({ id }) => {
-    if (id.startsWith('ALL')) return true;
-    const baseId = id.substring(0, id.lastIndexOf('_'));
-    return baseId === group.id;
+  ).some(({ member_id }) => {
+    return member_id === 'ALL' || member_id === group.id;
   });
 
   return (
