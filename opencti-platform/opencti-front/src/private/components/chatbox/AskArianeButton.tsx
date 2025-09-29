@@ -151,14 +151,15 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             sx={{ width: '100%', paddingLeft: '8px' }}
             gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
             onClick={toggleChatbot}
-            startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
+            data-testid="ArianeButtonExpended"
+            startIcon={ <FiligranIcon size='small' icon={LogoXtmOneIcon} color="ai" style={chatIconStyle} />}
           >
             {t_i18n('ASK ARIANE')}
             <EEChip />
           </GradientButton>
         ) : (
-          <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
-            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />
+          <IconButton style={{ padding: '2px', bottom: '2px' }} onClick={toggleChatbot} data-testid="ArianeButtonCollapsed">
+            <FiligranIcon size='small' data-testid="ArianeIcon" icon={LogoXtmOneIcon} color="ai" style={chatIconStyle} />
           </IconButton>
         )}
       </EETooltip>
