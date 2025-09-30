@@ -43,7 +43,7 @@ describe('Delete functional errors behaviors', async () => {
     expect(deleted.entity_type).toBe(ENTITY_TYPE_DECAY_RULE);
   });
 
-  it('should be able to delete a report using SCO parent type', async () => {
+  it('should be able to delete a report using Stix Core Object parent type', async () => {
     const reportAddData: ReportAddInput = {
       name: 'Report for middleware-delete-test',
       published: utcDate()
@@ -75,6 +75,11 @@ describe('Delete functional errors behaviors', async () => {
     const reportToBeDeleted = await addReport(testContext, ADMIN_USER, reportAddData);
     await expect(() => deleteElementById(testContext, ADMIN_USER, reportToBeDeleted.id, ABSTRACT_STIX_CYBER_OBSERVABLE))
       .rejects.toThrowError('Cant find element type for deletion');
+
+    // But delete with the right entity type is fine:
+    const deleted = await deleteElementById(testContext, ADMIN_USER, reportToBeDeleted.id, ENTITY_TYPE_CONTAINER_REPORT);
+    expect(deleted.id).toBe(reportToBeDeleted.id);
+    expect(deleted.entity_type).toBe(ENTITY_TYPE_CONTAINER_REPORT);
   });
 
   it('should be able to delete an entity without parent type', async () => {
