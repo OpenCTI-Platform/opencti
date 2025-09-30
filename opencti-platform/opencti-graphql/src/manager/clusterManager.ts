@@ -39,7 +39,7 @@ const initClusterManager = () => {
       activityManager.status(settings),
       playbookManager.status(settings),
       fileIndexManager.status(settings),
-      ...getAllManagersStatuses(),
+      ...getAllManagersStatuses(settings),
     ];
     const configData: ClusterConfig = { platform_id: platformId, managers };
     await registerClusterInstance(platformId, configData);

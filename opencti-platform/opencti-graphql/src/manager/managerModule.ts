@@ -211,6 +211,6 @@ export const shutdownAllManagers = async () => {
   }
 };
 
-export const getAllManagersStatuses = (settings?: BasicStoreSettings) => {
+export const getAllManagersStatuses = (settings: BasicStoreSettings) => {
   return [...managersModule.managers.map((module) => module.status(settings))];
 };
