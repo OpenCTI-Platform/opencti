@@ -95,6 +95,7 @@ import { notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationE
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
@@ -3454,7 +3455,9 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
     throw AlreadyDeletedError({ id });
   }
 
-  if (!(element.entity_type === type || element.relationship_type === type)) {
+  const isAbstractAndNotInternalObject = element.parent_types.includes(type) && !element.parent_types.includes(ABSTRACT_INTERNAL_OBJECT);
+
+  if (!(element.entity_type === type || element.relationship_type === type || isAbstractAndNotInternalObject)) {
     throw FunctionalError('Cant find element type for deletion', { id, type });
   }
 
