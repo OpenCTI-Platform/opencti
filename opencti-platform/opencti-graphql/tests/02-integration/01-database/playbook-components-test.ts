@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT, PLAYBOOK_SHARING_COMPONENT, playbookReducingComponentExecutor } from '../../../src/modules/playbook/playbook-components';
+import { playbookContainerWrapperComponentExecutor, playbookReducingComponentExecutor, playbookSharingComponentExecutor } from '../../../src/modules/playbook/playbook-components';
 import type { StixBundle } from '../../../src/types/stix-2-1-common';
 import type { StixSoftware } from '../../../src/types/stix-2-1-sco';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
@@ -124,7 +124,7 @@ describe('playbook sharing component', () => {
     } as unknown as StixBundle;
 
     const params = buildTestExecutorParameters(dataInstanceId, playbookNode, sharing_component_bundle, sharing_component_bundle);
-    const result = await PLAYBOOK_SHARING_COMPONENT.executor(params);
+    const result = await playbookSharingComponentExecutor(params);
     expect(result.bundle).toEqual(bundleToIngest);
   });
 });
@@ -205,7 +205,7 @@ describe('playbook container wrapper component', () => {
     } as unknown as StixBundle;
 
     const params = buildTestExecutorParameters(dataInstanceId, playbookNode, container_wrapper_component_bundle, container_wrapper_component_bundle);
-    const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(params);
+    const result = await playbookContainerWrapperComponentExecutor(params);
     expect(result.bundle.objects.length).toEqual(2);
     expect(result.bundle.objects[1].id).toEqual(expectedBundleToIngest.objects[1].id);
     expect(result.bundle.objects[1].extensions[STIX_EXT_OCTI].type).toEqual(expectedBundleToIngest.objects[1].extensions[STIX_EXT_OCTI].type);
