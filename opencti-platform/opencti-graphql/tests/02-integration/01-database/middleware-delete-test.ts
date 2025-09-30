@@ -55,7 +55,7 @@ describe('Delete functional errors behaviors', async () => {
     expect(deleted.entity_type).toBe(ENTITY_TYPE_CONTAINER_REPORT);
   });
 
-  it('should be able to delete a report using SCO parent type', async () => {
+  it('should be able to delete a report using container parent type', async () => {
     const reportAddData: ReportAddInput = {
       name: 'Report2 for middleware-delete-test',
       published: utcDate()

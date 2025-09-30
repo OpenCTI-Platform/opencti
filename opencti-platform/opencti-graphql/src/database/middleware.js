@@ -3455,10 +3455,12 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
     throw AlreadyDeletedError({ id });
   }
 
-  const isAbstractAndNotInternalObject = element.parent_types.includes(type) && !element.parent_types.includes(ABSTRACT_INTERNAL_OBJECT);
+  if (!(element.entity_type === type || element.relationship_type === type)) {
+    const isAbstractAndNotInternalObject = element.parent_types.includes(type) && !element.parent_types.includes(ABSTRACT_INTERNAL_OBJECT);
 
-  if (!(element.entity_type === type || element.relationship_type === type || isAbstractAndNotInternalObject)) {
-    throw FunctionalError('Cant find element type for deletion', { id, type });
+    if (element.parent_types && !isAbstractAndNotInternalObject) {
+      throw FunctionalError('Cant find element type for deletion', { id, type });
+    }
   }
 
   if (getDraftContext(context, user)) {
