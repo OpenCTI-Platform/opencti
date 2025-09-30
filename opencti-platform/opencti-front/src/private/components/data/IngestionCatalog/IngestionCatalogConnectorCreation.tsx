@@ -30,7 +30,6 @@ import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/Ing
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
 import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/data/IngestionCatalog/utils/JsonFormPasswordRenderer';
-import Box from '@mui/material/Box';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
