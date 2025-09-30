@@ -21,7 +21,6 @@ import {
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import {
-  buildPagination,
   computeAverage,
   extractIdsFromStoreObject,
   extractObjectsPirsFromInputs,
@@ -238,7 +237,7 @@ import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
-import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
+import { hasSameSourceAlreadyUpdateThisScore } from '../modules/indicator/indicator-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2916,11 +2915,9 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    logApp.info('UPSERT - END', { inputs, updateOpts, resolvedElement });
     return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
-  logApp.info('UPSERT - End No modification applied');
   return { element: resolvedElement, event: null, isCreation: false };
 };
 
