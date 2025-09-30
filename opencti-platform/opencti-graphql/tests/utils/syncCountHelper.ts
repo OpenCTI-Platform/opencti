@@ -43,7 +43,7 @@ testCreatedCounter['observed-data'] = 1;
 testCreatedCounter.opinion = 4;
 testCreatedCounter.persona = 1;
 testCreatedCounter.relationship = 133;
-testCreatedCounter.report = 31;
+testCreatedCounter.report = 34;
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 1;
 testCreatedCounter['threat-actor'] = 17;
@@ -94,7 +94,7 @@ testMergedCounter.file = 3;
 testMergedCounter.artifact = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
-testDeletedCounter.report = 23;
+testDeletedCounter.report = 26;
 testDeletedCounter['marking-definition'] = 10;
 testDeletedCounter['threat-actor'] = 8;
 testDeletedCounter['case-rfi'] = 9;
