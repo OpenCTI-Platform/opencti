@@ -301,7 +301,6 @@ const IngestionCatalogConnectorCreation = ({
         <Formik<ManagedConnectorValues>
           onReset={onClose}
           validationSchema={Yup.object().shape({
-            name: k8sNameSchema(t_i18n),
             user_id: Yup.object().required(),
           })}
           initialValues={{
