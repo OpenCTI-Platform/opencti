@@ -2,7 +2,7 @@
 import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
-import type { TestSequencer, TestSpecification } from 'vitest/node';
+import { BaseSequencer, type TestSpecification } from 'vitest/node';
 
 export const buildTestConfig = (include: string[]) => defineConfig({
   plugins: [graphql() as PluginOption],
@@ -25,7 +25,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     },
     sequence: {
       shuffle: false,
-      sequencer: class Sequencer implements TestSequencer {
+      sequencer: class Sequencer extends BaseSequencer {
         // eslint-disable-next-line class-methods-use-this
         async shard(files: TestSpecification[]) {
           return files;
@@ -33,7 +33,7 @@ export const buildTestConfig = (include: string[]) => defineConfig({
 
         // eslint-disable-next-line class-methods-use-this
         async sort(files: TestSpecification[]) {
-          return files.sort((testA, testB) => (testA > testB ? 1 : -1));
+          return files.sort((testA, testB) => (testA.moduleId > testB.moduleId ? 1 : -1));
         }
       },
     },
