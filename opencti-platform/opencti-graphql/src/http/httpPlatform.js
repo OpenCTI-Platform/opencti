@@ -458,17 +458,30 @@ const createApp = async (app, schema) => {
   // -- Passport callback
   // -- Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
-  app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
-    if (req.body.RelayState) {
-      const refererUrl = new URL(req.body.RelayState, getBaseUrl());
-      if (refererUrl.pathname !== req.body.RelayState) {
-        logApp.error('Error auth provider callback : RelayState has been altered', { relayState: req.body.RelayState });
-        setCookieError(res, 'Invalid authentication, please ask your administrator');
-        res.redirect('/');
-        return;
-      }
+  const sanitizeReferer = (refererToSanitize, baseUrl) => {
+    if (!refererToSanitize) return '/';
+    const base = new URL(baseUrl);
+    const refererUrl = new URL(refererToSanitize, base);
+
+    const isSameOrigin = refererUrl.origin === base.origin;
+    const isUrlRelative = refererToSanitize.startsWith('/');
+
+    if (isSameOrigin || isUrlRelative) {
+      return refererUrl.pathname + refererUrl.search + refererUrl.hash;
     }
-    const referer = req.body.RelayState ?? req.session.referer;
+    logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
+    return '/';
+  };
+
+  app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
+    const baseUrl = getBaseUrl();
+    let referer = '/';
+
+    if (req.body.RelayState) {
+      referer = sanitizeReferer(req.body.RelayState, baseUrl);
+    } else if (req.session.referer) {
+      referer = sanitizeReferer(req.session.referer, baseUrl);
+    }
     const { provider } = req.params;
     const callbackLogin = () => new Promise((accept, reject) => {
       passport.authenticate(provider, {}, (err, user) => {
