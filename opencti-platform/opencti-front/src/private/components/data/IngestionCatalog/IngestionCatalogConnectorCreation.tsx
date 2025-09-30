@@ -29,6 +29,8 @@ import Tooltip from '@mui/material/Tooltip';
 import JsonFormArrayRenderer, { jsonFormArrayTester } from '@components/data/IngestionCatalog/utils/JsonFormArrayRenderer';
 import buildContractConfiguration from '@components/data/connectors/utils/buildContractConfiguration';
 import JsonFormUnsupportedType, { jsonFormUnsupportedTypeTester } from '@components/data/IngestionCatalog/utils/JsonFormUnsupportedType';
+import { JsonFormPasswordRenderer, jsonFormPasswordTester } from '@components/data/IngestionCatalog/utils/JsonFormPasswordRenderer';
+import Box from '@mui/material/Box';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { RelayError } from '../../../../relay/relayTypes';
 import type { Theme } from '../../../../components/Theme';
@@ -86,6 +88,7 @@ const k8sNameSchema = (t_i18n: (key: string) => string) => Yup.string()
 
 const customRenderers = [
   ...materialRenderers,
+  { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
 ];
@@ -366,6 +369,7 @@ const IngestionCatalogConnectorCreation = ({
                               },
                             }}
                           >
+
                             <JsonForms
                               data={configDefaults}
                               schema={requiredProperties}
