@@ -135,6 +135,12 @@ const CREATE_INDICATOR_QUERY = gql`
   }
 `;
 
+const DELETE_INDICATOR_QUERY = gql`
+  mutation IndicatorDeletionDeleteMutation($id: ID!) {
+      indicatorDelete(id: $id)
+  }
+`;
+
 const filename = './tests/data/poisonivy.json';
 
 describe('Delete operation resolver testing', () => {
@@ -408,6 +414,11 @@ describe('Delete operation resolver testing', () => {
       await queryAsAdmin({
         query: DELETE_CONFIRM_MUTATION,
         variables: { id: cleanupDeleteOps.data.deleteOperations.edges[0].node.id }
+      });
+
+      await queryAsAdmin({
+        query: DELETE_INDICATOR_QUERY,
+        variables: { id: indicatorId }
       });
     }
   });
