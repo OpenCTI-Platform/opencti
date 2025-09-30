@@ -665,10 +665,13 @@ const useSearchEntities = ({
               });
           }
           if (!cacheEntities[filterKey]) {
-            // fetch only the identities listed as creator of at least 1 thing + myself
-            fetchQuery(identitySearchCreatorsSearchQuery, {
-              entityTypes: searchContext.entityTypes ?? [],
-            })
+            const entityTypesFromSearchContext = searchContext.entityTypes ?? [];
+            // for History and Activity, fetch the creators of all stix core objects
+            const entityTypes = entityTypesFromSearchContext.includes('History') || entityTypesFromSearchContext.includes('Activity')
+              ? ['Stix-Core-Object']
+              : entityTypesFromSearchContext;
+            // fetch only: myself + the identities listed as creator of at least 1 object of type in the searchContext.entityTypes
+            fetchQuery(identitySearchCreatorsSearchQuery, { entityTypes })
               .toPromise()
               .then((response) => {
                 const data = response as IdentitySearchCreatorsSearchQuery$data;
