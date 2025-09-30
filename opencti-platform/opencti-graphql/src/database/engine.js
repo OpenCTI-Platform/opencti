@@ -2219,7 +2219,7 @@ const buildLocalMustFilter = async (validFilter) => {
       const should = {
         bool: {
           should: nestedShould,
-          minimum_should_match: localFilterMode === 'or' ? 1 : nestedShould.length,
+          minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
         },
       };
       nestedMust.push(should);
