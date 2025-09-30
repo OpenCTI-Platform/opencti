@@ -33,9 +33,9 @@ describe('Delete functional errors behaviors', async () => {
       order: 12
     };
     const decayRuleCreated = await addDecayRule(testContext, ADMIN_USER, decayRule);
-
+    console.log('decayRuleCreated : ', decayRuleCreated);
     await expect(() => deleteElementById(testContext, ADMIN_USER, decayRuleCreated.id, ENTITY_TYPE_GROUP))
-      .rejects.toThrowError('Cant find element type for deletion');
+      .rejects.toThrowError('Already deleted elements');
 
     // But delete with the right entity type is fine:
     const deleted = await deleteElementById(testContext, ADMIN_USER, decayRuleCreated.id, ENTITY_TYPE_DECAY_RULE);
@@ -74,7 +74,7 @@ describe('Delete functional errors behaviors', async () => {
     };
     const reportToBeDeleted = await addReport(testContext, ADMIN_USER, reportAddData);
     await expect(() => deleteElementById(testContext, ADMIN_USER, reportToBeDeleted.id, ABSTRACT_STIX_CYBER_OBSERVABLE))
-      .rejects.toThrowError('Cant find element type for deletion');
+      .rejects.toThrowError('Already deleted elements');
 
     // But delete with the right entity type is fine:
     const deleted = await deleteElementById(testContext, ADMIN_USER, reportToBeDeleted.id, ENTITY_TYPE_CONTAINER_REPORT);

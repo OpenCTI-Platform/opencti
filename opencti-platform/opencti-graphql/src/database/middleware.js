@@ -3449,18 +3449,10 @@ const draftInternalDeleteElement = async (context, user, draftElement) => {
 export const internalDeleteElementById = async (context, user, id, type, opts = {}) => {
   let lock;
   let event;
-  const element = await storeLoadByIdWithRefs(context, user, id, { ...opts, includeDeletedInDraft: true });
+  const element = await storeLoadByIdWithRefs(context, user, id, { ...opts, type, includeDeletedInDraft: true });
 
   if (!element) {
     throw AlreadyDeletedError({ id });
-  }
-
-  if (!(element.entity_type === type || element.relationship_type === type)) {
-    const isAbstractAndNotInternalObject = element.parent_types.includes(type) && !element.parent_types.includes(ABSTRACT_INTERNAL_OBJECT);
-
-    if (element.parent_types && !isAbstractAndNotInternalObject) {
-      throw FunctionalError('Cant find element type for deletion', { id, type });
-    }
   }
 
   if (getDraftContext(context, user)) {
