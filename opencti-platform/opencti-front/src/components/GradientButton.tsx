@@ -100,7 +100,9 @@ const GradientButton = ({
         ...sx,
       }}
     >
-      <span className="text">{children}</span>
+      <span className="text">
+        {typeof children === 'string' ? children.toUpperCase() : children}
+      </span>
     </Button>
   );
 };
