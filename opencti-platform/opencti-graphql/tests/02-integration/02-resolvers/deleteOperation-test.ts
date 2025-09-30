@@ -44,6 +44,16 @@ const READ_REPORT_QUERY = gql`
                     }
                 }
             }
+            objects {
+                edges {
+                    node {
+                        ... on BasicObject {
+                            id
+                            standard_id
+                        }
+                    }
+                }
+            }
         }
     }
 `;
@@ -209,6 +219,7 @@ describe('Delete operation resolver testing', () => {
         name: 'Report for restore',
         description: 'Report for restore description',
         published: '2020-02-26T00:51:35.000Z',
+        objects: ['campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7'],
       },
     };
 
@@ -248,6 +259,10 @@ describe('Delete operation resolver testing', () => {
     const reportQueryAfterResult = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: reportInternalId } });
     expect(reportQueryAfterResult.data?.report.id).toBe(reportInternalId);
     expect(reportQueryAfterResult.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
+
+    // verify the objects relationship is restored
+    expect(reportQueryAfterResult.data?.report.objects.edges.length).toEqual(1);
+    expect(reportQueryAfterResult.data?.report.objects.edges[0].node.standard_id).toEqual('campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7');
 
     await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId }, });
   });
