@@ -5,6 +5,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StixCoreObjectOrStixCoreRelationshipNotesCards, { stixCoreObjectOrStixCoreRelationshipNotesCardsQuery } from './StixCoreObjectOrStixCoreRelationshipNotesCards';
 import { NotesOrdering, OrderingMode, StixCoreObjectOrStixCoreRelationshipNotesCardsQuery } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
@@ -26,6 +27,7 @@ const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjec
   defaultMarkings,
 }) => {
   const { t_i18n } = useFormatter();
+  const hiddenNote = useIsHiddenEntities('Note');
   const paginationOptions = {
     count: 200,
     orderBy: 'created' as NotesOrdering,
@@ -59,7 +61,7 @@ const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<StixCoreObjec
   }
   return (
     <>
-      {queryRef && (
+      {queryRef && !hiddenNote && (
         <React.Suspense
           fallback={
             <div style={{ height: '100%', marginTop }}>

@@ -564,10 +564,8 @@ class StixSightingRelationshipContainer extends Component {
               </Grid>
               <Grid item xs={12}>
                 <StixCoreObjectOrStixCoreRelationshipNotes
-                  stixCoreObjectOrStixCoreRelationshipId={
-                    stixSightingRelationship.id
-                  }
-                  isRelationship={true}
+                  stixCoreObjectOrStixCoreRelationshipId={stixSightingRelationship.id}
+                  isRelationship
                   defaultMarkings={stixSightingRelationship.objectMarking ?? []}
                 />
               </Grid>
