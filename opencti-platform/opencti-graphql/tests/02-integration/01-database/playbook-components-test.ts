@@ -1,13 +1,28 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT, PLAYBOOK_SHARING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
+import { PLAYBOOK_CONTAINER_WRAPPER_COMPONENT, PLAYBOOK_SHARING_COMPONENT, playbookReducingComponentExecutor } from '../../../src/modules/playbook/playbook-components';
 import type { StixBundle } from '../../../src/types/stix-2-1-common';
+import type { StixSoftware } from '../../../src/types/stix-2-1-sco';
 import type { BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
+import type { NodeInstance } from '../../../src/modules/playbook/playbook-types';
 import { enableCEAndUnSetOrganization, enableEEAndSetOrganization } from '../../utils/testQueryHelper';
 import { PLATFORM_ORGANIZATION, TEST_ORGANIZATION } from '../../utils/testQuery';
 import { getOrganizationEntity } from '../../utils/domainQueryHelper';
 import { sharing_component_bundle } from './playbookComponents/playbook-sharing-component';
 import { container_wrapper_component_bundle } from './playbookComponents/playbook-container-wrapper-component';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
+
+const buildTestExecutorParameters = (dataInstanceId: string, playbookNode: NodeInstance<any>, bundle: StixBundle, previousStepBundle: StixBundle | null = null) => {
+  return {
+    dataInstanceId,
+    eventId: '',
+    executionId: '',
+    playbookId: '',
+    previousPlaybookNodeId: '',
+    previousStepBundle,
+    playbookNode,
+    bundle,
+  };
+};
 
 describe('playbook sharing component', () => {
   let externalOrganizationEntity: BasicStoreEntityOrganization;
@@ -108,16 +123,8 @@ describe('playbook sharing component', () => {
       type: 'bundle'
     } as unknown as StixBundle;
 
-    const result = await PLAYBOOK_SHARING_COMPONENT.executor({
-      dataInstanceId,
-      eventId: '',
-      executionId: '',
-      playbookId: '',
-      previousPlaybookNodeId: '',
-      previousStepBundle: sharing_component_bundle,
-      playbookNode,
-      bundle: sharing_component_bundle
-    });
+    const params = buildTestExecutorParameters(dataInstanceId, playbookNode, sharing_component_bundle, sharing_component_bundle);
+    const result = await PLAYBOOK_SHARING_COMPONENT.executor(params);
     expect(result.bundle).toEqual(bundleToIngest);
   });
 });
@@ -197,18 +204,61 @@ describe('playbook container wrapper component', () => {
       ]
     } as unknown as StixBundle;
 
-    const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor({
-      dataInstanceId,
-      eventId: '',
-      executionId: '',
-      playbookId: '',
-      previousPlaybookNodeId: '',
-      previousStepBundle: container_wrapper_component_bundle,
-      playbookNode,
-      bundle: container_wrapper_component_bundle
-    });
+    const params = buildTestExecutorParameters(dataInstanceId, playbookNode, container_wrapper_component_bundle, container_wrapper_component_bundle);
+    const result = await PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor(params);
     expect(result.bundle.objects.length).toEqual(2);
     expect(result.bundle.objects[1].id).toEqual(expectedBundleToIngest.objects[1].id);
     expect(result.bundle.objects[1].extensions[STIX_EXT_OCTI].type).toEqual(expectedBundleToIngest.objects[1].extensions[STIX_EXT_OCTI].type);
+  });
+});
+
+describe('playbook reduce knowledge component test', () => {
+  const stixSoftware = {
+    id: 'software--1ee6cfe0-616f-595a-b037-deaf2017ad08',
+    spec_version: '2.1',
+    type: 'software',
+    extensions: {
+      'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        extension_type: 'property-extension',
+        id: '42145fec-a8b4-4ab1-8d45-ddf491dd121a',
+        type: 'Software',
+        created_at: '2025-08-22T14:06:32.481Z',
+        updated_at: '2025-08-22T14:06:32.481Z',
+        is_inferred: false,
+        creator_ids: [
+          'cf876123-c9d4-4288-b2bd-5b94149125d9'
+        ]
+      },
+      'extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82': {
+        extension_type: 'property-extension',
+        score: 50
+      }
+    },
+    name: 'Nino software'
+  };
+  it('should reduce match main element', async () => {
+    const dataInstanceId = stixSoftware.id;
+    const playbookNode = {
+      id: 'd649ded2-386a-46b9-abe1-034ffcc9a404',
+      name: 'Reduce Software Entity only',
+      position: {
+        x: -100,
+        y: 450
+      },
+      component_id: 'PLAYBOOK_REDUCING_COMPONENT',
+      // reduces on entity_type = Software
+      configuration: { filters: '{"mode":"and","filters":[{"key":["entity_type"],"operator":"eq","values":["Software"],"mode":"or"}],"filterGroups":[]}' }
+    };
+    const bundle: StixBundle = {
+      id: '973ba8c8-20e1-454c-af1e-effe5c6cfe5b',
+      spec_version: '2.1',
+      type: 'bundle',
+      objects: [stixSoftware as StixSoftware]
+    };
+    const params = buildTestExecutorParameters(dataInstanceId, playbookNode, bundle);
+    const result = await playbookReducingComponentExecutor(params);
+    expect(result.output_port).toEqual('out');
+    expect(result.bundle.objects.length).toEqual(1);
+    expect(result.bundle.objects[0].id).toEqual(stixSoftware.id);
   });
 });

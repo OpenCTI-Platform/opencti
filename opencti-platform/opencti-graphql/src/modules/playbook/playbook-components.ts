@@ -343,6 +343,8 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     return { output_port: 'out', bundle: newBundle };
   }
 };
+// export executor for testing
+export const playbookReducingComponentExecutor = PLAYBOOK_REDUCING_COMPONENT.executor;
 
 interface ConnectorConfiguration {
   connector: string
