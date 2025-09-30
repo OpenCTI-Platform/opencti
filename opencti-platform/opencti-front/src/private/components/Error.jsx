@@ -9,6 +9,7 @@ import ErrorNotFound from '../../components/ErrorNotFound';
 import { useFormatter } from '../../components/i18n';
 import { commitMutation } from '../../relay/environment';
 import withRouter from '../../utils/compat_router/withRouter';
+import useDraftContext from '../../utils/hooks/useDraftContext';
 
 // Highest level of error catching, do not rely on any tierce (intl, theme, ...) pure fallback
 export const HighLevelError = () => (
@@ -18,6 +19,8 @@ export const HighLevelError = () => (
 // Really simple error display
 export const SimpleError = () => {
   const { t_i18n } = useFormatter();
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
 
   return (
     <div style={{ paddingTop: 10 }}>
@@ -27,7 +30,7 @@ export const SimpleError = () => {
             '',
             {
               id: 'An unknown error occurred. Please provide a support package to your administrator or OpenCTI maintainers',
-              values: { link_support_package: <Link to="/dashboard/settings/experience">{t_i18n('support package')}</Link> },
+              values: { link_support_package: disabledInDraft ? t_i18n('support package') : <Link to="/dashboard/settings/experience">{t_i18n('support package')}</Link> },
             },
           )}
         </span>
