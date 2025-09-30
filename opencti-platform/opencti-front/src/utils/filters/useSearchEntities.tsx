@@ -264,6 +264,8 @@ const groupsQuery = graphql`
 
 export type EntityValue = FilterOptionValue;
 
+const INTERNAL_TYPES_IN_ACTIVITY = ['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList', 'DecayRule', 'EmailTemplate', 'CsvMapper', 'JsonMapper', 'StatusTemplate', 'TaxiiCollection', 'StreamCollection', 'Feed', 'Notifier', 'FintelDesign', 'RetentionRule'];
+
 const useSearchEntities = ({
   availableEntityTypes,
   availableRelationshipTypes,
@@ -665,10 +667,13 @@ const useSearchEntities = ({
               });
           }
           if (!cacheEntities[filterKey]) {
-            // fetch only the identities listed as creator of at least 1 thing + myself
-            fetchQuery(identitySearchCreatorsSearchQuery, {
-              entityTypes: searchContext.entityTypes ?? [],
-            })
+            const entityTypesFromSearchContext = searchContext.entityTypes ?? [];
+            // for History and Activity, fetch the creators of all stix core objects
+            const entityTypes = entityTypesFromSearchContext.includes('History') || entityTypesFromSearchContext.includes('Activity')
+              ? []
+              : entityTypesFromSearchContext;
+            // fetch only: myself + the identities listed as creator of at least 1 object of type in the searchContext.entityTypes
+            fetchQuery(identitySearchCreatorsSearchQuery, { entityTypes })
               .toPromise()
               .then((response) => {
                 const data = response as IdentitySearchCreatorsSearchQuery$data;
@@ -728,7 +733,7 @@ const useSearchEntities = ({
               value: n.label,
               type: n.label,
             })),
-            ...['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList', 'DecayRule', 'EmailTemplate', 'CsvMapper', 'JsonMapper', 'StatusTemplate', 'TaxiiCollection', 'StreamCollection', 'Feed', 'Notifier', 'FintelDesign', 'RetentionRule'].map((n) => ({
+            ...INTERNAL_TYPES_IN_ACTIVITY.map((n) => ({
               label: t_i18n(`entity_${n}`),
               value: n,
               type: n,
