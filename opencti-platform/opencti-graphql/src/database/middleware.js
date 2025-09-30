@@ -237,7 +237,7 @@ import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
-import { hasSameSourceAlreadyUpdateThisScore } from '../modules/indicator/indicator-utils';
+import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;

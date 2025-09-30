@@ -51,7 +51,6 @@ import {
   type DecayLiveDetails,
   findDecayRuleForIndicator
 } from '../decayRule/decayRule-domain';
-import { isModuleActivated } from '../../database/cluster-module';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
