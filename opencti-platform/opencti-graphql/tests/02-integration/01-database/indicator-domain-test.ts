@@ -375,7 +375,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_until: inFiveDays,
     };
     await createIndicator(connectorUser, indicatorUpsert1);
-    const indicatorAfterUpsert1 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+    const indicatorAfterUpsert1 = await findById(testContext, connectorUser, indicatorCreated.id);
     expect(indicatorAfterUpsert1.x_opencti_score).toBe(75);
 
     // When the same indicator is created again (upsert) - same user (ADMIN_USER) same score (80) => should be skipped
@@ -392,7 +392,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     expect(indicatorAfterUpsert2.x_opencti_score).toBe(75); // score update is ignored
   });
 
-  it.todo('should upsert 2 times with same source and same score be ignored - without decay', async () => {
+  it('should upsert 2 times with same source and same score be taken - without decay', async () => {
     isDecayEnabledSpy.mockResolvedValue(false);
 
     // GIVEN an indicator that is created
@@ -406,20 +406,19 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     };
     const indicatorCreated = await createIndicator(ADMIN_USER, indicatorInput);
     expect(indicatorCreated.x_opencti_score).toBe(100);
-    console.log('indicatorCreated', indicatorCreated);
 
     // Same user decrease score => should be taken
     const indicatorInput2 = {
       name: 'Indicator domain test concurrent upserts',
       pattern: '[domain-name:value = \'jesaisplus2.io\']',
       pattern_type: STIX_PATTERN_TYPE,
-      x_opencti_score: 80,
+      x_opencti_score: 81,
       valid_from: inPast90Days,
       valid_until: inFiveDays,
     };
     await createIndicator(ADMIN_USER, indicatorInput2);
     const indicatorCreated2 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
-    expect(indicatorCreated2.x_opencti_score).toBe(80);
+    expect(indicatorCreated2.x_opencti_score).toBe(81);
 
     // When the same indicator is created again (upsert) - with another user => should be taken
     const indicatorUpsert1 = {
@@ -431,7 +430,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
       valid_until: inFiveDays,
     };
     await createIndicator(connectorUser, indicatorUpsert1);
-    const indicatorAfterUpsert1 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
+    const indicatorAfterUpsert1 = await findById(testContext, connectorUser, indicatorCreated.id);
     expect(indicatorAfterUpsert1.x_opencti_score).toBe(75);
 
     // When the same indicator is created again (upsert) - same user (ADMIN_USER) same score (80) => should be skipped
@@ -445,6 +444,6 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     };
     await createIndicator(ADMIN_USER, indicatorUpsert2);
     const indicatorAfterUpsert2 = await findById(testContext, ADMIN_USER, indicatorCreated.id);
-    expect(indicatorAfterUpsert2.x_opencti_score).toBe(75); // score update is ignored
+    expect(indicatorAfterUpsert2.x_opencti_score).toBe(80); // score update is ignored
   });
 });

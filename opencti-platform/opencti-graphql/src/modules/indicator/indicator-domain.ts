@@ -274,7 +274,6 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   checkScore(indicatorBaseScore);
 
   const isDecayActivated: boolean = await isDecayEnabled();
-  logApp.info('ADD INDICATOR', { decayOn: isDecayActivated });
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
@@ -465,7 +464,6 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     if (scoreEditInput && !scoreEditInput.value.includes(baseScore) && !validUntilEditInput) {
       const newScore = scoreEditInput.value[0];
       // First check if the same update by the same source exists
-      logApp.info('INDICATOR UPDATE', { userId: user.id, newScore, currentHistory: indicatorBeforeUpdate.decay_history });
       if (!hasSameSourceAlreadyUpdateThisScore(user.id, newScore, indicatorBeforeUpdate.decay_history)) {
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
         finalInput.push(...allChanges);
@@ -516,7 +514,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   if (revokedEditInput && !finalInput.find((e) => e.key === REVOKED)) {
     finalInput.push(revokedEditInput);
   }
-  logApp.info('Indicator full computed changes:', { finalInput });
+  logApp.debug('Indicator full computed changes:', { finalInput });
 
   // END Decay and {Score, Valid until, Revoke} computation
   if (finalInput.length > 0) {
