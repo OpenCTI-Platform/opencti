@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import type { AttributeDefinition } from '../../schema/attribute-definition';
+import { type AttributeDefinition, draftChange } from '../../schema/attribute-definition';
 import { created, modified } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
@@ -13,6 +13,7 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'definition', label: 'Definition', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_order', label: 'Marking order', type: 'numeric', precision: 'integer', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'x_opencti_color', label: 'Marking color', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { ...draftChange, isFilterable: false },
   ],
   [ENTITY_TYPE_LABEL]: [
     { name: 'value', label: 'Value', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
