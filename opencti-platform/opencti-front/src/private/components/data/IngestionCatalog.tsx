@@ -90,7 +90,7 @@ const BrowseMoreButton = () => {
       target="_blank"
       title={t_i18n('Browse more')}
     >
-      {t_i18n('Browse more').toUpperCase()}
+      {t_i18n('Browse more')}
     </GradientButton>
   );
 };
