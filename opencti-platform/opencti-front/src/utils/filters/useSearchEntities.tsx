@@ -264,6 +264,8 @@ const groupsQuery = graphql`
 
 export type EntityValue = FilterOptionValue;
 
+const INTERNAL_TYPES_IN_ACTIVITY = ['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList', 'DecayRule', 'EmailTemplate', 'CsvMapper', 'JsonMapper', 'StatusTemplate', 'TaxiiCollection', 'StreamCollection', 'Feed', 'Notifier', 'FintelDesign', 'RetentionRule'];
+
 const useSearchEntities = ({
   availableEntityTypes,
   availableRelationshipTypes,
@@ -668,7 +670,7 @@ const useSearchEntities = ({
             const entityTypesFromSearchContext = searchContext.entityTypes ?? [];
             // for History and Activity, fetch the creators of all stix core objects
             const entityTypes = entityTypesFromSearchContext.includes('History') || entityTypesFromSearchContext.includes('Activity')
-              ? ['Stix-Core-Object']
+              ? []
               : entityTypesFromSearchContext;
             // fetch only: myself + the identities listed as creator of at least 1 object of type in the searchContext.entityTypes
             fetchQuery(identitySearchCreatorsSearchQuery, { entityTypes })
@@ -731,7 +733,7 @@ const useSearchEntities = ({
               value: n.label,
               type: n.label,
             })),
-            ...['User', 'Group', 'Workspace', 'Label', 'Marking-Definition', 'Pir', 'DisseminationList', 'ExclusionList', 'DecayRule', 'EmailTemplate', 'CsvMapper', 'JsonMapper', 'StatusTemplate', 'TaxiiCollection', 'StreamCollection', 'Feed', 'Notifier', 'FintelDesign', 'RetentionRule'].map((n) => ({
+            ...INTERNAL_TYPES_IN_ACTIVITY.map((n) => ({
               label: t_i18n(`entity_${n}`),
               value: n,
               type: n,
