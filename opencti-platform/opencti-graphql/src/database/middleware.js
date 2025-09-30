@@ -21,7 +21,6 @@ import {
 } from '../config/errors';
 import { extractEntityRepresentativeName } from './entity-representative';
 import {
-  buildPagination,
   computeAverage,
   extractIdsFromStoreObject,
   extractObjectsPirsFromInputs,
@@ -238,6 +237,7 @@ import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
 import { doYield } from '../utils/eventloop-utils';
+import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2748,20 +2748,19 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
-    logApp.info('UPSERT INDICATOR - ****', { userId: user.id, score: updatePatch.x_opencti_score, history: resolvedElement.decay_history, updatePatchHistory: updatePatch.decay_history });
-    if (updatePatch.decay_applied_rule) {
+    if (resolvedElement.decay_applied_rule) {
+      // Do not compute decay again when:
+      // - base score does not change
+      // - same userIs has already updated to the same score previously
       const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
-      // Do not compute decay again when base score does not change
-      // or when the same score update has already been done
-      if ((!resolvedElement.revoked && isScoreInUpsertSameAsBaseScore)
-          || (hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history))) {
-        logApp.info(`UPSERT INDICATOR -- SKIP DECAY, do not change score, keep:${resolvedElement.x_opencti_score}`);
+      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
+      if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource) {
+        logApp.debug(`[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`, { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score, isScoreInUpsertSameAsBaseScore, hasSameScoreChangedBySameSource });
         // don't reset score, valid_from & valid_until
         updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
         updatePatch.valid_from = resolvedElement.valid_from;
         updatePatch.valid_until = resolvedElement.valid_until;
         // don't reset decay attributes
-        // updatePatch.decay_base_score = element.decay_base_score; // no need since it's the same score
         updatePatch.revoked = resolvedElement.revoked;
         updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
         updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
@@ -2769,7 +2768,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
         updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
       } else {
         // As base_score as change, decay will be reset by upsert
-        logApp.info('UPSERT INDICATOR -- Decay is restarted', { resolvedElement, basePatch });
+        logApp.debug('[OPENCTI][DECAY] Decay is restarted', { elementScore: resolvedElement.x_opencti_score, initialPatchScore: basePatch.x_opencti_score, updatePatchScore: updatePatch.x_opencti_score });
       }
     }
 
@@ -2905,11 +2904,9 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    logApp.info('UPSERT - END', { inputs, updateOpts, resolvedElement });
     return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
   }
   // -- No modification applied
-  logApp.info('UPSERT - End No modification applied');
   return { element: resolvedElement, event: null, isCreation: false };
 };
 

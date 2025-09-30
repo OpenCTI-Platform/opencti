@@ -1667,7 +1667,6 @@ const validateUser = (user, settings) => {
   // Check organization consistency
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   if (!hasSetAccessCapability && settings.platform_organization && user.organizations.length === 0 && !user.user_service_account) {
-    console.log('User:', user.id);
     throw AuthenticationFailure('You can\'t login without an organization');
   }
   // Check account expiration date
