@@ -479,15 +479,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )}
                   </Grid>
 
-                  {
-                    connector.is_managed && (
-                      <Grid item xs={12}>
-                        <Typography variant="h3">{t_i18n('Instance name')}</Typography>
-                        <Typography component="div" variant="body1">{connector.name}</Typography>
-                      </Grid>
-                    )
-                  }
-
                   <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n("User's organizations")}
@@ -548,19 +539,25 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Alert>
               </Grid>
               )}
+
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('State')}
                 </Typography>
-                <Tooltip title={connector.connector_state || ''}>
-                  <pre>
-                    <ItemCopy
-                      content={connector.connector_state || ''}
-                      limit={200}
-                    />
-                  </pre>
-                </Tooltip>
+                {
+                  connector.connector_state ? (
+                    <Tooltip title={connector.connector_state || ''}>
+                      <pre>
+                        <ItemCopy
+                          content={connector.connector_state || ''}
+                          limit={200}
+                        />
+                      </pre>
+                    </Tooltip>
+                  ) : '-'
+                }
               </Grid>
+
               <Grid item xs={6}>
                 {!connector.connector_info && (
                   connector.connector_state
@@ -644,6 +641,16 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Typography>
                 )}
               </Grid>
+
+              {
+                connector.is_managed && (
+                  <Grid item xs={6}>
+                    <Typography variant="h3">{t_i18n('Instance name')}</Typography>
+                    <Typography component="div" variant="body1">{connector.name}</Typography>
+                  </Grid>
+                )
+              }
+
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Server capacity')}
