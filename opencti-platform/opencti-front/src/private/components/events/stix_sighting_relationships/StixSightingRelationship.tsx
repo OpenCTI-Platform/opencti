@@ -73,7 +73,7 @@ StixSightingRelationshipProps
         variables={{ id: sightingId }}
         render={(result: { props: StixSightingRelationshipQuery$data }) => {
           if (result.props && result.props.stixSightingRelationship) {
-            const headerName = result.props.stixSightingRelationship.from?.representative?.main;
+            const headerName = result.props.stixSightingRelationship.from?.representative?.main ?? t_i18n('Restricted');
             return (<>
               <Breadcrumbs elements={[
                 { label: t_i18n('Events') },
