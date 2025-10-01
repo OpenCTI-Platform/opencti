@@ -101,6 +101,15 @@ export interface ManagedConnectorValues extends BasicUserHandlingValues {
   confidence_level?: string;
 }
 
+const validationSchema = Yup.object().shape({
+  display_name: Yup.string()
+    .trim()
+    .min(2)
+    .max(255)
+    .required(),
+  user_id: Yup.object().required(),
+});
+
 const IngestionCatalogConnectorCreation = ({
   connector, open, onClose, catalogId, hasRegisteredManagers, deploymentCount = 0, onCreate,
 }: IngestionCatalogConnectorCreationProps) => {
@@ -291,9 +300,7 @@ const IngestionCatalogConnectorCreation = ({
 
         <Formik<ManagedConnectorValues>
           onReset={onClose}
-          validationSchema={Yup.object().shape({
-            user_id: Yup.object().required(),
-          })}
+          validationSchema={validationSchema}
           initialValues={{
             display_name: connectorName,
             name: sanitizeContainerName(connectorName),

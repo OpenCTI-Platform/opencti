@@ -478,6 +478,16 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <FieldOrEmpty source={connector.connector_user}>{null}</FieldOrEmpty>
                     )}
                   </Grid>
+
+                  {
+                    connector.is_managed && (
+                      <Grid item xs={12}>
+                        <Typography variant="h3">{t_i18n('Instance name')}</Typography>
+                        <Typography component="div" variant="body1">{connector.name}</Typography>
+                      </Grid>
+                    )
+                  }
+
                   <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>
                       {t_i18n("User's organizations")}
@@ -804,6 +814,7 @@ const Connector = createRefetchContainer(
       fragment Connector_connector on Connector {
         id
         name
+        title
         active
         auto
         only_contextual
