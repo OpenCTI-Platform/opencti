@@ -59,4 +59,22 @@ describe('httpPlatform: sanitizeReferer function', () => {
       expect(logApp.info).toHaveBeenCalled();
     });
   });
+
+  describe('When refererToSanitize is not a correct domain name', () => {
+    it('should return /', () => {
+      const refererToSanitize = 'www.wrong.com';
+      const result = sanitizeReferer(refererToSanitize);
+      expect(result).toBe('/');
+      expect(logApp.info).toHaveBeenCalled();
+    });
+  });
+
+  describe('When refererToSanitize is not a correct IP', () => {
+    it('should return /', () => {
+      const refererToSanitize = '127.0.0.1';
+      const result = sanitizeReferer(refererToSanitize);
+      expect(result).toBe('/');
+      expect(logApp.info).toHaveBeenCalled();
+    });
+  });
 });
