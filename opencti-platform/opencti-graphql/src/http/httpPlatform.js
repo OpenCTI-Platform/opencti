@@ -37,13 +37,12 @@ import { getChatbotProxy } from './httpChatbotProxy';
 export function sanitizeReferer(refererToSanitize) {
   if (!refererToSanitize) return '/';
   const base = getBaseUrl();
-  const refererUrl = new URL(refererToSanitize, base);
-  const isSameOrigin = refererUrl.origin === base;
 
+  const isSameOrigin = refererToSanitize.startsWith(`${base}`);
   const isUrlRelative = refererToSanitize.startsWith('/');
 
   if (isSameOrigin || isUrlRelative) {
-    return refererUrl.pathname + refererUrl.search + refererUrl.hash;
+    return refererToSanitize;
   }
   logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
   return '/';

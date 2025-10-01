@@ -30,7 +30,7 @@ describe('httpPlatform: sanitizeReferer function', () => {
       const baseUrl = getBaseUrl();
       const refererToSanitize = `${baseUrl}/some/path`;
       const result = sanitizeReferer(refererToSanitize);
-      expect(result).toBe('/some/path');
+      expect(result).toBe(refererToSanitize);
     });
   });
 
@@ -47,7 +47,7 @@ describe('httpPlatform: sanitizeReferer function', () => {
       const baseUrl = getBaseUrl();
       const refererToSanitize = `${baseUrl}/some/path?param=value#section`;
       const result = sanitizeReferer(refererToSanitize);
-      expect(result).toBe('/some/path?param=value#section');
+      expect(result).toBe(refererToSanitize);
     });
   });
 
@@ -60,7 +60,7 @@ describe('httpPlatform: sanitizeReferer function', () => {
     });
   });
 
-  describe('When refererToSanitize is not a correct domain name', () => {
+  describe('When refererToSanitize is not a domain name', () => {
     it('should return /', () => {
       const refererToSanitize = 'www.wrong.com';
       const result = sanitizeReferer(refererToSanitize);
@@ -69,7 +69,7 @@ describe('httpPlatform: sanitizeReferer function', () => {
     });
   });
 
-  describe('When refererToSanitize is not a correct IP', () => {
+  describe('When refererToSanitize is not an IP', () => {
     it('should return /', () => {
       const refererToSanitize = '127.0.0.1';
       const result = sanitizeReferer(refererToSanitize);
