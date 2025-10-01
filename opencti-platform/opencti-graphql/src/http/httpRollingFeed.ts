@@ -30,11 +30,12 @@ const errorConverter = (e: any) => {
 
 const dataFormat = (separator: string, data: string) => {
   let escapedData:string;
+
   if (data.includes('"') || data.includes(separator) || data.includes('\n') || data.includes('\r')) {
-    escapedData = data.replaceAll('"', '').replaceAll(separator, '').replaceAll('\n', ' ').replaceAll('\r', ' ');
+    escapedData = data.replaceAll('"', '""').replaceAll('\n', ' ').replaceAll('\r', ' ');
     return `"${escapedData}"`;
   }
-  return `"${data}"`;
+  return data;
 };
 
 export const buildCsvLines = (elements:any[], feed:BasicStoreEntityFeed):string[] => {

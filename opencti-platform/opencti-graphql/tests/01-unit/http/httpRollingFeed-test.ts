@@ -68,7 +68,7 @@ const elements = [{ _index: 'opencti_stix_domain_objects-000001', _id: 'test-id'
 describe('buildCsvLines', () => {
   it('should convert elements to CSV lines and remove carriage return', () => {
     const expectedResultLines: string[] = [
-      '"test csv encore";"Triggered risk rules:  |Rule|Severity|Score| |----|---|----| |Ligne 2| colonne 2| colonne 3| |Ligne 3| colonne 2| colonne 3|  **test gras**  *test italique* ~~test barré~~  virgule test"',
+      'test csv encore;"Triggered risk rules:  |Rule|Severity|Score| |----|---|----| |Ligne 2| colonne 2| colonne 3| |Ligne 3| colonne 2| colonne 3|  **test gras**  *test italique* ~~test barré~~  virgule test"',
     ];
     const resultLines = buildCsvLines(elements, feed);
     expect(resultLines).toEqual(expectedResultLines);
@@ -79,7 +79,7 @@ describe('buildCsvLines', () => {
     const elementsWithCaractersToRemove = [{ ...elements[0], description: descriptionWithIssues }];
 
     const expectedResultLines: string[] = [
-      '"test csv encore";"Triggered risk rules:  |Rule|Severity|Score| |----|---|----| |Ligne 2| colonne 2| colonne 3| |Ligne 3| colonne 2| colonne 3|  **test  gras**  *test italique* ~~test barré~~  virgule test"',
+      'test csv encore;"Triggered risk rules:  |Rule|Severity;|Score| |----|---|----| |Ligne 2| colonne"" 2| colonne 3| |Ligne 3| colonne 2| colonne 3|  **test  gras**  *test italique* ~~test barré~~  virgule test"',
     ];
     const resultLines = buildCsvLines(elementsWithCaractersToRemove, feed);
     expect(resultLines).toEqual(expectedResultLines);
