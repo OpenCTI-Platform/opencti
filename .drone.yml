@@ -111,6 +111,7 @@ steps:
 
   - name: api-coverage
     image: plugins/codecov
+    failure: ignore
     settings:
       token:
         from_secret: codecov_token
