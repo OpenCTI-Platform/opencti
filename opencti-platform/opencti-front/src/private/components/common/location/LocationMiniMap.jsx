@@ -15,6 +15,7 @@ import CityDark from '../../../../static/images/leaflet/city_dark.png';
 import MarkerDark from '../../../../static/images/leaflet/marker_dark.png';
 import CityLight from '../../../../static/images/leaflet/city_light.png';
 import MarkerLight from '../../../../static/images/leaflet/marker_light.png';
+import { isValidLatitude, isValidLongitude, validateCoordinates } from '../../../../utils/position.utils';
 
 const styles = (theme) => ({
   paper: {
@@ -23,29 +24,6 @@ const styles = (theme) => ({
     borderRadius: 8,
   },
 });
-
-// Default coordinates (Paris) to use as fallback
-const DEFAULT_CENTER = [48.8566969, 2.3514616];
-
-// Validate coordinates to prevent map crashes
-const isValidLatitude = (lat) => {
-  return lat !== null && lat !== undefined && !Number.isNaN(lat) && lat >= -90 && lat <= 90;
-};
-
-const isValidLongitude = (lng) => {
-  return lng !== null && lng !== undefined && !Number.isNaN(lng) && lng >= -180 && lng <= 180;
-};
-
-const validateCoordinates = (coordinates) => {
-  if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
-    return DEFAULT_CENTER;
-  }
-  const [lat, lng] = coordinates;
-  if (!isValidLatitude(lat) || !isValidLongitude(lng)) {
-    return DEFAULT_CENTER;
-  }
-  return coordinates;
-};
 
 const cityIcon = (dark = true) => new L.Icon({
   iconUrl: dark ? fileUri(CityDark) : fileUri(CityLight),

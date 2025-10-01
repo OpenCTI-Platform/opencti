@@ -14,6 +14,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import { getValidatedCenter } from '../../../../utils/position.utils';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -22,9 +23,6 @@ const useStyles = makeStyles(() => ({
     marginBottom: 20,
   },
 }));
-
-// Default coordinates (Paris) to use when position has invalid or missing coordinates
-const DEFAULT_CENTER_COORDINATES: [number, number] = [48.8566969, 2.3514616];
 
 interface PositionComponentProps {
   position: Position_position$data;
@@ -42,23 +40,6 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
       relationship_type: ['located-at'],
     },
   );
-
-  // Validate coordinates to prevent map crash with invalid values
-  const isValidLatitude = (lat: number | null | undefined): boolean => {
-    return lat !== null && lat !== undefined && lat >= -90 && lat <= 90;
-  };
-
-  const isValidLongitude = (lng: number | null | undefined): boolean => {
-    return lng !== null && lng !== undefined && lng >= -180 && lng <= 180;
-  };
-
-  const getValidatedCenter = (): [number, number] => {
-    if (isValidLatitude(position.latitude) && isValidLongitude(position.longitude)) {
-      return [position.latitude as number, position.longitude as number];
-    }
-    // Return default coordinates if invalid or missing
-    return DEFAULT_CENTER_COORDINATES;
-  };
   return (
     <div data-testid="position-details-page">
       <Grid
@@ -77,7 +58,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({
         </Grid>
         <Grid item xs={4}>
           <LocationMiniMap
-            center={getValidatedCenter()}
+            center={getValidatedCenter(position)}
             position={position}
             zoom={8}
           />
