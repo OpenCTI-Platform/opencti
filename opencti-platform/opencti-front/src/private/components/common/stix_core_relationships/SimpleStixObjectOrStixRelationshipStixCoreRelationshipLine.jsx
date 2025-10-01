@@ -67,14 +67,12 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
     } = this.props;
     const link = `${entityLink}/relations/${node.id}`;
     const isReversed = node.fromId === entityId;
-    const row = isReversed ? node.to : node.from;
-    const element = row || {
-      id: isReversed ? node.toId : node.fromId,
-      entity_type: isReversed ? node.toType : node.fromType,
-      name: 'Restricted',
-      restricted: true,
-    };
+    const element = isReversed ? node.to : node.from;
+
+    if (!element) return null;
+
     const draftColor = getDraftModeColor(theme);
+
     return (
       <ListItem
         divider={true}
