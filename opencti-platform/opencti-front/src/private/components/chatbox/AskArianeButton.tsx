@@ -2,7 +2,6 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { useTheme } from '@mui/styles';
-import IconButton from '@mui/material/IconButton';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import { LogoXtmOneIcon } from 'filigran-icon';
