@@ -176,6 +176,7 @@ import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2-1-converter';
+import { convertStoreToStix } from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
@@ -236,8 +237,6 @@ import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetti
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
-
-import { convertStoreToStix } from './stix-common-converter';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
 
 // region global variables
@@ -522,11 +521,11 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
 };
 export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
-  const version = opts?.version ?? Version.Stix_2_1;
+  const { version = Version.Stix_2_1 } = opts;
   return instance ? convertStoreToStix(instance, version) : undefined;
 };
-const convertStoreToStixWithResolvedFiles = async (instance) => {
-  const instanceInStix = convertStoreToStix_2_1(instance);
+const convertStoreToStixWithResolvedFiles = async (instance, version) => {
+  const instanceInStix = convertStoreToStix(instance, version);
   const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
   if (nonResolvedFiles) {
     for (let i = 0; i < nonResolvedFiles.length; i += 1) {
@@ -540,7 +539,7 @@ const convertStoreToStixWithResolvedFiles = async (instance) => {
   return instanceInStix;
 };
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
-  const { resolveStixFiles = false } = opts;
+  const { resolveStixFiles = false, version = Version.Stix_2_1 } = opts;
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   // As stix load by ids doesn't respect the ordering we need to remap the result
   const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
@@ -548,12 +547,12 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   if (resolveStixFiles) {
     const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
       .filter((i) => isNotEmptyField(i))
-      .map((e) => (convertStoreToStixWithResolvedFiles(e)));
+      .map((e) => (convertStoreToStixWithResolvedFiles(e, version)));
     return Promise.all(fileResolvedInstancesPromise);
   }
   return ids.map((id) => loadedInstancesMap.get(id))
     .filter((i) => isNotEmptyField(i))
-    .map((e) => (convertStoreToStix_2_1(e)));
+    .map((e) => (convertStoreToStix(e, version)));
 };
 export const stixLoadByIdStringify = async (context, user, id, version) => {
   const opts = { version };
