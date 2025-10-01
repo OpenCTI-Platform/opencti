@@ -529,7 +529,8 @@ export const executionContext = (source: string, auth?: AuthUser, draftContext?:
     tracing,
     user: auth ?? undefined,
     draft_context: draftContext ?? undefined,
-    sharedData: {},
+    sharedData: { impersonatedUser: auth },
+    getUser: () => auth,
   };
 };
 
