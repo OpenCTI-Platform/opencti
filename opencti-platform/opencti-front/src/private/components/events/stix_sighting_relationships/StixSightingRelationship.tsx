@@ -83,8 +83,8 @@ StixSightingRelationshipProps
               />
               <StixSightingRelationshipHeader
                 headerName={headerName}
-                handleOpenEdit={handleOpenEdit}
-                handleOpenDelete={handleOpenDelete}
+                onOpenEdit={handleOpenEdit}
+                onOpenDelete={handleOpenDelete}
               />
               <StixSightingRelationshipOverview
                 entityId={entityId}

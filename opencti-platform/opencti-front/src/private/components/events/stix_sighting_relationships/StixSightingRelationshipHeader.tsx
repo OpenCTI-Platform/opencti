@@ -12,14 +12,14 @@ import { useFormatter } from '../../../../components/i18n';
 
 interface StixSightingRelationshipHeaderProps {
   headerName?: string,
-  handleOpenDelete: () => void,
-  handleOpenEdit: () => void,
+  onOpenDelete: () => void,
+  onOpenEdit: () => void,
 }
 
 const StixSightingRelationshipHeader = ({
   headerName,
-  handleOpenDelete,
-  handleOpenEdit,
+  onOpenDelete,
+  onOpenEdit,
 }: StixSightingRelationshipHeaderProps) => {
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
   const theme = useTheme<Theme>();
@@ -52,7 +52,7 @@ const StixSightingRelationshipHeader = ({
             {({ closeMenu }) => (
               <Box>
                 <MenuItem onClick={() => {
-                  handleOpenDelete();
+                  onOpenDelete();
                   closeMenu();
                 }}
                 >
@@ -68,7 +68,7 @@ const StixSightingRelationshipHeader = ({
               variant='contained'
               size='medium'
               aria-label={t_i18n('Update')}
-              onClick={handleOpenEdit}
+              onClick={onOpenEdit}
               style={{ marginLeft: theme.spacing(0.5) }}
             >
               {t_i18n('Update')}
