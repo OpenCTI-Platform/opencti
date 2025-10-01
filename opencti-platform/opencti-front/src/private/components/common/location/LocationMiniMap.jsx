@@ -24,6 +24,29 @@ const styles = (theme) => ({
   },
 });
 
+// Default coordinates (Paris) to use as fallback
+const DEFAULT_CENTER = [48.8566969, 2.3514616];
+
+// Validate coordinates to prevent map crashes
+const isValidLatitude = (lat) => {
+  return lat !== null && lat !== undefined && !Number.isNaN(lat) && lat >= -90 && lat <= 90;
+};
+
+const isValidLongitude = (lng) => {
+  return lng !== null && lng !== undefined && !Number.isNaN(lng) && lng >= -180 && lng <= 180;
+};
+
+const validateCoordinates = (coordinates) => {
+  if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
+    return DEFAULT_CENTER;
+  }
+  const [lat, lng] = coordinates;
+  if (!isValidLatitude(lat) || !isValidLongitude(lng)) {
+    return DEFAULT_CENTER;
+  }
+  return coordinates;
+};
+
 const cityIcon = (dark = true) => new L.Icon({
   iconUrl: dark ? fileUri(CityDark) : fileUri(CityLight),
   iconRetinaUrl: dark ? fileUri(CityDark) : fileUri(CityLight),
@@ -58,20 +81,29 @@ const LocationMiniMap = (props) => {
     return { fillOpacity: 0, color: 'none' };
   };
   const { t, center, zoom, classes, theme, city, position } = props;
+
+  // Validate center coordinates to prevent crashes
+  const validatedCenter = validateCoordinates(center);
+
+  // Validate marker position
   let mapPosition = null;
   if (city && city.latitude && city.longitude) {
-    mapPosition = [city.latitude, city.longitude];
+    if (isValidLatitude(city.latitude) && isValidLongitude(city.longitude)) {
+      mapPosition = [city.latitude, city.longitude];
+    }
   } else if (position && position.latitude && position.longitude) {
-    mapPosition = [position.latitude, position.longitude];
+    if (isValidLatitude(position.latitude) && isValidLongitude(position.longitude)) {
+      mapPosition = [position.latitude, position.longitude];
+    }
   }
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 10 }}>
-        {`${t('Mini map')} (lat. ${center[0]}, long. ${center[1]})`}
+        {`${t('Mini map')} (lat. ${validatedCenter[0]}, long. ${validatedCenter[1]})`}
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <MapContainer
-          center={center}
+          center={validatedCenter}
           zoom={zoom}
           attributionControl={false}
           zoomControl={false}
