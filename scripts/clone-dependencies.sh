@@ -84,6 +84,16 @@ clone_for_pr_build() {
         echo "[CLONE-DEPS] NOT multi repo, cloning client-python:${PR_TARGET_BRANCH} and connector:${PR_TARGET_BRANCH}"
         gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
         gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
+
+        CHANGES_OUSTIDE_FRONT_COUNT=$(gh pr diff ${PR_NUMBER} --name-only | grep -v "opencti-platform/opencti-front" | wc -l)
+        if [[ ${CHANGES_OUSTIDE_FRONT_COUNT} -eq 0 ]]
+        then
+            echo "[CLONE-DEPS][BUILD] Only frontend changes on this PR, api-test can be skipped."
+            touch "${WORKSPACE}/api-test.skip"
+        else
+            echo "[CLONE-DEPS][BUILD] There is more than frontend changes, api-test will be run."
+        fi
+        
     fi
 }
 
