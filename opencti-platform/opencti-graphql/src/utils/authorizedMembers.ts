@@ -80,6 +80,7 @@ export const getAuthorizedMembers = async (
       });
     }
     return {
+      // To avoid id relay caching issue, we need to change the id as it is a different object
       id: `${currentAuthMember.id}_${i}`,
       member_id: currentAuthMember.id,
       name: member?.name ?? '',

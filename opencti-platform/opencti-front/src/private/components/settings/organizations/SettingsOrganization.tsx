@@ -63,6 +63,7 @@ const settingsOrganizationFragment = graphql`
       name
       authorizedMembers {
         id
+        member_id
       }
     }
     members {
@@ -130,7 +131,10 @@ const SettingsOrganization = ({
   const parentOrganizations = organization.parentOrganizations?.edges ?? [];
   const canAccessDashboard = (
     organization.default_dashboard?.authorizedMembers || []
-  ).some(({ id }) => id.startsWith('ALL') || organization.id === id);
+  ).some(({ member_id }) => {
+    return organization.id === member_id || member_id === 'ALL';
+  });
+
   const capabilitiesPerGroup = new Map(
     organization.grantable_groups?.map((group) => [
       group.id,
