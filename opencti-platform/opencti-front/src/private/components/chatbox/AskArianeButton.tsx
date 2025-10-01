@@ -151,16 +151,20 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             sx={{ width: '100%', paddingLeft: '8px' }}
             gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
             onClick={toggleChatbot}
-            data-testid="ArianeButtonExpended"
-            startIcon={ <FiligranIcon size='small' icon={LogoXtmOneIcon} color="ai" style={chatIconStyle} />}
+            startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
           >
             {t_i18n('ASK ARIANE')}
             <EEChip />
           </GradientButton>
         ) : (
-          <IconButton style={{ padding: '2px', bottom: '2px' }} onClick={toggleChatbot} data-testid="ArianeButtonCollapsed">
-            <FiligranIcon size='small' data-testid="ArianeIcon" icon={LogoXtmOneIcon} color="ai" style={chatIconStyle} />
-          </IconButton>
+          <GradientButton
+            size="small"
+            sx={{ margin: '-4px', marginLeft: '-6px', marginTop: '-4px', minWidth: 'auto', paddingLeft: 1, paddingY: theme.spacing(0.5) }}
+            gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
+            onClick={toggleChatbot}
+            startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
+          >
+          </GradientButton>
         )}
       </EETooltip>
       {isEnterpriseEdition && isChatbotAiEnabled() ? (
