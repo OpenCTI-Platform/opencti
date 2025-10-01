@@ -2180,6 +2180,7 @@ type Connector implements BasicObject & InternalObject {
   parent_types: [String]!
   # Connector
   name: String!
+  title: String!
   active: Boolean
   auto: Boolean
   only_contextual: Boolean

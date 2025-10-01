@@ -791,6 +791,7 @@ export const connectorQuery = graphql`
     connector(id: $id) {
       id
       name
+      title
       ...Connector_connector
     }
   }
