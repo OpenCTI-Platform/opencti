@@ -2,7 +2,7 @@ import { toBase64 } from 'openai/core';
 import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
-import { listEntitiesPaginated, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
+import { storeLoadById, type EntityOptions, pageEntitiesConnection } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import { fromBase64, isNotEmptyField } from '../../database/utils';
 import type { EditInput, ThemeAddInput } from '../../generated/graphql';
@@ -92,7 +92,7 @@ export const addTheme = async (
 export const findAll = async (
   context: AuthContext,
   opts: EntityOptions<BasicStoreEntityTheme>,
-) => listEntitiesPaginated<BasicStoreEntityTheme>(
+) => pageEntitiesConnection<BasicStoreEntityTheme>(
   context,
   SYSTEM_USER,
   [ENTITY_TYPE_THEME],
@@ -106,7 +106,7 @@ export const findAll = async (
     await addTheme(context, SYSTEM_USER, defaultDarkTheme);
   }
 
-  return listEntitiesPaginated<BasicStoreEntityTheme>(
+  return pageEntitiesConnection<BasicStoreEntityTheme>(
     context,
     SYSTEM_USER,
     [ENTITY_TYPE_THEME],
