@@ -20,7 +20,7 @@ export const getValidatedCenter = (position: { latitude?: number | null; longitu
 };
 
 // Validate coordinate array format
-export const validateCoordinates = (coordinates: any): [number, number] => {
+export const validateCoordinates = (coordinates: unknown): [number, number] => {
   if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
     return DEFAULT_CENTER_COORDINATES;
   }
