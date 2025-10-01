@@ -13586,6 +13586,7 @@ type ThemeConnection {
 }
 
 input ThemeAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   manifest: String!
 }
