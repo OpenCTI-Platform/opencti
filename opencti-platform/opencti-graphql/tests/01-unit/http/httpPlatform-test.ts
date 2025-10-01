@@ -2,12 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sanitizeReferer } from '../../../src/http/httpPlatform';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
 
-vi.mock('../../../src/config/conf', () => ({
-  logApp: {
-    info: vi.fn(),
-    error: vi.fn(),
-  },
-}));
+vi.mock('../../../src/config/conf', async (importOriginal) => {
+  const actual:object = await importOriginal();
+  return {
+    ...actual,
+    logApp: {
+      info: vi.fn(),
+      error: vi.fn(),
+    }, };
+});
 
 describe('httpPlatform: sanitizeReferer function', () => {
   beforeEach(() => {
