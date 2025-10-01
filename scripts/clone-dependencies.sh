@@ -85,6 +85,7 @@ clone_for_pr_build() {
         gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
         gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
 
+        cd ${WORKSPACE}
         CHANGES_OUSTIDE_FRONT_COUNT=$(gh pr diff ${PR_NUMBER} --name-only | grep -v "opencti-platform/opencti-front" | wc -l)
         if [[ ${CHANGES_OUSTIDE_FRONT_COUNT} -eq 0 ]]
         then
