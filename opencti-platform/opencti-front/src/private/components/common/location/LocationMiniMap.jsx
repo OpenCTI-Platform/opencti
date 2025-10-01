@@ -15,6 +15,7 @@ import CityDark from '../../../../static/images/leaflet/city_dark.png';
 import MarkerDark from '../../../../static/images/leaflet/marker_dark.png';
 import CityLight from '../../../../static/images/leaflet/city_light.png';
 import MarkerLight from '../../../../static/images/leaflet/marker_light.png';
+import { isValidLatitude, isValidLongitude, validateCoordinates } from '../../../../utils/position.utils';
 
 const styles = (theme) => ({
   paper: {
@@ -58,20 +59,29 @@ const LocationMiniMap = (props) => {
     return { fillOpacity: 0, color: 'none' };
   };
   const { t, center, zoom, classes, theme, city, position } = props;
+
+  // Validate center coordinates to prevent crashes
+  const validatedCenter = validateCoordinates(center);
+
+  // Validate marker position
   let mapPosition = null;
   if (city && city.latitude && city.longitude) {
-    mapPosition = [city.latitude, city.longitude];
+    if (isValidLatitude(city.latitude) && isValidLongitude(city.longitude)) {
+      mapPosition = [city.latitude, city.longitude];
+    }
   } else if (position && position.latitude && position.longitude) {
-    mapPosition = [position.latitude, position.longitude];
+    if (isValidLatitude(position.latitude) && isValidLongitude(position.longitude)) {
+      mapPosition = [position.latitude, position.longitude];
+    }
   }
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 10 }}>
-        {`${t('Mini map')} (lat. ${center[0]}, long. ${center[1]})`}
+        {`${t('Mini map')} (lat. ${validatedCenter[0]}, long. ${validatedCenter[1]})`}
       </Typography>
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <MapContainer
-          center={center}
+          center={validatedCenter}
           zoom={zoom}
           attributionControl={false}
           zoomControl={false}
