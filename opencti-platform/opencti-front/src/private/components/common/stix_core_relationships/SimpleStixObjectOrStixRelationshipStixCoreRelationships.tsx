@@ -9,6 +9,7 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import {
   SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$data,
+  SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables,
 } from '@components/common/stix_core_relationships/__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines, {
@@ -82,9 +83,10 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
       width: '12%',
     },
   };
-  const paginationOptions = {
-    fromOrToId: stixObjectOrStixRelationshipId,
-    relationship_type: relationshipType || 'stix-core-relationship',
+  const paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables = {
+    count: 8,
+    fromOrToId: [stixObjectOrStixRelationshipId],
+    relationship_type: relationshipType ? [relationshipType] : ['stix-core-relationship'],
     orderBy: 'created_at',
     orderMode: 'desc',
   };
@@ -98,16 +100,15 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
           query={
               simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery
             }
-          variables={{ count: 8, ...paginationOptions }}
+          variables={paginationOptions}
           render={({ props }: { props: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$data }) => {
             if (props) {
               return (
                 <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
                   stixObjectOrStixRelationshipId={stixObjectOrStixRelationshipId}
                   stixObjectOrStixRelationshipLink={stixObjectOrStixRelationshipLink}
-                  data={props}
+                  props={props}
                   dataColumns={dataColumns}
-                  initialLoading={false}
                   paginationOptions={paginationOptions}
                 />
               );
