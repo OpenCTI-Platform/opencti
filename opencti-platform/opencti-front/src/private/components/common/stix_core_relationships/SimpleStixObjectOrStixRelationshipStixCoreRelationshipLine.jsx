@@ -70,9 +70,9 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
     const row = isReversed ? node.to : node.from;
     const element = row || {
       id: isReversed ? node.toId : node.fromId,
-      entity_type: isReversed ? node.toType : node.fromType,
-      name: 'Restricted',
+      entity_type: 'Restricted',
       restricted: true,
+      representative: { main: t('Restricted') },
     };
     const draftColor = getDraftModeColor(theme);
     return (
@@ -125,6 +125,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                     entityType={element.entity_type}
                     size='large'
                     showIcon
+                    isRestricted={!row}
                   />
                 </div>
                 <div
