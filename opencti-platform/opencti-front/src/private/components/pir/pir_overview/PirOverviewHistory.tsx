@@ -88,7 +88,7 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
   return (
     <Paper
       title={t_i18n('News feed')}
-      style={{ maxHeight: '619px', overflow: 'auto' }}
+      style={{ maxHeight: '899px', overflow: 'auto' }}
     >
       <div style={{ display: 'flex', gap: theme.spacing(0.5), flexDirection: 'column' }}>
         {history.length === 0 && (

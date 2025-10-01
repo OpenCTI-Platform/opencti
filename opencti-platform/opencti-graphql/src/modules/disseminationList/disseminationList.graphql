@@ -5,6 +5,7 @@ type DisseminationList implements InternalObject & BasicObject {
   parent_types: [String]!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   # DisseminationList
   name: String!
   emails: [String!]! @auth(for: [SETTINGS_SETDISSEMINATION])

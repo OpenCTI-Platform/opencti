@@ -2,7 +2,7 @@ import * as C from '@mui/material/colors';
 import { resolveLink } from './Entity';
 import { truncate } from './String';
 import { isColorCloseToWhite, itemColor } from './Colors';
-import { monthsAgo, now } from './Time';
+import { dateFormat, monthsAgo, now } from './Time';
 
 export const colors = (temp) => [
   C.red[temp],
@@ -58,11 +58,11 @@ const simpleLabelTooltip = (theme) => ({ seriesIndex, w }) => (`
 
 /**
  * A custom tooltip for ApexChart.
- * This tooltip display complex data for scatter chart.
+ * This tooltip display complex data for scatter chart (PIR threat map).
  *
  * @param {Theme} theme
  */
-const multipleDataTooltip = (theme) => ({ seriesIndex, dataPointIndex, w }) => {
+const scatterThreatMapTooltip = (theme) => ({ seriesIndex, dataPointIndex, w }) => {
   const containerColors = `background:${theme.palette.background.nav}; color:${theme.palette.text.primary};`;
   const containerLayout = 'padding: 2px 6px; font-size: 12px; display:flex; flex-direction:column;';
   const { group } = w.config.series[seriesIndex].data[dataPointIndex].meta;
@@ -71,7 +71,7 @@ const multipleDataTooltip = (theme) => ({ seriesIndex, dataPointIndex, w }) => {
   const rows = group.slice(0, max).map((data) => `
     <div style="display:flex; align-items:center; gap:4px">
       <div style="width:10px; height:10px; background:${itemColor(data.type)}; border-radius:10px;"></div>
-      <span>${data.name}: ${data.score}%</span>
+      <span>${dateFormat(data.date)} - ${data.name} (${data.score}%)</span>
     </div>
   `).join('');
   return (`
@@ -1133,7 +1133,7 @@ export const scatterChartOptions = (theme) => ({
   },
   tooltip: {
     theme: theme.palette.mode,
-    custom: multipleDataTooltip(theme),
+    custom: scatterThreatMapTooltip(theme),
   },
   xaxis: {
     type: 'datetime',

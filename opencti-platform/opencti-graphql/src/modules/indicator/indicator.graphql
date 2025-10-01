@@ -31,6 +31,7 @@ type IndicatorEdge {
 
 type DecayHistory {
   updated_at: DateTime!
+  refreshed_at: DateTime
   score: Int!
 }
 
@@ -69,6 +70,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]

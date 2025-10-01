@@ -11,6 +11,7 @@ import {
   type IdAttribute,
   internalId,
   parentTypes,
+  refreshedAt,
   relationshipType,
   standardId,
   updatedAt
@@ -70,6 +71,7 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   entityType,
   createdAt,
   updatedAt,
+  refreshedAt,
   creators,
   { name: 'i_inference_weight', label: 'Inference weight', type: 'numeric', precision: 'integer', update: false, editDefault: false, mandatoryType: 'no', multiple: false, upsert: false, isFilterable: false },
   connections,
