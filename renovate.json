@@ -7,6 +7,9 @@
     "dependencies",
     "filigran team"
   ],
+  "npm": {
+    "minimumReleaseAge": "3 days"
+  },
   "prConcurrentLimit": 2,
   "packageRules": [
     {

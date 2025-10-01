@@ -6,3 +6,6 @@
 venv
 .vscode
 /licenses/
+
+# Yarn directories
+.yarn/

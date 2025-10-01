@@ -3,6 +3,34 @@
   "version": "6.8.2",
   "private": true,
   "main": "src/front.tsx",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "relay": "relay-compiler relay.config.json",
+    "dev": "yarn relay && vite",
+    "dev:vite:debug": "yarn relay && vite --debug plugin-transform",
+    "start": "yarn relay && node builder/dev/dev.js",
+    "esbuild": "node builder/prod/prod.js",
+    "build": "yarn relay && yarn esbuild",
+    "build:standalone": "yarn relay && yarn esbuild --keep",
+    "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
+    "control": "yarn audit --groups dependencies --summary",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "check-ts": "tsc --noEmit",
+    "i18n-checker": "node i18n-checker.js",
+    "extract-translation": "node script/extract-i18n-keyword.js && node script/extract-label-keyword.js",
+    "verify-translation": "node script/verify-translation.js",
+    "sort-translation": "node script/sort-translation-files.js",
+    "auto-translation:all": "node script/auto-translate.js && npm run sort-translation",
+    "verify-licenses": "npx license-checker-rseidelsohn --production --summary --onlyAllow 'Hippocratic-2.1;MIT;Apache-2.0;GPL-2.0-or-later;OFL-1.1;BSD-3-Clause;ISC;BSD-2-Clause;Python-2.0;MPL-2.0;CC-BY-4.0;CC-BY-3.0;BlueOak-1.0.0;CC0-1.0;UNLICENSED;0BSD;Unlicense;WTFPL;LGPL-3.0' --excludePackagesStartingWith  '@ckeditor;eslint;opencti'",
+    "test:e2e": "E2E_TEST=true yarn playwright test --workers=1 --retries=1 -x",
+    "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
+    "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
+    "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test && yarn show-report-e2e",
+    "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html"
+  },
   "dependencies": {
     "@analytics/google-analytics": "1.1.0",
     "@cfworker/json-schema": "4.1.1",
@@ -148,33 +176,9 @@
     "vite-plugin-static-copy": "3.1.2",
     "vitest": "3.2.4"
   },
+  "packageManager": "yarn@4.10.3+sha512.c38cafb5c7bb273f3926d04e55e1d8c9dfa7d9c3ea1f36a4868fa028b9e5f72298f0b7f401ad5eb921749eb012eb1c3bb74bf7503df3ee43fd600d14a018266f",
   "engines": {
     "node": ">=20.*"
-  },
-  "scripts": {
-    "relay": "relay-compiler relay.config.json",
-    "dev": "yarn relay && vite",
-    "dev:vite:debug": "yarn relay && vite --debug plugin-transform",
-    "start": "yarn relay && node builder/dev/dev.js",
-    "esbuild": "node builder/prod/prod.js",
-    "build": "yarn relay && yarn esbuild",
-    "build:standalone": "yarn relay && yarn esbuild --keep",
-    "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
-    "control": "yarn audit --groups dependencies --summary",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
-    "check-ts": "tsc --noEmit",
-    "i18n-checker": "node i18n-checker.js",
-    "extract-translation": "node script/extract-i18n-keyword.js && node script/extract-label-keyword.js",
-    "verify-translation": "node script/verify-translation.js",
-    "sort-translation": "node script/sort-translation-files.js",
-    "auto-translation:all": "node script/auto-translate.js && npm run sort-translation",
-    "verify-licenses": "npx license-checker-rseidelsohn --production --summary --onlyAllow 'Hippocratic-2.1;MIT;Apache-2.0;GPL-2.0-or-later;OFL-1.1;BSD-3-Clause;ISC;BSD-2-Clause;Python-2.0;MPL-2.0;CC-BY-4.0;CC-BY-3.0;BlueOak-1.0.0;CC0-1.0;UNLICENSED;0BSD;Unlicense;WTFPL;LGPL-3.0' --excludePackagesStartingWith  '@ckeditor;eslint;opencti'",
-    "test:e2e": "E2E_TEST=true yarn playwright test --workers=1 --retries=1 -x",
-    "test:e2e:ui": "E2E_TEST=true yarn playwright test --ui --workers=1",
-    "generate-test-e2e": "npx playwright codegen http://localhost:3000/",
-    "test:e2e:coverage": "E2E_TEST=true E2E_COVERAGE=true yarn playwright test && yarn show-report-e2e",
-    "show-report-e2e": "start \"\" test-results/report.html && start \"\" test-results/coverage/index.html"
   },
   "resolutions": {
     "cookie": "1.0.2",
@@ -188,8 +192,18 @@
     "@types/relay-runtime": "19.0.2",
     "react": "19.1.0"
   },
-  "workspaces": [
-    "packages/*"
-  ],
-  "packageManager": "yarn@4.9.2"
+  "dependenciesMeta": {
+    "canvas": {
+      "built": false
+    },
+    "core-js": {
+      "built": false
+    },
+    "esbuild": {
+      "built": false
+    },
+    "protobufjs": {
+      "built": false
+    }
+  }
 }
