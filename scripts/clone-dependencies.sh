@@ -81,9 +81,29 @@ clone_for_pr_build() {
         fi
         
     else
+
         echo "[CLONE-DEPS] NOT multi repo, cloning client-python:${PR_TARGET_BRANCH} and connector:${PR_TARGET_BRANCH}"
-        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
-        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --branch ${PR_TARGET_BRANCH}  --depth=1
+        
+        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --depth=1
+        cd ${CLI_PYTHON_DIR}
+        git ls-remote --exit-code --heads origin $PR_TARGET_BRANCH >/dev/null 2>&1
+        EXIT_CODE=$?
+
+        if [[ $EXIT_CODE == '0' ]]; then
+            echo "Git branch '$PR_TARGET_BRANCH' exists in the remote repository in ${CLI_PYTHON_DIR}"
+            git switch $PR_TARGET_BRANCH
+        elif [[ $EXIT_CODE == '2' ]]; then
+            echo "Git branch '$BRANCH' does not exist in the remote repository, using default in ${CLI_PYTHON_DIR}"
+        fi
+
+        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --depth=1
+        cd ${CONNECTOR_DIR}
+        if [[ $EXIT_CODE == '0' ]]; then
+            echo "Git branch '$PR_TARGET_BRANCH' exists in the remote repository ${CONNECTOR_DIR}"
+            git switch $PR_TARGET_BRANCH
+        elif [[ $EXIT_CODE == '2' ]]; then
+            echo "Git branch '$BRANCH' does not exist in the remote repository, using default in ${CONNECTOR_DIR}"
+        fi
 
         cd ${WORKSPACE}
         CHANGES_OUSTIDE_FRONT_COUNT=$(gh pr diff ${PR_NUMBER} --name-only | grep -v "opencti-platform/opencti-front" | wc -l)
