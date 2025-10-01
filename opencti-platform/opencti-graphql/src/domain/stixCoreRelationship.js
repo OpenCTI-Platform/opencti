@@ -21,7 +21,12 @@ import { elRemoveElementFromDraft } from '../database/draft-engine';
 export const findStixCoreRelationshipsPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return pageRelationsConnection(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, fullArgs);
+  let relationshipTypesInput = fullArgs.relationship_type;
+  if (!Array.isArray(relationshipTypesInput)) {
+    relationshipTypesInput = relationshipTypesInput ? [relationshipTypesInput] : [];
+  }
+  const relationshipTypes = buildStixCoreRelationshipTypes(relationshipTypesInput);
+  return pageRelationsConnection(context, user, relationshipTypes, R.dissoc('relationship_type', fullArgs));
 };
 
 export const findById = (context, user, stixCoreRelationshipId) => {
