@@ -1,9 +1,9 @@
 import React from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine from './SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine';
 import {
-  SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$data,
+  SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery,
   SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables,
 } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery.graphql';
 import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$key } from './__generated__/SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data.graphql';
@@ -83,7 +83,7 @@ export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery =
 `;
 
 interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesProps {
-  props: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$data,
+  queryRef: PreloadedQuery<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery>,
   dataColumns: DataColumns,
   stixObjectOrStixRelationshipId: string,
   stixObjectOrStixRelationshipLink: string,
@@ -91,14 +91,19 @@ interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesProps {
 }
 
 const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = ({
-  props,
+  queryRef,
   dataColumns,
   stixObjectOrStixRelationshipId,
   stixObjectOrStixRelationshipLink,
   paginationOptions,
 }: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesProps) => {
   const { t_i18n } = useFormatter();
-  const data = useFragment<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$key>(SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesFragment, props);
+  const queryResult = usePreloadedQuery(simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery, queryRef);
+  const data = useFragment<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$key>(
+    SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesFragment,
+    queryResult,
+  );
+
   return (
     <div style={{ height: '100%' }}>
       {data.stixCoreRelationships && data.stixCoreRelationships.edges.length > 0 ? (
