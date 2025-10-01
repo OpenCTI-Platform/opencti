@@ -93,7 +93,7 @@ clone_for_pr_build() {
             echo "Git branch '$PR_TARGET_BRANCH' exists in the remote repository in ${CLI_PYTHON_DIR}"
             git switch $PR_TARGET_BRANCH
         elif [[ $EXIT_CODE == '2' ]]; then
-            echo "Git branch '$BRANCH' does not exist in the remote repository, using default in ${CLI_PYTHON_DIR}"
+            echo "Git branch '$PR_TARGET_BRANCH' does not exist in the remote repository, using default in ${CLI_PYTHON_DIR}"
         fi
 
         gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --depth=1
@@ -102,7 +102,7 @@ clone_for_pr_build() {
             echo "Git branch '$PR_TARGET_BRANCH' exists in the remote repository ${CONNECTOR_DIR}"
             git switch $PR_TARGET_BRANCH
         elif [[ $EXIT_CODE == '2' ]]; then
-            echo "Git branch '$BRANCH' does not exist in the remote repository, using default in ${CONNECTOR_DIR}"
+            echo "Git branch '$PR_TARGET_BRANCH' does not exist in the remote repository, using default in ${CONNECTOR_DIR}"
         fi
 
         cd ${WORKSPACE}
