@@ -15,6 +15,7 @@ steps:
           from_secret: github_token
     commands:
       # copy opencti-platform without nodes_modules
+      - exit 1
       - cp -R opencti-platform platform-reference
       - apk add git github-cli
       - chmod 777 scripts/*
