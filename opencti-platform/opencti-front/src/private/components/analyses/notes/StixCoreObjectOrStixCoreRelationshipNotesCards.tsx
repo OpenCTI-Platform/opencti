@@ -55,7 +55,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginLeft: theme.spacing(2),
   },
   createButton: {
-    float: 'left',
+    marginLeft: 5,
     marginTop: -15,
   },
 }));
@@ -247,7 +247,6 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
             color="primary"
             onClick={handleToggleWrite}
             classes={{ root: classes.createButton }}
-            size="large"
           >
             <EditOutlined fontSize="small" />
           </IconButton>
