@@ -82,7 +82,7 @@ steps:
       SMTP__ENABLED: false
       PYTHONUNBUFFERED: 1
     commands:
-      - if [ -f ${WORKSPACE}/api-test.skip ]; then exit 0; fi
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then exit 0; fi
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
