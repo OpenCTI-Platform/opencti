@@ -13,9 +13,7 @@ PR_NUMBER=$4
 
 
 CLI_PYTHON_DIR="${WORKSPACE}/client-python"
-CONNECTOR_DIR="${WORKSPACE}/opencti-connectors"
 echo "CLI_PYTHON_DIR=${CLI_PYTHON_DIR}"
-echo "CONNECTOR_DIR=${CONNECTOR_DIR}"
 
 clone_for_pr_build() {
     cd ${WORKSPACE}
@@ -55,34 +53,10 @@ clone_for_pr_build() {
             echo "[CLONE-DEPS][CLIENT-PYTHON] No PR found in client-python side, keeping client-python:${PR_TARGET_BRANCH}"
             # Repository already clone on PR_TARGET_BRANCH branch
         fi
-
-        # ------
-        # For connector, maybe one day we will refactor to a function.
-        echo "[CLONE-DEPS][CONNECTOR] Multi repository PR, looking for connectors related branch"
-        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR}  -- --branch ${PR_TARGET_BRANCH}  --depth=1
-        cd ${CONNECTOR_DIR}
-
-        # search for the first opencti PR that matches OPENCTI_BRANCH
-        gh repo set-default https://github.com/OpenCTI-Platform/connectors
-        gh pr list --label "multi-repository" > multi-repo-connector-prs.txt
-
-        cat multi-repo-connector-prs.txt
-
-        CONNECTOR_PR_NUMBER=$(cat multi-repo-connector-prs.txt | grep "${TARGET_BRANCH}" | head -n 1 | sed 's/#//g' | awk '{print $1}')
-        echo "CONNECTOR_PR_NUMBER=${CONNECTOR_PR_NUMBER}"
-
-        if [[ "${CONNECTOR_PR_NUMBER}" != "" ]]
-        then
-            echo "[CLONE-DEPS][CONNECTOR] Found a PR in connectors with number ${CONNECTOR_PR_NUMBER}, using it."
-            gh pr checkout ${CONNECTOR_PR_NUMBER}
-        else
-            echo "[CLONE-DEPS][CONNECTOR] No PR found in connectors side, keeping connector:${PR_TARGET_BRANCH}"
-            # Repository already clone on PR_TARGET_BRANCH branch
-        fi
         
     else
 
-        echo "[CLONE-DEPS] NOT multi repo, cloning client-python:${PR_TARGET_BRANCH} and connector:${PR_TARGET_BRANCH}"
+        echo "[CLONE-DEPS] NOT multi repo, cloning client-python:${PR_TARGET_BRANCH}"
         
         gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --depth=1
         cd ${CLI_PYTHON_DIR}
@@ -94,15 +68,6 @@ clone_for_pr_build() {
             git switch $PR_TARGET_BRANCH
         elif [[ $EXIT_CODE == '2' ]]; then
             echo "Git branch '$PR_TARGET_BRANCH' does not exist in the remote repository, using default in ${CLI_PYTHON_DIR}"
-        fi
-
-        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --depth=1
-        cd ${CONNECTOR_DIR}
-        if [[ $EXIT_CODE == '0' ]]; then
-            echo "Git branch '$PR_TARGET_BRANCH' exists in the remote repository ${CONNECTOR_DIR}"
-            git switch $PR_TARGET_BRANCH
-        elif [[ $EXIT_CODE == '2' ]]; then
-            echo "Git branch '$PR_TARGET_BRANCH' does not exist in the remote repository, using default in ${CONNECTOR_DIR}"
         fi
 
         cd ${WORKSPACE}
@@ -130,16 +95,6 @@ clone_for_push_build() {
         CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo 'master')
     fi
     git clone -b $CLIENT_PYTHON_BRANCH https://github.com/OpenCTI-Platform/client-python.git ${CLI_PYTHON_DIR}
-
-    echo "[CLONE-DEPS][CONNECTOR] Build from a commit, checking if a dedicated branch is required."
-    if [[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/$PR_BRANCH_NAME)")" != '' ]]
-    then
-        CONNECTOR_BRANCH=${PR_BRANCH_NAME}
-    else
-        CONNECTOR_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo 'master')
-    fi
-
-    git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git ${CONNECTOR_DIR}
 }
 
 echo "[CLONE-DEPS] START; with PR_BRANCH_NAME=${PR_BRANCH_NAME},PR_TARGET_BRANCH=${PR_TARGET_BRANCH}, PR_NUMBER=${PR_NUMBER}, OPENCTI_DIR=${OPENCTI_DIR}."
@@ -165,8 +120,6 @@ else
     clone_for_pr_build
 fi
 
-cd ${CONNECTOR_DIR}
-echo "[CLONE-DEPS] END; Using connectors on branch:$(git branch --show-current)"
 cd ${CLI_PYTHON_DIR}
 echo "[CLONE-DEPS] END; Using client-python on branch:$(git branch --show-current)"
 
