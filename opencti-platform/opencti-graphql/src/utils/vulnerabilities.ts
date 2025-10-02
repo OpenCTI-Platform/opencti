@@ -553,7 +553,8 @@ export const generateVulnerabilitiesUpdates = (initial: Vulnerability, updates: 
     if (!isValidCvssVector('cvss3', vector)) {
       throw FunctionalError('This is not a valid CVSS3 vector');
     }
-    newUpdates.push(...parseCvssVector('cvss3', vector) as CvssFieldUpdate[]);
+    const initialScore = updates.find((item) => item.key === 'x_opencti_cvss_base_score')?.value?.at?.(0);
+    newUpdates.push(...parseCvssVector('cvss3', vector, initialScore) as CvssFieldUpdate[]);
   } else if (updates.some((e) => e.key.startsWith('x_opencti_cvss_'))) {
     let baseScore = initial.x_opencti_cvss_base_score;
     if (updates.some((e) => e.key === 'x_opencti_cvss_base_score')) {
