@@ -308,7 +308,7 @@ export const idGen = (type, data, namespace) => {
   // If empty data, generate an error message
   if (isEmptyField(data)) {
     const contrib = resolveContribution(type);
-    const properties = contrib.definition[type];
+    const properties = contrib.definition[type].flat();
     const missingKeys = properties.map((p) => p.src).join(' - ');
     throw FunctionalError(`Missing required elements for ${type} creation (${missingKeys})`, { properties });
   }
