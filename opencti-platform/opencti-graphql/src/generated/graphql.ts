@@ -14060,6 +14060,7 @@ export type ManagedConnector = BasicObject & InternalObject & {
   connector_user_id?: Maybe<Scalars['ID']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  identifier: Scalars['String']['output'];
   manager?: Maybe<ConnectorManager>;
   manager_connector_logs: Array<Scalars['String']['output']>;
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
@@ -41730,6 +41731,7 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   connector_user_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager?: Resolver<Maybe<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
