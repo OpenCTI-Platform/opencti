@@ -1,5 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import { StixRelationshipsTimelineStixRelationshipQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsTimelineStixRelationshipQuery.graphql';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -8,6 +9,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 
 const stixRelationshipsTimelineStixRelationshipQuery = graphql`
   query StixRelationshipsTimelineStixRelationshipQuery(
@@ -965,6 +967,15 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
   }
 `;
 
+interface StixRelationshipsTimelineProps {
+  variant: string,
+  height?: number,
+  startDate: string | null,
+  endDate: string | null,
+  dataSelection: WidgetDataSelection[],
+  parameters?: WidgetParameters,
+}
+
 const StixRelationshipsTimeline = ({
   variant,
   height,
@@ -972,7 +983,7 @@ const StixRelationshipsTimeline = ({
   endDate,
   dataSelection,
   parameters = {},
-}) => {
+}: StixRelationshipsTimelineProps) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
@@ -980,19 +991,19 @@ const StixRelationshipsTimeline = ({
       ? selection.date_attribute
       : 'created_at';
     const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { startDate, endDate, dateAttribute });
-    const fromId = filters.filters.find((o) => o.key === 'fromId')?.values || null;
+    const fromId = filters?.filters.find((o) => o.key === 'fromId')?.values || null;
     return (
       <QueryRenderer
         query={stixRelationshipsTimelineStixRelationshipQuery}
         variables={{
-          first: dataSelection.number ?? 50,
+          first: selection.number ?? 10,
           orderBy: dateAttribute,
           orderMode: selection.sort_mode ?? 'asc',
           filters,
           dynamicFrom: selection.dynamicFrom,
           dynamicTo: selection.dynamicTo,
         }}
-        render={({ props }) => {
+        render={({ props }: { props: StixRelationshipsTimelineStixRelationshipQuery$data }) => {
           if (
             props
             && props.stixRelationships
@@ -1002,7 +1013,7 @@ const StixRelationshipsTimeline = ({
             const data = stixRelationshipsEdges.flatMap((stixRelationshipEdge) => {
               const stixRelationship = stixRelationshipEdge.node;
               const remoteNode = stixRelationship.from
-              && stixRelationship.from.id === fromId
+              && fromId && fromId.includes(stixRelationship.from.id)
               && selection.isTo !== false
                 ? stixRelationship.to
                 : stixRelationship.from;
@@ -1015,10 +1026,11 @@ const StixRelationshipsTimeline = ({
                 : `${resolveLink(remoteNode.entity_type)}/${
                   remoteNode.id
                 }/knowledge/relations/${stixRelationship.id}`;
+              type StixRelationship = typeof stixRelationship;
               return {
                 value: {
                   ...remoteNode,
-                  created: stixRelationship[dateAttribute] ?? stixRelationship.created,
+                  created: stixRelationship[dateAttribute as keyof StixRelationship] ?? stixRelationship.created,
                 },
                 link,
               };
