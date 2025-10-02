@@ -34,6 +34,7 @@ const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>)
     if ('api_token' in entity && entity.api_token) {
       ids.push(entity.api_token as string);
     }
+    
     if (entity.standard_id) {
       ids.push(entity.standard_id);
     }
