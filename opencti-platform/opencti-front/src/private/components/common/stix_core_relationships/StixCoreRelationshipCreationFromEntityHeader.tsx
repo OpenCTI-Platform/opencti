@@ -142,6 +142,7 @@ StixCoreRelationshipCreationFromEntityHeaderProps
               helpers={helpers}
               contextFilters={contextFilters}
               virtualEntityTypes={stixCoreObjectTypes}
+              handleClose={handleClose}
             />
           ) : (
             <StixCoreRelationshipCreationFormStage
