@@ -587,10 +587,11 @@ services:
       - apk add build-base git libffi-dev cargo
       - mkdir /tmp/pycti-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/pycti-start-platform/
-      - ls -lart /tmp
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
+      - pip install -e .[dev,doc]
       - cd /tmp/pycti-start-platform/opencti-graphql
       - yarn install
-      - sed -i '/^pycti==/d' src/python/requirements.txt
       - yarn install:python
       - yarn build:dev
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
