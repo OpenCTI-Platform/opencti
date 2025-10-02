@@ -14,7 +14,7 @@ import archiverZipEncrypted from 'archiver-zip-encrypted';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
-import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE } from '../config/conf';
+import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
 import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
 import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
@@ -33,6 +33,19 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
+
+export const sanitizeReferer = (refererToSanitize) => {
+  const base = getBaseUrl();
+  if (!refererToSanitize) return base;
+
+  const resolvedUrl = new URL(refererToSanitize, base).toString();
+  if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
+    // same domain URL accept the redirection
+    return resolvedUrl;
+  }
+  logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
+  return base;
+};
 
 const extractRefererPathFromReq = (req) => {
   if (isNotEmptyField(req.headers.referer)) {
@@ -459,7 +472,6 @@ const createApp = async (app, schema) => {
   // -- Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
-    const referer = req.body.RelayState ?? req.session.referer;
     const { provider } = req.params;
     const callbackLogin = () => new Promise((accept, reject) => {
       passport.authenticate(provider, {}, (err, user) => {
@@ -478,7 +490,9 @@ const createApp = async (app, schema) => {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
-      res.redirect(referer ?? '/');
+      const referer = req.body.RelayState ?? req.session.referer;
+      const sanitizedReferer = sanitizeReferer(referer);
+      res.redirect(sanitizedReferer);
     }
   });
 
