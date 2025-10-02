@@ -307,7 +307,7 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined | null,
-  opts: { removeTypeAll?: boolean, startDate?: string, endDate?: string, dateAttribute?: string } = {},
+  opts: { removeTypeAll?: boolean, startDate?: string | null, endDate?: string | null, dateAttribute?: string } = {},
 ) => {
   const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
   let filters = inputFilters ?? undefined;
