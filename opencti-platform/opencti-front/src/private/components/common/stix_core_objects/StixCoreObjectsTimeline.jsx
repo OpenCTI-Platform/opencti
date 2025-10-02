@@ -76,7 +76,7 @@ const StixCoreObjectsTimeline = ({
           types: dataSelectionTypes,
           first: selection.number ?? 10,
           orderBy: dateAttribute,
-          orderMode: 'desc',
+          orderMode: selection.sort_mode ?? 'asc',
           filters,
         }}
         render={({ props }) => {
