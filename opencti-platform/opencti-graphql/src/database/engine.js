@@ -2149,39 +2149,30 @@ const buildLocalMustFilter = async (validFilter) => {
       const { key: nestedKey, values: nestedValues, operator: nestedOperator = 'eq' } = nestedElement;
       const nestedShould = [];
       const nestedFieldKey = `${parentKey}.${nestedKey}`;
+      // nil and not_nil operators
+      if (nestedOperator === 'nil') {
+        nestedMustNot.push({
+          exists: {
+            field: nestedFieldKey
+          }
+        });
+      } else if (nestedOperator === 'not_nil') {
+        nestedShould.push({
+          exists: {
+            field: nestedFieldKey
+          }
+        });
+      }
+      // other operators
       if (nestedKey === ID_INTERNAL) {
-        if (nestedOperator === 'nil') {
-          nestedMustNot.push({
-            exists: {
-              field: nestedFieldKey
-            }
-          });
-        } else if (nestedOperator === 'not_nil') {
-          nestedShould.push({
-            exists: {
-              field: nestedFieldKey
-            }
-          });
-        } else if (nestedOperator === 'not_eq') {
+        if (nestedOperator === 'not_eq') {
           nestedMustNot.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
         } else { // nestedOperator = 'eq'
           nestedShould.push({ terms: { [`${nestedFieldKey}.keyword`]: nestedValues } });
         }
       } else { // nested key !== internal_id
         // eslint-disable-next-line no-lonely-if
-        if (nestedOperator === 'nil') {
-          nestedMustNot.push({
-            exists: {
-              field: nestedFieldKey
-            }
-          });
-        } else if (nestedOperator === 'not_nil') {
-          nestedShould.push({
-            exists: {
-              field: nestedFieldKey
-            }
-          });
-        } else if (nestedOperator === FilterOperator.Within) {
+        if (nestedOperator === FilterOperator.Within) {
           nestedShould.push({
             range: {
               [nestedFieldKey]: { gte: nestedValues[0], lte: nestedValues[1] }
@@ -2219,7 +2210,7 @@ const buildLocalMustFilter = async (validFilter) => {
       const should = {
         bool: {
           should: nestedShould,
-          minimum_should_match: localFilterMode === 'or' ? 1 : nestedShould.length,
+          minimum_should_match: localFilterMode === 'or' ? 1 : nestedValues.length,
         },
       };
       nestedMust.push(should);
