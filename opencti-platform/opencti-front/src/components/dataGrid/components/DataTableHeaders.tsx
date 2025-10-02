@@ -64,7 +64,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
     background: hasSelectedElements && !removeSelectAll
       ? theme.palette.background.accent
       : 'transparent',
-    minWidth: hasSelectedElements ? 0 : startColumnWidth,
+    minWidth: startColumnWidth,
   };
 
   const showToolbar = numberOfSelectedElements > 0 && !disableToolBar;
