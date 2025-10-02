@@ -45,6 +45,7 @@ interface StixCoreRelationshipCreationSelectEntityStageProps {
   helpers: UseLocalStorageHelpers;
   contextFilters: FilterGroup;
   virtualEntityTypes: string[];
+  handleClose: () => void;
 }
 
 const StixCoreRelationshipCreationSelectEntityStage: FunctionComponent<
@@ -60,6 +61,7 @@ StixCoreRelationshipCreationSelectEntityStageProps
   helpers,
   contextFilters,
   virtualEntityTypes,
+  handleClose,
 }) => {
   const { t_i18n } = useFormatter();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
@@ -187,6 +189,7 @@ StixCoreRelationshipCreationSelectEntityStageProps
                   stixDomainObjectType={stixCoreObject.entity_type}
                   defaultRelationshipType={allowedRelationshipTypes?.[0]}
                   selectedEntities={targetEntities}
+                  onBulkCreate={handleClose}
                 />
               )]}
             />
