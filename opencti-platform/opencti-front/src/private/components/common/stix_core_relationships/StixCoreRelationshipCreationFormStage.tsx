@@ -107,26 +107,28 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
         commitRelationshipCreationMutation({
           variables: { input: finalValues },
           updater: (store: RecordSourceSelectorProxy) => {
-            if (connectionKey === 'Pagination_stixCoreRelationships') {
-              // Handles 'Relationships View'
-              insertNode(
-                store,
-                connectionKey,
-                paginationOptions,
-                'stixCoreRelationshipAdd',
-              );
-            } else if (typeof onCreate !== 'function') {
-              // Handle 'Entities View'
-              insertNode(
-                store,
-                connectionKey || 'Pagination_stixCoreRelationships',
-                paginationOptions,
-                'stixCoreRelationshipAdd',
-                null,
-                null,
-                null,
-                reversed ? 'from' : 'to',
-              );
+            if (paginationOptions) { // view update if in Knowledge tab
+              if (connectionKey === 'Pagination_stixCoreRelationships') {
+                // Handles 'Relationships View'
+                insertNode(
+                  store,
+                  connectionKey,
+                  paginationOptions,
+                  'stixCoreRelationshipAdd',
+                );
+              } else if (typeof onCreate !== 'function') {
+                // Handle 'Entities View'
+                insertNode(
+                  store,
+                  connectionKey || 'Pagination_stixCoreRelationships',
+                  paginationOptions,
+                  'stixCoreRelationshipAdd',
+                  null,
+                  null,
+                  null,
+                  reversed ? 'from' : 'to',
+                );
+              }
             }
           },
           onError: (error: Error) => {
