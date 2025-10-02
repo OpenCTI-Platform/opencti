@@ -10,6 +10,9 @@ describe('draft-utils', () => {
   const valueA = 'valueA';
   const valueB = 'valueB';
 
+
+
+  
   it('should getConsolidatedUpdatePatch consolidate updates correctly', () => {
     const newUpdateAAddA = [{ key: keyA, value: [valueA], operation: UPDATE_OPERATION_ADD }];
     const newUpdateARemoveA = [{ key: keyA, value: [valueA], operation: UPDATE_OPERATION_REMOVE }];
