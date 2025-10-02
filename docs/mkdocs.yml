@@ -42,13 +42,13 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/OpenCTI-Platform
-    - icon: fontawesome/brands/medium
+    - icon: fontawesome/solid/book
       link: https://blog.filigran.io
     - icon: fontawesome/brands/slack
       link: https://community.filigran.io
     - icon: fontawesome/brands/linkedin
       link: https://linkedin.com/company/filigran
-    - icon: fontawesome/brands/twitter
+    - icon: fontawesome/brands/x-twitter
       link: https://twitter.com/FiligranHQ
     - icon: fontawesome/brands/facebook
       link: https://facebook.com/FiligranHQ
