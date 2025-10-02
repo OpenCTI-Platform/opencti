@@ -28,7 +28,7 @@ const errorConverter = (e: any) => {
   };
 };
 
-const dataFormat = (separator: string, data: string) => {
+const escapeCsvField = (separator: string, data: string) => {
   let escapedData:string;
 
   if (data.includes('"') || data.includes(separator) || data.includes('\n') || data.includes('\r')) {
@@ -54,24 +54,24 @@ export const buildCsvLines = (elements:any[], feed:BasicStoreEntityFeed):string[
         if (isNotEmptyField(data)) {
           if (isMultipleAttribute(element.entity_type, baseKey)) {
             const dataArray = data as string[];
-            dataElements.push(dataFormat(separator, dataArray.join(',')));
+            dataElements.push(escapeCsvField(separator, dataArray.join(',')));
           } else if (isObjectAttribute(baseKey)) {
             if (isComplexKey) {
               const [, innerKey] = mapping.attribute.split('.');
               const dictInnerData = data[innerKey.toUpperCase()];
               if (isNotEmptyField(dictInnerData)) {
-                dataElements.push(dataFormat(separator, String(dictInnerData)));
+                dataElements.push(escapeCsvField(separator, String(dictInnerData)));
               } else {
-                dataElements.push(dataFormat(separator, ''));
+                dataElements.push(escapeCsvField(separator, ''));
               }
             } else {
-              dataElements.push(dataFormat(separator, JSON.stringify(data)));
+              dataElements.push(escapeCsvField(separator, JSON.stringify(data)));
             }
           } else {
-            dataElements.push(dataFormat(separator, String(data)));
+            dataElements.push(escapeCsvField(separator, String(data)));
           }
         } else {
-          dataElements.push(dataFormat(separator, ''));
+          dataElements.push(escapeCsvField(separator, ''));
         }
       }
     }
