@@ -85,6 +85,8 @@ export default class DashboardWidgetsPageModel {
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('List of malwares');
+    const orderMode = new SelectFieldPageModel(this.page, 'Sort mode', false);
+    await orderMode.selectOption('Desc');
     await this.createWidget();
   }
 
@@ -97,6 +99,8 @@ export default class DashboardWidgetsPageModel {
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('Timeline of malwares');
+    const orderMode = new SelectFieldPageModel(this.page, 'Sort mode', false);
+    await orderMode.selectOption('Desc');
     await this.createWidget();
   }
 
