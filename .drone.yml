@@ -546,6 +546,7 @@ services:
   - name: opencti-pycti-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
+      APP__PORT: 4600
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       APP__ENTERPRISE_EDITION_LICENSE:
