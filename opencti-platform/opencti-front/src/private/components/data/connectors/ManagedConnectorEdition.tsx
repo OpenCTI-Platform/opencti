@@ -206,8 +206,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                 style={fieldSpacingContainerStyle}
                 variant="standard"
                 name="display_name"
-                label={t_i18n('Display name')}
-                required
+                label={t_i18n('Name')}
                 disabled
                 fullWidth={true}
               />
@@ -217,8 +216,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                 style={fieldSpacingContainerStyle}
                 variant="standard"
                 name="name"
-                label={t_i18n('Instance name')}
-                required
+                label={t_i18n('Connector identifier')}
                 disabled
                 fullWidth={true}
               />

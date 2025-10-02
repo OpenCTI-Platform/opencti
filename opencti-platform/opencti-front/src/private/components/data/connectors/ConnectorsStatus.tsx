@@ -408,15 +408,11 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                               }}
                             >
                               <Tooltip title={connector.title} placement={'top'}>
-                                <div className={classes.bodyItem}>
-                                  {
-                                    connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name
-                                  }
-                                </div>
+                                <div className={classes.bodyItem}>{connector.title}</div>
                               </Tooltip>
-                              <div className={classes.bodyItem}>
-                                {connectorType}
-                              </div>
+
+                              <div className={classes.bodyItem}>{connectorType}</div>
+
                               <div className={classes.bodyItem}>
                                 <ItemBoolean
                                   label={connector.connectorTriggerStatus.label}

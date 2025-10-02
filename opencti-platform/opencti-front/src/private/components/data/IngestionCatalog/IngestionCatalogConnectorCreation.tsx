@@ -334,7 +334,7 @@ const IngestionCatalogConnectorCreation = ({
                     style={fieldSpacingContainerStyle}
                     variant="standard"
                     name="display_name"
-                    label={t_i18n('Display name')}
+                    label={t_i18n('Name')}
                     required
                     fullWidth={true}
                     onChange={(_: string, value: string) => {
@@ -347,7 +347,7 @@ const IngestionCatalogConnectorCreation = ({
                     style={fieldSpacingContainerStyle}
                     variant="standard"
                     name="name"
-                    label={t_i18n('Instance name')}
+                    label={t_i18n('Connector identifier')}
                     fullWidth={true}
                     disabled
                   />
