@@ -19,7 +19,7 @@ import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import { Themes_themes$key } from '@components/settings/themes/__generated__/Themes_themes.graphql';
-import Themes, { refetchableThemesQuery } from '@components/settings/themes/Themes';
+import ThemeManager, { refetchableThemesQuery } from '@components/settings/themes/ThemeManager';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
@@ -791,7 +791,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         </Grid>
 
         <Grid size={8}>
-          <Themes
+          <ThemeManager
             handleRefetch={handleRefetch}
             currentTheme={settings.platform_theme ?? ''}
           />

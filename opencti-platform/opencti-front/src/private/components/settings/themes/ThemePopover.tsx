@@ -35,8 +35,10 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   isCurrentTheme,
 }) => {
   const { t_i18n } = useFormatter();
+
   const [anchorEl, setAnchorEl] = useState<(EventTarget & Element) | null>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
+
   const theme: ThemeType = {
     id: themeData.id,
     name: themeData.name,
@@ -47,27 +49,35 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     id: '... successfully deleted',
     values: { entity_type: t_i18n('Theme') },
   });
+
   const [commit] = useApiMutation(
     deleteThemeMutation,
     undefined,
     { successMessage: deleteSuccessMessage },
   );
+  const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
+  const { setDeleting, handleOpenDelete, deleting } = deletion;
 
   const handleOpen = (event: React.UIEvent) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = () => { setAnchorEl(null); };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
     handleClose();
   };
-  const handleCloseUpdate = () => setDisplayUpdate(false);
+
+  const handleCloseUpdate = () => {
+    setDisplayUpdate(false);
+  };
+
   const handleExport = () => {
     handleExportJson(theme);
   };
-
-  const deletion = useDeletion({ handleClose });
-  const { setDeleting, handleOpenDelete, deleting } = deletion;
 
   const submitDelete = () => {
     setDeleting(true);
@@ -87,13 +97,17 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     handleClose();
   };
 
+  const isMenuOpen = Boolean(anchorEl);
+  const isDeleteDisabled = isCurrentTheme || deleting;
+
   return (
     <div>
-      <Security needs={[
-        KNOWLEDGE_KNUPDATE,
-        KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
-        KNOWLEDGE_KNUPDATE_KNDELETE,
-      ]}
+      <Security
+        needs={[
+          KNOWLEDGE_KNUPDATE,
+          KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
+          KNOWLEDGE_KNUPDATE_KNDELETE,
+        ]}
       >
         <IconButton
           onClick={handleOpen}
@@ -105,9 +119,10 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
           <MoreVert />
         </IconButton>
       </Security>
+
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
+        open={isMenuOpen}
         onClose={handleClose}
       >
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -131,7 +146,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
             <MenuItem
               onClick={handleOpenDelete}
               aria-label={t_i18n('Delete')}
-              disabled={isCurrentTheme || deleting}
+              disabled={isDeleteDisabled}
             >
               {t_i18n('Delete')}
             </MenuItem>
