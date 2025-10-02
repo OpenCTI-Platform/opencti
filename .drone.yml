@@ -224,7 +224,12 @@ steps:
       - cd client-python
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
+      - while ! nc -z opencti-pycti-start 4600 ; do sleep 1 ; done
+      - sleep 10
+      - if [ $(wget --server-response "http://opencti-pycti-start:4600/health?health_access_key=cihealthkey" -O opencti-pycti-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-pycti-start has not start correctly"; exit 1; fi
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - dependencies-checkout
 
   - name: client-test-310
     image: python:3.10
@@ -232,7 +237,12 @@ steps:
       - cd client-python
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
+      - while ! nc -z opencti-pycti-start 4600 ; do sleep 1 ; done
+      - sleep 10
+      - if [ $(wget --server-response "http://opencti-pycti-start:4600/health?health_access_key=cihealthkey" -O opencti-pycti-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-pycti-start has not start correctly"; exit 1; fi
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - dependencies-checkout
 
   - name: client-test-311
     image: python:3.11
@@ -240,7 +250,12 @@ steps:
       - cd client-python
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
+      - while ! nc -z opencti-pycti-start 4600 ; do sleep 1 ; done
+      - sleep 10
+      - if [ $(wget --server-response "http://opencti-pycti-start:4600/health?health_access_key=cihealthkey" -O opencti-pycti-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-pycti-start has not start correctly"; exit 1; fi
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - dependencies-checkout
 
   - name: client-test-312
     image: python:3.12
@@ -248,7 +263,12 @@ steps:
       - cd client-python
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
+      - while ! nc -z opencti-pycti-start 4600 ; do sleep 1 ; done
+      - sleep 10
+      - if [ $(wget --server-response "http://opencti-pycti-start:4600/health?health_access_key=cihealthkey" -O opencti-pycti-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-pycti-start has not start correctly"; exit 1; fi
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - dependencies-checkout
 
   # always run the examples last since they don't clean up
   - name: example-tests
@@ -258,7 +278,13 @@ steps:
       - pip3 install -r requirements.txt --user
       - pip3 install .
       - cd examples/
+      - if [ $(wget --server-response "http://opencti-pycti-start:4600/health?health_access_key=cihealthkey" -O opencti-pycti-start-health 2>&1 | grep -c "200 OK") != 1 ]; then echo "ERROR opencti-pycti-start has not start correctly"; exit 1; fi
       - /bin/bash run_all.sh
+    depends_on:
+      - client-test-312
+      - client-test-311
+      - client-test-310
+      - client-test-39
 
   - name: slack
     image: plugins/slack
@@ -547,6 +573,7 @@ services:
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     environment:
       APP__PORT: 4600
+      APP__HEALTH_ACCESS_KEY: cihealthkey
       APP__ADMIN__PASSWORD: admin
       APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       APP__ENTERPRISE_EDITION_LICENSE:
