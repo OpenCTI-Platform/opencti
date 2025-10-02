@@ -25,23 +25,25 @@ export default {
     const start = Date.now();
     return {
       willSendResponse: async (sendContext) => {
+        const elapsed = Date.now() - start;
+
         const requestError = getRequestError(sendContext);
-        let operationAttributes;
-        const operationName = sendContext.operationName ?? 'Unspecified';
-        const operation = sendContext.operation?.operation ?? 'query';
-        if (operationName === 'Unspecified') {
-          logApp.error('TELEMETRY PLUGIN UNDEFINED OPERATION', { query: stripIgnoredCharacters(sendContext.request.query) });
+        const operationAttributes = {
+          operation: sendContext.operation?.operation ?? 'query',
+          name: sendContext.operationName ?? 'Unspecified',
+          status: requestError ? 'ERROR' : 'SUCCESS',
+          type: requestError ? sendContext.response.body.singleResult.errors.at(0)?.name ?? requestError.name : undefined,
+        };
+
+        if (!sendContext.operationName) {
+          logApp.error('TELEMETRY PLUGIN UNDEFINED OPERATION', { query: stripIgnoredCharacters(sendContext.request?.query ?? 'undefined') });
         }
+
         if (requestError) {
-          const type = sendContext.response.body.singleResult.errors.at(0)?.name ?? requestError.name;
-          operationAttributes = { operation, name: operationName, status: 'ERROR', type };
           meterManager.error(operationAttributes);
         } else {
-          operationAttributes = { operation, name: operationName, status: 'SUCCESS' };
           meterManager.request(operationAttributes);
         }
-        const stop = Date.now();
-        const elapsed = stop - start;
         meterManager.latency(elapsed, operationAttributes);
       },
     };

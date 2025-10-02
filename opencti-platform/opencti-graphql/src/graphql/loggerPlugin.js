@@ -82,7 +82,7 @@ export default {
         if (appLogExtendedErrors) {
           const [variables] = await tryResolveKeyPromises(contextVariables);
           callMetaData.variables = variables;
-          callMetaData.operation_query = stripIgnoredCharacters(context.request.query);
+          callMetaData.operation_query = stripIgnoredCharacters(context.request?.query ?? 'undefined');
         }
         if (isCallError) {
           let callError = head(context.errors);
