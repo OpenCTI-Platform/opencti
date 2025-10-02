@@ -3977,6 +3977,7 @@ export type Connector = BasicObject & InternalObject & {
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  identifier: Scalars['String']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   manager_connector_logs?: Maybe<Array<Scalars['String']['output']>>;
   manager_connector_uptime?: Maybe<Scalars['Int']['output']>;
@@ -3995,7 +3996,6 @@ export type Connector = BasicObject & InternalObject & {
   playbook_compatible?: Maybe<Scalars['Boolean']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
-  title: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
 };
@@ -38264,6 +38264,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  identifier?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   manager_connector_logs?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   manager_connector_uptime?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -38282,7 +38283,6 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   playbook_compatible?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

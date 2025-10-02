@@ -8,7 +8,7 @@ export const connectorsListQuery = graphql`
     connectors {
       id
       name
-      title
+      identifier
       connector_type
       is_managed
       built_in
