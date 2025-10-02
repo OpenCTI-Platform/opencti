@@ -11,6 +11,7 @@ Note that this feature is under Enterprise Edition and requires capabilities (a 
 ## PIR general behavior
 
 A PIR is focused on some entities of interest and gives relevant information about them. You can:
+
 - list these entities,
 - filter and order them by their score for the PIR,
 - have access to a news feed and a historic displaying the last important event concerning them,
@@ -24,6 +25,7 @@ These functionalities are detailed in the sections below.
 How are the entities of interest to focus on determined?
 
 At a PIR creation, the user indicates
+
 - a PIR name,
 - a rescan period (1 month by default),
 - some criteria and filters to respect to be an entity of interest (for instance: should target the Energy sector or the Europe region with a confidence superior or equal to 60).
@@ -36,6 +38,7 @@ At a PIR creation, the user indicates
 The PIR manager is listening to the stream events. If a rescan period has been given, it listens to the stream from the date corresponding to the rescan (for instance: 1 month before now).
 
 For each event, the entity involved is marked as of interest for the PIR, if there is a creation of a relationship:
+
 - respecting one of the PIR criteria (for instance, the event is a relationship 'Malware X targets the Energy sector'),
 - and respecting the PIR filters (in the example: the relationship has a confidence superior or equal to 60).
 
@@ -52,6 +55,7 @@ For instance, if a malware has a relationship with Energy that was created 3 mon
 From the PIR list, clicking on a PIR line redirects to the PIR content. Let's present the different tabs.
 
 In the 'Overview', you have access to:
+
 - the PIR details: rescan period, filters, criteria, creation date, creators, description, processing delay.
 
 The processing delay is the difference between the last stream event and the last event processed by the PIR. It indicates the late compared to the stream.
@@ -92,6 +96,7 @@ Due to technical limitations, only the first 5000 flagged entities are used to r
 ## PIR Activities
 
 The Activities tab lists the events of interest for the PIR:
+
 - Addition or removal of an entity in the PIR (meaning a new entity is detected as of interest, or an entity is no more of interest),
 - Change in the score of threat (increase of score because it targets a new criteria, or decrease of score because it targets no more a criteria),
 - Creation or deletion of a relationship involving a threat of interest (except for 'indicates' relationships that are not taken into account because they can be numerous and pollute the activities logs),
