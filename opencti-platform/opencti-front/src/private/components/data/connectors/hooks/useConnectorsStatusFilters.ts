@@ -41,8 +41,9 @@ const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsS
   const matchesFilterCriteria = (connector: Connector): boolean => {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      const nameMatch = connector.name?.toLowerCase().includes(searchLower);
-      if (!nameMatch) return false;
+      const connectorIdentifierMatch = connector.name?.toLowerCase().includes(searchLower);
+      const displayNameMatch = connector.title?.toLowerCase().includes(searchLower);
+      if (!connectorIdentifierMatch && !displayNameMatch) return false;
     }
 
     if (filters.slug) {
