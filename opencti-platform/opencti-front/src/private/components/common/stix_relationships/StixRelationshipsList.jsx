@@ -4539,7 +4539,7 @@ const StixRelationshipsList = ({
           variables={{
             first: 50,
             orderBy: dateAttribute,
-            orderMode: 'desc',
+            orderMode: selection.sort_mode ?? 'asc',
             filters,
             dynamicFrom: selection.dynamicFrom,
             dynamicTo: selection.dynamicTo,
