@@ -583,8 +583,10 @@ services:
       GITHUB_TOKEN:
         from_secret: github_token
     commands:
-      - apk add build-base git libffi-dev cargo github-cli
+      - sleep 10
+      - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/pycti-start-platform/
+      - ls -lart /tmp
       - cd /tmp/pycti-start-platform/opencti-graphql
       - yarn install
       - sed -i '/^pycti==/d' src/python/requirements.txt
