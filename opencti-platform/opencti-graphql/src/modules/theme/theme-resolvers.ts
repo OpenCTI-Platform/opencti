@@ -1,18 +1,24 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addTheme, deleteTheme, editTheme, findAll, findById, generateThemeExportConfiguration, themeImport } from './theme-domain';
+import { addTheme, deleteTheme, fieldPatchTheme, findById, findThemePaginated, generateThemeExportConfiguration, themeImport } from './theme-domain';
 
 const themeResolvers: Resolvers = {
   Query: {
     theme: (_, { id }, context) => findById(context, id),
-    themes: (_, args, context) => findAll(context, args),
+    themes: (_, args, context) => findThemePaginated(context, context.user, args),
   },
   Theme: {
     toConfigurationExport: (theme) => generateThemeExportConfiguration(theme),
   },
   Mutation: {
-    themeAdd: (_, { input }, context) => addTheme(context, context.user, input),
-    themeDelete: (_, { id }, context) => deleteTheme(context, context.user, id),
-    themeFieldPatch: (_, { id, input }, context) => editTheme(context, context.user, id, input),
+    themeAdd: (_, { input }, context) => {
+      return addTheme(context, context.user, input);
+    },
+    themeDelete: (_, { id }, context) => {
+      return deleteTheme(context, context.user, id);
+    },
+    themeFieldPatch: (_, { id, input }, context) => {
+      return fieldPatchTheme(context, context.user, id, input);
+    },
     themeImport: (_, { file }, context) => themeImport(context, context.user, file),
   },
 };

@@ -21,7 +21,16 @@ type ThemeConnection {
 
 input ThemeAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
-  manifest: String!
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String!
+  theme_logo_collapsed: String!
+  theme_logo_login: String!
+  theme_text_color: String!
 }
 
 type Query {
