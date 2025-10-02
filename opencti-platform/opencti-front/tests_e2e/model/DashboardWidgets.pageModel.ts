@@ -11,6 +11,7 @@ export default class DashboardWidgetsPageModel {
   filters = new FiltersPageModel(this.page);
   titleField = new TextFieldPageModel(this.page, 'Title', 'text');
   dateAttribute = new SelectFieldPageModel(this.page, 'Relative time', false);
+  orderMode = new SelectFieldPageModel(this.page, 'Sort mode', false);
 
   constructor(private page: Page) {}
 
@@ -85,6 +86,7 @@ export default class DashboardWidgetsPageModel {
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('List of malwares');
+    await this.orderMode.selectOption('Desc');
     await this.createWidget();
   }
 
@@ -97,6 +99,7 @@ export default class DashboardWidgetsPageModel {
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('Timeline of malwares');
+    await this.orderMode.selectOption('Desc');
     await this.createWidget();
   }
 
