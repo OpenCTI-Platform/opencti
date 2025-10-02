@@ -592,6 +592,7 @@ services:
       - yarn install
       - sed -i '/^pycti==/d' src/python/requirements.txt
       - yarn install:python
+      - yarn build:dev
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
 volumes:
