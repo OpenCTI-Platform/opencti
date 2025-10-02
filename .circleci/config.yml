@@ -72,6 +72,7 @@ jobs:
           at: ~/
       - run:
           name: Replace pycti requirement of stable version with latest master branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
@@ -101,6 +102,7 @@ jobs:
           at: ~/
       - run:
           name: Replace pycti requirement of stable version with latest prerelease branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$CIRCLE_BRANCH|" -i {} \;          
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
@@ -156,6 +158,7 @@ jobs:
           at: ~/
       - run:
           name: Replace pycti requirement of stable version with latest master branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;          
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
@@ -185,6 +188,7 @@ jobs:
           at: ~/
       - run:
           name: Replace pycti requirement of stable version with latest prerelease branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$CIRCLE_BRANCH|" -i {} \;                    
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
@@ -213,7 +217,6 @@ jobs:
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: cp -a ./opencti-worker/src release/opencti/worker
-      - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/client-python
       - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/connectors
       - run:
           working_directory: ~/opencti/release
@@ -290,7 +293,6 @@ jobs:
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
       - run: cp -a ./opencti-worker/src release/opencti/worker
-      - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/client-python
       - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/connectors
       - run:
           working_directory: ~/opencti_musl/release
@@ -492,6 +494,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest master branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;
       - run:
           name: Install buildx
@@ -537,6 +540,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest master branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;
       - run:
           name: Install buildx
@@ -581,6 +585,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest prerelease branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$CIRCLE_BRANCH|" -i {} \;
       - run:
           name: Install buildx
@@ -626,6 +631,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest release branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed "s|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@$CIRCLE_BRANCH|" -i {} \;
       - run:
           name: Install buildx
@@ -670,6 +676,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest master branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;      
       - run:
           name: Install buildx
@@ -715,6 +722,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest master branch code
+          # ??? Todo
           command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/client-python@master|' -i {} \;      
       - run:
           name: Install buildx
