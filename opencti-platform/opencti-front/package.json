@@ -184,8 +184,6 @@
     "glob-parent": "6.0.2",
     "webpack": "5.101.3",
     "d3-color": "3.1.0",
-    "loader-utils": "3.3.1",
-    "scss-tokenizer": "0.4.3",
     "@types/react": "19.1.8",
     "@types/relay-runtime": "19.0.2",
     "react": "19.1.0"
