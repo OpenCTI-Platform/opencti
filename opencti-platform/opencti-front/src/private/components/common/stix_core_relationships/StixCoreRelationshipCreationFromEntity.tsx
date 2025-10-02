@@ -802,6 +802,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                           stixDomainObjectType={entity_type}
                           defaultRelationshipType={allowedRelationshipTypes?.[0]}
                           selectedEntities={targetEntities}
+                          onBulkCreate={handleClose}
                         />
                       )]}
                     />
