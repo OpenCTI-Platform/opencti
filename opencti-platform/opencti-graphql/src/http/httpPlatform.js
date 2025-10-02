@@ -34,19 +34,18 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
 
-export function sanitizeReferer(refererToSanitize) {
-  if (!refererToSanitize) return '/';
+export const sanitizeReferer = (refererToSanitize) => {
   const base = getBaseUrl();
+  if (!refererToSanitize) return base;
 
-  const isSameOrigin = refererToSanitize.startsWith(`${base}`);
-  const isUrlRelative = refererToSanitize.startsWith('/');
-
-  if (isSameOrigin || isUrlRelative) {
-    return refererToSanitize;
+  const resolvedUrl = new URL(refererToSanitize, base).toString();
+  if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
+    // same domain URL accept the redirection
+    return resolvedUrl;
   }
   logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
-  return '/';
-}
+  return base;
+};
 
 const extractRefererPathFromReq = (req) => {
   if (isNotEmptyField(req.headers.referer)) {
@@ -473,13 +472,6 @@ const createApp = async (app, schema) => {
   // -- Default limit is '100kb' based on https://expressjs.com/en/resources/middleware/body-parser.html
   const urlencodedParser = AUTH_PAYLOAD_BODY_SIZE ? bodyParser.urlencoded({ extended: true, limit: AUTH_PAYLOAD_BODY_SIZE }) : bodyParser.urlencoded({ extended: true });
   app.all(`${basePath}/auth/:provider/callback`, urlencodedParser, async (req, res, next) => {
-    let referer = '/';
-
-    if (req.body.RelayState) {
-      referer = sanitizeReferer(req.body.RelayState);
-    } else if (req.session.referer) {
-      referer = sanitizeReferer(req.session.referer);
-    }
     const { provider } = req.params;
     const callbackLogin = () => new Promise((accept, reject) => {
       passport.authenticate(provider, {}, (err, user) => {
@@ -498,7 +490,9 @@ const createApp = async (app, schema) => {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
-      res.redirect(referer ?? '/');
+      const referer = req.body.RelayState ?? req.session.referer;
+      const sanitizedReferer = sanitizeReferer(referer);
+      res.redirect(sanitizedReferer);
     }
   });
 

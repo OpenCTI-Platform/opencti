@@ -12,6 +12,8 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
     }, };
 });
 
+const baseUrl = getBaseUrl();
+
 describe('httpPlatform: sanitizeReferer function', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -19,18 +21,19 @@ describe('httpPlatform: sanitizeReferer function', () => {
   });
 
   describe('When refererToSanitize is undefined', () => {
-    it('should return /', () => {
+    it('should return baseUrl', () => {
       const result = sanitizeReferer(undefined);
-      expect(result).toBe('/');
+      expect(result).toBe(baseUrl);
+      expect(logApp.info).not.toHaveBeenCalled();
     });
   });
 
   describe('When refererToSanitize has same origin as baseUrl', () => {
     it('should return expected referer', () => {
-      const baseUrl = getBaseUrl();
       const refererToSanitize = `${baseUrl}/some/path`;
       const result = sanitizeReferer(refererToSanitize);
       expect(result).toBe(refererToSanitize);
+      expect(logApp.info).not.toHaveBeenCalled();
     });
   });
 
@@ -38,43 +41,44 @@ describe('httpPlatform: sanitizeReferer function', () => {
     it('should return expected referer', () => {
       const refererToSanitize = '/some-relative/path';
       const result = sanitizeReferer(refererToSanitize);
-      expect(result).toBe('/some-relative/path');
+      expect(result).toBe(`${baseUrl}/some-relative/path`);
+      expect(logApp.info).not.toHaveBeenCalled();
     });
   });
 
   describe('When refererToSanitize is correct and has hash and search params', () => {
     it('should return expected referer', () => {
-      const baseUrl = getBaseUrl();
       const refererToSanitize = `${baseUrl}/some/path?param=value#section`;
       const result = sanitizeReferer(refererToSanitize);
       expect(result).toBe(refererToSanitize);
+      expect(logApp.info).not.toHaveBeenCalled();
     });
   });
 
   describe('When refererToSanitize is not a correct value', () => {
-    it('should return /', () => {
+    it('should return baseUrl', () => {
       const refererToSanitize = 'http://www.wrong.com';
       const result = sanitizeReferer(refererToSanitize);
-      expect(result).toBe('/');
+      expect(result).toBe(baseUrl);
       expect(logApp.info).toHaveBeenCalled();
     });
   });
 
   describe('When refererToSanitize is not a domain name', () => {
-    it('should return /', () => {
+    it('should return baseUrl', () => {
       const refererToSanitize = 'www.wrong.com';
       const result = sanitizeReferer(refererToSanitize);
-      expect(result).toBe('/');
-      expect(logApp.info).toHaveBeenCalled();
+      expect(result).toBe(`${baseUrl}/www.wrong.com`);
+      expect(logApp.info).not.toHaveBeenCalled();
     });
   });
 
   describe('When refererToSanitize is not an IP', () => {
-    it('should return /', () => {
-      const refererToSanitize = '127.0.0.1';
+    it('should return baseUrl', () => {
+      const refererToSanitize = '22.0.0.1';
       const result = sanitizeReferer(refererToSanitize);
-      expect(result).toBe('/');
-      expect(logApp.info).toHaveBeenCalled();
+      expect(result).toBe(`${baseUrl}/22.0.0.1`);
+      expect(logApp.info).not.toHaveBeenCalled();
     });
   });
 });
