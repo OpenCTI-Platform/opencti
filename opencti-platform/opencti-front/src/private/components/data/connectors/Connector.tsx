@@ -10,7 +10,7 @@ import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import { useTheme } from '@mui/styles';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
@@ -50,6 +50,8 @@ import { Connector_connector$data } from './__generated__/Connector_connector.gr
 import { ConnectorUpdateTriggerMutation, EditInput } from './__generated__/ConnectorUpdateTriggerMutation.graphql';
 import { ConnectorUpdateStatusMutation } from './__generated__/ConnectorUpdateStatusMutation.graphql';
 import { ConnectorWorksQuery$data, ConnectorWorksQuery$variables } from './__generated__/ConnectorWorksQuery.graphql';
+import { truncate } from '../../../../utils/String';
+import { resolveLink } from '../../../../utils/Entity';
 
 // Type extension for organization node with authorized_authorities
 interface OrganizationNodeWithAuthorities {
@@ -198,6 +200,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     connector_state: connector.connector_state ?? '',
   });
 
+  const navigate = useNavigate();
+
   const connectorConfig = getConnectorConfig();
   const connectorTriggerStatus = getConnectorTriggerStatus(connectorConfig);
   const connectorOnlyContextualStatus = getConnectorOnlyContextualStatus(connectorConfig);
@@ -264,6 +268,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     setTabValue(newValue);
   };
 
+  const connectorLinkUrl = `${resolveLink('Ingestion-Catalog')}/${connector.manager_contract_excerpt?.slug}`;
+
   // Component for Overview content (without ConnectorWorks)
   const ConnectorOverview = () => (
     <>
@@ -279,6 +285,24 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           }} className={'paper-for-grid'} variant="outlined"
           >
             <Grid container={true} spacing={3}>
+              {
+                connector.is_managed && connector.manager_contract_excerpt && (
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>{t_i18n('Connector')}</Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        // use navigate to avoid reloading the app with href prop
+                        navigate(connectorLinkUrl);
+                      }}
+                    >
+                      {connector.manager_contract_excerpt?.title}
+                    </Button>
+                  </Grid>
+                )
+              }
+
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('Type')}
@@ -641,8 +665,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               {
                 connector.is_managed && (
                   <Grid item xs={6}>
-                    <Typography variant="h3">{t_i18n('Instance name')}</Typography>
-                    <Typography component="div" variant="body1">{connector.name}</Typography>
+                    <Typography variant="h3" gutterBottom={true}>{t_i18n('Connector identifier')}</Typography>
+                    <pre>
+                      <ItemCopy content={connector.name} />
+                    </pre>
                   </Grid>
                 )
               }
@@ -714,6 +740,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           marginBottom: theme.spacing(2),
         }}
       >
+
         <Typography
           variant="h1"
           gutterBottom={true}
@@ -725,11 +752,14 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             margin: 0,
           }}
         >
-          {connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name}
+          <Tooltip title={connector.title}>
+            {truncate(connector.title, 80)}
+          </Tooltip>
           <div style={{ display: 'inline-block' }}>
             <ConnectorStatusChip connector={connector} />
           </div>
         </Typography>
+
         <div style={{
           float: 'right',
           display: 'flex',
@@ -832,7 +862,8 @@ const Connector = createRefetchContainer(
           value
         }
         manager_contract_excerpt {
-            title
+          title
+          slug
         }
         manager_contract_definition
         manager_current_status

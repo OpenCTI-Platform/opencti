@@ -12,6 +12,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/threats/campaigns';
     case 'Connectors':
       return '/dashboard/data/ingestion/connectors';
+    case 'Ingestion-Catalog':
+      return '/dashboard/data/ingestion/catalog';
     case 'FintelTemplate':
       return '/dashboard/settings/customization/entity_types';
     case 'FintelDesign':
