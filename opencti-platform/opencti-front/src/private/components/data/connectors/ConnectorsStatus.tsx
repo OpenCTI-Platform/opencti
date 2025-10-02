@@ -407,8 +407,8 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 gridTemplateColumns: gridColumns,
                               }}
                             >
-                              <Tooltip title={connector.title} placement={'top'}>
-                                <div className={classes.bodyItem}>{connector.title}</div>
+                              <Tooltip title={connector.name} placement={'top'}>
+                                <div className={classes.bodyItem}>{connector.name}</div>
                               </Tooltip>
 
                               <div className={classes.bodyItem}>{connectorType}</div>

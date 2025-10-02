@@ -667,7 +667,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   <Grid item xs={6}>
                     <Typography variant="h3" gutterBottom={true}>{t_i18n('Connector identifier')}</Typography>
                     <pre>
-                      <ItemCopy content={connector.name} />
+                      <ItemCopy content={connector.identifier} />
                     </pre>
                   </Grid>
                 )
@@ -752,8 +752,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             margin: 0,
           }}
         >
-          <Tooltip title={connector.title}>
-            {truncate(connector.title, 80)}
+          <Tooltip title={connector.name}>
+            {truncate(connector.name, 80)}
           </Tooltip>
           <div style={{ display: 'inline-block' }}>
             <ConnectorStatusChip connector={connector} />
@@ -834,7 +834,7 @@ export const connectorQuery = graphql`
     connector(id: $id) {
       id
       name
-      title
+      identifier
       ...Connector_connector
     }
   }
@@ -847,7 +847,7 @@ const Connector = createRefetchContainer(
       fragment Connector_connector on Connector {
         id
         name
-        title
+        identifier
         active
         auto
         only_contextual

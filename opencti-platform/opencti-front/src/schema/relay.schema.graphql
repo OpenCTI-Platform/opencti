@@ -2318,7 +2318,7 @@ type Connector implements BasicObject & InternalObject {
   parent_types: [String]!
   metrics: [Metric]
   name: String!
-  title: String!
+  identifier: String!
   active: Boolean
   auto: Boolean
   auto_update: Boolean
