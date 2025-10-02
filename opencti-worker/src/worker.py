@@ -67,6 +67,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
     listen_api_https_proxy: str
     log_level: str = "info"
     json_logging: bool = True
+    thread_busy_wait: bool = True
     _is_interrupted: bool = False
 
     def __post_init__(self) -> None:
@@ -99,7 +100,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
             self.worker_logger.warning(str(err))
-        self.channel.basic_qos(prefetch_count=1)
+        self.channel.basic_qos(prefetch_count=self.execution_pool._max_workers + 1)
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
@@ -215,9 +216,10 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                     method.delivery_tag,
                     body,
                 )
-                while task_future.running():  # Loop while the thread is processing
-                    self.pika_connection.sleep(0.05)
-                self.worker_logger.info("Message processed, thread terminated")
+                if self.thread_busy_wait:
+                    while task_future.running():  # Loop while the thread is processing
+                        self.pika_connection.sleep(0.05)
+                    self.worker_logger.info("Message processed, thread terminated")
         except Exception as e:
             self.worker_logger.error("Unhandled exception", {"exception": e})
         finally:
@@ -236,6 +238,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     log_level: str
     ssl_verify: Union[bool, str] = False
     json_logging: bool = True
+    thread_busy_wait: bool = True
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -274,7 +277,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.channel.confirm_delivery()
         except Exception as err:  # pylint: disable=broad-except
             self.worker_logger.warning(str(err))
-        self.channel.basic_qos(prefetch_count=1)
+        self.channel.basic_qos(prefetch_count=self.execution_pool._max_workers + 1)
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
@@ -319,17 +322,27 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         imported_items = []
         start_processing = datetime.datetime.now()
         try:
+            api = OpenCTIApiClient(
+                url=self.opencti_url,
+                token=self.opencti_token,
+                log_level=self.log_level,
+                ssl_verify=self.ssl_verify,
+                json_logging=self.json_logging,
+                perform_health_check=False,
+            )
+
             # Set the API headers
-            self.api.set_applicant_id_header(data.get("applicant_id"))
-            self.api.set_playbook_id_header(data.get("playbook_id"))
-            self.api.set_event_id(data.get("event_id"))
-            self.api.set_draft_id(data.get("draft_id"))
+            api.set_applicant_id_header(data.get("applicant_id"))
+            api.set_playbook_id_header(data.get("playbook_id"))
+            api.set_event_id(data.get("event_id"))
+            api.set_draft_id(data.get("draft_id"))
             work_id = data["work_id"] if "work_id" in data else None
             no_split = data["no_split"] if "no_split" in data else False
             synchronized = data["synchronized"] if "synchronized" in data else False
-            self.api.set_synchronized_upsert_header(synchronized)
+            api.set_synchronized_upsert_header(synchronized)
             previous_standard = data.get("previous_standard")
-            self.api.set_previous_standard_header(previous_standard)
+            api.set_previous_standard_header(previous_standard)
+
             # Execute the import
             event_type = data["type"] if "type" in data else "bundle"
             types = (
@@ -346,7 +359,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     raise ValueError("JSON data type is not a STIX2 bundle")
                 if len(content_json["objects"]) == 1 or no_split:
                     update = data["update"] if "update" in data else False
-                    imported_items = self.api.stix2.import_bundle_from_json(
+                    imported_items = api.stix2.import_bundle_from_json(
                         content, update, types, work_id
                     )
                 else:
@@ -372,7 +385,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     )
                     # Add expectations to the work
                     if work_id is not None:
-                        self.api.work.add_expectations(work_id, expectations)
+                        api.work.add_expectations(work_id, expectations)
                     # For each split bundle, send it to the same queue
                     for bundle in bundles:
                         text_bundle = json.dumps(bundle)
@@ -403,7 +416,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [event_content["data"]],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     # Specific knowledge merge
@@ -424,7 +437,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [merge_object],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     # All standard operations
@@ -447,7 +460,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [data_object],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     case _:
@@ -500,9 +513,10 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         method.delivery_tag,
                         data,
                     )
-                    while task_future.running():  # Loop while the thread is processing
-                        self.pika_connection.sleep(0.05)
-                    self.worker_logger.info("Message processed, thread terminated")
+                    if self.thread_busy_wait:
+                        while task_future.running():  # Loop while the thread is processing
+                            self.pika_connection.sleep(0.05)
+                        self.worker_logger.info("Message processed, thread terminated")
                 except Exception as e:
                     self.worker_logger.error(
                         "Could not process message",
@@ -618,6 +632,13 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             False,
             "0.0.0.0",
         )
+        self.worker_thread_busy_wait = get_config_variable(
+            "WORKER_THREAD_BUSY_WAIT",
+            ["worker", "thread_busy_wait"],
+            config,
+            False,
+            True,
+        )
 
         # Telemetry
         if self.telemetry_enabled:
@@ -690,6 +711,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.log_level,
                                 self.opencti_ssl_verify,
                                 self.opencti_json_logging,
+                                self.worker_thread_busy_wait,
                             )
                             self.consumer_threads[push_queue].name = push_queue
                             self.consumer_threads[push_queue].start()
@@ -703,6 +725,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.log_level,
                             self.opencti_ssl_verify,
                             self.opencti_json_logging,
+                            self.worker_thread_busy_wait,
                         )
                         self.consumer_threads[push_queue].name = push_queue
                         self.consumer_threads[push_queue].start()
@@ -721,6 +744,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                     self.listen_api_https_proxy,
                                     self.log_level,
                                     self.opencti_json_logging,
+                                    self.worker_thread_busy_wait,
                                 )
                                 self.listen_api_threads[listen_queue].name = (
                                     listen_queue
@@ -736,6 +760,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.listen_api_https_proxy,
                                 self.log_level,
                                 self.opencti_json_logging,
+                                self.worker_thread_busy_wait,
                             )
                             self.listen_api_threads[listen_queue].name = listen_queue
                             self.listen_api_threads[listen_queue].start()
