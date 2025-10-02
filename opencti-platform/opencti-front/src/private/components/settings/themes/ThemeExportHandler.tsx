@@ -16,18 +16,16 @@ const ThemeExportHandlerQuery = graphql`
   }
 `;
 
-const handleExportJson = (theme: themeToExport) => {
-  fetchQuery(ThemeExportHandlerQuery, { id: theme.id })
-    .toPromise()
-    .then((data) => {
-      const result = data as ThemeExportHandlerQuery$data;
-      if (result.theme) {
-        const blob = new Blob([result.theme.toConfigurationExport], { type: 'text/json' });
-        const todayDate = new Date().toISOString().split('T')[0].replaceAll('-', '');
-        const fileName = `${todayDate}_octi_theme_${theme.name}.json`;
-        fileDownload(blob, fileName);
-      }
-    });
+const handleExportJson = async (theme: themeToExport) => {
+  const data = await fetchQuery(ThemeExportHandlerQuery, { id: theme.id }).toPromise();
+  const result = data as ThemeExportHandlerQuery$data;
+
+  if (!result.theme) return;
+
+  const blob = new Blob([result.theme.toConfigurationExport], { type: 'text/json' });
+  const todayDate = new Date().toISOString().split('T')[0].replaceAll('-', '');
+  const fileName = `${todayDate}_octi_theme_${theme.name}.json`;
+  fileDownload(blob, fileName);
 };
 
 export default handleExportJson;

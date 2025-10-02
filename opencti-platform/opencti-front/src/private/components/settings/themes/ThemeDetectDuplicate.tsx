@@ -5,9 +5,7 @@ import { fetchQuery } from '../../../../relay/environment';
 import { ThemeDetectDuplicateQuery$data } from './__generated__/ThemeDetectDuplicateQuery.graphql';
 
 const themesQuery = graphql`
-  query ThemeDetectDuplicateQuery(
-    $filters: FilterGroup
-  ) {
+  query ThemeDetectDuplicateQuery($filters: FilterGroup) {
     themes(filters: $filters) {
       edges {
         node {
@@ -25,57 +23,63 @@ interface ThemeDetectDuplicateProps {
 }
 
 const ThemeDetectDuplicate: FunctionComponent<ThemeDetectDuplicateProps> = ({
-  themeName,
-  themeId,
-}) => {
+                                                                              themeName,
+                                                                              themeId,
+                                                                            }) => {
   const { t_i18n } = useFormatter();
-  const [potentialDuplicates, setPotentialDuplicates] = useState<string[]>([]);
+  const [duplicateCount, setDuplicateCount] = useState<number>(0);
 
   useEffect(() => {
-    if (themeName.length >= 2) {
-      fetchQuery(themesQuery, {
-        filters: {
-          mode: 'and',
-          filters: [{
-            key: 'name',
-            values: [themeName],
-            operator: 'search',
-          }],
-          filterGroups: [],
-        },
-      })
-        .toPromise()
-        .then((data) => {
-          const themes = (data as ThemeDetectDuplicateQuery$data).themes?.edges ?? [];
-          const themeNames = themes
-            .filter((theme) => !!theme)
-            .filter((theme) => theme.node.id !== themeId)
-            .map((theme) => theme?.node.name);
-          setPotentialDuplicates(themeNames);
-        });
-    }
-  }, [themeName]);
+    const fetchDuplicates = async () => {
+      if (themeName.length < 2) {
+        setDuplicateCount(0);
+        return;
+      }
 
-  if (potentialDuplicates.length > 1) {
-    return (
-      <span>
-        {potentialDuplicates.length} {t_i18n('potential duplicate entities')}
-        {' '}
-        {t_i18n('have been found.')}
-      </span>
-    );
-  } if (potentialDuplicates.length === 1) {
-    return (
-      <span>
-        1 {t_i18n('potential duplicate entity')}
-        {' '}
-        {t_i18n('has been found.')}
-      </span>
-    );
-  }
-  return (
-    <span>{t_i18n('No potential duplicate entities has been found.')}</span>
-  );
+      try {
+        const data = await fetchQuery(themesQuery, {
+          filters: {
+            mode: 'and',
+            filters: [{
+              key: 'name',
+              values: [themeName],
+              operator: 'search',
+            }],
+            filterGroups: [],
+          },
+        }).toPromise();
+
+        const result = data as ThemeDetectDuplicateQuery$data;
+        const themes = result.themes?.edges ?? [];
+
+        const duplicates = themes
+          .filter((theme) => theme?.node.id !== themeId)
+          .map((theme) => theme?.node.name)
+          .filter(Boolean);
+
+        setDuplicateCount(duplicates.length);
+      } catch (error) {
+        // console.error('Failed to fetch duplicate themes:', error);
+        setDuplicateCount(0);
+      }
+    };
+
+    fetchDuplicates();
+  }, [themeName, themeId]);
+
+  const renderMessage = () => {
+    if (duplicateCount === 0) {
+      return t_i18n('No potential duplicate entities has been found.');
+    }
+
+    if (duplicateCount === 1) {
+      return `1 ${t_i18n('potential duplicate entity')} ${t_i18n('has been found.')}`;
+    }
+
+    return `${duplicateCount} ${t_i18n('potential duplicate entities')} ${t_i18n('have been found.')}`;
+  };
+
+  return <span>{renderMessage()}</span>;
 };
 
 export default ThemeDetectDuplicate;

@@ -25,6 +25,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+
   const [commit] = useApiMutation<ThemeImporterImportMutation>(
     importMutation,
     undefined,
@@ -37,7 +38,9 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
   const handleImport = (event: FormEvent) => {
     const inputElement = event.target as HTMLInputElement;
     const file = inputElement.files?.[0];
+
     if (!file) return;
+
     commit({
       variables: { file },
       updater: (store: RecordSourceSelectorProxy) => {
