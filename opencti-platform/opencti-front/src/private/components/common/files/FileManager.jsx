@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose, filter, flatten, fromPairs, includes, map, uniq, zip } from 'ramda';
@@ -28,6 +28,9 @@ import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import PictureManagementViewer from './PictureManagementViewer';
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
+import {
+  CreateRelationshipContext
+} from "@components/common/stix_core_relationships/CreateRelationshipContextProvider";
 
 const styles = (theme) => ({
   container: {
@@ -140,6 +143,13 @@ const FileManager = ({
   isArtifact,
   directDownload = false,
 }) => {
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
+  useEffect(() => {
+    setCreateRelationshipContext({
+      stixCoreObjectTypes: ['Stix-Core-Object'],
+    });
+  }, []);
+
   const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);

@@ -1,28 +1,25 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { CircularProgress, Fab } from '@mui/material';
 import { ChevronRightOutlined } from '@mui/icons-material';
-import { StixCoreRelationshipCreationFromEntityQuery } from './__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import {
-  stixCoreRelationshipCreationFromEntityQuery,
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment,
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesFragment,
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
   TargetEntity,
 } from './StixCoreRelationshipCreationFromEntity';
 import { PaginationOptions } from '../../../../components/list_lines';
-import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../../components/i18n';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { ModuleHelper } from '../../../../utils/platformModulesHelper';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
-import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import {
   type StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery as StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType,
+  StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
 } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
@@ -30,45 +27,62 @@ import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data } 
 import BulkRelationDialogContainer from '../bulk/dialog/BulkRelationDialogContainer';
 import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
+import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { StixCoreRelationshipCreationSelectEntityStage_stixCoreObject$key } from './__generated__/StixCoreRelationshipCreationSelectEntityStage_stixCoreObject.graphql';
 
 interface StixCoreRelationshipCreationSelectEntityStageProps {
   handleNextStep: () => void;
   storageKey: string;
-  entityId: string;
-  queryRef: PreloadedQuery<
-  StixCoreRelationshipCreationFromEntityQuery,
-  Record<string, unknown>
-  >;
+  data: StixCoreRelationshipCreationSelectEntityStage_stixCoreObject$key;
   targetEntities: TargetEntity[];
   setTargetEntities: React.Dispatch<React.SetStateAction<TargetEntity[]>>;
-  searchPaginationOptions: PaginationOptions;
-  helpers: UseLocalStorageHelpers;
-  contextFilters: FilterGroup;
   virtualEntityTypes: string[];
   handleClose: () => void;
 }
+
+const fragment = graphql`
+  fragment StixCoreRelationshipCreationSelectEntityStage_stixCoreObject on StixCoreObject {
+    id
+    representative {
+      main
+    }
+    entity_type
+  }
+`;
 
 const StixCoreRelationshipCreationSelectEntityStage: FunctionComponent<
 StixCoreRelationshipCreationSelectEntityStageProps
 > = ({
   handleNextStep,
   storageKey,
-  entityId,
-  queryRef: queryRefProps,
+  data,
   targetEntities,
   setTargetEntities,
-  searchPaginationOptions,
-  helpers,
-  contextFilters,
   virtualEntityTypes,
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
-  const { stixCoreObject } = usePreloadedQuery(
-    stixCoreRelationshipCreationFromEntityQuery,
-    queryRefProps,
+  const stixCoreObject = useFragment(fragment, data);
+
+  const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
+    storageKey,
+    {
+      orderAsc: false,
+      sortBy: '_score',
+      searchTerm: '',
+    },
+    true,
   );
+  const { searchTerm, orderAsc, sortBy, filters } = viewStorage;
+
+  const contextFilters = useBuildEntityTypeBasedFilterContext(virtualEntityTypes, filters);
+  const searchPaginationOptions: PaginationOptions = {
+    search: searchTerm,
+    filters: contextFilters,
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+  } as PaginationOptions;
 
   // Fetch from context
   const { state: {
@@ -170,7 +184,7 @@ StixCoreRelationshipCreationSelectEntityStageProps
               variant={DataTableVariant.inline}
               rootRef={tableRootRef ?? undefined}
               dataColumns={buildColumns(platformModuleHelpers)}
-              resolvePath={(data: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => data.stixCoreObjects?.edges?.map((n) => n?.node)}
+              resolvePath={(d: StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data) => d.stixCoreObjects?.edges?.map((n) => n?.node)}
               storageKey={storageKey}
               lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
               initialValues={{}}
@@ -184,8 +198,8 @@ StixCoreRelationshipCreationSelectEntityStageProps
                   paginationOptions={searchPaginationOptions}
                   paginationKey="Pagination_stixCoreObjects"
                   key="BulkRelationDialogContainer"
-                  stixDomainObjectId={entityId}
-                  stixDomainObjectName={stixCoreObject.name ?? ''}
+                  stixDomainObjectId={stixCoreObject.id}
+                  stixDomainObjectName={stixCoreObject.representative.main ?? ''}
                   stixDomainObjectType={stixCoreObject.entity_type}
                   defaultRelationshipType={allowedRelationshipTypes?.[0]}
                   selectedEntities={targetEntities}

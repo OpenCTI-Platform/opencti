@@ -1,14 +1,12 @@
 import { Button } from '@mui/material';
-import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
+import React, { FunctionComponent, useContext, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import {
+  StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key,
+} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityHeader_stixCoreObject.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../drawer/Drawer';
-import { stixCoreRelationshipCreationFromEntityQuery, TargetEntity } from './StixCoreRelationshipCreationFromEntity';
-import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
-import { PaginationOptions } from '../../../../components/list_lines'; import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { StixCoreRelationshipCreationFromEntityQuery } from './__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
+import { TargetEntity } from './StixCoreRelationshipCreationFromEntity';
 import StixCoreRelationshipCreationHeaderButtons from './StixCoreRelationshipCreationHeaderButtons';
 import StixCoreRelationshipCreationSelectEntityStage from './StixCoreRelationshipCreationSelectEntityStage';
 import StixCoreRelationshipCreationFormStage from './StixCoreRelationshipCreationFormStage';
@@ -23,23 +21,23 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
  * the user more flexibility in where they can create relationships from.
  */
 
+const relationshipCreationFromEntityFragment = graphql`
+  fragment StixCoreRelationshipCreationFromEntityHeader_stixCoreObject on StixCoreObject {
+    id
+    ...StixCoreRelationshipCreationSelectEntityStage_stixCoreObject
+    ...StixCoreRelationshipCreationFormStage_stixCoreObject
+  }
+`;
+
 interface StixCoreRelationshipCreationFromEntityHeaderProps {
-  entityId: string;
-  targetEntities?: TargetEntity[];
-  handleReverseRelation?: () => void;
-  defaultStartTime?: string;
-  defaultStopTime?: string;
+  data: StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key;
 }
 
 const StixCoreRelationshipCreationFromEntityHeader: FunctionComponent<
 StixCoreRelationshipCreationFromEntityHeaderProps
-> = ({
-  entityId,
-  targetEntities: initialTargetEntities = [],
-  defaultStartTime = (new Date()).toISOString(),
-  defaultStopTime = (new Date()).toISOString(),
-}) => {
+> = ({ data }) => {
   const { t_i18n } = useFormatter();
+  const stixCoreObject = useFragment(relationshipCreationFromEntityFragment, data);
 
   // Fetch from context
   const { state: {
@@ -50,9 +48,7 @@ StixCoreRelationshipCreationFromEntityHeaderProps
   const targetStixDomainObjectTypes = computeTargetStixDomainObjectTypes(stixCoreObjectTypes);
   const targetStixCyberObservableTypes = computeTargetStixCyberObservableTypes(stixCoreObjectTypes);
 
-  const [targetEntities, setTargetEntities] = useState<TargetEntity[]>(
-    initialTargetEntities,
-  );
+  const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
 
   // Drawer and form control
   const [open, setOpen] = useState<boolean>(false);
@@ -68,36 +64,7 @@ StixCoreRelationshipCreationFromEntityHeaderProps
     setTargetEntities([]);
   };
 
-  const storageKey = `stixCoreRelationshipCreationFromEntity-${entityId}-${targetStixDomainObjectTypes.join('-')}-${targetStixCyberObservableTypes.join('-')}`;
-
-  const [sortBy, setSortBy] = useState('_score');
-  const [orderAsc, setOrderAsc] = useState(false);
-  const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
-    storageKey,
-    {},
-    true,
-  );
-  const { searchTerm = '', orderAsc: storageOrderAsc, sortBy: storageSortBy, filters } = viewStorage;
-  useEffect(() => {
-    if (storageSortBy && (storageSortBy !== sortBy)) setSortBy(storageSortBy);
-    if (storageOrderAsc !== undefined && (storageOrderAsc !== orderAsc)) setOrderAsc(storageOrderAsc);
-  }, [storageOrderAsc, storageSortBy]);
-  const contextFilters = useBuildEntityTypeBasedFilterContext(stixCoreObjectTypes, filters);
-  const searchPaginationOptions: PaginationOptions = {
-    search: searchTerm,
-    filters: contextFilters,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-  } as PaginationOptions;
-
-  const queryRef = useQueryLoading<
-  StixCoreRelationshipCreationFromEntityQuery
-  >(
-    stixCoreRelationshipCreationFromEntityQuery,
-    { id: entityId },
-  );
-
-  if (!queryRef) return <Loader variant={LoaderVariant.inElement} />;
+  const storageKey = `stixCoreRelationshipCreationFromEntity-${stixCoreObject.id}-${targetStixDomainObjectTypes.join('-')}-${targetStixCyberObservableTypes.join('-')}`;
 
   return (
     <>
@@ -120,8 +87,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
             show={step < 1}
             showSDOs={targetStixDomainObjectTypes.length > 0}
             showSCOs={targetStixCyberObservableTypes.length > 0}
-            searchTerm={searchTerm}
-            searchPaginationOptions={searchPaginationOptions}
             actualTypeFilterValues={[
               ...targetStixDomainObjectTypes,
               ...targetStixCyberObservableTypes,
@@ -134,25 +99,18 @@ StixCoreRelationshipCreationFromEntityHeaderProps
             <StixCoreRelationshipCreationSelectEntityStage
               handleNextStep={() => setStep(1)}
               storageKey={storageKey}
-              entityId={entityId}
-              queryRef={queryRef}
+              data={stixCoreObject}
               targetEntities={targetEntities}
               setTargetEntities={setTargetEntities}
-              searchPaginationOptions={searchPaginationOptions}
-              helpers={helpers}
-              contextFilters={contextFilters}
               virtualEntityTypes={stixCoreObjectTypes}
               handleClose={handleClose}
             />
           ) : (
             <StixCoreRelationshipCreationFormStage
               targetEntities={targetEntities}
-              queryRef={queryRef}
               handleResetSelection={handleResetSelection}
               handleClose={handleClose}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
-              entityId={entityId}
+              data={stixCoreObject}
             />
           )
         }

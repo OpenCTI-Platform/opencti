@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Button } from '@mui/material';
-import { PaginationOptions } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
@@ -9,8 +8,6 @@ interface StixCoreRelationshipCreationHeaderButtonsProps {
   show: boolean;
   showSDOs: boolean;
   showSCOs: boolean;
-  searchTerm: string;
-  searchPaginationOptions: PaginationOptions;
   actualTypeFilterValues: string[];
 }
 
@@ -20,8 +17,6 @@ StixCoreRelationshipCreationHeaderButtonsProps
   show,
   showSDOs,
   showSCOs,
-  searchTerm,
-  searchPaginationOptions,
   actualTypeFilterValues,
 }) => {
   const { t_i18n } = useFormatter();
@@ -41,9 +36,9 @@ StixCoreRelationshipCreationHeaderButtonsProps
       {showSDOs && (
         <StixDomainObjectCreation
           display={true}
-          inputValue={searchTerm}
+          inputValue={undefined}
           paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={searchPaginationOptions}
+          paginationOptions={undefined}
           speeddial={false}
           open={undefined}
           handleClose={undefined}
@@ -69,9 +64,9 @@ StixCoreRelationshipCreationHeaderButtonsProps
       <StixCyberObservableCreation
         display={true}
         contextual={true}
-        inputValue={searchTerm}
+        inputValue={undefined}
         paginationKey="Pagination_stixCoreObjects"
-        paginationOptions={searchPaginationOptions}
+        paginationOptions={undefined}
         speeddial={true}
         open={openCreateObservable}
         handleClose={handleCloseCreateObservable}

@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, useContext, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -6,6 +6,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { FileDownloadOutlined, ViewListOutlined } from '@mui/icons-material';
 import { VectorPolygon } from 'mdi-material-ui';
+import { CreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import StixCoreObjectOrStixCoreRelationshipContainersLines, {
@@ -55,6 +56,13 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
       ? `-${authorId}`
       : `-${stixDomainObjectOrStixCoreRelationship.id}`
   }`;
+
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
+  useEffect(() => {
+    setCreateRelationshipContext({
+      stixCoreObjectTypes: ['Stix-Core-Object'],
+    });
+  }, []);
 
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,

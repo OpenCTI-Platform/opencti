@@ -1,16 +1,14 @@
 import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
-import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { CircularProgress } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik';
 import {
   StixCoreRelationshipCreationFromEntityForm,
   stixCoreRelationshipCreationFromEntityFromMutation,
-  stixCoreRelationshipCreationFromEntityQuery,
   stixCoreRelationshipCreationFromEntityToMutation,
   TargetEntity,
 } from './StixCoreRelationshipCreationFromEntity';
-import { StixCoreRelationshipCreationFromEntityQuery } from './__generated__/StixCoreRelationshipCreationFromEntityQuery.graphql';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { insertNode } from '../../../../utils/store';
 import { formatDate } from '../../../../utils/Time';
@@ -19,30 +17,32 @@ import { resolveRelationsTypes } from '../../../../utils/Relation';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { StixCoreRelationshipCreationFormStage_stixCoreObject$key } from './__generated__/StixCoreRelationshipCreationFormStage_stixCoreObject.graphql';
 
 interface StixCoreRelationshipCreationFormStageProps {
   targetEntities: TargetEntity[];
-  queryRef: PreloadedQuery<StixCoreRelationshipCreationFromEntityQuery, Record<string, unknown>>;
+  data: StixCoreRelationshipCreationFormStage_stixCoreObject$key;
   handleResetSelection: () => void;
   handleClose: () => void;
-  defaultStartTime: string;
-  defaultStopTime: string;
-  entityId: string;
 }
+
+const fragment = graphql`
+  fragment StixCoreRelationshipCreationFormStage_stixCoreObject on StixCoreObject {
+    id
+    representative {
+      main
+    }
+    entity_type
+  }
+`;
 
 const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelationshipCreationFormStageProps> = ({
   targetEntities,
-  queryRef,
+  data,
   handleResetSelection,
   handleClose,
-  defaultStartTime,
-  defaultStopTime,
-  entityId,
 }) => {
-  const { stixCoreObject } = usePreloadedQuery(
-    stixCoreRelationshipCreationFromEntityQuery,
-    queryRef,
-  );
+  const stixCoreObject = useFragment(fragment, data);
 
   const { state: {
     relationshipTypes: allowedRelationshipTypes,
@@ -89,8 +89,8 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
   const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     setSubmitting(true);
     for (const targetEntity of targetEntities) {
-      const fromEntityId = reversed ? targetEntity.id : entityId;
-      const toEntityId = reversed ? entityId : targetEntity.id;
+      const fromEntityId = reversed ? targetEntity.id : stixCoreObject.id;
+      const toEntityId = reversed ? stixCoreObject.id : targetEntity.id;
       const finalValues = {
         ...values,
         confidence: parseInt(values.confidence, 10),
@@ -175,8 +175,8 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
             handleResetSelection={handleResetSelection}
             onSubmit={onSubmit}
             handleClose={handleClose}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
+            defaultStartTime={(new Date()).toISOString()}
+            defaultStopTime={(new Date()).toISOString()}
             defaultConfidence={undefined}
             defaultCreatedBy={undefined}
             defaultMarkingDefinitions={undefined}
