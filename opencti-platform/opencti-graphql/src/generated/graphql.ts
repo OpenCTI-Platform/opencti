@@ -1971,6 +1971,8 @@ export enum CampaignsOrdering {
 }
 
 export enum Capabilities {
+  Automation = 'AUTOMATION',
+  AutomationAutomationmanage = 'AUTOMATION_AUTOMATIONMANAGE',
   Bypass = 'BYPASS',
   Connectorapi = 'CONNECTORAPI',
   Csvmappers = 'CSVMAPPERS',
