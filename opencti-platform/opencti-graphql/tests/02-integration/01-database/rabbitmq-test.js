@@ -20,7 +20,7 @@ describe('Rabbit connector management', () => {
   });
   it('should connector queues available', async () => {
     const data = await metrics(testContext, ADMIN_USER);
-    expect(data.queues.length).toEqual(18);
+    expect(data.queues.length).toEqual(20);
     const aggregationMap = new Map(data.queues.map((q) => [q.name, q]));
     expect(aggregationMap.get(`${RABBIT_QUEUE_PREFIX}listen_${testConnectorId}`)).toBeDefined();
     expect(aggregationMap.get(`${RABBIT_QUEUE_PREFIX}push_${testConnectorId}`)).toBeDefined();

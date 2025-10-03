@@ -236,6 +236,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     log_level: str
     ssl_verify: Union[bool, str] = False
     json_logging: bool = True
+    objects_max_deps: int = 0
 
     def __post_init__(self) -> None:
         super().__init__()
@@ -278,6 +279,11 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
+        self.listen_too_large_routing = (
+            self.connector["config"]["push_routing"]
+            .replace("push_routing", "listen_routing")
+            .replace(self.connector["id"], "too-large-bundle")
+        )
 
     @property
     def id(self) -> Any:  # pylint: disable=inconsistent-return-statements
@@ -307,6 +313,28 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.worker_logger.info(
                 "Message NOT acknowledged (channel closed)", {"tag": delivery_tag}
             )
+
+    def send_bundle_to_specific_queue(
+        self,
+        push_channel: BlockingChannel,
+        exchange: str,
+        routing_key: str,
+        data: Any,
+        bundle: Any,
+    ):
+        text_bundle = json.dumps(bundle)
+        data["content"] = base64.b64encode(
+            text_bundle.encode("utf-8", "escape")
+        ).decode("utf-8")
+        push_channel.basic_publish(
+            exchange=exchange,
+            routing_key=routing_key,
+            body=json.dumps(data),
+            properties=pika.BasicProperties(
+                delivery_mode=2,
+                content_encoding="utf-8",  # make message persistent
+            ),
+        )
 
     # Data handling
     def data_handler(  # pylint: disable=too-many-statements, too-many-locals
@@ -346,9 +374,28 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     raise ValueError("JSON data type is not a STIX2 bundle")
                 if len(content_json["objects"]) == 1 or no_split:
                     update = data["update"] if "update" in data else False
-                    imported_items = self.api.stix2.import_bundle_from_json(
-                        content, update, types, work_id
+                    imported_items, too_large_items_bundles = (
+                        self.api.stix2.import_bundle_from_json(
+                            content, update, types, work_id, self.objects_max_deps
+                        )
                     )
+                    if len(too_large_items_bundles) > 0:
+                        push_pika_connection = pika.BlockingConnection(
+                            self.pika_parameters
+                        )
+                        push_channel = push_pika_connection.channel()
+                        try:
+                            push_channel.confirm_delivery()
+                        except Exception as err:  # pylint: disable=broad-except
+                            self.worker_logger.warning(str(err))
+                        for too_large_item_bundle in too_large_items_bundles:
+                            self.send_bundle_to_specific_queue(
+                                push_channel,
+                                self.connector["config"]["listen_exchange"],
+                                self.listen_too_large_routing,
+                                data,
+                                too_large_item_bundle,
+                            )
                 else:
                     # As bundle is received as complete, split and requeue
                     # Create a specific channel to push the split bundles
@@ -364,8 +411,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         if "x_opencti_event_version" in content_json
                         else None
                     )
-                    stix2_splitter = OpenCTIStix2Splitter()
-                    expectations, _, bundles = (
+                    stix2_splitter = OpenCTIStix2Splitter(self.objects_max_deps)
+                    expectations, _, bundles, too_large_elements_bundles = (
                         stix2_splitter.split_bundle_with_expectations(
                             content_json, False, event_version
                         )
@@ -373,20 +420,23 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                     # Add expectations to the work
                     if work_id is not None:
                         self.api.work.add_expectations(work_id, expectations)
+                    # For each bundle too large, send it to the too large queue
+                    for too_large_elements_bundle in too_large_elements_bundles:
+                        self.send_bundle_to_specific_queue(
+                            push_channel,
+                            self.connector["config"]["listen_exchange"],
+                            self.listen_too_large_routing,
+                            data,
+                            too_large_elements_bundle,
+                        )
                     # For each split bundle, send it to the same queue
                     for bundle in bundles:
-                        text_bundle = json.dumps(bundle)
-                        data["content"] = base64.b64encode(
-                            text_bundle.encode("utf-8", "escape")
-                        ).decode("utf-8")
-                        push_channel.basic_publish(
-                            exchange=self.connector["config"]["push_exchange"],
-                            routing_key=self.connector["config"]["push_routing"],
-                            body=json.dumps(data),
-                            properties=pika.BasicProperties(
-                                delivery_mode=2,
-                                content_encoding="utf-8",  # make message persistent
-                            ),
+                        self.send_bundle_to_specific_queue(
+                            push_channel,
+                            self.connector["config"]["push_exchange"],
+                            self.connector["config"]["push_routing"],
+                            data,
+                            bundle,
                         )
                     push_channel.close()
                     push_pika_connection.close()
@@ -403,7 +453,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [event_content["data"]],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items, _ = self.api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     # Specific knowledge merge
@@ -424,7 +474,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [merge_object],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items, _ = self.api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     # All standard operations
@@ -447,7 +497,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [data_object],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items, _ = self.api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     case _:
@@ -596,6 +646,13 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             default="",
         )
+        self.stix_object_max_deps = get_config_variable(
+            "WORKER_OBJECTs_MAX_DEPS",
+            ["worker", "objects_max_deps"],
+            config,
+            True,
+            100000,
+        )
         # Telemetry
         self.telemetry_enabled = get_config_variable(
             "WORKER_TELEMETRY_ENABLED",
@@ -690,6 +747,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.log_level,
                                 self.opencti_ssl_verify,
                                 self.opencti_json_logging,
+                                self.stix_object_max_deps,
                             )
                             self.consumer_threads[push_queue].name = push_queue
                             self.consumer_threads[push_queue].start()
@@ -703,6 +761,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.log_level,
                             self.opencti_ssl_verify,
                             self.opencti_json_logging,
+                            self.stix_object_max_deps,
                         )
                         self.consumer_threads[push_queue].name = push_queue
                         self.consumer_threads[push_queue].start()
