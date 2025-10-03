@@ -43,7 +43,8 @@ import {
   SCORE_FILTER,
   SEVERITY_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER
+  WORKFLOW_FILTER,
+  PATTERN_TYPE_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -261,10 +262,18 @@ export const testConfidence = (stix: any, filter: Filter) => {
 };
 
 /**
+ * PATTERN TYPE
+ */
+export const testPatternType = (stix: any, filter: Filter) => {
+  const stixValues: string[] = toValidArray(stix.pattern_type);
+  return testStringFilter(filter, stixValues);
+};
+
+/**
  * PATTERN
  */
 export const testPattern = (stix: any, filter: Filter) => {
-  const stixValues: string[] = toValidArray(stix.pattern_type);
+  const stixValues: string[] = toValidArray(stix.pattern);
   return testStringFilter(filter, stixValues);
 };
 
@@ -471,6 +480,7 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [MAIN_OBSERVABLE_TYPE_FILTER]: testMainObservableType,
   [MARKING_FILTER]: testMarkingFilter,
   [OBJECT_CONTAINS_FILTER]: testObjectContains,
+  [PATTERN_TYPE_FILTER]: testPatternType,
   [PATTERN_FILTER]: testPattern,
   [PRIORITY_FILTER]: testPriority,
   [REVOKED_FILTER]: testRevoked,
