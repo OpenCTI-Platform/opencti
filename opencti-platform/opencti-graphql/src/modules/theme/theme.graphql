@@ -11,9 +11,9 @@ type Theme implements InternalObject & BasicObject {
   theme_primary: String!
   theme_secondary: String!
   theme_accent: String!
-  theme_logo: String!
-  theme_logo_collapsed: String!
-  theme_logo_login: String!
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
   theme_text_color: String!
   toConfigurationExport: String!
 }
@@ -58,9 +58,9 @@ input ThemeAddInput {
   theme_primary: String!
   theme_secondary: String!
   theme_accent: String!
-  theme_logo: String!
-  theme_logo_collapsed: String!
-  theme_logo_login: String!
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
   theme_text_color: String!
 }
 
