@@ -22,7 +22,7 @@ export const completeConnector = (connector) => {
   if (connector) {
     const completed = { ...connector };
     completed.name = connector.name;
-    completed.identifier = connector.identifier || '';
+    completed.container_name = connector.container_name || '';
     completed.is_managed = isNotEmptyField(connector.catalog_id);
     completed.connector_scope = connector.connector_scope ? connector.connector_scope.split(',') : [];
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);

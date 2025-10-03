@@ -42,7 +42,7 @@ const useConnectorsStatusFilters = ({ connectors, searchParams }: UseConnectorsS
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       const connectorIdentifierMatch = connector.name?.toLowerCase().includes(searchLower);
-      const displayNameMatch = connector.title?.toLowerCase().includes(searchLower);
+      const displayNameMatch = connector.container_name?.toLowerCase().includes(searchLower);
       if (!connectorIdentifierMatch && !displayNameMatch) return false;
     }
 

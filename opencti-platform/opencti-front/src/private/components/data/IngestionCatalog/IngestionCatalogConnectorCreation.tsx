@@ -339,18 +339,7 @@ const IngestionCatalogConnectorCreation = ({
                     fullWidth={true}
                     onChange={(_: string, value: string) => {
                       setFieldValue('name', sanitizeContainerName(value));
-                      setFieldValue('identifier', sanitizeContainerName(value));
                     }}
-                  />
-
-                  <Field
-                    component={TextField}
-                    style={fieldSpacingContainerStyle}
-                    variant="standard"
-                    name="identifier"
-                    label={t_i18n('Connector identifier')}
-                    fullWidth={true}
-                    disabled
                   />
 
                   <IngestionCreationUserHandling
