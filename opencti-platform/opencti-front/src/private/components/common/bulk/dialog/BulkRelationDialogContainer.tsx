@@ -14,6 +14,7 @@ type BulkRelationDialogContainerProps = {
   paginationKey: string;
   paginationOptions: PaginationOptions;
   targetObjectTypes: string[];
+  onBulkCreate: () => void;
 };
 
 const inlinedStyle = {
@@ -32,6 +33,7 @@ const BulkRelationDialogContainer = ({
   paginationKey,
   paginationOptions,
   targetObjectTypes,
+  onBulkCreate,
 }: BulkRelationDialogContainerProps) => {
   const { t_i18n } = useFormatter();
 
@@ -58,6 +60,7 @@ const BulkRelationDialogContainer = ({
           targetObjectTypes={targetObjectTypes}
           onClose={handleCloseDialog}
           selectedEntities={selectedEntities}
+          onBulkCreate={onBulkCreate}
         />
       )}
     </>

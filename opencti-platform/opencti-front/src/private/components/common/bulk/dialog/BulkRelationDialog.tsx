@@ -78,6 +78,7 @@ interface BulkRelationDialogProps {
   paginationKey: string;
   paginationOptions: PaginationOptions;
   targetObjectTypes: string[];
+  onBulkCreate: () => void;
 }
 
 export interface BulkEntityTypeInfo {
@@ -172,6 +173,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
   paginationKey,
   paginationOptions,
   targetObjectTypes,
+  onBulkCreate,
 }) => {
   const { t_i18n } = useFormatter();
   const [textAreaValue, setTextAreaValue] = useState<string[]>([...selectedEntities.map((item) => item.name ?? '')]);
@@ -414,6 +416,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
     }
     setIsSubmitting(false);
     onClose();
+    onBulkCreate();
     dispatchEvent(new CustomEvent(ForceUpdateEvent));
   };
   const getTextAreaValue = () => textAreaValue.join('\n');
