@@ -60,6 +60,7 @@ const ThreatActorIndividualQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject @arguments(relatedRelationshipTypes: $relatedRelationshipTypes)
       ...ThreatActorIndividual_ThreatActorIndividual
       ...ThreatActorIndividualKnowledge_ThreatActorIndividual
@@ -169,7 +170,7 @@ const RootThreatActorIndividualComponent = ({
               RelateComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <StixCoreRelationshipCreationFromEntityHeader
-                    entityId={threatActorIndividual.id}
+                    data={threatActorIndividual}
                   />
                 </Security>
               )}
