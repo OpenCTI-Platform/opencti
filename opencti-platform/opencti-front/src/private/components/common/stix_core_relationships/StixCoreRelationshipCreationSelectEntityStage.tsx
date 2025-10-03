@@ -8,7 +8,7 @@ import {
   stixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery,
   TargetEntity,
 } from './StixCoreRelationshipCreationFromEntity';
-import { PaginationOptions } from '../../../../components/list_lines';
+import { OrderMode, PaginationOptions } from '../../../../components/list_lines';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../../components/i18n';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
@@ -25,7 +25,7 @@ import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data } from './__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data.graphql';
 import BulkRelationDialogContainer from '../bulk/dialog/BulkRelationDialogContainer';
-import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
+import { CreateRelationshipContext, useInitCreateRelationshipContext } from './CreateRelationshipContextProvider';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { StixCoreRelationshipCreationSelectEntityStage_stixCoreObject$key } from './__generated__/StixCoreRelationshipCreationSelectEntityStage_stixCoreObject.graphql';
@@ -81,14 +81,17 @@ StixCoreRelationshipCreationSelectEntityStageProps
     search: searchTerm,
     filters: contextFilters,
     orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-  } as PaginationOptions;
+    orderMode: (orderAsc ? 'asc' : 'desc') as OrderMode,
+  };
 
   // Fetch from context
-  const { state: {
+  const { state } = useContext(CreateRelationshipContext);
+  const {
     relationshipTypes: allowedRelationshipTypes,
     stixCoreObjectTypes = [],
-  } } = useContext(CreateRelationshipContext);
+  } = state;
+
+  useInitCreateRelationshipContext({ ...state, paginationOptions: searchPaginationOptions });
 
   // Compute SDOs and SCOs
   const targetStixDomainObjectTypes = computeTargetStixDomainObjectTypes(stixCoreObjectTypes);

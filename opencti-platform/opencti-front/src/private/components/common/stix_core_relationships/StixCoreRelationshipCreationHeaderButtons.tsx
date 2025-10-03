@@ -1,8 +1,10 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useState } from 'react';
 import { Button } from '@mui/material';
+import { CreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { useFormatter } from '../../../../components/i18n';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 interface StixCoreRelationshipCreationHeaderButtonsProps {
   show: boolean;
@@ -22,6 +24,10 @@ StixCoreRelationshipCreationHeaderButtonsProps
   const { t_i18n } = useFormatter();
   const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
 
+  // Fetch from context
+  const { state: { paginationOptions } } = useContext(CreateRelationshipContext);
+  const searchPaginationOptions = paginationOptions as PaginationOptions;
+
   const handleOpenCreateObservable = () => setOpenCreateObservable(true);
   const handleCloseCreateObservable = () => setOpenCreateObservable(false);
 
@@ -36,9 +42,9 @@ StixCoreRelationshipCreationHeaderButtonsProps
       {showSDOs && (
         <StixDomainObjectCreation
           display={true}
-          inputValue={undefined}
+          inputValue={searchPaginationOptions?.search}
           paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={undefined}
+          paginationOptions={searchPaginationOptions}
           speeddial={false}
           open={undefined}
           handleClose={undefined}
@@ -64,9 +70,9 @@ StixCoreRelationshipCreationHeaderButtonsProps
       <StixCyberObservableCreation
         display={true}
         contextual={true}
-        inputValue={undefined}
+        inputValue={searchPaginationOptions?.search}
         paginationKey="Pagination_stixCoreObjects"
-        paginationOptions={undefined}
+        paginationOptions={searchPaginationOptions}
         speeddial={true}
         open={openCreateObservable}
         handleClose={handleCloseCreateObservable}

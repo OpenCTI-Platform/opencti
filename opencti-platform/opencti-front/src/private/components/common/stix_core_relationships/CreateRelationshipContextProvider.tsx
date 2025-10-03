@@ -1,4 +1,5 @@
 import React, { ReactNode, createContext, useMemo, useState, useContext, useEffect } from 'react';
+import { PaginationOptions } from '../../../../components/list_lines';
 
 interface CreateRelationshipContextStateType {
   relationshipTypes?: string[];
@@ -36,7 +37,7 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
   const [connectionKey, setConnectionKey] = useState<string>('Pagination_stixCoreObjects');
   const [reversed, setReversed] = useState<boolean>(false);
   const [handleReverseRelation, setHandleReverseRelation] = useState<() => void>();
-  const [paginationOptions, setPaginationOptions] = useState<unknown>();
+  const [paginationOptions, setPaginationOptions] = useState<PaginationOptions>();
   const [onCreate, setOnCreate] = useState<() => void>();
   const state = {
     relationshipTypes,
