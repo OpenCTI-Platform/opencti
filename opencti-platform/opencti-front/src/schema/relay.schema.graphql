@@ -8886,8 +8886,8 @@ type Query {
   publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
   publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
-  theme(id: String!): Theme
-  themes(first: Int, after: ID, filters: FilterGroup, search: String, toStix: Boolean): ThemeConnection
+  theme(id: ID!): Theme
+  themes(first: Int, after: ID, orderBy: ThemeOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThemeConnection
   obasStixCoreObjectSimulationsResult(id: ID!): StixObjectSimulationsResult
   obasScenarioElementsDistribution(id: ID!, type: ScenarioType, filters: FilterGroup): [Distribution]
   deleteOperation(id: String!): DeleteOperation
@@ -9762,7 +9762,7 @@ type Mutation {
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
   themeAdd(input: ThemeAddInput!): Theme
   themeDelete(id: ID!): ID
-  themeFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Theme
+  themeFieldPatch(id: ID!, input: [EditInput!]!): Theme
   themeImport(file: Upload!): Theme
   aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format, language: String): String
   aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
@@ -13571,8 +13571,22 @@ type Theme implements InternalObject & BasicObject {
   entity_type: String!
   parent_types: [String!]!
   name: String!
-  manifest: String
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String!
+  theme_logo_collapsed: String!
+  theme_logo_login: String!
+  theme_text_color: String!
   toConfigurationExport: String!
+}
+
+type ThemeConnection {
+  pageInfo: PageInfo!
+  edges: [ThemeEdge!]!
 }
 
 type ThemeEdge {
@@ -13580,15 +13594,24 @@ type ThemeEdge {
   node: Theme!
 }
 
-type ThemeConnection {
-  pageInfo: PageInfo!
-  edges: [ThemeEdge]
+enum ThemeOrdering {
+  name
+  _score
 }
 
 input ThemeAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
-  manifest: String!
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String!
+  theme_logo_collapsed: String!
+  theme_logo_login: String!
+  theme_text_color: String!
 }
 
 enum Tone {

@@ -5,19 +5,46 @@ import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 // region Database types
 export interface BasicStoreEntityTheme extends BasicStoreEntity {
   name: string;
-  manifest: string;
+  theme_background: string;
+  theme_paper: string;
+  theme_nav: string;
+  theme_primary: string;
+  theme_secondary: string;
+  theme_accent: string;
+  theme_logo: string;
+  theme_logo_collapsed: string;
+  theme_logo_login: string;
+  theme_text_color: string;
 }
 
 export interface StoreEntityTheme extends StoreEntity {
   name: string;
-  manifest: string;
+  theme_background: string;
+  theme_paper: string;
+  theme_nav: string;
+  theme_primary: string;
+  theme_secondary: string;
+  theme_accent: string;
+  theme_logo: string;
+  theme_logo_collapsed: string;
+  theme_logo_login: string;
+  theme_text_color: string;
 }
 // endregion
 
 // region Stix type
 export interface StixTheme extends StixObject {
   name: string;
-  manifest: string;
+  theme_background: string;
+  theme_paper: string;
+  theme_nav: string;
+  theme_primary: string;
+  theme_secondary: string;
+  theme_accent: string;
+  theme_logo: string;
+  theme_logo_collapsed: string;
+  theme_logo_login: string;
+  theme_text_color: string;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   };

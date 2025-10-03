@@ -17199,10 +17199,8 @@ export type MutationThemeDeleteArgs = {
 
 
 export type MutationThemeFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
 
@@ -24433,7 +24431,7 @@ export type QueryTaxiiCollectionsArgs = {
 
 
 export type QueryThemeArgs = {
-  id: Scalars['String']['input'];
+  id: Scalars['ID']['input'];
 };
 
 
@@ -24441,6 +24439,8 @@ export type QueryThemesArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<ThemeOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -30125,21 +30125,39 @@ export type Theme = BasicObject & InternalObject & {
   __typename?: 'Theme';
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
-  manifest?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  theme_accent: Scalars['String']['output'];
+  theme_background: Scalars['String']['output'];
+  theme_logo: Scalars['String']['output'];
+  theme_logo_collapsed: Scalars['String']['output'];
+  theme_logo_login: Scalars['String']['output'];
+  theme_nav: Scalars['String']['output'];
+  theme_paper: Scalars['String']['output'];
+  theme_primary: Scalars['String']['output'];
+  theme_secondary: Scalars['String']['output'];
+  theme_text_color: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
 };
 
 export type ThemeAddInput = {
-  manifest: Scalars['String']['input'];
   name: Scalars['String']['input'];
+  theme_accent: Scalars['String']['input'];
+  theme_background: Scalars['String']['input'];
+  theme_logo: Scalars['String']['input'];
+  theme_logo_collapsed: Scalars['String']['input'];
+  theme_logo_login: Scalars['String']['input'];
+  theme_nav: Scalars['String']['input'];
+  theme_paper: Scalars['String']['input'];
+  theme_primary: Scalars['String']['input'];
+  theme_secondary: Scalars['String']['input'];
+  theme_text_color: Scalars['String']['input'];
 };
 
 export type ThemeConnection = {
   __typename?: 'ThemeConnection';
-  edges?: Maybe<Array<Maybe<ThemeEdge>>>;
+  edges: Array<ThemeEdge>;
   pageInfo: PageInfo;
 };
 
@@ -30148,6 +30166,11 @@ export type ThemeEdge = {
   cursor: Scalars['String']['output'];
   node: Theme;
 };
+
+export enum ThemeOrdering {
+  Score = '_score',
+  Name = 'name'
+}
 
 export type ThemeSettings = {
   platform_favicon?: Maybe<Scalars['String']['output']>;
@@ -34913,8 +34936,9 @@ export type ResolversTypes = ResolversObject<{
   TextAddInput: TextAddInput;
   Theme: ResolverTypeWrapper<BasicStoreEntityTheme>;
   ThemeAddInput: ThemeAddInput;
-  ThemeConnection: ResolverTypeWrapper<Omit<ThemeConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ThemeEdge']>>> }>;
+  ThemeConnection: ResolverTypeWrapper<Omit<ThemeConnection, 'edges'> & { edges: Array<ResolversTypes['ThemeEdge']> }>;
   ThemeEdge: ResolverTypeWrapper<Omit<ThemeEdge, 'node'> & { node: ResolversTypes['Theme'] }>;
+  ThemeOrdering: ThemeOrdering;
   ThemeSettings: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['ThemeSettings']>;
   ThreatActor: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['ThreatActor']>;
   ThreatActorConnection: ResolverTypeWrapper<Omit<ThreatActorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ThreatActorEdge']>>> }>;
@@ -35797,7 +35821,7 @@ export type ResolversParentTypes = ResolversObject<{
   TextAddInput: TextAddInput;
   Theme: BasicStoreEntityTheme;
   ThemeAddInput: ThemeAddInput;
-  ThemeConnection: Omit<ThemeConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ThemeEdge']>>> };
+  ThemeConnection: Omit<ThemeConnection, 'edges'> & { edges: Array<ResolversParentTypes['ThemeEdge']> };
   ThemeEdge: Omit<ThemeEdge, 'node'> & { node: ResolversParentTypes['Theme'] };
   ThemeSettings: ResolversInterfaceTypes<ResolversParentTypes>['ThemeSettings'];
   ThreatActor: ResolversInterfaceTypes<ResolversParentTypes>['ThreatActor'];
@@ -45363,16 +45387,25 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
 export type ThemeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Theme'] = ResolversParentTypes['Theme']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_accent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_background?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_logo?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_logo_collapsed?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_logo_login?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_nav?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_paper?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_primary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_secondary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_text_color?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ThemeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThemeConnection'] = ResolversParentTypes['ThemeConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ThemeEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['ThemeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
