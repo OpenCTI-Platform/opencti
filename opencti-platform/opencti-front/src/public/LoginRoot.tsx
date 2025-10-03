@@ -34,7 +34,6 @@ export const rootPublicQuery = graphql`
         node {
           id
           name
-          manifest
         }
       }
     }

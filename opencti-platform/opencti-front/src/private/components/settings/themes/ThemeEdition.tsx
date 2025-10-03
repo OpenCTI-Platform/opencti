@@ -14,7 +14,6 @@ const editThemeMutation = graphql`
     themeFieldPatch(id: $id, input: $input) {
       id
       name
-      manifest
     }
   }
 `;

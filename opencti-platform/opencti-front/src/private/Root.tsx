@@ -244,7 +244,6 @@ const rootPrivateQuery = graphql`
         node {
           id
           name
-          manifest
         }
       }
     }
