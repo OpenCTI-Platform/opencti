@@ -1,6 +1,6 @@
 import { BUS_TOPICS } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
-import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { EditInput, QueryThemesArgs, ThemeAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';

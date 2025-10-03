@@ -3,20 +3,19 @@ import { IconButton, Paper, Stack, Tooltip, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { Disposable, graphql } from 'relay-runtime';
 import Box from '@mui/material/Box';
+import { ThemeManagerQuery, ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
+import { ThemeManager_data$data } from '@components/settings/themes/__generated__/ThemeManager_data.graphql';
+import { ThemeManager_lines_data$data } from '@components/settings/themes/__generated__/ThemeManager_lines_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { ThemesLinesSearchQuery, ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
-import { ThemesLines_data$data } from './__generated__/ThemesLines_data.graphql';
 import ThemePopover from './ThemePopover';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import ThemeCreation from './ThemeCreation';
 import ThemeImporter from './ThemeImporter';
-import { deserializeThemeManifest } from './ThemeType';
-import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 
 const LOCAL_STORAGE_KEY = 'themes';
 
@@ -76,6 +75,17 @@ const themesLineFragment = graphql`
   fragment ThemeManager_data on Theme {
     id
     name
+    theme_background
+    theme_paper
+    theme_nav
+    theme_primary
+    theme_secondary
+    theme_accent
+    theme_logo
+    theme_logo_collapsed
+    theme_logo_login
+    theme_text_color
+    system_default
   }
 `;
 
@@ -102,16 +112,16 @@ const ThemeManager: FunctionComponent<ThemesProps> = ({
     },
   };
 
-  const { helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ThemesLinesSearchQuery>(
+  const { helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ThemeManagerQuery>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
 
   const queryPaginationOptions = {
     ...paginationOptions,
-  } as unknown as ThemesLinesSearchQuery$variables;
+  } as unknown as ThemeManagerQuery$variables;
 
-  const queryRef = useQueryLoading<ThemesLinesSearchQuery>(
+  const queryRef = useQueryLoading<ThemeManagerQuery>(
     themeManagerQuery,
     queryPaginationOptions,
   );
@@ -122,10 +132,9 @@ const ThemeManager: FunctionComponent<ThemesProps> = ({
       label: t_i18n('Name'),
       percentWidth: 100,
       isSortable: false,
-      render: (node: ThemesLine_data$data) => (
-        deserializeThemeManifest(node.manifest).system_default
-          ? t_i18n(node.name)
-          : node.name),
+      render: (node: ThemeManager_data$data) => (
+        node.system_default ? t_i18n(node.name) : node.name
+      ),
     },
   };
 
@@ -135,12 +144,12 @@ const ThemeManager: FunctionComponent<ThemesProps> = ({
     queryRef,
     nodePath: ['themes', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
-  } as UsePreloadedPaginationFragment<ThemesLinesSearchQuery>;
+  } as UsePreloadedPaginationFragment<ThemeManagerQuery>;
 
   const handleOpenCreation = () => setDisplayCreation(true);
   const handleCloseCreation = () => setDisplayCreation(false);
 
-  const resolveThemesData = (data: ThemesLines_data$data) => data.themes?.edges?.map((n) => n?.node);
+  const resolveThemesData = (data: ThemeManager_lines_data$data) => data.themes?.edges?.map((n) => n?.node);
 
   return (
     <>

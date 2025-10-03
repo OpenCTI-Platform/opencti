@@ -6,7 +6,7 @@ import themeValidationSchema from '@components/settings/themes/themeValidation';
 import ThemeForm from '@components/settings/themes/ThemeForm';
 import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
-import ThemeType, { serializeThemeManifest } from './ThemeType';
+import ThemeType from './ThemeType';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 const editThemeMutation = graphql`
@@ -43,16 +43,21 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
   const validator = themeValidationSchema(t_i18n);
 
   const updateTheme = async (values: ThemeType) => {
-    const { id, name, ...valuesToSerialize } = values;
-    const manifest = serializeThemeManifest(valuesToSerialize);
-
     return new Promise<void>((resolve, reject) => {
       commit({
         variables: {
-          id,
+          id: values.id,
           input: [
-            { key: 'name', value: name },
-            { key: 'manifest', value: manifest },
+            { key: 'name', value: values.name },
+            { key: 'theme_background', value: values.theme_background },
+            { key: 'theme_paper', value: values.theme_paper },
+            { key: 'theme_nav', value: values.theme_nav },
+            { key: 'theme_secondary', value: values.theme_secondary },
+            { key: 'theme_accent', value: values.theme_accent },
+            { key: 'theme_logo', value: values.theme_logo },
+            { key: 'theme_logo_collapsed', value: values.theme_logo_collapsed },
+            { key: 'theme_logo_login', value: values.theme_logo_login },
+            { key: 'theme_text_color', value: values.theme_text_color },
           ],
         },
         onCompleted: () => resolve(),

@@ -3,12 +3,12 @@ import { Formik, FormikHelpers } from 'formik';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import ThemeForm from '@components/settings/themes/ThemeForm';
 import themeValidationSchema from '@components/settings/themes/themeValidation';
+import { ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../../common/drawer/Drawer';
 import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreateMutation.graphql';
 import { insertNode } from '../../../../utils/store';
-import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
@@ -23,7 +23,7 @@ interface ThemeCreationProps {
   open: boolean;
   handleClose: () => void;
   handleRefetch: () => Disposable;
-  paginationOptions: ThemesLinesSearchQuery$variables;
+  paginationOptions: ThemeManagerQuery$variables;
 }
 
 const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({

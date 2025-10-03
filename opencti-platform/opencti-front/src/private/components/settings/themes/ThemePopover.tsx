@@ -2,13 +2,13 @@ import { MoreVert } from '@mui/icons-material';
 import { IconButton, Menu, MenuItem } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
+import { ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
+import { ThemeManager_data$data } from '@components/settings/themes/__generated__/ThemeManager_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ThemeEdition from './ThemeEdition';
-import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT_KNASKEXPORT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
-import ThemeType, { deserializeThemeManifest } from './ThemeType';
+import ThemeType from './ThemeType';
 import handleExportJson from './ThemeExportHandler';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -22,9 +22,9 @@ const deleteThemeMutation = graphql`
 `;
 
 interface ThemePopoverProps {
-  themeData: ThemesLine_data$data;
+  themeData: ThemeManager_data$data;
   handleRefetch: () => Disposable;
-  paginationOptions: ThemesLinesSearchQuery$variables;
+  paginationOptions: ThemeManagerQuery$variables;
   isCurrentTheme: boolean;
 }
 
@@ -42,7 +42,17 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   const theme: ThemeType = {
     id: themeData.id,
     name: themeData.name,
-    ...deserializeThemeManifest(themeData.manifest),
+    theme_background: themeData.theme_background,
+    theme_paper: themeData.theme_paper,
+    theme_nav: themeData.theme_nav,
+    theme_primary: themeData.theme_primary,
+    theme_secondary: themeData.theme_secondary,
+    theme_accent: themeData.theme_accent,
+    theme_logo: themeData.theme_logo,
+    theme_logo_collapsed: themeData.theme_logo_collapsed,
+    theme_logo_login: themeData.theme_logo_login,
+    theme_text_color: themeData.theme_text_color,
+    system_default: themeData.system_default,
   };
 
   const deleteSuccessMessage = t_i18n('', {

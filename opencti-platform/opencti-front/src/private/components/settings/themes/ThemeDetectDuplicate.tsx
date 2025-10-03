@@ -23,9 +23,9 @@ interface ThemeDetectDuplicateProps {
 }
 
 const ThemeDetectDuplicate: FunctionComponent<ThemeDetectDuplicateProps> = ({
-                                                                              themeName,
-                                                                              themeId,
-                                                                            }) => {
+  themeName,
+  themeId,
+}) => {
   const { t_i18n } = useFormatter();
   const [duplicateCount, setDuplicateCount] = useState<number>(0);
 
