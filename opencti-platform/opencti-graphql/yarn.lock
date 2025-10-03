@@ -3216,14 +3216,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mistralai/mistralai@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@mistralai/mistralai@npm:1.7.2"
+"@mistralai/mistralai@npm:1.10.0":
+  version: 1.10.0
+  resolution: "@mistralai/mistralai@npm:1.10.0"
   dependencies:
+    zod: "npm:^3.20.0"
     zod-to-json-schema: "npm:^3.24.1"
-  peerDependencies:
-    zod: ">= 3"
-  checksum: 10c0/051f77d8d50918153d313c901e5cae89148e6f9e60a3dc00d2afe60e99aeb282122d2d49d1cc11196b329cebbf6b6f2537653c0ba5c5af0d2efc7616318e9cf2
+  checksum: 10c0/1fb5948a18559f14e39ed55d780648baa988446799d8ebdd5d609670a9cc6ef41afca90aa2864685e5b4c3c6b2c95d18356ab0c191943f246ac9f5626fdec485
   languageName: node
   linkType: hard
 
@@ -11684,7 +11683,7 @@ __metadata:
     "@langchain/mistralai": "npm:0.2.0"
     "@langchain/openai": "npm:0.5.5"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
-    "@mistralai/mistralai": "npm:1.7.2"
+    "@mistralai/mistralai": "npm:1.10.0"
     "@node-saml/passport-saml": "npm:5.1.0"
     "@opensearch-project/opensearch": "npm:3.5.1"
     "@opentelemetry/api": "npm:1.9.0"
@@ -15316,6 +15315,13 @@ __metadata:
   version: 3.24.2
   resolution: "zod@npm:3.24.2"
   checksum: 10c0/c638c7220150847f13ad90635b3e7d0321b36cce36f3fc6050ed960689594c949c326dfe2c6fa87c14b126ee5d370ccdebd6efb304f41ef5557a4aaca2824565
+  languageName: node
+  linkType: hard
+
+"zod@npm:^3.20.0":
+  version: 3.25.76
+  resolution: "zod@npm:3.25.76"
+  checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
   languageName: node
   linkType: hard
 
