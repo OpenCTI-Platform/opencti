@@ -537,6 +537,7 @@
   "Connector catalog | Ingestion | Data": "Verbinderkatalog | Ingestion | Daten",
   "Connector catalogs": "Kataloge für Steckverbinder",
   "Connector configuration": "Konfiguration des Anschlusses",
+  "Connector identifier": "Kennung des Steckers",
   "Connector name": "Name des Anschlusses",
   "Connectors": "Konnektoren",
   "Connectors & workers": "Konnektoren & Arbeiter",

@@ -267,8 +267,8 @@ export const managedConnectorAdd = async (
 
   // Create connector
   const connectorToCreate: any = {
-    title: input.name,
-    name: sanitizedName,
+    name: input.name,
+    container_name: sanitizedName,
     connector_type: targetContract.container_type,
     catalog_id: input.catalog_id,
     connector_user_id: connectorUser.id,

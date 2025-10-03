@@ -537,6 +537,7 @@
   "Connector catalog | Ingestion | Data": "连接器目录 | 输入 | 数据",
   "Connector catalogs": "连接器目录",
   "Connector configuration": "连接器配置",
+  "Connector identifier": "连接器标识符",
   "Connector name": "连接器名称",
   "Connectors": "连接器",
   "Connectors & workers": "连接器和工作器",

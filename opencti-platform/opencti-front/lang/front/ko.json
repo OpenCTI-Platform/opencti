@@ -537,6 +537,7 @@
   "Connector catalog | Ingestion | Data": "커넥터 카탈로그 | 수집 | 데이터",
   "Connector catalogs": "커넥터 카탈로그",
   "Connector configuration": "커넥터 구성",
+  "Connector identifier": "커넥터 식별자",
   "Connector name": "커넥터 이름",
   "Connectors": "커넥터",
   "Connectors & workers": "커넥터 및 작업자",

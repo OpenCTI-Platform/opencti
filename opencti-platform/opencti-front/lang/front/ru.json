@@ -537,6 +537,7 @@
   "Connector catalog | Ingestion | Data": "Каталог коннекторов | Ingestion | Data",
   "Connector catalogs": "Каталоги коннекторов",
   "Connector configuration": "Конфигурация коннектора",
+  "Connector identifier": "Идентификатор разъема",
   "Connector name": "Имя коннектора",
   "Connectors": "Коннекторы",
   "Connectors & workers": "Коннекторы и воркеры",
