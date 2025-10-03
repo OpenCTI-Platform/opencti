@@ -381,7 +381,7 @@ describe('Stix filter testers', () => {
     });
   });
 
-  describe('by Pattern (key=pattern_type)', () => {
+  describe('by Pattern Type (key=pattern_type)', () => {
     const stixWithPatternType = stixIndicators[0];
     const stixWithoutPatternType = stixReports[0];
 
