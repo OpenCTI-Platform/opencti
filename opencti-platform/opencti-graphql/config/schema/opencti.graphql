@@ -13252,6 +13252,7 @@ type Query {
   connectorsForAnalysis: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   work(id: ID!): Work @auth(for: [MODULES])
+  isWorkAlive(id: ID!): Boolean @auth(for: [MODULES])
   works(
     first: Int
     after: ID
