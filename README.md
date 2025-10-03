@@ -89,6 +89,20 @@ Integration testing
 $ pytest ./tests/02-integration/
 ```
 
+Example testing:
+
+> OpenCTI must be running
+
+```bash
+cd examples
+# Configure with you local instance of OpenCTI
+export OPENCTI_API_URL="http://localhost:4000"
+export OPENCTI_API_TOKEN="xxxxxxxxxxxxxxxxxxxxxx"
+
+#Run one example file
+python get_indicators_of_malware.py
+```
+
 ## About
 
 OpenCTI is a product designed and developed by the company [Filigran](https://filigran.io).
