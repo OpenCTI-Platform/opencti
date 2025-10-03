@@ -10,7 +10,7 @@ COPY opencti-graphql/patch ./patch
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
     && npm install -g node-gyp \
-    && yarn install --frozen-lockfile && yarn cache clean --all
+    && yarn install --immutable && yarn cache clean --all
 
 
 FROM base AS graphql-builder

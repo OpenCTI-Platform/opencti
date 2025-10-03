@@ -8,7 +8,8 @@ COPY opencti-graphql/patch ./patch
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo postfix postfix-pcre gettext-dev \
     && npm install -g node-gyp \
-    && yarn install --frozen-lockfile && yarn cache clean --all
+    && npm install -g corepack \
+    && yarn install --immutable && yarn cache clean --all
 
 
 FROM base AS graphql-builder
@@ -19,6 +20,7 @@ COPY opencti-graphql/patch ./patch
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo postfix postfix-pcre gettext-dev \
     && npm install -g node-gyp \
+    && npm install -g corepack \
     && yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn build:prod
@@ -34,6 +36,7 @@ COPY opencti-front/packages ./packages
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo postfix postfix-pcre gettext-dev \
     && npm install -g node-gyp \
+    && npm install -g corepack \
     && yarn install
 
 COPY opencti-front /opt/opencti-build/opencti-front

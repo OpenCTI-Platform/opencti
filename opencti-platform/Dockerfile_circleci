@@ -11,7 +11,8 @@ RUN set -ex; \
     && rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED \
     && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
     && npm install -g node-gyp \
-    && yarn install --frozen-lockfile && yarn cache clean --all
+    && npm install -g corepack \
+    && yarn install --immutable && yarn cache clean --all
 
 
 FROM base AS graphql-builder
@@ -24,6 +25,7 @@ RUN set -ex; \
     && rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED \
     && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
     && npm install -g node-gyp \
+    && npm install -g corepack \
     && yarn install
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn build:prod
