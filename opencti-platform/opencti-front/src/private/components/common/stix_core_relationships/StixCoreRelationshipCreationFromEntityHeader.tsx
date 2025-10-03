@@ -4,9 +4,6 @@ import { graphql, useFragment } from 'react-relay';
 import {
   StixCoreRelationshipCreationFromEntityHeader_stixCoreObject$key,
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityHeader_stixCoreObject.graphql';
-import {
-  StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables,
-} from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import Drawer from '../drawer/Drawer';
 import { TargetEntity } from './StixCoreRelationshipCreationFromEntity';
@@ -15,9 +12,6 @@ import StixCoreRelationshipCreationSelectEntityStage from './StixCoreRelationshi
 import StixCoreRelationshipCreationFormStage from './StixCoreRelationshipCreationFormStage';
 import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
-import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
-import { PaginationOptions } from '../../../../components/list_lines';
 
 /**
  * This file contains the code for the "Create Relationship" button in the top
@@ -72,25 +66,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
 
   const storageKey = `stixCoreRelationshipCreationFromEntity-${stixCoreObject.id}-${targetStixDomainObjectTypes.join('-')}-${targetStixCyberObservableTypes.join('-')}`;
 
-  const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
-    storageKey,
-    {
-      orderAsc: false,
-      sortBy: '_score',
-      searchTerm: '',
-    },
-    true,
-  );
-  const { searchTerm, orderAsc, sortBy, filters } = viewStorage;
-
-  const contextFilters = useBuildEntityTypeBasedFilterContext(stixCoreObjectTypes, filters);
-  const searchPaginationOptions: PaginationOptions = {
-    search: searchTerm,
-    filters: contextFilters,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-  } as PaginationOptions;
-
   return (
     <>
       {/* The controlled dial to open the drawer */}
@@ -116,8 +91,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
               ...targetStixDomainObjectTypes,
               ...targetStixCyberObservableTypes,
             ]}
-            searchTerm={searchTerm ?? ''}
-            searchPaginationOptions={searchPaginationOptions}
           />
         )}
       >
@@ -131,9 +104,6 @@ StixCoreRelationshipCreationFromEntityHeaderProps
               setTargetEntities={setTargetEntities}
               virtualEntityTypes={stixCoreObjectTypes}
               handleClose={handleClose}
-              searchPaginationOptions={searchPaginationOptions}
-              helpers={helpers}
-              contextFilters={contextFilters}
             />
           ) : (
             <StixCoreRelationshipCreationFormStage
