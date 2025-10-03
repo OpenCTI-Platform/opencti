@@ -16,7 +16,7 @@ import { createWork, updateExpectationsNumber } from '../../domain/work';
 import { ConnectorType, type FormSubmissionInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { SYSTEM_USER } from '../../utils/access';
-import { convertStoreToStix } from '../../database/stix-2-1-converter';
+import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixId } from '../../types/stix-2-1-common';
@@ -461,7 +461,7 @@ export const formSubmit = async (
       return storeLoadById<StoreEntityForm>(context, user, id, mainEntityType);
     }));
     for (let index = 0; index < mainEntities.length; index += 1) {
-      mainStixEntities.push(convertStoreToStix(mainEntities[index]));
+      mainStixEntities.push(convertStoreToStix_2_1(mainEntities[index]));
       mainEntityStixId = mainEntities[index].standard_id;
     }
   } else {
@@ -475,7 +475,7 @@ export const formSubmit = async (
           mainEntity[mainEntityFields[i].attributeMapping.attributeName] = values.mainEntityGroups[index][mainEntityFields[i].name];
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
-        mainStixEntities.push(convertStoreToStix(mainEntity));
+        mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
       }
     } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
@@ -518,7 +518,7 @@ export const formSubmit = async (
           mainEntity.context = 'form';
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
-        mainStixEntities.push(convertStoreToStix(mainEntity));
+        mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
         mainEntityStixId = mainEntity.standard_id;
       }
     } else {
@@ -529,7 +529,7 @@ export const formSubmit = async (
         mainEntity[mainEntityFields[i].attributeMapping.attributeName] = values[mainEntityFields[i].name];
       }
       mainEntity = completeEntity(mainEntityType, mainEntity);
-      mainStixEntities.push(convertStoreToStix(mainEntity));
+      mainStixEntities.push(convertStoreToStix_2_1(mainEntity));
       mainEntityStixId = mainEntity.standard_id;
     }
   }
@@ -547,7 +547,7 @@ export const formSubmit = async (
             return storeLoadById<StoreEntityForm>(context, user, id, additionalEntityType);
           }));
           for (let index2 = 0; index2 < additionalEntities.length; index2 += 1) {
-            const stixAdditionalEntity = convertStoreToStix(additionalEntities[index2]);
+            const stixAdditionalEntity = convertStoreToStix_2_1(additionalEntities[index2]);
             bundle.objects.push(stixAdditionalEntity);
             if (additionalEntitiesMap[additionalEntity.id]) {
               additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
@@ -568,7 +568,7 @@ export const formSubmit = async (
                 newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[`additional_${additionalEntity.id}_groups`][index2][additionalEntityFields[i].name];
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-              const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
+              const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
               bundle.objects.push(stixAdditionalEntity);
               if (additionalEntitiesMap[additionalEntity.id]) {
                 additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
@@ -617,7 +617,7 @@ export const formSubmit = async (
                 newAdditionalEntity.context = 'form';
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-              const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
+              const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
               bundle.objects.push(stixAdditionalEntity);
               if (additionalEntitiesMap[additionalEntity.id]) {
                 additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
@@ -634,7 +634,7 @@ export const formSubmit = async (
             newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[additionalEntityFields[i].name];
           }
           newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-          const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
+          const stixAdditionalEntity = convertStoreToStix_2_1(newAdditionalEntity);
           bundle.objects.push(stixAdditionalEntity);
           if (additionalEntitiesMap[additionalEntity.id]) {
             additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
