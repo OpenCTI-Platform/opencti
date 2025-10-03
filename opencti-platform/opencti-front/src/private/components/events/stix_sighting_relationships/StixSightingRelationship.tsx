@@ -3,11 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import { useFormatter } from 'src/components/i18n';
-import { Box, Button, styled } from '@mui/material';
 import Security from 'src/utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
-import MenuItem from '@mui/material/MenuItem';
-import { useTheme } from '@mui/material/styles';
+import { KNOWLEDGE_KNUPDATE } from 'src/utils/hooks/useGranted';
+import StixSightingRelationshipHeader from '@components/events/stix_sighting_relationships/StixSightingRelationshipHeader';
 import StixSightingRelationshipEdition, { stixSightingRelationshipEditionDeleteMutation } from './StixSightingRelationshipEdition';
 import { commitMutation, defaultCommitMutation, QueryRenderer } from '../../../../relay/environment';
 import { StixSightingRelationshipQuery$data } from './__generated__/StixSightingRelationshipQuery.graphql';
@@ -15,12 +13,17 @@ import Loader from '../../../../components/Loader';
 import StixSightingRelationshipOverview from './StixSightingRelationshipOverview';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import PopoverMenu from '../../../../components/PopoverMenu';
-import type { Theme } from '../../../../components/Theme';
 
 const stixSightingRelationshipQuery = graphql`
   query StixSightingRelationshipQuery($id: String!) {
     stixSightingRelationship(id: $id) {
+      from {
+        ... on StixCoreObject {
+          representative {
+            main
+          }
+        }
+      }
       ...StixSightingRelationshipOverview_stixSightingRelationship
     }
   }
@@ -36,8 +39,7 @@ StixSightingRelationshipProps
 > = ({ entityId, paddingRight }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
-  const theme = useTheme<Theme>();
+
   const [editOpen, setEditOpen] = useState<boolean>(false);
   const [openDelete, setOpenDelete] = useState(false);
   const { sightingId } = useParams() as { sightingId: string };
@@ -64,12 +66,6 @@ StixSightingRelationshipProps
     });
   };
 
-  const SightingHeader = styled('div')({
-    display: 'flex',
-    justifyContent: 'end',
-    marginBottom: 24,
-  });
-
   return (
     <div data-testid="sighting-overview">
       <QueryRenderer
@@ -77,6 +73,7 @@ StixSightingRelationshipProps
         variables={{ id: sightingId }}
         render={(result: { props: StixSightingRelationshipQuery$data }) => {
           if (result.props && result.props.stixSightingRelationship) {
+            const headerName = result.props.stixSightingRelationship.from?.representative?.main ?? t_i18n('Restricted');
             return (<>
               <Breadcrumbs elements={[
                 { label: t_i18n('Events') },
@@ -84,40 +81,11 @@ StixSightingRelationshipProps
                 { label: t_i18n('Sighting'), current: true },
               ]}
               />
-              <SightingHeader>
-                <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <div style={{ display: 'flex' }}>
-                    {canDelete && (
-                    <PopoverMenu>
-                      {({ closeMenu }) => (
-                        <Box>
-                          <MenuItem onClick={() => {
-                            handleOpenDelete();
-                            closeMenu();
-                          }}
-                          >
-                            {t_i18n('Delete')}
-                          </MenuItem>
-                        </Box>
-                      )}
-                    </PopoverMenu>
-                    )}
-                    {(
-                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                        <Button
-                          variant='contained'
-                          size='medium'
-                          aria-label={t_i18n('Update')}
-                          onClick={handleOpenEdit}
-                          style={{ marginLeft: theme.spacing(0.5) }}
-                        >
-                          {t_i18n('Update')}
-                        </Button>
-                      </Security>
-                    )}
-                  </div>
-                </div>
-              </SightingHeader>
+              <StixSightingRelationshipHeader
+                headerName={headerName}
+                onOpenEdit={handleOpenEdit}
+                onOpenDelete={handleOpenDelete}
+              />
               <StixSightingRelationshipOverview
                 entityId={entityId}
                 stixSightingRelationship={result.props.stixSightingRelationship}

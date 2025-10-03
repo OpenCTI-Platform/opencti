@@ -15,7 +15,12 @@ import { addDynamicFromAndToToFilters } from '../utils/filtering/filtering-utils
 export const findStixRelationPaginated = async (context, user, args) => {
   const filters = addDynamicFromAndToToFilters(args);
   const fullArgs = { ...args, filters };
-  return pageRelationsConnection(context, user, ABSTRACT_STIX_RELATIONSHIP, fullArgs);
+  let relationshipTypesInput = fullArgs.relationship_type;
+  if (!Array.isArray(relationshipTypesInput)) {
+    relationshipTypesInput = relationshipTypesInput ? [relationshipTypesInput] : [];
+  }
+  const relationshipTypes = buildRelationshipTypes(relationshipTypesInput);
+  return pageRelationsConnection(context, user, relationshipTypes, R.dissoc('relationship_type', fullArgs));
 };
 
 export const findById = (context, user, stixRelationshipId) => {

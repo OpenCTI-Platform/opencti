@@ -94,10 +94,14 @@ const PositionEditionOverviewComponent = (props) => {
     confidence: Yup.number().nullable(),
     latitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
-      .nullable(),
+      .nullable()
+      .min(-90, t_i18n('Latitude must be between -90 and 90 degrees'))
+      .max(90, t_i18n('Latitude must be between -90 and 90 degrees')),
     longitude: Yup.number()
       .typeError(t_i18n('This field must be a number'))
-      .nullable(),
+      .nullable()
+      .min(-180, t_i18n('Longitude must be between -180 and 180 degrees'))
+      .max(180, t_i18n('Longitude must be between -180 and 180 degrees')),
     street_address: Yup.string()
       .nullable()
       .max(1000, t_i18n('The value is too long')),

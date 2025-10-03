@@ -76,15 +76,6 @@ const sanitizeContainerName = (label: string): string => {
   return sanitized;
 };
 
-// Validate K8s name format
-const k8sNameSchema = (t_i18n: (key: string) => string) => Yup.string()
-  .required(t_i18n('This field is required'))
-  .min(2, t_i18n('Name must be at least 2 characters'))
-  .max(63, t_i18n('Name must be at most 63 characters'))
-  .matches(/^\S+$/, t_i18n('Name cannot contain whitespace'))
-  .matches(/^[a-z0-9-]+$/, t_i18n('Only lowercase letters, numbers and hyphens are allowed'))
-  .matches(/^[a-z0-9].*[a-z0-9]$/, t_i18n('Name cannot start or end with a hyphen'));
-
 const customRenderers = [
   ...materialRenderers,
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
@@ -104,10 +95,20 @@ interface IngestionCatalogConnectorCreationProps {
 
 export interface ManagedConnectorValues extends BasicUserHandlingValues {
   name: string;
+  display_name: string;
   user_id: string | FieldOption;
   automatic_user?: boolean;
   confidence_level?: string;
 }
+
+const validationSchema = Yup.object().shape({
+  display_name: Yup.string()
+    .trim()
+    .min(2)
+    .max(255)
+    .required(),
+  user_id: Yup.object().required(),
+});
 
 const IngestionCatalogConnectorCreation = ({
   connector, open, onClose, catalogId, hasRegisteredManagers, deploymentCount = 0, onCreate,
@@ -130,7 +131,7 @@ const IngestionCatalogConnectorCreation = ({
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
     const input = {
-      name: values.name,
+      name: values.display_name,
       catalog_id: catalogId,
       user_id: typeof values.user_id === 'string' ? values.user_id : values.user_id?.value,
       automatic_user: values.automatic_user ?? true,
@@ -192,8 +193,7 @@ const IngestionCatalogConnectorCreation = ({
     Object.entries(connector.config_schema.properties).forEach(([key, value]) => {
       if (key === 'CONNECTOR_NAME') {
         if (value.default !== undefined) {
-          // Apply sanitization to the default connector name
-          const baseName = sanitizeContainerName(value.default.toString());
+          const baseName = value.default.toString();
           defaultConnectorName = deploymentCount > 0
             ? `${baseName}-${deploymentCount + 1}`
             : baseName;
@@ -300,12 +300,10 @@ const IngestionCatalogConnectorCreation = ({
 
         <Formik<ManagedConnectorValues>
           onReset={onClose}
-          validationSchema={Yup.object().shape({
-            name: k8sNameSchema(t_i18n),
-            user_id: Yup.object().required(),
-          })}
+          validationSchema={validationSchema}
           initialValues={{
-            name: connectorName,
+            display_name: connectorName,
+            name: sanitizeContainerName(connectorName),
             confidence_level: connector.max_confidence_level.toString(),
             user_id: { label: '', value: '' },
             automatic_user: true,
@@ -313,7 +311,7 @@ const IngestionCatalogConnectorCreation = ({
           }}
           onSubmit={() => {}}
         >
-          {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues }) => {
+          {({ values, isSubmitting, setSubmitting, resetForm, isValid, setValues, setFieldValue }) => {
             const errors = compiledValidator?.validate(values)?.errors;
 
             const disableCreate = !isValid || isSubmitting || !!errors?.[0];
@@ -332,11 +330,23 @@ const IngestionCatalogConnectorCreation = ({
                     component={TextField}
                     style={fieldSpacingContainerStyle}
                     variant="standard"
-                    name="name"
-                    label={t_i18n('Instance name')}
+                    name="display_name"
+                    label={t_i18n('Display name')}
                     required
                     fullWidth={true}
-                    helperText={t_i18n('Only lowercase letters, numbers and hyphens')}
+                    onChange={(_: string, value: string) => {
+                      setFieldValue('name', sanitizeContainerName(value));
+                    }}
+                  />
+
+                  <Field
+                    component={TextField}
+                    style={fieldSpacingContainerStyle}
+                    variant="standard"
+                    name="name"
+                    label={t_i18n('Instance name')}
+                    fullWidth={true}
+                    disabled
                   />
 
                   <IngestionCreationUserHandling

@@ -62,6 +62,8 @@ enum Capabilities {
   MODULES_MODMANAGE
   PIRAPI
   PIRAPI_PIRUPDATE
+  AUTOMATION
+  AUTOMATION_AUTOMATIONMANAGE
   SETTINGS
   SETTINGS_SETMANAGEXTMHUB
   SETTINGS_SETPARAMETERS
@@ -2180,6 +2182,7 @@ type Connector implements BasicObject & InternalObject {
   parent_types: [String]!
   # Connector
   name: String!
+  title: String!
   active: Boolean
   auto: Boolean
   only_contextual: Boolean

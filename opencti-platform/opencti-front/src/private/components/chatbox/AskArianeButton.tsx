@@ -2,7 +2,6 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import React, { useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/LeftBar';
 import { useTheme } from '@mui/styles';
-import IconButton from '@mui/material/IconButton';
 import { CGUStatus } from '@components/settings/Experience';
 import ValidateTermsOfUseDialog from '@components/settings/ValidateTermsOfUseDialog';
 import { LogoXtmOneIcon } from 'filigran-icon';
@@ -157,9 +156,14 @@ const AskArianeButton = React.forwardRef((props, ref) => {
             <EEChip />
           </GradientButton>
         ) : (
-          <IconButton style={{ padding: 0 }} onClick={toggleChatbot}>
-            <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />
-          </IconButton>
+          <GradientButton
+            size="small"
+            sx={{ margin: '-4px', marginLeft: '-6px', marginTop: '-4px', minWidth: 'auto', paddingLeft: 1, paddingY: theme.spacing(0.5) }}
+            gradientVariant={isCGUStatusPending ? GradientVariant.disabled : GradientVariant.ai}
+            onClick={toggleChatbot}
+            startIcon={ <FiligranIcon icon={LogoXtmOneIcon} size='small' color="ai" style={chatIconStyle} />}
+          >
+          </GradientButton>
         )}
       </EETooltip>
       {isEnterpriseEdition && isChatbotAiEnabled() ? (

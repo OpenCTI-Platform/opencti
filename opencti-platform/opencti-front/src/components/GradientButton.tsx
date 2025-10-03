@@ -85,7 +85,6 @@ const GradientButton = ({
     <Button
       {...otherProps}
       sx={{
-        transition: 'all 0.3s ease-in-out',
         ...bgGradientStyle(),
         '.text': {
           ...textGradientStyle(),
@@ -93,16 +92,18 @@ const GradientButton = ({
           alignItems: 'center',
           gap: 0.5,
           width: '100%',
-          textTransform: 'none',
+          textTransform: 'uppercase',
+          lineHeight: 1.5,
+        },
+        '& .MuiButton-startIcon': {
+          marginRight: children ? undefined : 0,
         },
         '&:hover': bgGradientStyle({ hover: true }),
         '&:active': bgGradientStyle({ active: true }),
         ...sx,
       }}
     >
-      <span className="text">
-        {typeof children === 'string' ? children.toUpperCase() : children}
-      </span>
+      {children && <span className="text">{children}</span>}
     </Button>
   );
 };

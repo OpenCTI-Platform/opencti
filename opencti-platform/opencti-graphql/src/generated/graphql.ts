@@ -1971,6 +1971,8 @@ export enum CampaignsOrdering {
 }
 
 export enum Capabilities {
+  Automation = 'AUTOMATION',
+  AutomationAutomationmanage = 'AUTOMATION_AUTOMATIONMANAGE',
   Bypass = 'BYPASS',
   Connectorapi = 'CONNECTORAPI',
   Csvmappers = 'CSVMAPPERS',
@@ -3950,6 +3952,7 @@ export type Connector = BasicObject & InternalObject & {
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   playbook_compatible?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
+  title: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
 };
@@ -36814,6 +36817,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   playbook_compatible?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

@@ -405,7 +405,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 gridTemplateColumns: gridColumns,
                               }}
                             >
-                              <Tooltip title={connector.name} placement={'top'}>
+                              <Tooltip title={connector.title} placement={'top'}>
                                 <div className={classes.bodyItem}>
                                   {
                                     connector.is_managed ? connector.manager_contract_excerpt?.title : connector.name

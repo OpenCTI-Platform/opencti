@@ -267,6 +267,7 @@ export const managedConnectorAdd = async (
 
   // Create connector
   const connectorToCreate: any = {
+    title: input.name,
     name: sanitizedName,
     connector_type: targetContract.container_type,
     catalog_id: input.catalog_id,
@@ -277,6 +278,7 @@ export const managedConnectorAdd = async (
     connector_state_timestamp: now(),
     built_in: false
   };
+
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
   // Increment telemetry for connector deployed via composer
   await addConnectorDeployedCount();

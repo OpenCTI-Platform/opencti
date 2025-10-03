@@ -27,12 +27,12 @@ import { truncate } from '../../../../utils/String';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {
+  AUTOMATION,
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  SETTINGS_SETACCESSES,
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import StixCoreObjectFileExport from '../stix_core_objects/StixCoreObjectFileExport';
@@ -770,7 +770,7 @@ const ContainerHeader = (props) => {
                         title={t_i18n('Enroll in playbook')}
                         setOpen={setOpenEnrollPlaybook}
                         handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNENRICHMENT, SETTINGS_SETACCESSES]}
+                        needs={[AUTOMATION]}
                         matchAll
                       />
                       )}
