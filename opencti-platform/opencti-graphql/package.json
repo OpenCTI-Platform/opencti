@@ -50,7 +50,7 @@
     "@aws-sdk/client-sts": "3.835.0",
     "@aws-sdk/credential-provider-node": "3.835.0",
     "@aws-sdk/lib-storage": "3.837.0",
-    "@datadog/pprof": "5.8.2",
+    "@datadog/pprof": "5.10.0",
     "@elastic/elasticsearch": "8.19.1",
     "@escape.tech/graphql-armor": "3.1.6",
     "@graphql-tools/merge": "9.1.1",
@@ -220,7 +220,7 @@
     "node-calls-python": "patch:node-calls-python@1.9.1#./patch/node-calls-python-1.9.1.patch",
     "graphql": "patch:graphql@16.11.0#./patch/graphql-16.8.1.patch",
     "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch",
-    "@datadog/pprof": "patch:@datadog/pprof@5.8.2#./patch/@datadog-pprof-5.4.1.patch",
+    "@datadog/pprof": "patch:@datadog/pprof@5.10.0#./patch/@datadog-pprof-5.4.1.patch",
     "path-to-regexp": "0.1.12"
   },
   "dependenciesMeta": {
