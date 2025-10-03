@@ -21,26 +21,25 @@ import { ThemesLine_data$data } from './__generated__/ThemesLine_data.graphql';
 const LOCAL_STORAGE_KEY = 'themes';
 
 export const refetchableThemesQuery = graphql`
-  fragment Themes_themes on Query
-  @refetchable(queryName: "ThemesRefetchQuery") {
+  fragment ThemeManager_themes on Query
+  @refetchable(queryName: "ThemeManagerThemesRefetchQuery") {
     themes {
       edges {
         node {
           id
           name
-          manifest
         }
       }
     }
   }
 `;
 
-const themesLinesSearchQuery = graphql`
-  query ThemesLinesSearchQuery(
+const themeManagerQuery = graphql`
+  query ThemeManagerQuery(
     $count: Int!
     $cursor: ID
   ) {
-    ...ThemesLines_data
+    ...ThemeManager_lines_data
     @arguments(
       count: $count
       cursor: $cursor
@@ -49,7 +48,7 @@ const themesLinesSearchQuery = graphql`
 `;
 
 const themesLinesFragment = graphql`
-  fragment ThemesLines_data on Query
+  fragment ThemeManager_lines_data on Query
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
@@ -61,7 +60,7 @@ const themesLinesFragment = graphql`
     ) @connection(key: "Pagination_themes") {
       edges {
         node {
-          ...ThemesLine_data
+          ...ThemeManager_data
         }
       }
       pageInfo {
@@ -74,10 +73,9 @@ const themesLinesFragment = graphql`
 `;
 
 const themesLineFragment = graphql`
-  fragment ThemesLine_data on Theme {
+  fragment ThemeManager_data on Theme {
     id
     name
-    manifest
   }
 `;
 
@@ -114,7 +112,7 @@ const ThemeManager: FunctionComponent<ThemesProps> = ({
   } as unknown as ThemesLinesSearchQuery$variables;
 
   const queryRef = useQueryLoading<ThemesLinesSearchQuery>(
-    themesLinesSearchQuery,
+    themeManagerQuery,
     queryPaginationOptions,
   );
 
@@ -132,7 +130,7 @@ const ThemeManager: FunctionComponent<ThemesProps> = ({
   };
 
   const preloadedPaginationOptions = {
-    linesQuery: themesLinesSearchQuery,
+    linesQuery: themeManagerQuery,
     linesFragment: themesLinesFragment,
     queryRef,
     nodePath: ['themes', 'pageInfo', 'globalCount'],

@@ -22,11 +22,13 @@ import { SYSTEM_USER } from '../../utils/access';
 // };
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-  return storeLoadById<BasicStoreEntityTheme>(context, user, id, ENTITY_TYPE_THEME,);
+  // FIXME: use SYSTEM_USER instead of user because on public page such as
+  // Login, the components is using the theme to get logo
+  return storeLoadById<BasicStoreEntityTheme>(context, SYSTEM_USER, id, ENTITY_TYPE_THEME,);
 };
 
 export const findThemePaginated = async (context: AuthContext, user: AuthUser, args: QueryThemesArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
+  return pageEntitiesConnection<BasicStoreEntityTheme>(context, SYSTEM_USER, [ENTITY_TYPE_THEME], args);
 };
 
 export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput) => {

@@ -126,7 +126,7 @@ const settingsQuery = graphql`
         version
       }
     }
-    ...Themes_themes
+    ...ThemeManager_themes
   }
 `;
 

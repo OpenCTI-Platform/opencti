@@ -9,7 +9,7 @@ interface themeToExport {
 }
 
 const ThemeExportHandlerQuery = graphql`
-  query ThemeExportHandlerQuery($id: String!) {
+  query ThemeExportHandlerQuery($id: ID!) {
     theme(id: $id) {
       toConfigurationExport
     }

@@ -141,7 +141,6 @@ const topBarQuery = graphql`
       edges {
         node {
           name
-          manifest
         }
       }
     }

@@ -16,7 +16,6 @@ export const createThemeMutation = graphql`
     themeAdd(input: $input) {
       id
       name
-      manifest
     }
   }
 `;
