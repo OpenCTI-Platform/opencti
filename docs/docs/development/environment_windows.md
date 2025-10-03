@@ -22,7 +22,7 @@ Docker Desktop from - [https://docs.docker.com/desktop/install/windows-install/]
 
 ## NodeJS and yarn
 
-The platform is developed on nodejs technology, so you need to install node and the yarn package manager.
+The platform is developed on NodeJS technology, so you need to install node and the Yarn package manager.
 
 - Install NodeJS from - [https://nodejs.org/download/release/v16.20.0/node-v16.20.0-x64.msi](https://nodejs.org/download/release/v16.20.0/node-v16.20.0-x64.msi)
    - Select the option for installing Chocolatey on the Tools for Native Modules screen
@@ -31,9 +31,9 @@ The platform is developed on nodejs technology, so you need to install node and 
    - Shell out to CMD prompt as Administrator and install/run:
        - `pip3 install pywin32`
 
-- Configure Yarn ([https://yarnpkg.com/getting-started/install](https://yarnpkg.com/getting-started/install))
+- Install corepack in order to use Yarn ([https://yarnpkg.com/getting-started/install](https://yarnpkg.com/getting-started/install))
    - Open CMD as Administrator and run the following command:
-       - `corepack enable`
+       - `npm install -g corepack`
 
 ## Python runtime
 

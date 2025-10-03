@@ -24,13 +24,13 @@ $ sudo sysctl -w vm.max_map_count=262144
 
 ## NodeJS and yarn
 
-The platform is developed on nodejs technology, so you need to install node and the yarn package manager.
+The platform is developed on NodeJS technology, so you need to install node and corepack to be able to use Yarn.
+Please ensure Yarn v1 is not installed since it will conflict with corepack and recent version of Yarn.
 
 ```bash
 $ sudo apt-get install nodejs
-$ sudo curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-$ sudo echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-$ sudo apt-get update && sudo apt-get install yarn
+$ npm uninstall -g yarn
+$ npm install -g corepack 
 ```
 
 ## Python runtime
