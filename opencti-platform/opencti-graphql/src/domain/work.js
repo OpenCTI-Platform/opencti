@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
+import { isWorkCompleted, redisDeleteWorks, redisGetWork, redisInitializeWork, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
@@ -32,13 +32,18 @@ export const workToExportFile = (work) => {
   };
 };
 
-const loadWorkById = async (context, user, workId) => {
+export const loadWorkById = async (context, user, workId) => {
   const action = await elLoadById(context, user, workId, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
   return action ? R.assoc('id', workId, action) : action;
 };
 
 export const findById = (context, user, workId) => {
   return loadWorkById(context, user, workId);
+};
+
+export const isWorkAlive = async (_context, _user, workId) => {
+  const redisWork = await redisGetWork(workId);
+  return !!redisWork && Object.keys(redisWork).length !== 0;
 };
 
 export const findWorkPaginated = (context, user, args = {}) => {
@@ -228,7 +233,12 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     work.draft_context = draftContext;
   }
   await elIndex(INDEX_HISTORY, work);
-  return loadWorkById(context, user, workId);
+  const createdWork = await loadWorkById(context, user, workId);
+  // If work was created, initialize work on redis
+  if (createdWork) {
+    await redisInitializeWork(createdWork.id);
+  }
+  return createdWork;
 };
 
 export const reportExpectation = async (context, user, workId, errorData) => {

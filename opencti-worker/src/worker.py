@@ -330,6 +330,15 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.api.set_synchronized_upsert_header(synchronized)
             previous_standard = data.get("previous_standard")
             self.api.set_previous_standard_header(previous_standard)
+            # Check if work is still valid
+            if work_id is not None:
+                is_work_alive = self.api.work.get_is_work_alive(work_id)
+                # If work no longer exists, bundle can be acked without doing anything
+                if not is_work_alive:
+                    cb = functools.partial(self.ack_message, channel, delivery_tag)
+                    connection.add_callback_threadsafe(cb)
+                    return
+
             # Execute the import
             event_type = data["type"] if "type" in data else "bundle"
             types = (
