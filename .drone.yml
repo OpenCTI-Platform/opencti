@@ -34,7 +34,7 @@ steps:
       - pip install -e .[dev,doc]
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn verify-licenses
     depends_on:
@@ -45,7 +45,7 @@ steps:
     commands:
       - cd ./opencti-platform/opencti-front
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn verify-licenses
     depends_on:
@@ -93,7 +93,7 @@ steps:
       - pip install -e .[dev,doc]
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn build
       - yarn check-ts
@@ -127,7 +127,7 @@ steps:
       - npm install -g node-gyp
       - cd opencti-platform/opencti-front
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn build
       - yarn check-ts
@@ -151,7 +151,7 @@ steps:
       - apt-get -y install netcat-traditional
       - cd opencti-platform/opencti-front
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - npx playwright install --with-deps chromium
       - yarn build
@@ -300,7 +300,7 @@ services:
       - pip install -e .[dev,doc]
       - cd /tmp/raw-start-platform/opencti-graphql
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -340,7 +340,7 @@ services:
       - pip install -e .[dev,doc]
       - cd /tmp/live-start-platform/opencti-graphql
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -380,7 +380,7 @@ services:
       - pip install -e .[dev,doc]
       - cd /tmp/direct-start-platform/opencti-graphql
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -459,7 +459,7 @@ services:
       - pip install -e .[dev,doc]
       - cd /tmp/restore-start-platform/opencti-graphql
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -500,7 +500,7 @@ services:
       - pip install -e .[dev,doc]
       - cd /tmp/e2e-start-platform/opencti-graphql
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/.yarnrc.yml .
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
       - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)

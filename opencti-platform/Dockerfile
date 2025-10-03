@@ -5,8 +5,7 @@ RUN corepack enable
 FROM base AS graphql-deps-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
-COPY opencti-graphql/.yarn ./.yarn
+COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./
 COPY opencti-graphql/patch ./patch
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
@@ -17,8 +16,7 @@ RUN set -ex; \
 FROM base AS graphql-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock opencti-graphql/.yarnrc.yml ./
-COPY opencti-graphql/.yarn ./.yarn
+COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./
 COPY opencti-graphql/patch ./patch
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
@@ -34,9 +32,8 @@ FROM base AS front-builder
 
 WORKDIR /opt/opencti-build/opencti-front
 
-COPY opencti-front/package.json opencti-front/yarn.lock opencti-front/.yarnrc.yml ./
+COPY opencti-front/package.json opencti-front/yarn.lock ../.yarnrc.yml ./
 COPY opencti-front/.yarn ./.yarn
-COPY opencti-front/patch ./patch
 COPY opencti-front/packages ./packages
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
