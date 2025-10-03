@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import { CreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import CampaignDetails from './CampaignDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -70,6 +71,13 @@ const CampaignComponent = ({
 }) => {
   const campaign = useFragment<Campaign_campaign$key>(campaignFragment, campaignData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(campaign.entity_type);
+
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
+  useEffect(() => {
+    setCreateRelationshipContext({
+      stixCoreObjectTypes: ['Stix-Core-Object'],
+    });
+  }, []);
 
   return (
     <div data-testid="campaign-details-page">
