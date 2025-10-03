@@ -30128,6 +30128,7 @@ export type Theme = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
+  system_default?: Maybe<Scalars['Boolean']['output']>;
   theme_accent: Scalars['String']['output'];
   theme_background: Scalars['String']['output'];
   theme_logo?: Maybe<Scalars['String']['output']>;
@@ -45390,6 +45391,7 @@ export type ThemeResolvers<ContextType = any, ParentType extends ResolversParent
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  system_default?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   theme_accent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_background?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
