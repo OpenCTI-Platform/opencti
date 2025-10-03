@@ -3191,17 +3191,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:0.5.5":
-  version: 0.5.5
-  resolution: "@langchain/openai@npm:0.5.5"
+"@langchain/openai@npm:0.6.14":
+  version: 0.6.14
+  resolution: "@langchain/openai@npm:0.6.14"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
-    openai: "npm:^4.87.3"
-    zod: "npm:^3.22.4"
-    zod-to-json-schema: "npm:^3.22.3"
+    openai: "npm:5.12.2"
+    zod: "npm:^3.25.32"
   peerDependencies:
-    "@langchain/core": ">=0.3.39 <0.4.0"
-  checksum: 10c0/475c040f473f9c9270e8130c86d480f68834af5723e7e9b761c60152cafe5bc162e87856a4c654b12d6fe8f0cf99b27247b3869e4c0c79797847263523e045d4
+    "@langchain/core": ">=0.3.68 <0.4.0"
+  checksum: 10c0/7aa843e5f6a8b06e4e7f8d062fec2247ddff9e1e5b8facedbe3031972308858f2c6753118453d172f132b25267fabf59d610317de1ca7c2ba98badf4c5e17447
   languageName: node
   linkType: hard
 
@@ -11636,17 +11635,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openai@npm:^4.87.3":
-  version: 4.93.0
-  resolution: "openai@npm:4.93.0"
-  dependencies:
-    "@types/node": "npm:^18.11.18"
-    "@types/node-fetch": "npm:^2.6.4"
-    abort-controller: "npm:^3.0.0"
-    agentkeepalive: "npm:^4.2.1"
-    form-data-encoder: "npm:1.7.2"
-    formdata-node: "npm:^4.3.2"
-    node-fetch: "npm:^2.6.7"
+"openai@npm:5.12.2":
+  version: 5.12.2
+  resolution: "openai@npm:5.12.2"
   peerDependencies:
     ws: ^8.18.0
     zod: ^3.23.8
@@ -11657,7 +11648,7 @@ __metadata:
       optional: true
   bin:
     openai: bin/cli
-  checksum: 10c0/84a78561ca561c9fecd102015b8b4a1ae97ca3b23a1b61c245cc45349628f7ab2c68fd1825b7ba7b90c34916d63627fd00c01bce761730a8e128f6f095c74627
+  checksum: 10c0/7737b9b24edc81fcf9e6dcfb18a196cc0f8e29b6e839adf06a2538558c03908e3aa4cd94901b1a7f4a9dd62676fe9e34d6202281b2395090d998618ea1614c0c
   languageName: node
   linkType: hard
 
@@ -11682,7 +11673,7 @@ __metadata:
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
     "@langchain/core": "npm:0.3.59"
     "@langchain/mistralai": "npm:0.2.0"
-    "@langchain/openai": "npm:0.5.5"
+    "@langchain/openai": "npm:0.6.14"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
     "@mistralai/mistralai": "npm:1.7.2"
     "@node-saml/passport-saml": "npm:5.1.0"
@@ -15312,7 +15303,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:3.24.2, zod@npm:^3.22.4, zod@npm:^3.23.8":
+"zod@npm:3.24.2, zod@npm:^3.23.8":
   version: 3.24.2
   resolution: "zod@npm:3.24.2"
   checksum: 10c0/c638c7220150847f13ad90635b3e7d0321b36cce36f3fc6050ed960689594c949c326dfe2c6fa87c14b126ee5d370ccdebd6efb304f41ef5557a4aaca2824565
