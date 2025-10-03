@@ -7,6 +7,14 @@ export const error = (type, message, data) => {
   return new GraphQLError(message, { extensions: { code: type, data } });
 };
 
+const MUTED_ERROR = Symbol('mutedError');
+export const muteError = (e) => {
+  e[MUTED_ERROR] = true;
+  return e;
+};
+
+export const isMutedError = (e) => e[MUTED_ERROR];
+
 // region TYPE_AUTH
 export const AUTH_FAILURE = 'AUTH_FAILURE';
 export const AuthenticationFailure = (reason, data) => error(AUTH_FAILURE, reason || 'Bad login or password', {

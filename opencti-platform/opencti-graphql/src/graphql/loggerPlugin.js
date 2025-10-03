@@ -4,7 +4,7 @@ import { ApolloServerErrorCode } from '@apollo/server/errors';
 import conf, { appLogExtendedErrors, booleanConf, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
-import { AUTH_ERRORS, FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS, ValidationError } from '../config/errors';
+import { AUTH_ERRORS, FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS, isMutedError, ValidationError } from '../config/errors';
 import { publishUserAction } from '../listener/UserActionListener';
 
 const innerCompute = (inners) => {
@@ -40,7 +40,7 @@ export default {
       willSendResponse: async (context) => {
         const stop = Date.now();
         const elapsed = stop - start;
-        const isCallError = context.errors && context.errors.length > 0;
+        const isCallError = context.errors && context.errors.length > 0 && !isMutedError(context.errors[0]);
         if (!isCallError && !perfLog) {
           return;
         }
@@ -82,7 +82,7 @@ export default {
         if (appLogExtendedErrors) {
           const [variables] = await tryResolveKeyPromises(contextVariables);
           callMetaData.variables = variables;
-          callMetaData.operation_query = stripIgnoredCharacters(context.request.query);
+          callMetaData.operation_query = stripIgnoredCharacters(context.request?.query ?? 'undefined');
         }
         if (isCallError) {
           let callError = head(context.errors);
@@ -96,8 +96,7 @@ export default {
           const errorCode = callError.extensions?.code ?? callError.name;
           // Don't error log for a simple missing authentication
           // Specific audit log for forbidden access
-          const isAuthenticationCall = errorCode && AUTH_ERRORS.includes(errorCode);
-          if (isAuthenticationCall) {
+          if (AUTH_ERRORS.includes(errorCode)) {
             // If not forbidden access, audit already handled
             // Forbidden can be called in many places
             if (errorCode === FORBIDDEN_ACCESS) {
@@ -113,10 +112,8 @@ export default {
                 }
               });
             }
-            return;
-          }
-          // If functional error, log in warning
-          if (errorCode && FUNCTIONAL_ERRORS.includes(errorCode)) {
+          } else if (FUNCTIONAL_ERRORS.includes(errorCode)) {
+            // If functional error, log in warning
             logApp.warn(errorMessage, callMetaData);
           } else {
             // Every other uses cases are logged with error level
