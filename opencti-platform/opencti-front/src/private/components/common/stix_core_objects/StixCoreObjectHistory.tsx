@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
@@ -6,7 +6,7 @@ import {
   StixCoreObjectHistoryLinesQuery,
   StixCoreObjectHistoryLinesQuery$variables,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
-import { CreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistoryLines, { stixCoreObjectHistoryLinesQuery } from './StixCoreObjectHistoryLines';
 import SearchInput from '../../../../components/SearchInput';
@@ -20,6 +20,8 @@ type StixCoreObjectHistoryProps = {
 };
 
 const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreObjectHistoryProps) => {
+  useInitCreateRelationshipContext();
+
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
 
@@ -29,13 +31,6 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   const handleSearchEntity = (value: string) => setEntitySearchTerm(value);
 
   const handleSearchRelations = (value: string) => setRelationsSearchTerm(value);
-
-  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
-  useEffect(() => {
-    setCreateRelationshipContext({
-      stixCoreObjectTypes: ['Stix-Core-Object'],
-    });
-  }, []);
 
   const objectsPaginationOptions: StixCoreObjectHistoryLinesQuery$variables = {
     filters: {
