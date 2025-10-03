@@ -14,7 +14,7 @@ import { DataColumns, PaginationOptions } from '../../../../../components/list_l
 import { EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery$variables } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery.graphql';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
-import { CreateRelationshipContext } from '../CreateRelationshipContextProvider';
+import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
   entityId: string;
@@ -153,14 +153,13 @@ EntityStixCoreRelationshipsEntitiesViewProps
     setReversedRelation(!reversedRelation);
   };
 
-  useEffect(() => {
-    setCreateRelationshipContext({
-      stixCoreObjectTypes,
-      relationshipTypes,
-      connectionKey: 'Pagination_stixCoreObjects',
-      handleReverseRelation,
-    });
-  }, []);
+  useInitCreateRelationshipContext({
+    stixCoreObjectTypes,
+    relationshipTypes,
+    connectionKey: 'Pagination_stixCoreObjects',
+    handleReverseRelation,
+  });
+
   useEffect(() => {
     setCreateRelationshipContext({
       reversed: reversedRelation,

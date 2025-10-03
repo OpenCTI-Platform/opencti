@@ -1,4 +1,4 @@
-import React, { ReactNode, createContext, useMemo, useState } from 'react';
+import React, { ReactNode, createContext, useMemo, useState, useContext, useEffect } from 'react';
 
 interface CreateRelationshipContextStateType {
   relationshipTypes?: string[];
@@ -74,3 +74,12 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
 };
 
 export default CreateRelationshipContextProvider;
+
+export const useInitCreateRelationshipContext = (state: CreateRelationshipContextStateType = {
+  stixCoreObjectTypes: ['Stix-Core-Object'],
+}) => {
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
+  useEffect(() => {
+    setCreateRelationshipContext(state);
+  }, []);
+};

@@ -15,7 +15,7 @@ import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStora
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
-import { CreateRelationshipContext } from '../CreateRelationshipContextProvider';
+import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -165,16 +165,15 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     setReversedRelation(!reversedRelation);
   };
 
-  useEffect(() => {
-    setCreateRelationshipContext({
-      stixCoreObjectTypes: stixCoreObjectTypes.length
-        ? stixCoreObjectTypes
-        : ['Stix-Core-Object'],
-      relationshipTypes,
-      handleReverseRelation,
-      connectionKey: 'Pagination_stixCoreRelationships',
-    });
-  }, []);
+  useInitCreateRelationshipContext({
+    stixCoreObjectTypes: stixCoreObjectTypes.length
+      ? stixCoreObjectTypes
+      : ['Stix-Core-Object'],
+    relationshipTypes,
+    handleReverseRelation,
+    connectionKey: 'Pagination_stixCoreRelationships',
+  });
+
   useEffect(() => {
     setCreateRelationshipContext({
       reversed: reversedRelation,

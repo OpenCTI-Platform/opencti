@@ -23,7 +23,7 @@ import DataTable from '../../../../../../components/dataGrid/DataTable';
 import { useQueryLoadingWithLoadQuery } from '../../../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../../../../../../components/i18n';
-import { CreateRelationshipContext } from '../../CreateRelationshipContextProvider';
+import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -232,14 +232,13 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     </ToggleButton>
   );
 
-  useEffect(() => {
-    setCreateRelationshipContext({
-      stixCoreObjectTypes: ['Indicator'],
-      relationshipTypes,
-      connectionKey: 'Pagination_indicators',
-      reversed: isRelationReversed,
-    });
-  }, []);
+  useInitCreateRelationshipContext({
+    stixCoreObjectTypes: ['Indicator'],
+    relationshipTypes,
+    connectionKey: 'Pagination_indicators',
+    reversed: isRelationReversed,
+  });
+
   useEffect(() => {
     setCreateRelationshipContext({
       paginationOptions: queryPaginationOptions,

@@ -1,7 +1,7 @@
-import React, { useContext, useEffect } from 'react';
+import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import { CreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -141,18 +141,12 @@ interface ThreatActorIndividualProps {
 }
 
 const ThreatActorIndividual: React.FC<ThreatActorIndividualProps> = ({ threatActorIndividualData }) => {
+  useInitCreateRelationshipContext();
   const threatActorIndividual = useFragment<ThreatActorIndividual_ThreatActorIndividual$key>(
     threatActorIndividualFragment,
     threatActorIndividualData,
   );
   const overviewLayoutCustomization = useOverviewLayoutCustomization(threatActorIndividual.entity_type);
-
-  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
-  useEffect(() => {
-    setCreateRelationshipContext({
-      stixCoreObjectTypes: ['Stix-Core-Object'],
-    });
-  }, []);
 
   return (
     <div data-testid="threat-actor-individual-details-page">

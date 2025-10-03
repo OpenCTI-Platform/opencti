@@ -1,7 +1,7 @@
-import React, { useContext, useEffect } from 'react';
+import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
-import { CreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -69,12 +69,7 @@ interface IntrusionSetProps {
 }
 
 const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
-  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
-  useEffect(() => {
-    setCreateRelationshipContext({
-      stixCoreObjectTypes: ['Stix-Core-Object'],
-    });
-  }, []);
+  useInitCreateRelationshipContext();
   const intrusionSet = useFragment<IntrusionSet_intrusionSet$key>(intrusionSetFragment, intrusionSetData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(intrusionSet.entity_type);
   return (
