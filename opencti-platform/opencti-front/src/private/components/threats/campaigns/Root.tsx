@@ -59,6 +59,7 @@ const campaignQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Campaign_campaign
       ...CampaignKnowledge_campaign
@@ -149,7 +150,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               RelateComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <StixCoreRelationshipCreationFromEntityHeader
-                    entityId={campaign.id}
+                    data={campaign}
                   />
                 </Security>
               )}
