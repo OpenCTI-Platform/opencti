@@ -63,6 +63,7 @@ const intrusionSetQuery = graphql`
         id
       }
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...IntrusionSet_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
@@ -155,7 +156,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               RelateComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <StixCoreRelationshipCreationFromEntityHeader
-                    entityId={intrusionSet.id}
+                    data={intrusionSet}
                   />
                 </Security>
               )}
