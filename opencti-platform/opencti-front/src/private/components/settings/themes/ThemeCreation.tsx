@@ -9,7 +9,6 @@ import Drawer from '../../common/drawer/Drawer';
 import { ThemeCreationCreateMutation } from './__generated__/ThemeCreationCreateMutation.graphql';
 import { insertNode } from '../../../../utils/store';
 import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
-import { serializeThemeManifest } from './ThemeType';
 
 export const createThemeMutation = graphql`
   mutation ThemeCreationCreateMutation($input: ThemeAddInput!) {
@@ -63,11 +62,22 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
   ) => {
     try {
       await validator.validate(values);
-      const { name, ...valuesToSerialize } = values;
-      const manifest = serializeThemeManifest({ ...valuesToSerialize, system_default: false });
-
       commit({
-        variables: { input: { name, manifest } },
+        variables: {
+          input: {
+            name: values.name,
+            theme_background: values.theme_background,
+            theme_paper: values.theme_paper,
+            theme_nav: values.theme_background,
+            theme_primary: values.theme_nav,
+            theme_secondary: values.theme_secondary,
+            theme_accent: values.theme_accent,
+            theme_logo: values.theme_logo,
+            theme_logo_collapsed: values.theme_logo_collapsed,
+            theme_logo_login: values.theme_logo_login,
+            theme_text_color: values.theme_text_color,
+          },
+        },
         updater: (store: RecordSourceSelectorProxy) => insertNode(
           store,
           'Pagination_themes',
