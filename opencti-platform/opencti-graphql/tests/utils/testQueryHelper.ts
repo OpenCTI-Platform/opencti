@@ -86,7 +86,7 @@ export const queryAsUserWithSuccess = async (client: AxiosInstance, request: { q
   const requestResult = await executeInternalQuery(client, print(request.query), request.variables);
   expect(requestResult, `Something is wrong with this query: ${request.query}`).toBeDefined();
   if (requestResult.errors) {
-    logApp.info('Unexpected error; requestResult:', { requestResult });
+    logApp.error('Unexpected error; request:', { request, requestResult });
   }
   expect(requestResult.errors, `This errors should not be there: ${JSON.stringify(requestResult.errors)}`).toBeUndefined();
   return requestResult;
