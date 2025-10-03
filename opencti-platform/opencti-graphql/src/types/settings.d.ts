@@ -1,5 +1,5 @@
 import type { BasicStoreEntity } from './store';
-import type { XtmHubRegistrationStatus, CguStatus } from '../generated/graphql';
+import type { XtmHubRegistrationStatus, CguStatus, ValidationMode } from '../generated/graphql';
 
 export interface BasicStoreSettingsMessage {
   id: string
@@ -32,4 +32,5 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   xtm_hub_should_send_connectivity_email?: boolean
   platform_ai_enabled: boolean
   filigran_chatbot_ai_cgu_status: CguStatus
+  platform_validation_mode?: ValidationMode
 }

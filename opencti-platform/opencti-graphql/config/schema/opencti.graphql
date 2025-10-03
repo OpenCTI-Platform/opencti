@@ -1518,6 +1518,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   # XTM1 AI
   filigran_chatbot_ai_url: String
   filigran_chatbot_ai_cgu_status: CGUStatus!
+  platform_validation_mode: ValidationMode
 }
 
 ############## Groups
