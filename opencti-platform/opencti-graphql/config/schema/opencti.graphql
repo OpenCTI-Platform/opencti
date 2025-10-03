@@ -2224,7 +2224,7 @@ type Connector implements BasicObject & InternalObject {
   metrics:[Metric]
   # Connector
   name: String!
-  identifier: String!
+  container_name: String!
   active: Boolean
   auto: Boolean
   auto_update: Boolean
@@ -2272,7 +2272,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   metrics:[Metric]
   # Connector
   name: String!
-  identifier: String!
+  container_name: String!
   connector_user_id: ID
   connector_user: User
   connector_state_timestamp: DateTime

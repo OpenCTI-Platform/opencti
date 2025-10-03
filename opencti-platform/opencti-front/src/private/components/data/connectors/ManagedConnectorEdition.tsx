@@ -48,7 +48,6 @@ const updateManagedConnector = graphql`
 
 interface ManagedConnectorValues {
   name: string;
-  identifier: string;
   creator?: FieldOption
 }
 
@@ -191,7 +190,6 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
         initialValues={{
           creator: connector.connector_user ? { value: connector.connector_user.id, label: connector.connector_user.name } : undefined,
           name: connector.name,
-          identifier: connector.identifier,
           ...reconciledData,
         }}
         onSubmit={() => {}}
@@ -207,16 +205,6 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                 variant="standard"
                 name="name"
                 label={t_i18n('Name')}
-                disabled
-                fullWidth={true}
-              />
-
-              <Field
-                component={TextField}
-                style={fieldSpacingContainerStyle}
-                variant="standard"
-                name="identifier"
-                label={t_i18n('Connector identifier')}
                 disabled
                 fullWidth={true}
               />
