@@ -15,7 +15,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { internalLoadById, fullRelationsList } from '../database/middleware-loader';
-import type { RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
+import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction, RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
@@ -158,7 +158,14 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Ar
   await elList(context, RULE_MANAGER_USER, READ_DATA_INDICES, opts);
 };
 
-export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, events: Array<DataEvent>, forRules: Array<RuleRuntime> = []) => {
+export const rulesApplyHandler = async (
+  context: AuthContext,
+  user: AuthUser,
+  events: Array<DataEvent>,
+  forRules: Array<RuleRuntime> = [],
+  createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+  createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }
@@ -209,7 +216,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
           const rule = rules[ruleIndex];
           const isImpactedElement = isMatchRuleFilters(rule, data);
           if (isImpactedElement) {
-            await rule.insert(data);
+            await rule.insert(data, createInferredEntityCallback, createInferredRelationCallback);
           }
         }
       }
@@ -340,22 +347,36 @@ const initRuleManager = () => {
 };
 const ruleEngine = initRuleManager();
 
-export const executeRuleApply = async (context: AuthContext, user: AuthUser, rule: RuleRuntime, id: string) => {
+export const executeRuleApply = async (
+  context: AuthContext,
+  user: AuthUser,
+  rule: RuleRuntime,
+  id: string,
+  createInferredEntityCallback: createInferredEntityCallbackFunction | undefined,
+  createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, id);
   if (!instance) {
     throw FunctionalError('Cant find element to scan', { id });
   }
   const event = buildCreateEvent(user, instance, '-');
-  await rulesApplyHandler(context, user, [event], [rule]);
+  await rulesApplyHandler(context, user, [event], [rule], createInferredEntityCallback, createInferredRelationCallback);
 };
 
-export const ruleApply = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
+export const ruleApply = async (
+  context: AuthContext,
+  user: AuthUser,
+  elementId: string,
+  ruleId: string,
+  createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
+  createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+) => {
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   if (!rule) {
     throw FunctionalError('Cant find rule to scan', { id: ruleId });
   }
-  return executeRuleApply(context, user, rule, elementId);
+  return executeRuleApply(context, user, rule, elementId, createInferredEntityCallback, createInferredRelationCallback);
 };
 
 export const ruleClear = async (context: AuthContext, user: AuthUser, elementId: string, ruleId: string) => {
