@@ -30130,9 +30130,9 @@ export type Theme = BasicObject & InternalObject & {
   standard_id: Scalars['String']['output'];
   theme_accent: Scalars['String']['output'];
   theme_background: Scalars['String']['output'];
-  theme_logo: Scalars['String']['output'];
-  theme_logo_collapsed: Scalars['String']['output'];
-  theme_logo_login: Scalars['String']['output'];
+  theme_logo?: Maybe<Scalars['String']['output']>;
+  theme_logo_collapsed?: Maybe<Scalars['String']['output']>;
+  theme_logo_login?: Maybe<Scalars['String']['output']>;
   theme_nav: Scalars['String']['output'];
   theme_paper: Scalars['String']['output'];
   theme_primary: Scalars['String']['output'];
@@ -30145,9 +30145,9 @@ export type ThemeAddInput = {
   name: Scalars['String']['input'];
   theme_accent: Scalars['String']['input'];
   theme_background: Scalars['String']['input'];
-  theme_logo: Scalars['String']['input'];
-  theme_logo_collapsed: Scalars['String']['input'];
-  theme_logo_login: Scalars['String']['input'];
+  theme_logo?: InputMaybe<Scalars['String']['input']>;
+  theme_logo_collapsed?: InputMaybe<Scalars['String']['input']>;
+  theme_logo_login?: InputMaybe<Scalars['String']['input']>;
   theme_nav: Scalars['String']['input'];
   theme_paper: Scalars['String']['input'];
   theme_primary: Scalars['String']['input'];
@@ -45392,9 +45392,9 @@ export type ThemeResolvers<ContextType = any, ParentType extends ResolversParent
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_accent?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_background?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_logo?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_logo_collapsed?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  theme_logo_login?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  theme_logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_logo_collapsed?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  theme_logo_login?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   theme_nav?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_paper?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme_primary?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
