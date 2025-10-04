@@ -55,7 +55,7 @@ import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { fromB64 } from '../utils/base64';
-import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_ASSESS } from '../modules/securityCoverage/securityCoverage-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { elConvertHitsToMap } from '../database/engine';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
@@ -334,7 +334,7 @@ const platformSecurityCoverageTargets = (context: AuthContext) => {
           }
         }
       };
-      await fullRelationsList(context, SYSTEM_USER, RELATION_ASSESS, { callback });
+      await fullRelationsList(context, SYSTEM_USER, RELATION_COVERED, { callback });
     }
     return coveragesByTarget;
   };

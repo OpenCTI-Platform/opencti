@@ -29,7 +29,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
-import { RELATION_HAS_ASSESSED } from '../../schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
@@ -38,6 +38,7 @@ interface VocabularyDefinition {
   entity_types: string[],
   fields: {
     key: string,
+    composite?: string,
     required: boolean,
     multiple: boolean,
   }[]
@@ -83,9 +84,10 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   // C
   coverage_ov: {
-    entity_types: [ENTITY_TYPE_SECURITY_COVERAGE, RELATION_HAS_ASSESSED],
+    entity_types: [ENTITY_TYPE_SECURITY_COVERAGE, RELATION_HAS_COVERED],
     fields: [{
       key: 'coverage',
+      composite: 'coverage_name',
       required: false,
       multiple: false,
     }]

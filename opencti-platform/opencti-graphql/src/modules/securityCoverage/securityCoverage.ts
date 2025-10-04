@@ -3,10 +3,10 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
 import { createdAt, creators, elementCoverage, updatedAt } from '../../schema/attribute-definition';
 import {
-  ATTRIBUTE_ASSESS,
+  ATTRIBUTE_COVERED,
   ENTITY_TYPE_SECURITY_COVERAGE,
-  INPUT_ASSESS,
-  RELATION_ASSESS,
+  INPUT_COVERED,
+  RELATION_COVERED,
   type StixSecurityCoverage,
   type StoreEntitySecurityCoverage
 } from './securityCoverage-types';
@@ -20,27 +20,27 @@ import {
   ENTITY_TYPE_VULNERABILITY
 } from '../../schema/stixDomainObject';
 import { securityCoverageStixBundle } from './securityCoverage-domain';
-import { RELATION_HAS_ASSESSED } from '../../schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
 import { REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import type { StoreEntity } from '../../types/store';
 
 const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
   type: {
-    id: 'security-assessment',
+    id: 'security-coverage',
     name: ENTITY_TYPE_SECURITY_COVERAGE,
     category: ABSTRACT_STIX_DOMAIN_OBJECT,
     aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_SECURITY_COVERAGE]: [{ src: 'objectAssess' }],
+      [ENTITY_TYPE_SECURITY_COVERAGE]: [{ src: 'objectCovered' }],
     },
     resolvers: {
       name(data: object) {
         return normalizeName(data);
       },
-      objectAssess(data: object) {
+      objectCovered(data: object) {
         return (data as StoreEntity).standard_id;
       },
     },
@@ -56,7 +56,7 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
   ],
   relations: [
     {
-      name: RELATION_HAS_ASSESSED,
+      name: RELATION_HAS_COVERED,
       targets: [
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_NEW },
         { name: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type: REL_NEW },
@@ -66,10 +66,10 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
   ],
   relationsRefs: [
     {
-      name: INPUT_ASSESS,
+      name: INPUT_COVERED,
       type: 'ref',
-      databaseName: RELATION_ASSESS,
-      stixName: ATTRIBUTE_ASSESS,
+      databaseName: RELATION_COVERED,
+      stixName: ATTRIBUTE_COVERED,
       label: 'Coverage target',
       mandatoryType: 'external',
       editDefault: false,
