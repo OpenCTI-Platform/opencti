@@ -58,7 +58,7 @@ export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
 
-const MARKING_TLP_CLEAR_ID = '613f2e26-407d-48c7-9eca-b8e91df99dc9';
+export const MARKING_TLP_CLEAR_ID = '613f2e26-407d-48c7-9eca-b8e91df99dc9';
 export const MARKING_TLP_CLEAR = `marking-definition--${MARKING_TLP_CLEAR_ID}`;
 const MARKING_TLP_GREEN_ID = '34098fce-860f-48ae-8e50-ebd3cc5e41da';
 export const MARKING_TLP_GREEN = `marking-definition--${MARKING_TLP_GREEN_ID}`;
@@ -308,7 +308,7 @@ export const idGen = (type, data, namespace) => {
   // If empty data, generate an error message
   if (isEmptyField(data)) {
     const contrib = resolveContribution(type);
-    const properties = contrib.definition[type];
+    const properties = contrib.definition[type].flat();
     const missingKeys = properties.map((p) => p.src).join(' - ');
     throw FunctionalError(`Missing required elements for ${type} creation (${missingKeys})`, { properties });
   }
