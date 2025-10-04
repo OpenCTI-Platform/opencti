@@ -429,7 +429,7 @@ export const elementCoverage: AttributeDefinition = {
   isFilterable: false, // Filter will be done by a special key
   mappings: [
     elementCoverageScore,
-    { name: 'coverage_score', label: 'Expectation score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
+    { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
   ]
 };
 
