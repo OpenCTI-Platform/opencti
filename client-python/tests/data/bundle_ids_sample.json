@@ -1,0 +1,89 @@
+{
+  "type": "bundle",
+  "id": "bundle--8c939929-688f-4a72-badb-3dd1bd6af0fa",
+  "objects": [
+    {
+      "id": "malware--d650c5b9-4b43-5781-8576-ea52bd6c7ce5",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2024-03-13T09:56:18.259Z",
+      "modified": "2024-03-13T09:56:18.259Z",
+      "name": "BasicMalware",
+      "is_family": false,
+      "x_opencti_id": "75f2a512-fcc6-4cbc-a2ef-52ca9c57df46",
+      "x_opencti_type": "Malware",
+      "type": "malware"
+    },
+    {
+      "id": "identity--7b82b010-b1c0-4dae-981f-7756374a17da",
+      "type": "identity",
+      "spec_version": "2.1",
+      "name": "ANSSI",
+      "identity_class": "organization",
+      "labels": ["identity"],
+      "created": "2020-02-23T23:40:53.575Z",
+      "modified": "2020-02-27T08:45:39.351Z",
+      "x_opencti_organization_type": "CSIRT"
+    },
+    {
+      "id": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27",
+      "type": "marking-definition",
+      "spec_version": "2.1",
+      "definition_type": "TLP",
+      "definition": {
+        "TLP": "TLP:TEST"
+      },
+      "created": "2020-02-25T09:02:29.040Z",
+      "modified": "2020-02-25T09:02:29.040Z",
+      "created_by_ref": "marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"
+    },
+    {
+      "id": "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7",
+      "type": "report",
+      "spec_version": "2.1",
+      "name": "A demo report for testing purposes",
+      "labels": ["report"],
+      "description": "Report for testing purposes (random data).",
+      "published": "2020-03-01T14:02:48.111Z",
+      "created": "2020-03-01T14:02:55.327Z",
+      "modified": "2020-03-01T14:09:48.078Z",
+      "report_types": ["threat-report"],
+      "x_opencti_report_status": 2,
+      "confidence": 3,
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17da",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "object_refs": [
+        "observed-data--7d258c31-9a26-4543-aecb-2abc5ed366be",
+        "malware--d650c5b9-4b43-5781-8576-ea52bd6c7ce5"
+      ]
+    },
+    {
+      "id": "relationship--ba52fced-422a-4bee-816a-85aa21c9eacc",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "related-to",
+      "source_ref": "malware--d650c5b9-4b43-5781-8576-ea52bd6c7ce5",
+      "target_ref": "report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7",
+      "created": "2020-03-01T14:07:14.316Z",
+      "modified": "2020-03-01T14:07:14.316Z",
+      "start_time": "1900-01-01T00:00:00.000Z",
+      "stop_time": "1900-01-01T00:00:00.000Z",
+      "created_by_ref": "identity--7b82b010-b1c0-4dae-981f-7756374a17da",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
+      "type": "sighting",
+      "spec_version": "2.1",
+      "id": "sighting--ee20065d-2555-424f-ad9e-0f8428623c75",
+      "created": "2016-08-06T20:08:31.000Z",
+      "modified": "2016-09-06T20:08:31.000Z",
+      "sighting_of_ref": "malware--d650c5b9-4b43-5781-8576-ea52bd6c7ce5",
+      "where_sighted_refs": ["identity--7b82b010-b1c0-4dae-981f-7756374a17da"],
+      "first_seen": "2016-08-06T20:08:31.000Z",
+      "last_seen": "2016-08-07T20:08:31.000Z",
+      "count": 12,
+      "x_opencti_negative": true
+    }
+  ]
+}

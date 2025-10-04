@@ -1,0 +1,36 @@
+{
+  "type": "bundle",
+  "id": "bundle--8c939929-688f-4a72-badb-3dd1bd6af0fa",
+  "objects": [
+    {
+      "id": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "type": "malware",
+      "name": "malware 01",
+      "created": "2019-09-30T16:38:26.000Z",
+      "modified": "2020-01-14T14:01:48.288Z"
+    },
+    {
+      "id": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3d",
+      "type": "malware",
+      "name": "malware 02",
+      "created": "2019-09-30T16:38:26.000Z",
+      "modified": "2020-01-14T14:01:48.288Z"
+    },
+    {
+      "id": "relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea04",
+      "type": "relationship",
+      "relationship_type": "part-of",
+      "created_by_ref": "identity--not-available",
+      "source_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3d"
+    },
+    {
+      "id": "relationship--10e8c71d-a1b4-4e35-bca8-2e4a3785ea05",
+      "type": "relationship",
+      "relationship_type": "part-of",
+      "created_by_ref": "identity--not-available",
+      "source_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c",
+      "target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3e"
+    }
+  ]
+}
