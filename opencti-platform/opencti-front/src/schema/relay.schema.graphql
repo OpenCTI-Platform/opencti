@@ -8323,8 +8323,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
 }
 
 input SecurityCoverageExpectation {
-  name: String!
-  score: Int!
+  coverage_name: String!
+  coverage_score: Int!
 }
 
 input StixCoreRelationshipAddInput {
@@ -14330,11 +14330,11 @@ input SecurityPlatformAddInput {
   update: Boolean
 }
 
-union StixCoverageAssessObject = Report | Malware
+union StixCoveredObject = Report | Malware
 
 type CoverageResult {
-  name: String!
-  score: Int!
+  coverage_name: String!
+  coverage_score: Int!
 }
 
 type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -14396,8 +14396,8 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
-  coverage: [CoverageResult!]!
-  objectAssess: StixCoverageAssessObject
+  coverage: [CoverageResult!]
+  objectCovered: StixCoveredObject
   toStixBundle: String
 }
 
@@ -14429,7 +14429,7 @@ input SecurityCoverageAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
-  objectAssess: String!
+  objectCovered: String!
   created: DateTime
   modified: DateTime
   revoked: Boolean
@@ -14437,7 +14437,7 @@ input SecurityCoverageAddInput {
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
   externalReferences: [String]
-  coverage: [SecurityCoverageExpectation!]!
+  coverage: [SecurityCoverageExpectation!]
   update: Boolean
 }
 

@@ -191,7 +191,7 @@ import {
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
-import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
+import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
@@ -803,10 +803,10 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
             });
         } else if (hasOpenVocab) {
           const ids = isListing ? id : [id];
-          const category = getVocabularyCategoryForField(destKey, type);
+          const { category, field } = getVocabularyCategoryForField(destKey, type);
           ids.forEach((i) => {
-            const vocabularyId = idVocabulary(i, category);
-            const vocabularyElement = { id: vocabularyId, destKey, multiple: isListing };
+            const vocabularyId = field.composite ? idVocabulary(i[field.composite], category) : idVocabulary(i, category);
+            const vocabularyElement = { id: vocabularyId, destKey, vocab: { field: field.composite, data: i }, multiple: isListing };
             if (fetchingIdsMap.has(vocabularyId)) {
               fetchingIdsMap.get(vocabularyId).push(vocabularyElement);
             } else {
@@ -881,14 +881,37 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, resolutionsMap.values());
     const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
-      const isMultiple = R.head(val).i_group.multiple;
+      const { multiple } = R.head(val).i_group;
       if (val.length === 1) {
-        return { [k]: isMultiple ? val : R.head(val) };
+        const finalVal = multiple ? val : R.head(val);
+        const { vocab } = finalVal;
+        if (vocab) {
+          // TODO JRI Add again the vocabularies check
+          if (vocab.field) {
+            return { [k]: { ...vocab.data, [vocab.field]: finalVal.name } };
+          }
+          return { [k]: finalVal.name };
+        }
+        return { [k]: finalVal };
       }
-      if (!isMultiple) {
+      if (!multiple) {
         throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val, doc_code: 'ELEMENT_ID_COLLISION' });
       }
-      return { [k]: val };
+      const result = [];
+      val.forEach((rawValue) => {
+        const { vocab } = rawValue.i_group;
+        if (vocab) {
+          // TODO JRI Add again the vocabularies check
+          if (vocab.field) {
+            result.push({ ...vocab.data, [vocab.field]: rawValue.name });
+          } else {
+            result.push(rawValue.name);
+          }
+        } else {
+          result.push(val);
+        }
+      });
+      return { [k]: result };
     });
     const unresolvedIds = expectedIds.filter((id) => !resolvedIds.has(id));
     // In case of missing from / to, fail directly
@@ -909,23 +932,23 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
     // Check Open vocab in resolved to convert them back to the raw value
-    const entityVocabs = Object.values(vocabularyDefinitions).filter(({ entity_types }) => entity_types.includes(type));
-    entityVocabs.forEach(({ fields }) => {
-      const existingFields = fields.filter(({ key }) => Boolean(input[key]));
-      existingFields.forEach(({ key, required, multiple }) => {
-        const resolvedData = inputResolved[key];
-        if (isEmptyField(resolvedData) && required) {
-          throw FunctionalError('Missing mandatory attribute for vocabulary', { key });
-        }
-        if (isNotEmptyField(resolvedData)) {
-          const isArrayValues = Array.isArray(resolvedData);
-          if (isArrayValues && !multiple) {
-            throw FunctionalError('Find multiple vocabularies for single one', { key, data: resolvedData });
-          }
-          inputResolved[key] = isArrayValues ? resolvedData.map(({ name }) => name) : resolvedData.name;
-        }
-      });
-    });
+    // const entityVocabs = Object.values(vocabularyDefinitions).filter(({ entity_types }) => entity_types.includes(type));
+    // entityVocabs.forEach(({ fields }) => {
+    //   const existingFields = fields.filter(({ key }) => Boolean(input[key]));
+    //   existingFields.forEach(({ key, required, composite, multiple }) => {
+    //     const resolvedData = inputResolved[key];
+    //     if (isEmptyField(resolvedData) && required) {
+    //       throw FunctionalError('Missing mandatory attribute for vocabulary', { key });
+    //     }
+    //     if (isNotEmptyField(resolvedData)) {
+    //       const isArrayValues = Array.isArray(resolvedData);
+    //       if (isArrayValues && !multiple) {
+    //         throw FunctionalError('Find multiple vocabularies for single one', { key, data: resolvedData });
+    //       }
+    //       inputResolved[key] = isArrayValues ? resolvedData.map(({ name }) => name) : resolvedData.name;
+    //     }
+    //   });
+    // });
     // Check the marking allow for the user and asked inside the input
     if (!isBypassUser(user) && inputResolved[INPUT_MARKINGS]) {
       const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);

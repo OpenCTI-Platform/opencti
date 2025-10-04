@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { type EntityOptions, fullRelationsList, loadEntityThroughRelationsPaginated, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader'; import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE, INPUT_ASSESS, RELATION_ASSESS } from './securityCoverage-types';
+import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE, INPUT_COVERED, RELATION_COVERED } from './securityCoverage-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
@@ -32,8 +32,8 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   const SecurityCoverage = await storeLoadByIdWithRefs(context, user, SecurityCoverageId);
   const stixSecurityCoverage = convertStoreToStix(SecurityCoverage);
   objects.push(stixSecurityCoverage);
-  const objectAsses = SecurityCoverage[INPUT_ASSESS] as unknown as BasicStoreEntity;
-  const assessment = await storeLoadByIdWithRefs(context, user, objectAsses.id);
+  const objectCovered = SecurityCoverage[INPUT_COVERED] as unknown as BasicStoreEntity;
+  const assessment = await storeLoadByIdWithRefs(context, user, objectCovered.id);
   const stixAssessment = convertStoreToStix(assessment);
   objects.push(stixAssessment);
   const stixAssessmentRefs = stixRefsExtractor(stixAssessment);
@@ -53,7 +53,7 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
       targetIds.add(relation.toId);
     }
   };
-  await fullRelationsList(context, user, STIX_CORE_RELATIONSHIPS, { fromId: objectAsses.id, callback: relationsCallback });
+  await fullRelationsList(context, user, STIX_CORE_RELATIONSHIPS, { fromId: objectCovered.id, callback: relationsCallback });
   if (targetIds.size > 0) {
     const targets = await storeLoadByIdsWithRefs(context, user, Array.from(targetIds));
     for (let index = 0; index < targets.length; index += 1) {
@@ -66,9 +66,9 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
   return JSON.stringify(StixBundle);
 };
 
-export const objectAssess = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
+export const objectCovered = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
   const entityTypes = [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_THREAT_ACTOR_GROUP];
-  return loadEntityThroughRelationsPaginated<T>(context, user, SecurityCoverageId, RELATION_ASSESS, entityTypes, false);
+  return loadEntityThroughRelationsPaginated<T>(context, user, SecurityCoverageId, RELATION_COVERED, entityTypes, false);
 };
 
 export const securityCoverageDelete = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {

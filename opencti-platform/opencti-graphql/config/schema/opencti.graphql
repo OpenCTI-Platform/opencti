@@ -13058,8 +13058,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
 }
 
 input SecurityCoverageExpectation {
-    name: String!
-    score: Int!
+    coverage_name: String!
+    coverage_score: Int!
 }
 
 input StixCoreRelationshipAddInput {
