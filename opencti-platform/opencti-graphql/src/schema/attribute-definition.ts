@@ -403,7 +403,7 @@ export const errors: AttributeDefinition = {
   ]
 };
 
-const elementCoverageScore: AttributeDefinition = {
+const elementCoverageName: AttributeDefinition = {
   name: 'coverage_name',
   label: 'Coverage name',
   type: 'string',
@@ -428,7 +428,7 @@ export const elementCoverage: AttributeDefinition = {
   upsert_force_replace: true,
   isFilterable: false, // Filter will be done by a special key
   mappings: [
-    elementCoverageScore,
+    elementCoverageName,
     { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
   ]
 };
