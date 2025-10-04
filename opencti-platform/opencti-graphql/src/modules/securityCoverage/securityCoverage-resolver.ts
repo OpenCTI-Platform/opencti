@@ -1,4 +1,4 @@
-import { addSecurityCoverage, findAll, findById, securityCoverageDelete, securityCoverageStixBundle, objectAssess } from './securityCoverage-domain';
+import { addSecurityCoverage, findAll, findById, securityCoverageDelete, securityCoverageStixBundle, objectCovered } from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -14,15 +14,15 @@ const SecurityCoverageResolvers: Resolvers = {
     securityCoverages: (_, args, context) => findAll(context, context.user, args),
   },
   SecurityCoverage: {
-    objectAssess: (SecurityCoverage, _, context) => objectAssess<any>(context, context.user, SecurityCoverage.id),
+    objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
     toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id)
   },
-  StixCoverageAssessObject: {
+  StixCoveredObject: {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     __resolveType(obj) {
       if (obj.entity_type) {
-        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (_, letter) => letter.toUpperCase());
       }
       return 'Unknown';
     },
