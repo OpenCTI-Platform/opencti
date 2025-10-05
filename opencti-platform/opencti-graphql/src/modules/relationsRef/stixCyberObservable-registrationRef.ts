@@ -13,10 +13,11 @@ import {
   creatorUser,
   dst,
   dstPayload,
+  emailTo,
   encapsulatedBy,
   encapsulates,
   externalReferences,
-  from,
+  emailFrom,
   image,
   objectLabel,
   objectMarking,
@@ -31,8 +32,7 @@ import {
   serviceDlls,
   src,
   srcPayload,
-  to,
-  values
+  values,
 } from '../../schema/stixRefRelationship';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -84,9 +84,9 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DOMAIN_NAME, [
   buildRelationRef(resolvesTo, (_: string, toType: string) => [ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR].includes(toType))
 ]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MESSAGE, [
-  buildRelationRef(from, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
+  buildRelationRef(emailFrom, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
   buildRelationRef(sender, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
-  buildRelationRef(to, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
+  buildRelationRef(emailTo, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
   buildRelationRef(cc, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
   buildRelationRef(bcc, (_: string, toType: string) => ENTITY_EMAIL_ADDR === toType),
   buildRelationRef(bodyMultipart, (_: string, toType: string) => ENTITY_EMAIL_MIME_PART_TYPE === toType),

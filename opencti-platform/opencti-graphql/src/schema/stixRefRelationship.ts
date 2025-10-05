@@ -52,6 +52,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from './stixCyberObservable';
 import { ATTRIBUTE_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-types';
+import { FunctionalError } from '../config/errors';
 
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
@@ -113,6 +114,41 @@ export const RELATION_BODY_MULTIPART = 'body-multipart';
 export const RELATION_VALUES = 'values';
 export const RELATION_SERVICE_DLL = 'service-dll';
 
+// -- RELATIONS FROM / TO DEFINITION ---
+
+export const fromRef: RefAttribute = {
+  name: 'from',
+  type: 'ref',
+  databaseName: 'connections',
+  stixName: 'source_ref',
+  mandatoryType: 'internal',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isRefExistingForTypes(this, fromType, toType) {
+    throw FunctionalError('Direct using of from definition is not permitted', { fromType, toType });
+  },
+  label: 'From',
+  isFilterable: false,
+  toTypes: [],
+};
+export const toRef: RefAttribute = {
+  name: 'to',
+  type: 'ref',
+  databaseName: 'connections',
+  stixName: 'target_ref',
+  mandatoryType: 'internal',
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isRefExistingForTypes(this, fromType, toType) {
+    throw FunctionalError('Direct using of to definition is not permitted', { fromType, toType });
+  },
+  label: 'To',
+  isFilterable: false,
+  toTypes: [],
+};
+
 // -- RELATIONS REF ---
 
 export const operatingSystems: RefAttribute = {
@@ -132,7 +168,6 @@ export const operatingSystems: RefAttribute = {
   },
   toTypes: [ENTITY_SOFTWARE],
 };
-
 export const samples: RefAttribute = {
   name: INPUT_SAMPLE,
   type: 'ref',
@@ -150,7 +185,6 @@ export const samples: RefAttribute = {
   },
   toTypes: [ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE],
 };
-
 export const contains: RefAttribute = {
   name: INPUT_CONTAINS,
   type: 'ref',
@@ -202,7 +236,7 @@ export const belongsTo: RefAttribute = {
   },
   toTypes: [ENTITY_USER_ACCOUNT, ENTITY_AUTONOMOUS_SYSTEM],
 };
-export const from: RefAttribute = {
+export const emailFrom: RefAttribute = {
   name: INPUT_EMAIL_FROM,
   type: 'ref',
   databaseName: RELATION_FROM,
@@ -236,7 +270,7 @@ export const sender: RefAttribute = {
   },
   toTypes: [ENTITY_EMAIL_ADDR],
 };
-export const to: RefAttribute = {
+export const emailTo: RefAttribute = {
   name: INPUT_EMAIL_TO,
   type: 'ref',
   databaseName: RELATION_TO,
@@ -618,9 +652,9 @@ export const STIX_REF_RELATIONSHIPS: RefAttribute[] = [
   contains,
   resolvesTo,
   belongsTo,
-  from,
+  emailFrom,
   sender,
-  to,
+  emailTo,
   cc,
   bcc,
   rawEmail,
@@ -848,6 +882,7 @@ export const work: RefAttribute = {
   isFilterable: true,
   toTypes: [ENTITY_TYPE_WORK]
 };
+
 export const internalFiles: RefAttribute = {
   name: INPUT_INTERNAL_FILES,
   type: 'ref',
@@ -883,6 +918,7 @@ export const externalReferences: RefAttribute = {
   isFilterable: true,
   toTypes: [ENTITY_TYPE_EXTERNAL_REFERENCE],
 };
+
 export const killChainPhases: RefAttribute = {
   name: INPUT_KILLCHAIN,
   type: 'ref',
