@@ -49,7 +49,7 @@ const elWhiteUser = async () => {
   return buildStandardUser([{ internal_id: TLP_WHITE.internal_id, standard_id: TLP_WHITE.standard_id }], ALL_TLP);
 };
 
-const VOCABULARY_COUNT = 347;
+const VOCABULARY_COUNT = 349;
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
