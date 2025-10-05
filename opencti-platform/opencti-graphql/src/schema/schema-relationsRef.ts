@@ -2,6 +2,8 @@ import { getParentTypes } from './schemaUtils';
 import { UnsupportedError } from '../config/errors';
 import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 import type { RefAttribute } from './attribute-definition';
+import { isBasicRelationship } from './stixRelationship';
+import { fromRef, toRef } from './stixRefRelationship';
 
 let usageProtection = false;
 export const schemaRelationsRefDefinition = {
@@ -113,12 +115,18 @@ export const schemaRelationsRefDefinition = {
   },
 
   getRelationRef(entityType: string, name: string): RefAttribute | null {
-    return this.relationsRefCacheMap.get(this.selectEntityType(entityType))?.get(name) ?? null;
+    const refMap = this.relationsRefCacheMap.get(this.selectEntityType(entityType));
+    // From and To are not directly part of the model
+    // In the database they are stored in the connection attribute
+    if (isBasicRelationship(entityType) && name === fromRef.name) {
+      return fromRef;
+    }
+    if (isBasicRelationship(entityType) && name === toRef.name) {
+      return toRef;
+    }
+    // Else just return the ref find in the map
+    return refMap?.get(name) ?? null;
   },
-
-  // relationsRefMap(entityType: string) {
-  //   return new Map(schemaRelationsRefDefinition.getRelationsRef(entityType).map((n) => [n.name, n]));
-  // },
 
   getInputNames(entityType: string): string[] {
     return this.namesCache.get(this.selectEntityType(entityType)) ?? [];
