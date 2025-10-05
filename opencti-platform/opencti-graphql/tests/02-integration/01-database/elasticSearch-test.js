@@ -736,7 +736,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(entitiesCounter.label);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.externalReference);
-    expect(data.edges.length).toEqual(564);
+    expect(data.edges.length).toEqual(217 + VOCABULARY_COUNT);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
