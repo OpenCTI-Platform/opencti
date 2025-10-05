@@ -489,6 +489,7 @@ export const registerConnectorForIngestion = async (context: AuthContext, input:
     name: `[FEED - ${input.type}] ${input.name}`,
     type: ConnectorType.ExternalImport,
     auto: true,
+    auto_update: false,
     scope: ['application/stix+json;version=2.1'],
     only_contextual: false,
     playbook_compatible: false
