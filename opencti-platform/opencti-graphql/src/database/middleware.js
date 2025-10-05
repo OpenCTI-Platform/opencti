@@ -191,7 +191,7 @@ import {
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
 import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
-import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
+import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
@@ -805,8 +805,11 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
           const ids = isListing ? id : [id];
           const { category, field } = getVocabularyCategoryForField(destKey, type);
           ids.forEach((i) => {
+            if (field.composite && field.multiple) {
+              throw FunctionalError('Composite vocab only support single definition', { field });
+            }
             const vocabularyId = field.composite ? idVocabulary(i[field.composite], category) : idVocabulary(i, category);
-            const vocabularyElement = { id: vocabularyId, destKey, vocab: { field: field.composite, data: i }, multiple: isListing };
+            const vocabularyElement = { id: vocabularyId, destKey, vocab: { field, data: i }, multiple: isListing };
             if (fetchingIdsMap.has(vocabularyId)) {
               fetchingIdsMap.get(vocabularyId).push(vocabularyElement);
             } else {
@@ -881,34 +884,40 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, resolutionsMap.values());
     const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
-      const { multiple } = R.head(val).i_group;
-      if (val.length === 1) {
-        const finalVal = multiple ? val : R.head(val);
-        const { vocab } = finalVal;
-        if (vocab) {
-          // TODO JRI Add again the vocabularies check
-          if (vocab.field) {
-            return { [k]: { ...vocab.data, [vocab.field]: finalVal.name } };
-          }
-          return { [k]: finalVal.name };
+      const attr = schemaAttributesDefinition.getAttribute(type, k);
+      const ref = schemaRelationsRefDefinition.getRelationRef(type, k);
+      if (!ref && !attr) {
+        throw UnsupportedError('Invalid attribute resolution', { key: k, type, doc_code: 'ELEMENT_NOT_FOUND' });
+      }
+      const isMultiple = attr?.multiple || ref?.multiple;
+      // If single value
+      if (!isMultiple) {
+        const rawValues = Array.isArray(val) ? val : [val];
+        if (rawValues.length > 1) {
+          throw UnsupportedError('Input resolve refs expect single value', { key: k, values: rawValues, doc_code: 'ELEMENT_ID_COLLISION' });
         }
-        return { [k]: finalVal };
+        const rawValue = rawValues[0];
+        const { vocab } = rawValue.i_group;
+        if (vocab) {
+          if (vocab.field.composite) {
+            return { [k]: { ...vocab.data, [vocab.field.composite]: rawValue.name } };
+          }
+          return { [k]: rawValue.name };
+        }
+        return { [k]: rawValue };
       }
-      if (!multiple) {
-        throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val, doc_code: 'ELEMENT_ID_COLLISION' });
-      }
+      // If multiple values
       const result = [];
       val.forEach((rawValue) => {
         const { vocab } = rawValue.i_group;
         if (vocab) {
-          // TODO JRI Add again the vocabularies check
-          if (vocab.field) {
-            result.push({ ...vocab.data, [vocab.field]: rawValue.name });
+          if (vocab.field.composite) {
+            result.push({ ...vocab.data, [vocab.field.composite]: rawValue.name });
           } else {
             result.push(rawValue.name);
           }
         } else {
-          result.push(val);
+          result.push(rawValue);
         }
       });
       return { [k]: result };
@@ -932,23 +941,22 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const complete = { ...cleanedInput, entity_type: type };
     const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
     // Check Open vocab in resolved to convert them back to the raw value
-    // const entityVocabs = Object.values(vocabularyDefinitions).filter(({ entity_types }) => entity_types.includes(type));
-    // entityVocabs.forEach(({ fields }) => {
-    //   const existingFields = fields.filter(({ key }) => Boolean(input[key]));
-    //   existingFields.forEach(({ key, required, composite, multiple }) => {
-    //     const resolvedData = inputResolved[key];
-    //     if (isEmptyField(resolvedData) && required) {
-    //       throw FunctionalError('Missing mandatory attribute for vocabulary', { key });
-    //     }
-    //     if (isNotEmptyField(resolvedData)) {
-    //       const isArrayValues = Array.isArray(resolvedData);
-    //       if (isArrayValues && !multiple) {
-    //         throw FunctionalError('Find multiple vocabularies for single one', { key, data: resolvedData });
-    //       }
-    //       inputResolved[key] = isArrayValues ? resolvedData.map(({ name }) => name) : resolvedData.name;
-    //     }
-    //   });
-    // });
+    const entityVocabs = Object.values(vocabularyDefinitions).filter(({ entity_types }) => entity_types.includes(type));
+    entityVocabs.forEach(({ fields }) => {
+      const existingFields = fields.filter(({ key }) => Boolean(input[key]));
+      existingFields.forEach(({ key, required, composite, multiple }) => {
+        const resolvedData = inputResolved[key];
+        if (isEmptyField(resolvedData) && required) {
+          throw FunctionalError('Missing mandatory attribute for vocabulary', { key });
+        }
+        if (isNotEmptyField(resolvedData)) {
+          const isArrayValues = Array.isArray(resolvedData);
+          if (isArrayValues && !multiple && !composite) {
+            throw FunctionalError('Find multiple vocabularies for single one', { key, data: resolvedData });
+          }
+        }
+      });
+    });
     // Check the marking allow for the user and asked inside the input
     if (!isBypassUser(user) && inputResolved[INPUT_MARKINGS]) {
       const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
@@ -2650,8 +2658,7 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
   const inputs = [];
   const fieldKey = attribute.name;
   if (attribute.multiple) {
-    const attributeOperation = attribute.upsert_force_replace ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
-    const operation = isFullSync ? UPDATE_OPERATION_REPLACE : attributeOperation;
+    const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
     // Only add input in case of replace or when we really need to add something
     if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
       inputs.push({ key: fieldKey, value: inputData ?? [], operation });
@@ -2850,7 +2857,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       const inputData = updatePatch[attributeKey];
       const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
-      const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
+      const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
