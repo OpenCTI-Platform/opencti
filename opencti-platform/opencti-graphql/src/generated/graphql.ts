@@ -26040,7 +26040,10 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   contact_information?: Maybe<Scalars['String']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
-  coverage?: Maybe<Array<CoverageResult>>;
+  coverage_information?: Maybe<Array<CoverageResult>>;
+  coverage_last_result?: Maybe<Scalars['DateTime']['output']>;
+  coverage_valid_from?: Maybe<Scalars['DateTime']['output']>;
+  coverage_valid_to?: Maybe<Scalars['DateTime']['output']>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -26243,7 +26246,10 @@ export type SecurityCoverageStixCoreRelationshipsDistributionArgs = {
 
 export type SecurityCoverageAddInput = {
   confidence?: InputMaybe<Scalars['Int']['input']>;
-  coverage?: InputMaybe<Array<SecurityCoverageExpectation>>;
+  coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
+  coverage_last_result?: InputMaybe<Scalars['DateTime']['input']>;
+  coverage_valid_from?: InputMaybe<Scalars['DateTime']['input']>;
+  coverage_valid_to?: InputMaybe<Scalars['DateTime']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -44208,7 +44214,10 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   contact_information?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SecurityCoverageContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
-  coverage?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
+  coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
+  coverage_last_result?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  coverage_valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  coverage_valid_to?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
