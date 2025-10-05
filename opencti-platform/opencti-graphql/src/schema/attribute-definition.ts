@@ -387,21 +387,8 @@ export const errors: AttributeDefinition = {
   ]
 };
 
-const elementCoverageName: AttributeDefinition = {
-  name: 'coverage_name',
-  label: 'Coverage name',
-  type: 'string',
-  format: 'vocabulary',
-  vocabularyCategory: 'coverage_ov',
-  mandatoryType: 'no',
-  editDefault: false,
-  multiple: false,
-  upsert: false,
-  isFilterable: false
-};
-
-export const elementCoverage: AttributeDefinition = {
-  name: 'coverage',
+export const coverageInformation: AttributeDefinition = {
+  name: 'coverage_information',
   label: 'Coverage',
   type: 'object',
   format: 'nested',
@@ -412,7 +399,7 @@ export const elementCoverage: AttributeDefinition = {
   upsert_force_replace: true,
   isFilterable: false, // Filter will be done by a special key
   mappings: [
-    elementCoverageName,
+    { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
   ]
 };

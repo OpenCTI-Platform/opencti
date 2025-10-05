@@ -1,7 +1,7 @@
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { normalizeName } from '../../schema/identifier';
-import { createdAt, creators, elementCoverage, updatedAt } from '../../schema/attribute-definition';
+import { createdAt, creators, coverageInformation, updatedAt } from '../../schema/attribute-definition';
 import {
   ATTRIBUTE_COVERED,
   ENTITY_TYPE_SECURITY_COVERAGE,
@@ -11,7 +11,7 @@ import {
   type StoreEntitySecurityCoverage
 } from './securityCoverage-types';
 import convertSecurityCoverageToStix from './securityCoverage-converter';
-import { objectOrganization, } from '../../schema/stixRefRelationship';
+import { createdBy, objectLabel, objectMarking, objectOrganization, } from '../../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -46,10 +46,13 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
     },
   },
   attributes: [
-    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'customizable', editDefault: true, multiple: false, upsert: true, isFilterable: true },
-    { name: 'periodicity', /* PT1S */ label: 'Periodicity', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    elementCoverage,
+    { name: 'coverage_periodicity', /* PT1S */ label: 'Periodicity', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'coverage_last_result', label: 'Last coverage', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'coverage_valid_from', label: 'Valid coverage from', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    { name: 'coverage_valid_to', label: 'Valid coverage to', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+    coverageInformation,
     creators,
     createdAt,
     updatedAt,
@@ -81,6 +84,9 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
       isFilterable: true,
       toTypes: [ENTITY_TYPE_THREAT_ACTOR_GROUP, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CONTAINER_REPORT],
     },
+    objectLabel,
+    objectMarking,
+    createdBy,
     { ...objectOrganization, isFilterable: false }
   ],
   representative: (stix: StixSecurityCoverage) => {

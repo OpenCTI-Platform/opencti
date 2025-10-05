@@ -86,7 +86,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   coverage_ov: {
     entity_types: [ENTITY_TYPE_SECURITY_COVERAGE, RELATION_HAS_COVERED],
     fields: [{
-      key: 'coverage',
+      key: 'coverage_information',
       composite: 'coverage_name',
       required: false,
       multiple: false,
