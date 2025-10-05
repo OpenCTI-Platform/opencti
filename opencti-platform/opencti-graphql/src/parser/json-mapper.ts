@@ -43,10 +43,10 @@ import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { BundleBuilder } from './bundle-creator';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { createStixPatternSync } from '../python/pythonBridge';
-import { from as fromDef, to as toDef } from '../schema/stixRefRelationship';
 import { logApp } from '../config/conf';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
+import { fromRef, toRef } from '../schema/stixRefRelationship';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
@@ -392,9 +392,9 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
               if (refDef) {
                 await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, refDef, results, refEntities, representation, chosenMarkings);
               } else if (attribute.key === 'from') {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, fromDef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, fromRef, results, refEntities, representation, chosenMarkings);
               } else if (attribute.key === 'to') {
-                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, toDef, results, refEntities, representation, chosenMarkings);
+                await handleBasedOnAttribute(context, user, baseJson, attribute, input, baseDatum, toRef, results, refEntities, representation, chosenMarkings);
               } else {
                 throw UnsupportedError('Unknown schema for attribute:', { attribute });
               }
