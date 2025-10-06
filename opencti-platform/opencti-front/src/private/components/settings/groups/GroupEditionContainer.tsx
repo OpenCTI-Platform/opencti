@@ -45,6 +45,7 @@ const GroupEditionContainerFragment = graphql`
     rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
   ) {
     id
+    standard_id
     members(first: 500) {
       edges {
         node {
@@ -74,13 +75,6 @@ interface GroupEditionContainerProps {
   open?: boolean
   disabled?: boolean
 }
-
-const UpdateGroupControlledDial = (props: DrawerControlledDialProps) => (
-  <EditEntityControlledDial
-    style={{ float: 'right' }}
-    {...props}
-  />
-);
 
 const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   groupQueryRef,
@@ -119,6 +113,13 @@ const GroupEditionContainer: FunctionComponent<GroupEditionContainerProps> = ({
   const userQueryRef = useQueryLoading<DataTableToolBarUsersLinesSearchQuery>(
     toolBarUsersLinesSearchQuery,
     { search: searchTerm, orderBy, orderMode },
+  );
+  const UpdateGroupControlledDial = (props: DrawerControlledDialProps) => (
+    <EditEntityControlledDial
+      style={{ float: 'right' }}
+      disabled={disabled}
+      {...props}
+    />
   );
 
   const { editContext } = group;
