@@ -64,8 +64,8 @@ steps:
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
-    - name: cache-node-backend
-      path: /drone/src/opencti-platform/opencti-graphql/node_modules
+    - name: cache-api-tests-yarn
+      path: /root/.yarn/berry
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
@@ -86,6 +86,7 @@ steps:
       SMTP__ENABLED: false
       PYTHONUNBUFFERED: 1
     commands:
+      - echo "$(ls /root/.yarn/berry/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
@@ -528,9 +529,9 @@ services:
       - python3 src/worker.py
 
 volumes:
-  - name: cache-node-backend
+  - name: cache-api-tests-yarn
     host:
-      path: /tmp/cache-node-backend
+      path: /tmp/cache-api-tests-yarn
   - name: cache-node-raw-start-backend
     host:
       path: /tmp/cache-node-raw-start-backend
