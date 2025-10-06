@@ -13,6 +13,7 @@ import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { isMultipleAttribute, isObjectAttribute } from '../schema/schema-attributes';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import type { BasicStoreEntityFeed } from '../types/store';
 
 const SIZE_LIMIT = nconf.get('data_sharing:max_csv_feed_result') || 5000;
 
@@ -27,12 +28,59 @@ const errorConverter = (e: any) => {
   };
 };
 
-const dataFormat = (separator: string, data: string) => {
-  if (data.includes(separator) || data.includes('"')) {
-    const escapedData = data.replaceAll('"', '""');
+const escapeCsvField = (separator: string, data: string) => {
+  let escapedData:string;
+
+  if (data.includes('"') || data.includes(separator)
+  ) {
+    escapedData = data.replaceAll('"', '""');
     return `"${escapedData}"`;
   }
   return data;
+};
+
+export const buildCsvLines = (elements:any[], feed:BasicStoreEntityFeed):string[] => {
+  const lines: string[] = [];
+  const separator = feed.separator ?? ',';
+  for (let index = 0; index < elements.length; index += 1) {
+    const element = elements[index];
+    const dataElements = [];
+    for (let attrIndex = 0; attrIndex < feed.feed_attributes.length; attrIndex += 1) {
+      const attribute = feed.feed_attributes[attrIndex];
+      const mapping = attribute.mappings.find((f) => f.type === element.entity_type);
+      if (mapping) {
+        const isComplexKey = mapping.attribute.includes('.');
+        const baseKey = isComplexKey ? mapping.attribute.split('.')[0] : mapping.attribute;
+        const data = element[baseKey];
+        if (isNotEmptyField(data)) {
+          if (isMultipleAttribute(element.entity_type, baseKey)) {
+            const dataArray = data as string[];
+            dataElements.push(escapeCsvField(separator, dataArray.join(',')));
+          } else if (isObjectAttribute(baseKey)) {
+            if (isComplexKey) {
+              const [, innerKey] = mapping.attribute.split('.');
+              const dictInnerData = data[innerKey.toUpperCase()];
+              if (isNotEmptyField(dictInnerData)) {
+                dataElements.push(escapeCsvField(separator, String(dictInnerData)));
+              } else {
+                dataElements.push(escapeCsvField(separator, ''));
+              }
+            } else {
+              dataElements.push(escapeCsvField(separator, JSON.stringify(data)));
+            }
+          } else {
+            dataElements.push(escapeCsvField(separator, String(data)));
+          }
+        } else {
+          dataElements.push(escapeCsvField(separator, ''));
+        }
+      }
+    }
+
+    const line = dataElements.join(separator);
+    lines.push(line);
+  }
+  return lines;
 };
 
 const initHttpRollingFeeds = (app: Express.Application) => {
@@ -73,43 +121,12 @@ const initHttpRollingFeeds = (app: Express.Application) => {
       if (feed.include_header) {
         res.write(`${feed.feed_attributes.map((a) => a.attribute).join(feed.separator)}\r\n`);
       }
-      for (let index = 0; index < elements.length; index += 1) {
-        const element = elements[index];
-        const dataElements = [];
-        for (let attrIndex = 0; attrIndex < feed.feed_attributes.length; attrIndex += 1) {
-          const attribute = feed.feed_attributes[attrIndex];
-          const mapping = attribute.mappings.find((f) => f.type === element.entity_type);
-          if (mapping) {
-            const isComplexKey = mapping.attribute.includes('.');
-            const baseKey = isComplexKey ? mapping.attribute.split('.')[0] : mapping.attribute;
-            const data = element[baseKey];
-            if (isNotEmptyField(data)) {
-              if (isMultipleAttribute(element.entity_type, baseKey)) {
-                const dataArray = data as string[];
-                dataElements.push(dataFormat(feed.separator, dataArray.join(',')));
-              } else if (isObjectAttribute(baseKey)) {
-                if (isComplexKey) {
-                  const [, innerKey] = mapping.attribute.split('.');
-                  const dictInnerData = data[innerKey.toUpperCase()];
-                  if (isNotEmptyField(dictInnerData)) {
-                    dataElements.push(dataFormat(feed.separator, String(dictInnerData)));
-                  } else {
-                    dataElements.push(dataFormat(feed.separator, ''));
-                  }
-                } else {
-                  dataElements.push(dataFormat(feed.separator, JSON.stringify(data)));
-                }
-              } else {
-                dataElements.push(dataFormat(feed.separator, String(data)));
-              }
-            } else {
-              dataElements.push(dataFormat(feed.separator, ''));
-            }
-          }
-        }
-        res.write(dataElements.join(feed.separator ?? ','));
+
+      const lines = buildCsvLines(elements, feed);
+      lines.forEach((l) => {
+        res.write(l);
         res.write('\r\n');
-      }
+      });
       res.send();
     } catch (e) {
       const errorDetail = errorConverter(e);
