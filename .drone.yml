@@ -86,7 +86,7 @@ steps:
       SMTP__ENABLED: false
       PYTHONUNBUFFERED: 1
     commands:
-      - echo "$(ls /root/.yarn/berry/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
