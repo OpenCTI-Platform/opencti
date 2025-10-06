@@ -56,27 +56,6 @@ const ingestionCatalogConnectorCreationMutation = graphql`
   }
 `;
 
-// Sanitize name for K8s/Docker compatibility
-const sanitizeContainerName = (label: string): string => {
-  const withHyphens = label.replace(/([a-z])([A-Z])/g, '$1-$2');
-  let sanitized = withHyphens
-    .replace(/[^a-zA-Z0-9]+/g, '-')
-    .toLowerCase()
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
-
-  if (sanitized.length > 63) {
-    sanitized = sanitized.substring(0, 63);
-    sanitized = sanitized.replace(/-+$/, '');
-  }
-
-  if (sanitized.length === 0) {
-    return `a-${Math.floor(Math.random() * 10)}`;
-  }
-
-  return sanitized;
-};
-
 const customRenderers = [
   ...materialRenderers,
   { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
@@ -96,7 +75,6 @@ interface IngestionCatalogConnectorCreationProps {
 }
 
 export interface ManagedConnectorValues extends BasicUserHandlingValues {
-  identifier: string;
   display_name: string;
   user_id: string | FieldOption;
   automatic_user?: boolean;
@@ -306,11 +284,10 @@ const IngestionCatalogConnectorCreation = ({
           validationSchema={validationSchema}
           initialValues={{
             display_name: connectorName,
-            identifier: sanitizeContainerName(connectorName),
             confidence_level: connector.max_confidence_level.toString(),
             user_id: { label: '', value: '' },
             automatic_user: true,
-            name: '',
+            name: connectorName,
             ...configDefaults,
           }}
           onSubmit={() => {}}
@@ -339,7 +316,7 @@ const IngestionCatalogConnectorCreation = ({
                     required
                     fullWidth={true}
                     onChange={(_: string, value: string) => {
-                      setFieldValue('name', sanitizeContainerName(value));
+                      setFieldValue('name', value);
                     }}
                   />
 
@@ -372,7 +349,6 @@ const IngestionCatalogConnectorCreation = ({
                               },
                             }}
                           >
-
                             <JsonForms
                               data={configDefaults}
                               schema={requiredProperties}
