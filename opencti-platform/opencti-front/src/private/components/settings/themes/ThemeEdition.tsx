@@ -14,6 +14,16 @@ const editThemeMutation = graphql`
     themeFieldPatch(id: $id, input: $input) {
       id
       name
+      theme_background
+      theme_paper
+      theme_nav
+      theme_primary
+      theme_secondary
+      theme_accent
+      theme_text_color
+      theme_logo
+      theme_logo_collapsed
+      theme_logo_login
     }
   }
 `;
@@ -58,6 +68,9 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
             { key: 'theme_logo_collapsed', value: values.theme_logo_collapsed },
             { key: 'theme_logo_login', value: values.theme_logo_login },
             { key: 'theme_text_color', value: values.theme_text_color },
+            { key: 'theme_logo', value: values.theme_logo },
+            { key: 'theme_logo_collapsed', value: values.theme_logo_collapsed },
+            { key: 'theme_logo_login', value: values.theme_logo_login },
           ],
         },
         onCompleted: () => resolve(),

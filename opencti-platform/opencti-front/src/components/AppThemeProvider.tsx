@@ -132,9 +132,6 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     });
   }
 
-  console.log('THEME', theme);
-
-  console.log('DEFAULT THEME', defaultTheme);
   // Construct app theme for theme builder
   const appTheme: AppThemeType = {
     name: theme?.name ?? defaultTheme.name,
@@ -149,8 +146,6 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
     theme_secondary: theme?.theme_secondary ?? defaultTheme.theme_secondary,
     theme_text_color: theme?.theme_text_color ?? defaultTheme.theme_text_color,
   };
-
-  console.log('apptheme', appTheme);
 
   const themeComponent = themeBuilder(appTheme);
   const muiTheme = createTheme(themeComponent as ThemeOptions);

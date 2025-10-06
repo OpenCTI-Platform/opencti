@@ -144,24 +144,6 @@ export const settingsMutationFieldPatch = graphql`
         platform_favicon
         platform_email
         platform_theme
-        platform_theme_dark_background
-        platform_theme_dark_paper
-        platform_theme_dark_nav
-        platform_theme_dark_primary
-        platform_theme_dark_secondary
-        platform_theme_dark_accent
-        platform_theme_dark_logo
-        platform_theme_dark_logo_collapsed
-        platform_theme_dark_logo_login
-        platform_theme_light_background
-        platform_theme_light_paper
-        platform_theme_light_nav
-        platform_theme_light_primary
-        platform_theme_light_secondary
-        platform_theme_light_accent
-        platform_theme_light_logo
-        platform_theme_light_logo_collapsed
-        platform_theme_light_logo_login
         platform_language
         platform_whitemark
         platform_enterprise_edition {
