@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@apollo/server": "4.11.0",
+    "@as-integrations/express5": "1.1.2",
     "@aws-sdk/client-s3": "3.837.0",
     "@aws-sdk/client-sts": "3.835.0",
     "@aws-sdk/credential-provider-node": "3.835.0",
