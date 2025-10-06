@@ -20,6 +20,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import { Themes_themes$key } from '@components/settings/themes/__generated__/Themes_themes.graphql';
 import ThemeManager, { refetchableThemesQuery } from '@components/settings/themes/ThemeManager';
+import { ThemeManager_themes$key } from '@components/settings/themes/__generated__/ThemeManager_themes.graphql';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
@@ -210,7 +211,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   const { settings, about } = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
 
   const data = usePreloadedQuery<SettingsQuery>(settingsQuery, queryRef);
-  const [{ themes }, refetch] = useRefetchableFragment<SettingsQuery, Themes_themes$key>(
+  const [{ themes }, refetch] = useRefetchableFragment<SettingsQuery, ThemeManager_themes$key>(
     refetchableThemesQuery,
     data,
   );
@@ -295,6 +296,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
 
   const [commitSettingsFocus] = useApiMutation(settingsFocus);
   const [commitField] = useApiMutation(settingsMutationFieldPatch);
+
   const handleChangeFocus = (name: string) => {
     commitSettingsFocus({
       variables: {
@@ -305,6 +307,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       },
     });
   };
+
   const handleSubmitField = (name: string, value: string | boolean) => {
     let finalValue = value;
     if (
@@ -622,9 +625,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         value={node.id}
                         data-testid={`${node.name}-li`}
                       >
-                        {deserializeThemeManifest(node.manifest).system_default
-                          ? t_i18n(node.name)
-                          : node.name}
+                        {node.name}
                       </MenuItem>
                     ))}
                   </Field>

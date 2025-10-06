@@ -27,6 +27,16 @@ export const refetchableThemesQuery = graphql`
         node {
           id
           name
+          theme_background
+          theme_paper
+          theme_nav
+          theme_primary
+          theme_secondary
+          theme_accent
+          theme_text_color
+          theme_logo
+          theme_logo_collapsed
+          theme_logo_login
         }
       }
     }
@@ -52,7 +62,7 @@ const themesLinesFragment = graphql`
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
   )
-  @refetchable(queryName: "ThemesLinesRefetchQuery") {
+  @refetchable(queryName: "ThemeManagerLinesRefetchQuery") {
     themes(
       first: $count
       after: $cursor
@@ -89,12 +99,12 @@ const themesLineFragment = graphql`
   }
 `;
 
-interface ThemesProps {
+interface ThemeManagerProps {
   handleRefetch: () => Disposable;
   currentTheme: string;
 }
 
-const ThemeManager: FunctionComponent<ThemesProps> = ({
+const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
   handleRefetch,
   currentTheme,
 }) => {
@@ -132,9 +142,7 @@ const ThemeManager: FunctionComponent<ThemesProps> = ({
       label: t_i18n('Name'),
       percentWidth: 100,
       isSortable: false,
-      render: (node: ThemeManager_data$data) => (
-        node.system_default ? t_i18n(node.name) : node.name
-      ),
+      render: (node: { id: string; name: string }) => node.name,
     },
   };
 
@@ -163,7 +171,7 @@ const ThemeManager: FunctionComponent<ThemesProps> = ({
               aria-label={t_i18n('Add')}
               onClick={handleOpenCreation}
               size="large"
-              data-testid='create-theme-btn'
+              data-testid="create-theme-btn"
             >
               <Add fontSize="small" />
             </IconButton>
@@ -179,9 +187,7 @@ const ThemeManager: FunctionComponent<ThemesProps> = ({
       <Paper
         ref={ref}
         variant="outlined"
-        style={{
-          padding: '0 15px 15px',
-        }}
+        style={{ padding: '0 15px 15px' }}
       >
         {queryRef && (
           <DataTable
