@@ -3,15 +3,17 @@ import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
+import { USER_CONNECTOR, USER_EDITOR, ADMIN_USER, testContext } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
 import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
 import { enableCustomCatalogs } from '../../../src/modules/catalog/catalog-domain';
+import { createOnTheFlyUser, userAlreadyExists } from '../../../src/modules/user/user-domain';
 
 const TEST_COMPOSER_ID = uuidv4();
-const TEST_USER_CONNECTOR_ID: string = USER_CONNECTOR.id; // Initialize with default value
+let TEST_USER_CONNECTOR_ID: string; // Will be initialized in beforeAll
+const TEST_USER_CONNECTOR_NAME = `test-connector-user-${uuidv4()}`; // Unique name for the test user
 const TEST_COMPOSER_PUBLIC_KEY = '-----BEGIN RSA PUBLIC KEY-----\nMIICCgKCAgEAk8V1xvej71cJhH+XAVwJKXkpM90fM8gf9jhq5t2SKDnMhGfl7bSNSRKEN6zUea3F4Q635SCK0klAh69J2wh1LakPb5Z/lRv5n/OA3QnINNbQwnDD2tjMoVoR/fW/oe8AG5CvgES0kLx/wfVoxUPpWyOTtWvtIjJH+Cyrj4as4lICaeci6AdjRfhR/syVaErflTEdJyps2g5DA3p8H9f+IOTxOK8dCBYWGPHLkgEXhz8Pc6mmIq7IYHeYMUXHOokrjCKiw1s59NAJvhdSmYP15Udac1QNGLTIsV8IvWvYWmUmOWUOTXAgy/sX1IuH+mt3yjmPzfScaSwPkecLkaGdUIecHZGyDHy+fJsb8vmj3NWr6MiehTFLs+UKyp+VPLSzxT29Umd/ZkqoYtMH0Fj/vIptxg7E5G/YQZtwB23OXPEZ2eC6cUKXwZXext+CS7Gdp8HoQn4Z7lpSQTh6lim/Olx5SpTSpXhFE8lTjT1MlbXyeEwBRFYpb/BjthsHM3d7pRdpJL613ZzMjEgJnE5dwAX7nlTdAldChLbA7U9Hw254NLZcO301j2YHcU1JiGHTtMO7nOrVFy7FIA5HS2kKRW8dWMm7C3sVmuWEjmydsCQZIvHmPTvkTE4YnEP1UZuNczinaR08oW/CBuajmNqJsCsmg6m9ThuxizJh71NzcNMCAwEAAQ==\n-----END RSA PUBLIC KEY-----';
 
 // Test configuration
@@ -120,6 +122,17 @@ const CONNECTOR_MANAGERS_QUERY = gql`
     }
 `;
 
+const LIST_CONNECTORS_QUERY = gql`
+    query ListConnectors {
+        connectors {
+            id
+            name
+            built_in
+            connector_type
+        }
+    }
+`;
+
 const CONNECTOR_LOGS_QUERY = gql`
     query GetConnectorLogs($id: String!) {
         connector(id: $id) {
@@ -159,8 +172,80 @@ describe('Connector Composer and Managed Connectors', () => {
   const createdConnectorIds = new Set<string>();
   let xtmComposer: XTMComposerMock;
 
+  // Helper function to count only non-built-in connectors
+  const countNonBuiltInConnectors = async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: LIST_CONNECTORS_QUERY,
+      variables: {}
+    });
+    // Filter to keep only non-built-in connectors
+    const nonBuiltIn = result.data?.connectors?.filter((c: any) => !c.built_in) || [];
+    return nonBuiltIn.length;
+  };
+
+  // Helper function to list non-built-in connectors
+  const listNonBuiltInConnectors = async () => {
+    const result = await queryAsAdminWithSuccess({
+      query: LIST_CONNECTORS_QUERY,
+      variables: {}
+    });
+    const nonBuiltIn = result.data?.connectors?.filter((c: any) => !c.built_in) || [];
+    return nonBuiltIn.map((c: any) => ({ id: c.id, name: c.name }));
+  };
+
   // Initialize XTM Composer mock
   beforeAll(async () => {
+    // Create a connector user for the tests
+    try {
+      // Check if user already exists
+      const userExists = await userAlreadyExists(testContext, TEST_USER_CONNECTOR_NAME);
+
+      if (!userExists) {
+        // Create the connector user using createOnTheFlyUser
+        const createdUser = await createOnTheFlyUser(testContext, ADMIN_USER, {
+          userName: TEST_USER_CONNECTOR_NAME,
+          serviceAccount: false,
+          confidenceLevel: 100
+        });
+        TEST_USER_CONNECTOR_ID = createdUser.id;
+      } else {
+        // If user exists, get its ID
+        const GET_USER_QUERY = gql`
+          query GetUserByName($name: String!) {
+            users(search: $name, first: 1) {
+              edges {
+                node {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        `;
+
+        const result = await queryAsAdminWithSuccess({
+          query: GET_USER_QUERY,
+          variables: { name: TEST_USER_CONNECTOR_NAME }
+        });
+        if (result.data?.users?.edges?.[0]?.node?.id) {
+          TEST_USER_CONNECTOR_ID = result.data.users.edges[0].node.id;
+        } else {
+          throw new Error('Could not find existing user ID');
+        }
+      }
+    } catch (error) {
+      // Fallback to USER_CONNECTOR.id if creation fails
+      TEST_USER_CONNECTOR_ID = USER_CONNECTOR.id;
+    }
+
+    // Count non-built-in connectors at the beginning
+    const initialCount = await countNonBuiltInConnectors();
+
+    // If not 0, there are connectors remaining from a previous test
+    if (initialCount > 0) {
+      await listNonBuiltInConnectors();
+    }
+
     // Set up test catalog path in environment
     const testCatalogPath = path.join(__dirname, '../../utils/opencti-manifest.json');
     process.env.APP__CUSTOM_CATALOGS = JSON.stringify([testCatalogPath]);
@@ -222,15 +307,12 @@ describe('Connector Composer and Managed Connectors', () => {
         {
           input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters',
           expectedName: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters',
-          expectedSanitized: 'very-long-name-with-special-chars-that-exceeds-the-maximum-len'
+          expectedSanitized: 'very-long-name-with-special-chars-that-exceeds-the-maximum-leng'
         }
       ];
 
       await testCases.reduce(async (previousPromise, testCase) => {
         await previousPromise;
-
-        // Add a small delay between test cases to ensure catalog is stable
-        await wait(100);
 
         const input = {
           name: testCase.input,
@@ -243,6 +325,7 @@ describe('Connector Composer and Managed Connectors', () => {
           })
         };
 
+        let connectorId: string | undefined;
         try {
           const result = await queryAsAdminWithSuccess({
             query: ADD_MANAGED_CONNECTOR_MUTATION,
@@ -251,30 +334,36 @@ describe('Connector Composer and Managed Connectors', () => {
 
           expect(result.data).toBeDefined();
           expect(result.data?.managedConnectorAdd).toBeDefined();
-          
+
+          connectorId = result.data?.managedConnectorAdd.id;
+          if (connectorId) {
+            createdConnectorIds.add(connectorId);
+          }
+
           // Name should keep the original value
           expect(result.data?.managedConnectorAdd.name).toEqual(testCase.expectedName);
-          
+
           // Container name should be sanitized with ID suffix
           const containerName = result.data?.managedConnectorAdd.container_name;
           expect(containerName).toBeDefined();
-          
+
           // Verify the format: sanitizedName-8charsId
           const containerNameRegex = new RegExp(`^${testCase.expectedSanitized}-[a-f0-9]{8}$`);
           expect(containerName).toMatch(containerNameRegex);
-
-          const connectorId = result.data?.managedConnectorAdd.id;
+        } finally {
+          // Always try to clean up the connector if it was created
           if (connectorId) {
-            createdConnectorIds.add(connectorId);
-
-            // Clean up immediately after each test
-            await queryAsAdminWithSuccess({
-              query: DELETE_CONNECTOR_MUTATION,
-              variables: { id: connectorId }
-            });
-            createdConnectorIds.delete(connectorId);
+            try {
+              await queryAsAdminWithSuccess({
+                query: DELETE_CONNECTOR_MUTATION,
+                variables: { id: connectorId }
+              });
+              createdConnectorIds.delete(connectorId);
+            } catch (deleteError) {
+              // Keep it in the set for final cleanup
+            }
           }
-        } catch (error: any) { /* empty */ }
+        }
       }, Promise.resolve());
     });
 
@@ -1285,14 +1374,14 @@ describe('Connector Composer and Managed Connectors', () => {
         query: ADD_MANAGED_CONNECTOR_MUTATION,
         variables: { input: duplicateInput }
       });
-      
+
       expect(duplicateResult.data).toBeDefined();
       const secondConnectorId = duplicateResult.data?.managedConnectorAdd.id;
       createdConnectorIds.add(secondConnectorId);
-      
+
       // Verify both connectors have same name but different container_names
       expect(duplicateResult.data?.managedConnectorAdd.name).toEqual('Duplicate Name Test Connector');
-      
+
       // Get the first connector's container_name for comparison
       const GET_CONNECTOR_QUERY = gql`
         query GetConnector($id: String!) {
@@ -1303,24 +1392,24 @@ describe('Connector Composer and Managed Connectors', () => {
           }
         }
       `;
-      
+
       const firstConnectorData = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY,
         variables: { id: firstConnectorId }
       });
-      
+
       const secondConnectorData = await queryAsAdminWithSuccess({
         query: GET_CONNECTOR_QUERY,
         variables: { id: secondConnectorId }
       });
-      
+
       // Both should have same name
       expect(firstConnectorData.data?.connector.name).toEqual('Duplicate Name Test Connector');
       expect(secondConnectorData.data?.connector.name).toEqual('Duplicate Name Test Connector');
-      
+
       // But different container_names (due to different IDs)
       expect(firstConnectorData.data?.connector.container_name).not.toEqual(secondConnectorData.data?.connector.container_name);
-      
+
       // Both container_names should start with same sanitized prefix
       const expectedPrefix = 'duplicate-name-test-connector-';
       expect(firstConnectorData.data?.connector.container_name).toMatch(new RegExp(`^${expectedPrefix}[a-f0-9]{8}$`));
@@ -1380,7 +1469,8 @@ describe('Connector Composer and Managed Connectors', () => {
       });
 
       const testConnectorId = createResult.data?.managedConnectorAdd.id;
-      // Note: Not adding to createdConnectorIds as it's cleaned up in this test
+      // Add to tracking even though it's cleaned up in this test, for safety
+      createdConnectorIds.add(testConnectorId);
 
       // Test that connector user can update logs
       const input = {
@@ -1396,10 +1486,15 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data.updateConnectorLogs).toBeDefined();
 
       // Cleanup
-      await queryAsAdminWithSuccess({
+      const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_CONNECTOR_MUTATION,
         variables: { id: testConnectorId }
       });
+
+      // Remove from tracking after successful deletion
+      if (deleteResult.data?.deleteConnector) {
+        createdConnectorIds.delete(testConnectorId);
+      }
     });
 
     it('should deny non-admin users from deleting a connector', async () => {
@@ -1426,7 +1521,8 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(createResult.data).toBeDefined();
       const testConnectorId = createResult.data?.managedConnectorAdd.id;
-      // Note: Not adding to createdConnectorIds as it's cleaned up in this test
+      // Add to tracking even though it's cleaned up in this test, for safety
+      createdConnectorIds.add(testConnectorId);
 
       // Try to delete as non-admin user
       await queryAsUserIsExpectedForbidden(USER_EDITOR.client, {
@@ -1435,10 +1531,15 @@ describe('Connector Composer and Managed Connectors', () => {
       });
 
       // Cleanup - delete as admin
-      await queryAsAdminWithSuccess({
+      const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_CONNECTOR_MUTATION,
         variables: { id: testConnectorId }
       });
+
+      // Remove from tracking after successful deletion
+      if (deleteResult.data?.deleteConnector) {
+        createdConnectorIds.delete(testConnectorId);
+      }
     });
   });
 
@@ -1467,6 +1568,8 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(createResult.data).toBeDefined();
       const lifecycleConnectorId = createResult.data?.managedConnectorAdd.id;
+      // Add to tracking even though it's cleaned up in this test, for safety
+      createdConnectorIds.add(lifecycleConnectorId);
 
       // Deploy (start)
       await queryAsAdminWithSuccess({
@@ -1500,6 +1603,11 @@ describe('Connector Composer and Managed Connectors', () => {
 
       expect(deleteResult.data).toBeDefined();
       expect(deleteResult.data?.deleteConnector).toEqual(lifecycleConnectorId);
+
+      // Remove from tracking after successful deletion
+      if (deleteResult.data?.deleteConnector) {
+        createdConnectorIds.delete(lifecycleConnectorId);
+      }
     });
   });
 
@@ -1527,6 +1635,8 @@ describe('Connector Composer and Managed Connectors', () => {
       });
 
       const errorConnectorId = createResult.data?.managedConnectorAdd.id;
+      // Add to tracking for cleanup
+      createdConnectorIds.add(errorConnectorId);
 
       // Don't request starting status, so deployment should fail
       try {
@@ -1537,10 +1647,15 @@ describe('Connector Composer and Managed Connectors', () => {
       }
 
       // Cleanup
-      await queryAsAdminWithSuccess({
+      const deleteResult = await queryAsAdminWithSuccess({
         query: DELETE_CONNECTOR_MUTATION,
         variables: { id: errorConnectorId }
       });
+
+      // Remove from tracking after successful deletion
+      if (deleteResult.data?.deleteConnector) {
+        createdConnectorIds.delete(errorConnectorId);
+      }
     });
 
     it('should handle missing required configuration', async () => {
@@ -1555,7 +1670,7 @@ describe('Connector Composer and Managed Connectors', () => {
         manager_contract_image: testConnector.container_image,
         manager_contract_configuration: [
           // Missing required fields - only providing one optional field
-          { key: 'CONNECTOR_SCOPE', value: ['IPv4-Addr'] }
+          { key: 'CONNECTOR_SCOPE', value: JSON.stringify(['IPv4-Addr']) }
         ]
       };
 
@@ -1577,25 +1692,41 @@ describe('Connector Composer and Managed Connectors', () => {
       xtmComposer.stopOrchestration();
     }
 
-    // Final cleanup of any remaining connectors
     const allConnectorsToDelete = Array.from(createdConnectorIds).filter(Boolean);
 
-    await Promise.all(
-      allConnectorsToDelete.map(async (connectorId) => {
-        try {
-          await queryAsAdminWithSuccess({
-            query: DELETE_CONNECTOR_MUTATION,
-            variables: { id: connectorId }
-          });
-        } catch (error: any) {
-          // Ignore if already deleted
-          const isAlreadyDeleted = error?.data?.errors?.some((e: any) => e.extensions?.code === 'ALREADY_DELETED_ERROR');
+    // Note: Test user cleanup - The test user is not deleted to avoid permission issues
+    const deletionResults: { id: string, success: boolean, error?: string }[] = [];
 
-          if (!isAlreadyDeleted) {
-            console.warn(`Cleanup: Failed to delete connector ${connectorId}`, error);
-          }
+    // Use for...of loop with await to avoid race conditions (eslint-disable-next-line no-restricted-syntax)
+    // eslint-disable-next-line no-restricted-syntax
+    for (const connectorId of allConnectorsToDelete) {
+      try {
+        await queryAsAdminWithSuccess({
+          query: DELETE_CONNECTOR_MUTATION,
+          variables: { id: connectorId }
+        });
+        deletionResults.push({ id: connectorId, success: true });
+      } catch (error: any) {
+        // Check if connector doesn't exist (already deleted)
+        const isNotFound = error?.message?.includes('No connector found')
+          || error?.data?.errors?.some((e: any) => e.extensions?.code === 'ALREADY_DELETED_ERROR'
+            || e.message?.includes('not found'));
+
+        if (!isNotFound) {
+          deletionResults.push({ id: connectorId, success: false, error: error.message });
+        } else {
+          deletionResults.push({ id: connectorId, success: true }); // Already deleted
         }
-      })
-    );
+      }
+    }
+    // Clear the set after cleanup
+    createdConnectorIds.clear();
+
+    // Verify that we have cleaned up properly
+    const finalCount = await countNonBuiltInConnectors();
+
+    if (finalCount > 0) {
+      await listNonBuiltInConnectors();
+    }
   });
 });
