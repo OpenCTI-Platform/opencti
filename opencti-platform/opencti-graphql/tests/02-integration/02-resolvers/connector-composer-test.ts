@@ -2,7 +2,7 @@ import { expect, it, describe, afterAll, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
-import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { USER_CONNECTOR, USER_EDITOR } from '../../utils/testQuery';
 import { wait } from '../../../src/database/utils';
 import { XTMComposerMock } from '../../utils/XTMComposerMock';
@@ -48,6 +48,7 @@ const ADD_MANAGED_CONNECTOR_MUTATION = gql`
         managedConnectorAdd(input: $input) {
             id
             name
+            container_name
             connector_user_id
             manager_contract_image
             manager_requested_status
@@ -203,14 +204,26 @@ describe('Connector Composer and Managed Connectors', () => {
       expect(result.data?.registerConnectorsManager.last_sync_execution).not.toBeNull();
     });
 
-    it('should sanitize connector names for Kubernetes/Docker compatibility', async () => {
+    it('should verify container_name sanitization format', async () => {
       const testConnector = catalogHelper.getTestSafeConnector();
       const catalogId = catalogHelper.getCatalogId();
 
       const testCases = [
-        { input: 'ServiceNow Connector', expected: 'service-now-connector' },
-        { input: '-Test@Connector#2024!', expected: 'test-connector-2024' },
-        { input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters', expected: 'very-long-name-with-special-chars-that-exceeds-the-maximum-leng' }
+        {
+          input: 'ServiceNow Connector',
+          expectedName: 'ServiceNow Connector',
+          expectedSanitized: 'service-now-connector'
+        },
+        {
+          input: '-Test@Connector#2024!',
+          expectedName: '-Test@Connector#2024!',
+          expectedSanitized: 'test-connector-2024'
+        },
+        {
+          input: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters',
+          expectedName: 'Very___Long---Name__With$$Special##Chars@@That--Exceeds--The--Maximum--Length--Limit--Of--63--Characters',
+          expectedSanitized: 'very-long-name-with-special-chars-that-exceeds-the-maximum-len'
+        }
       ];
 
       await testCases.reduce(async (previousPromise, testCase) => {
@@ -225,7 +238,7 @@ describe('Connector Composer and Managed Connectors', () => {
           catalog_id: catalogId,
           manager_contract_image: testConnector.container_image,
           manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-            IPINFO_TOKEN: `sanitization-test-token-${testCase.expected}`,
+            IPINFO_TOKEN: `sanitization-test-token-${testCase.expectedSanitized}`,
             ...ipinfoProperties
           })
         };
@@ -238,7 +251,17 @@ describe('Connector Composer and Managed Connectors', () => {
 
           expect(result.data).toBeDefined();
           expect(result.data?.managedConnectorAdd).toBeDefined();
-          expect(result.data?.managedConnectorAdd.name).toEqual(testCase.expected);
+          
+          // Name should keep the original value
+          expect(result.data?.managedConnectorAdd.name).toEqual(testCase.expectedName);
+          
+          // Container name should be sanitized with ID suffix
+          const containerName = result.data?.managedConnectorAdd.container_name;
+          expect(containerName).toBeDefined();
+          
+          // Verify the format: sanitizedName-8charsId
+          const containerNameRegex = new RegExp(`^${testCase.expectedSanitized}-[a-f0-9]{8}$`);
+          expect(containerName).toMatch(containerNameRegex);
 
           const connectorId = result.data?.managedConnectorAdd.id;
           if (connectorId) {
@@ -897,7 +920,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
       const testConnector = connectors.find((c: any) => c.id === testConnectorId);
       expect(testConnector).toBeDefined();
-      expect(testConnector.name).toEqual('xtm-composer-test-connector');
+      expect(testConnector.name).toEqual('XTM Composer Test Connector');
       // Split image name to ignore version
       const [imageName] = testConnector.manager_contract_image.split(':');
       expect(imageName).toEqual('opencti/connector-ipinfo');
@@ -1186,7 +1209,7 @@ describe('Connector Composer and Managed Connectors', () => {
       managedConnectorId = result.data?.managedConnectorAdd.id;
       createdConnectorIds.add(managedConnectorId);
       expect(result.data?.managedConnectorAdd).not.toBeNull();
-      expect(result.data?.managedConnectorAdd.name).toEqual('test-ip-info-connector');
+      expect(result.data?.managedConnectorAdd.name).toEqual('Test IpInfo Connector');
       expect(result.data?.managedConnectorAdd.connector_user_id).toBeDefined();
       expect(result.data?.managedConnectorAdd.manager_requested_status).toEqual('stopped');
       expect(result.data?.managedConnectorAdd.manager_contract_hash).toBeDefined();
@@ -1257,33 +1280,51 @@ describe('Connector Composer and Managed Connectors', () => {
         })
       };
 
-      await adminQueryWithError(
-        {
-          query: ADD_MANAGED_CONNECTOR_MUTATION,
-          variables: { input: duplicateInput }
-        },
-        'CONNECTOR_NAME_ALREADY_EXISTS'
-      );
-
-      // Test with different raw name but same sanitized name
-      const duplicateSanitizedInput = {
-        name: 'Duplicate-Name-Test-Connector!', // Different raw name but same after sanitization
-        user_id: TEST_USER_CONNECTOR_ID,
-        catalog_id: catalogId,
-        manager_contract_image: testConnector.container_image,
-        manager_contract_configuration: catalogHelper.getMinimalConfig(testConnector, {
-          IPINFO_TOKEN: 'duplicate-sanitized-token',
-          ...ipinfoProperties
-        })
-      };
-
-      await adminQueryWithError(
-        {
-          query: ADD_MANAGED_CONNECTOR_MUTATION,
-          variables: { input: duplicateSanitizedInput }
-        },
-        'CONNECTOR_NAME_ALREADY_EXISTS'
-      );
+      // Creating with same name should succeed since container_name will be different
+      const duplicateResult = await queryAsAdminWithSuccess({
+        query: ADD_MANAGED_CONNECTOR_MUTATION,
+        variables: { input: duplicateInput }
+      });
+      
+      expect(duplicateResult.data).toBeDefined();
+      const secondConnectorId = duplicateResult.data?.managedConnectorAdd.id;
+      createdConnectorIds.add(secondConnectorId);
+      
+      // Verify both connectors have same name but different container_names
+      expect(duplicateResult.data?.managedConnectorAdd.name).toEqual('Duplicate Name Test Connector');
+      
+      // Get the first connector's container_name for comparison
+      const GET_CONNECTOR_QUERY = gql`
+        query GetConnector($id: String!) {
+          connector(id: $id) {
+            id
+            name
+            container_name
+          }
+        }
+      `;
+      
+      const firstConnectorData = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: firstConnectorId }
+      });
+      
+      const secondConnectorData = await queryAsAdminWithSuccess({
+        query: GET_CONNECTOR_QUERY,
+        variables: { id: secondConnectorId }
+      });
+      
+      // Both should have same name
+      expect(firstConnectorData.data?.connector.name).toEqual('Duplicate Name Test Connector');
+      expect(secondConnectorData.data?.connector.name).toEqual('Duplicate Name Test Connector');
+      
+      // But different container_names (due to different IDs)
+      expect(firstConnectorData.data?.connector.container_name).not.toEqual(secondConnectorData.data?.connector.container_name);
+      
+      // Both container_names should start with same sanitized prefix
+      const expectedPrefix = 'duplicate-name-test-connector-';
+      expect(firstConnectorData.data?.connector.container_name).toMatch(new RegExp(`^${expectedPrefix}[a-f0-9]{8}$`));
+      expect(secondConnectorData.data?.connector.container_name).toMatch(new RegExp(`^${expectedPrefix}[a-f0-9]{8}$`));
     });
   });
 
