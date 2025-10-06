@@ -118,7 +118,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-sighting-relationship']);
 
-  useInitCreateRelationshipContext({ stixCoreObjectTypes: ['Stix-Core-Object'] });
+  useInitCreateRelationshipContext();
 
   const contextFilters: FilterGroup = {
     mode: 'and',
