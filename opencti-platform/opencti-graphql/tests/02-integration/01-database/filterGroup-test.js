@@ -12,7 +12,9 @@ import {
   IDS_FILTER,
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
+  RELATION_FROM_FILTER,
   RELATION_FROM_TYPES_FILTER,
+  RELATION_TO_FILTER,
   RELATION_TO_TYPES_FILTER,
   SOURCE_RELIABILITY_FILTER
 } from '../../../src/utils/filtering/filtering-constants';
@@ -117,6 +119,8 @@ describe('Complex filters combinations for elastic queries', () => {
   let marking1Id;
   let marking2StixId;
   let marking2Id;
+  let locationInternalId;
+  let intrusionSetInternalId;
   it('should testing environment created', async () => {
     const CREATE_QUERY = gql`
         mutation ReportAdd($input: ReportAddInput!) {
@@ -219,6 +223,11 @@ describe('Complex filters combinations for elastic queries', () => {
     report2InternalId = report2.data.reportAdd.id;
     report3InternalId = report3.data.reportAdd.id;
     report4InternalId = report4.data.reportAdd.id;
+    // Fetch a location and an intrusion set internal ids
+    const location = await storeLoadById(testContext, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c', ENTITY_TYPE_LOCATION);
+    locationInternalId = location.internal_id;
+    const intrusionSet = await storeLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7', ENTITY_TYPE_INTRUSION_SET);
+    intrusionSetInternalId = intrusionSet.internal_id;
   });
   it('should list entities according to filters: filters with unexisting values', async () => {
     const queryResult = await queryAsAdmin({
@@ -1529,10 +1538,6 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.globalSearch.edges.length).toEqual(0);
   });
   it('should list entities according to filters: filters with a relationship_type key', async () => {
-    const location = await storeLoadById(testContext, ADMIN_USER, 'location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c', ENTITY_TYPE_LOCATION);
-    const locationInternalId = location.internal_id;
-    const intrusionSet = await storeLoadById(testContext, ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7', ENTITY_TYPE_INTRUSION_SET);
-    const intrusionSetInternalId = intrusionSet.internal_id;
     // (objects = internal-id-of-a-location)
     let queryResult = await queryAsAdmin({
       query: LIST_QUERY,
@@ -1575,7 +1580,7 @@ describe('Complex filters combinations for elastic queries', () => {
     expect(queryResult.data.globalSearch.edges.length).toEqual(1); // 1 intrusion-set targets this location
     expect(queryResult.data.globalSearch.edges[0].node.id).toEqual(intrusionSetInternalId);
   });
-  it(`should list relationships according to filters: combinations of operators and modes with the special filter key ${INSTANCE_RELATION_TYPES_FILTER}`, async () => {
+  it(`should list relationships according to filters: combinations of operators and modes with the special filter keys ${INSTANCE_RELATION_TYPES_FILTER}, ${RELATION_FROM_TYPES_FILTER}, ${RELATION_TO_TYPES_FILTER}`, async () => {
     // all stix core relationships
     let queryResult = await queryAsAdmin({
       query: RELATIONSHIP_QUERY,
@@ -1893,6 +1898,206 @@ describe('Complex filters combinations for elastic queries', () => {
       }
     });
     expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24);
+  });
+  it(`should list relationships according to filters: combinations of operators and modes with the special filter keys ${RELATION_FROM_FILTER} and ${RELATION_TO_FILTER}`, async () => {
+    // fromId is empty
+    let queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'nil',
+              values: [],
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // no relationships have no source entity
+    // fromId is not empty
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'not_nil',
+              values: [],
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(24); // all the relationships (ie 24) have a source entity
+    // fromId = locationId
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'eq',
+              values: [locationInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(1); // 1 relationship with this location as source
+    // fromId != locationId
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'not_eq',
+              values: [locationInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(23); // 24 relationships - 1 relationship with this location as source
+    // fromId = locationId OR intrusionSetId
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'eq',
+              values: [locationInternalId, intrusionSetInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(4); // 1 relationship with the location as source + 3 relationships with the intrusion set as source
+    // fromId != locationId AND != intrusionSetId
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'not_eq',
+              values: [locationInternalId, intrusionSetInternalId],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(20); // 24 relationships - 4 relationship with the location or the intrusion set as source
+    // fromId = locationId AND intrusionSetId
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_FROM_FILTER,
+              operator: 'eq',
+              values: [locationInternalId, intrusionSetInternalId],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationship with both a location and an intrusion set as source
+    // toId = locationId
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_TO_FILTER,
+              operator: 'eq',
+              values: [locationInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(1); // 1 relationship with this location as target
+    // toId = locationId OR intrusionSetId
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_TO_FILTER,
+              operator: 'eq',
+              values: [locationInternalId, intrusionSetInternalId],
+              mode: 'or',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(3); // 1 relationship with the location as target + 2 relationships with the intrusion set as target
+    // toId = locationId AND intrusionSetId
+    queryResult = await queryAsAdmin({
+      query: RELATIONSHIP_QUERY,
+      variables: {
+        first: 20,
+        filters: {
+          mode: 'or',
+          filters: [
+            {
+              key: RELATION_TO_FILTER,
+              operator: 'eq',
+              values: [locationInternalId, intrusionSetInternalId],
+              mode: 'and',
+            }
+          ],
+          filterGroups: [],
+        },
+      }
+    });
+    expect(queryResult.data.stixCoreRelationships.edges.length).toEqual(0); // 0 relationship with both a location and an intrusion set as target
   });
   it('should list entities according to filters: filters with not supported keys', async () => {
     // bad_filter_key = XX
