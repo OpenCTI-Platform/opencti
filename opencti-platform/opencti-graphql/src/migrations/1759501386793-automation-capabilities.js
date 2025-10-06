@@ -14,7 +14,7 @@ export const up = async (next) => {
   const context = executionContext('migration');
 
   // ------ Create Automation capabilities
-  const UseAutomationCapability = await addCapability(context, SYSTEM_USER, {
+  const useAutomationCapability = await addCapability(context, SYSTEM_USER, {
     name: AUTOMATION,
     attribute_order: 2800,
     description: 'Use Playbooks'
@@ -37,7 +37,7 @@ export const up = async (next) => {
         await createRelation(context, SYSTEM_USER, parametersInput);
       }
       if (hasEnrichmentCapability) {
-        const parametersInput = { fromId: roleId, toId: UseAutomationCapability.id, relationship_type: 'has-capability' };
+        const parametersInput = { fromId: roleId, toId: useAutomationCapability.id, relationship_type: 'has-capability' };
         await createRelation(context, SYSTEM_USER, parametersInput);
       }
     }

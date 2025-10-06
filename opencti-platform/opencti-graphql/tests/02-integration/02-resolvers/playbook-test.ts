@@ -1,14 +1,10 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import path from 'path';
 import { adminQueryWithError, adminQueryWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
-import { resetCatalogCache } from '../../../src/modules/catalog/catalog-domain';
-import { catalogHelper } from '../../utils/catalogHelper';
-import { XTMComposerMock } from '../../utils/XTMComposerMock';
-import { USER_DISINFORMATION_ANALYST, USER_PARTICIPATE } from '../../utils/testQuery';
+import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
   query playbooks(
@@ -110,7 +106,7 @@ describe('Playbook resolver standard behavior', () => {
         name: playbookName,
       }
     };
-    const queryResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: CREATE_PLAYBOOK,
       variables: input,
     });
@@ -138,7 +134,7 @@ describe('Playbook resolver standard behavior', () => {
     });
   });
   it('should update playbook with Manage Playbooks capability', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: UPDATE_PLAYBOOK,
       variables: {
         id: playbookId,
@@ -292,7 +288,7 @@ describe('Playbook resolver standard behavior', () => {
     });
   });
   it('should remove playbook with Manage Playbooks capability', async () => {
-    const queryResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST.client, {
+    const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: DELETE_PLAYBOOK,
       variables: { id: playbookId },
     });
