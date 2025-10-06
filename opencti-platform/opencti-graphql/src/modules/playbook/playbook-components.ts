@@ -180,6 +180,31 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   }
 };
 
+const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<StreamConfiguration> = {
+  type: 'object',
+  properties: {
+    create: { type: 'boolean', default: true },
+    update: { type: 'boolean', default: false },
+    delete: { type: 'boolean', default: false },
+    filters: { type: 'string' },
+  },
+  required: ['create', 'update', 'delete'],
+};
+const PLAYBOOK_INTERNAL_DATA_STREAM_PIR: PlaybookComponent<StreamConfiguration> = {
+  id: 'PLAYBOOK_INTERNAL_DATA_STREAM_PIR',
+  name: 'Listen PIR events',
+  description: 'Listen for all internal PIR events',
+  icon: 'in-pir',
+  is_entry_point: true,
+  is_internal: true,
+  ports: [{ id: 'out', type: 'out' }],
+  configuration_schema: PLAYBOOK_DATA_STREAM_PIR_SCHEMA,
+  schema: async () => PLAYBOOK_DATA_STREAM_PIR_SCHEMA,
+  executor: async ({ bundle }) => {
+    return ({ output_port: 'out', bundle, forceBundleTracking: true });
+  }
+};
+
 export interface ManualTriggerConfiguration {
   filters: string
 }
@@ -1621,6 +1646,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_INTERNAL_MANUAL_TRIGGER.id]: PLAYBOOK_INTERNAL_MANUAL_TRIGGER,
   [PLAYBOOK_INTERNAL_DATA_STREAM.id]: PLAYBOOK_INTERNAL_DATA_STREAM,
+  [PLAYBOOK_INTERNAL_DATA_STREAM_PIR.id]: PLAYBOOK_INTERNAL_DATA_STREAM_PIR,
   [PLAYBOOK_INTERNAL_DATA_CRON.id]: PLAYBOOK_INTERNAL_DATA_CRON,
   [PLAYBOOK_LOGGER_COMPONENT.id]: PLAYBOOK_LOGGER_COMPONENT,
   [PLAYBOOK_INGESTION_COMPONENT.id]: PLAYBOOK_INGESTION_COMPONENT,

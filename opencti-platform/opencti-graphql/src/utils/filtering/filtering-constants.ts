@@ -37,6 +37,7 @@ export const REPRESENTATIVE_FILTER = 'representative'; // representative of an e
 export const INSTANCE_RELATION_TYPES_FILTER = 'elementWithTargetTypes'; // TODO Rename/migrate to fromOrToType
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId'; // TODO Rename/migrate to triggerListenId
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
+export const RELATION_IN_PIR_FILTER = 'inPir';
 
 // Values that do not need resolution when matching against stix object
 export const ID_FILTER = 'id';
