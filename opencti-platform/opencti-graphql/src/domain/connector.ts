@@ -259,18 +259,23 @@ export const managedConnectorAdd = async (
   if (!sanitizedName || sanitizedName.length < 2) {
     throw FunctionalError('Invalid connector name');
   }
-  // Check for name collision
+  // Generate internal ID and container name (add timestamp for uniqueness)
+  const internalId = uuidv5(`${input.name}-${Date.now()}`, OPENCTI_NAMESPACE);
+  const containerName = `${sanitizedName}-${internalId.substring(0, 8)}`;
+
+  // Check for container name collision
   const existingConnectors = await connectors(context, user);
-  const nameCollision = existingConnectors.find((c) => c.name === sanitizedName);
-  if (nameCollision) {
-    logApp.info(`[CONNECTOR] Name collision detected: connector with name '${sanitizedName}' already exists`);
-    throw FunctionalError('CONNECTOR_NAME_ALREADY_EXISTS');
+  const containerNameCollision = existingConnectors.find((c) => c.container_name === containerName);
+  if (containerNameCollision) {
+    logApp.info(`[CONNECTOR] Container name collision detected: connector with container_name '${containerName}' already exists`);
+    throw FunctionalError('CONNECTOR_CONTAINER_NAME_ALREADY_EXISTS');
   }
 
   // Create connector
   const connectorToCreate: any = {
+    internal_id: internalId,
     name: input.name,
-    container_name: sanitizedName,
+    container_name: containerName,
     connector_type: targetContract.container_type,
     catalog_id: input.catalog_id,
     connector_user_id: connectorUser.id,

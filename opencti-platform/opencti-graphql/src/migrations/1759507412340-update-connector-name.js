@@ -19,7 +19,7 @@ export const up = async (next) => {
     managedConnectors.map(async (connector) => {
       try {
         const patch = {
-          container_name: connector.name,
+          container_name: `${connector.name}-${connector.internalId.substring(0, 8)}`,
           name: connector.title || connector.manager_contract_excerpt?.title
         };
 
