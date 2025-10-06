@@ -33,7 +33,7 @@ describe('Data initialization test', () => {
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'AUTOMATION',
-      'AUTOMATION_AUTOMATIONMANAGE',
+      'AUTOMATION_AUTMANAGE',
       'BYPASS',
       'CONNECTORAPI',
       'CSVMAPPERS',

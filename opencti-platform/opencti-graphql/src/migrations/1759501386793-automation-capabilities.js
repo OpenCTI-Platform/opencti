@@ -1,6 +1,6 @@
 import { logApp } from '../config/conf';
 import { elList } from '../database/engine';
-import { AUTOMATION, AUTOMATION_AUTOMATIONMANAGE, executionContext, SYSTEM_USER } from '../utils/access';
+import { AUTOMATION, AUTOMATION_AUTMANAGE, executionContext, SYSTEM_USER } from '../utils/access';
 import { addCapability } from '../domain/grant';
 import { createRelation } from '../database/middleware';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -20,12 +20,12 @@ export const up = async (next) => {
     description: 'Use Playbooks'
   });
   const manageAutomationCapability = await addCapability(context, SYSTEM_USER, {
-    name: AUTOMATION_AUTOMATIONMANAGE,
+    name: AUTOMATION_AUTMANAGE,
     attribute_order: 2850,
     description: 'Manage Playbooks'
   });
 
-  // ------ Add PLAYBOOK to all Roles that have
+  // ------ Add capabilities to Roles
   const callback = async (roles) => {
     for (let i = 0; i < roles.length; i += 1) {
       const roleId = roles[i].id;
