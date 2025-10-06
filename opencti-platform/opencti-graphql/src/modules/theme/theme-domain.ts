@@ -1,3 +1,5 @@
+import type { FileHandle } from 'fs/promises';
+import { z } from 'zod';
 import { BUS_TOPICS } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -10,16 +12,7 @@ import { type BasicStoreEntityTheme, type StoreEntityTheme } from './theme-types
 import { FunctionalError } from '../../config/errors';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { SYSTEM_USER } from '../../utils/access';
-
-// const defaultLightTheme: ThemeAddInput = {
-//   name: 'Light',
-//   manifest: 'eyJ0aGVtZV9iYWNrZ3JvdW5kIjoiI2Y4ZjhmOCIsInRoZW1lX3BhcGVyIjoiI2ZmZmZmZiIsInRoZW1lX25hdiI6IiNmZmZmZmYiLCJ0aGVtZV9wcmltYXJ5IjoiIzAwMWJkYSIsInRoZW1lX3NlY29uZGFyeSI6IiMwYzdlNjkiLCJ0aGVtZV9hY2NlbnQiOiIjZWVlZWVlIiwidGhlbWVfdGV4dF9jb2xvciI6IiMwMDAwMDAiLCJ0aGVtZV9sb2dvIjoiIiwidGhlbWVfbG9nb19jb2xsYXBzZWQiOiIiLCJ0aGVtZV9sb2dvX2xvZ2luIjoiIiwic3lzdGVtX2RlZmF1bHQiOnRydWV9',
-// };
-//
-// const defaultDarkTheme: ThemeAddInput = {
-//   name: 'Dark',
-//   manifest: 'eyJ0aGVtZV9iYWNrZ3JvdW5kIjoiIzA3MGQxOSIsInRoZW1lX3BhcGVyIjoiIzA5MTAxZSIsInRoZW1lX25hdiI6IiMwNzBkMTkiLCJ0aGVtZV9wcmltYXJ5IjoiIzBmYmNmZiIsInRoZW1lX3NlY29uZGFyeSI6IiMwMGYxYmQiLCJ0aGVtZV9hY2NlbnQiOiIjMGYxZTM4IiwidGhlbWVfdGV4dF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9sb2dvIjoiIiwidGhlbWVfbG9nb19jb2xsYXBzZWQiOiIiLCJ0aGVtZV9sb2dvX2xvZ2luIjoiIiwic3lzdGVtX2RlZmF1bHQiOnRydWV9',
-// };
+import { extractContentFrom } from '../../utils/fileToContent';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   // FIXME: use SYSTEM_USER instead of user because on public page such as
@@ -44,8 +37,8 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_logo_collapsed: input.theme_logo_collapsed,
     theme_logo_login: input.theme_logo_login,
     theme_text_color: input.theme_text_color,
-    system_default: input.system_default ?? false,
   };
+
   const created = await createInternalObject<StoreEntityTheme>(context, user, themeToCreate, ENTITY_TYPE_THEME);
 
   await publishUserAction({
@@ -69,7 +62,7 @@ export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId:
   if (!theme) {
     throw FunctionalError(`Theme ${themeId} cannot be found`);
   }
-  if (theme.system_default === true) {
+  if (theme.system_default) {
     throw FunctionalError('System default themes cannot be deleted');
   }
   return deleteInternalObject(context, user, themeId, ENTITY_TYPE_THEME);
@@ -91,6 +84,33 @@ export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, them
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_THEME].EDIT_TOPIC, element, user);
+};
+
+const themeImportSchema = z.object({
+  name: z.string().min(1, 'Theme name is required'),
+  theme_background: z.string().min(1, 'Background color is required'),
+  theme_paper: z.string().min(1, 'Paper color is required'),
+  theme_nav: z.string().min(1, 'Nav color is required'),
+  theme_primary: z.string().min(1, 'Primary color is required'),
+  theme_secondary: z.string().min(1, 'Secondary color is required'),
+  theme_accent: z.string().min(1, 'Accent color is required'),
+  theme_text_color: z.string().min(1, 'Text color is required'),
+  theme_logo: z.string().optional().default(''),
+  theme_logo_collapsed: z.string().optional().default(''),
+  theme_logo_login: z.string().optional().default(''),
+});
+
+export const themeImport = async (context: AuthContext, user: AuthUser, file: Promise<FileHandle>) => {
+  const parsedData = await extractContentFrom(file);
+
+  const validationResult = themeImportSchema.safeParse(parsedData);
+
+  if (!validationResult.success) {
+    const errors = validationResult.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+    throw new Error(`Invalid theme file: ${errors}`);
+  }
+
+  return addTheme(context, user, validationResult.data);
 };
 
 // const checkExistingTheme = async (

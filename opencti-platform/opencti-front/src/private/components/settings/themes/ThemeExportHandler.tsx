@@ -11,7 +11,17 @@ interface themeToExport {
 const ThemeExportHandlerQuery = graphql`
   query ThemeExportHandlerQuery($id: ID!) {
     theme(id: $id) {
-      toConfigurationExport
+      name
+      theme_background
+      theme_paper
+      theme_nav
+      theme_primary
+      theme_secondary
+      theme_accent
+      theme_text_color
+      theme_logo
+      theme_logo_collapsed
+      theme_logo_login      
     }
   }
 `;
@@ -22,9 +32,12 @@ const handleExportJson = async (theme: themeToExport) => {
 
   if (!result.theme) return;
 
-  const blob = new Blob([result.theme.toConfigurationExport], { type: 'text/json' });
+  const themeData = { ...result.theme };
+
+  const jsonString = JSON.stringify(themeData, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
   const todayDate = new Date().toISOString().split('T')[0].replaceAll('-', '');
-  const fileName = `${todayDate}_octi_theme_${theme.name}.json`;
+  const fileName = `${todayDate}_octi_theme_${theme.name.toLowerCase()}.json`;
   fileDownload(blob, fileName);
 };
 
