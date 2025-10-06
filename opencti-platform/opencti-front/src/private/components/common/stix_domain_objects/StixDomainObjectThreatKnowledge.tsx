@@ -163,9 +163,7 @@ StixDomainObjectThreatKnowledgeProps
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
   // Reset 'Create Relationship' target types
-  useInitCreateRelationshipContext({
-    stixCoreObjectTypes: ['Stix-Core-Object'],
-  });
+  useInitCreateRelationshipContext();
 
   const LOCAL_STORAGE_KEY = `stix-domain-object-${stixDomainObjectId}`;
   const link = `${resolveLink(stixDomainObjectType)}/${stixDomainObjectId}/knowledge`;
