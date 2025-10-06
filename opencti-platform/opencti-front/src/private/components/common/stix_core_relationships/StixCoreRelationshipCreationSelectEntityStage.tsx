@@ -9,7 +9,7 @@ import {
   TargetEntity,
 } from './StixCoreRelationshipCreationFromEntity';
 import { PaginationOptions } from '../../../../components/list_lines';
-import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../../components/i18n';
 import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -27,8 +27,8 @@ import { StixCoreRelationshipCreationFromEntityStixCoreObjectsLines_data$data } 
 import BulkRelationDialogContainer from '../bulk/dialog/BulkRelationDialogContainer';
 import { CreateRelationshipContext } from './CreateRelationshipContextProvider';
 import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTypes } from '../../../../utils/stixTypeUtils';
-import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import { StixCoreRelationshipCreationSelectEntityStage_stixCoreObject$key } from './__generated__/StixCoreRelationshipCreationSelectEntityStage_stixCoreObject.graphql';
+import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 interface StixCoreRelationshipCreationSelectEntityStageProps {
   handleNextStep: () => void;
@@ -38,6 +38,9 @@ interface StixCoreRelationshipCreationSelectEntityStageProps {
   setTargetEntities: React.Dispatch<React.SetStateAction<TargetEntity[]>>;
   virtualEntityTypes: string[];
   handleClose: () => void;
+  searchPaginationOptions: PaginationOptions,
+  contextFilters: FilterGroup,
+  helpers: UseLocalStorageHelpers,
 }
 
 const fragment = graphql`
@@ -60,29 +63,13 @@ StixCoreRelationshipCreationSelectEntityStageProps
   setTargetEntities,
   virtualEntityTypes,
   handleClose,
+  searchPaginationOptions,
+  contextFilters,
+  helpers,
 }) => {
   const { t_i18n } = useFormatter();
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
   const stixCoreObject = useFragment(fragment, data);
-
-  const { viewStorage, helpers } = usePaginationLocalStorage<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQuery$variables>(
-    storageKey,
-    {
-      orderAsc: false,
-      sortBy: '_score',
-      searchTerm: '',
-    },
-    true,
-  );
-  const { searchTerm, orderAsc, sortBy, filters } = viewStorage;
-
-  const contextFilters = useBuildEntityTypeBasedFilterContext(virtualEntityTypes, filters);
-  const searchPaginationOptions: PaginationOptions = {
-    search: searchTerm,
-    filters: contextFilters,
-    orderBy: sortBy,
-    orderMode: orderAsc ? 'asc' : 'desc',
-  } as PaginationOptions;
 
   // Fetch from context
   const { state: {
