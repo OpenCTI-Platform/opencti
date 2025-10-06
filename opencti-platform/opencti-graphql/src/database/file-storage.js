@@ -239,7 +239,7 @@ const filesAdaptation = (objects) => {
 };
 
 export const loadedFilesListing = async (context, user, directory, opts = {}) => {
-  const { recursive = false, callback = null, dontThrow = false } = opts;
+  const { recursive = false, callback = null, dontThrow = false, rawFormat = false } = opts;
   const files = [];
   if (isNotEmptyField(directory) && directory.startsWith('/')) {
     throw FunctionalError('File listing directory must not start with a /');
@@ -253,11 +253,15 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
     try {
       const response = await rawListObjects(directory, recursive, continuationToken);
       const resultFiles = filesAdaptation(response.Contents ?? []);
-      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(context, user, f.Key, { dontThrow }), { concurrency: 5 });
-      if (callback) {
-        callback(resultLoaded.filter((n) => n !== undefined));
+      if (rawFormat) {
+        files.push(...resultFiles);
       } else {
-        files.push(...resultLoaded.filter((n) => n !== undefined));
+        const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(context, user, f.Key, { dontThrow }), { concurrency: 5 });
+        if (callback) {
+          callback(resultLoaded.filter((n) => n !== undefined));
+        } else {
+          files.push(...resultLoaded.filter((n) => n !== undefined));
+        }
       }
       truncated = response.IsTruncated;
       if (truncated) {

@@ -508,6 +508,7 @@ const mapJSToStream = (event: any) => {
   });
   return cmdArgs;
 };
+export const STREAM_FILE_DIRECTORY = `streams/${REDIS_STREAM_NAME}/`;
 const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluster | Redis, event: BaseEvent, opts: EventOpts = {}) => {
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
@@ -520,7 +521,7 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
         // Add salt to prevent time collision
         const randomSalt = Math.floor(Math.random() * 1000);
         const eventId = streamEventId(null, randomSalt);
-        const filePath = `streams/${REDIS_STREAM_NAME}/${eventId}`;
+        const filePath = `${STREAM_FILE_DIRECTORY}${eventId}`;
         const fileContent = JSON.stringify(mapJsToStream);
         await rawUpload(filePath, fileContent);
         mapJsToStream = [streamMaxEventFileKey, filePath];

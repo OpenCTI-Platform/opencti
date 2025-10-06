@@ -2,6 +2,9 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { GARBAGE_COLLECTION_MANAGER_USER, executionContext } from '../utils/access';
 import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
+import { fetchStreamInfo, STREAM_FILE_DIRECTORY } from '../database/redis';
+import { loadedFilesListing } from '../database/file-storage';
+import { deleteFileFromStorage } from '../database/raw-file-storage';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
@@ -29,6 +32,18 @@ export const garbageCollectionHandler = async () => {
     }
   }
   logApp.debug('[OPENCTI-MODULE] Garbage collection manager deletion process complete', { count: deleteOperationsToManage.length });
+
+  // Also check redis files here
+  const { firstEventId } = await fetchStreamInfo();
+  const timestamp = firstEventId.split('-')[0];
+  const allRedisLargeEventFiles = await loadedFilesListing(context, GARBAGE_COLLECTION_MANAGER_USER, STREAM_FILE_DIRECTORY, { rawFormat: true });
+  for (let i = 0; i < allRedisLargeEventFiles.length; i += 1) {
+    const file = allRedisLargeEventFiles[0];
+    const currentTimestamp = file.Key.split(STREAM_FILE_DIRECTORY)[1].split('-')[0];
+    if (currentTimestamp < timestamp) {
+      await deleteFileFromStorage(file.Key);
+    }
+  }
 };
 
 const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {

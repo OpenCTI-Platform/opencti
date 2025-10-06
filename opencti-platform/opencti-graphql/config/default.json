@@ -373,7 +373,7 @@
     "port": 6379,
     "host_ip_family": 4,
     "trimming": 2000000,
-    "max_event_length": 1
+    "max_event_length": 5000
   },
   "elasticsearch": {
     "index_prefix": "opencti",
