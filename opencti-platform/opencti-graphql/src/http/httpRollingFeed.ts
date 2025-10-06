@@ -31,8 +31,9 @@ const errorConverter = (e: any) => {
 const escapeCsvField = (separator: string, data: string) => {
   let escapedData:string;
 
-  if (data.includes('"') || data.includes(separator) || data.includes('\n') || data.includes('\r')) {
-    escapedData = data.replaceAll('"', '""').replaceAll('\n', ' ').replaceAll('\r', ' ');
+  if (data.includes('"') || data.includes(separator)
+  ) {
+    escapedData = data.replaceAll('"', '""');
     return `"${escapedData}"`;
   }
   return data;
