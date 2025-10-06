@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 import {
   EntityStixSightingRelationshipsLinesPaginationQuery,
   EntityStixSightingRelationshipsLinesPaginationQuery$variables,
@@ -12,9 +12,9 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import { CreateRelationshipContext } from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
+import { useInitCreateRelationshipContext } from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 
@@ -118,13 +118,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-sighting-relationship']);
 
-  const { setState } = useContext(CreateRelationshipContext);
-  // Necessary to reset 'Create Relationship' target types
-  useEffect(() => {
-    setState({
-      stixCoreObjectTypes: ['Stix-Core-Object'],
-    });
-  }, []);
+  useInitCreateRelationshipContext({ stixCoreObjectTypes: ['Stix-Core-Object'] });
 
   const contextFilters: FilterGroup = {
     mode: 'and',

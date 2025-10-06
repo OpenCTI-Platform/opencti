@@ -78,8 +78,8 @@ export default CreateRelationshipContextProvider;
 export const useInitCreateRelationshipContext = (state: CreateRelationshipContextStateType = {
   stixCoreObjectTypes: ['Stix-Core-Object'],
 }) => {
-  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
+  const { setState } = useContext(CreateRelationshipContext);
   useEffect(() => {
-    setCreateRelationshipContext(state);
+    setState(state);
   }, []);
 };
