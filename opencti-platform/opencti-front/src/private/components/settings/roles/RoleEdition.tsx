@@ -17,6 +17,7 @@ import { RootRoleEditionQuery$data } from './__generated__/RootRoleEditionQuery.
 const RoleEditionFragment = graphql`
   fragment RoleEdition_role on Role {
     id
+    standard_id
     ...RoleEditionOverview_role
     ...RoleEditionCapabilities_role
     editContext {
@@ -33,13 +34,6 @@ interface RoleEditionDrawerProps {
   disabled?: boolean
 }
 
-const UpdateRoleControlledDial = (props: DrawerControlledDialProps) => (
-  <EditEntityControlledDial
-    style={{ float: 'right' }}
-    {...props}
-  />
-);
-
 const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   handleClose = () => {},
   roleRef,
@@ -50,6 +44,14 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   const [currentTab, setCurrentTab] = useState(0);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
   const role = useFragment<RoleEdition_role$key>(RoleEditionFragment, roleRef);
+
+  const UpdateRoleControlledDial = (props: DrawerControlledDialProps) => (
+    <EditEntityControlledDial
+      style={{ float: 'right' }}
+      disabled={disabled}
+      {...props}
+    />
+  );
 
   return (
     <Drawer
