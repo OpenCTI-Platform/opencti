@@ -14,13 +14,13 @@ export const asyncFilter = async <T>(elements: T[], predicate: (value: T, index:
   return filtered;
 };
 
-export const asyncMap = async <T, Z>(elements: T[], transform: (value: T) => Z, filter?: (value: Z) => boolean, opts: { flat?: boolean } = {}) => {
+export const asyncMap = async <T, Z>(elements: T[], transform: (value: T) => Promise<Z>, filter?: (value: Z) => boolean, opts: { flat?: boolean } = {}) => {
   const { flat = false } = opts;
   const transformed: Z[] = [];
   for (let index = 0; index < elements.length; index += 1) {
     await doYield();
     const element = elements[index];
-    const item = transform(element); // can be one element or array
+    const item = await transform(element); // can be one element or array
     if (!filter || filter(item)) {
       if (flat && Array.isArray(item)) {
         for (let j = 0; j < item.length; j += 1) {

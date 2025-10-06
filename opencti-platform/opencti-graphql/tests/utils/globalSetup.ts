@@ -3,7 +3,7 @@ import '../../src/modules/index';
 // import managers
 import '../../src/manager/index';
 // endregion
-import { initializeBucket, storageInit } from '../../src/database/file-storage';
+import { storageInit, initializeBucket } from '../../src/database/raw-file-storage';
 import { deleteQueues } from '../../src/domain/connector';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './testQuery';
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
