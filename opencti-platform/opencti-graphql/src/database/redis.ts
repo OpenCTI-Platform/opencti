@@ -40,7 +40,7 @@ import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { asyncMap } from '../utils/data-processing';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { getFileContent, rawUpload } from './file-storage';
+import { getFileContent, rawUpload } from './raw-file-storage';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -733,7 +733,7 @@ const processStreamData = async ([id, data]: any) => {
 };
 const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean | undefined) => {
   const transform = (r: any) => processStreamData(r);
-  const filter = (s: any) => (withInternal ? true : (s.data.scope ?? 'external') === 'external');
+  const filter = (s: any) => s && (withInternal ? true : (s.data.scope ?? 'external') === 'external');
   const events = await asyncMap(results, transform, filter);
   const lastEventId = events.length > 0 ? R.last(events)?.id : `${new Date().valueOf()}-0`;
   await callback(events, lastEventId);
