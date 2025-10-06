@@ -11,7 +11,6 @@ import { LoginRootPublicQuery } from '../__generated__/LoginRootPublicQuery.grap
 import { rootPublicQuery } from '../LoginRoot';
 import logoLight from '../../static/images/logo_light.png';
 import logoDark from '../../static/images/logo_dark.png';
-import { deserializeThemeManifest } from '../../private/components/settings/themes/ThemeType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -38,17 +37,14 @@ const PublicDataSharing = () => {
   const theme = useTheme<Theme>();
   const classes = useStyles();
 
-  const { publicSettings: settings, themes } = usePreloadedQuery<LoginRootPublicQuery>(
+  const { publicSettings: settings } = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
   );
 
-  const defaultTheme = themes?.edges?.filter((node) => !!node)
-    .map(({ node }) => ({ ...node }))
-    .filter(({ name }) => name === settings.platform_theme)?.[0];
-  const loginLogo = deserializeThemeManifest(defaultTheme?.manifest)
-    .theme_logo_login;
+  const loginLogo = settings.platform_theme?.theme_logo_login || theme.logo;
 
+  console.log('settings.platform_theme', settings.platform_theme);
   return (
     <>
       <div className={classes.container}>

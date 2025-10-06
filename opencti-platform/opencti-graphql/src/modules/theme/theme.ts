@@ -29,6 +29,8 @@ const THEME_DEFINITION: ModuleDefinition<StoreEntityTheme, StixTheme> = {
     { name: 'theme_logo_collapsed', label: 'Theme Logo Collapsed', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'theme_logo_login', label: 'Theme Logo Login', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'theme_text_color', label: 'Theme Text Color', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'built_in', label: 'Built-in', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+
   ],
   relations: [],
   representative: (stix: StixTheme) => {

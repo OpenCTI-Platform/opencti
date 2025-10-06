@@ -95,7 +95,7 @@ const themesLineFragment = graphql`
     theme_logo_collapsed
     theme_logo_login
     theme_text_color
-    system_default
+    built_in
   }
 `;
 
@@ -161,8 +161,8 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 
   return (
     <>
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <Typography variant="h4" gutterBottom>{t_i18n('Themes')}</Typography>
+      <Stack direction="row" alignItems="center" gap={1} sx={{ marginBottom: 0.5 }}>
+        <Typography variant="h4" sx={{ margin: 0 }}>{t_i18n('Themes')}</Typography>
 
         <Box>
           <Tooltip title={t_i18n('Add')}>

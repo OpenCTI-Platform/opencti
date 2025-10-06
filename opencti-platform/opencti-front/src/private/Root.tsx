@@ -53,7 +53,9 @@ const rootSettingsFragment = graphql`
     platform_openmtd_url
     platform_xtmhub_url
     xtm_hub_registration_status
-    platform_theme
+    platform_theme {
+      name
+    }
     platform_whitemark
     platform_organization {
       id
@@ -423,7 +425,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       }}
     >
       <StyledEngineProvider injectFirst={true}>
-        <ConnectedThemeProvider settings={settings} themes={themes}>
+        <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
             <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
               <Index settings={settings} />

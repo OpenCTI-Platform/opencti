@@ -16,7 +16,7 @@ type Theme implements InternalObject & BasicObject {
   theme_logo_login: String
   theme_text_color: String!
   toConfigurationExport: String!
-  system_default: Boolean
+  built_in: Boolean
 }
 
 # Relay connections
