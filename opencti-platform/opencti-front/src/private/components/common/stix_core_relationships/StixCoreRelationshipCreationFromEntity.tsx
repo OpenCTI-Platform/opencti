@@ -44,6 +44,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { FieldOption } from '../../../../utils/field';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -570,8 +571,9 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
 
   // TODO: Remove once Create Relationship FAB is removed everywhere
   const location = useLocation();
-  const categoriesToHide = ['threats'];
-  const showFAB = categoriesToHide.reduce(
+  const { isFeatureEnable } = useHelper();
+  const categoriesWithRelateComponent = ['threats'];
+  const showFAB = !isFeatureEnable('FAB_RELATIONSHIP') || categoriesWithRelateComponent.reduce(
     (prev, curr) => prev || !location.pathname.includes(`/dashboard/${curr}`),
     false,
   );
