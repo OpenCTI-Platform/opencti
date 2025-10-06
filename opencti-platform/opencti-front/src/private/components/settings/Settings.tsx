@@ -11,14 +11,13 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/styles';
-import { Switch, Box } from '@mui/material';
+import { Box, Switch } from '@mui/material';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
-import { Themes_themes$key } from '@components/settings/themes/__generated__/Themes_themes.graphql';
 import ThemeManager, { refetchableThemesQuery } from '@components/settings/themes/ThemeManager';
 import { ThemeManager_themes$key } from '@components/settings/themes/__generated__/ThemeManager_themes.graphql';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
@@ -45,8 +44,6 @@ import type { Theme } from '../../../components/Theme';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 
-import { deserializeThemeManifest } from './themes/ThemeType';
-
 const settingsQuery = graphql`
   query SettingsQuery {
     settings {
@@ -54,30 +51,33 @@ const settingsQuery = graphql`
       platform_title
       platform_favicon
       platform_email
-      platform_theme
+      platform_theme {
+        id
+        name
+      }
       platform_language
       platform_whitemark
       platform_login_message
       platform_banner_text
       platform_banner_level
-      platform_theme_dark_background
-      platform_theme_dark_paper
-      platform_theme_dark_nav
-      platform_theme_dark_primary
-      platform_theme_dark_secondary
-      platform_theme_dark_accent
-      platform_theme_dark_logo
-      platform_theme_dark_logo_collapsed
-      platform_theme_dark_logo_login
-      platform_theme_light_background
-      platform_theme_light_paper
-      platform_theme_light_nav
-      platform_theme_light_primary
-      platform_theme_light_secondary
-      platform_theme_light_accent
-      platform_theme_light_logo
-      platform_theme_light_logo_collapsed
-      platform_theme_light_logo_login
+#      platform_theme_dark_background
+#      platform_theme_dark_paper
+#      platform_theme_dark_nav
+#      platform_theme_dark_primary
+#      platform_theme_dark_secondary
+#      platform_theme_dark_accent
+#      platform_theme_dark_logo
+#      platform_theme_dark_logo_collapsed
+#      platform_theme_dark_logo_login
+#      platform_theme_light_background
+#      platform_theme_light_paper
+#      platform_theme_light_nav
+#      platform_theme_light_primary
+#      platform_theme_light_secondary
+#      platform_theme_light_accent
+#      platform_theme_light_logo
+#      platform_theme_light_logo_collapsed
+#      platform_theme_light_logo_login
       platform_map_tile_server_dark
       platform_map_tile_server_light
       platform_ai_enabled
@@ -143,7 +143,10 @@ export const settingsMutationFieldPatch = graphql`
         platform_title
         platform_favicon
         platform_email
-        platform_theme
+        platform_theme {
+          id
+          name
+        }
         platform_language
         platform_whitemark
         platform_enterprise_edition {
@@ -199,36 +202,20 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   );
 
   const { id, editContext } = settings;
+
   const initialValues = {
     platform_title: settings.platform_title,
     platform_favicon: settings.platform_favicon,
     platform_email: settings.platform_email,
-    platform_theme: settings.platform_theme,
+    platform_theme: settings.platform_theme?.id,
     platform_language: settings.platform_language,
     platform_login_message: settings.platform_login_message,
     platform_banner_text: settings.platform_banner_text,
     platform_banner_level: settings.platform_banner_level,
-    platform_theme_dark_background: settings.platform_theme_dark_background,
-    platform_theme_dark_paper: settings.platform_theme_dark_paper,
-    platform_theme_dark_nav: settings.platform_theme_dark_nav,
-    platform_theme_dark_primary: settings.platform_theme_dark_primary,
-    platform_theme_dark_secondary: settings.platform_theme_dark_secondary,
-    platform_theme_dark_accent: settings.platform_theme_dark_accent,
-    platform_theme_dark_logo: settings.platform_theme_dark_logo,
-    platform_theme_dark_logo_collapsed: settings.platform_theme_dark_logo_collapsed,
-    platform_theme_dark_logo_login: settings.platform_theme_dark_logo_login,
-    platform_theme_light_background: settings.platform_theme_light_background,
-    platform_theme_light_paper: settings.platform_theme_light_paper,
-    platform_theme_light_nav: settings.platform_theme_light_nav,
-    platform_theme_light_primary: settings.platform_theme_light_primary,
-    platform_theme_light_secondary: settings.platform_theme_light_secondary,
-    platform_theme_light_accent: settings.platform_theme_light_accent,
-    platform_theme_light_logo: settings.platform_theme_light_logo,
-    platform_theme_light_logo_collapsed: settings.platform_theme_light_logo_collapsed,
-    platform_theme_light_logo_login: settings.platform_theme_light_logo_login,
     platform_map_tile_server_dark: settings.platform_map_tile_server_dark,
     platform_map_tile_server_light: settings.platform_map_tile_server_light,
   };
+
   const modules = settings.platform_modules;
   const { version, dependencies } = about || { version: '', dependencies: [] };
   const isEnterpriseEditionActivated = settings.platform_enterprise_edition.license_enterprise;
@@ -244,24 +231,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       .required(t_i18n('This field is required'))
       .email(t_i18n('The value must be an email address')),
     platform_theme: Yup.string().nullable(),
-    platform_theme_dark_background: Yup.string().nullable(),
-    platform_theme_dark_paper: Yup.string().nullable(),
-    platform_theme_dark_nav: Yup.string().nullable(),
-    platform_theme_dark_primary: Yup.string().nullable(),
-    platform_theme_dark_secondary: Yup.string().nullable(),
-    platform_theme_dark_accent: Yup.string().nullable(),
-    platform_theme_dark_logo: Yup.string().nullable(),
-    platform_theme_dark_logo_collapsed: Yup.string().nullable(),
-    platform_theme_dark_logo_login: Yup.string().nullable(),
-    platform_theme_light_background: Yup.string().nullable(),
-    platform_theme_light_paper: Yup.string().nullable(),
-    platform_theme_light_nav: Yup.string().nullable(),
-    platform_theme_light_primary: Yup.string().nullable(),
-    platform_theme_light_secondary: Yup.string().nullable(),
-    platform_theme_light_accent: Yup.string().nullable(),
-    platform_theme_light_logo: Yup.string().nullable(),
-    platform_theme_light_logo_collapsed: Yup.string().nullable(),
-    platform_theme_light_logo_login: Yup.string().nullable(),
     platform_language: Yup.string().nullable(),
     platform_whitemark: Yup.string().nullable(),
     enterprise_license: Yup.string().nullable(),
@@ -290,43 +259,15 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
     });
   };
 
-  const handleSubmitField = (name: string, value: string | boolean) => {
-    let finalValue = value;
-    if (
-      typeof finalValue === 'string'
-      && [
-        'platform_theme_dark_background',
-        'platform_theme_dark_paper',
-        'platform_theme_dark_nav',
-        'platform_theme_dark_primary',
-        'platform_theme_dark_secondary',
-        'platform_theme_dark_accent',
-        'platform_theme_light_background',
-        'platform_theme_light_paper',
-        'platform_theme_light_nav',
-        'platform_theme_light_primary',
-        'platform_theme_light_secondary',
-        'platform_theme_light_accent',
-      ].includes(name)
-      && finalValue.length > 0
-    ) {
-      if (!finalValue.startsWith('#')) {
-        finalValue = `#${finalValue}`;
-      }
-      finalValue = finalValue.substring(0, 7);
-      if (finalValue.length < 7) {
-        finalValue = '#000000';
-      }
+  const handleSubmitField = async (name: string, value: string | boolean) => {
+    try {
+      await settingsValidation().validateAt(name, { [name]: value });
+      commitField({
+        variables: { id, input: { key: name, value: value || '' } },
+      });
+    } catch (error) {
+      return false;
     }
-
-    settingsValidation()
-      .validateAt(name, { [name]: finalValue })
-      .then(() => {
-        commitField({
-          variables: { id, input: { key: name, value: finalValue || '' } },
-        });
-      })
-      .catch(() => false);
   };
 
   return (
@@ -592,8 +533,9 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     fullWidth
                     containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(name)}
-                    onChange={(name: string, value: string) => handleSubmitField(name, value)
-                    }
+                    onChange={(name: string, value: string) => {
+                      handleSubmitField(name, value);
+                    }}
                     helpertext={
                       <SubscriptionFocus
                         context={editContext}
@@ -776,7 +718,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         <Grid size={8}>
           <ThemeManager
             handleRefetch={handleRefetch}
-            currentTheme={settings.platform_theme ?? ''}
+            currentTheme={settings.platform_theme?.name ?? ''}
           />
         </Grid>
 

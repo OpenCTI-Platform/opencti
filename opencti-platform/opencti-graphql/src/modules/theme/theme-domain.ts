@@ -11,17 +11,21 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityTheme, type StoreEntityTheme } from './theme-types';
 import { FunctionalError } from '../../config/errors';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
-import { SYSTEM_USER } from '../../utils/access';
 import { extractContentFrom } from '../../utils/fileToContent';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   // FIXME: use SYSTEM_USER instead of user because on public page such as
   // Login, the components is using the theme to get logo
-  return storeLoadById<BasicStoreEntityTheme>(context, SYSTEM_USER, id, ENTITY_TYPE_THEME);
+  console.log('findById -----> ', id);
+  return storeLoadById<BasicStoreEntityTheme>(context, user, id, ENTITY_TYPE_THEME);
+};
+
+export const initDefaultTheme = () => {
+
 };
 
 export const findThemePaginated = async (context: AuthContext, user: AuthUser, args: QueryThemesArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityTheme>(context, SYSTEM_USER, [ENTITY_TYPE_THEME], args);
+  return pageEntitiesConnection<BasicStoreEntityTheme>(context, user, [ENTITY_TYPE_THEME], args);
 };
 
 const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string) => {
@@ -48,24 +52,10 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_logo_collapsed: input.theme_logo_collapsed,
     theme_logo_login: input.theme_logo_login,
     theme_text_color: input.theme_text_color,
+    built_in: input.system_default ?? false, // FIXME
   };
 
-  const created = await createInternalObject<StoreEntityTheme>(context, user, themeToCreate, ENTITY_TYPE_THEME);
-
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `creates theme \`${created.name}\``,
-    context_data: {
-      id: created.id,
-      entity_type: ENTITY_TYPE_THEME,
-      input,
-    },
-  });
-
-  return notify(BUS_TOPICS[ENTITY_TYPE_THEME].ADDED_TOPIC, created, user);
+  return createInternalObject<StoreEntityTheme>(context, user, themeToCreate, ENTITY_TYPE_THEME);
 };
 
 export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId: string) => {

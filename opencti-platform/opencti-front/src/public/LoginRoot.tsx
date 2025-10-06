@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { ConnectedThemeProvider } from '../components/AppThemeProvider';
+import { ConnectedPublicThemeProvider, ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import Login from './components/Login';
 import { environment } from '../relay/environment';
@@ -12,7 +12,20 @@ export const rootPublicQuery = graphql`
   query LoginRootPublicQuery {
     publicSettings {
       platform_enterprise_edition_license_validated
-      platform_theme
+      platform_theme {
+        id
+        name
+        theme_background
+        theme_paper
+        theme_nav
+        theme_primary
+        theme_secondary
+        theme_accent
+        theme_text_color
+        theme_logo
+        theme_logo_collapsed
+        theme_logo_login
+      }
       platform_login_message
       platform_consent_message
       platform_banner_text
@@ -25,17 +38,9 @@ export const rootPublicQuery = graphql`
         provider
       }
       playground_enabled
-      ...AppThemeProvider_settings
       ...AppIntlProvider_settings
+      ...AppThemeProvider_publicsettings
       ...PublicSettingsProvider_settings
-    }
-    themes {
-      edges {
-        node {
-          id
-          name
-        }
-      }
     }
   }
 `;
@@ -47,19 +52,19 @@ const queryRef = loadQuery<LoginRootPublicQuery>(
 );
 
 const LoginRoot = ({ type }: { type: string }) => {
-  const { publicSettings: settings, themes } = usePreloadedQuery<LoginRootPublicQuery>(
+  const data = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
   );
 
   return (
     <StyledEngineProvider injectFirst={true}>
-      <ConnectedThemeProvider settings={settings} themes={themes}>
+      <ConnectedPublicThemeProvider settings={data.publicSettings} >
         <CssBaseline />
-        <ConnectedIntlProvider settings={settings}>
-          <Login settings={settings} themes={themes} type={type} />
+        <ConnectedIntlProvider settings={data.publicSettings}>
+          <Login settings={data.publicSettings} type={type} />
         </ConnectedIntlProvider>
-      </ConnectedThemeProvider>
+      </ConnectedPublicThemeProvider>
     </StyledEngineProvider>
   );
 };

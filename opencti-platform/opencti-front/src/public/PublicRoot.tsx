@@ -22,15 +22,17 @@ const queryRef = loadQuery<LoginRootPublicQuery>(
 );
 
 const PublicRoot = () => {
-  const { publicSettings: settings, themes } = usePreloadedQuery<LoginRootPublicQuery>(
+  const { publicSettings: settings } = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
   );
+
   const isPlaygroundEnabled = settings.playground_enabled;
+
   return (
     <PublicSettingsProvider settings={settings}>
       <StyledEngineProvider injectFirst={true}>
-        <ConnectedThemeProvider settings={settings} themes={themes}>
+        <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
             <CssBaseline />
             <Message />

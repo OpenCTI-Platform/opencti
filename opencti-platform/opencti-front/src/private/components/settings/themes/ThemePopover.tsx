@@ -52,7 +52,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     theme_logo_collapsed: themeData.theme_logo_collapsed,
     theme_logo_login: themeData.theme_logo_login,
     theme_text_color: themeData.theme_text_color,
-    system_default: themeData.system_default,
+    system_default: themeData.built_in,
   };
 
   const deleteSuccessMessage = t_i18n('', {
