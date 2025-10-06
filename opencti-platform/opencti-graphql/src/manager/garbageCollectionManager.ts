@@ -39,7 +39,7 @@ export const garbageCollectionHandler = async () => {
   const allRedisLargeEventFiles = await loadedFilesListing(context, GARBAGE_COLLECTION_MANAGER_USER, STREAM_FILE_DIRECTORY, { rawFormat: true });
   for (let i = 0; i < allRedisLargeEventFiles.length; i += 1) {
     const file = allRedisLargeEventFiles[0];
-    const currentTimestamp = file.Key.split(STREAM_FILE_DIRECTORY)[1].split('-')[0];
+    const currentTimestamp = file.Key.splice(STREAM_FILE_DIRECTORY.length).split('-')[0];
     if (currentTimestamp < timestamp) {
       await deleteFileFromStorage(file.Key);
     }
