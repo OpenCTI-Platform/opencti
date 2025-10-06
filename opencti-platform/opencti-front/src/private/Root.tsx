@@ -244,6 +244,16 @@ const rootPrivateQuery = graphql`
         node {
           id
           name
+          theme_background
+          theme_accent
+          theme_nav
+          theme_paper
+          theme_primary
+          theme_secondary
+          theme_text_color
+          theme_logo
+          theme_logo_collapsed
+          theme_logo_login
         }
       }
     }
