@@ -64,6 +64,13 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
 };
 
 export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId: string) => {
+  const theme = await findById(context, user, themeId);
+  if (!theme) {
+    throw FunctionalError(`Theme ${themeId} cannot be found`);
+  }
+  if (theme.system_default === true) {
+    throw FunctionalError('System default themes cannot be deleted');
+  }
   return deleteInternalObject(context, user, themeId, ENTITY_TYPE_THEME);
 };
 
