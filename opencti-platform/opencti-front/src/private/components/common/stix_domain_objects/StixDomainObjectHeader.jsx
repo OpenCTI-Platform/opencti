@@ -58,6 +58,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { resolveLink } from '../../../../utils/Entity';
 import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 export const stixDomainObjectMutation = graphql`
   mutation StixDomainObjectHeaderFieldMutation(
@@ -300,6 +301,7 @@ const StixDomainObjectHeader = (props) => {
   } = props;
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
+  const { isFeatureEnable } = useHelper();
 
   const openAliasesCreate = false;
   const [openAlias, setOpenAlias] = useState(false);
@@ -754,7 +756,7 @@ const StixDomainObjectHeader = (props) => {
               </PopoverMenu>
             ) : null}
             {EditComponent}
-            {RelateComponent}
+            {isFeatureEnable('FAB_RELATIONSHIP') && RelateComponent}
             <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </div>
         </div>
