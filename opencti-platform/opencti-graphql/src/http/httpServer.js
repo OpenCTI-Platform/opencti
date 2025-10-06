@@ -4,7 +4,7 @@ import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 // eslint-disable-next-line import/extensions
 import nconf from 'nconf';
 import express from 'express';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express5';
 import { json } from 'body-parser';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
