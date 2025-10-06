@@ -14,7 +14,7 @@ import {
 } from '../../../src/schema/identifier';
 import { ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
-import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_MALWARE, ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
 import { BASE_TYPE_RELATION, OPENCTI_NAMESPACE } from '../../../src/schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
@@ -164,6 +164,7 @@ describe('Identifier generation test', () => {
     expect(idGen(ENTITY_TYPE_MARKING_DEFINITION, { definition_type: 'TLP', definition: 'TLP:WHITE' }, OPENCTI_NAMESPACE)).toEqual(MARKING_TLP_CLEAR_ID);
     // correct error if no data
     expect(() => idGen(ENTITY_HASHED_OBSERVABLE_STIX_FILE, undefined, OPENCTI_NAMESPACE)).toThrowError('Missing required elements for StixFile creation (hashes - name)');
+    expect(() => idGen(ENTITY_TYPE_MALWARE, undefined, OPENCTI_NAMESPACE)).toThrowError('Missing required elements for Malware creation (name)');
   });
 });
 
