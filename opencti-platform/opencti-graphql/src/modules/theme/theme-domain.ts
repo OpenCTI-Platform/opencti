@@ -17,14 +17,25 @@ import { extractContentFrom } from '../../utils/fileToContent';
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   // FIXME: use SYSTEM_USER instead of user because on public page such as
   // Login, the components is using the theme to get logo
-  return storeLoadById<BasicStoreEntityTheme>(context, SYSTEM_USER, id, ENTITY_TYPE_THEME,);
+  return storeLoadById<BasicStoreEntityTheme>(context, SYSTEM_USER, id, ENTITY_TYPE_THEME);
 };
 
 export const findThemePaginated = async (context: AuthContext, user: AuthUser, args: QueryThemesArgs) => {
   return pageEntitiesConnection<BasicStoreEntityTheme>(context, SYSTEM_USER, [ENTITY_TYPE_THEME], args);
 };
 
+const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string) => {
+  const themes = await findThemePaginated(context, user, {});
+  return themes.edges.findIndex((edge) => edge.node.name === themeName) > -1;
+};
+
 export const addTheme = async (context: AuthContext, user: AuthUser, input: ThemeAddInput) => {
+  const themeFound = await checkExistingTheme(context, user, input.name);
+
+  if (themeFound) {
+    throw FunctionalError('Theme name already exists');
+  }
+
   const themeToCreate = {
     name: input.name,
     theme_background: input.theme_background,
@@ -107,7 +118,13 @@ export const themeImport = async (context: AuthContext, user: AuthUser, file: Pr
 
   if (!validationResult.success) {
     const errors = validationResult.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
-    throw new Error(`Invalid theme file: ${errors}`);
+    throw FunctionalError('Invalid theme file', errors);
+  }
+
+  const themeFound = await checkExistingTheme(context, user, validationResult.data.name);
+
+  if (themeFound) {
+    throw FunctionalError('Theme name already exists');
   }
 
   return addTheme(context, user, validationResult.data);
