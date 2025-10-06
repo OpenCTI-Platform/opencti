@@ -1,6 +1,5 @@
-import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
+import React, { FunctionComponent, useContext, useMemo } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { CircularProgress } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik';
 import {
@@ -57,40 +56,22 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
     ? stixCoreRelationshipCreationFromEntityToMutation
     : stixCoreRelationshipCreationFromEntityFromMutation);
 
-  if (!stixCoreObject) {
-    return (
-      <div style={{ display: 'table', height: '100%', width: '100%' }}>
-        <span
-          style={{
-            display: 'table-cell',
-            verticalAlign: 'middle',
-            textAlign: 'center',
-          }}
-        >
-          <CircularProgress size={80} thickness={2} />
-        </span>
-      </div>
-    );
-  }
-
   const sourceEntity: TargetEntity = stixCoreObject;
-  const [fromEntities, setFromEntities] = useState<TargetEntity[]>([sourceEntity]);
-  const [toEntities, setToEntities] = useState<TargetEntity[]>(targetEntities);
-  useEffect(() => {
-    if (reversed) {
-      setFromEntities(targetEntities);
-      setToEntities([sourceEntity]);
-    } else {
-      setFromEntities([sourceEntity]);
-      setToEntities(targetEntities);
-    }
-  }, [reversed]);
+
+  const fromEntities = useMemo(
+    () => (reversed ? targetEntities : [sourceEntity]),
+    [reversed, targetEntities, sourceEntity],
+  );
+  const toEntities = useMemo(
+    () => (reversed ? [sourceEntity] : targetEntities),
+    [reversed, targetEntities, sourceEntity],
+  );
 
   const onSubmit: FormikConfig<StixCoreRelationshipCreationFromEntityForm>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     setSubmitting(true);
     for (const targetEntity of targetEntities) {
-      const fromEntityId = reversed ? targetEntity.id : stixCoreObject.id;
-      const toEntityId = reversed ? stixCoreObject.id : targetEntity.id;
+      const fromEntityId = reversed ? targetEntity.id : sourceEntity.id;
+      const toEntityId = reversed ? sourceEntity.id : targetEntity.id;
       const finalValues = {
         ...values,
         confidence: parseInt(values.confidence, 10),
@@ -160,8 +141,7 @@ const StixCoreRelationshipCreationFormStage: FunctionComponent<StixCoreRelations
         ).filter( // Unique filter
           (value, index, self) => self.indexOf(value) === index,
         ).filter(
-          (n) => allowedRelationshipTypes === null
-            || allowedRelationshipTypes === undefined
+          (n) => !allowedRelationshipTypes
             || allowedRelationshipTypes.length === 0
             || allowedRelationshipTypes.includes('stix-core-relationship')
             || allowedRelationshipTypes.includes(n),
