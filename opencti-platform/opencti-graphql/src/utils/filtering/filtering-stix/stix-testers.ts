@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-2-1-extensions';
 import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
 import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';
 import type { TesterFunction } from '../boolean-logic-engine';
 import { testBooleanFilter, testNumericFilter, testStringFilter, toValidArray } from '../boolean-logic-engine';
@@ -43,7 +43,8 @@ import {
   SCORE_FILTER,
   SEVERITY_FILTER,
   TYPE_FILTER,
-  WORKFLOW_FILTER
+  WORKFLOW_FILTER,
+  RELATION_IN_PIR_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -51,6 +52,7 @@ import { extractStixRepresentative } from '../../../database/stix-representative
 import { type AuthorizedMember, isUserInAuthorizedMember } from '../../access';
 import type { AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
+import { RELATION_IN_PIR } from '../../../schema/internalRelationship';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -372,6 +374,14 @@ export const testRelationToTypes = (stix: any, filter: Filter) => {
   return false;
 };
 
+export const testRelationInPir = (stix: any, filter: Filter) => {
+  if (stix.type === ABSTRACT_INTERNAL_RELATIONSHIP && stix.relationship_type === RELATION_IN_PIR) {
+    const stixValues: string[] = toValidArray(stix.target_ref);
+    return testStringFilter(filter, stixValues);
+  }
+  return false;
+};
+
 /**
  * REPRESENTATIVE
  */
@@ -492,4 +502,5 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [RELATION_TO_FILTER]: testRelationTo,
   [RELATION_TO_TYPES_FILTER]: testRelationToTypes,
   [REPRESENTATIVE_FILTER]: testRepresentative,
+  [RELATION_IN_PIR_FILTER]: testRelationInPir
 };

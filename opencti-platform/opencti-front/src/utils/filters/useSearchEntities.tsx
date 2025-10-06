@@ -43,6 +43,7 @@ import { convertMarking } from '../edition';
 import useGranted, { SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../hooks/useGranted';
 import { displayEntityTypeForTranslation } from '../String';
 import { useSearchEntitiesGroupsQuery$data } from './__generated__/useSearchEntitiesGroupsQuery.graphql';
+import { useSearchEntitiesPirsQuery$data } from './__generated__/useSearchEntitiesPirsQuery.graphql';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -251,6 +252,20 @@ const workspacesQuery = graphql`
 const groupsQuery = graphql`
   query useSearchEntitiesGroupsQuery($search: String, $first: Int) {
     groups(search: $search, first: $first) {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
+  }
+`;
+
+const pirsQuery = graphql`
+  query useSearchEntitiesPirsQuery($search: String, $first: Int) {
+    pirs(search: $search, first: $first) {
       edges {
         node {
           id
@@ -486,6 +501,26 @@ const useSearchEntities = ({
         });
     };
 
+    // fetches groups and add them to the set
+    const buildOptionsFromPirSearchQuery = (key: string) => {
+      fetchQuery(pirsQuery, {
+        search: event.target.value !== 0 ? event.target.value : '',
+        first: 10,
+      })
+        .toPromise()
+        .then((data) => {
+          const pirs: EntityValue[] = (
+            (data as useSearchEntitiesPirsQuery$data)?.pirs
+              ?.edges ?? []
+          ).flatMap((n) => (!n ? [] : {
+            label: n.node.name,
+            value: n.node.id,
+            type: n.node.entity_type,
+          }));
+          unionSetEntities(key, pirs);
+        });
+    };
+
     // fetches identities by types and add them to the set
     const buildOptionsFromIdentitySearchQuery = (key: string, types: string[]) => {
       fetchQuery(identitySearchIdentitiesSearchQuery, {
@@ -606,6 +641,7 @@ const useSearchEntities = ({
       'connectedToId', // id of the listened entities in an instance trigger
       'sightedBy', // sighting relationship TODO remove because already in regardingOf, and migrate the key)
       'computed_reliability', // special key for the entity reliability, or the reliability of its author if no reliability is set
+      'inPir',
     ].concat(entityTypesFilters)
       .concat(contextFilters);
     // case 1 : filter keys with specific behavior
@@ -643,6 +679,9 @@ const useSearchEntities = ({
           break;
         case 'members_group':
           buildOptionsFromMembersSearchQuery(filterKey, ['Group']);
+          break;
+        case 'inPir':
+          buildOptionsFromPirSearchQuery(filterKey);
           break;
         case 'members_organization':
           buildOptionsFromMembersSearchQuery(filterKey, ['Organization']);
