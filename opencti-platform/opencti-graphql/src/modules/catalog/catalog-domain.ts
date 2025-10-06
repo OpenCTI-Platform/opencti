@@ -8,7 +8,7 @@ import { isEmptyField } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import { idGenFromData } from '../../schema/identifier';
 import filigranCatalog from '../../__generated__/opencti-manifest.json';
-import conf, { isFeatureEnabled, logApp } from '../../config/conf';
+import conf, { logApp } from '../../config/conf';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 
 const CUSTOM_CATALOGS: string[] = conf.get('app:custom_catalogs') ?? [];
@@ -19,6 +19,8 @@ addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 let catalogMap: Record<string, CatalogType>;
 // cache for contracts by image map
 let contractsByImageCache: Map<string, CatalogContract> | undefined;
+// Test mode flag - when enabled, catalogs are loaded without cache
+let testMode = false;
 
 // Build catalog map from files
 const buildCatalogMap = (): Record<string, CatalogType> => {
@@ -91,19 +93,19 @@ const buildCatalogMap = (): Record<string, CatalogType> => {
   return newCatalogMap;
 };
 
-// Reset catalog cache - for testing purposes only
-export const resetCatalogCache = () => {
+// Enable test catalog mode - clears cache and enables live catalog loading for tests
+export const enableTestCatalogMode = () => {
   catalogMap = undefined as any;
+  contractsByImageCache = undefined;
+  testMode = true;
 };
 
 const getCatalogs = (): Record<string, CatalogType> => {
-  // TEMPORARY HACK: Live catalog mode for local development with custom catalogs only
-  // This feature allows loading catalogs without cache for testing purposes
-  // TODO: Remove this hack when proper catalog management is implemented
-  const shouldUseLiveCatalogs = isFeatureEnabled('LIVE_CATALOGS') && CUSTOM_CATALOGS.length > 0;
+  // Test mode: load catalogs without cache for testing purposes
+  const shouldBypassCache = testMode && CUSTOM_CATALOGS.length > 0;
 
-  if (shouldUseLiveCatalogs) {
-    // Live mode: no cache, only custom catalogs (excluding filigran catalog)
+  if (shouldBypassCache) {
+    // Test mode: no cache, only custom catalogs (excluding filigran catalog)
     const liveCatalogMap: Record<string, CatalogType> = {};
     const catalogs = CUSTOM_CATALOGS.map((custom) => fs.readFileSync(custom, { encoding: 'utf8', flag: 'r' }));
     // Note: intentionally NOT adding filigranCatalog here
@@ -162,9 +164,8 @@ const getCatalogs = (): Record<string, CatalogType> => {
     }
     return liveCatalogMap;
   }
-  // END OF TEMPORARY HACK
 
-  // Use cached catalog map or build it
+  // Normal mode: use cached catalog map or build it
   if (!catalogMap) {
     catalogMap = buildCatalogMap();
   }
