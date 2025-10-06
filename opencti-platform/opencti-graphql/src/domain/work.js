@@ -44,7 +44,7 @@ export const findById = (context, user, workId) => {
 
 export const isWorkAlive = async (_context, _user, workId) => {
   const redisWork = await redisGetWork(workId);
-  return !!redisWork && Object.keys(redisWork).length !== 0;
+  return !!redisWork && redisWork.is_initialized === 'true';
 };
 
 export const findWorkPaginated = (context, user, args = {}) => {
