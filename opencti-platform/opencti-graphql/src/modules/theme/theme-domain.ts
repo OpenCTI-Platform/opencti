@@ -44,6 +44,7 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_logo_collapsed: input.theme_logo_collapsed,
     theme_logo_login: input.theme_logo_login,
     theme_text_color: input.theme_text_color,
+    system_default: input.system_default ?? false,
   };
   const created = await createInternalObject<StoreEntityTheme>(context, user, themeToCreate, ENTITY_TYPE_THEME);
 
