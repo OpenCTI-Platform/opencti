@@ -104,7 +104,7 @@ const AUTOMATION_CAPABILITIES = {
   attribute_order: 2800,
   dependencies: [
     {
-      name: 'AUTOMATIONMANAGE',
+      name: 'AUTMANAGE',
       description: 'Manage Playbooks',
       attribute_order: 2850,
     },
