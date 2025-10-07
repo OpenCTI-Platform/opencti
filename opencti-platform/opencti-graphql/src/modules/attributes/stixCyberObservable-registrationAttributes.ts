@@ -27,6 +27,7 @@ import {
   ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
+  ENTITY_SSH_KEY,
   ENTITY_TEXT,
   ENTITY_TRACKING_NUMBER,
   ENTITY_URL,
@@ -302,5 +303,11 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'persona_name', label: 'Persona name', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'persona_type', label: 'Persona type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   ],
+  [ENTITY_SSH_KEY]: [
+    { name: 'key_type', label: 'Key type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'public_key', label: 'Public key', type: 'string', format: 'short', mandatoryType: 'external', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'fingerprint_md5', label: 'Fingerprint MD5', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'fingerprint_sha256', label: 'Fingerprint sha256', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  ]
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixCyberObservablesAttributes);

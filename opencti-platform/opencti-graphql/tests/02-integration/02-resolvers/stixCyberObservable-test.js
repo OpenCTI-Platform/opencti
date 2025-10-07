@@ -46,46 +46,46 @@ describe('StixCyberObservable resolver standard behavior', () => {
   const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
 
   const CREATE_QUERY = gql`
-      mutation StixCyberObservableAdd(
-        $type: String!,
-        $IPv4Addr: IPv4AddrAddInput,
-        $NetworkTraffic: NetworkTrafficAddInput,
-        $Text: TextAddInput,
-        $x_opencti_score: Int
+    mutation StixCyberObservableAdd(
+      $type: String!,
+      $IPv4Addr: IPv4AddrAddInput,
+      $NetworkTraffic: NetworkTrafficAddInput,
+      $Text: TextAddInput,
+      $x_opencti_score: Int
+    ) {
+      stixCyberObservableAdd(type: $type,
+        IPv4Addr: $IPv4Addr,
+        NetworkTraffic: $NetworkTraffic,
+        Text: $Text
+        x_opencti_score: $x_opencti_score
       ) {
-        stixCyberObservableAdd(type: $type,
-          IPv4Addr: $IPv4Addr,
-          NetworkTraffic: $NetworkTraffic,
-          Text: $Text
-          x_opencti_score: $x_opencti_score
-        ) {
-          id
-          observable_value
-          x_opencti_score
-          ... on IPv4Addr {
-            value
-          }
-          ... on NetworkTraffic {
-            dst_port
-          }
-          ... on Text {
-            value
-          }
+        id
+        observable_value
+        x_opencti_score
+        ... on IPv4Addr {
+          value
+        }
+        ... on NetworkTraffic {
+          dst_port
+        }
+        ... on Text {
+          value
         }
       }
+    }
     `;
 
   const UPDATE_QUERY = gql`
-      mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) {
-        stixCyberObservableEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-            x_opencti_score
-            observable_value
-          }
+    mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) {
+      stixCyberObservableEdit(id: $id) {
+        fieldPatch(input: $input) {
+          id
+          x_opencti_score
+          observable_value
         }
       }
-    `;
+    }
+  `;
 
   it('should not create stixCyberObservable with score value outside of 0 and 100', async () => {
     // Create
@@ -136,7 +136,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(stixCyberObservable).not.toBeNull();
     expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
     expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('8090');
-    stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
+    networkTrafficInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
   it('should stixCyberObservable SSH_key created', async () => {
     // Create the stixCyberObservable
@@ -153,7 +153,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(stixCyberObservable).not.toBeNull();
     expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
     expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9');
-    networkTrafficInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
+    stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
   it('should stixCyberObservable loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });
@@ -334,12 +334,12 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(note.data.noteAdd.attribute_abstract).toEqual('Note description');
     const noteInternalId = note.data.noteAdd.id;
     const DELETE_QUERY = gql`
-            mutation noteDelete($id: ID!) {
-                noteEdit(id: $id) {
-                    delete
-                }
-            }
-        `;
+      mutation noteDelete($id: ID!) {
+        noteEdit(id: $id) {
+          delete
+        }
+      }
+      `;
     // Delete the note
     await queryAsAdmin({
       query: DELETE_QUERY,
