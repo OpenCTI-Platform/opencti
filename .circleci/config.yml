@@ -212,6 +212,7 @@ jobs:
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-platform/.yarnrc.yml release/opencti/
       - run: cp -a ./opencti-worker/src release/opencti/worker
       - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/client-python
       - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/connectors
@@ -237,6 +238,7 @@ jobs:
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-platform/.yarnrc.yml release/opencti/
       - run: cp -a ./opencti-worker/src release/opencti/worker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
@@ -263,6 +265,7 @@ jobs:
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-platform/.yarnrc.yml release/opencti/
       - run: cp -a ./opencti-worker/src release/opencti/worker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
       - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
@@ -289,6 +292,7 @@ jobs:
       - run: mkdir release
       - run: rm -Rf ./opencti-platform/opencti-graphql/.yarn/cache
       - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-platform/.yarnrc.yml release/opencti/
       - run: cp -a ./opencti-worker/src release/opencti/worker
       - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/client-python
       - run: cd release/opencti && git clone --single-branch --branch ${CIRCLE_TAG} https://github.com/OpenCTI-Platform/connectors
