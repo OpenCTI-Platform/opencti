@@ -16,6 +16,7 @@ import {
   ENTITY_PERSONA,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
+  ENTITY_SSH_KEY,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
@@ -237,6 +238,8 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.content || stixCyberObservable.title || stixCyberObservable.url || 'Unknown';
     case ENTITY_PERSONA:
       return stixCyberObservable.persona_name || 'Unknown';
+    case ENTITY_SSH_KEY:
+      return stixCyberObservable.key_type || 'Unknown';
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }

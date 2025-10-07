@@ -1209,7 +1209,6 @@ const convertSSHKeyToStix = (instance: StoreCyberObservable, type: string): SCO.
     comment: instance.comment,
     created: convertToStixDate(instance.created),
     expiration_date: convertToStixDate(instance.expiration_date),
-    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],

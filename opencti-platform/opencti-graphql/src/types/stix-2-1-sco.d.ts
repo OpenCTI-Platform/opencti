@@ -639,8 +639,8 @@ export interface StixSSHKey extends StixCyberObject {
   fingerprint_md5: string;
   key_length: string,
   comment: string;
-  created: DateTime | undefined;
-  expiration_date: DateTime | undefined;
+  created: StixDate | undefined;
+  expiration_date: StixDate | undefined;
   external_references: Array<StixInternalExternalReference>;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension

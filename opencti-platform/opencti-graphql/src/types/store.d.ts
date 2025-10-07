@@ -592,8 +592,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   private_key_usage_period_not_before: Date;
   private_key_usage_period_not_after: Date;
   expiration_date: Date;
-  publication_date: Date,
-  created: Date,
+  publication_date: Date;
+  created: Date;
   // boolean
   defanged: boolean;
   is_multipart: boolean;
