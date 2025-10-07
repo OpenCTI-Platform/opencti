@@ -317,7 +317,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                     queues.append(push_queue)
                     push_consumer = self.consumers.get(push_queue)
                     if push_consumer is None or not push_consumer.is_alive():
-                        if not push_consumer.is_alive():
+                        if push_consumer is not None:
                             self.worker_logger.info(
                                 "Thread for queue not alive, creating a new one...",
                                 {"queue": push_queue},
