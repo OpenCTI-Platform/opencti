@@ -12454,8 +12454,8 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   observable_value: String!
   indicators(first: Int): IndicatorConnection
   # SSHKey
-  ssh_key_name: String!
   ssh_key_type: String!
+  public_key: String!
   # Technical
   creators: [Creator!]
   toStix: String
@@ -15190,6 +15190,7 @@ type Mutation {
     PaymentCard: PaymentCardAddInput
     MediaContent: MediaContentAddInput
     Persona: PersonaAddInput
+    SSHKey: SSHKeyAddInput
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations @auth
   stixCyberObservablesExportAsk(input: StixCyberObservablesExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])

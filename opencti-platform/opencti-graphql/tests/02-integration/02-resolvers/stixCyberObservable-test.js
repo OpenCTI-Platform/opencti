@@ -50,12 +50,14 @@ describe('StixCyberObservable resolver standard behavior', () => {
       $type: String!,
       $IPv4Addr: IPv4AddrAddInput,
       $NetworkTraffic: NetworkTrafficAddInput,
+      $SSHKey: SSHKeyAddInput,
       $Text: TextAddInput,
       $x_opencti_score: Int
     ) {
       stixCyberObservableAdd(type: $type,
         IPv4Addr: $IPv4Addr,
         NetworkTraffic: $NetworkTraffic,
+        SSHKey: $SSHKey,
         Text: $Text
         x_opencti_score: $x_opencti_score
       ) {
@@ -70,6 +72,10 @@ describe('StixCyberObservable resolver standard behavior', () => {
         }
         ... on Text {
           value
+        }
+        ... on SSHKey {
+          ssh_key_type
+          public_key
         }
       }
     }
