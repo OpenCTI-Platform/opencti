@@ -1702,21 +1702,21 @@ const prepareAttributesForUpdate = async (context, user, instance, elements) => 
     if (def.type === 'numeric') {
       return {
         key: input.key,
-        value: R.map((value) => {
+        value: (input.value ?? []).map((value) => {
           // Like at creation, we need to be sure that confidence is default to 0
           const baseValue = (input.key === confidence.name && isEmptyField(value)) ? 0 : value;
           const parsedValue = baseValue ? Number(baseValue) : baseValue;
           return Number.isNaN(parsedValue) ? null : parsedValue;
-        }, input.value),
+        }),
       };
     }
     // Check boolean
     if (def.type === 'boolean') {
       return {
         key: input.key,
-        value: R.map((value) => {
+        value: (input.value ?? []).map((value) => {
           return value === true || value === 'true';
-        }, input.value),
+        }),
       };
     }
     // Check dates for empty values
