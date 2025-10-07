@@ -1,4 +1,4 @@
-import { logMigration } from '../config/conf';
+import { logApp, logMigration } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { connectors } from '../database/repository';
 import { patchAttribute } from '../database/middleware';
@@ -22,10 +22,9 @@ export const up = async (next) => {
           container_name: `${connector.name}-${connector.internalId.substring(0, 8)}`,
           name: connector.title || connector.manager_contract_excerpt?.title
         };
-
         await patchAttribute(context, SYSTEM_USER, connector.id, ENTITY_TYPE_CONNECTOR, patch);
       } catch (error) {
-        logMigration.error(`${message} > failed to update connector ${connector.id}`, { error });
+        logApp.error(`${message} > failed to update connector ${connector.id}`, { error });
       }
     })
   );
