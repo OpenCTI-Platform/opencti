@@ -381,27 +381,72 @@ describe('Stix filter testers', () => {
     });
   });
 
-  describe('by Pattern (key=pattern_type)', () => {
+  describe('by Pattern Type (key=pattern_type)', () => {
+    const stixWithPatternType = stixIndicators[0];
+    const stixWithoutPatternType = stixReports[0];
+
+    it('should test positive for a stix object with matching filter', () => {
+      const filter: Filter = {
+        key: ['pattern_type'],
+        mode: 'or',
+        operator: 'eq',
+        values: [stixWithPatternType.pattern_type]
+      } as Filter;
+      expect(testers.testPatternType(stixWithPatternType, filter)).toEqual(true);
+    });
+
+    it('should test negative for a stix object with no matching filter', () => {
+      const filter: Filter = {
+        key: ['pattern_type'],
+        mode: 'or',
+        operator: 'eq',
+        values: [`${stixWithPatternType.pattern_type}-not-matching`]
+      } as Filter;
+      expect(testers.testPatternType(stixWithPatternType, filter)).toEqual(false);
+    });
+
+    it('should test negative for a stix object with no pattern type', () => {
+      const filter: Filter = {
+        key: ['pattern_type'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['anything']
+      } as Filter;
+      expect(testers.testPatternType(stixWithoutPatternType, filter)).toEqual(false);
+    });
+  });
+
+  describe('by Pattern (key=pattern)', () => {
     const stixWithPattern = stixIndicators[0];
     const stixWithoutPattern = stixReports[0];
 
     it('should test positive for a stix object with matching filter', () => {
-      let filter: Filter = {
+      const filter: Filter = {
+        key: ['pattern'],
+        mode: 'or',
+        operator: 'eq',
+        values: [stixWithPattern.pattern]
+      } as Filter;
+      expect(testers.testPattern(stixWithPattern, filter)).toEqual(true);
+    });
+
+    it('should test negative for a stix object with no matching filter', () => {
+      const filter: Filter = {
+        key: ['pattern'],
+        mode: 'or',
+        operator: 'eq',
+        values: [`${stixWithPattern.pattern}-not-matching`]
+      } as Filter;
+      expect(testers.testPattern(stixWithPattern, filter)).toEqual(false);
+    });
+
+    it('should test negative for a stix object with no pattern', () => {
+      const filter: Filter = {
         key: ['pattern_type'],
         mode: 'or',
         operator: 'eq',
-        values: ['stix']
+        values: ['anything']
       } as Filter;
-      expect(testers.testPattern(stixWithPattern, filter)).toEqual(true);
-      expect(testers.testPattern(stixWithoutPattern, filter)).toEqual(false);
-
-      filter = {
-        key: ['pattern_type'],
-        mode: 'and',
-        operator: 'eq',
-        values: ['not-stix']
-      } as Filter;
-      expect(testers.testPattern(stixWithPattern, filter)).toEqual(false);
       expect(testers.testPattern(stixWithoutPattern, filter)).toEqual(false);
     });
   });
