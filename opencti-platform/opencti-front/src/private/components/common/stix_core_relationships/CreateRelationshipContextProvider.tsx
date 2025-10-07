@@ -37,7 +37,7 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
   const [reversed, setReversed] = useState<boolean>(false);
   const [handleReverseRelation, setHandleReverseRelation] = useState<() => void>();
   const [paginationOptions, setPaginationOptions] = useState<unknown>();
-  const [onCreate, setOnCreate] = useState<() => void>();
+  const [onCreate, setOnCreate] = useState<() => void | undefined>();
   const state = {
     relationshipTypes,
     stixCoreObjectTypes,
@@ -61,8 +61,8 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
     if (updatedConnectionKey) setConnectionKey(updatedConnectionKey);
     if (updatedReversed !== undefined) setReversed(updatedReversed);
     setHandleReverseRelation(() => updatedHandleReverseRelation);
-    if (updatedPaginationOptions) setPaginationOptions(updatedPaginationOptions);
-    if (updatedOnCreate) setOnCreate(() => updatedOnCreate); // Dispatching inner function to let context consumer call the onCreate function
+    if (paginationOptions !== updatedPaginationOptions) setPaginationOptions(updatedPaginationOptions);
+    if (onCreate !== updatedOnCreate) setOnCreate(() => updatedOnCreate); // Dispatching inner function to let context consumer call the onCreate function
   };
   const values = useMemo<CreateRelationshipContextType>(() => ({
     state,
@@ -77,6 +77,9 @@ export default CreateRelationshipContextProvider;
 
 export const useInitCreateRelationshipContext = (state: CreateRelationshipContextStateType = {
   stixCoreObjectTypes: ['Stix-Core-Object'],
+  relationshipTypes: [],
+  onCreate: undefined,
+  paginationOptions: undefined,
 }) => {
   const { setState } = useContext(CreateRelationshipContext);
   useEffect(() => {

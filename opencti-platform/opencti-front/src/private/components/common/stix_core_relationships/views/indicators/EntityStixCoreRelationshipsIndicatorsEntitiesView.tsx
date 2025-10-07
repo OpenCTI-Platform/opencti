@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import React, { FunctionComponent, useContext, useEffect } from 'react';
 import { graphql } from 'react-relay';
 import {
@@ -241,7 +242,8 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
 
   useEffect(() => {
     setCreateRelationshipContext({
-      paginationOptions: queryPaginationOptions,
+      paginationOptions: R.dissoc('count', queryPaginationOptions),
+      onCreate: undefined,
     });
   }, [localStorage]);
 

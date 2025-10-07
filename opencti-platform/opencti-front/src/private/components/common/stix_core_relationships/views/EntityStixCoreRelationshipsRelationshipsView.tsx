@@ -184,6 +184,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     setCreateRelationshipContext({
       paginationOptions,
       handleReverseRelation,
+      onCreate: undefined,
     });
   }, [localStorage]);
 

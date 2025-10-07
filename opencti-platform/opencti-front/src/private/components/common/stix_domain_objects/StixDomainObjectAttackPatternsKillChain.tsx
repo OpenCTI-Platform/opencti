@@ -144,6 +144,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   useInitCreateRelationshipContext({
     onCreate: refetch,
+    relationshipTypes: ['uses', 'related-to', 'should-cover'],
+    reversed: false,
   });
 
   const handleAdd = (entity: TargetEntity) => {

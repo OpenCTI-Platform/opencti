@@ -170,6 +170,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
     setCreateRelationshipContext({
       paginationOptions,
       handleReverseRelation,
+      onCreate: undefined,
     });
   }, [localStorage]);
 
