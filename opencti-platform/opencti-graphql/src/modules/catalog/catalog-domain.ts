@@ -19,8 +19,8 @@ addFormats(ajv, ['password', 'uri', 'duration', 'email', 'date-time', 'date']);
 let catalogMap: Record<string, CatalogType>;
 // cache for contracts by image map
 let contractsByImageCache: Map<string, CatalogContract> | undefined;
-// Test mode flag - when enabled, catalogs are loaded without cache
-let testMode = false;
+// Bypass catalog cache flag - when enabled, catalogs are loaded without cache
+let bypassCatalogCache = false;
 
 // Build catalog map from files
 const buildCatalogMap = (): Record<string, CatalogType> => {
@@ -93,19 +93,19 @@ const buildCatalogMap = (): Record<string, CatalogType> => {
   return newCatalogMap;
 };
 
-// Enable test catalog mode - clears cache and enables live catalog loading for tests
-export const enableTestCatalogMode = () => {
+// Enable custom catalogs - clears cache and enables live catalog loading
+export const enableCustomCatalogs = () => {
   catalogMap = undefined as any;
   contractsByImageCache = undefined;
-  testMode = true;
+  bypassCatalogCache = true;
 };
 
 const getCatalogs = (): Record<string, CatalogType> => {
-  // Test mode: load catalogs without cache for testing purposes
-  const shouldBypassCache = testMode && CUSTOM_CATALOGS.length > 0;
+  // Bypass cache mode: load catalogs without cache for custom catalogs
+  const shouldBypassCache = bypassCatalogCache && CUSTOM_CATALOGS.length > 0;
 
   if (shouldBypassCache) {
-    // Test mode: no cache, only custom catalogs (excluding filigran catalog)
+    // Bypass cache mode: no cache, only custom catalogs (excluding filigran catalog)
     const liveCatalogMap: Record<string, CatalogType> = {};
     const catalogs = CUSTOM_CATALOGS.map((custom) => fs.readFileSync(custom, { encoding: 'utf8', flag: 'r' }));
     // Note: intentionally NOT adding filigranCatalog here
