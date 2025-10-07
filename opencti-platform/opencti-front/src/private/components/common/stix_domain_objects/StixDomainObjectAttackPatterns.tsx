@@ -76,6 +76,7 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
   useInitCreateRelationshipContext({
     stixCoreObjectTypes: ['Attack-Pattern'],
     paginationOptions: queryPaginationOptions,
+    onCreate: undefined,
   });
 
   return (
