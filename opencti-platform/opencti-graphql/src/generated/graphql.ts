@@ -30107,8 +30107,8 @@ export type Theme = BasicObject & InternalObject & {
 };
 
 export type ThemeAddInput = {
+  built_in?: InputMaybe<Scalars['Boolean']['input']>;
   name: Scalars['String']['input'];
-  system_default?: InputMaybe<Scalars['Boolean']['input']>;
   theme_accent: Scalars['String']['input'];
   theme_background: Scalars['String']['input'];
   theme_logo?: InputMaybe<Scalars['String']['input']>;
