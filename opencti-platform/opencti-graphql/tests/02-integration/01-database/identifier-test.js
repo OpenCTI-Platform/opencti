@@ -1,19 +1,22 @@
 /* eslint-disable no-underscore-dangle */
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { elLoadById, } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   allFieldsContributingToStandardId,
   generateHashedObservableStandardIds,
   generateStandardId,
+  idGen,
   isStandardIdDowngraded,
   isStandardIdSameWay,
-  isStandardIdUpgraded
+  isStandardIdUpgraded,
+  MARKING_TLP_CLEAR_ID
 } from '../../../src/schema/identifier';
 import { ENTITY_DIRECTORY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_USER_ACCOUNT } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
-import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
-import { BASE_TYPE_RELATION } from '../../../src/schema/general';
+import { ENTITY_TYPE_MALWARE, ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
+import { BASE_TYPE_RELATION, OPENCTI_NAMESPACE } from '../../../src/schema/general';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 
 describe('Identifier generation test', () => {
   it('should way change detected correctly', async () => {
@@ -154,6 +157,14 @@ describe('Identifier generation test', () => {
     };
     isUpgraded = isStandardIdUpgraded(file, changeFile);
     expect(isUpgraded).toBeFalsy();
+  });
+
+  it('should generate ID from data', () => {
+    // special id for some TLP
+    expect(idGen(ENTITY_TYPE_MARKING_DEFINITION, { definition_type: 'TLP', definition: 'TLP:WHITE' }, OPENCTI_NAMESPACE)).toEqual(MARKING_TLP_CLEAR_ID);
+    // correct error if no data
+    expect(() => idGen(ENTITY_HASHED_OBSERVABLE_STIX_FILE, undefined, OPENCTI_NAMESPACE)).toThrowError('Missing required elements for StixFile creation (hashes - name)');
+    expect(() => idGen(ENTITY_TYPE_MALWARE, undefined, OPENCTI_NAMESPACE)).toThrowError('Missing required elements for Malware creation (name)');
   });
 });
 

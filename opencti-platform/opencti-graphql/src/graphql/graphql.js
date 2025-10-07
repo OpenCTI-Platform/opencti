@@ -6,7 +6,7 @@ import { GraphQLError } from 'graphql/error';
 import { createApollo4QueryValidationPlugin } from 'graphql-constraint-directive/apollo4';
 import createSchema from './schema';
 import conf, { DEV_MODE, ENABLED_METRICS, ENABLED_TRACING, GRAPHQL_ARMOR_DISABLED, logApp, PLAYGROUND_ENABLED, PLAYGROUND_INTROSPECTION_DISABLED } from '../config/conf';
-import { ForbiddenAccess } from '../config/errors';
+import { AuthRequired, muteError, ResourceNotFoundError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import tracingPlugin from './tracingPlugin';
@@ -65,17 +65,24 @@ const createApolloServer = () => {
     apolloPlugins.push(...protection.plugins);
     apolloValidationRules.push(...protection.validationRules);
   }
-  // Schema introspection must be accessible only for auth users.
+
   const secureIntrospectionPlugin = {
-    requestDidStart: (requestContext) => {
-      const { contextValue, request } = requestContext;
-      // Is schema have introspection request
-      if (request.query && ['__schema'].some((pattern) => request.query.includes(pattern))) {
-        // If introspection explicitly disabled or user is not authenticated
-        if (!PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED || !contextValue?.user) {
-          throw ForbiddenAccess('GraphQL introspection not authorized!');
-        }
-      }
+    requestDidStart: () => {
+      return {
+        didResolveOperation: ({ contextValue, request }) => {
+          const isIntrospectionRequest = request.query?.includes('__schema');
+          if (isIntrospectionRequest) {
+            const isIntrospectionDisabled = !PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED;
+            if (isIntrospectionDisabled) {
+              throw muteError(ResourceNotFoundError('GraphQL introspection not authorized!'));
+            }
+            // is user authenticated
+            if (!contextValue?.user) {
+              throw AuthRequired();
+            }
+          }
+        },
+      };
     },
   };
   apolloPlugins.push(secureIntrospectionPlugin);

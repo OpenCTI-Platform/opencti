@@ -65,6 +65,7 @@ export const INTERNAL_ATTRIBUTES = [
   'pattern_version',
   'connections',
   'i_attributes',
+  'pir_information',
   // X - Mitre
   'x_mitre_permissions_required',
   'x_mitre_detection',

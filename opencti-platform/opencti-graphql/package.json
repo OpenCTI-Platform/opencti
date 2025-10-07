@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.8.2",
+  "version": "6.8.3",
   "main": "src/back.js",
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "@apollo/server": "4.11.0",
+    "@as-integrations/express5": "1.1.2",
     "@aws-sdk/client-s3": "3.837.0",
     "@aws-sdk/client-sts": "3.835.0",
     "@aws-sdk/credential-provider-node": "3.835.0",

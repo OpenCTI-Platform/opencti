@@ -116,10 +116,12 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
                 <PopoverMenu>
                   {({ closeMenu }) => (
                     <Box>
-                      <MenuItem onClick={() => {
-                        handleOpenDelete();
-                        closeMenu();
-                      }}
+                      <MenuItem
+                        disabled={!isAllowed && isSensitive}
+                        onClick={() => {
+                          handleOpenDelete();
+                          closeMenu();
+                        }}
                       >
                         {t_i18n('Delete')}
                       </MenuItem>

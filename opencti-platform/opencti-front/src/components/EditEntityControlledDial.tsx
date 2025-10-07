@@ -11,6 +11,7 @@ const EditEntityControlledDial = ({
   size = 'medium',
   variant = 'contained',
   style,
+  disabled = false,
 }: ButtonOwnProps & CommonProps & DrawerControlledDialProps) => {
   const { t_i18n } = useFormatter();
   const buttonLabel = t_i18n('Update');
@@ -22,6 +23,7 @@ const EditEntityControlledDial = ({
       size={size}
       aria-label={buttonLabel}
       style={style ?? { marginLeft: '4px' }}
+      disabled={disabled}
     >
       {buttonLabel}
     </Button>
