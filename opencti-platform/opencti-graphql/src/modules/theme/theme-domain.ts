@@ -1,6 +1,6 @@
 import type { FileHandle } from 'fs/promises';
 import { z } from 'zod';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
@@ -12,16 +12,11 @@ import { type BasicStoreEntityTheme, type StoreEntityTheme } from './theme-types
 import { FunctionalError } from '../../config/errors';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { extractContentFrom } from '../../utils/fileToContent';
+import { SYSTEM_USER } from '../../utils/access';
+import { DARK_DEFAULTS, LIGHT_DEFAULTS } from './theme-constants';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-  // FIXME: use SYSTEM_USER instead of user because on public page such as
-  // Login, the components is using the theme to get logo
-  console.log('findById -----> ', id);
   return storeLoadById<BasicStoreEntityTheme>(context, user, id, ENTITY_TYPE_THEME);
-};
-
-export const initDefaultTheme = () => {
-
 };
 
 export const findThemePaginated = async (context: AuthContext, user: AuthUser, args: QueryThemesArgs) => {
@@ -56,6 +51,47 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
   };
 
   return createInternalObject<StoreEntityTheme>(context, user, themeToCreate, ENTITY_TYPE_THEME);
+};
+
+export const initDefaultTheme = async (context: AuthContext) => {
+  logApp.info('[INIT] theme defaults starts initialization');
+  // Create Dark theme with user customizations or defaults
+  const darkThemeInput = {
+    name: 'Dark',
+    theme_background: DARK_DEFAULTS.theme_background,
+    theme_paper: DARK_DEFAULTS.theme_paper,
+    theme_nav: DARK_DEFAULTS.theme_nav,
+    theme_primary: DARK_DEFAULTS.theme_primary,
+    theme_secondary: DARK_DEFAULTS.theme_secondary,
+    theme_accent: DARK_DEFAULTS.theme_accent,
+    theme_text_color: DARK_DEFAULTS.theme_text_color,
+    theme_logo: DARK_DEFAULTS.theme_logo,
+    theme_logo_collapsed: DARK_DEFAULTS.theme_logo_collapsed,
+    theme_logo_login: DARK_DEFAULTS.theme_logo_login,
+    built_in: true
+  };
+
+  const darkTheme = await addTheme(context, SYSTEM_USER, darkThemeInput);
+
+  const lightThemeInput = {
+    name: 'Light',
+    theme_background: LIGHT_DEFAULTS.theme_background,
+    theme_paper: LIGHT_DEFAULTS.theme_paper,
+    theme_nav: LIGHT_DEFAULTS.theme_nav,
+    theme_primary: LIGHT_DEFAULTS.theme_primary,
+    theme_secondary: LIGHT_DEFAULTS.theme_secondary,
+    theme_accent: LIGHT_DEFAULTS.theme_accent,
+    theme_text_color: LIGHT_DEFAULTS.theme_text_color,
+    theme_logo: LIGHT_DEFAULTS.theme_logo,
+    theme_logo_collapsed: LIGHT_DEFAULTS.theme_logo_collapsed,
+    theme_logo_login: LIGHT_DEFAULTS.theme_logo_login,
+    built_in: true
+  };
+
+  await addTheme(context, SYSTEM_USER, lightThemeInput);
+
+  return darkTheme;
+  logApp.info('[INIT] theme defaults initalized');
 };
 
 export const deleteTheme = async (context: AuthContext, user: AuthUser, themeId: string) => {
