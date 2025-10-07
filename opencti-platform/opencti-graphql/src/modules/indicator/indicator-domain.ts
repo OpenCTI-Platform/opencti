@@ -522,7 +522,7 @@ export interface IndicatorPatch {
 }
 
 export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator) => {
-  let patch: IndicatorPatch = {};
+  let patch: IndicatorPatch | undefined;
   const model = indicator.decay_applied_rule;
   if (!model || !model.decay_points) {
     return null;
