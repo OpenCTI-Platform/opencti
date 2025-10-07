@@ -64,14 +64,13 @@ import {
   UnsupportedError
 } from '../config/errors';
 import {
-  isStixMetaRelationship,
   isStixRefRelationship,
+  isStixRefUnidirectionalRelationship,
   RELATION_BORN_IN,
   RELATION_CREATED_BY,
   RELATION_ETHNICITY,
   RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
@@ -4792,8 +4791,8 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       const sources = targetsElements.map((t) => {
         const field = buildRefRelationKey(t.relation, t.field);
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        if (t.relation !== RELATION_OBJECT && isStixMetaRelationship(t.relation)) {
-          // don't try to add unidirectional meta ref rel if already present (issue#7535)
+        if (isStixRefUnidirectionalRelationship(t.relation)) {
+          // don't try to add unidirectional ref rel if already present (issue#7535)
           script += `for(refId in params['${field}']) { 
           if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
         } else {
@@ -4815,10 +4814,10 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         if (t.relation === RELATION_IN_PIR) {
           // remove pir_information concerning the pir and add the new pir_information
           script += `
-          ; if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+            if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
               ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
               ctx._source['pir_information'].addAll(params.new_pir_information);
-            } else ctx._source['pir_information'] = params.new_pir_information
+            } else { ctx._source['pir_information'] = params.new_pir_information; }
           `;
         }
         return script;

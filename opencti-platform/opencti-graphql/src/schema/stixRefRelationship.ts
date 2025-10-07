@@ -923,7 +923,9 @@ schemaTypesDefinition.register(
 
 export const isStixRefRelationship = (type: string) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_REF_RELATIONSHIP) || type === ABSTRACT_STIX_REF_RELATIONSHIP;
 
-export const isStixMetaRelationship = (type: string) => META_RELATIONS.some((ref) => ref.databaseName === type);
+const isStixMetaRelationship = (type: string) => META_RELATIONS.some((ref) => ref.databaseName === type);
+
+export const isStixRefUnidirectionalRelationship = (type: string) => isStixMetaRelationship(type) && type !== RELATION_OBJECT;
 
 export const buildRelationRef = (relationRef: Omit<RefAttribute, 'isRefExistingForTypes'>, isRefExistingForTypes: Checker): RefAttribute => {
   return {
