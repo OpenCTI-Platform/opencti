@@ -34,6 +34,7 @@ interface ThemePopoverProps {
   themeData: ThemeManager_data$data;
   handleRefetch: () => Disposable;
   paginationOptions: ThemeManagerQuery$variables;
+  canDelete: boolean;
   defaultTheme?: {
     id: string,
     name: string
@@ -44,6 +45,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   themeData,
   handleRefetch,
   paginationOptions,
+  canDelete = false,
   defaultTheme,
 }) => {
   const { t_i18n } = useFormatter();
@@ -141,7 +143,7 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   };
 
   const isMenuOpen = Boolean(anchorEl);
-  const isDeleteDisabled = false; // isCurrentTheme || deleting;
+  const isDeleteDisabled = themeData.built_in || !canDelete || deleting;
 
   return (
     <div>

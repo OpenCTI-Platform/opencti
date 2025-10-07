@@ -63,7 +63,7 @@ input ThemeAddInput {
   theme_logo_collapsed: String
   theme_logo_login: String
   theme_text_color: String!
-  system_default: Boolean
+  built_in: Boolean
 }
 
 # Mutations

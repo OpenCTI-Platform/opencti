@@ -52,7 +52,7 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
     theme_logo_collapsed: input.theme_logo_collapsed,
     theme_logo_login: input.theme_logo_login,
     theme_text_color: input.theme_text_color,
-    built_in: input.system_default ?? false, // FIXME
+    built_in: input.built_in ?? false,
   };
 
   return createInternalObject<StoreEntityTheme>(context, user, themeToCreate, ENTITY_TYPE_THEME);

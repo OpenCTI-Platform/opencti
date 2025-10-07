@@ -203,11 +203,11 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
                   themeData={row}
                   handleRefetch={handleRefetch}
                   paginationOptions={paginationOptions.variables}
+                  canDelete={row.id !== defaultTheme?.id}
                   defaultTheme={defaultTheme}
                 />
               );
-            }
-            }
+            }}
             resolvePath={resolveThemesData}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
