@@ -95,6 +95,7 @@ import {
   ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
+  ENTITY_SSH_KEY,
   ENTITY_TEXT,
   ENTITY_TRACKING_NUMBER,
   ENTITY_URL,
@@ -1195,6 +1196,27 @@ const convertPersonaToStix = (instance: StoreCyberObservable, type: string): SCO
     }
   };
 };
+const convertSSHKeyToStix = (instance: StoreCyberObservable, type: string): SCO.StixSSHKey => {
+  assertType(ENTITY_SSH_KEY, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...buildStixCyberObservable(instance),
+    key_type: instance.key_type,
+    public_key: instance.public_key,
+    fingerprint_sha256: instance.fingerprint_sha256,
+    fingerprint_md5: instance.fingerprint_md5,
+    key_length: instance.key_length,
+    comment: instance.comment,
+    created: convertToStixDate(instance.created),
+    expiration_date: convertToStixDate(instance.expiration_date),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
 
 const checkInstanceCompletion = (instance: StoreRelation) => {
   if (instance.from === undefined || isEmptyField(instance.from)) {
@@ -1633,6 +1655,9 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE === type) {
       return convertX509CertificateToStix(cyber, type);
+    }
+    if (ENTITY_SSH_KEY === type) {
+      return convertSSHKeyToStix(cyber, type);
     }
     // No converter_2_1 found
     throw UnsupportedError(`No observable converter available for ${type}`);
