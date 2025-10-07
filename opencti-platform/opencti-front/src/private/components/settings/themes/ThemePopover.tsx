@@ -1,6 +1,6 @@
 import { MoreVert } from '@mui/icons-material';
 import { IconButton, Menu, MenuItem } from '@mui/material';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useState } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import { ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
 import { ThemeManager_data$data } from '@components/settings/themes/__generated__/ThemeManager_data.graphql';
@@ -14,6 +14,15 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../../utils/store';
 import DeleteDialog from '../../../../components/DeleteDialog';
+import { UserContext, UserContextType } from '../../../../utils/hooks/useAuth';
+
+const deleteUserThemeMutation = graphql`
+  mutation ThemePopoverUserDeletionMutation($input: [EditInput!]!) {
+    meEdit(input: $input) {
+      theme
+    }
+  }
+`;
 
 const deleteThemeMutation = graphql`
   mutation ThemePopoverDeletionMutation($id: ID!) {
@@ -25,16 +34,21 @@ interface ThemePopoverProps {
   themeData: ThemeManager_data$data;
   handleRefetch: () => Disposable;
   paginationOptions: ThemeManagerQuery$variables;
-  isCurrentTheme: boolean;
+  defaultTheme?: {
+    id: string,
+    name: string
+  } | null
 }
 
 const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
   themeData,
   handleRefetch,
   paginationOptions,
-  isCurrentTheme,
+  defaultTheme,
 }) => {
   const { t_i18n } = useFormatter();
+
+  const { me } = useContext<UserContextType>(UserContext);
 
   const [anchorEl, setAnchorEl] = useState<(EventTarget & Element) | null>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
@@ -65,7 +79,10 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
     undefined,
     { successMessage: deleteSuccessMessage },
   );
+  const [commitUserResetTheme] = useApiMutation(deleteUserThemeMutation);
+
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
+
   const { setDeleting, handleOpenDelete, deleting } = deletion;
 
   const handleOpen = (event: React.UIEvent) => {
@@ -91,6 +108,21 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
 
   const submitDelete = () => {
     setDeleting(true);
+
+    const userThemeId = me?.theme;
+    // reset to default if the user is currently using a theme
+    // that we delete here
+    if (userThemeId === themeData.id && defaultTheme) {
+      commitUserResetTheme({
+        variables: {
+          input: [{
+            key: 'theme',
+            value: defaultTheme.id,
+          }],
+        },
+      });
+    }
+
     commit({
       variables: { id: theme.id },
       updater: (store: RecordSourceSelectorProxy) => deleteNode(
@@ -104,11 +136,12 @@ const ThemePopover: FunctionComponent<ThemePopoverProps> = ({
         handleRefetch();
       },
     });
+
     handleClose();
   };
 
   const isMenuOpen = Boolean(anchorEl);
-  const isDeleteDisabled = isCurrentTheme || deleting;
+  const isDeleteDisabled = false; // isCurrentTheme || deleting;
 
   return (
     <div>
