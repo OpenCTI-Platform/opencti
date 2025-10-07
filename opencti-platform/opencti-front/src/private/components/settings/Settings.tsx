@@ -60,24 +60,6 @@ const settingsQuery = graphql`
       platform_login_message
       platform_banner_text
       platform_banner_level
-#      platform_theme_dark_background
-#      platform_theme_dark_paper
-#      platform_theme_dark_nav
-#      platform_theme_dark_primary
-#      platform_theme_dark_secondary
-#      platform_theme_dark_accent
-#      platform_theme_dark_logo
-#      platform_theme_dark_logo_collapsed
-#      platform_theme_dark_logo_login
-#      platform_theme_light_background
-#      platform_theme_light_paper
-#      platform_theme_light_nav
-#      platform_theme_light_primary
-#      platform_theme_light_secondary
-#      platform_theme_light_accent
-#      platform_theme_light_logo
-#      platform_theme_light_logo_collapsed
-#      platform_theme_light_logo_login
       platform_map_tile_server_dark
       platform_map_tile_server_light
       platform_ai_enabled
@@ -718,7 +700,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         <Grid size={8}>
           <ThemeManager
             handleRefetch={handleRefetch}
-            currentTheme={settings.platform_theme?.name ?? ''}
+            defaultTheme={settings.platform_theme}
           />
         </Grid>
 

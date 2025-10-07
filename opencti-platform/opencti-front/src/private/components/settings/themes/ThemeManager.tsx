@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import { ThemeManagerQuery, ThemeManagerQuery$variables } from '@components/settings/themes/__generated__/ThemeManagerQuery.graphql';
 import { ThemeManager_data$data } from '@components/settings/themes/__generated__/ThemeManager_data.graphql';
 import { ThemeManager_lines_data$data } from '@components/settings/themes/__generated__/ThemeManager_lines_data.graphql';
+import { usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
@@ -48,11 +49,7 @@ const themeManagerQuery = graphql`
     $count: Int!
     $cursor: ID
   ) {
-    ...ThemeManager_lines_data
-    @arguments(
-      count: $count
-      cursor: $cursor
-    )
+    ...ThemeManager_lines_data @arguments(count: $count, cursor: $cursor)
   }
 `;
 
@@ -101,12 +98,15 @@ const themesLineFragment = graphql`
 
 interface ThemeManagerProps {
   handleRefetch: () => Disposable;
-  currentTheme: string;
+  defaultTheme?: {
+    id: string
+    name: string
+  } | null;
 }
 
 const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
   handleRefetch,
-  currentTheme,
+  defaultTheme,
 }) => {
   const { t_i18n } = useFormatter();
   const [displayCreation, setDisplayCreation] = useState<boolean>(false);
@@ -197,14 +197,17 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
             hideSearch
             hideFilters
             variant={DataTableVariant.inline}
-            actions={(row) => (
-              <ThemePopover
-                themeData={row}
-                handleRefetch={handleRefetch}
-                paginationOptions={paginationOptions.variables}
-                isCurrentTheme={row.id === currentTheme}
-              />
-            )}
+            actions={(row) => {
+              return (
+                <ThemePopover
+                  themeData={row}
+                  handleRefetch={handleRefetch}
+                  paginationOptions={paginationOptions.variables}
+                  defaultTheme={defaultTheme}
+                />
+              );
+            }
+            }
             resolvePath={resolveThemesData}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
