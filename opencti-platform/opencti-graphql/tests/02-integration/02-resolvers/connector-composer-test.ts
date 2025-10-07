@@ -10,6 +10,7 @@ import type { ApiConnector } from '../../utils/XTMComposerMock';
 import { catalogHelper } from '../../utils/catalogHelper';
 import { enableCustomCatalogs } from '../../../src/modules/catalog/catalog-domain';
 import { createOnTheFlyUser, userAlreadyExists } from '../../../src/modules/user/user-domain';
+import { userDelete } from '../../../src/domain/user';
 
 const TEST_COMPOSER_ID = uuidv4();
 let TEST_USER_CONNECTOR_ID: string; // Will be initialized in beforeAll
@@ -1694,7 +1695,7 @@ describe('Connector Composer and Managed Connectors', () => {
 
     const allConnectorsToDelete = Array.from(createdConnectorIds).filter(Boolean);
 
-    // Note: Test user cleanup - The test user is not deleted to avoid permission issues
+    // Clean up all connectors first
     const deletionResults: { id: string, success: boolean, error?: string }[] = [];
 
     // Use for...of loop with await to avoid race conditions (eslint-disable-next-line no-restricted-syntax)
@@ -1721,6 +1722,16 @@ describe('Connector Composer and Managed Connectors', () => {
     }
     // Clear the set after cleanup
     createdConnectorIds.clear();
+
+    // Clean up the test user if it was created
+    if (TEST_USER_CONNECTOR_ID && TEST_USER_CONNECTOR_ID !== USER_CONNECTOR.id) {
+      try {
+        // Only delete if it's not the fallback user
+        await userDelete(testContext, ADMIN_USER, TEST_USER_CONNECTOR_ID);
+      } catch (error: any) {
+        // Ignore errors if user was already deleted or doesn't exist
+      }
+    }
 
     // Verify that we have cleaned up properly
     const finalCount = await countNonBuiltInConnectors();
