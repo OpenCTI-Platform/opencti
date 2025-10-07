@@ -4,6 +4,7 @@ import {
   deleteDraftWorkspace,
   findDraftWorkspacePaginated,
   findById,
+  getCurrentUserAccessRight,
   getObjectsCount,
   getProcessingCount,
   listDraftObjects,
@@ -13,6 +14,7 @@ import {
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import { filterMembersWithUsersOrgs } from '../../utils/access';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const draftWorkspaceResolvers: Resolvers = {
   Query: {
@@ -40,6 +42,8 @@ const draftWorkspaceResolvers: Resolvers = {
     processingCount: (draft, _, context) => getProcessingCount(context, context.user, draft),
     works: (draft, args, context) => worksForDraft(context, context.user, draft.id, args),
     validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
+    authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
+    currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
   },
   Mutation: {
     draftWorkspaceAdd: (_, { input }, context) => {
