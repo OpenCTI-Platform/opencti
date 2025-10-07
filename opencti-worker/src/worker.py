@@ -576,7 +576,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         )
         # Load worker config
         self.log_level = get_config_variable(
-            "WORKER_LOG_LEVEL", ["worker", "log_level"], config
+            "WORKER_LOG_LEVEL", ["worker", "log_level"], config, default="info"
         )
         self.listen_api_ssl_verify = get_config_variable(
             "WORKER_LISTEN_API_SSL_VERIFY",
