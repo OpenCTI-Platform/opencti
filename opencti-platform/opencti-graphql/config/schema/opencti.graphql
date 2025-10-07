@@ -13197,7 +13197,7 @@ type Query {
     filters: FilterGroup
   ): FileConnection @auth(for: [KNOWLEDGE_KNASKIMPORT])
   filesMetrics: FilesMetrics @auth(for: [SETTINGS_FILEINDEXING])
-  guessMimeType(fileId: String!): String @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  guessMimeType(fileId: String!): String @auth(for: [KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNASKIMPORT])
   askAiActivity(busId: String, language: String, forceRefresh: Boolean): AiActivity @auth(for: [KNOWLEDGE])
 
   ######## INDEXED FILES
