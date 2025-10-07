@@ -407,7 +407,6 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value="default">{t('Default')}</MenuItem>
                 {themeList.map(({ id, name }) => (
                   <MenuItem key={id} value={id}>{name}</MenuItem>
                 ))}
