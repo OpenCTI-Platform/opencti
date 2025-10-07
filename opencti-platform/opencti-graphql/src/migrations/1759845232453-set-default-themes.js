@@ -1,5 +1,6 @@
 import { logMigration } from '../config/conf';
 import { getEntityFromCache } from '../database/cache';
+import { DARK_DEFAULTS, LIGHT_DEFAULTS } from '../modules/theme/theme-constants';
 import { addTheme } from '../modules/theme/theme-domain';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -8,33 +9,6 @@ import { elUpdateByQueryForMigration } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 
 const message = '[MIGRATION] Creating default themes and replacing platform_theme with Theme ID';
-
-const DARK_DEFAULTS = {
-  theme_background: '#070d19',
-  theme_paper: '#09101e',
-  theme_nav: '#070d19',
-  theme_primary: '#0fbcff',
-  theme_secondary: '#00f1bd',
-  theme_accent: '#0f1e38',
-  theme_text_color: '#ffffff',
-  theme_logo: '',
-  theme_logo_collapsed: '',
-  theme_logo_login: '',
-};
-
-// Default values for Light theme
-const LIGHT_DEFAULTS = {
-  theme_background: '#f8f8f8',
-  theme_paper: '#ffffff',
-  theme_nav: '#ffffff',
-  theme_primary: '#001bda',
-  theme_secondary: '#0c7e69',
-  theme_accent: '#dfdfdf',
-  theme_text_color: '#000000',
-  theme_logo: '',
-  theme_logo_collapsed: '',
-  theme_logo_login: '',
-};
 
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
@@ -45,7 +19,7 @@ export const up = async (next) => {
     SYSTEM_USER,
     ENTITY_TYPE_SETTINGS,
   );
-  //
+
   // Create Dark theme with user customizations or defaults
   const darkThemeInput = {
     name: 'Dark',
@@ -59,7 +33,7 @@ export const up = async (next) => {
     theme_logo: settings.platform_theme_dark_logo || DARK_DEFAULTS.theme_logo,
     theme_logo_collapsed: settings.platform_theme_dark_logo_collapsed || DARK_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: settings.platform_theme_dark_logo_login || DARK_DEFAULTS.theme_logo_login,
-    system_default: true
+    built_in: true
   };
 
   const darkTheme = await addTheme(context, SYSTEM_USER, darkThemeInput);
@@ -78,7 +52,7 @@ export const up = async (next) => {
     theme_logo: settings.platform_theme_light_logo || LIGHT_DEFAULTS.theme_logo,
     theme_logo_collapsed: settings.platform_theme_light_logo_collapsed || LIGHT_DEFAULTS.theme_logo_collapsed,
     theme_logo_login: settings.platform_theme_light_logo_login || LIGHT_DEFAULTS.theme_logo_login,
-    system_default: true
+    built_in: true
   };
 
   const lightTheme = await addTheme(context, SYSTEM_USER, lightThemeInput);
