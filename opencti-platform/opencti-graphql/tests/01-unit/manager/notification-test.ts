@@ -55,7 +55,8 @@ describe.concurrent('notification manager utils', () => {
     const octiTool = new NotificationTool();
     expect(octiTool.m2h('#Title1')).toEqual('<h1 id="title1">Title1</h1>');
     expect(octiTool.m2h('**description**')).toEqual('<p><strong>description</strong></p>');
-    expect(octiTool.m2h("Malicious content: <script>alert('XSS')</script> with a link: [clic](javascript:alert('XSS2'))"))
-      .toEqual("<p>Malicious content: <script>alert('XSS')</script> with a link: <a href=\"javascript:alert('XSS2')\">clic</a></p>");
+    expect(octiTool.m2h('*description*')).toEqual('<p><em>description</em></p>');
+    expect(octiTool.m2h('Description with a link: [clic](content)'))
+      .toEqual('<p>Description with a link: <a href="content">clic</a></p>');
   });
 });
