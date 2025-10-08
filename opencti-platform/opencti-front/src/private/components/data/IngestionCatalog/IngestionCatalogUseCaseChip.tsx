@@ -6,6 +6,7 @@ import type { Theme } from '../../../../components/Theme';
 
 interface IngestionCatalogChipProps {
   label: string;
+  tooltipLabel?: string;
   variant?: 'outlined' | 'filled';
   color?: 'primary' | 'secondary' | 'error' | 'success';
   withTooltip?: boolean;
@@ -13,22 +14,29 @@ interface IngestionCatalogChipProps {
   isInlist?: boolean;
 }
 
-const IngestionCatalogChip = ({ label, variant, color, withTooltip = false, isInTooltip = false, isInlist = false }: IngestionCatalogChipProps) => {
+const IngestionCatalogChip = ({
+  label,
+  tooltipLabel,
+  variant,
+  color,
+  withTooltip = false,
+  isInlist = false,
+}: IngestionCatalogChipProps) => {
   const theme = useTheme<Theme>();
-  const width = isInTooltip ? '100%' : 'auto';
+  const tooltipContent = withTooltip ? (tooltipLabel || label) : undefined;
+
   return (
-    <Tooltip title={withTooltip ? label : undefined}>
+    <Tooltip title={tooltipContent}>
       <Chip
         variant={variant ?? 'outlined'}
         size="small"
-        color={color ?? 'default'}
-        style={{
+        color={'info'}
+        sx={{
           fontSize: 12,
           lineHeight: '14px',
-          borderRadius: 4,
+          borderRadius: 1,
           marginRight: isInlist ? theme.spacing(1) : 0,
-          border: `2px solid ${color ? theme.palette[color].main : theme.palette.chip.main}`,
-          width,
+          border: `1px solid ${theme.palette.primary.dark}`,
         }}
         label={label}
       />
