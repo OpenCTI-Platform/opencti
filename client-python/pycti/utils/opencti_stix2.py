@@ -2069,14 +2069,39 @@ class OpenCTIStix2:
                     self.opencti.api_url.replace("graphql", "storage/get/") + file["id"]
                 )
                 data = self.opencti.fetch_opencti_file(url, binary=True, serialize=True)
-                entity["x_opencti_files"].append(
-                    {
-                        "name": file["name"],
-                        "data": data,
-                        "mime_type": file["metaData"]["mimetype"],
-                        "version": file["metaData"].get("version", None),
+                x_opencti_file = {
+                    "name": file["name"],
+                    "data": data,
+                    "mime_type": file["metaData"]["mimetype"],
+                    "version": file["metaData"].get("version", None),
+                    "object_marking_refs": [],
+                }
+                for file_marking_definition in file["objectMarking"]:
+                    if file_marking_definition["definition_type"] == "TLP":
+                        created = "2017-01-20T00:00:00.000Z"
+                    else:
+                        created = file_marking_definition["created"]
+                    marking_definition = {
+                        "type": "marking-definition",
+                        "spec_version": SPEC_VERSION,
+                        "id": file_marking_definition["standard_id"],
+                        "created": created,
+                        "definition_type": file_marking_definition[
+                            "definition_type"
+                        ].lower(),
+                        "name": file_marking_definition["definition"],
+                        "definition": {
+                            file_marking_definition["definition_type"]
+                            .lower(): file_marking_definition["definition"]
+                            .lower()
+                            .replace("tlp:", "")
+                        },
                     }
-                )
+                    result.append(marking_definition)
+                    x_opencti_file["object_marking_refs"].append(
+                        marking_definition["id"]
+                    )
+                entity["x_opencti_files"].append(x_opencti_file)
             del entity["importFiles"]
             del entity["importFilesIds"]
 

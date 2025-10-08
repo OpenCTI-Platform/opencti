@@ -23,7 +23,7 @@ import type { UpdateEvent } from '../types/event';
 import type { BasicStoreSettings } from '../types/settings';
 import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { BasicStoreCommon } from '../types/store';
+import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import type { AuthContext, AuthUser, UserRole } from '../types/user';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
@@ -924,12 +924,13 @@ export const controlUserRestrictDeleteAgainstElement = <T extends ObjectWithCrea
  * @param context
  * @param user
  * @param markingId
+ * @param markingsMap
  */
-export const validateMarking = async (context: AuthContext, user: AuthUser, markingId: string) => {
+export const validateMarking = async (context: AuthContext, user: AuthUser, markingId: string, markingsMap?: Map<string, BasicStoreIdentifier | StixObject>) => {
   if (isBypassUser(user)) {
     return;
   }
-  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const markings = markingsMap ?? await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const userMarking = (user.allowed_marking || []).map((m) => markings.get(m.internal_id)).filter((m) => isNotEmptyField(m)) as BasicStoreCommon[];
   const userMarkingIds = userMarking.map((marking) => extractIdsFromStoreObject(marking)).flat();
   if (!userMarkingIds.includes(markingId)) {
