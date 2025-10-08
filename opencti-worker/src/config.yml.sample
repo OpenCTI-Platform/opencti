@@ -7,4 +7,4 @@ opencti:
 worker:
   log_level: 'info'
   telemetry_enabled: false
-  objects_max_deps: 0
+  objects_max_refs: 0
