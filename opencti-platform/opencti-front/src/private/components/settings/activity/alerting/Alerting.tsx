@@ -133,7 +133,7 @@ const AlertingLines: FunctionComponent<AlertingLinesProps> = ({
 const Alerting: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Activity: Alerting | Settings'));
+  setTitle(t_i18n('Alerting | Activity | Settings'));
   const classes = useStyles();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<AlertingPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,

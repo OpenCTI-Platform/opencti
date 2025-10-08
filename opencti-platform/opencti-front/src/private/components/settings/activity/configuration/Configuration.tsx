@@ -108,7 +108,7 @@ ConfigurationComponentProps
   const theme = useTheme<Theme>();
 
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Activity: Configuration | Settings'));
+  setTitle(t_i18n('Configuration | Activity | Settings'));
   const [commit] = useApiMutation(configurationFieldPatch);
   const { settings } = usePreloadedQuery<ConfigurationQuery>(
     configurationQuery,

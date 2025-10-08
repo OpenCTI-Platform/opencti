@@ -107,7 +107,7 @@ const Audit = () => {
   const knowledgeCapability = useGranted([KNOWLEDGE], true);
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Activity: Events | Settings'));
+  setTitle(t_i18n('Events | Activity | Settings'));
 
   const {
     viewStorage,
