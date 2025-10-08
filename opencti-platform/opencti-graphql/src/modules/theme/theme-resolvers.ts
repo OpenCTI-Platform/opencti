@@ -6,9 +6,6 @@ const themeResolvers: Resolvers = {
     theme: (_, { id }, context) => findById(context, context.user, id),
     themes: (_, args, context) => findThemePaginated(context, context.user, args),
   },
-  Theme: {
-    // toConfigurationExport: (theme) => generateThemeExportConfiguration(theme),
-  },
   Mutation: {
     themeAdd: (_, { input }, context) => {
       return addTheme(context, context.user, input);

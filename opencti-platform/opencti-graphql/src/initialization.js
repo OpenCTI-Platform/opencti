@@ -22,7 +22,6 @@ import { initializeData, patchPlatformId } from './database/data-initialization'
 import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 import { lockResources } from './lock/master-lock';
-import { initDefaultTheme } from './modules/theme/theme-domain';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';

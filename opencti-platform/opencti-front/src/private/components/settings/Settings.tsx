@@ -247,6 +247,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       commitField({
         variables: { id, input: { key: name, value: value || '' } },
       });
+      return true;
     } catch (error) {
       return false;
     }

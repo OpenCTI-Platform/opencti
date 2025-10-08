@@ -27,7 +27,6 @@ import { isNotEmptyField } from '../../utils/utils';
 import useDimensions from '../../utils/hooks/useDimensions';
 import SystemBanners from './SystemBanners';
 import ResetPassword from './ResetPassword';
-import { deserializeThemeManifest } from '../../private/components/settings/themes/ThemeType';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.

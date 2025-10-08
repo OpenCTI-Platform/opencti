@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { ConnectedPublicThemeProvider, ConnectedThemeProvider } from '../components/AppThemeProvider';
+import { ConnectedPublicThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import Login from './components/Login';
 import { environment } from '../relay/environment';

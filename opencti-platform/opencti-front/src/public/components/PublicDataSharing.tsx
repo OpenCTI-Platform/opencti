@@ -44,7 +44,6 @@ const PublicDataSharing = () => {
 
   const loginLogo = settings.platform_theme?.theme_logo_login || theme.logo;
 
-  console.log('settings.platform_theme', settings.platform_theme);
   return (
     <>
       <div className={classes.container}>
