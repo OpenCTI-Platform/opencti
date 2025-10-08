@@ -23,6 +23,7 @@ type IngestionCsv implements InternalObject & BasicObject {
     markings: [String!]
     toConfigurationExport: String!
     duplicateCsvMapper: CsvMapper!
+    ingestionLogs: [String!]!
 }
 
 enum IngestionCsvOrdering {

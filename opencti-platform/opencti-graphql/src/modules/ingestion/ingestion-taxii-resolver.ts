@@ -1,5 +1,6 @@
 import { addIngestion, findTaxiiIngestionPaginated, findById, ingestionDelete, ingestionEditField, ingestionTaxiiResetState } from './ingestion-taxii-domain';
 import type { Resolvers } from '../../generated/graphql';
+import { getIngestionLogs } from './ingestion-taxii-collection-domain';
 
 const ingestionTaxiiResolvers: Resolvers = {
   Query: {
@@ -8,6 +9,7 @@ const ingestionTaxiiResolvers: Resolvers = {
   },
   IngestionTaxii: {
     user: (ingestionTaxii, _, context) => context.batch.creatorBatchLoader.load(ingestionTaxii.user_id),
+    ingestionLogs: (ingestionTaxii) => getIngestionLogs(ingestionTaxii),
   },
   Mutation: {
     ingestionTaxiiAdd: (_, { input }, context) => {

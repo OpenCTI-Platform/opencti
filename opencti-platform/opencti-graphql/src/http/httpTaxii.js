@@ -12,12 +12,12 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../domain/taxii';
 import { executionContext, isUserHasCapability, SYSTEM_USER } from '../utils/access';
 import { findById as findTaxiiCollection } from '../modules/ingestion/ingestion-taxii-collection-domain';
-import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestionManager';
 import { now } from '../utils/format';
 import { computeWorkStatus } from '../domain/connector';
 import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ingestion-types';
 import { TAXIIAPI } from '../domain/user';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
+import { handleConfidenceToScoreTransformation, pushBundleToConnectorQueue } from '../manager/ingestion/ingestionUtils';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
