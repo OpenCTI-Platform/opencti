@@ -12482,9 +12482,9 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   jobs(first: Int): [Work]
 }
 input SSHKeyAddInput {
-  key_type: String!
-  public_key: String!
-  fingerprint_sha256: String @constraint(minLength: 5)
+  ssh_key_type: String
+  public_key: String
+  fingerprint_sha256: String! @constraint(minLength: 5)
   fingerprint_md5: String @constraint(minLength: 5)
   key_length: String
   comment: String

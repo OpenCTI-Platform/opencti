@@ -16763,6 +16763,7 @@ export type MutationStixCyberObservableAddArgs = {
   Persona?: InputMaybe<PersonaAddInput>;
   PhoneNumber?: InputMaybe<PhoneNumberAddInput>;
   Process?: InputMaybe<ProcessAddInput>;
+  SSHKey?: InputMaybe<SshKeyAddInput>;
   Software?: InputMaybe<SoftwareAddInput>;
   StixFile?: InputMaybe<StixFileAddInput>;
   Text?: InputMaybe<TextAddInput>;
@@ -25410,10 +25411,10 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
+  public_key: Scalars['String']['output'];
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   spec_version: Scalars['String']['output'];
-  ssh_key_name: Scalars['String']['output'];
   ssh_key_type: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -25577,10 +25578,10 @@ export type SshKeyAddInput = {
   created?: InputMaybe<Scalars['DateTime']['input']>;
   expiration_date?: InputMaybe<Scalars['DateTime']['input']>;
   fingerprint_md5?: InputMaybe<Scalars['String']['input']>;
-  fingerprint_sha256?: InputMaybe<Scalars['String']['input']>;
+  fingerprint_sha256: Scalars['String']['input'];
   key_length?: InputMaybe<Scalars['String']['input']>;
-  key_type: Scalars['String']['input'];
-  public_key: Scalars['String']['input'];
+  public_key?: InputMaybe<Scalars['String']['input']>;
+  ssh_key_type?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SavedFilter = BasicObject & InternalObject & {
@@ -43427,10 +43428,10 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyPendingFilesArgs>>;
+  public_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SshKeyReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  ssh_key_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   ssh_key_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SshKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;

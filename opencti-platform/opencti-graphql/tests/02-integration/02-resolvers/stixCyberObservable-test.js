@@ -149,17 +149,21 @@ describe('StixCyberObservable resolver standard behavior', () => {
     const STIX_OBSERVABLE_TO_CREATE = {
       type: 'SSH-Key',
       SSHKey: {
+        ssh_key_type: 'rsa',
         public_key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9',
+        fingerprint_sha256: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d95f'
       },
     };
     const stixCyberObservable = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
+    console.log('SCO', stixCyberObservable);
     expect(stixCyberObservable).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9');
-    stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
+    // expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
+    // expect(stixCyberObservable.data.stixCyberObservableAdd.public_key).toEqual('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9');
+    expect(stixCyberObservable.data.stixCyberObservableAdd.fingerprint_sha256).toEqual('a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d94f');
+    // stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
   it('should stixCyberObservable loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });

@@ -633,7 +633,7 @@ export interface StixPersona extends StixCyberObject {
 // Custom object extension - SSH key
 // key_type, key_type, fingerprint_sha256, fingerprint_md5, key_length, comment, created, expiration_date
 export interface StixSSHKey extends StixCyberObject {
-  key_type: string;
+  ssh_key_type: string;
   public_key: string;
   fingerprint_sha256: string;
   fingerprint_md5: string;

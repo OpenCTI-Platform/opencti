@@ -170,6 +170,7 @@ export const promoteObservableToIndicator = async (context, user, observableId) 
 
 export const addStixCyberObservable = async (context, user, input) => {
   // The input type must be a correct observable type
+  console.log('input.type', input.type);
   if (!isStixCyberObservable(input.type)) {
     throw FunctionalError(`Observable type ${input.type} is not supported.`);
   }

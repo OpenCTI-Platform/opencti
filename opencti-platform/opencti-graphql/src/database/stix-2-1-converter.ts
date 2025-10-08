@@ -1201,7 +1201,7 @@ const convertSSHKeyToStix = (instance: StoreCyberObservable, type: string): SCO.
   const stixCyberObject = buildStixCyberObservable(instance);
   return {
     ...buildStixCyberObservable(instance),
-    key_type: instance.key_type,
+    ssh_key_type: instance.key_type,
     public_key: instance.public_key,
     fingerprint_sha256: instance.fingerprint_sha256,
     fingerprint_md5: instance.fingerprint_md5,
