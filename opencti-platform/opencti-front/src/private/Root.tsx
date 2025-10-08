@@ -334,25 +334,6 @@ const rootPrivateQuery = graphql`
   }
 `;
 
-const userThemeQuery = graphql`
-  query RootUserThemeQuery($themeId: ID!) {
-    theme(id: $themeId) {
-      id
-      name
-      theme_background
-      theme_paper
-      theme_nav
-      theme_primary
-      theme_secondary
-      theme_accent
-      theme_text_color
-      theme_logo
-      theme_logo_collapsed
-      theme_logo_login
-    }
-  }
-`;
-
 const computeBannerSettings = (settings: RootSettings$data) => {
   const bannerLevel = settings.platform_banner_level;
   const bannerText = settings.platform_banner_text;
