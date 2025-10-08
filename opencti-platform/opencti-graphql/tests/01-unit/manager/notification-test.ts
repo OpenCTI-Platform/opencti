@@ -51,7 +51,7 @@ describe.concurrent('notification manager utils', () => {
     expect(isTimeTrigger(digest('month', '1-12:00:00.000Z'), utcDate('2022-12-02T12:00:00.000Z'))).toEqual(false);
   });
 
-  it.only('should covert markdown to html', async () => {
+  it('should covert markdown to html', async () => {
     const octiTool = new NotificationTool();
     expect(octiTool.m2h('#Title1')).toEqual('<h1 id="title1">Title1</h1>');
   });
