@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Tooltip } from '@mui/material';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
-import { OptionsFormValues } from '@components/common/files/import_files/ImportFilesDialog';
+import { OptionsFormValues, ValidationMode } from '@components/common/files/import_files/ImportFilesDialog';
 import { Field, FormikContextType, FormikProvider } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
@@ -65,14 +65,14 @@ const ImportFilesOptions = ({
                 containerstyle={{ marginTop: 16, width: '100%' }}
               >
                 <MenuItem
-                  key={'draft'}
-                  value={'draft'}
+                  key={ValidationMode.Draft}
+                  value={ValidationMode.Draft}
                 >
                   {t_i18n('Draft')}
                 </MenuItem>
                 <MenuItem
-                  key={'workbench'}
-                  value={'workbench'}
+                  key={ValidationMode.Workbench}
+                  value={ValidationMode.Workbench}
                   disabled={!isWorkbenchEnabled}
                 >
                   {t_i18n('Workbench')}
