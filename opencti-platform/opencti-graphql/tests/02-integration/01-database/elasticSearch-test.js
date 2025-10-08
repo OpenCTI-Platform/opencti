@@ -410,7 +410,7 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(48);
+    expect(entityTypeMap.get('Capability')).toBe(50);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
@@ -450,7 +450,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(541 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(543 + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -559,7 +559,7 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(48);
+    expect(entityTypeMap.get('Capability')).toBe(50);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
@@ -598,7 +598,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(550);
+    expect(data.edges.length).toEqual(552);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -693,7 +693,7 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('Capability')).toBe(48);
+    expect(entityTypeMap.get('Capability')).toBe(50);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
     expect(entityTypeMap.get('EntitySetting')).toBe(44);
@@ -735,7 +735,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(13);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
-    expect(data.edges.length).toEqual(561);
+    expect(data.edges.length).toEqual(563);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -836,7 +836,7 @@ describe('Elasticsearch pagination', () => {
     const internalRelationships = groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].map((m) => m.node);
     const internalRelationshipsByType = R.groupBy((m) => m.entity_type, internalRelationships);
     expect(internalRelationshipsByType['accesses-to'].length).toEqual(28);
-    expect(internalRelationshipsByType['has-capability'].length).toEqual(57);
+    expect(internalRelationshipsByType['has-capability'].length).toEqual(58);
     expect(internalRelationshipsByType['has-role'].length).toEqual(9);
     expect(internalRelationshipsByType['member-of'].length).toEqual(13);
     expect(internalRelationshipsByType['participate-to'].length).toEqual(4);
@@ -876,7 +876,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
     expect(metaByEntityType['operating-system'].length).toEqual(1);
 
-    expect(data.edges.length).toEqual(266);
+    expect(data.edges.length).toEqual(267);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
@@ -884,7 +884,7 @@ describe('Elasticsearch pagination', () => {
     data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
     const entityTypeMap = mapCountPerEntityType(data);
-    expect(entityTypeMap.get('has-capability')).toBe(57);
+    expect(entityTypeMap.get('has-capability')).toBe(58);
     expect(entityTypeMap.get('accesses-to')).toBe(28);
     expect(entityTypeMap.get('member-of')).toBe(13);
     expect(entityTypeMap.get('has-role')).toBe(9);
@@ -905,7 +905,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('external-reference')).toBe(7);
     expect(entityTypeMap.get('operating-system')).toBe(1);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(2);
-    expect(data.length).toEqual(266);
+    expect(data.length).toEqual(267);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');

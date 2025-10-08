@@ -1,6 +1,6 @@
 import validator from 'validator';
 import { addSettings } from '../domain/settings';
-import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
+import { BYPASS, AUTOMATION, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from '../utils/access';
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
@@ -98,6 +98,18 @@ const PIR_CAPABILITIES = {
     },
   ],
 };
+const AUTOMATION_CAPABILITIES = {
+  name: AUTOMATION,
+  description: 'Use Playbooks',
+  attribute_order: 2800,
+  dependencies: [
+    {
+      name: 'AUTMANAGE',
+      description: 'Manage Playbooks',
+      attribute_order: 2850,
+    },
+  ],
+};
 export const CAPABILITIES = [
   BYPASS_CAPABILITIES,
   KNOWLEDGE_CAPABILITIES,
@@ -140,6 +152,7 @@ export const CAPABILITIES = [
   },
   TAXII_CAPABILITIES,
   PIR_CAPABILITIES,
+  AUTOMATION_CAPABILITIES,
   SETTINGS_CAPABILITIES,
   {
     name: 'CONNECTORAPI',
