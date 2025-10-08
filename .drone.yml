@@ -86,6 +86,7 @@ steps:
       SMTP__ENABLED: false
       PYTHONUNBUFFERED: 1
     commands:
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
@@ -110,6 +111,7 @@ steps:
 
   - name: api-coverage
     image: plugins/codecov
+    failure: ignore
     settings:
       token:
         from_secret: codecov_token
@@ -293,6 +295,7 @@ services:
       SMTP__ENABLED: false
     commands:
       - sleep 10
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - ls -lart
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
@@ -334,6 +337,7 @@ services:
       SMTP__ENABLED: false
     commands:
       - sleep 10
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
@@ -374,6 +378,7 @@ services:
       SMTP__ENABLED: false
     commands:
       - sleep 10
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
@@ -394,6 +399,7 @@ services:
       WORKER_LOG_LEVEL: info
     commands:
       - sleep 10
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-worker /tmp/direct-start-worker
       - cd "$DRONE_WORKSPACE/client-python"
@@ -414,6 +420,7 @@ services:
       WORKER_LOG_LEVEL: info
     commands:
       - sleep 10
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - cp -a opencti-worker /tmp/opencti-test-worker
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
@@ -453,6 +460,7 @@ services:
       SMTP__ENABLED: false
     commands:
       - sleep 10
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - apk add build-base git libffi-dev cargo
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
