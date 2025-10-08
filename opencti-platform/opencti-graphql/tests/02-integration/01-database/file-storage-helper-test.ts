@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage';
 import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER } from '../../utils/testQuery';
-import { MARKING_TLP_CLEAR } from '../../../src/schema/identifier';
+import { MARKING_TLP_CLEAR, MARKING_TLP_CLEAR_ID } from '../../../src/schema/identifier';
 import { findById as findDocumentById, SUPPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
 
 const adminContext: AuthContext = {
@@ -24,7 +24,7 @@ describe('File storage upload with marking', () => {
     expect(document.metaData.file_markings).toBeDefined();
     expect(document.metaData.file_markings?.length, 'One marking MARKING_TLP_CLEAR is expected on this document.').toBe(1);
     if (document.metaData.file_markings) {
-      expect(document.metaData.file_markings[0]).toBe(MARKING_TLP_CLEAR);
+      expect(document.metaData.file_markings[0]).toBe(MARKING_TLP_CLEAR_ID);
     }
   });
 });
