@@ -13813,6 +13813,7 @@ type PirRelationship implements BasicRelationship {
 }
 
 enum PirOrdering {
+  _score
   name
   created_at
   updated_at
