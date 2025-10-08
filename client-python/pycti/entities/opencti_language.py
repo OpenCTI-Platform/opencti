@@ -134,6 +134,17 @@ class Language:
                             mimetype
                             version
                         }
+                        objectMarking {
+                            id
+                            standard_id
+                            entity_type
+                            definition_type
+                            definition
+                            created
+                            modified
+                            x_opencti_order
+                            x_opencti_color
+                        }
                     }
                 }
             }
@@ -249,6 +260,17 @@ class Language:
                         metaData {
                             mimetype
                             version
+                        }
+                        objectMarking {
+                            id
+                            standard_id
+                            entity_type
+                            definition_type
+                            definition
+                            created
+                            modified
+                            x_opencti_order
+                            x_opencti_color
                         }
                     }
                 }
