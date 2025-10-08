@@ -6,8 +6,8 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
 import { insertNode } from '../../../../utils/store';
-import { ThemesLinesSearchQuery$variables } from './__generated__/ThemesLinesSearchQuery.graphql';
 import { ThemeImporterImportMutation } from './__generated__/ThemeImporterImportMutation.graphql';
+import { ThemeManagerQuery$variables } from './__generated__/ThemeManagerQuery.graphql';
 
 const importMutation = graphql`
   mutation ThemeImporterImportMutation($file: Upload!) {
@@ -17,7 +17,7 @@ const importMutation = graphql`
 
 interface ThemeImporterProps {
   handleRefetch: () => Disposable;
-  paginationOptions: ThemesLinesSearchQuery$variables;
+  paginationOptions: ThemeManagerQuery$variables;
 }
 
 const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
