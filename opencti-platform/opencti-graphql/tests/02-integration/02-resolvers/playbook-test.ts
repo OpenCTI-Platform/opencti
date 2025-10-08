@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { adminQueryWithError, adminQueryWithSuccess } from '../../utils/testQueryHelper';
+import { adminQueryWithError, adminQueryWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddNodeInput } from '../../../src/generated/graphql';
 import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
+import { USER_PARTICIPATE, USER_SECURITY } from '../../utils/testQuery';
 
 const LIST_PLAYBOOKS = gql`
   query playbooks(
@@ -88,13 +89,24 @@ describe('Playbook resolver standard behavior', () => {
     const queryResult = await adminQueryWithSuccess({ query: LIST_PLAYBOOKS, variables: { first: 10 } });
     expect(queryResult.data?.playbooks.edges.length).toEqual(0);
   });
-  it('should add playbook', async () => {
+  it('should not add playbook if no Manage Playbooks capability', async () => {
     const input = {
       input: {
         name: playbookName,
       }
     };
-    const queryResult = await adminQueryWithSuccess({
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      query: CREATE_PLAYBOOK,
+      variables: input,
+    });
+  });
+  it('should add playbook with Manage Playbooks capability', async () => {
+    const input = {
+      input: {
+        name: playbookName,
+      }
+    };
+    const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: CREATE_PLAYBOOK,
       variables: input,
     });
@@ -110,8 +122,19 @@ describe('Playbook resolver standard behavior', () => {
     expect(queryResult.data?.playbook.name).toEqual(playbookName);
     expect(queryResult.data?.playbook.playbook_running).toEqual(false);
   });
-  it('should update playbook', async () => {
-    const queryResult = await adminQueryWithSuccess({
+  it('should not update playbook if no Manage Playbooks capability', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      query: UPDATE_PLAYBOOK,
+      variables: {
+        id: playbookId,
+        input: [
+          { key: 'name', value: ['Playbook1 - updated'] },
+        ]
+      }
+    });
+  });
+  it('should update playbook with Manage Playbooks capability', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: UPDATE_PLAYBOOK,
       variables: {
         id: playbookId,
@@ -258,8 +281,14 @@ describe('Playbook resolver standard behavior', () => {
       UNSUPPORTED_ERROR
     );
   });
-  it('should remove playbook', async () => {
-    const queryResult = await adminQueryWithSuccess({
+  it('should not delete playbook if no Manage Playbooks capability', async () => {
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE.client, {
+      query: DELETE_PLAYBOOK,
+      variables: { id: playbookId },
+    });
+  });
+  it('should remove playbook with Manage Playbooks capability', async () => {
+    const queryResult = await queryAsUserWithSuccess(USER_SECURITY.client, {
       query: DELETE_PLAYBOOK,
       variables: { id: playbookId },
     });
