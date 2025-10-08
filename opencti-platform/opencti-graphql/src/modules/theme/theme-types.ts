@@ -15,7 +15,7 @@ export interface BasicStoreEntityTheme extends BasicStoreEntity {
   theme_logo_collapsed: string;
   theme_logo_login: string;
   theme_text_color: string;
-  system_default: boolean;
+  built_in: boolean;
 }
 
 export interface StoreEntityTheme extends StoreEntity {
@@ -30,7 +30,7 @@ export interface StoreEntityTheme extends StoreEntity {
   theme_logo_collapsed: string;
   theme_logo_login: string;
   theme_text_color: string;
-  system_default: boolean;
+  built_in: boolean;
 }
 // endregion
 
@@ -47,7 +47,7 @@ export interface StixTheme extends StixObject {
   theme_logo_collapsed: string;
   theme_logo_login: string;
   theme_text_color: string;
-  system_default: boolean;
+  built_in: boolean;
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO
   };
