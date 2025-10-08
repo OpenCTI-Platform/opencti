@@ -3,6 +3,7 @@ import '../../src/modules/index';
 // import managers
 import '../../src/manager/index';
 // endregion
+import { v4 as uuidv4 } from 'uuid';
 import { initializeBucket, storageInit } from '../../src/database/file-storage';
 import { deleteQueues } from '../../src/domain/connector';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './testQuery';
@@ -14,12 +15,15 @@ import cacheManager from '../../src/manager/cacheManager';
 import { initializeAdminUser } from '../../src/config/providers';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
 import { initializeInternalQueues } from '../../src/database/rabbitmq';
-import { executionContext } from '../../src/utils/access';
+import { executionContext, SYSTEM_USER } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { shutdownModules, startModules } from '../../src/managers';
 import { deleteAllBucketContent } from '../../src/database/file-storage-helper';
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
+import { createEntity } from '../../src/database/middleware';
+import { ENTITY_TYPE_MIGRATION_STATUS } from '../../src/schema/internalObject';
+import type { AuthContext } from '../../src/types/user';
 
 /**
  * This is run once before all tests (for setup) and after all (for teardown).
@@ -34,6 +38,14 @@ import { initLockFork } from '../../src/lock/master-lock';
 
 const { INIT_TEST_PLATFORM, SKIP_CLEANUP_PLATFORM } = process.env;
 
+const testInitializeMigration = async (context: AuthContext) => {
+  // Cannot use initializeMigration from initialization.js because it relies on relative filesystem path from src.
+  // In the other hand, migration status is required for /health
+  const lastRun = `${new Date().getTime()}-init`;
+  const migrationStatus = { internal_id: uuidv4(), lastRun };
+  await createEntity(context, SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
+};
+
 const initializePlatform = async () => {
   const context = executionContext('platform_test_initialization');
   logApp.info(`[vitest-global-setup] initializing platform with env=${environment}`);
@@ -42,6 +54,7 @@ const initializePlatform = async () => {
   await initializeInternalQueues();
   await initializeBucket();
   await initializeSchema();
+  await testInitializeMigration(context);
   await initializeData(context, true);
   await initializeAdminUser(context);
   await initDefaultNotifiers(context);
