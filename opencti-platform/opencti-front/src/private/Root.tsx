@@ -1,6 +1,6 @@
 import { StyledEngineProvider } from '@mui/material/styles';
 import React, { FunctionComponent, useMemo } from 'react';
-import { graphql, PreloadedQuery, useFragment, useLazyLoadQuery, usePreloadedQuery, useSubscription } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useSubscription } from 'react-relay';
 import { AnalyticsProvider } from 'use-analytics';
 import Analytics from 'analytics';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
@@ -20,7 +20,6 @@ import { RootSettings$data, RootSettings$key } from './__generated__/RootSetting
 import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> element
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
-import { RootUserThemeQuery } from './__generated__/RootUserThemeQuery.graphql';
 import useActiveTheme from '../utils/hooks/useActiveTheme';
 
 const rootSettingsFragment = graphql`

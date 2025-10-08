@@ -98,6 +98,5 @@ export const up = async (next) => {
 };
 
 export const down = async (next) => {
-  // Optionally: delete created themes and revert platform_theme to 'dark' or 'light'
   next();
 };
