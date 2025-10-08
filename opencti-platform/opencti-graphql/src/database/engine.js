@@ -24,7 +24,6 @@ import {
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
-  MAX_EVENT_LOOP_PROCESSING_TIME,
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
@@ -220,6 +219,7 @@ import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-type
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { asyncFilter, asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { doYield } from '../utils/eventloop-utils';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1580,8 +1580,8 @@ const elDataConverter = (esHit) => {
 export const elConvertHitsToMap = async (elements, opts) => {
   const { mapWithAllIds = false } = opts;
   const convertedHitsMap = {};
-  let startProcessingTime = new Date().getTime();
   for (let n = 0; n < elements.length; n += 1) {
+    await doYield();
     const element = elements[n];
     convertedHitsMap[element.internal_id] = element;
     if (mapWithAllIds) {
@@ -1592,13 +1592,6 @@ export const elConvertHitsToMap = async (elements, opts) => {
       // Add the stix ids keys
       (element.x_opencti_stix_ids ?? []).forEach((id) => {
         convertedHitsMap[id] = element;
-      });
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
       });
     }
   }
@@ -3801,19 +3794,12 @@ const buildRegardingOfFilter = async (context, user, elements, filters) => {
             sideIdManualInferred.set(sideId, toTypes);
           }
         };
-        let startProcessingTime = new Date().getTime();
         for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
+          await doYield();
           const relation = relationships[relIndex];
           const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
           addTypeSide(relation.fromId, relType);
           addTypeSide(relation.toId, relType);
-          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-            startProcessingTime = new Date().getTime();
-            await new Promise((resolve) => {
-              setImmediate(resolve);
-            });
-          }
         }
       }
       return (element) => {
@@ -4142,24 +4128,17 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
     const elIdsCache = {};
     const indexCache = {};
     const pirInformationCache = {};
-    let startProcessingTime = new Date().getTime();
     for (let idIndex = 0; idIndex < dataIds.length; idIndex += 1) {
+      await doYield();
       const element = dataIds[idIndex];
       elIdsCache[element.internal_id] = element._id;
       indexCache[element.internal_id] = element._index;
       pirInformationCache[element.internal_id] = element.pir_information;
-      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-        startProcessingTime = new Date().getTime();
-        await new Promise((resolve) => {
-          setImmediate(resolve);
-        });
-      }
     }
     // Split by max operations, create the bulk
     const groupsOfImpacts = R.splitEvery(MAX_BULK_OPERATIONS, impacts);
-    startProcessingTime = new Date().getTime();
     for (let i = 0; i < groupsOfImpacts.length; i += 1) {
+      await doYield();
       const impactsBulk = groupsOfImpacts[i];
       const bodyUpdateRaw = impactsBulk.map(([impactId, elementMeta]) => {
         return Object.entries(elementMeta).map(([typeAndIndex, cleanupIds]) => {
@@ -4215,13 +4194,6 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
       if (bodyUpdate.length > 0) {
         await elBulk({ refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyUpdate });
       }
-      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-        startProcessingTime = new Date().getTime();
-        await new Promise((resolve) => {
-          setImmediate(resolve);
-        });
-      }
     }
   }
 };
@@ -4229,8 +4201,8 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
 export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, relationsToRemoveMap) => {
   // Update all rel connections that will remain
   const elementsImpact = {};
-  let startProcessingTime = new Date().getTime();
   for (let i = 0; i < cleanupRelations.length; i += 1) {
+    await doYield();
     const relation = cleanupRelations[i];
     const fromWillNotBeRemoved = !relationsToRemoveMap.has(relation.fromId) && !toBeRemovedIds.includes(relation.fromId);
     const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(relation.entity_type, relation.fromType, relation.toType, ROLE_FROM);
@@ -4261,13 +4233,6 @@ export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemoved
           elementsImpact[relation.toId][cleanKey] = [relation.fromId];
         }
       }
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
     }
   }
   return elementsImpact;
@@ -4487,15 +4452,22 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
 export const prepareElementForIndexing = async (element) => {
   const thing = {};
   const keyItems = Object.keys(element);
-  let startProcessingTime = new Date().getTime();
   for (let index = 0; index < keyItems.length; index += 1) {
+    await doYield();
     const key = keyItems[index];
     const value = element[key];
     if (Array.isArray(value)) { // Array of Date, objects, string or number
       const preparedArray = [];
-      let innerProcessingTime = new Date().getTime();
-      let extendLoopSplit = 0;
+      let yieldCount = 0;
       for (let valueIndex = 0; valueIndex < value.length; valueIndex += 1) {
+        if (await doYield()) {
+          // If we extend the preparation 5 times, log a warn
+          // It will help to understand what kind of key have so many elements
+          if (yieldCount === 5) {
+            logApp.warn('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
+          }
+          yieldCount += 1;
+        }
         const valueElement = value[valueIndex];
         if (valueElement) {
           if (isDateAttribute(key)) { // Date is an object but natively supported
@@ -4509,19 +4481,6 @@ export const prepareElementForIndexing = async (element) => {
             // For all other types, no transform (list of boolean is not supported)
             preparedArray.push(valueElement);
           }
-        }
-        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-        if (new Date().getTime() - innerProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-          // If we extends the preparation 5 times, log a warn
-          // It will help to understand what kind of key have so much elements
-          if (extendLoopSplit === 5) {
-            logApp.warn('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
-          }
-          extendLoopSplit += 1;
-          innerProcessingTime = new Date().getTime();
-          await new Promise((resolve) => {
-            setImmediate(resolve);
-          });
         }
       }
       thing[key] = preparedArray;
@@ -4537,13 +4496,6 @@ export const prepareElementForIndexing = async (element) => {
       thing[key] = value.trim();
     } else { // For all other types (numeric, ...), no transform
       thing[key] = value;
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
     }
   }
   return thing;
