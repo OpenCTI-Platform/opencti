@@ -60,7 +60,7 @@ jobs:
 
       - name: Setup Node.js & python
         run: |
-          npm install -g node-gyp yarn
+          npm install -g node-gyp corepack
           python -V
         shell: alpine.sh --root {0}
 
