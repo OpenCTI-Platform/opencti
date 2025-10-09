@@ -145,7 +145,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('8090');
     networkTrafficInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
-  it('should stixCyberObservable SSH_key created/update/delete', async () => {
+  it('should stixCyberObservable SSH_key created/update', async () => {
     // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
       type: 'SSH-Key',
@@ -167,6 +167,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(stixCyberObservable.data.stixCyberObservableAdd.key_type).toEqual('rsa');
     stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
 
+    // Update SSH Key
     const EDIT_QUERY = gql`
       mutation StixCyberObservableEdit($id: ID!, $input: [EditInput]!) {
         stixCyberObservableEdit(id: $id) {
@@ -188,11 +189,28 @@ describe('StixCyberObservable resolver standard behavior', () => {
         input: [{ key: 'key_type', value: 'ecdsa' }, { key: 'public_key', value: '' }, { key: 'fingerprint_sha256', value: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d97f' }]
       },
     });
-
-    console.log('SCO', JSON.stringify(stixCyberObservableUpdated));
     expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.key_type).toEqual('ecdsa');
     expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.public_key).toEqual('');
     expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.fingerprint_sha256).toEqual('a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d97f');
+  });
+
+  it('should ssh-key deleted', async () => {
+    const DELETE_QUERY = gql`
+      mutation stixCyberObservableDelete($id: ID!) {
+        stixCyberObservableEdit(id: $id) {
+          delete
+        }
+      }
+    `;
+    // Delete
+    await queryAsAdmin({
+      query: DELETE_QUERY,
+      variables: { id: stixCyberObservableInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableStixId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixCyberObservable).toBeNull();
   });
   it('should stixCyberObservable loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });
