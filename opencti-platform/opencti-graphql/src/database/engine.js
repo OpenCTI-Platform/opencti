@@ -4823,8 +4823,8 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
           }
         }
         // freshness of an entity updated for any relationship
-        if (isUpdatedAtObject(fromSide.type) || isUpdatedAtObject(toSide.type)) {
-          script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
+        if ((fromSide && isUpdatedAtObject(fromSide.type)) || (toSide && isUpdatedAtObject(toSide.type))) {
+          script += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
         }
         // Add Pir information for in-pir relationships
         if (t.relation === RELATION_IN_PIR) {
