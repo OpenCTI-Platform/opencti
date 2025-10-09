@@ -6,7 +6,6 @@ import themeDark from './ThemeDark';
 import themeLight from './ThemeLight';
 import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/hooks/useDocumentModifier';
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
-import { AppThemeProvider_publicsettings$data } from './__generated__/AppThemeProvider_publicsettings.graphql';
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
