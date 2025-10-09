@@ -180,7 +180,7 @@ const PLAYBOOK_INTERNAL_DATA_STREAM: PlaybookComponent<StreamConfiguration> = {
   }
 };
 
-export interface ManualTriggerConfiguration {
+interface ManualTriggerConfiguration {
   filters: string
 }
 const PLAYBOOK_INTERNAL_MANUAL_TRIGGER_SCHEMA: JSONSchemaType<ManualTriggerConfiguration> = {
@@ -221,8 +221,9 @@ const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
   },
   required: ['period', 'triggerTime', 'onlyLast', 'filters'],
 };
-export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> = {
-  id: 'PLAYBOOK_INTERNAL_DATA_CRON',
+export const PLAYBOOK_INTERNAL_DATA_CRON_ID = 'PLAYBOOK_INTERNAL_DATA_CRON';
+const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> = {
+  id: PLAYBOOK_INTERNAL_DATA_CRON_ID,
   name: 'Query knowledge on a regular basis',
   description: 'Query knowledge on the platform',
   icon: 'cron',
@@ -273,8 +274,9 @@ const PLAYBOOK_MATCHING_COMPONENT_SCHEMA: JSONSchemaType<MatchConfiguration> = {
   },
   required: ['filters'],
 };
-export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
-  id: 'PLAYBOOK_FILTERING_COMPONENT',
+export const PLAYBOOK_MATCHING_COMPONENT_ID = 'PLAYBOOK_FILTERING_COMPONENT';
+const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> = {
+  id: PLAYBOOK_MATCHING_COMPONENT_ID,
   name: 'Match knowledge',
   description: 'Match STIX data according to filter (pass if match)',
   icon: 'filter',
@@ -343,6 +345,8 @@ const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration> = {
     return { output_port: 'out', bundle: newBundle };
   }
 };
+// export executor for testing
+export const playbookReducingComponentExecutor = PLAYBOOK_REDUCING_COMPONENT.executor;
 
 interface ConnectorConfiguration {
   connector: string
@@ -501,7 +505,7 @@ export const addTaskFromCaseTemplates = async (
   return tasks;
 };
 
-export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
+const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWrapperConfiguration> = {
   id: 'PLAYBOOK_CONTAINER_WRAPPER_COMPONENT',
   name: 'Container wrapper',
   description: 'Create a container and wrap the element inside it',
@@ -585,6 +589,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
     return { output_port: 'out', bundle };
   }
 };
+export const playbookContainerWrapperComponentExecutor = PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.executor;
 
 export interface SharingConfiguration {
   organizations: string[] | { label: string, value: string }[]
@@ -604,8 +609,9 @@ const PLAYBOOK_SHARING_COMPONENT_SCHEMA: JSONSchemaType<SharingConfiguration> = 
   },
   required: ['organizations'],
 };
-export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
-  id: 'PLAYBOOK_SHARING_COMPONENT',
+export const PLAYBOOK_SHARING_COMPONENT_ID = 'PLAYBOOK_SHARING_COMPONENT';
+const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration> = {
+  id: PLAYBOOK_SHARING_COMPONENT_ID,
   name: 'Share with organizations',
   description: 'Share with organizations within the platform',
   icon: 'organization-add',
@@ -636,6 +642,7 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
     return { output_port: 'out', bundle };
   }
 };
+export const playbookSharingComponentExecutor = PLAYBOOK_SHARING_COMPONENT.executor;
 
 export interface UnsharingConfiguration {
   organizations: string[] | { label: string, value: string }[]
@@ -655,7 +662,7 @@ const PLAYBOOK_UNSHARING_COMPONENT_SCHEMA: JSONSchemaType<UnsharingConfiguration
   },
   required: ['organizations'],
 };
-export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfiguration> = {
+const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfiguration> = {
   id: 'PLAYBOOK_UNSHARING_COMPONENT',
   name: 'Unshare with organizations',
   description: 'Unshare with organizations within the platform',
@@ -715,7 +722,7 @@ const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<AccessRestri
   },
   required: ['access_restrictions'],
 };
-export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRestrictionsConfiguration> = {
+const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRestrictionsConfiguration> = {
   id: 'PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT',
   name: 'Manage access restrictions',
   description: 'Manage advanced access restrictions on entities',
@@ -778,7 +785,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
     return { output_port: 'out', bundle };
   }
 };
-export interface RemoveAccessRestrictionsConfiguration {
+interface RemoveAccessRestrictionsConfiguration {
   all: boolean
 }
 const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<RemoveAccessRestrictionsConfiguration> = {
@@ -788,7 +795,7 @@ const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT_SCHEMA: JSONSchemaType<Remov
   },
   required: [],
 };
-export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<RemoveAccessRestrictionsConfiguration> = {
+const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<RemoveAccessRestrictionsConfiguration> = {
   id: 'PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT',
   name: 'Remove access restrictions',
   description: 'Remove advanced access restrictions on entities',
@@ -1196,7 +1203,7 @@ const convertAuthorizedMemberToUsers = async (authorized_members: { value: strin
     .filter((u) => INTERNAL_USERS[u.id] === undefined);
   return R.uniqBy(R.prop('id'), withoutInternalUsers);
 };
-export interface NotifierConfiguration {
+interface NotifierConfiguration {
   notifiers: string[]
   authorized_members: object
 }
