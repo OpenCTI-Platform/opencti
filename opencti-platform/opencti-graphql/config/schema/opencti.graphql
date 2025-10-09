@@ -1366,27 +1366,33 @@ interface IntlSettings {
     platform_translations: String
 }
 
-type PublicSettings implements IntlSettings {
-    id: ID!
-    platform_title: String
-    platform_favicon: String
-    platform_login_message: String
-    platform_consent_message: String
-    platform_consent_confirm_text: String
-    platform_banner_text: String
-    platform_banner_level: String
-    platform_theme: Theme
-    platform_map_tile_server_dark: String
-    platform_map_tile_server_light: String
-    platform_whitemark: Boolean
-    platform_language: String
-    platform_translations: String
-    platform_providers: [PublicProvider!]!
-    platform_enterprise_edition_license_validated: Boolean!
-    playground_enabled: Boolean!
+interface ThemeSettings {
+  platform_title: String
+  platform_favicon: String
+  platform_theme: Theme
 }
 
-type Settings implements InternalObject & BasicObject & IntlSettings {
+type PublicSettings implements IntlSettings & ThemeSettings {
+  id: ID!
+  platform_title: String
+  platform_favicon: String
+  platform_login_message: String
+  platform_consent_message: String
+  platform_consent_confirm_text: String
+  platform_banner_text: String
+  platform_banner_level: String
+  platform_theme: Theme
+  platform_map_tile_server_dark: String
+  platform_map_tile_server_light: String
+  platform_whitemark: Boolean
+  platform_language: String
+  platform_translations: String
+  platform_providers: [PublicProvider!]!
+  platform_enterprise_edition_license_validated: Boolean!
+  playground_enabled: Boolean!
+}
+
+type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSettings {
   id: ID!
   standard_id: String!
   entity_type: String!

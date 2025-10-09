@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { StyledEngineProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { ConnectedPublicThemeProvider } from '../components/AppThemeProvider';
+import { ConnectedThemeProvider } from '../components/AppThemeProvider';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
 import Login from './components/Login';
 import { environment } from '../relay/environment';
@@ -39,7 +39,7 @@ export const rootPublicQuery = graphql`
       }
       playground_enabled
       ...AppIntlProvider_settings
-      ...AppThemeProvider_publicsettings
+      ...AppThemeProvider_settings
       ...PublicSettingsProvider_settings
     }
   }
@@ -59,12 +59,12 @@ const LoginRoot = ({ type }: { type: string }) => {
 
   return (
     <StyledEngineProvider injectFirst={true}>
-      <ConnectedPublicThemeProvider settings={data.publicSettings} >
+      <ConnectedThemeProvider settings={data.publicSettings} >
         <CssBaseline />
         <ConnectedIntlProvider settings={data.publicSettings}>
           <Login settings={data.publicSettings} type={type} />
         </ConnectedIntlProvider>
-      </ConnectedPublicThemeProvider>
+      </ConnectedThemeProvider>
     </StyledEngineProvider>
   );
 };
