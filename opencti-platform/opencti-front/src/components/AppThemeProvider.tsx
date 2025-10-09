@@ -9,7 +9,7 @@ import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider
 
 interface AppThemeProviderProps {
   children: React.ReactNode;
-  settings: AppThemeProvider_settings$data | AppThemeProvider_publicsettings$data;
+  settings: AppThemeProvider_settings$data;
   activeTheme?: { id: string } & AppThemeType | null
 }
 
