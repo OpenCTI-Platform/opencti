@@ -55,6 +55,7 @@ export const addTheme = async (context: AuthContext, user: AuthUser, input: Them
 
 export const initDefaultTheme = async (context: AuthContext, user = SYSTEM_USER) => {
   logApp.info('[INIT] Theme defaults starts initialization');
+
   // Create Dark theme with user customizations or defaults
   const darkThemeInput = {
     name: 'Dark',
