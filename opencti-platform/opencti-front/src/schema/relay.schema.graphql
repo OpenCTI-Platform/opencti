@@ -7932,8 +7932,9 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  ssh_key_type: String!
-  public_key: String!
+  key_type: String
+  public_key: String
+  fingerprint_sha256: String!
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -7945,7 +7946,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
 }
 
 input SSHKeyAddInput {
-  ssh_key_type: String
+  key_type: String
   public_key: String
 
   "*Constraints:*\n* Minimal length: `5`\n"
@@ -10697,7 +10698,7 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
-  ssh_key_type_ov
+  key_type_ov
   threat_actor_group_type_ov
   threat_actor_group_role_ov
   threat_actor_group_sophistication_ov

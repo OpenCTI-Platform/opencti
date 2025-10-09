@@ -32,7 +32,7 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
-  ssh_key_type_ov
+  key_type_ov
   threat_actor_group_type_ov
   threat_actor_group_role_ov
   threat_actor_group_sophistication_ov

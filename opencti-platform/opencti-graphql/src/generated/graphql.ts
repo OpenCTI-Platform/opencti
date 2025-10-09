@@ -25394,12 +25394,14 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  fingerprint_sha256: Scalars['String']['output'];
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   importFiles?: Maybe<FileConnection>;
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  key_type?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -25411,11 +25413,10 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
-  public_key: Scalars['String']['output'];
+  public_key?: Maybe<Scalars['String']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   spec_version: Scalars['String']['output'];
-  ssh_key_type: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
@@ -25580,8 +25581,8 @@ export type SshKeyAddInput = {
   fingerprint_md5?: InputMaybe<Scalars['String']['input']>;
   fingerprint_sha256: Scalars['String']['input'];
   key_length?: InputMaybe<Scalars['String']['input']>;
+  key_type?: InputMaybe<Scalars['String']['input']>;
   public_key?: InputMaybe<Scalars['String']['input']>;
-  ssh_key_type?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SavedFilter = BasicObject & InternalObject & {
@@ -32374,6 +32375,7 @@ export enum VocabularyCategory {
   IndicatorTypeOv = 'indicator_type_ov',
   InfrastructureTypeOv = 'infrastructure_type_ov',
   IntegrityLevelOv = 'integrity_level_ov',
+  KeyTypeOv = 'key_type_ov',
   MalwareCapabilitiesOv = 'malware_capabilities_ov',
   MalwareResultOv = 'malware_result_ov',
   MalwareTypeOv = 'malware_type_ov',
@@ -32393,7 +32395,6 @@ export enum VocabularyCategory {
   SecurityPlatformTypeOv = 'security_platform_type_ov',
   ServiceStatusOv = 'service_status_ov',
   ServiceTypeOv = 'service_type_ov',
-  KeyTypeOv = 'key_type_ov',
   StartTypeOv = 'start_type_ov',
   ThreatActorGroupRoleOv = 'threat_actor_group_role_ov',
   ThreatActorGroupSophisticationOv = 'threat_actor_group_sophistication_ov',
@@ -43411,12 +43412,14 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SshKeyExternalReferencesArgs>>;
+  fingerprint_sha256?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SshKeyGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyImportFilesArgs>>;
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<SshKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SshKeyJobsArgs>>;
+  key_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SshKeyNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -43428,11 +43431,10 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyPendingFilesArgs>>;
-  public_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  public_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SshKeyReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  ssh_key_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SshKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SshKeyStixCoreRelationshipsArgs>>;
