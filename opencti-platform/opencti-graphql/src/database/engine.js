@@ -1563,8 +1563,12 @@ const elDataConverter = (esHit) => {
       // Rebuild rel to stix attributes
       const rel = key.substring(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      const relData = isSingleRelationsRef(data.entity_type, relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
-      data[relType] = isStixRefUnidirectionalRelationship(relType) ? R.uniq(relData) : relData;
+      if (isSingleRelationsRef(data.entity_type, relType)) {
+        data[relType] = R.head(val);
+      } else {
+        const relData = [...(data[relType] ?? []), ...val];
+        data[relType] = isStixRefUnidirectionalRelationship(relType) ? R.uniq(relData) : relData;
+      }
     } else {
       data[key] = val;
     }
