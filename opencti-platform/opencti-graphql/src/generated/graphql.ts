@@ -32393,7 +32393,7 @@ export enum VocabularyCategory {
   SecurityPlatformTypeOv = 'security_platform_type_ov',
   ServiceStatusOv = 'service_status_ov',
   ServiceTypeOv = 'service_type_ov',
-  SshKeyTypeOv = 'ssh_key_type_ov',
+  KeyTypeOv = 'key_type_ov',
   StartTypeOv = 'start_type_ov',
   ThreatActorGroupRoleOv = 'threat_actor_group_role_ov',
   ThreatActorGroupSophisticationOv = 'threat_actor_group_sophistication_ov',

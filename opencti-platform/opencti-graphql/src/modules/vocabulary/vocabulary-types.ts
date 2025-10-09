@@ -365,11 +365,11 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }],
   },
-  ssh_key_type_ov: {
-    description: 'An enumeration of Windows service SSH key types',
+  key_type_ov: {
+    description: 'An enumeration of SSH key types',
     entity_types: [ENTITY_PROCESS],
     fields: [{
-      key: 'ssh_key_type',
+      key: 'key_type',
       required: false,
       multiple: false,
     }],

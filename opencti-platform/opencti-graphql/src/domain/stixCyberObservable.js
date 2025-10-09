@@ -234,6 +234,7 @@ export const addStixCyberObservable = async (context, user, input) => {
   }
   // If everything ok, create adapt/create the observable
   const created = await createEntity(context, user, observableInput, type);
+  console.log('created', created);
   // create the linked indicator if needed
   if (createIndicator) {
     try {

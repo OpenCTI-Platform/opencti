@@ -12454,8 +12454,9 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   observable_value: String!
   indicators(first: Int): IndicatorConnection
   # SSHKey
-  ssh_key_type: String!
-  public_key: String!
+  key_type: String
+  public_key: String
+  fingerprint_sha256: String!
   # Technical
   creators: [Creator!]
   toStix: String
@@ -12482,7 +12483,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   jobs(first: Int): [Work]
 }
 input SSHKeyAddInput {
-  ssh_key_type: String
+  key_type: String
   public_key: String
   fingerprint_sha256: String! @constraint(minLength: 5)
   fingerprint_md5: String @constraint(minLength: 5)
