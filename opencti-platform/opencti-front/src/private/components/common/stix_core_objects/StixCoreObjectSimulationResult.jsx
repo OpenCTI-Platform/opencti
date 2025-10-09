@@ -4,7 +4,7 @@ import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import React, { useState } from 'react';
 import Tooltip from '@mui/material/Tooltip';
-import { CheckOutlined, ErrorOutlined, LaunchOutlined, OpenInNewOutlined, SensorOccupiedOutlined, ShieldOutlined, TrackChangesOutlined } from '@mui/icons-material';
+import { CheckOutlined, ErrorOutlined, LaunchOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
@@ -13,10 +13,10 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
-import { graphql, usePreloadedQuery } from 'react-relay';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
+import Avatar from '@mui/material/Avatar';
 import Drawer from '../drawer/Drawer';
 import Chart from '../charts/Chart';
 import EEChip from '../entreprise_edition/EEChip';
@@ -24,7 +24,7 @@ import Transition from '../../../../components/Transition';
 import obasLight from '../../../../static/images/xtm/obas_light.png';
 import obasDark from '../../../../static/images/xtm/obas_dark.png';
 import { donutChartOptions } from '../../../../utils/Charts';
-import { extractSimpleError, fileUri, QueryRenderer } from '../../../../relay/environment';
+import { fileUri } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -32,64 +32,9 @@ import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
-import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import useXTM from '../../../../utils/hooks/useXTM';
 import useAI from '../../../../utils/hooks/useAI';
-
-const stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery = graphql`
-  query StixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery($id: ID!) {
-    obasStixCoreObjectSimulationsResult(id: $id) {
-      prevention {
-        unknown
-        success
-        failure
-      }
-      detection {
-        unknown
-        success
-        failure
-      }
-      human {
-        unknown
-        success
-        failure
-      }
-    }
-  }
-`;
-
-const stixCoreObjectSimulationResultObasContainerGenerateScenarioWithInjectPlaceholdersMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasContainerGenerateScenarioWithInjectPlaceholdersMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasContainerGenerateScenarioWithInjectPlaceholders(id: $id, simulationConfig: $simulationConfig, filters: $filters){
-      urlResponse
-      attackPatternsNotAvailableInOpenBAS
-      hasInjectPlaceholders
-    }
-  }
-`;
-
-const stixCoreObjectSimulationResultObasThreatGenerateScenarioWithInjectPlaceholdersMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasThreatGenerateScenarioWithInjectPlaceholdersMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasThreatGenerateScenarioWithInjectPlaceholders(id: $id, simulationConfig: $simulationConfig, filters: $filters) {
-      urlResponse
-      attackPatternsNotAvailableInOpenBAS
-      hasInjectPlaceholders
-    }
-  }
-`;
-
-const stixCoreObjectSimulationResultObasVictimGenerateScenarioWithInjectPlaceholdersMutation = graphql`
-  mutation StixCoreObjectSimulationResultObasVictimGenerateScenarioWithInjectPlaceholdersMutation($id: ID!, $simulationConfig: SimulationConfig, $filters: FilterGroup) {
-    obasVictimGenerateScenarioWithInjectPlaceholders(id: $id, simulationConfig: $simulationConfig, filters: $filters){
-      urlResponse
-      attackPatternsNotAvailableInOpenBAS
-      hasInjectPlaceholders
-    }
-  }
-`;
 
 const useStyles = makeStyles((theme) => ({
   simulationResults: {
@@ -128,10 +73,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const StixCoreObjectSimulationResult = ({
-  id,
-  queryRef,
-  query,
-  type,
+  data,
   simulationType,
   setSimulationType,
 }) => {
@@ -142,9 +84,7 @@ const StixCoreObjectSimulationResult = ({
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
   const { enabled, configured } = useAI();
   const isSimulatedEmailsAvailable = enabled && configured && isEnterpriseEdition;
-
-  const { oBasConfigured, oBasDisableDisplay } = useXTM();
-  const [filters, helpers] = useFiltersState(emptyFilterGroup);
+  const [helpers] = useFiltersState(emptyFilterGroup);
 
   const [open, setOpen] = useState(false);
   const [openCallToAction, setOpenCallToAction] = useState(false);
@@ -152,27 +92,14 @@ const StixCoreObjectSimulationResult = ({
   const [architecture, setArchitecture] = useState('x86_64');
   const [selection, setSelection] = useState('random');
   const [interval, setInterval] = useState(2);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [resultError, setResultError] = useState(null);
-  const draftContext = useDraftContext();
-  const disabledInDraft = !!draftContext;
-
-  const attackPatterns = usePreloadedQuery(query, queryRef);
-
-  // Check if there are attack patterns in the entity
-  const hasAttackPatterns = (
-    (type === 'container' && attackPatterns?.stixCoreObject?.objects?.edges?.length > 0)
-    || (type === 'threat' && attackPatterns?.stixCoreRelationships?.edges?.length > 0)
-  );
 
   const platformOptions = [
     { label: 'Windows', value: 'Windows' },
     { label: 'Linux', value: 'Linux' },
     { label: 'MacOS', value: 'MacOS' },
   ];
-
-  const opacity = (!hasAttackPatterns && simulationType) === 'technical' ? 0.38 : 1;
 
   const handleClose = () => {
     setSimulationType('technical');
@@ -185,103 +112,6 @@ const StixCoreObjectSimulationResult = ({
     setResult(null);
     setResultError(null);
     handleClose();
-  };
-
-  const canGenerateScenario = () => {
-    return (
-      (simulationType === 'technical' && hasAttackPatterns && platforms.length > 0 && architecture)
-      || (simulationType === 'simulated' && enabled && configured && isEnterpriseEdition)
-      || (simulationType === 'mixed' && ((enabled && configured && isEnterpriseEdition) && (hasAttackPatterns && platforms.length > 0 && architecture)))
-    );
-  };
-
-  const [commitMutationGenerateContainer] = useApiMutation(stixCoreObjectSimulationResultObasContainerGenerateScenarioWithInjectPlaceholdersMutation);
-  const [commitMutationGenerateThreat] = useApiMutation(stixCoreObjectSimulationResultObasThreatGenerateScenarioWithInjectPlaceholdersMutation);
-  const [commitMutationGenerateVictim] = useApiMutation(stixCoreObjectSimulationResultObasVictimGenerateScenarioWithInjectPlaceholdersMutation);
-
-  const handleGenerate = () => {
-    setIsSubmitting(true);
-    setOpen(false);
-    const selectedPlatforms = platforms.map((option) => option.value);
-    switch (type) {
-      case 'container':
-        commitMutationGenerateContainer({
-          variables: {
-            id,
-            simulationConfig: {
-              interval,
-              selection,
-              simulationType,
-              platforms: selectedPlatforms,
-              architecture,
-            },
-            filters,
-          },
-          onCompleted: (response) => {
-            setResult(response.obasContainerGenerateScenarioWithInjectPlaceholders);
-            setIsSubmitting(false);
-            handleClose();
-          },
-          onError: (error) => {
-            setResultError(extractSimpleError(error));
-            setIsSubmitting(false);
-            handleClose();
-          },
-        });
-        break;
-      case 'threat':
-        commitMutationGenerateThreat({
-          variables: {
-            id,
-            simulationConfig: {
-              interval,
-              selection,
-              simulationType,
-              platforms: selectedPlatforms,
-              architecture,
-            },
-            filters,
-          },
-          onCompleted: (response) => {
-            setResult(response.obasThreatGenerateScenarioWithInjectPlaceholders);
-            setIsSubmitting(false);
-            handleClose();
-          },
-          onError: (error) => {
-            setResultError(extractSimpleError(error));
-            setIsSubmitting(false);
-            handleClose();
-          },
-        });
-        break;
-      case 'victim':
-        commitMutationGenerateVictim({
-          variables: {
-            id,
-            simulationConfig: {
-              interval,
-              selection,
-              simulationType,
-              platforms: selectedPlatforms,
-              architecture,
-            },
-            filters,
-          },
-          onCompleted: (response) => {
-            setResult(response.obasVictimGenerateScenarioWithInjectPlaceholders);
-            setIsSubmitting(false);
-            handleClose();
-          },
-          onError: (error) => {
-            setResultError(extractSimpleError(error));
-            setIsSubmitting(false);
-            handleClose();
-          },
-        });
-        break;
-      default:
-      // do nothing
-    }
   };
 
   const initialValues = {
@@ -316,9 +146,9 @@ const StixCoreObjectSimulationResult = ({
       <Formik
         initialValues={initialValues}
         validationSchema={simulationGenerationValidator}
-        onSubmit={handleGenerate}
+        onSubmit={() => { /* console.log('TODO change to create security coverage entity') */ }}
       >
-        {({ isValid, values }) => (
+        {({ values }) => (
           <Form>
             <div style={{ width: '100%' }}>
               <Field
@@ -328,7 +158,7 @@ const StixCoreObjectSimulationResult = ({
                 label={t_i18n('Simulation type')}
                 fullWidth
                 onChange={(_event, newValue) => setSimulationType(newValue)}
-                containerstyle={{ width: '100%', marginTop: 20, opacity }}
+                containerstyle={{ width: '100%', marginTop: 20 }}
               >
                 <MenuItem value="technical">
                   {t_i18n('Technical (payloads)')}
@@ -343,11 +173,11 @@ const StixCoreObjectSimulationResult = ({
             </div>
             {values.simulationType !== 'simulated' && (
               <>
-                {!hasAttackPatterns && (
+                {/*! hasAttackPatterns && (
                   <Alert severity="warning" variant="outlined" style={{ marginTop: 5 }}>
                     {t_i18n('Technical (payloads) requires attack patterns in this entity.')}
                   </Alert>
-                )}
+                ) */}
                 <div style={fieldSpacingContainerStyle}>
                   <Field
                     component={AutocompleteField}
@@ -364,7 +194,7 @@ const StixCoreObjectSimulationResult = ({
                         <div className={classes.text}>{option.label ?? ''}</div>
                       </li>
                     )}
-                    disabled={!hasAttackPatterns}
+                    disabled={false}
                   />
                 </div>
                 <div style={fieldSpacingContainerStyle}>
@@ -373,7 +203,7 @@ const StixCoreObjectSimulationResult = ({
                     label={t_i18n('Targeted architecture')}
                     name="architecture"
                     fullWidth
-                    disabled={!hasAttackPatterns}
+                    disabled={false}
                     onChange={(_event, newValue) => setArchitecture(newValue)}
                     containerstyle={{ width: '100%' }}
                   >
@@ -391,7 +221,7 @@ const StixCoreObjectSimulationResult = ({
                 label={t_i18n('Interval between injections (in minutes)')}
                 name="interval"
                 fullWidth
-                disabled={!canGenerateScenario()}
+                disabled={true}
                 onChange={(_event, newValue) => setInterval(parseInt(newValue, 10))}
               />
             </div>
@@ -402,7 +232,7 @@ const StixCoreObjectSimulationResult = ({
                 label={t_i18n('Number of injects generated by attack pattern and platform')}
                 name="selection"
                 fullWidth
-                disabled={!canGenerateScenario()}
+                disabled={true}
                 onChange={(_event, newValue) => setSelection(newValue)}
                 containerstyle={{ width: '100%' }}
               >
@@ -414,7 +244,7 @@ const StixCoreObjectSimulationResult = ({
               <Button
                 variant="contained"
                 onClick={handleClose}
-                disabled={isSubmitting}
+                disabled={true}
                 classes={{ root: classes.button }}
               >
                 {t_i18n('Cancel')}
@@ -423,7 +253,7 @@ const StixCoreObjectSimulationResult = ({
                 variant="contained"
                 color="secondary"
                 type="submit"
-                disabled={isSubmitting || !canGenerateScenario() || !isValid}
+                disabled={true}
                 classes={{ root: classes.button }}
               >
                 {t_i18n('Generate')}
@@ -437,12 +267,16 @@ const StixCoreObjectSimulationResult = ({
 
   const renderCharts = () => {
     return (
-      <QueryRenderer
-        query={stixCoreObjectSimulationResultObasStixCoreObjectSimulationsResultQuery}
-        variables={{ id }}
-        render={({ props }) => {
-          const labels = [t_i18n('Unknown'), t_i18n('Success'), t_i18n('Failure')];
-          const chartColors = [theme.palette.action.disabled, theme.palette.success.main, theme.palette.error.main];
+      <div className={classes.charts}>
+        {(data?.coverage_information ?? []).map((coverage) => {
+          let chartColors = [theme.palette.action.disabled];
+          let labels = [t_i18n('Unknown')];
+          let series = [coverage.coverage_score];
+          if (coverage.coverage_score > 0) {
+            chartColors = [theme.palette.success.main, theme.palette.error.main];
+            labels = [t_i18n('Success'), t_i18n('Failure')];
+            series = [coverage.coverage_score, 100 - coverage.coverage_score];
+          }
           const options = donutChartOptions(
             theme,
             labels,
@@ -456,104 +290,18 @@ const StixCoreObjectSimulationResult = ({
             65,
             false,
           );
-          if (props && props.obasStixCoreObjectSimulationsResult) {
-            const { prevention, detection, human } = props.obasStixCoreObjectSimulationsResult;
-            return (
-              <div className={classes.charts}>
-                <div className={classes.chartContainer}>
-                  <div className={classes.chart}>
-                    <Chart
-                      options={options}
-                      series={[prevention.unknown, prevention.success, prevention.failure]}
-                      type="donut"
-                      width={50}
-                      height={50}
-                    />
-                    <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
-                      <ShieldOutlined className={classes.iconOverlay} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className={classes.chartContainer}>
-                  <div className={classes.chart}>
-                    <Chart
-                      options={options}
-                      series={[detection.unknown, detection.success, detection.failure]}
-                      type="donut"
-                      width={50}
-                      height={50}
-                    />
-                    <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
-                      <TrackChangesOutlined className={classes.iconOverlay} />
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className={classes.chartContainer}>
-                  <div className={classes.chart}>
-                    <Chart
-                      options={options}
-                      series={[human.unknown, human.success, human.failure]}
-                      type="donut"
-                      width={50}
-                      height={50}
-                    />
-                    <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
-                      <SensorOccupiedOutlined className={classes.iconOverlay} />
-                    </Tooltip>
-                  </div>
-                </div>
-              </div>
-            );
-          }
-          const chartData = [100];
-          return (
-            <div className={classes.charts}>
-              <div className={classes.chartContainer}>
-                <div className={classes.chart}>
-                  <Chart
-                    options={options}
-                    series={chartData}
-                    type="donut"
-                    width={50}
-                    height={50}
-                  />
-                  <Tooltip title={`${t_i18n('Prevention')}`} placement="bottom">
-                    <ShieldOutlined className={classes.iconOverlay} />
-                  </Tooltip>
-                </div>
-              </div>
-              <div className={classes.chartContainer}>
-                <div className={classes.chart}>
-                  <Chart
-                    options={options}
-                    series={chartData}
-                    type="donut"
-                    width={50}
-                    height={50}
-                  />
-                  <Tooltip title={`${t_i18n('Detection')}`} placement="bottom">
-                    <TrackChangesOutlined className={classes.iconOverlay} />
-                  </Tooltip>
-                </div>
-              </div>
-              <div className={classes.chartContainer}>
-                <div className={classes.chart}>
-                  <Chart
-                    options={options}
-                    series={chartData}
-                    type="donut"
-                    width={50}
-                    height={50}
-                  />
-                  <Tooltip title={`${t_i18n('Human response')}`} placement="bottom">
-                    <SensorOccupiedOutlined className={classes.iconOverlay} />
-                  </Tooltip>
-                </div>
-              </div>
+          return <div key={coverage.coverage_name} className={classes.chartContainer}>
+            <div className={classes.chart}>
+              <Chart options={options} series={series} type="donut" width={50} height={50}/>
+              <Tooltip title={`${t_i18n(coverage.coverage_name)}`} placement="bottom">
+                <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 18, height: 18 }}>
+                  <span style={{ color: '#ffffff' }}>{coverage.coverage_name.charAt(0).toUpperCase()}</span>
+                </Avatar>
+              </Tooltip>
             </div>
-          );
-        }}
-      />
+          </div>;
+        })}
+      </div>
     );
   };
 
@@ -632,23 +380,22 @@ const StixCoreObjectSimulationResult = ({
 
   return (
     <>
-      {!oBasDisableDisplay && !disabledInDraft && (
-        <div className={classes.simulationResults}>
-          <Tooltip title={`${t_i18n('Check the posture in OpenBAS')}`}>
-            <Button
-              variant="outlined"
-              size="small"
-              style={{ fontSize: 12 }}
-              disabled={!isGrantedToUpdate && oBasConfigured}
-              onClick={() => (oBasConfigured ? setOpen(true) : setOpenCallToAction(true))}
-            >
-              <img style={{ width: 20, height: 20, marginRight: 5, display: 'block' }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
-              {t_i18n('Simulate')}
-            </Button>
-          </Tooltip>
-          {renderCharts()}
-        </div>
-      )}
+      <div className={classes.simulationResults}>
+        {data == null
+            && <Tooltip title={`${t_i18n('Create a coverage')}`}>
+              <Button
+                variant="outlined"
+                size="small"
+                style={{ fontSize: 12 }}
+                disabled={!isGrantedToUpdate}
+                onClick={() => setOpen(true)}
+              >
+                <img style={{ width: 20, height: 20, marginRight: 5, display: 'block' }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OAEV" />
+                {t_i18n('Add Security coverage')}
+              </Button>
+            </Tooltip>}
+        {renderCharts()}
+      </div>
       <Drawer
         title={t_i18n('Generate a simulation scenario')}
         open={open}
@@ -657,7 +404,7 @@ const StixCoreObjectSimulationResult = ({
         {renderForm()}
       </Drawer>
       <Dialog
-        open={!!(isSubmitting || result || resultError)}
+        open={!!(result || resultError)}
         slotProps={{ paper: { elevation: 1 } }}
         slots={{ transition: Transition }}
         onClose={handleCloseFinal}
@@ -665,12 +412,12 @@ const StixCoreObjectSimulationResult = ({
         fullWidth={true}
       >
         <DialogContent>
-          {isSubmitting && renderCooking()}
-          {!isSubmitting && result && renderResult()}
-          {!isSubmitting && resultError && renderResultError()}
+          {renderCooking()}
+          {result && renderResult()}
+          {resultError && renderResultError()}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseFinal} disabled={isSubmitting}>{t_i18n('Close')}</Button>
+          <Button onClick={handleCloseFinal} disabled={true}>{t_i18n('Close')}</Button>
         </DialogActions>
       </Dialog>
       <Dialog

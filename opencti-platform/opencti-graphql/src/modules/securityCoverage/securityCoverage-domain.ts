@@ -14,12 +14,16 @@ import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
 
 // region CRUD
-export const findById = (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
+export const findSecurityCoverageById = (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
   return storeLoadById<BasicStoreEntitySecurityCoverage>(context, user, SecurityCoverageId, ENTITY_TYPE_SECURITY_COVERAGE);
 };
 
-export const findAll = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityCoverage>) => {
+export const pageSecurityCoverageConnections = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntitySecurityCoverage>) => {
   return pageEntitiesConnection<BasicStoreEntitySecurityCoverage>(context, user, [ENTITY_TYPE_SECURITY_COVERAGE], args);
+};
+
+export const findSecurityCoverageByCoveredId = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, coveredId: string) => {
+  return loadEntityThroughRelationsPaginated<T>(context, user, coveredId, RELATION_COVERED, ABSTRACT_STIX_DOMAIN_OBJECT, true);
 };
 
 export const addSecurityCoverage = async (context: AuthContext, user: AuthUser, securityCoverageInput: SecurityCoverageAddInput) => {

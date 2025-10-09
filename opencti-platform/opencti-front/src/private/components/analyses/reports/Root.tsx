@@ -57,6 +57,12 @@ const reportQuery = graphql`
       entity_type
       name
       currentUserAccessRight
+      securityCoverage {
+          coverage_information {
+              coverage_name
+              coverage_score
+          }
+      }
       ...Report_report
       ...ReportDetails_report
       ...ReportKnowledge_report
@@ -183,7 +189,7 @@ const RootReport = () => {
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                         <AIInsights id={report.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
-                        <StixCoreObjectSimulationResultContainer id={report.id} type="container"/>
+                        <StixCoreObjectSimulationResultContainer id={report.id} data={report.securityCoverage} type="container"/>
                       </div>
                     )}
                   </Box>

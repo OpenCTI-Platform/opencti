@@ -129,7 +129,6 @@ import './internal/csvMapper/csvMapper-graphql';
 import './internal/jsonMapper/jsonMapper-graphql';
 import './publicDashboard/publicDashboard-graphql';
 import './ai/ai-graphql';
-import './xtm/xtm-graphql';
 import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
 import './exclusionList/exclusionList-graphql';
