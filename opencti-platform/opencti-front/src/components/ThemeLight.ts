@@ -3,7 +3,7 @@ import type { ExtendedThemeOptions } from './Theme';
 import { fileUri } from '../relay/environment';
 import LogoText from '../static/images/logo_text_light.png';
 import LogoCollapsed from '../static/images/logo_light.png';
-import { hexToRGB, stringToColour } from '../utils/Colors';
+import { hexToRGB } from '../utils/Colors';
 
 const EE_COLOR = '#0c7e69';
 
