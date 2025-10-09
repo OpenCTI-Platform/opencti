@@ -2,7 +2,7 @@ import Card from '@mui/material/Card';
 import React from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import { CardActions, Typography } from '@mui/material';
+import { CardActions, Stack, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { VerifiedOutlined } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
@@ -77,9 +77,12 @@ const ConnectorActions = ({
 
   return (
     <CardActions
-      style={{
+      sx={{
         justifyContent: 'space-between',
-        padding: 16,
+        padding: 2,
+        flexWrap: 'wrap',
+        gap: 1,
+        alignItems: 'flex-end',
       }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -87,10 +90,15 @@ const ConnectorActions = ({
         label={connectorMetadata.label}
         color={connectorMetadata.color}
       />
-      <div style={{ display: 'flex', gap: 4 }}>
-        <Button variant="outlined" size="small" component={Link} to={link}>
-          {t_i18n('Details')}
-        </Button>
+      <Stack
+        sx={{
+          marginLeft: '0!important',
+        }}
+        direction="row" gap={1}
+      >
+        {/*<Button variant="outlined" size="small" component={Link} to={link}>*/}
+        {/*  {t_i18n('Details')}*/}
+        {/*</Button>*/}
         <Security needs={[INGESTION_SETINGESTIONS]}>
           {isEnterpriseEdition ? (
             <IngestionCatalogCardDeployButton
@@ -104,12 +112,11 @@ const ConnectorActions = ({
             </Box>
           )}
         </Security>
-      </div>
+      </Stack>
     </CardActions>
   );
 };
 
-// Main Component
 const IngestionCatalogCard = ({
   node: connector,
   isEnterpriseEdition,
