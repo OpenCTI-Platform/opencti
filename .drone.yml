@@ -254,7 +254,7 @@ steps:
       - dependencies-checkout
 
   # always run the examples last since they don't clean up
-  - name: example-tests
+  - name: pycti-example-tests
     image: python:3.12
     commands:
       - cd client-python
@@ -302,6 +302,7 @@ steps:
       - api-tests
       - frontend-tests
       - frontend-e2e-tests
+      - pycti-example-tests
 
   - name: slack
     image: plugins/slack
@@ -638,16 +639,17 @@ services:
         from_secret: github_token
     commands:
       - sleep 10
+      - ls -lart
       - apk add build-base git libffi-dev cargo
-      - mkdir /tmp/pycti-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/pycti-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/pycti-start-platform/opencti-graphql
+      - npm install -g corepack
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
-      - yarn build:dev
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
 volumes:
