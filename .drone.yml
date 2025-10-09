@@ -17,12 +17,11 @@ steps:
       # copy opencti-platform without nodes_modules
       - cp -R opencti-platform platform-reference
       - apk add git github-cli
+      # Faking that client-python is here
+      - git clone https://github.com/OpenCTI-Platform/client-python client-python --depth=1
       - chmod 777 scripts/*
       - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
-      - cd "$DRONE_WORKSPACE/client-python"
-      - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - git log -n 1
 
   - name: backend-verify-licenses
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
@@ -209,6 +208,65 @@ steps:
     commands:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
+  
+  - name: client-test-39
+    image: python:3.9
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - dependencies-checkout
+
+  - name: client-test-310
+    image: python:3.10
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - dependencies-checkout
+
+  - name: client-test-311
+    image: python:3.11
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - dependencies-checkout
+
+  - name: client-test-312
+    image: python:3.12
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - dependencies-checkout
+
+  # always run the examples last since they don't clean up
+  - name: example-tests
+    image: python:3.12
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install .
+      - cd examples/
+       - /bin/bash run_all.sh
+    depends_on:
+      - client-test-312
+      - client-test-311
+      - client-test-310
+      - client-test-39
 
   - name: build-circleci
     image: curlimages/curl
@@ -555,6 +613,42 @@ services:
       - cd /tmp/opencti-e2e-worker
       - pip install -r src/requirements.txt
       - python3 src/worker.py
+
+  - name: opencti-pycti-start
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
+    environment:
+      APP__PORT: 4600
+      APP__HEALTH_ACCESS_KEY: cihealthkey
+      APP__ADMIN__PASSWORD: admin
+      APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      APP__ENTERPRISE_EDITION_LICENSE:
+        from_secret: ee_license
+      REDIS__HOSTNAME: redis
+      REDIS__NAMESPACE: pycti-start
+      ELASTICSEARCH__URL: http://elastic:9200
+      ELASTICSEARCH__INDEX_PREFIX: pycti-start
+      MINIO__ENDPOINT: minio
+      MINIO__BUCKET_NAME: pycti-start
+      RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__QUEUE_PREFIX: pycti-start
+      EXPIRATION_SCHEDULER__ENABLED: false
+      SUBSCRIPTION_SCHEDULER__ENABLED: false
+      SMTP__ENABLED: false
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - sleep 10
+      - apk add build-base git libffi-dev cargo
+      - mkdir /tmp/pycti-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/pycti-start-platform/
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
+      - pip install -e .[dev,doc]
+      - cd /tmp/pycti-start-platform/opencti-graphql
+      - yarn install
+      - yarn install:python
+      - yarn build:dev
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn start
 
 volumes:
   - name: cache-backend-verify-licenses-yarn
