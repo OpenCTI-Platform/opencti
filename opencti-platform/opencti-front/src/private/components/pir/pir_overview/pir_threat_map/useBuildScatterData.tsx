@@ -34,7 +34,7 @@ const useBuildScatterData = ({
     getNodes(stixDomainObjects).forEach((d) => {
       const item = {
         id: d.id,
-        date: d.refreshed_at ?? d.updated_at,
+        date: d.refreshed_at,
         score: d.pirInformation?.pir_score ?? 0,
         name: d?.representative?.main ?? '',
         type: d?.entity_type ?? '',
