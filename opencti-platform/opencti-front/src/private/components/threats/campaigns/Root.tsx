@@ -10,7 +10,6 @@ import { RootCampaignSubscription } from '@components/threats/campaigns/__genera
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import Campaign from './Campaign';
 import CampaignKnowledge from './CampaignKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -206,7 +205,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={campaign.id}/>
-                <StixCoreObjectSimulationResultContainer id={campaign.id} type="threat"/>
+                  { /* <StixCoreObjectSimulationResultContainer id={campaign.id} type="threat"/> */}
               </div>
               )}
             </Box>

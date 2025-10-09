@@ -1,4 +1,11 @@
-import { addSecurityCoverage, findAll, findById, securityCoverageDelete, securityCoverageStixBundle, objectCovered } from './securityCoverage-domain';
+import {
+  addSecurityCoverage,
+  pageSecurityCoverageConnections,
+  findSecurityCoverageById,
+  securityCoverageDelete,
+  securityCoverageStixBundle,
+  objectCovered
+} from './securityCoverage-domain';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -10,8 +17,8 @@ import type { Resolvers } from '../../generated/graphql';
 
 const SecurityCoverageResolvers: Resolvers = {
   Query: {
-    securityCoverage: (_, { id }, context) => findById(context, context.user, id),
-    securityCoverages: (_, args, context) => findAll(context, context.user, args),
+    securityCoverage: (_, { id }, context) => findSecurityCoverageById(context, context.user, id),
+    securityCoverages: (_, args, context) => pageSecurityCoverageConnections(context, context.user, args),
   },
   SecurityCoverage: {
     objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),

@@ -146,6 +146,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
             request_headers = {
                 "User-Agent": "pycti/" + __version__,
                 "Authorization": "Bearer " + self.connector_token,
+                "Content-Type": "application/json",
             }
             response = requests.post(
                 callback_uri,
@@ -158,7 +159,7 @@ class ApiConsumer(Thread):  # pylint: disable=too-many-instance-attributes
                 },
                 timeout=300,
             )
-            if response.status_code != 202:
+            if response.status_code != 200 and response.status_code != 202:
                 raise RequestException(response.status_code, response.text)
             else:
                 # Ack the message
