@@ -617,6 +617,9 @@ services:
 
   - name: opencti-pycti-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
+    volumes:
+    - name: cache-opencti-pycti-start-yarn
+      path: /root/.yarn/berry
     environment:
       APP__PORT: 4600
       APP__HEALTH_ACCESS_KEY: cihealthkey
@@ -638,9 +641,11 @@ services:
       GITHUB_TOKEN:
         from_secret: github_token
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - sleep 10
       - ls -lart
       - apk add build-base git libffi-dev cargo
+      - mkdir -p /tmp/pycti-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/pycti-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
@@ -683,6 +688,8 @@ volumes:
   - name: cache-frontend-e2e-tests-yarn
     host:
       path: /tmp/cache-frontend-e2e-tests-yarn
-
+  - name: cache-opencti-pycti-start-yarn
+    host:
+      path: /tmp/cache-opencti-pycti-start-yarn
 image_pull_secrets:
   - dockerconfigjson
