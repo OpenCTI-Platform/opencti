@@ -1,104 +1,68 @@
-import { useRef, useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+
+const GAP_WIDTH = 8;
+const PLUS_CHIP_WIDTH = 70;
 
 const useChipOverflow = (useCases: string[]) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [visibleCount, setVisibleCount] = useState(useCases.length);
   const [shouldTruncate, setShouldTruncate] = useState(false);
-  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     chipRefs.current = chipRefs.current.slice(0, useCases.length);
   }, [useCases.length]);
 
   useEffect(() => {
+    let resizeTimeout: ReturnType<typeof setTimeout>;
+
     const calculateVisibleChips = () => {
-      if (!containerRef.current) return;
+      const container = containerRef.current;
+      if (!container) return;
 
-      const containerWidth = containerRef.current.offsetWidth;
-      const validChips = chipRefs.current.filter((ref) => ref !== null);
+      const containerWidth = container.offsetWidth;
+      const chips = chipRefs.current.filter(Boolean) as HTMLDivElement[];
 
-      if (validChips.length === 0) return;
-
-      const GAP_WIDTH = 8;
-      const PLUS_CHIP_WIDTH = 70;
-      const MIN_CHIP_WIDTH = 60; // Minimum width before collapsing to +N
-      const TRUNCATION_BUFFER = 20; // Extra buffer to decide when to truncate
+      if (chips.length === 0) return;
 
       let accumulatedWidth = 0;
-      let visibleChips = 0;
-      let needsTruncation = false;
+      let count = 0;
+      let truncationNeeded = false;
 
-      for (let i = 0; i < validChips.length; i += 1) {
-        const chip = validChips[i];
-        if (!chip) return;
+      for (let i = 0; i < chips.length; i += 1) {
+        const chipWidth = chips[i].offsetWidth;
+        const hasMore = i < chips.length - 1;
+        const gap = count > 0 ? GAP_WIDTH : 0;
+        const widthWithChip = accumulatedWidth + chipWidth + gap;
 
-        const chipWidth = chip.offsetWidth;
-        const gapWidth = visibleChips > 0 ? GAP_WIDTH : 0;
-        const totalWidthWithThisChip = accumulatedWidth + chipWidth + gapWidth;
+        // If we can still fit the chip and possibly the +N indicator
+        const remainingSpace = containerWidth - widthWithChip;
+        const spaceNeededForRest = hasMore ? PLUS_CHIP_WIDTH + GAP_WIDTH : 0;
 
-        const hasMoreChips = i < validChips.length - 1;
-        const widthNeeded = hasMoreChips
-          ? totalWidthWithThisChip + GAP_WIDTH + PLUS_CHIP_WIDTH
-          : totalWidthWithThisChip;
-
-        // Can fit at full width
-        if (widthNeeded <= containerWidth) {
-          accumulatedWidth = totalWidthWithThisChip;
-          visibleChips += 1;
-          needsTruncation = false;
+        if (remainingSpace >= spaceNeededForRest) {
+          accumulatedWidth = widthWithChip;
+          count += 1;
         } else {
-          // Check if we can fit this chip with truncation
-          const minWidthNeeded = hasMoreChips
-            ? accumulatedWidth + MIN_CHIP_WIDTH + gapWidth + GAP_WIDTH + PLUS_CHIP_WIDTH
-            : accumulatedWidth + MIN_CHIP_WIDTH + gapWidth;
-
-          // Check with buffer: if we're close to needing truncation, apply it
-          const truncatedWidthNeeded = hasMoreChips
-            ? accumulatedWidth + MIN_CHIP_WIDTH + TRUNCATION_BUFFER + gapWidth + GAP_WIDTH + PLUS_CHIP_WIDTH
-            : accumulatedWidth + MIN_CHIP_WIDTH + TRUNCATION_BUFFER + gapWidth;
-
-          if (minWidthNeeded <= containerWidth && truncatedWidthNeeded > containerWidth) {
-            needsTruncation = true;
-            visibleChips += 1;
-            break;
-          } else if (minWidthNeeded <= containerWidth) {
-            visibleChips += 1;
-            needsTruncation = false;
-          }
+          truncationNeeded = true;
           break;
         }
       }
 
-      const newVisibleCount = Math.max(1, visibleChips);
-
-      setVisibleCount((prev) => {
-        if (prev !== newVisibleCount) {
-          setShouldTruncate(false); // Reset truncation when count changes
-          return newVisibleCount;
-        }
-        return prev;
-      });
-
-      setShouldTruncate(needsTruncation);
+      setVisibleCount(Math.max(1, count));
+      setShouldTruncate(truncationNeeded);
     };
 
     const handleResize = () => {
-      if (resizeTimeoutRef.current) {
-        clearTimeout(resizeTimeoutRef.current);
-      }
-      resizeTimeoutRef.current = setTimeout(calculateVisibleChips, 100);
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(calculateVisibleChips, 100);
     };
 
-    const initialTimer = setTimeout(calculateVisibleChips, 50);
+    calculateVisibleChips();
     window.addEventListener('resize', handleResize);
 
     return () => {
-      clearTimeout(initialTimer);
-      if (resizeTimeoutRef.current) {
-        clearTimeout(resizeTimeoutRef.current);
-      }
       window.removeEventListener('resize', handleResize);
+      clearTimeout(resizeTimeout);
     };
   }, [useCases]);
 

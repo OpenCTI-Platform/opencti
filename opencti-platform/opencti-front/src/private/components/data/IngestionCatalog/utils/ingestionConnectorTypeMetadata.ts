@@ -39,7 +39,7 @@ export const getConnectorMetadata = (
     case 'STREAM':
       return {
         label: t_i18n('Stream'),
-        color: 'primary' as const,
+        color: 'warning' as const,
       };
     default:
       // return raw type if type not handled

@@ -3,9 +3,8 @@ import React from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
 import { CardActions, Stack, Typography } from '@mui/material';
-import Button from '@mui/material/Button';
 import { VerifiedOutlined } from '@mui/icons-material';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
@@ -62,19 +61,15 @@ const ConnectorTitle = ({ title }: { title: string }) => {
 
 const ConnectorActions = ({
   connectorMetadata,
-  link,
   isEnterpriseEdition,
   deploymentCount,
   onClickDeploy,
 }: {
-  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'success' };
-  link: string;
+  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' };
   isEnterpriseEdition: boolean;
   deploymentCount: number;
   onClickDeploy: () => void;
 }) => {
-  const { t_i18n } = useFormatter();
-
   return (
     <CardActions
       sx={{
@@ -96,9 +91,6 @@ const ConnectorActions = ({
         }}
         direction="row" gap={1}
       >
-        {/*<Button variant="outlined" size="small" component={Link} to={link}>*/}
-        {/*  {t_i18n('Details')}*/}
-        {/*</Button>*/}
         <Security needs={[INGESTION_SETINGESTIONS]}>
           {isEnterpriseEdition ? (
             <IngestionCatalogCardDeployButton
@@ -202,7 +194,6 @@ const IngestionCatalogCard = ({
 
       <ConnectorActions
         connectorMetadata={connectorMetadata}
-        link={link}
         isEnterpriseEdition={isEnterpriseEdition}
         deploymentCount={deploymentCount}
         onClickDeploy={onClickDeploy}

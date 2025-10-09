@@ -19,33 +19,43 @@ const ConnectorUseCases = ({ useCases }: { useCases: string[] }) => {
       ref={containerRef}
       sx={{ overflow: 'hidden', flexWrap: 'nowrap', position: 'relative' }}
     >
-      {useCases.map((useCase: string, index: number) => {
-        const isVisible = index < visibleCount;
-        const isLastVisible = index === visibleCount - 1;
+      {
+        // Show the usecase chips,
+        // - if last one has enough space, show full chip
+        // - not enough remaining space, but still can show text, truncate it
+        // - not enough remaining space for text, show +1 instead of usecase truncated
 
-        return (
-          <ChipWrapper
-            key={useCase}
-            useCase={useCase}
-            isVisible={isVisible}
-            canShrink={isLastVisible} // Only last visible chip can shrink
-            chipRef={(el: HTMLDivElement | null) => {
-              chipRefs.current[index] = el;
-            }}
-          />
-        );
-      })}
+        useCases.map((useCase: string, index: number) => {
+          const isVisible = index < visibleCount;
+          const isLastVisible = index === visibleCount - 1;
 
-      {hasOverflow && (
-        <Box sx={{ flexShrink: 0 }}>
-          <IngestionCatalogChip
-            withTooltip={true}
-            isInTooltip
-            label={`+${hiddenCount}`}
-            tooltipLabel={hiddenUseCases.join(', ')}
-          />
-        </Box>
-      )}
+          return (
+            <ChipWrapper
+              key={useCase}
+              useCase={useCase}
+              isVisible={isVisible}
+              canShrink={isLastVisible} // Only last visible chip can shrink
+              chipRef={(el: HTMLDivElement | null) => {
+                chipRefs.current[index] = el;
+              }}
+            />
+          );
+        })
+      }
+
+      {
+        hasOverflow && (
+          <Box sx={{ flexShrink: 0 }}>
+            <IngestionCatalogChip
+              withTooltip={true}
+              isInTooltip
+              label={`+${hiddenCount}`}
+              tooltipLabel={hiddenUseCases.join(', ')}
+              color="primary"
+            />
+          </Box>
+        )
+      }
     </Stack>
   );
 };

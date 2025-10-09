@@ -22,7 +22,7 @@ const ChipWrapper = ({
       position: isVisible ? 'relative' : 'absolute',
     }}
   >
-    <IngestionCatalogChip withTooltip={true} isInTooltip label={useCase} />
+    <IngestionCatalogChip withTooltip={true} isInTooltip label={useCase} color="primary" />
   </Box>
 );
 
