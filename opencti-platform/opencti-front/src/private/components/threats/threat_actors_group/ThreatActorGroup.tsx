@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { ThreatActorGroup_ThreatActorGroup$key } from '@components/threats/threat_actors_group/__generated__/ThreatActorGroup_ThreatActorGroup.graphql';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import ThreatActorGroupDetails from './ThreatActorGroupDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -69,6 +70,8 @@ interface ThreatActorGroupProps {
 }
 
 const ThreatActorGroup: React.FC<ThreatActorGroupProps> = ({ threatActorGroupData }) => {
+  useInitCreateRelationshipContext();
+
   const threatActorGroup = useFragment<ThreatActorGroup_ThreatActorGroup$key>(
     threatActorGroupFragment,
     threatActorGroupData,

@@ -12,8 +12,9 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useRemoveIdAndIncorrectKeysFromFilterGroupObject, isFilterGroupNotEmpty } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { useInitCreateRelationshipContext } from '../../common/stix_core_relationships/CreateRelationshipContextProvider';
 
 export const LOCAL_STORAGE_KEY = 'sightings';
 
@@ -116,6 +117,8 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
   } = viewStorage;
 
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-sighting-relationship']);
+
+  useInitCreateRelationshipContext();
 
   const contextFilters: FilterGroup = {
     mode: 'and',

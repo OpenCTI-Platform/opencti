@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useContext, useEffect, useState } from 'react';
 import useAuth from '../../../../../utils/hooks/useAuth';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../../relay/environment';
@@ -15,6 +15,7 @@ import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStora
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
 import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -63,6 +64,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
     openExports,
     view,
   } = viewStorage;
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
 
   const { platformModuleHelpers } = useAuth();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
@@ -162,6 +164,31 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   const handleReverseRelation = () => {
     setReversedRelation(!reversedRelation);
   };
+
+  useInitCreateRelationshipContext({
+    reversed: false,
+    stixCoreObjectTypes: stixCoreObjectTypes.length
+      ? stixCoreObjectTypes
+      : ['Stix-Core-Object'],
+    relationshipTypes,
+    handleReverseRelation,
+    connectionKey: 'Pagination_stixCoreRelationships',
+  });
+
+  useEffect(() => {
+    setCreateRelationshipContext({
+      paginationOptions,
+      reversed: reversedRelation,
+      handleReverseRelation,
+    });
+  }, [reversedRelation]);
+  useEffect(() => {
+    setCreateRelationshipContext({
+      paginationOptions,
+      handleReverseRelation,
+      onCreate: undefined,
+    });
+  }, [localStorage]);
 
   const finalView = currentView || view;
   return (

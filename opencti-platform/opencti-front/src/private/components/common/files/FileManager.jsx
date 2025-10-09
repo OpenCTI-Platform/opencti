@@ -14,6 +14,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 import DraftWorkspaceViewer from './draftWorkspace/DraftWorkspaceViewer';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import FileExportViewer from './FileExportViewer';
@@ -140,6 +141,8 @@ const FileManager = ({
   isArtifact,
   directDownload = false,
 }) => {
+  useInitCreateRelationshipContext();
+
   const { t_i18n } = useFormatter();
   const [fileToImport, setFileToImport] = useState(null);
   const [openExport, setOpenExport] = useState(false);

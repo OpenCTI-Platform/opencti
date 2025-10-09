@@ -1,4 +1,5 @@
-import React, { FunctionComponent } from 'react';
+import * as R from 'ramda';
+import React, { FunctionComponent, useContext, useEffect } from 'react';
 import { graphql } from 'react-relay';
 import {
   EntityStixCoreRelationshipsIndicatorsEntitiesViewQuery,
@@ -23,6 +24,7 @@ import DataTable from '../../../../../../components/dataGrid/DataTable';
 import { useQueryLoadingWithLoadQuery } from '../../../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../../../../../../components/i18n';
+import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsIndicatorsEntitiesViewProps {
   entityId: string
@@ -134,7 +136,7 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
     orderAsc,
     openExports,
   } = viewStorage;
-
+  const { setState: setCreateRelationshipContext } = useContext(CreateRelationshipContext);
   const { platformModuleHelpers } = useAuth();
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
   const dataColumns = {
@@ -230,6 +232,20 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
       </Tooltip>
     </ToggleButton>
   );
+
+  useInitCreateRelationshipContext({
+    stixCoreObjectTypes: ['Indicator'],
+    relationshipTypes,
+    connectionKey: 'Pagination_indicators',
+    reversed: isRelationReversed,
+  });
+
+  useEffect(() => {
+    setCreateRelationshipContext({
+      paginationOptions: R.dissoc('count', queryPaginationOptions),
+      onCreate: undefined,
+    });
+  }, [localStorage]);
 
   const viewButtons = [entitiesViewButton, relationshipsView, knowledgeFromRelatedContainersView];
 

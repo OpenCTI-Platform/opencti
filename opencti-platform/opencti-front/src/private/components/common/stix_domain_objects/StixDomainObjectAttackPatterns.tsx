@@ -15,6 +15,7 @@ import {
 } from '../../../../utils/filters/filtersUtils';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
+import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 
 interface StixDomainObjectAttackPatternsProps {
   stixDomainObjectId: string,
@@ -71,6 +72,14 @@ const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPa
     stixDomainObjectAttackPatternsKillChainQuery,
     { first: 500, ...queryPaginationOptions },
   );
+
+  useInitCreateRelationshipContext({
+    reversed: false,
+    stixCoreObjectTypes: ['Attack-Pattern'],
+    paginationOptions: queryPaginationOptions,
+    onCreate: undefined,
+  });
+
   return (
     <div
       style={{
