@@ -8,7 +8,6 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
-import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -226,7 +225,7 @@ const RootThreatActorIndividualComponent = ({
               {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={threatActorIndividual.id}/>
-                <StixCoreObjectSimulationResultContainer id={threatActorIndividual.id} type="threat"/>
+                  { /* <StixCoreObjectSimulationResultContainer id={threatActorIndividual.id} type="threat"/> */ }
               </div>
               )}
             </Box>

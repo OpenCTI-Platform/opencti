@@ -3818,6 +3818,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   deleteWithElementsCount: Int
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 input ReportAddInput {
@@ -8903,8 +8904,6 @@ type Query {
   publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
   publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
-  obasStixCoreObjectSimulationsResult(id: ID!): StixObjectSimulationsResult
-  obasScenarioElementsDistribution(id: ID!, type: ScenarioType, filters: FilterGroup): [Distribution]
   deleteOperation(id: String!): DeleteOperation
   deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
   supportPackage(id: String!): SupportPackage
@@ -9791,12 +9790,6 @@ type Mutation {
   aiSummarize(id: ID!, content: String!, format: Format): String
   aiExplain(id: ID!, content: String!): String
   aiNLQ(search: String!): NLQResponse
-  obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasContainerGenerateScenarioWithInjectPlaceholders`.")
-  obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasThreatGenerateScenarioWithInjectPlaceholders`.")
-  obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasVictimGenerateScenarioWithInjectPlaceholders`.")
-  obasContainerGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
-  obasThreatGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
-  obasVictimGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
   deleteOperationRestore(id: ID!): ID
   deleteOperationConfirm(id: ID!): ID
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
@@ -13612,60 +13605,6 @@ type AIBus {
 type NLQResponse {
   filters: String!
   notResolvedValues: [String!]!
-}
-
-enum ScenarioType {
-  container
-  threat
-  victim
-}
-
-enum Selection {
-  multiple
-  random
-}
-
-enum SimulationType {
-  technical
-  simulated
-  mixed
-}
-
-enum Platform {
-  Windows
-  Linux
-  MacOS
-}
-
-enum Architecture {
-  x86_64
-  arm64
-}
-
-input SimulationConfig {
-  interval: Int!
-  selection: Selection!
-  simulationType: SimulationType!
-  platforms: [Platform]
-  architecture: Architecture
-}
-
-type GenerationResponse {
-  urlResponse: String
-  attackPatternsNotAvailableInOpenBAS: String
-  hasInjectPlaceholders: Boolean
-}
-
-type SimulationsResult {
-  unknown: Int
-  success: Int
-  failure: Int
-}
-
-type StixObjectSimulationsResult {
-  prevention: SimulationsResult
-  detection: SimulationsResult
-  human: SimulationsResult
 }
 
 type DeletedElement {
