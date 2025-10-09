@@ -104,7 +104,7 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
       sub.unsubscribe();
     };
   });
-  const [selectedTab, setSelectedTab] = useState('write');
+  const [selectedTab, setSelectedTab] = useState(!editionMode ? 'preview' : 'write');
   const basicShape = {
     content: Yup.string().nullable(),
     description: Yup.string().nullable(),
