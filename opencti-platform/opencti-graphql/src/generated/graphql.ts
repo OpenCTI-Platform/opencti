@@ -3401,7 +3401,7 @@ export type Catalog = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -5737,7 +5737,7 @@ export type CsvMapper = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   representations: Array<CsvMapperRepresentation>;
   separator: Scalars['String']['output'];
   skipLineChar?: Maybe<Scalars['String']['output']>;
@@ -6560,7 +6560,7 @@ export type DeleteOperation = BasicObject & InternalObject & {
   main_entity_type: Scalars['String']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -7152,7 +7152,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   objectsCount: DraftObjectsCount;
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   processingCount: Scalars['Int']['output'];
   standard_id: Scalars['String']['output'];
   validationWork?: Maybe<Work>;
@@ -7942,7 +7942,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   mandatoryAttributes: Array<Scalars['String']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   overview_layout_customization?: Maybe<Array<OverviewWidgetCustomization>>;
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -9100,7 +9100,7 @@ export type Form = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   spec_version: Scalars['String']['output'];
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
@@ -12200,7 +12200,7 @@ export type IngestionRss = BasicObject & InternalObject & {
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   report_types?: Maybe<Array<Scalars['String']['output']>>;
   scheduling_period?: Maybe<Scalars['String']['output']>;
@@ -12259,7 +12259,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
@@ -12302,7 +12302,7 @@ export type IngestionTaxiiCollection = BasicObject & InternalObject & {
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
@@ -12730,7 +12730,7 @@ export type JsonMapper = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   representations: Array<JsonMapperRepresentation>;
   standard_id: Scalars['String']['output'];
   toConfigurationExport: Scalars['String']['output'];
@@ -14451,7 +14451,7 @@ export type ManagerConfiguration = BasicObject & InternalObject & {
   manager_running?: Maybe<Scalars['Boolean']['output']>;
   manager_setting?: Maybe<Scalars['JSON']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
 };
 
@@ -14645,7 +14645,7 @@ export type MeUser = BasicObject & InternalObject & {
   otp_activated?: Maybe<Scalars['Boolean']['output']>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   otp_qr?: Maybe<Scalars['String']['output']>;
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   personal_notifiers?: Maybe<Array<Notifier>>;
   restrict_delete?: Maybe<Scalars['Boolean']['output']>;
   standard_id: Scalars['String']['output'];
@@ -20836,7 +20836,7 @@ export type Pir = BasicObject & InternalObject & {
   lastEventId: Scalars['String']['output'];
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   pirContainers?: Maybe<ContainerConnection>;
   pir_criteria: Array<PirCriterion>;
   pir_filters: Scalars['String']['output'];
@@ -21094,7 +21094,7 @@ export type Playbook = BasicObject & InternalObject & {
   last_executions?: Maybe<Array<PlayBookExecution>>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   playbook_definition?: Maybe<Scalars['String']['output']>;
   playbook_running?: Maybe<Scalars['Boolean']['output']>;
   queue_messages: Scalars['Int']['output'];
@@ -21737,7 +21737,7 @@ export type PublicDashboard = BasicObject & InternalObject & {
   metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   owner?: Maybe<Creator>;
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   private_manifest?: Maybe<Scalars['String']['output']>;
   public_manifest?: Maybe<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
@@ -27355,7 +27355,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   metrics?: Maybe<Array<Maybe<Metric>>>;
   metrics_definition?: Maybe<Array<MetricDefinition>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   password_policy_max_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_length?: Maybe<Scalars['Int']['output']>;
   password_policy_min_lowercase?: Maybe<Scalars['Int']['output']>;
@@ -34793,7 +34793,7 @@ export type Workspace = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   owner?: Maybe<Creator>;
-  parent_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
   tags?: Maybe<Array<Scalars['String']['output']>>;
@@ -38938,7 +38938,7 @@ export type CatalogResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -39703,7 +39703,7 @@ export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   representations?: Resolver<Array<ResolversTypes['CsvMapperRepresentation']>, ParentType, ContextType>;
   separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   skipLineChar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -40041,7 +40041,7 @@ export type DeleteOperationResolvers<ContextType = any, ParentType extends Resol
   main_entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -40252,7 +40252,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectsCount?: Resolver<ResolversTypes['DraftObjectsCount'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   processingCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   validationWork?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType>;
@@ -40499,7 +40499,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   mandatoryAttributes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   overview_layout_customization?: Resolver<Maybe<Array<ResolversTypes['OverviewWidgetCustomization']>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -40944,7 +40944,7 @@ export type FormResolvers<ContextType = any, ParentType extends ResolversParentT
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41892,7 +41892,7 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   report_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -41928,7 +41928,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41950,7 +41950,7 @@ export type IngestionTaxiiCollectionResolvers<ContextType = any, ParentType exte
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -42128,7 +42128,7 @@ export type JsonMapperResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   representations?: Resolver<Array<ResolversTypes['JsonMapperRepresentation']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toConfigurationExport?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -42731,7 +42731,7 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
   manager_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   manager_setting?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -42865,7 +42865,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   personal_notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
   restrict_delete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44321,7 +44321,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PirPirContainersArgs>>;
   pir_criteria?: Resolver<Array<ResolversTypes['PirCriterion']>, ParentType, ContextType>;
   pir_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44474,7 +44474,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   last_executions?: Resolver<Maybe<Array<ResolversTypes['PlayBookExecution']>>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   playbook_definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   queue_messages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -44691,7 +44691,7 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   private_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   public_manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -45891,7 +45891,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -48317,7 +48317,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<WorkspaceObjectsArgs>>;
   owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   tags?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
