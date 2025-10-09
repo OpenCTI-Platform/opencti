@@ -65,7 +65,7 @@ type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
   standard_id: String! @auth
-  parent_types: [String!]!
+  parent_types: [String]! @auth
   metrics:[Metric] @auth
   # CsvMapper
   name: String! @auth
