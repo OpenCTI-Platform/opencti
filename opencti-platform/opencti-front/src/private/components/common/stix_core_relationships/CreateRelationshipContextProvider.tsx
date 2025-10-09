@@ -80,6 +80,7 @@ export const useInitCreateRelationshipContext = (state: CreateRelationshipContex
   relationshipTypes: [],
   onCreate: undefined,
   paginationOptions: undefined,
+  reversed: false,
 }) => {
   const { setState } = useContext(CreateRelationshipContext);
   useEffect(() => {
