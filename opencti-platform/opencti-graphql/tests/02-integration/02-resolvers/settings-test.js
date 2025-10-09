@@ -24,7 +24,9 @@ const READ_QUERY = gql`
       platform_title
       platform_email
       platform_language
-      platform_theme
+      platform_theme {
+        name
+      }
       platform_providers {
         name
         provider
