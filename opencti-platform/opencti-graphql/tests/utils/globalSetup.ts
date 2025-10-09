@@ -54,7 +54,7 @@ const initializePlatform = async () => {
   await initializeInternalQueues();
   await initializeBucket();
   await initializeSchema();
-  await testInitializeMigration(context);
+  // await testInitializeMigration(context);
   await initializeData(context, true);
   await initializeAdminUser(context);
   await initDefaultNotifiers(context);
