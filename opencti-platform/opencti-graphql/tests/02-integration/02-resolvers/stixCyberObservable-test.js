@@ -159,7 +159,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    console.log('SCO', JSON.stringify(stixCyberObservable));
+    // console.log('SCO', JSON.stringify(stixCyberObservable));
     expect(stixCyberObservable).not.toBeNull();
     expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
     expect(stixCyberObservable.data.stixCyberObservableAdd.public_key).toEqual('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9');

@@ -170,7 +170,6 @@ export const promoteObservableToIndicator = async (context, user, observableId) 
 
 export const addStixCyberObservable = async (context, user, input) => {
   // The input type must be a correct observable type
-  console.log('input.type', input.type);
   if (!isStixCyberObservable(input.type)) {
     throw FunctionalError(`Observable type ${input.type} is not supported.`);
   }
@@ -234,7 +233,6 @@ export const addStixCyberObservable = async (context, user, input) => {
   }
   // If everything ok, create adapt/create the observable
   const created = await createEntity(context, user, observableInput, type);
-  console.log('created', created);
   // create the linked indicator if needed
   if (createIndicator) {
     try {
