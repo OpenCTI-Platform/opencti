@@ -20192,6 +20192,7 @@ export type PirInformation = {
 };
 
 export enum PirOrdering {
+  Score = '_score',
   CreatedAt = 'created_at',
   Creator = 'creator',
   Name = 'name',
