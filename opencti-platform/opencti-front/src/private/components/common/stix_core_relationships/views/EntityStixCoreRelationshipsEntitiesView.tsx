@@ -154,6 +154,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
   };
 
   useInitCreateRelationshipContext({
+    reversed: false,
     stixCoreObjectTypes,
     relationshipTypes,
     connectionKey: 'Pagination_stixCoreObjects',
@@ -162,6 +163,7 @@ EntityStixCoreRelationshipsEntitiesViewProps
 
   useEffect(() => {
     setCreateRelationshipContext({
+      paginationOptions,
       reversed: reversedRelation,
       handleReverseRelation,
     });
