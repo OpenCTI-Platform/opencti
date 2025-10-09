@@ -26,7 +26,11 @@ steps:
 
   - name: backend-verify-licenses
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
+    volumes:
+      - name: cache-backend-verify-licenses-yarn
+        path: /root/.yarn/berry
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
@@ -42,7 +46,11 @@ steps:
 
   - name: frontend-verify-licenses
     image: node:22.14.0
+    volumes:
+      - name: cache-frontend-verify-licenses-yarn
+        path: /root/.yarn/berry
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - cd ./opencti-platform/opencti-front
       - npm install -g corepack
       - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
@@ -123,9 +131,10 @@ steps:
   - name: frontend-tests
     image: node:22-alpine
     volumes:
-    - name: cache-node-frontend
-      path: /drone/src/opencti-platform/opencti-front/node_modules
+    - name: cache-frontend-tests-yarn
+      path: /root/.yarn/berry
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
       - npm install -g node-gyp
       - cd opencti-platform/opencti-front
@@ -142,14 +151,15 @@ steps:
   - name: frontend-e2e-tests
     image: node:22.18.0
     volumes:
-    - name: cache-node-frontend-e2e
-      path: /drone/src/opencti-platform/opencti-front/node_modules
+    - name: cache-frontend-e2e-tests-yarn
+      path: /root/.yarn/berry
     environment:
       BACK_END_URL: http://opencti-e2e-start:4500
       E2E_TEST: true
       TEAMS_WEBHOOK: teams-webhook-url
     ipc: host
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - apt-get update
       - apt-get -y install netcat-traditional
       - cd opencti-platform/opencti-front
@@ -270,8 +280,8 @@ services:
   - name: opencti-raw-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
-    - name: cache-node-raw-start-backend
-      path: /tmp/raw-start-platform/opencti-graphql/node_modules
+    - name: cache-opencti-raw-start-yarn
+      path: /root/.yarn/berry
     environment:
       APP__PORT: 4100
       APP__ADMIN__PASSWORD: admin
@@ -294,10 +304,12 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__ENABLED: false
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - ls -lart
       - apk add build-base git libffi-dev cargo
+      - mkdir -p /tmp/raw-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/raw-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
@@ -312,8 +324,8 @@ services:
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
-    - name: cache-node-live-start-backend
-      path: /tmp/live-start-platform/opencti-graphql/node_modules
+    - name: cache-opencti-live-start-yarn
+      path: /root/.yarn/berry
     environment:
       APP__PORT: 4200
       APP__ADMIN__PASSWORD: admin
@@ -336,9 +348,11 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__ENABLED: false
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - apk add build-base git libffi-dev cargo
+      - mkdir -p /tmp/live-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
@@ -353,8 +367,8 @@ services:
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
-    - name: cache-node-direct-start-backend
-      path: //tmp/direct-start-platform/opencti-graphql/node_modules
+    - name: cache-opencti-direct-start-yarn
+      path: /root/.yarn/berry
     environment:
       APP__PORT: 4300
       APP__ADMIN__PASSWORD: admin
@@ -377,9 +391,11 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__ENABLED: false
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - apk add build-base git libffi-dev cargo
+      - mkdir -p /tmp/direct-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
@@ -435,8 +451,8 @@ services:
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
-    - name: cache-node-restore-start-backend
-      path: /tmp/restore-start-platform/node_modules
+    - name: cache-opencti-restore-start-yarn
+      path: /root/.yarn/berry
     environment:
       APP__PORT: 4400
       APP__ADMIN__PASSWORD: admin
@@ -459,9 +475,11 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__ENABLED: false
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - apk add build-base git libffi-dev cargo
+      - mkdir -p /tmp/restore-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
@@ -476,8 +494,8 @@ services:
   - name: opencti-e2e-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
-    - name: cache-node-e2e-start-backend
-      path: /tmp/e2e-start-platform/node_modules
+    - name: cache-opencti-e2e-start-yarn
+      path: /root/.yarn/berry
     environment:
       APP__PORT: 4500
       APP__ENABLED_DEV_FEATURES: '["*"]'
@@ -501,8 +519,10 @@ services:
       PUBLISHER_MANAGER__ENABLED: false
       SMTP__ENABLED: false
     commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
       - sleep 10
       - apk add build-base git libffi-dev cargo
+      - mkdir -p /tmp/e2e-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/e2e-start-platform/
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
@@ -537,30 +557,36 @@ services:
       - python3 src/worker.py
 
 volumes:
+  - name: cache-backend-verify-licenses-yarn
+    host:
+      path: /tmp/cache-backend-verify-licenses-yarn
+  - name: cache-frontend-verify-licenses-yarn
+    host:
+      path: /tmp/cache-frontend-verify-licenses-yarn
   - name: cache-api-tests-yarn
     host:
       path: /tmp/cache-api-tests-yarn
-  - name: cache-node-raw-start-backend
+  - name: cache-opencti-raw-start-yarn
     host:
-      path: /tmp/cache-node-raw-start-backend
-  - name: cache-node-live-start-backend
+      path: /tmp/cache-opencti-raw-start-yarn
+  - name: cache-opencti-live-start-yarn
     host:
-      path: /tmp/cache-node-live-start-backend
-  - name: cache-node-direct-start-backend
+      path: /tmp/cache-opencti-live-start-yarn
+  - name: cache-opencti-direct-start-yarn
     host:
-      path: /tmp/cache-node-direct-start-backend
-  - name: cache-node-restore-start-backend
+      path: /tmp/cache-opencti-direct-start-yarn
+  - name: cache-opencti-restore-start-yarn
     host:
-      path: /tmp/cache-node-restore-start-backend
-  - name: cache-node-e2e-start-backend
+      path: /tmp/cache-opencti-restore-start-yarn
+  - name: cache-opencti-e2e-start-yarn
     host:
-      path: /tmp/cache-node-e2e-start-backend
-  - name: cache-node-frontend
+      path: /tmp/cache-opencti-e2e-start-yarn
+  - name: cache-frontend-tests-yarn
     host:
-      path: /tmp/cache-node-frontend
-  - name: cache-node-frontend-e2e
+      path: /tmp/cache-frontend-tests-yarn
+  - name: cache-frontend-e2e-tests-yarn
     host:
-      path: /tmp/cache-node-frontend-e2e
+      path: /tmp/cache-frontend-e2e-tests-yarn
 
 image_pull_secrets:
   - dockerconfigjson
