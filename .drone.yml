@@ -16,10 +16,10 @@ steps:
     commands:
       # copy opencti-platform without nodes_modules
       - cp -R opencti-platform platform-reference
-      - apk add git
-      - git clone https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
+      - apk add git github-cli
+      - chmod 777 scripts/*
+      - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
-
   - name: backend-verify-licenses
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     commands:
