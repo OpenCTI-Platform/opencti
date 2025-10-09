@@ -166,6 +166,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   };
 
   useInitCreateRelationshipContext({
+    reversed: false,
     stixCoreObjectTypes: stixCoreObjectTypes.length
       ? stixCoreObjectTypes
       : ['Stix-Core-Object'],
@@ -176,6 +177,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
 
   useEffect(() => {
     setCreateRelationshipContext({
+      paginationOptions,
       reversed: reversedRelation,
       handleReverseRelation,
     });
