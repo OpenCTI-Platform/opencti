@@ -261,6 +261,7 @@ export const stixCyberObservableDeleteRelation = async (context, user, stixCyber
 
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  console.log('input', input);
   const scoreInput = input.find((i) => i.key === 'x_opencti_score');
   const urlInput = input.find((i) => i.key === 'url');
   const payloadBinInput = input.find((i) => i.key === 'payload_bin');
@@ -292,7 +293,6 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     }
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
-
   const { element: stixCyberObservable } = await updateAttribute(
     context,
     user,
@@ -301,6 +301,8 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     input,
     opts
   );
+  console.log('stixCyberObservable', stixCyberObservable);
+
   // Delete the key when updating a numeric field with an empty value (e.g. to delete this value) to avoid a schema error
   Object.entries(stixCyberObservable).forEach(([key, value]) => {
     if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
