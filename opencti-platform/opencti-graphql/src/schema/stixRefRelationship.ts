@@ -913,6 +913,7 @@ export const META_RELATIONS: RefAttribute[] = [
   // OCTI
   objectOrganization,
   objectAssignee,
+  objectParticipant,
 ];
 
 // Register

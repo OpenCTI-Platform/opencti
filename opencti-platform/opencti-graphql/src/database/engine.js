@@ -163,12 +163,12 @@ import {
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
-  RELATION_DYNAMIC_FROM_FILTER,
-  RELATION_DYNAMIC_TO_FILTER,
   isComplexConversionFilterKey,
   LAST_PIR_SCORE_DATE_FILTER_PREFIX,
   PIR_SCORE_FILTER_PREFIX,
   RELATION_DYNAMIC_FILTER,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -1563,7 +1563,12 @@ const elDataConverter = (esHit) => {
       // Rebuild rel to stix attributes
       const rel = key.substring(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      data[relType] = isSingleRelationsRef(data.entity_type, relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
+      if (isSingleRelationsRef(data.entity_type, relType)) {
+        data[relType] = R.head(val);
+      } else {
+        const relData = [...(data[relType] ?? []), ...val];
+        data[relType] = isStixRefUnidirectionalRelationship(relType) ? R.uniq(relData) : relData;
+      }
     } else {
       data[key] = val;
     }
