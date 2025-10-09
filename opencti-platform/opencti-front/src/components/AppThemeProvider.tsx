@@ -90,7 +90,6 @@ const AppThemeProvider: FunctionComponent<AppThemeProviderProps> = ({
 
   const themeToUse = activeTheme || settings.platform_theme;
 
-  // Construct app theme for theme builder
   const appTheme: AppThemeType = {
     name: themeToUse?.name ?? defaultTheme.name,
     theme_accent: themeToUse?.theme_accent ?? defaultTheme.theme_accent,
@@ -116,35 +115,7 @@ export const ConnectedThemeProvider = createFragmentContainer(
   AppThemeProvider,
   {
     settings: graphql`
-      fragment AppThemeProvider_settings on Settings {
-        platform_title
-        platform_favicon
-        platform_theme {
-          name
-          theme_logo
-          theme_logo_login
-          theme_logo_collapsed
-          theme_text_color
-          id
-          built_in
-          theme_nav
-          theme_primary
-          theme_secondary
-          theme_text_color
-          theme_accent
-          theme_background
-          theme_paper
-        }
-      }
-    `,
-  },
-);
-
-export const ConnectedPublicThemeProvider = createFragmentContainer(
-  AppThemeProvider,
-  {
-    settings: graphql`
-      fragment AppThemeProvider_publicsettings on PublicSettings {
+      fragment AppThemeProvider_settings on ThemeSettings {
         platform_title
         platform_favicon
         platform_theme {

@@ -1383,7 +1383,13 @@ type MetricDefinition {
   metrics: [MetricAttributes!]
 }
 
-type PublicSettings implements IntlSettings {
+interface ThemeSettings {
+  platform_title: String
+  platform_favicon: String
+  platform_theme: Theme
+}
+
+type PublicSettings implements IntlSettings & ThemeSettings {
     id: ID!
     platform_title: String
     platform_favicon: String
@@ -1403,7 +1409,7 @@ type PublicSettings implements IntlSettings {
     playground_enabled: Boolean!
 }
 
-type Settings implements InternalObject & BasicObject & IntlSettings {
+type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSettings {
   id: ID!
   standard_id: String!
   entity_type: String!
