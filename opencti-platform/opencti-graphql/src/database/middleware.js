@@ -554,9 +554,9 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
     .filter((i) => isNotEmptyField(i))
     .map((e) => (convertStoreToStix(e, version)));
 };
-export const stixLoadByIdStringify = async (context, user, id, version) => {
-  const opts = { version };
-  const data = await stixLoadById(context, user, id, opts);
+export const stixLoadByIdStringify = async (context, user, id, opts = {}) => {
+  const { version = Version.Stix_2_1 } = opts;
+  const data = await stixLoadById(context, user, id, { version });
   return data ? JSON.stringify(data) : '';
 };
 export const stixLoadByFilters = async (context, user, types, args) => {
