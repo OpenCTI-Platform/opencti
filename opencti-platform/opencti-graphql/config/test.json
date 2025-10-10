@@ -1,6 +1,8 @@
 {
   "app": {
     "port": 4010,
+    "base_url": "http://localhost:4010/",
+    "health_access_key": "cihealthkey",
     "performance_logger": false,
     "enabled_dev_features": ["*"],
     "sync_raw_start_remote_uri": "http://127.0.0.1:4200/graphql",
@@ -45,7 +47,7 @@
   "platform_id": "7992a4b1-128c-4656-bf97-2018b6f1f395",
   "http_proxy": "http://proxy.opencti.io:2000",
   "https_proxy": "https://proxy.opencti.io:2100",
-  "no_proxy": "127.0.0.1,127.0.0.0/8,internal.opencti.io,rabbitmq",
+  "no_proxy": "127.0.0.1,127.0.0.0/8,internal.opencti.io,rabbitmq,localhost",
   "https_proxy_ca": [],
   "https_proxy_reject_unauthorized": false,
   "redis": {
