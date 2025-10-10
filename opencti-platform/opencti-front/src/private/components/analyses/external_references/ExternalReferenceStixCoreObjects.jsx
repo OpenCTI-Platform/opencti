@@ -11,7 +11,7 @@ import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
-import { computeLink } from '../../../../utils/Entity';
+import useComputeLink from "../../../../utils/hooks/useComputeLink";
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -26,8 +26,11 @@ const useStyles = makeStyles((theme) => ({
 const ExternalReferenceStixCoreObjectsComponent = ({ externalReference }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const computeLink = useComputeLink();
+
   const stixCoreObjects = (externalReference.references?.edges ?? [])
     .map((n) => n?.node);
+
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>

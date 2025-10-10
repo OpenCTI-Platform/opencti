@@ -3,7 +3,7 @@ import { WidgetColumn } from 'src/utils/widget/widget';
 import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 import ItemIcon from '../ItemIcon';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
-import { computeLink } from '../../utils/Entity';
+import useComputeLink from '../../utils/hooks/useComputeLink';
 
 interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,6 +21,8 @@ const WidgetListRelationships = ({
   rootRef,
   columns,
 }: WidgetListRelationshipsProps) => {
+  const computeLink = useComputeLink();
+
   const buildColumns = useMemo((): DataTableProps['dataColumns'] => {
     const columnKeys = columns.map((column) => column.attribute).filter((key) => key !== null);
     const percentWidth = 100 / (columns.length ?? 1);

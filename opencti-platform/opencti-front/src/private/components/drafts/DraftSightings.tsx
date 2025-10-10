@@ -11,7 +11,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { truncate } from '../../../utils/String';
 import { useFormatter } from '../../../components/i18n';
-import { computeLink } from '../../../utils/Entity';
+import useComputeLink from '../../../utils/hooks/useComputeLink';
 
 const draftSightingsLineFragment = graphql`
     fragment DraftSightings_node on StixSightingRelationship {
@@ -288,6 +288,7 @@ interface DraftSightingsProps {
 const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) => {
   const { draftId } = useParams() as { draftId: string };
   const { t_i18n } = useFormatter();
+  const computeLink = useComputeLink();
 
   const initialValues = {
     filters: {

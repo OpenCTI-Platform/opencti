@@ -5,8 +5,8 @@ import { DataTableColumn, DataTableVariant, UseDataTable } from './dataTableType
 import usePreloadedPaginationFragment, { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
 import { useFormatter } from '../i18n';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
-import { computeLink } from '../../utils/Entity';
 import useLocalStorage, { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
+import useComputeLink from '../../utils/hooks/useComputeLink';
 
 export const useLineData = (lineFragment: GraphQLTaggedNode) => (row: KeyType) => useFragment(lineFragment, row);
 
@@ -24,7 +24,7 @@ export const useDataCellHelpers = (storageHelpers: UseLocalStorageHelpers | Reco
 
 export const useDataTableToggle = useEntityToggle;
 
-export const useDataTableComputeLink = computeLink;
+export const useDataTableComputeLink = useComputeLink();
 
 export const useDataTableLocalStorage = useLocalStorage;
 

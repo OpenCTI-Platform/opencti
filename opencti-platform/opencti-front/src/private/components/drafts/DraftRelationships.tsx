@@ -14,7 +14,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemEntityType from '../../../components/ItemEntityType';
-import { computeLink } from '../../../utils/Entity';
+import useComputeLink from '../../../utils/hooks/useComputeLink';
 
 const draftRelationshipsLineFragment = graphql`
     fragment DraftRelationships_node on StixCoreRelationship {
@@ -195,6 +195,7 @@ interface DraftRelationshipsProps {
 }
 
 const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {
+  const computeLink = useComputeLink();
   const { draftId } = useParams() as { draftId: string };
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
