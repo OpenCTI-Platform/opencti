@@ -57,7 +57,6 @@ import { checkObservableValue, isCacheEmpty } from '../../database/exclusionList
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
 
-export const INDICATOR_DEFAULT_SCORE: number = 50;
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
 

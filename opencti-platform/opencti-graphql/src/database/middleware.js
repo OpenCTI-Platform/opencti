@@ -2761,19 +2761,19 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
-    if (updatePatch.decay_applied_rule) {
+    if (resolvedElement.decay_applied_rule) {
+      // Do not compute decay again when:
+      // - base score does not change
+      // - same userIs has already updated to the same score previously
       const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
-      // Do not compute decay again when base score does not change
-      // or when the same score update has already been done
-      if ((!resolvedElement.revoked && isScoreInUpsertSameAsBaseScore)
-          || (hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history))) {
-        logApp.debug(`[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`);
+      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
+      if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource) {
+        logApp.info(`[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`, { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score, isScoreInUpsertSameAsBaseScore, hasSameScoreChangedBySameSource });
         // don't reset score, valid_from & valid_until
         updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
         updatePatch.valid_from = resolvedElement.valid_from;
         updatePatch.valid_until = resolvedElement.valid_until;
         // don't reset decay attributes
-        // updatePatch.decay_base_score = element.decay_base_score; // no need since it's the same score
         updatePatch.revoked = resolvedElement.revoked;
         updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
         updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
@@ -2781,7 +2781,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
         updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
       } else {
         // As base_score as change, decay will be reset by upsert
-        logApp.debug('[OPENCTI][DECAY] Decay is restarted', { resolvedElement, basePatch });
+        logApp.info('[OPENCTI][DECAY] Decay is restarted', { elementScore: resolvedElement.x_opencti_score, initialPatchScore: basePatch.x_opencti_score, updatePatchScore: updatePatch.x_opencti_score });
       }
     }
 

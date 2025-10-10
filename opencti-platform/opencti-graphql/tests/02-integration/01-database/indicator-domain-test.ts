@@ -272,6 +272,12 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
     await indicatorEditField(testContext, connectorUser, indicator.id, inputToUpdateScoreUserConnector1);
     const indicatorAfterConnectorUpdate70Again = await findById(testContext, ADMIN_USER, indicator.id);
     expect(indicatorAfterConnectorUpdate70Again.x_opencti_score).toBe(75);
+
+    // Second update with same connector, but different score, should be taken
+    const inputToUpdateScoreUserConnector36: EditInput[] = [{ key: X_SCORE, value: [36] }];
+    await indicatorEditField(testContext, connectorUser, indicator.id, inputToUpdateScoreUserConnector36);
+    const indicatorAfterConnectorUpdate36 = await findById(testContext, ADMIN_USER, indicator.id);
+    expect(indicatorAfterConnectorUpdate36.x_opencti_score).toBe(36);
   });
 
   it('should revoke move to false recompute score on upsert', async () => {
