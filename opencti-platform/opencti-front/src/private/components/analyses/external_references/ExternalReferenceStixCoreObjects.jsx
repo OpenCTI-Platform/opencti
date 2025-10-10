@@ -11,7 +11,7 @@ import { ListItemButton } from '@mui/material';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
-import useComputeLink from "../../../../utils/hooks/useComputeLink";
+import useComputeLink from '../../../../utils/hooks/useComputeLink';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
