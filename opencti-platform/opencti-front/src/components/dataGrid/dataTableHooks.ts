@@ -24,7 +24,7 @@ export const useDataCellHelpers = (storageHelpers: UseLocalStorageHelpers | Reco
 
 export const useDataTableToggle = useEntityToggle;
 
-export const useDataTableComputeLink = useComputeLink();
+export const useDataTableComputeLink = useComputeLink;
 
 export const useDataTableLocalStorage = useLocalStorage;
 

@@ -7,7 +7,7 @@ import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns 
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableProvider } from './DataTableContext';
 import {
-  useDataTableComputeLink as defaultComputeLink,
+  useDataTableComputeLink,
   useDataCellHelpers,
   useDataTableFormatter,
   useDataTableLocalStorage,
@@ -74,6 +74,7 @@ const DataTableComponent = ({
   onLineClick,
   emptyStateMessage,
 }: DataTableComponentProps) => {
+  const defaultComputeLink = useDataTableComputeLink();
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
 
