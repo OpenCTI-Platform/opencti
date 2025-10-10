@@ -5064,6 +5064,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/showdown@npm:2.0.6":
+  version: 2.0.6
+  resolution: "@types/showdown@npm:2.0.6"
+  checksum: 10/f376e90227c363e1aaf124b3e3fab5e2188273083175006d4a41803243e0809d95136ac4c9e630ab9d6bef1d5999e8e94bd88270d1df08fd562fc8a8d88407af
+  languageName: node
+  linkType: hard
+
 "@types/triple-beam@npm:^1.3.2":
   version: 1.3.5
   resolution: "@types/triple-beam@npm:1.3.5"
@@ -11692,6 +11699,7 @@ __metadata:
     "@types/nconf": "npm:0.10.7"
     "@types/node-forge": "npm:1.3.14"
     "@types/ramda": "npm:0.31.1"
+    "@types/showdown": "npm:2.0.6"
     "@types/turndown": "npm:5.0.5"
     "@types/xml2js": "npm:0.4.14"
     "@typescript-eslint/eslint-plugin": "npm:7.3.1"
