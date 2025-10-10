@@ -27,7 +27,12 @@ export interface IngestionCatalogCardProps {
   deploymentCount?: number;
 }
 
-const ConnectorLogo = ({ src, alt }: { src: string; alt: string }) => {
+interface ConnectorLogoProps {
+  src: string;
+  alt: string
+}
+
+const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
   return (
     <img
       style={{
@@ -61,17 +66,19 @@ const ConnectorTitle = ({ title }: { title: string }) => {
   );
 };
 
+interface ConnectorActionsProps {
+  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' };
+  isEnterpriseEdition: boolean;
+  deploymentCount: number;
+  onClickDeploy: () => void;
+}
+
 const ConnectorActions = ({
   connectorMetadata,
   isEnterpriseEdition,
   deploymentCount,
   onClickDeploy,
-}: {
-  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' };
-  isEnterpriseEdition: boolean;
-  deploymentCount: number;
-  onClickDeploy: () => void;
-}) => {
+}: ConnectorActionsProps) => {
   return (
     <CardActions
       sx={{
