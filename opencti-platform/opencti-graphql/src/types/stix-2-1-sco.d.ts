@@ -431,7 +431,7 @@ type windows_integrity_level_enum = 'low' | 'medium' | 'high' | 'system';
 type windows_service_start_type_enum = 'SERVICE_AUTO_START' | 'SERVICE_BOOT_START' | 'SERVICE_DEMAND_START' | 'SERVICE_DISABLED' | 'SERVICE_SYSTEM_ALERT';
 type windows_service_type_enum = 'SERVICE_KERNEL_DRIVER' | 'SERVICE_FILE_SYSTEM_DRIVER' | 'SERVICE_WIN32_OWN_PROCESS' | 'SERVICE_WIN32_SHARE_PROCESS';
 type windows_service_status_enum = 'SERVICE_CONTINUE_PENDING' | 'SERVICE_PAUSE_PENDING' | 'SERVICE_PAUSED' | 'SERVICE_RUNNING' | 'SERVICE_START_PENDING' | 'SERVICE_STOP_PENDING' | 'SERVICE_STOPPED';
-type windows_service_ssh_key_type_enum = 'rsa' | 'ecdsa' | 'ed25519' | 'dsa';
+type ssh_key_type_enum = 'rsa' | 'ecdsa' | 'ed25519' | 'dsa';
 export interface StixProcess extends StixCyberObject {
   is_hidden: boolean; // optional
   pid: number; // optional
@@ -636,7 +636,7 @@ export interface StixSSHKey extends StixCyberObject {
   public_key: string; // optional
   fingerprint_sha256: string;
   fingerprint_md5: string; // optional
-  key_length: string; // optional
+  key_length: number; // optional
   comment: string; // optional
   created: StixDate | undefined; // optional
   expiration_date: StixDate | undefined; // optional

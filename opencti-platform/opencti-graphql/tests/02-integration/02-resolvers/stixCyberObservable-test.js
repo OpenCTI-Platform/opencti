@@ -44,6 +44,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
   let stixCyberObservableInternalId;
   let networkTrafficInternalId;
   const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
+  const sshKeyStixId = 'ssh-key--921c202b-5706-499d-9484-b5cf9bc6f70c';
   let SSHInternalId;
 
   const CREATE_QUERY = gql`
@@ -150,17 +151,17 @@ describe('StixCyberObservable resolver standard behavior', () => {
     // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
       type: 'SSH-Key',
+      stix_id: sshKeyStixId,
       SSHKey: {
         key_type: 'rsa',
         public_key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9',
         fingerprint_sha256: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d96f'
       },
     };
-    const stixCyberObservableSSH = await queryAsAdmin({
+    const stixCyberObservableSSH = await queryAsAdminWithSuccess({
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    // console.log('SCO', JSON.stringify(stixCyberObservable));
     expect(stixCyberObservableSSH).not.toBeNull();
     expect(stixCyberObservableSSH.data.stixCyberObservableAdd).not.toBeNull();
     expect(stixCyberObservableSSH.data.stixCyberObservableAdd.public_key).toEqual('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9');
@@ -183,7 +184,8 @@ describe('StixCyberObservable resolver standard behavior', () => {
         }
       }
     `;
-    const stixCyberObservableUpdated = await queryAsAdmin({
+    // console.log('SSHII', SSHInternalId);
+    const stixCyberObservableUpdated = await queryAsAdminWithSuccess({
       query: EDIT_QUERY,
       variables: {
         id: SSHInternalId,
@@ -204,14 +206,14 @@ describe('StixCyberObservable resolver standard behavior', () => {
       }
     `;
     // Delete
-    await queryAsAdmin({
+    await queryAsAdminWithSuccess({
       query: DELETE_QUERY,
       variables: { id: SSHInternalId },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableStixId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: sshKeyStixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.stixCyberObservable).toBeNull();
+    expect(queryResult.data.stixCyberObservableUpdated).toBeNull();
   });
   it('should stixCyberObservable loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });
