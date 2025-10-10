@@ -1,6 +1,6 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { elDeleteInstances, elFindByIds, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
+import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
@@ -14,7 +14,6 @@ import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/impo
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
 import { logApp } from '../config/conf';
-import { stixLoadById } from '../database/middleware';
 import { internalLoadById } from '../database/middleware-loader';
 
 export const workToExportFile = (work) => {

@@ -5,7 +5,6 @@ import {
   createRelationRaw,
   deleteElementById,
   distributionEntities,
-  stixLoadById,
   storeLoadByIdWithRefs,
   timeSeriesEntities
 } from '../database/middleware';
@@ -66,7 +65,6 @@ import {
   isEmptyField,
   isNotEmptyField,
   READ_ENTITIES_INDICES,
-  READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INTERNAL_OBJECTS,
   UPDATE_OPERATION_ADD,
