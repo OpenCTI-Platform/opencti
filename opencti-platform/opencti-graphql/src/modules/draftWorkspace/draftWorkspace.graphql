@@ -19,6 +19,8 @@ type DraftWorkspace implements InternalObject & BasicObject {
     processingCount: Int!
     works(first: Int): [Work!]
     validationWork: Work
+    authorizedMembers: [MemberAccess!]!
+    currentUserAccessRight: String
 }
 
 type DraftObjectsCount {
@@ -96,10 +98,13 @@ type Query {
 input DraftWorkspaceAddInput {
     name: String!
     entity_id: String
+    authorized_members: [MemberAccessInput!]
 }
 
 type Mutation {
     draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace @auth(for: [KNOWLEDGE])
     draftWorkspaceValidate(id: ID!): Work @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
     draftWorkspaceDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
+    draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    draftWorkspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }
