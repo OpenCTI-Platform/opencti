@@ -10,9 +10,9 @@ import {
   timeSeriesEntities
 } from '../database/middleware';
 import {
+  fullEntitiesList,
   internalFindByIds,
   internalLoadById,
-  fullEntitiesList,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
   storeLoadById,
@@ -56,7 +56,7 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_MARKING_DEFINITION } from '
 import { createWork, worksForSource, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { minutesAgo, monthsAgo, now, utcDate } from '../utils/format';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, } from '../schema/internalObject';
 import { defaultValidationMode, deleteFile, getFileContent, loadFile, storeFileConverter } from '../database/file-storage';
 import { findById as documentFindById, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
 import { elCount, elFindByIds, elUpdateElement } from '../database/engine';
@@ -68,6 +68,7 @@ import {
   READ_ENTITIES_INDICES,
   READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_ENTITIES,
+  READ_INDEX_INTERNAL_OBJECTS,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE
 } from '../database/utils';
@@ -104,7 +105,6 @@ import { AI_BUS } from '../modules/ai/ai-types';
 import { lockResources } from '../lock/master-lock';
 import { editAuthorizedMembers } from '../utils/authorizedMembers';
 import { elRemoveElementFromDraft } from '../database/draft-engine';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draft-utils';
 import { askJobImport } from './connector';
 import { authorizedMembers } from '../schema/attribute-definition';
@@ -137,37 +137,19 @@ const extractStixCoreObjectTypesFromArgs = (args) => {
 };
 
 export const stixCoreBackgroundActiveOperations = async (context, user, id) => {
-  const stixElement = await stixLoadById(context, user, id);
-  // Get all not completed works associated to background task
-  const workBackgrounds = await fullEntitiesList(context, user, [ENTITY_TYPE_WORK], {
-    indices: [READ_INDEX_HISTORY],
+  // Get all background tasks targeting this element id, and having work not completed
+  return fullEntitiesList(context, user, [ENTITY_TYPE_BACKGROUND_TASK], {
+    indices: [READ_INDEX_INTERNAL_OBJECTS],
     filters: {
       mode: 'and',
       filters: [
-        { key: ['background_task_id'], values: ['EXISTS'] },
-        { key: ['status'], values: ['complete'], operator: 'not_eq' },
+        { key: ['task_ids'], values: [id] },
+        { key: ['work_id'], values: ['EXISTS'] },
+        { key: ['work_completed'], values: ['true'], operator: 'not_eq' },
       ],
       filterGroups: [],
     },
   });
-  const backgroundIds = workBackgrounds.map((work) => work.background_task_id);
-  // Get all related background tasks
-  const backTasks = await internalFindByIds(context, user, backgroundIds);
-  const activeTasks = [];
-  for (let index = 0; index < backTasks.length; index += 1) {
-    const backTask = backTasks[index];
-    let isConcerned = false;
-    if (backTask.type === 'QUERY') {
-      isConcerned = false;
-    }
-    if (backTask.type === 'LIST') {
-      isConcerned = (backTask.task_ids ?? []).includes(stixElement.extensions[STIX_EXT_OCTI].id);
-    }
-    if (isConcerned) {
-      activeTasks.push(backTask);
-    }
-  }
-  return activeTasks;
 };
 
 export const findStixCoreObjectPaginated = async (context, user, args) => {

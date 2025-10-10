@@ -1,10 +1,10 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
+import { elDeleteInstances, elFindByIds, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { publishUserAction } from '../listener/UserActionListener';
@@ -14,6 +14,8 @@ import { IMPORT_CSV_CONNECTOR, IMPORT_CSV_CONNECTOR_ID } from '../connector/impo
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { DRAFT_VALIDATION_CONNECTOR, DRAFT_VALIDATION_CONNECTOR_ID } from '../modules/draftWorkspace/draftWorkspace-connector';
 import { logApp } from '../config/conf';
+import { stixLoadById } from '../database/middleware';
+import { internalLoadById } from '../database/middleware-loader';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -253,6 +255,17 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
     if (currentWork) {
+      // If work is associated to a task, we also need to update work to completed on the task
+      if (isComplete && currentWork.background_task_id) {
+        const associatedTaskId = currentWork.background_task_id;
+        const associatedTask = await internalLoadById(context, user, associatedTaskId, { type: ENTITY_TYPE_BACKGROUND_TASK });
+        if (associatedTask) {
+          const sourceScriptUpdateWork = 'ctx._source["work_completed"] = "true"';
+          await elUpdate(associatedTask._index, associatedTaskId, { script: { source: sourceScriptUpdateWork, lang: 'painless' } });
+        } else {
+          logApp.warn('The task associated to work cannot be found in database, task work status cannot be updated.', { associatedTaskId });
+        }
+      }
       await elUpdate(currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
     } else {
       logApp.warn('The work cannot be found in database, report expectation cannot be updated.', { workId });

@@ -330,6 +330,7 @@ export const createDefaultTask = async (context, user, input, taskType, taskExpe
     completed: false,
     // Associated job
     work_id,
+    work_completed: false,
     connector_id,
     // Task related
     type: taskType,
