@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended"
+    "config:recommended",
+    "docker:enableMajor"
   ],
   "labels": [
     "dependencies",
@@ -11,19 +12,38 @@
     "minimumReleaseAge": "3 days"
   },
   "prConcurrentLimit": 2,
-  "packageRules": [
-    {
-      "matchUpdateTypes": [
-        "minor"
-      ],
-      "prPriority": 5
-    }
-  ],
   "timezone": "Europe/Paris",
   "schedule": [
-    "after 10pm every weekday",
-    "every weekend",
-    "before 5am every weekday"
+    "* 0-4,22-23 * * 1-5",
+    "* * * * 0,6"
   ],
-  "updateNotScheduled": false
+  "updateNotScheduled": false,
+  "packageRules": [
+    {
+      "extends": "monorepo:aws-sdk-js-v3",
+      "description": "Update aws-sdk-js-v3 only once a week (Sunday 01:00)",
+      "schedule": "* 1 * * 0"
+    },
+    {
+      "groupName": "devDependencies (non-major)",
+      "groupSlug": "dev-dependencies-non-major",
+      "description": "Batch auto merge and batch on sunday morning, non-major update of dev dependencies once a week (Sunday 03:00)",
+      "schedule": "* 3 * * 0",
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": false
+    }
+  ],
+  "lockFileMaintenance": {
+    "schedule": "* 5 * * 0",
+    "automerge": false,
+    "enabled": true
+  }
 }
