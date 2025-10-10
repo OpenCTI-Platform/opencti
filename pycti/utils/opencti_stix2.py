@@ -360,17 +360,23 @@ class OpenCTIStix2:
                 if isinstance(stix_object.get(f["key"]), list):
                     object_open_vocabularies[f["key"]] = []
                     for vocab in stix_object[f["key"]]:
-                        object_open_vocabularies[f["key"]].append(
-                            self.opencti.vocabulary.handle_vocab(
+                        resolved_vocab = (
+                            self.opencti.vocabulary.read_or_create_unchecked_with_cache(
                                 vocab, self.mapping_cache_permanent, field=f
-                            )["name"]
+                            )
                         )
+                        if resolved_vocab is not None:
+                            object_open_vocabularies[f["key"]].append(
+                                resolved_vocab["name"]
+                            )
                 else:
-                    object_open_vocabularies[f["key"]] = (
-                        self.opencti.vocabulary.handle_vocab(
+                    resolved_vocab = (
+                        self.opencti.vocabulary.read_or_create_unchecked_with_cache(
                             stix_object[f["key"]], self.mapping_cache_permanent, field=f
-                        )["name"]
+                        )
                     )
+                    if resolved_vocab is not None:
+                        object_open_vocabularies[f["key"]] = resolved_vocab["name"]
 
         # Object Labels
         object_label_ids = []

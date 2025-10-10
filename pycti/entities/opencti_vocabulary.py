@@ -95,7 +95,7 @@ class Vocabulary:
             )
             return None
 
-    def handle_vocab(self, vocab, cache, field):
+    def read_or_create_unchecked_with_cache(self, vocab, cache, field):
         if "vocab_" + vocab in cache:
             vocab_data = cache["vocab_" + vocab]
         else:
