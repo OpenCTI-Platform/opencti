@@ -8412,6 +8412,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   work(id: ID!): Work
+  isWorkAlive(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection

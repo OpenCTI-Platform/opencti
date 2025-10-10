@@ -22,6 +22,7 @@ import { addFilter } from '../utils/filtering/filtering-utils';
 import { getDraftContext } from '../utils/draftContext';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { deleteWorksRaw, loadWorkById } from './work';
 
 export const DEFAULT_ALLOWED_TASK_ENTITY_TYPES = [
   ABSTRACT_STIX_CORE_OBJECT,
@@ -181,6 +182,13 @@ export const deleteTask = async (context, user, taskId) => {
     message: 'deletes `background task`',
     context_data: { id: deleted.id, entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: deleted }
   });
+  // if task has an associated work, delete it
+  if (taskToDelete.work_id) {
+    const taskWork = await loadWorkById(context, user, taskToDelete.work_id);
+    if (taskWork) {
+      await deleteWorksRaw([taskWork]);
+    }
+  }
   return taskId;
 };
 
