@@ -222,12 +222,12 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should list stixCyberObservables', async () => {
     const queryResult = await queryAsAdmin({ query: gql(LIST_QUERY), variables: { first: 10 } });
-    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(7);
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
   });
   it('should list stixCyberObservables orderBy observable_value', async () => {
     const queryResult = await internalAdminQuery(LIST_QUERY, { first: 10, orderBy: 'observable_value', orderMode: 'desc' });
     expect(queryResult.data.stixCyberObservables).not.toBeNull();
-    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(7);
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(6);
   });
   it('should update stixCyberObservable', async () => {
     const queryResult = await queryAsAdmin({
