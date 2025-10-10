@@ -3,7 +3,12 @@ import Button from '@mui/material/Button';
 import React from 'react';
 import { useFormatter } from '../../../../../../components/i18n';
 
-const IngestionCatalogCardDeployButton = ({ deploymentCount, onClick }: { deploymentCount?: number, onClick: () => void }) => {
+type IngestionCatalogCardDeployButtonProps = {
+  deploymentCount?: number
+  onClick: () => void
+};
+
+const IngestionCatalogCardDeployButton = ({ deploymentCount, onClick }: IngestionCatalogCardDeployButtonProps) => {
   const { t_i18n } = useFormatter();
 
   return (

@@ -5,7 +5,11 @@ import ChipWrapper from '@components/data/IngestionCatalog/components/card/useca
 import Box from '@mui/material/Box';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 
-const ConnectorUseCases = ({ useCases }: { useCases: string[] }) => {
+type ConnectorUseCasesProps = {
+  useCases: string[]
+};
+
+const ConnectorUseCases = ({ useCases }: ConnectorUseCasesProps) => {
   const { containerRef, chipRefs, visibleCount } = useChipOverflow(useCases);
 
   const hiddenCount = useCases.length - visibleCount;

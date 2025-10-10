@@ -2,17 +2,19 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 
+type ChipWrapperProps = {
+  useCase: string;
+  isVisible: boolean;
+  canShrink?: boolean;
+  chipRef: (el: HTMLDivElement | null) => void;
+}
+
 const ChipWrapper = ({
   useCase,
   isVisible,
   canShrink,
   chipRef,
-}: {
-  useCase: string;
-  isVisible: boolean;
-  canShrink?: boolean;
-  chipRef: (el: HTMLDivElement | null) => void;
-}) => (
+}: ChipWrapperProps) => (
   <Box
     ref={chipRef}
     sx={{
