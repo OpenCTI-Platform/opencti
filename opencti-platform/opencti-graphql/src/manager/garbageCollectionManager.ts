@@ -2,6 +2,10 @@ import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { GARBAGE_COLLECTION_MANAGER_USER, executionContext } from '../utils/access';
 import { confirmDelete, findOldDeleteOperations } from '../modules/deleteOperation/deleteOperation-domain';
+import { fetchStreamInfo, STREAM_FILE_DIRECTORY } from '../database/redis';
+import { loadedFilesListing } from '../database/file-storage';
+import { deleteFileFromStorage } from '../database/raw-file-storage';
+import type { AuthContext } from '../types/user';
 
 const GARBAGE_COLLECTION_MANAGER_ENABLED = booleanConf('garbage_collection_manager:enabled', true);
 const TRASH_ENABLED = booleanConf('app:trash:enabled', true);
@@ -9,6 +13,25 @@ const GARBAGE_COLLECTION_MANAGER_KEY = conf.get('garbage_collection_manager:lock
 const SCHEDULE_TIME = conf.get('garbage_collection_manager:interval') || 60000; // 1 minute
 const BATCH_SIZE = conf.get('garbage_collection_manager:batch_size') || 10000;
 const DELETED_RETENTION_DAYS = conf.get('garbage_collection_manager:deleted_retention_days') || 7;
+
+let nextRedisStreamFilesGarbageTime = new Date().getTime();
+const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
+  const currentTime = new Date().getTime();
+  if (nextRedisStreamFilesGarbageTime < currentTime) {
+    nextRedisStreamFilesGarbageTime += 86400000;
+
+    const { firstEventId } = await fetchStreamInfo();
+    const timestamp = firstEventId.split('-')[0];
+    const allRedisLargeEventFiles = await loadedFilesListing(context, GARBAGE_COLLECTION_MANAGER_USER, STREAM_FILE_DIRECTORY, { rawFormat: true });
+    for (let i = 0; i < allRedisLargeEventFiles.length; i += 1) {
+      const file = allRedisLargeEventFiles[0];
+      const currentTimestamp = file.Key.slice(STREAM_FILE_DIRECTORY.length).split('-')[0];
+      if (currentTimestamp < timestamp) {
+        await deleteFileFromStorage(file.Key);
+      }
+    }
+  }
+};
 
 /**
  * Search for N (batch_size) older than DELETED_RETENTION_DAYS DeleteOperations
@@ -29,6 +52,8 @@ export const garbageCollectionHandler = async () => {
     }
   }
   logApp.debug('[OPENCTI-MODULE] Garbage collection manager deletion process complete', { count: deleteOperationsToManage.length });
+
+  await garbageCollectRedisStreamFiles(context);
 };
 
 const GARBAGE_COLLECTION_MANAGER_DEFINITION: ManagerDefinition = {

@@ -1,14 +1,9 @@
-import * as s3 from '@aws-sdk/client-s3';
-import { CopyObjectCommand } from '@aws-sdk/client-s3';
 import * as R from 'ramda';
 import path from 'node:path';
-import { Upload } from '@aws-sdk/lib-storage';
 import { Promise as BluePromise } from 'bluebird';
-import { defaultProvider } from '@aws-sdk/credential-provider-node';
-import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import mime from 'mime-types';
 import nconf from 'nconf';
-import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { now, sinceNowInMinutes, truncate, utcDate } from '../utils/format';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { createWork, deleteWorkForFile } from '../domain/work';
@@ -28,114 +23,20 @@ import {
   SUPPORT_STORAGE_PATH
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { enrichWithRemoteCredentials } from '../config/credentials';
 import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
 import { getDraftFilePrefix, isDraftFile } from './draft-utils';
+import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
 
 // Minio configuration
-const clientEndpoint = conf.get('minio:endpoint');
-const clientPort = conf.get('minio:port') || 9000;
-const clientAccessKey = conf.get('minio:access_key');
-const clientSecretKey = conf.get('minio:secret_key');
-const clientSessionToken = conf.get('minio:session_token');
-const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
-const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
 const excludedFiles = conf.get('minio:excluded_files') || ['.DS_Store'];
-const useSslConnection = booleanConf('minio:use_ssl', false);
-const useAwsRole = booleanConf('minio:use_aws_role', false);
-const useAwsLogs = booleanConf('minio:use_aws_logs', false);
-const disableChecksumValidation = booleanConf('minio:disable_checksum_validation', false);
 export const defaultValidationMode = conf.get('app:validation_mode');
-
-let s3Client; // Client reference
 
 export const specialTypesExtensions = {
   'application/vnd.oasis.stix+json': 'json',
   'application/vnd.mitre.navigator+json': 'json',
-};
-
-const buildCredentialProvider = async () => {
-  // If aws role must be used
-  if (useAwsRole) {
-    return () => {
-      return defaultProvider({
-        roleAssumerWithWebIdentity: getDefaultRoleAssumerWithWebIdentity({
-          // You must explicitly pass a region if you are not using us-east-1
-          region: bucketRegion
-        })
-      });
-    };
-  }
-  // If direct configuration
-  const baseAuth = { accessKeyId: clientAccessKey, secretAccessKey: clientSecretKey };
-  const userPasswordAuth = await enrichWithRemoteCredentials('minio', baseAuth);
-  return () => {
-    return {
-      ...userPasswordAuth,
-      ...(clientSessionToken && { sessionToken: clientSessionToken })
-    };
-  };
-};
-
-const getEndpoint = () => {
-  // If using AWS S3, unset the endpoint to let the library choose the best endpoint
-  if (clientEndpoint === 's3.amazonaws.com') {
-    return undefined;
-  }
-  return `${(useSslConnection ? 'https' : 'http')}://${clientEndpoint}:${clientPort}`;
-};
-
-export const initializeFileStorageClient = async () => {
-  s3Client = new s3.S3Client({
-    region: bucketRegion,
-    endpoint: getEndpoint(),
-    forcePathStyle: true,
-    credentialDefaultProvider: await buildCredentialProvider(),
-    logger: useAwsLogs ? logS3Debug : undefined,
-    tls: useSslConnection,
-    requestChecksumCalculation: disableChecksumValidation ? 'WHEN_REQUIRED' : 'WHEN_SUPPORTED',
-    responseChecksumValidation: disableChecksumValidation ? 'WHEN_REQUIRED' : 'WHEN_SUPPORTED'
-  });
-};
-
-export const initializeBucket = async () => {
-  try {
-    // Try to access to the bucket
-    await s3Client.send(new s3.HeadBucketCommand({ Bucket: bucketName }));
-    return true;
-  } catch (err) {
-    // If bucket not exist, try to create it.
-    // If creation fail, propagate the exception
-    await s3Client.send(new s3.CreateBucketCommand({ Bucket: bucketName }));
-    return true;
-  }
-};
-
-export const deleteBucket = async () => {
-  try {
-    // Try to access to the bucket
-    await s3Client.send(new s3.DeleteBucketCommand({ Bucket: bucketName }));
-  } catch (err) {
-    // Dont care
-    logApp.info('[FILE STORAGE] Bucket cannot be deleted.', { err });
-  }
-};
-
-export const storageInit = async () => {
-  await initializeFileStorageClient();
-  await initializeBucket();
-};
-
-export const isStorageAlive = () => initializeBucket();
-
-export const deleteFileFromStorage = async (id) => {
-  return s3Client.send(new s3.DeleteObjectCommand({
-    Bucket: bucketName,
-    Key: id
-  }));
 };
 
 export const deleteFile = async (context, user, id) => {
@@ -183,28 +84,6 @@ export const deleteRawFiles = async (context, user, ids) => {
 };
 
 /**
- * Download a file from S3 at given S3 key (id)
- * @param id
- * @returns {Promise<*|null>} null when error occurs on download.
- */
-export const downloadFile = async (id) => {
-  try {
-    const object = await s3Client.send(new s3.GetObjectCommand({
-      Bucket: bucketName,
-      Key: id
-    }));
-    if (!object || !object.Body) {
-      logApp.error('[FILE STORAGE] Cannot retrieve file from S3, null body in response', { fileId: id });
-      return null;
-    }
-    return object.Body;
-  } catch (err) {
-    logApp.error('[FILE STORAGE] Cannot retrieve file from S3', { cause: err, fileId: id });
-    return null;
-  }
-};
-
-/**
  * - Copy file from a place to another in S3
  * - Store file in documents
  * @param context
@@ -215,13 +94,7 @@ export const downloadFile = async (id) => {
 export const copyFile = async (context, copyProps) => {
   const { sourceId, targetId, sourceDocument, targetEntityId } = copyProps;
   try {
-    const input = {
-      Bucket: bucketName,
-      CopySource: `${bucketName}/${sourceId}`, // CopySource must start with bucket name, but not Key
-      Key: targetId
-    };
-    const command = new CopyObjectCommand(input);
-    await s3Client.send(command);
+    await rawCopyFile(sourceId, targetId);
     // Register in elastic
     const targetMetadata = { ...sourceDocument.metaData, entity_id: targetEntityId };
 
@@ -244,23 +117,6 @@ export const copyFile = async (context, copyProps) => {
   }
 };
 
-export const streamToString = (stream, encoding = 'utf8') => {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    stream.on('data', (chunk) => chunks.push(chunk));
-    stream.on('error', reject);
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString(encoding)));
-  });
-};
-
-export const getFileContent = async (id, encoding = 'utf8') => {
-  const object = await s3Client.send(new s3.GetObjectCommand({
-    Bucket: bucketName,
-    Key: id
-  }));
-  return streamToString(object.Body, encoding);
-};
-
 /**
  * Convert File object coming from uploadToStorage/upload functions to x_opencti_file format.
  */
@@ -272,21 +128,6 @@ export const storeFileConverter = (user, file) => {
     mime_type: file.metaData.mimetype,
     file_markings: file.metaData.file_markings ?? [],
   };
-};
-
-/**
- * Get file size from S3 (calling HEAD on S3 file).
- */
-export const getFileSize = async (user, fileS3Path) => {
-  try {
-    const object = await s3Client.send(new s3.HeadObjectCommand({
-      Bucket: bucketName,
-      Key: fileS3Path
-    }));
-    return object.ContentLength;
-  } catch (err) {
-    throw UnsupportedError('Load file from storage fail', { cause: err, user_id: user.id, filename: fileS3Path });
-  }
 };
 
 /**
@@ -398,7 +239,7 @@ const filesAdaptation = (objects) => {
 };
 
 export const loadedFilesListing = async (context, user, directory, opts = {}) => {
-  const { recursive = false, callback = null, dontThrow = false } = opts;
+  const { recursive = false, callback = null, dontThrow = false, rawFormat = false } = opts;
   const files = [];
   if (isNotEmptyField(directory) && directory.startsWith('/')) {
     throw FunctionalError('File listing directory must not start with a /');
@@ -406,25 +247,25 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
   if (isNotEmptyField(directory) && !directory.endsWith('/')) {
     throw FunctionalError('File listing directory must end with a /');
   }
-  const requestParams = {
-    Bucket: bucketName,
-    Prefix: directory,
-    Delimiter: recursive ? undefined : '/'
-  };
   let truncated = true;
+  let continuationToken;
   while (truncated) {
     try {
-      const response = await s3Client.send(new s3.ListObjectsV2Command(requestParams));
+      const response = await rawListObjects(directory, recursive, continuationToken);
       const resultFiles = filesAdaptation(response.Contents ?? []);
-      const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(context, user, f.Key, { dontThrow }), { concurrency: 5 });
-      if (callback) {
-        callback(resultLoaded.filter((n) => n !== undefined));
+      if (rawFormat) {
+        files.push(...resultFiles);
       } else {
-        files.push(...resultLoaded.filter((n) => n !== undefined));
+        const resultLoaded = await BluePromise.map(resultFiles, (f) => loadFile(context, user, f.Key, { dontThrow }), { concurrency: 5 });
+        if (callback) {
+          callback(resultLoaded.filter((n) => n !== undefined));
+        } else {
+          files.push(...resultLoaded.filter((n) => n !== undefined));
+        }
       }
       truncated = response.IsTruncated;
       if (truncated) {
-        requestParams.ContinuationToken = response.NextContinuationToken;
+        continuationToken = response.NextContinuationToken;
       }
     } catch (err) {
       logApp.error('[FILE STORAGE] Storage files read fail', { cause: err });
@@ -539,15 +380,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     creator_id: creatorId,
     entity_id: entity?.internal_id,
   };
-  const s3Upload = new Upload({
-    client: s3Client,
-    params: {
-      Bucket: bucketName,
-      Key: key,
-      Body: readStream
-    }
-  });
-  await s3Upload.done();
+  await rawUpload(key, readStream);
   const fileSize = await getFileSize(user, key);
 
   // Register in elastic

@@ -29,7 +29,8 @@ import { getDraftContext } from '../utils/draftContext';
 import { buildReverseUpdateFieldPatch, FILES_UPDATE_KEY } from './draft-utils';
 import { storeLoadByIdWithRefs, updateAttributeFromLoadedWithRefs } from './middleware';
 import { buildRefRelationKey } from '../schema/general';
-import { getFileContent, loadFile } from './file-storage';
+import { getFileContent } from './raw-file-storage';
+import { loadFile } from './file-storage';
 import { EditOperation } from '../generated/graphql';
 
 const completeDeleteElementsFromDraft = async (context, user, elements) => {
