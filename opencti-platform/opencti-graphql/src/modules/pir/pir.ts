@@ -18,7 +18,7 @@ import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_PIR, PIR_TYPES, type StixPir, type StoreEntityPir } from './pir-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import convertEntityPirToStix from './pir-converter';
-import { authorizedMembers, createdAt, creators, draftChange, lastEventId, updatedAt } from '../../schema/attribute-definition';
+import { authorizedMembers, draftChange, lastEventId } from '../../schema/attribute-definition';
 
 const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
   type: {
@@ -33,9 +33,6 @@ const ENTITY_PIR_DEFINITION: ModuleDefinition<StoreEntityPir, StixPir> = {
     },
   },
   attributes: [
-    createdAt,
-    updatedAt,
-    creators,
     lastEventId,
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'pir_type', label: 'PIR Type', type: 'string', format: 'enum', values: PIR_TYPES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: false },

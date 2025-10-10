@@ -58,6 +58,7 @@ type Trigger implements InternalObject & BasicObject {
     modified: DateTime
     created_at: DateTime
     updated_at: DateTime
+    refreshed_at: DateTime
     name: String!
     description: String
     trigger_type: TriggerType! # live or digest
@@ -140,6 +141,7 @@ type Notification implements InternalObject & BasicObject {
     user_id: String
     created_at: DateTime
     updated_at: DateTime
+    refreshed_at: DateTime
 }
 type NotificationConnection {
     pageInfo: PageInfo!

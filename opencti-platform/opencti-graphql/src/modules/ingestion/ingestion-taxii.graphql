@@ -18,6 +18,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
     parent_types: [String!]!
     created_at: DateTime
     updated_at: DateTime
+    refreshed_at: DateTime
     name: String!
     description: String
     uri: String!

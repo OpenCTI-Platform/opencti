@@ -17,6 +17,7 @@ describe('StixRefRelationship', () => {
                     spec_version
                     created_at
                     updated_at
+                    refreshed_at
                     confidence
                     from {
                         ... on Malware {
@@ -42,12 +43,13 @@ describe('StixRefRelationship', () => {
     });
 
     expect(stixRefRelationship.data.stixRefRelationshipAdd).not.toBeNull();
-    expect(stixRefRelationship.data.stixRefRelationshipAdd.created_at).toEqual(stixRefRelationship.data.stixRefRelationshipAdd.updated_at);
     expect(stixRefRelationship.data.stixRefRelationshipAdd.spec_version).toEqual('2.1');
     expect(stixRefRelationship.data.stixRefRelationshipAdd.confidence).toEqual(90);
     expect(stixRefRelationship.data.stixRefRelationshipAdd.from.x_opencti_stix_ids[0]).toEqual('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     stixRefRelationshipInternalId = stixRefRelationship.data.stixRefRelationshipAdd.id;
     stixRefRelationshipCreatedAt = stixRefRelationship.data.stixRefRelationshipAdd.created_at;
+    expect(stixRefRelationshipCreatedAt).toEqual(stixRefRelationship.data.stixRefRelationshipAdd.updated_at);
+    expect(stixRefRelationshipCreatedAt).toEqual(stixRefRelationship.data.stixRefRelationshipAdd.refreshed_at);
   });
   it('should StixRefRelationship updated', async () => {
     const UPDATE_QUERY = gql`
@@ -58,6 +60,7 @@ describe('StixRefRelationship', () => {
             created_at
             updated_at
             confidence
+            refreshed_at
           }
         }
       }
@@ -76,6 +79,8 @@ describe('StixRefRelationship', () => {
     // should modify updated_at
     expect(editionStartDatetime < stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at).toBeTruthy();
     expect(stixRefRelationshipCreatedAt < stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at).toBeTruthy();
+    // should modify refreshed_at
+    expect(stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.updated_at).toEqual(stixRefRelationship.data.stixRefRelationshipEdit.fieldPatch.refreshed_at);
   });
   it('should stixRefRelationship deleted', async () => {
     const READ_QUERY = gql`

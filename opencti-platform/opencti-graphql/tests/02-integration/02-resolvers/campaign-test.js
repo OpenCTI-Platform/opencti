@@ -1,5 +1,6 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
+import { now } from 'moment/moment';
 import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 
@@ -65,12 +66,17 @@ const READ_QUERY = gql`
       name
       description
       toStix
+      created_at
+      updated_at
+      refreshed_at
     }
   }
 `;
 
 describe('Campaign resolver standard behavior', () => {
   let campaignInternalId;
+  let campaignCreatedAt;
+  let campaignUpdatedAt;
   const campaignStixId = 'campaign--76c42acb-c5d7-4f38-abf2-a8566ac89ac9';
   it('should campaign created', async () => {
     const CREATE_QUERY = gql`
@@ -80,6 +86,9 @@ describe('Campaign resolver standard behavior', () => {
           standard_id
           name
           description
+          created_at
+          updated_at
+          refreshed_at
         }
       }
     `;
@@ -101,6 +110,10 @@ describe('Campaign resolver standard behavior', () => {
     expect(campaign.data.campaignAdd).not.toBeNull();
     expect(campaign.data.campaignAdd.name).toEqual('Campaign');
     campaignInternalId = campaign.data.campaignAdd.id;
+    campaignCreatedAt = campaign.data.campaignAdd.created_at;
+    campaignUpdatedAt = campaign.data.campaignAdd.updated_at;
+    expect(campaignCreatedAt).toEqual(campaignUpdatedAt);
+    expect(campaignCreatedAt).toEqual(campaign.data.campaignAdd.refreshed_at);
   });
   it('should campaign loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: campaignInternalId } });
@@ -157,15 +170,25 @@ describe('Campaign resolver standard behavior', () => {
           fieldPatch(input: $input) {
             id
             name
+            created_at
+            updated_at
+            refreshed_at
           }
         }
       }
     `;
+    const editionStartDatetime = now();
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: campaignInternalId, input: { key: 'name', value: ['Campaign - test'] } },
     });
     expect(queryResult.data.campaignEdit.fieldPatch.name).toEqual('Campaign - test');
+    expect(queryResult.data.campaignEdit.fieldPatch.created_at).toEqual(campaignCreatedAt);
+    // should modify updated_at and refreshed_at
+    campaignUpdatedAt = queryResult.data.campaignEdit.fieldPatch.updated_at;
+    expect(queryResult.data.campaignEdit.fieldPatch.refreshed_at).toEqual(campaignUpdatedAt);
+    expect(campaignCreatedAt < campaignUpdatedAt).toBeTruthy();
+    expect(editionStartDatetime < campaignUpdatedAt).toBeTruthy();
   });
   it('should context patch campaign', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -200,6 +223,7 @@ describe('Campaign resolver standard behavior', () => {
     expect(queryResult.data.campaignEdit.contextClean.id).toEqual(campaignInternalId);
   });
   it('should add relation in campaign', async () => {
+    const relationCreationStartDatetime = now();
     const RELATION_ADD_QUERY = gql`
       mutation CampaignEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         campaignEdit(id: $id) {
@@ -227,6 +251,13 @@ describe('Campaign resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.campaignEdit.relationAdd.from.objectMarking.length).toEqual(1);
+    // should update updated_at and refreshed_at (because ref relationship creation)
+    const campaignQueryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: campaignStixId } });
+    expect(campaignQueryResult).not.toBeNull();
+    expect(campaignQueryResult.data.campaign.id).toEqual(campaignInternalId);
+    expect(campaignQueryResult.data.campaign.created_at).toEqual(campaignCreatedAt);
+    expect(relationCreationStartDatetime < campaignQueryResult.data.campaign.updated_at).toBeTruthy();
+    expect(relationCreationStartDatetime < campaignQueryResult.data.campaign.refreshed_at).toBeTruthy();
   });
   it('should delete relation in campaign', async () => {
     const RELATION_DELETE_QUERY = gql`

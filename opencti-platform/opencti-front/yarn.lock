@@ -3434,6 +3434,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@faker-js/faker@npm:10.0.0":
+  version: 10.0.0
+  resolution: "@faker-js/faker@npm:10.0.0"
+  checksum: 10c0/7692f21cad661cd0cb150d72d4dff79322c892923c97a263c12ae74de45739306bea4e2630e8ac852dd4395ead2cb76be3715011395256c56e8a9b39acdcb97a
+  languageName: node
+  linkType: hard
+
 "@file-type/xml@npm:^0.4.3":
   version: 0.4.3
   resolution: "@file-type/xml@npm:0.4.3"
@@ -15383,6 +15390,7 @@ __metadata:
     "@analytics/google-analytics": "npm:1.1.0"
     "@cfworker/json-schema": "npm:4.1.1"
     "@ckeditor/ckeditor5-react": "npm:9.5.0"
+    "@faker-js/faker": "npm:10.0.0"
     "@fontsource/geologica": "npm:5.2.6"
     "@fontsource/ibm-plex-sans": "npm:5.2.6"
     "@graphiql/toolkit": "npm:0.11.1"

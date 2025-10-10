@@ -16,6 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React from 'react';
 import Grid from '@mui/material/Grid2';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import PirThreatMap from './pir_threat_map/PirThreatMap';
 import { pirHistoryFilterGroup } from '../pir-history-utils';
 import PirOverviewCountFlagged from './PirOverviewCountFlagged';
 import PirOverviewCounts from './PirOverviewCounts';
@@ -26,6 +27,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { PirOverviewFragment$data, PirOverviewFragment$key } from './__generated__/PirOverviewFragment.graphql';
 import { PirOverviewRedisStreamQuery } from './__generated__/PirOverviewRedisStreamQuery.graphql';
 import { PirOverviewHistoryQuery } from './__generated__/PirOverviewHistoryQuery.graphql';
+import { PirOverviewThreatMapQuery } from './__generated__/PirOverviewThreatMapQuery.graphql';
 
 const overviewFragment = graphql`
   fragment PirOverviewFragment on Pir {
@@ -41,6 +43,12 @@ const overviewFragment = graphql`
 const redisStreamQuery = graphql`
   query PirOverviewRedisStreamQuery {
     ...PirOverviewDetailsRedisFragment
+  }
+`;
+
+export const threatMapQuery = graphql`
+  query PirOverviewThreatMapQuery($filters: FilterGroup, $pirId: ID!) {
+    ...PirThreatMapFragment
   }
 `;
 
@@ -61,15 +69,18 @@ interface PirOverviewComponentProps {
   pir: PirOverviewFragment$data
   redisQueryRef: PreloadedQuery<PirOverviewRedisStreamQuery>
   historyQueryRef: PreloadedQuery<PirOverviewHistoryQuery>
+  threatMapQueryRef: PreloadedQuery<PirOverviewThreatMapQuery>
 }
 
 const PirOverviewComponent = ({
   pir,
   redisQueryRef,
   historyQueryRef,
+  threatMapQueryRef,
 }: PirOverviewComponentProps) => {
   const dataRedis = usePreloadedQuery(redisStreamQuery, redisQueryRef);
   const dataHistory = usePreloadedQuery(pirHistoryQuery, historyQueryRef);
+  const dataThreatMap = usePreloadedQuery(threatMapQuery, threatMapQueryRef);
 
   return (
     <Grid container spacing={3}>
@@ -81,6 +92,7 @@ const PirOverviewComponent = ({
         <PirOverviewHistory dataHistory={dataHistory} dataPir={pir} />
       </Grid>
       <Grid size={{ xs: 6 }} container direction='column' spacing={3}>
+        <PirThreatMap data={dataThreatMap} />
         <PirOverviewTopSources data={pir} />
         <PirOverviewCountFlagged data={pir} />
       </Grid>
@@ -103,8 +115,32 @@ const PirOverview = ({ data }: PirOverviewProps) => {
     filters: pirHistoryFilterGroup,
     pirId: pir.id,
   });
+  const threatMapQueryRef = useQueryLoading<PirOverviewThreatMapQuery>(threatMapQuery, {
+    pirId: pir.id,
+    filters: {
+      mode: 'and',
+      filterGroups: [],
+      filters: [
+        {
+          key: ['regardingOf'],
+          operator: 'eq',
+          mode: 'and',
+          values: [
+            { key: 'id', values: [pir.id], operator: 'eq', mode: 'or' },
+            { key: 'relationship_type', values: ['in-pir'], operator: 'eq', mode: 'or' },
+          ],
+        },
+        {
+          key: ['refreshed_at'],
+          operator: 'within',
+          values: ['now-1M', 'now'],
+          mode: 'or',
+        },
+      ],
+    },
+  });
 
-  if (!redisQueryRef || !pirHistoryQueryRef) {
+  if (!redisQueryRef || !pirHistoryQueryRef || !threatMapQueryRef) {
     return null;
   }
 
@@ -113,6 +149,7 @@ const PirOverview = ({ data }: PirOverviewProps) => {
       pir={pir}
       redisQueryRef={redisQueryRef}
       historyQueryRef={pirHistoryQueryRef}
+      threatMapQueryRef={threatMapQueryRef}
     />
   );
 };
