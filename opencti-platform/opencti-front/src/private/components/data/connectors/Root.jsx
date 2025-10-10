@@ -25,7 +25,7 @@ class RootConnector extends Component {
             if (props.connector) {
               return (
                 <>
-                  <Breadcrumbs elements={[{ label: t('Data') }, { label: t('Ingestion') }, { label: t('Ingestion monitoring'), link: '/dashboard/data/ingestion/connectors' }, { label: props.connector.title, current: true }]} />
+                  <Breadcrumbs elements={[{ label: t('Data') }, { label: t('Ingestion') }, { label: t('Ingestion monitoring'), link: '/dashboard/data/ingestion/connectors' }, { label: props.connector.name, current: true }]} />
                   <Routes>
                     <Route
                       path="/"
