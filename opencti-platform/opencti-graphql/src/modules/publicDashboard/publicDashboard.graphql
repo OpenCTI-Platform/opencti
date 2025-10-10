@@ -2,7 +2,7 @@ type PublicDashboard implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!  @auth(for: [KNOWLEDGE, EXPLORE])
   standard_id: String!  @auth(for: [KNOWLEDGE, EXPLORE])
-  parent_types: [String!]! @auth(for: [KNOWLEDGE, EXPLORE])
+  parent_types: [String]! @auth(for: [KNOWLEDGE, EXPLORE])
   # PublicDashboard
   name: String!
   owner: Creator @auth(for: [KNOWLEDGE, EXPLORE])

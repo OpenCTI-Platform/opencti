@@ -8,7 +8,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
     standard_id: String!
-    parent_types: [String!]!
+    parent_types: [String]!
     # DraftWorkspace
     name: String!
     created_at: DateTime!

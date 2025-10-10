@@ -2,7 +2,7 @@ type ManagerConfiguration implements InternalObject & BasicObject {
     id: ID!
     entity_type: String! @auth
     standard_id: String! @auth
-    parent_types: [String!]! @auth
+    parent_types: [String]! @auth
     # ManagerConfiguration
     manager_id: String! @auth
     manager_running: Boolean @auth

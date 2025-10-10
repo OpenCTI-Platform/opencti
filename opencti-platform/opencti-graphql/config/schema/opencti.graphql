@@ -1431,7 +1431,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   # Settings
   platform_enterprise_edition: PlatformEE!
   platform_organization: Organization
@@ -1795,7 +1795,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   user_email: String!
   name: String!
   description: String

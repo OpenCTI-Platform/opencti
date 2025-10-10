@@ -39,7 +39,7 @@ type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
   standard_id: String! @auth
-  parent_types: [String!]! @auth
+  parent_types: [String]! @auth
   # EntitySetting
   target_type: String! @auth
   platform_entity_files_ref: Boolean @auth

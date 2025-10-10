@@ -1522,7 +1522,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   platform_enterprise_edition: PlatformEE!
   platform_organization: Organization
   platform_title: String
@@ -1880,7 +1880,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   user_email: String!
   name: String!
   description: String
@@ -9761,7 +9761,7 @@ type Catalog implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   name: String!
   description: String!
   contracts: [String!]!
@@ -11658,7 +11658,7 @@ type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   target_type: String!
   platform_entity_files_ref: Boolean
   platform_hidden_type: Boolean
@@ -11695,7 +11695,7 @@ type Workspace implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   type: String
   name: String!
   description: String
@@ -11899,7 +11899,7 @@ type ManagerConfiguration implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   manager_id: String!
   manager_running: Boolean
   last_run_start_date: DateTime
@@ -12149,7 +12149,7 @@ type Playbook implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   name: String!
   description: String
   playbook_running: Boolean
@@ -12225,7 +12225,7 @@ type IngestionRss implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   created_at: DateTime
   updated_at: DateTime
   name: String!
@@ -12292,7 +12292,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   created_at: DateTime
   updated_at: DateTime
   name: String!
@@ -12353,7 +12353,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   created_at: DateTime
   updated_at: DateTime
   name: String!
@@ -13021,7 +13021,7 @@ type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   name: String!
   has_header: Boolean!
   separator: String!
@@ -13219,7 +13219,7 @@ type JsonMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   name: String!
   variables: [JsonMapperVariable!]
   representations: [JsonMapperRepresentation!]!
@@ -13249,7 +13249,7 @@ type PublicDashboard implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   name: String!
   owner: Creator
   description: String
@@ -13397,7 +13397,7 @@ type DeleteOperation implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   objectMarking: [MarkingDefinition!]
   confidence: Int
   created_at: DateTime
@@ -13528,7 +13528,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   name: String!
   created_at: DateTime!
   creators: [Creator!]
@@ -13775,7 +13775,7 @@ type Pir implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   created_at: DateTime!
   updated_at: DateTime!
   creators: [Creator!]
@@ -14103,7 +14103,7 @@ type Form implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!

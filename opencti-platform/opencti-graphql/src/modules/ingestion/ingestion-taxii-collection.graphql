@@ -2,7 +2,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
     standard_id: String!
-    parent_types: [String!]!
+    parent_types: [String]!
     created_at: DateTime
     updated_at: DateTime
     name: String!

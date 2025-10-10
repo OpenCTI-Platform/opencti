@@ -2,7 +2,7 @@ type Workspace implements InternalObject & BasicObject {
     id: ID!
     entity_type: String!
     standard_id: String!
-    parent_types: [String!]!
+    parent_types: [String]!
     # Workspace
     type: String
     name: String!
