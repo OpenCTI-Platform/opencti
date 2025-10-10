@@ -46,7 +46,11 @@ const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
   );
 };
 
-const ConnectorTitle = ({ title }: { title: string }) => {
+interface ConnectorTitleProps {
+  title: string
+}
+
+const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
   return (
     <Tooltip title={title} placement="bottom-start">
       <Typography
