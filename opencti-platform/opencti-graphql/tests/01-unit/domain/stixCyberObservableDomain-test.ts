@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addStixCyberObservable, generateIndicatorFromObservable, generateKeyValueForIndicator } from '../../../src/domain/stixCyberObservable';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 
 const artifact = {
   _index: 'opencti_stix_cyber_observables-000001',
@@ -42,10 +44,6 @@ const artifact = {
     'Stix-Cyber-Observable'
   ],
   modified: '2024-12-11T13:24:12.691Z',
-};
-const artifact2 = {
-  entity_type: 'Artifact',
-  name: 'artifact2'
 };
 const certificate = {
   _index: 'opencti_stix_cyber_observables-000001',
@@ -158,7 +156,7 @@ describe('SCO utils', () => {
 
   describe('generateIndicatorFromObservable ', () => {
     const observableToGenerateIndicator = {
-      entity_type: 'Observable',
+      entity_type: ABSTRACT_STIX_CYBER_OBSERVABLE,
       name: 'ObservableName'
     };
     const input = {
@@ -177,7 +175,7 @@ describe('SCO utils', () => {
 
   describe('addStixCyberObservable', () => {
     it('should not be able to create if the type is not an observable', async () => {
-      const input = { type: 'report' };
+      const input = { type: ENTITY_TYPE_CONTAINER_REPORT };
       await expect(() => addStixCyberObservable(testContext, ADMIN_USER, input))
         .rejects.toThrowError('Observable type report is not supported.');
     });
