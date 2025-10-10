@@ -39,7 +39,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'createButton'
 | 'disableToolBar'
 | 'removeSelectAll'
-| 'useComputeLink'
+| 'getComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
 | 'data'
@@ -56,7 +56,7 @@ const DataTableComponent = ({
   data,
   redirectionModeEnabled = false,
   useLineData,
-  useComputeLink,
+  getComputeLink,
   settingsMessagesBannerHeight,
   filtersComponent,
   hideHeaders,
@@ -203,7 +203,7 @@ const DataTableComponent = ({
         data,
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
-        useComputeLink: useComputeLink ?? defaultComputeLink,
+        getComputeLink: getComputeLink ?? defaultComputeLink,
         useDataTableColumnsLocalStorage: columnsLocalStorage,
         useDataTablePaginationLocalStorage: paginationLocalStorage,
         onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),

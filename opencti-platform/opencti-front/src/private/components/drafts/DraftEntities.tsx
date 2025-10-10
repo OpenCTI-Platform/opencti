@@ -280,7 +280,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           initialValues={initialValues}
           toolbarFilters={toolbarFilters}
           preloadedPaginationProps={preloadedPaginationProps}
-          useComputeLink={getRedirectionLink}
+          getComputeLink={getRedirectionLink}
           lineFragment={draftEntitiesLineFragment}
           entityTypes={[entitiesType]}
           removeFromDraftEnabled

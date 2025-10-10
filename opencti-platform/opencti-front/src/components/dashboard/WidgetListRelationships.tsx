@@ -50,7 +50,7 @@ const WidgetListRelationships = ({
         data={data.map(({ node }) => node)}
         globalCount={data.length}
         variant={DataTableVariant.widget}
-        useComputeLink={getRedirectionLink}
+        getComputeLink={getRedirectionLink}
         pageSize='50'
         disableNavigation={publicWidget}
         rootRef={rootRef}

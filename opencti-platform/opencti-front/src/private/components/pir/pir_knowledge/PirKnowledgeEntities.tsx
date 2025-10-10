@@ -256,7 +256,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
           entityTypes={['Stix-Domain-Object']}
           searchContextFinal={{ entityTypes: ['Stix-Domain-Object'] }}
           currentView={viewStorage.view}
-          useComputeLink={(e: PirKnowledgeEntities_SourceFlaggedFragment$data) => {
+          getComputeLink={(e: PirKnowledgeEntities_SourceFlaggedFragment$data) => {
             if (!e.entity_type) return '';
             return computeLink(e);
           }}

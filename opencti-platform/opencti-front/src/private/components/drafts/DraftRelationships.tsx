@@ -292,7 +292,7 @@ const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isRea
         resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
         storageKey={LOCAL_STORAGE_KEY}
         initialValues={initialValues}
-        useComputeLink={getRedirectionLink}
+        getComputeLink={getRedirectionLink}
         toolbarFilters={toolbarFilters}
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={draftRelationshipsLineFragment}
