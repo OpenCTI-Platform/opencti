@@ -292,7 +292,6 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     }
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
-
   const { element: stixCyberObservable } = await updateAttribute(
     context,
     user,
@@ -301,6 +300,7 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     input,
     opts
   );
+
   // Delete the key when updating a numeric field with an empty value (e.g. to delete this value) to avoid a schema error
   Object.entries(stixCyberObservable).forEach(([key, value]) => {
     if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
