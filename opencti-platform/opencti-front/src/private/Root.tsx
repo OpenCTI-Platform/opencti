@@ -350,6 +350,23 @@ const rootPrivateQuery = graphql`
         }
       }
     }
+    themes {
+      edges {
+        node {
+          id
+          name
+          theme_background
+          theme_paper
+          theme_nav
+          theme_primary
+          theme_secondary
+          theme_text_color
+          theme_logo
+          theme_logo_collapsed
+          theme_logo_login
+        }
+      }
+    }
   }
 `;
 
@@ -392,6 +409,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     schemaRelationsRefTypesMapping,
     filterKeysSchema,
     about,
+    themes,
   } = queryData;
   const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
   const me = useFragment<RootMe_data$key>(meUserFragment, meFragment);
@@ -399,6 +417,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const { activeTheme } = useActiveTheme({
     userThemeId: me?.theme,
     platformTheme: settings.platform_theme,
+    allThemes: themes,
   });
 
   const subConfig = useMemo(
@@ -430,6 +449,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
 
   const { isReachable } = useNetworkCheck(`${settings?.platform_xtmhub_url}/health`);
   useBaseHrefAbsolute();
+
   return (
     <UserContext.Provider
       value={{

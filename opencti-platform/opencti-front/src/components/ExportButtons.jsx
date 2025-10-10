@@ -10,8 +10,6 @@ import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
-import themeLight from './ThemeLight';
-import themeDark from './ThemeDark';
 import { commitLocalUpdate, MESSAGING$ } from '../relay/environment';
 import { exportImage, exportPdf } from '../utils/Image';
 import inject18n from './i18n';
@@ -34,16 +32,16 @@ class ExportButtons extends Component {
   constructor(props) {
     super(props);
     this.adjust = props.adjust;
+    this.themes = props.themes;
+    this.userThemeId = props.userThemeId;
+
     this.csvLink = React.createRef();
-    commitLocalUpdate((store) => {
-      const me = store.getRoot().getLinkedRecord('me');
-      const exporting = me.getValue('exporting') || false;
-      this.state = {
-        anchorElImage: null,
-        anchorElPdf: null,
-        exporting,
-      };
-    });
+
+    this.state = {
+      anchorElImage: null,
+      anchorElPdf: null,
+      exporting: false,
+    };
   }
 
   handleOpenImage(event) {
@@ -54,59 +52,53 @@ class ExportButtons extends Component {
     this.setState({ anchorElImage: null });
   }
 
-  exportImage(domElementId, name, theme, background) {
+  async exportImage(domElementId, name, themeId, background) {
     this.setState({ exporting: true });
     this.handleCloseImage();
-    const { theme: currentTheme, pixelRatio = 1, t } = this.props;
-    let timeout = 4000;
-    if (theme !== currentTheme.palette.mode) {
-      timeout = 6000;
+    const { pixelRatio = 1, t } = this.props;
+
+    commitLocalUpdate((store) => {
+      const me = store.getRoot().getLinkedRecord('me');
+      me.setValue(themeId, 'theme');
+    });
+
+    const container = document.getElementById(domElementId);
+    const exportButtons = document.getElementById('export-buttons');
+    // const viewButtons = document.getElementById('container-view-buttons');
+    exportButtons.setAttribute('style', 'display: none');
+    // viewButtons.setAttribute('style', 'display: none');
+
+    const { offsetWidth, offsetHeight } = container;
+    // if (themeId === this.userThemeId && this.adjust) {
+    //   container.setAttribute('style', 'width:3840px; height:2160px');
+    //   this.adjust(true);
+    // }
+
+    try {
+      const selectedTheme = this.themes.edges.find(
+        (edge) => edge.node.id === themeId,
+      )?.node;
+
+      await exportImage(
+        domElementId,
+        offsetWidth,
+        offsetHeight,
+        name,
+        background ? selectedTheme?.theme_background : null,
+        pixelRatio,
+        this.adjust,
+      );
+    } catch {
+      MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
+    } finally {
+      exportButtons.setAttribute('style', 'display: block');
+      // viewButtons.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
-        me.setValue(theme, 'theme');
-        me.setValue(true, 'exporting');
+        me.setValue(this.userThemeId, 'theme');
       });
+      this.setState({ exporting: false });
     }
-    setTimeout(() => {
-      const container = document.getElementById(domElementId);
-      const exportButtons = document.getElementById('export-buttons');
-      const viewButtons = document.getElementById('container-view-buttons');
-      exportButtons.setAttribute('style', 'display: none');
-      viewButtons.setAttribute('style', 'display: none');
-
-      const { offsetWidth, offsetHeight } = container;
-      if (theme === currentTheme.palette.mode && this.adjust) {
-        container.setAttribute('style', 'width:3840px; height:2160px');
-        this.adjust(true);
-      }
-      setTimeout(() => {
-        exportImage(
-          domElementId,
-          offsetWidth,
-          offsetHeight,
-          name,
-          // eslint-disable-next-line no-nested-ternary
-          background
-            ? theme === 'light'
-              ? themeLight().palette.background.default
-              : themeDark().palette.background.default
-            : null,
-          pixelRatio,
-          this.adjust,
-        ).then(() => {})
-          .catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to image')))
-          .finally(() => {
-            exportButtons.setAttribute('style', 'display: block');
-            viewButtons.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
-            commitLocalUpdate((store) => {
-              const me = store.getRoot().getLinkedRecord('me');
-              me.setValue(false, 'exporting');
-              me.setValue(currentTheme.palette.mode, 'theme');
-            });
-            this.setState({ exporting: false });
-          });
-      }, timeout / 2);
-    }, timeout);
   }
 
   handleOpenPdf(event) {
@@ -117,44 +109,42 @@ class ExportButtons extends Component {
     this.setState({ anchorElPdf: null });
   }
 
-  exportPdf(domElementId, name, theme, background) {
+  async exportPdf(domElementId, name, themeId, background) {
     this.setState({ exporting: true });
     this.handleClosePdf();
-    const { theme: currentTheme, pixelRatio = 1, t } = this.props;
-    let timeout = 4000;
-    if (theme !== currentTheme.palette.mode) {
-      timeout = 6000;
-      commitLocalUpdate((store) => {
-        const me = store.getRoot().getLinkedRecord('me');
-        me.setValue(true, 'exporting');
-        me.setValue(theme, 'theme');
-      });
-    }
-    setTimeout(() => {
-      const buttons = document.getElementById('export-buttons');
-      buttons.setAttribute('style', 'display: none');
-      exportPdf(
+
+    const { pixelRatio = 1, t } = this.props;
+
+    commitLocalUpdate((store) => {
+      const me = store.getRoot().getLinkedRecord('me');
+      me.setValue(themeId, 'theme');
+    });
+
+    const buttons = document.getElementById('export-buttons');
+    buttons.setAttribute('style', 'display: none');
+
+    const selectedTheme = this.themes.edges.find(
+      (edge) => edge.node.id === themeId,
+    )?.node;
+
+    try {
+      await exportPdf(
         domElementId,
         name,
-        // eslint-disable-next-line no-nested-ternary
-        background
-          ? theme === 'light'
-            ? themeLight().palette.background.default
-            : themeDark().palette.background.default
-          : null,
+        background ? selectedTheme?.theme_background : null,
         pixelRatio,
         this.adjust,
-      ).then(() => {}).catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf')))
-        .finally(() => {
-          commitLocalUpdate((store) => {
-            const me = store.getRoot().getLinkedRecord('me');
-            me.setValue(false, 'exporting');
-            me.setValue(currentTheme.palette.mode, 'theme');
-          });
-          this.setState({ exporting: false });
-          buttons.setAttribute('style', 'display: block');
-        });
-    }, timeout);
+      );
+    } catch (e) {
+      MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf'));
+    } finally {
+      commitLocalUpdate((store) => {
+        const me = store.getRoot().getLinkedRecord('me');
+        me.setValue(this.userThemeId, 'theme');
+      });
+      this.setState({ exporting: false });
+      buttons.setAttribute('style', 'display: block');
+    }
   }
 
   render() {
@@ -240,78 +230,55 @@ class ExportButtons extends Component {
                 open={Boolean(anchorElImage)}
                 onClose={this.handleCloseImage.bind(this)}
               >
-                <MenuItem
-                  onClick={this.exportImage.bind(
-                    this,
-                    domElementId,
-                    name,
-                    'dark',
-                    true,
-                  )}
-                >
-                  {t('Dark (with background)')}
-                </MenuItem>
-                <MenuItem
-                  onClick={this.exportImage.bind(
-                    this,
-                    domElementId,
-                    name,
-                    'dark',
-                    false,
-                  )}
-                >
-                  {t('Dark (without background)')}
-                </MenuItem>
-                <MenuItem
-                  onClick={this.exportImage.bind(
-                    this,
-                    domElementId,
-                    name,
-                    'light',
-                    true,
-                  )}
-                >
-                  {t('Light (with background)')}
-                </MenuItem>
-                <MenuItem
-                  onClick={this.exportImage.bind(
-                    this,
-                    domElementId,
-                    name,
-                    'light',
-                    false,
-                  )}
-                >
-                  {t('Light (without background)')}
-                </MenuItem>
+                {this.themes.edges.flatMap(({ node }) => [
+                  <MenuItem
+                    key={`${node.id}-with-bg`}
+                    onClick={this.exportImage.bind(
+                      this,
+                      domElementId,
+                      name,
+                      node.id,
+                      true,
+                    )}
+                  >
+                    {node.name} {t('(with background)')}
+                  </MenuItem>,
+                  <MenuItem
+                    key={`${node.id}-without-bg`}
+                    onClick={this.exportImage.bind(
+                      this,
+                      domElementId,
+                      name,
+                      node.id,
+                      false,
+                    )}
+                  >
+                    {node.name} {t('(without background)')}
+                  </MenuItem>,
+                ])}
               </Menu>
+
               <Menu
                 anchorEl={anchorElPdf}
                 open={Boolean(anchorElPdf)}
                 onClose={this.handleClosePdf.bind(this)}
               >
-                <MenuItem
-                  onClick={this.exportPdf.bind(
-                    this,
-                    domElementId,
-                    name,
-                    'dark',
-                    true,
-                  )}
-                >
-                  {t('Dark')}
-                </MenuItem>
-                <MenuItem
-                  onClick={this.exportPdf.bind(
-                    this,
-                    domElementId,
-                    name,
-                    'light',
-                    true,
-                  )}
-                >
-                  {t('Light')}
-                </MenuItem>
+                {
+                  this.themes.edges.map(({ node }) => (
+                    <MenuItem
+                      key={node.id}
+                      onClick={this.exportPdf.bind(
+                        this,
+                        domElementId,
+                        name,
+                        node.id,
+                        true,
+                      )}
+                    >
+                      {node.name}
+                    </MenuItem>
+                  ))
+                }
               </Menu>
               <Dialog
                 slotProps={{ paper: { elevation: 1 } }}

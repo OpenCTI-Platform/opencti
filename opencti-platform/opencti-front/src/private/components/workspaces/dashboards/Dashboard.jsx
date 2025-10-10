@@ -58,7 +58,7 @@ const dashboardFragment = graphql`
   }
 `;
 
-const DashboardComponent = ({ data, noToolbar }) => {
+const DashboardComponent = ({ data, noToolbar, themes, userThemeId }) => {
   const [commitWidgetImportMutation] = useApiMutation(dashboardImportWidgetMutation);
 
   const workspace = useFragment(dashboardFragment, data);
@@ -288,6 +288,8 @@ const DashboardComponent = ({ data, noToolbar }) => {
             handleImportWidget={importWidget}
             data={workspace}
             variant="dashboard"
+            themes={themes}
+            userThemeId={userThemeId}
           />
           <div style={{ marginTop: 8 }}>
             <DashboardTimeFilters
