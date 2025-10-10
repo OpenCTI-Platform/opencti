@@ -7,14 +7,9 @@ type ChipWrapperProps = {
   isVisible: boolean;
   canShrink?: boolean;
   chipRef: (el: HTMLDivElement | null) => void;
-}
+};
 
-const ChipWrapper = ({
-  useCase,
-  isVisible,
-  canShrink,
-  chipRef,
-}: ChipWrapperProps) => (
+const ChipWrapper = ({ useCase, isVisible, canShrink, chipRef }: ChipWrapperProps) => (
   <Box
     ref={chipRef}
     sx={{
