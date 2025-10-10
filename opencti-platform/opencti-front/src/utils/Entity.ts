@@ -152,8 +152,8 @@ export const computeLink = (node: {
   id: string;
   entity_type: string;
   relationship_type?: string;
-  from?: { entity_type: string; id: string };
-  to?: { entity_type: string; id: string };
+  from?: { entity_type: string; id: string, parent_types?: string; };
+  to?: { entity_type: string; id: string, parent_types?: string; };
   type?: string;
 }): string | undefined => {
   let redirectLink;
@@ -162,11 +162,11 @@ export const computeLink = (node: {
       node.from.id
     }/knowledge/sightings/${node.id}`;
   } else if (node.relationship_type) {
-    if (node.from) { // 'from' not restricted
+    if (node.from && !node.from.parent_types?.includes('stix-core-relationship')) { // 'from' not restricted and not a relationship
       redirectLink = `${resolveLink(node.from.entity_type)}/${
         node.from.id
       }/knowledge/relations/${node.id}`;
-    } else if (node.to) { // if 'from' is restricted, redirect to the knowledge relationship tab of 'to'
+    } else if (node.to && !node.to.parent_types?.includes('stix-core-relationship')) { // if 'from' is restricted or a relationship, redirect to the knowledge relationship tab of 'to'
       redirectLink = `${resolveLink(node.to.entity_type)}/${
         node.to.id
       }/knowledge/relations/${node.id}`;
