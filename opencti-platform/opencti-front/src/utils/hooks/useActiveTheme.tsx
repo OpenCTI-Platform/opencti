@@ -1,24 +1,4 @@
-import { useLazyLoadQuery, graphql } from 'react-relay';
-import type { useActiveThemeQuery } from './__generated__/useActiveThemeQuery.graphql';
-
-const userThemeQuery = graphql`
-  query useActiveThemeQuery($themeId: ID!) {
-    theme(id: $themeId) {
-      id
-      name
-      theme_background
-      theme_paper
-      theme_nav
-      theme_primary
-      theme_secondary
-      theme_accent
-      theme_text_color
-      theme_logo
-      theme_logo_collapsed
-      theme_logo_login
-    }
-  }
-`;
+import { RootPrivateQuery$data } from '../../private/__generated__/RootPrivateQuery.graphql';
 
 interface UseActiveThemeParams {
   userThemeId?: string | null;
@@ -36,25 +16,27 @@ interface UseActiveThemeParams {
     theme_logo_collapsed?: string | null;
     theme_logo_login?: string | null;
   } | null;
+  allThemes: RootPrivateQuery$data['themes']; // Add this
 }
 
-const useActiveTheme = ({ userThemeId, platformTheme }: UseActiveThemeParams) => {
+export const useActiveTheme = ({
+  userThemeId,
+  platformTheme,
+  allThemes,
+}: UseActiveThemeParams) => {
+  const themes = allThemes?.edges.map((edge) => edge.node) || [];
+
   const themeIdToFetch = (userThemeId && userThemeId !== 'default')
     ? userThemeId
     : platformTheme?.id;
 
-  const themeData = themeIdToFetch
-    ? useLazyLoadQuery<useActiveThemeQuery>(
-      userThemeQuery,
-      { themeId: themeIdToFetch },
-      { fetchPolicy: 'store-or-network' },
-    )
-    : null;
+  const activeTheme = themeIdToFetch
+    ? themes.find((theme) => theme.id === themeIdToFetch) || platformTheme
+    : platformTheme;
 
-  const fetchedTheme = themeData?.theme;
-  const activeTheme = themeData?.theme || platformTheme || null;
-
-  const userThemeWasDeleted = !!(themeIdToFetch && !fetchedTheme);
+  const userThemeWasDeleted = !!(userThemeId
+    && userThemeId !== 'default'
+    && !themes.find((t) => t.id === userThemeId));
 
   return {
     activeTheme,

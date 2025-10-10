@@ -18,6 +18,7 @@ import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/Wo
 import Button from '@mui/material/Button';
 import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
 import { WorkspaceHeaderFragment$key } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderFragment.graphql';
+import { RootDashboardQuery$data } from '@components/workspaces/dashboards/__generated__/RootDashboardQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 const workspaceHeaderFragment = graphql`
@@ -52,6 +53,8 @@ type WorkspaceHeaderProps = {
   },
   handleAddWidget?: () => void;
   handleImportWidget?: (widgetFile: File) => void
+  themes: RootDashboardQuery$data['themes']
+  userThemeId: string
 };
 
 const WorkspaceHeader = ({
@@ -60,6 +63,8 @@ const WorkspaceHeader = ({
   adjust = () => {},
   handleAddWidget = () => {},
   handleImportWidget = () => {},
+  themes,
+  userThemeId,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
@@ -110,6 +115,8 @@ const WorkspaceHeader = ({
             name={workspace.name}
             type={workspace.type}
             adjust={adjust}
+            themes={themes}
+            userThemeId={userThemeId}
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}
           />
