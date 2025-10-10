@@ -33,7 +33,7 @@ describe('Delete functional errors behaviors', async () => {
       order: 12
     };
     const decayRuleCreated = await addDecayRule(testContext, ADMIN_USER, decayRule);
-    console.log('decayRuleCreated : ', decayRuleCreated);
+
     await expect(() => deleteElementById(testContext, ADMIN_USER, decayRuleCreated.id, ENTITY_TYPE_GROUP))
       .rejects.toThrowError('Already deleted elements');
 
