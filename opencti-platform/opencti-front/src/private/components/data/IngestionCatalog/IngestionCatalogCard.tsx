@@ -13,6 +13,7 @@ import { getConnectorMetadata } from '@components/data/IngestionCatalog/utils/in
 import Box from '@mui/material/Box';
 import IngestionCatalogCardDeployButton from '@components/data/IngestionCatalog/components/card/IngestionCatalogCardDeployButton';
 import ConnectorUseCases from '@components/data/IngestionCatalog/components/card/usecases/ConnectorUseCases';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -42,20 +43,21 @@ const ConnectorLogo = ({ src, alt }: { src: string; alt: string }) => {
 
 const ConnectorTitle = ({ title }: { title: string }) => {
   return (
-    <Typography
-      variant="h1"
-      sx={{
-        fontWeight: 800,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        display: '-webkit-box',
-        WebkitLineClamp: 2,
-        WebkitBoxOrient: 'vertical',
-        opacity: 0.9,
-      }}
-    >
-      {title}
-    </Typography>
+    <Tooltip title={title} placement="bottom-start">
+      <Typography
+        variant="h1"
+        sx={{
+          fontWeight: 800,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          opacity: 0.9,
+        }}
+      >
+        {title}
+      </Typography>
+    </Tooltip>
   );
 };
 
