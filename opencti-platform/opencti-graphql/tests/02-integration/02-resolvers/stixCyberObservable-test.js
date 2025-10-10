@@ -44,6 +44,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
   let stixCyberObservableInternalId;
   let networkTrafficInternalId;
   const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
+  let SSHInternalId;
 
   const CREATE_QUERY = gql`
     mutation StixCyberObservableAdd(
@@ -155,17 +156,17 @@ describe('StixCyberObservable resolver standard behavior', () => {
         fingerprint_sha256: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d96f'
       },
     };
-    const stixCyberObservable = await queryAsAdmin({
+    const stixCyberObservableSSH = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
     // console.log('SCO', JSON.stringify(stixCyberObservable));
-    expect(stixCyberObservable).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
-    expect(stixCyberObservable.data.stixCyberObservableAdd.public_key).toEqual('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9');
-    expect(stixCyberObservable.data.stixCyberObservableAdd.fingerprint_sha256).toEqual('a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d96f');
-    expect(stixCyberObservable.data.stixCyberObservableAdd.key_type).toEqual('rsa');
-    stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
+    expect(stixCyberObservableSSH).not.toBeNull();
+    expect(stixCyberObservableSSH.data.stixCyberObservableAdd).not.toBeNull();
+    expect(stixCyberObservableSSH.data.stixCyberObservableAdd.public_key).toEqual('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9');
+    expect(stixCyberObservableSSH.data.stixCyberObservableAdd.fingerprint_sha256).toEqual('a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d96f');
+    expect(stixCyberObservableSSH.data.stixCyberObservableAdd.key_type).toEqual('rsa');
+    SSHInternalId = stixCyberObservableSSH.data.stixCyberObservableAdd.id;
 
     // Update SSH Key
     const EDIT_QUERY = gql`
@@ -185,7 +186,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     const stixCyberObservableUpdated = await queryAsAdmin({
       query: EDIT_QUERY,
       variables: {
-        id: stixCyberObservableInternalId,
+        id: SSHInternalId,
         input: [{ key: 'key_type', value: 'ecdsa' }, { key: 'public_key', value: '' }, { key: 'fingerprint_sha256', value: 'a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d97f' }]
       },
     });
@@ -205,7 +206,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     // Delete
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: stixCyberObservableInternalId },
+      variables: { id: SSHInternalId },
     });
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableStixId } });
