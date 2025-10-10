@@ -1,34 +1,44 @@
 import { Tooltip } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import React from 'react';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../components/Theme';
 
 interface IngestionCatalogChipProps {
   label: string;
+  tooltipLabel?: string;
   variant?: 'outlined' | 'filled';
-  color?: 'primary' | 'secondary' | 'error' | 'success';
+  color?: 'primary' | 'secondary' | 'error' | 'success' | 'warning';
   withTooltip?: boolean;
   isInTooltip?: boolean;
   isInlist?: boolean;
 }
 
-const IngestionCatalogChip = ({ label, variant, color, withTooltip = false, isInTooltip = false, isInlist = false }: IngestionCatalogChipProps) => {
+const IngestionCatalogChip = ({
+  label,
+  tooltipLabel,
+  variant,
+  color,
+  withTooltip = false,
+  isInlist = false,
+}: IngestionCatalogChipProps) => {
   const theme = useTheme<Theme>();
-  const width = isInTooltip ? '100%' : 'auto';
+
+  const tooltipContent = withTooltip ? (tooltipLabel || label) : undefined;
+
   return (
-    <Tooltip title={withTooltip ? label : undefined}>
+    <Tooltip title={tooltipContent}>
       <Chip
         variant={variant ?? 'outlined'}
         size="small"
         color={color ?? 'default'}
-        style={{
+        sx={{
           fontSize: 12,
           lineHeight: '14px',
-          borderRadius: 4,
+          borderRadius: 1,
           marginRight: isInlist ? theme.spacing(1) : 0,
-          border: `2px solid ${color ? theme.palette[color].main : theme.palette.chip.main}`,
-          width,
+          border: `1px solid ${color || theme.palette.chip.main}`,
+          backgroundColor: 'rgba(0, 0, 0, 0.1)',
         }}
         label={label}
       />

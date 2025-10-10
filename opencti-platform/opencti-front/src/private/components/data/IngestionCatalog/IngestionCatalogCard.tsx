@@ -2,19 +2,19 @@ import Card from '@mui/material/Card';
 import React from 'react';
 import CardHeader from '@mui/material/CardHeader';
 import CardContent from '@mui/material/CardContent';
-import { Badge, CardActions, Grid, Tooltip } from '@mui/material';
-import Button from '@mui/material/Button';
+import { CardActions, Stack, Typography } from '@mui/material';
 import { VerifiedOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 import { useTheme } from '@mui/styles';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
-import { truncate } from 'src/utils/String';
 import { getConnectorMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import Box from '@mui/material/Box';
+import IngestionCatalogCardDeployButton from '@components/data/IngestionCatalog/components/card/IngestionCatalogCardDeployButton';
+import ConnectorUseCases from '@components/data/IngestionCatalog/components/card/usecases/ConnectorUseCases';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
-import EnrichedTooltip from '../../../../components/EnrichedTooltip';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import type { Theme } from '../../../../components/Theme';
@@ -27,27 +27,98 @@ export interface IngestionCatalogCardProps {
   deploymentCount?: number;
 }
 
-type RenderConnectorUseCasesType = {
-  useCases: string[];
-  withTooltip?: boolean;
-  withBadge?: boolean;
+interface ConnectorLogoProps {
+  src: string;
+  alt: string
+}
+
+const ConnectorLogo = ({ src, alt }: ConnectorLogoProps) => {
+  return (
+    <img
+      style={{
+        height: '6rem',
+        width: '6rem',
+        borderRadius: 4,
+      }}
+      src={src}
+      alt={alt}
+    />
+  );
 };
 
-const DeployButton = ({ deploymentCount, onClick }: { deploymentCount?: number, onClick: () => void }) => {
-  const { t_i18n } = useFormatter();
+interface ConnectorTitleProps {
+  title: string
+}
 
+const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
   return (
-    <Tooltip title={deploymentCount ? `${deploymentCount} deployments` : '' }>
-      <Badge badgeContent={deploymentCount} color={'warning'}>
-        <Button
-          variant="contained"
-          onClick={onClick}
-          size="small"
-        >
-          {t_i18n('Deploy')}
-        </Button>
-      </Badge>
+    <Tooltip title={title} placement="bottom-start">
+      <Typography
+        variant="h1"
+        sx={{
+          fontWeight: 800,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          opacity: 0.9,
+        }}
+      >
+        {title}
+      </Typography>
     </Tooltip>
+  );
+};
+
+interface ConnectorActionsProps {
+  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' };
+  isEnterpriseEdition: boolean;
+  deploymentCount: number;
+  onClickDeploy: () => void;
+}
+
+const ConnectorActions = ({
+  connectorMetadata,
+  isEnterpriseEdition,
+  deploymentCount,
+  onClickDeploy,
+}: ConnectorActionsProps) => {
+  return (
+    <CardActions
+      sx={{
+        justifyContent: 'space-between',
+        padding: 2,
+        flexWrap: 'wrap',
+        gap: 1,
+        alignItems: 'flex-end',
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <IngestionCatalogChip
+        label={connectorMetadata.label}
+        color={connectorMetadata.color}
+      />
+      <Stack
+        sx={{
+          marginLeft: '0!important',
+        }}
+        direction="row" gap={1}
+      >
+        <Security needs={[INGESTION_SETINGESTIONS]}>
+          {isEnterpriseEdition ? (
+            <IngestionCatalogCardDeployButton
+              deploymentCount={deploymentCount}
+              onClick={onClickDeploy}
+            />
+          ) : (
+            <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
+              {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
+              <EnterpriseEditionButton title="Deploy" />
+            </Box>
+          )}
+        </Security>
+      </Stack>
+    </CardActions>
   );
 };
 
@@ -59,158 +130,88 @@ const IngestionCatalogCard = ({
 }: IngestionCatalogCardProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
+
+  const navigate = useNavigate();
+
   const link = `/dashboard/data/ingestion/catalog/${connector.slug}`;
 
-  const renderConnectorUseCases = ({
-    useCases,
-    withTooltip = true,
-    withBadge = false,
-  }: RenderConnectorUseCasesType) => {
-    const renderUseCaseWithBadge = (useCase: string) => (
-      <Badge variant="dot" color="primary" sx={{ width: '100%' }}>
-        <IngestionCatalogChip
-          withTooltip={withTooltip}
-          isInTooltip
-          label={useCase}
-        />
-      </Badge>
-    );
+  const connectorMetadata = getConnectorMetadata(
+    connector.container_type,
+    t_i18n,
+  );
 
-    return (
-      <Grid container spacing={1}>
-        {useCases.map((useCase: string, index: number) => (
-          <Grid key={useCase} item xs={6}>
-            {withBadge && index === 1 ? (
-              renderUseCaseWithBadge(useCase)
-            ) : (
-              <IngestionCatalogChip
-                withTooltip={withTooltip}
-                isInTooltip
-                label={useCase}
-              />
-            )}
-          </Grid>
-        ))}
-      </Grid>
-    );
+  const handleCardClick = () => {
+    navigate(link);
   };
-
-  const renderLabels = () => {
-    const hasMoreThanTwoUseCases = connector.use_cases.length > 2;
-    if (hasMoreThanTwoUseCases) {
-      const slicedList = connector.use_cases.slice(0, 2);
-      return (
-        <EnrichedTooltip
-          title={renderConnectorUseCases({ useCases: connector.use_cases })}
-        >
-          {renderConnectorUseCases({
-            useCases: slicedList,
-            withTooltip: false,
-            withBadge: true,
-          })}
-        </EnrichedTooltip>
-      );
-    }
-
-    return renderConnectorUseCases({
-      useCases: connector.use_cases,
-      withBadge: hasMoreThanTwoUseCases,
-    });
-  };
-
-  const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
 
   return (
-    <>
-      <Card
-        variant="outlined"
-        style={{
-          height: 330,
-          borderRadius: 4,
+    <Card
+      variant="outlined"
+      onClick={handleCardClick}
+      sx={{
+        height: 330,
+        borderRadius: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: 'pointer',
+        transition: 'background-color 0.2s ease-in-out',
+        '&:hover': {
+          backgroundColor: theme.palette.action?.hover,
+        },
+      }}
+    >
+      <CardHeader
+        sx={{
+          paddingBottom: 0.5,
+          paddingTop: 2,
+          alignItems: 'flex-start',
+          '& .MuiCardHeader-content': {
+            minWidth: 0,
+            overflow: 'hidden',
+            width: '100%',
+          },
+          '& .MuiCardHeader-action': {
+            marginTop: 0,
+          },
+        }}
+        avatar={<ConnectorLogo src={connector.logo} alt={connector.title} />}
+        title={<ConnectorTitle title={connector.title} />}
+        subheader={<ConnectorUseCases useCases={connector.use_cases} />}
+        action={connector.verified && <VerifiedOutlined color="success" />}
+      />
+
+      <CardContent
+        sx={{
+          flexGrow: 1,
+          pt: 1,
+          pb: 2,
+          overflow: 'hidden',
           display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
+          alignItems: 'flex-start',
         }}
       >
-        <div>
-          <CardHeader
-            sx={{
-              paddingBottom: 0,
-              marginBottom: 0,
-              alignItems: 'start',
-              '& .MuiCardHeader-content': {
-                minWidth: 0,
-              },
-            }}
-            avatar={
-              <img
-                style={{
-                  height: 50,
-                  width: 50,
-                  objectFit: 'contain',
-                  borderRadius: 4,
-                }}
-                src={connector.logo}
-                alt={connector.title}
-              />
-            }
-            title={
-              <Tooltip title={connector.title} placement="top">
-                <div
-                  style={{
-                    width: '100%',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    fontSize: 20,
-                    lineHeight: '24px',
-                    fontWeight: 600,
-                    marginBottom: theme.spacing(0.5),
-                  }}
-                >
-                  {connector.title}
-                </div>
+        <Typography
+          variant="body2"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 5,
+            WebkitBoxOrient: 'vertical',
+            lineHeight: 1.5,
+          }}
+        >
+          {connector.short_description}
+        </Typography>
+      </CardContent>
 
-              </Tooltip>
-            }
-            subheader={renderLabels()}
-            action={connector.verified && <VerifiedOutlined color="success" />}
-          />
-
-          <CardContent
-            style={{
-              height: '100%',
-              marginTop: theme.spacing(0.5),
-            }}
-          >
-            <div>{truncate(connector.short_description, 250)}</div>
-          </CardContent>
-        </div>
-        <CardActions style={{ justifyContent: 'space-between', padding: 16 }}>
-          <IngestionCatalogChip
-            label={connectorMetadata.label}
-            color={connectorMetadata.color}
-          />
-          <div style={{ display: 'flex', gap: 4 }}>
-            <Button variant="outlined" size="small" component={Link} to={link}>
-              {t_i18n('Details')}
-            </Button>
-            <Security needs={[INGESTION_SETINGESTIONS]}>
-              {
-                isEnterpriseEdition ? (
-                  <DeployButton deploymentCount={deploymentCount} onClick={onClickDeploy} />
-                ) : (
-                  <Box sx={{ '& .MuiButton-root': { marginLeft: 0 } }}>
-                    {/** FIXME: remove marginLeft in EnterpriseEditionButton * */}
-                    <EnterpriseEditionButton title="Deploy" />
-                  </Box>
-                )
-              }
-            </Security>
-          </div>
-        </CardActions>
-      </Card>
-    </>
+      <ConnectorActions
+        connectorMetadata={connectorMetadata}
+        isEnterpriseEdition={isEnterpriseEdition}
+        deploymentCount={deploymentCount}
+        onClickDeploy={onClickDeploy}
+      />
+    </Card>
   );
 };
 
