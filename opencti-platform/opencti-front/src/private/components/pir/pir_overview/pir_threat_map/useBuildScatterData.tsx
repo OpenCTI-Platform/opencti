@@ -18,7 +18,7 @@ import { PirThreatMapFragment$data } from './__generated__/PirThreatMapFragment.
 import { getNodes } from '../../../../../utils/connection';
 import { minutesBetweenDates } from '../../../../../utils/Time';
 import { itemColor } from '../../../../../utils/Colors';
-import { PirThreatMapMarker } from './pirThreatMapUtils';
+import { ApexPirThreatMapSeries, PirThreatMapMarker } from './pirThreatMapUtils';
 
 interface UseBuildScatterDataArgs {
   stixDomainObjects: PirThreatMapFragment$data['stixDomainObjects']
@@ -29,7 +29,10 @@ const useBuildScatterData = ({
   stixDomainObjects,
   entityTypes,
 }: UseBuildScatterDataArgs) => {
-  const series: ApexAxisChartSeries = useMemo(() => {
+  const MIN_DIFF_DATE = 1080; // 1080min = 18h.
+  const MIN_DIFF_SCORE = 5;
+
+  const series: ApexPirThreatMapSeries = useMemo(() => {
     const groupedData: PirThreatMapMarker[][] = [];
     getNodes(stixDomainObjects).forEach((d) => {
       const item = {
@@ -47,7 +50,7 @@ const useBuildScatterData = ({
           for (const group of groupedData) {
             const diffDate = Math.abs(minutesBetweenDates(group[0].date, item.date));
             const diffScore = Math.abs(group[0].score - item.score);
-            if (diffDate < 1080 && diffScore < 5) { // 1080 = 18h
+            if (diffDate < MIN_DIFF_DATE && diffScore < MIN_DIFF_SCORE) {
               group.push(item);
               filled = true;
               break;

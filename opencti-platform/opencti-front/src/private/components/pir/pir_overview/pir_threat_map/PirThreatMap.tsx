@@ -42,7 +42,6 @@ const pirThreatMapFragment = graphql`
       edges {
         node {
           id
-          updated_at
           refreshed_at
           entity_type
           representative {
