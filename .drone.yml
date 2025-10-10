@@ -631,7 +631,8 @@ services:
       - pip install -r src/requirements.txt
       - python3 src/worker.py
 
-  - name: opencti-pycti-start
+  # OpenCTI instance for client python, the name is hardcoded to 'opencti' in test setup.
+  - name: opencti
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-opencti-pycti-start-yarn
