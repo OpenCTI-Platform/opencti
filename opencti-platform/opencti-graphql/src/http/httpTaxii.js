@@ -7,7 +7,7 @@ import nconf from 'nconf';
 import express from 'express';
 import { parse as parseContentType } from 'content-type';
 import { findById as findWorkById } from '../domain/work';
-import { basePath, getBaseUrl } from '../config/conf';
+import { basePath, getBaseUrl, logApp } from '../config/conf';
 import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../domain/taxii';
@@ -81,8 +81,13 @@ const extractUserAndCollection = async (req, res, id) => {
 
 const JsonTaxiiMiddleware = express.json({
   type: (req) => {
-    const contentTypeFromRequest = parseContentType(req);
-    return TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION;
+    try {
+      const contentTypeFromRequest = parseContentType(req);
+      return TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION;
+    } catch (e) {
+      logApp.info('[Taxii] Content-Type from incoming request is missing or invalid', { headers: req.headers });
+      return false;
+    }
   },
   limit: nconf.get('app:max_payload_body_size') || '50mb'
 });

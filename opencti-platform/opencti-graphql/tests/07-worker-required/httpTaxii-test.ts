@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import axios from 'axios';
-import { addIngestion, ingestionEditField } from '../../../src/modules/ingestion/ingestion-taxii-collection-domain';
-import { ADMIN_API_TOKEN, ADMIN_USER, testContext } from '../../utils/testQuery';
-import type { EditInput, IngestionTaxiiCollectionAddInput } from '../../../src/generated/graphql';
-import { getGroupEntityByName } from '../../utils/domainQueryHelper';
-import { getBaseUrl } from '../../../src/config/conf';
+import { addIngestion, ingestionEditField } from '../../src/modules/ingestion/ingestion-taxii-collection-domain';
+import { ADMIN_API_TOKEN, ADMIN_USER, testContext } from '../utils/testQuery';
+import type { EditInput, IngestionTaxiiCollectionAddInput } from '../../src/generated/graphql';
+import { getGroupEntityByName } from '../utils/domainQueryHelper';
+import { getBaseUrl } from '../../src/config/conf';
 
 describe('Should taxii push accept several content-type', () => {
   it('creates a taxii push configuration and start', async () => {
