@@ -9,7 +9,7 @@ import type { Moment } from 'moment';
 import { AxiosError } from 'axios';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
+import { TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { type GetHttpClient, getHttpClient, OpenCTIHeaders } from '../utils/http-client';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
@@ -560,9 +560,7 @@ const csvDataHandler = async (context: AuthContext, ingestion: BasicStoreEntityI
     const { csvLines, addedLast } = await fetchCsvFromUrl(csvMapperParsed, ingestion);
     await processCsvLines(context, ingestion, csvMapperParsed, csvLines, addedLast);
   } catch (e: any) {
-    logApp.error(`[OPENCTI-MODULE] INGESTION Csv - Error trying to fetch csv feed for: ${ingestion.name}`);
-    logApp.error(e, { ingestion });
-    throw e;
+    throw UnknownError(e, { ingestionName: ingestion.name, ingestionId: ingestion.id });
   }
 };
 
@@ -593,7 +591,7 @@ const csvExecutor = async (context: AuthContext) => {
       } else {
         const ingestionPromise = csvDataHandler(context, ingestion)
           .catch((e) => {
-            logApp.warn('[OPENCTI-MODULE] INGESTION - Csv ingestion execution', { cause: e, name: ingestion.name });
+            logApp.warn('[OPENCTI-MODULE] INGESTION - Csv ingestion execution', { cause: e.message, name: ingestion.name });
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
             patchCsvIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now() }).catch((reason) => logApp.error('ERROR', { cause: reason }));
           });
