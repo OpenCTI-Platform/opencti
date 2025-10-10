@@ -232,6 +232,22 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
   return loadWorkById(context, user, workId);
 };
 
+const updateWorkTaskToComplete = async (context, user, work) => {
+  // Work isn't linked to a task, we can return without doing anything
+  if (!work.background_task_id) {
+    return;
+  }
+  // We update the associated task to mark the work as completed there
+  const associatedTaskId = work.background_task_id;
+  const associatedTask = await internalLoadById(context, user, associatedTaskId, { type: ENTITY_TYPE_BACKGROUND_TASK });
+  if (associatedTask) {
+    const sourceScriptUpdateWork = 'ctx._source["work_completed"] = "true"';
+    await elUpdate(associatedTask._index, associatedTaskId, { script: { source: sourceScriptUpdateWork, lang: 'painless' } });
+  } else {
+    logApp.warn('The task associated to work cannot be found in database, task work status cannot be updated.', { associatedTaskId });
+  }
+};
+
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   const { isComplete, total } = await redisUpdateWorkFigures(workId);
@@ -254,18 +270,11 @@ export const reportExpectation = async (context, user, workId, errorData) => {
     // Update elastic
     const currentWork = await loadWorkById(context, user, workId);
     if (currentWork) {
-      // If work is associated to a task, we also need to update work to completed on the task
-      if (isComplete && currentWork.background_task_id) {
-        const associatedTaskId = currentWork.background_task_id;
-        const associatedTask = await internalLoadById(context, user, associatedTaskId, { type: ENTITY_TYPE_BACKGROUND_TASK });
-        if (associatedTask) {
-          const sourceScriptUpdateWork = 'ctx._source["work_completed"] = "true"';
-          await elUpdate(associatedTask._index, associatedTaskId, { script: { source: sourceScriptUpdateWork, lang: 'painless' } });
-        } else {
-          logApp.warn('The task associated to work cannot be found in database, task work status cannot be updated.', { associatedTaskId });
-        }
-      }
       await elUpdate(currentWork._index, workId, { script: { source: sourceScript, lang: 'painless', params } });
+      // If work is associated to a task, we also need to update work to completed on the task
+      if (isComplete) {
+        await updateWorkTaskToComplete(context, user, currentWork);
+      }
     } else {
       logApp.warn('The work cannot be found in database, report expectation cannot be updated.', { workId });
     }
