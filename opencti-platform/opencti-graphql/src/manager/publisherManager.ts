@@ -229,7 +229,7 @@ export async function handleWebhookNotification(configurationString: string | un
   try {
     await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager webhook error', { cause: error, manager: 'PUBLISHER_MANAGER', url });
+    logApp.error('[OPENCTI-MODULE] Publisher manager webhook error', { cause: error, manager: 'PUBLISHER_MANAGER' });
     throw error;
   }
 }
