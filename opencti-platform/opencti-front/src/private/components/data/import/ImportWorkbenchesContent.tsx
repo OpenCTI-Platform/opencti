@@ -224,7 +224,7 @@ const ImportWorkbenchesContent = () => {
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
           taskScope={'IMPORT'}
-          useComputeLink={({ id }: ImportWorkbenchesContentFileLine_file$data) => (
+          getComputeLink={({ id }: ImportWorkbenchesContentFileLine_file$data) => (
             `/dashboard/data/import/workbench/${toB64(id)}`
           )}
           createButton={<WorkbenchCreation paginationOptions={queryPaginationOptions}/>}

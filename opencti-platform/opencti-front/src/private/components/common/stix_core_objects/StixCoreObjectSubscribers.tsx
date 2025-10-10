@@ -18,14 +18,12 @@ import { useFormatter } from '../../../../components/i18n';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
 import Drawer from '../drawer/Drawer';
-import { computeLink } from '../../../../utils/Entity';
 import type { Theme } from '../../../../components/Theme';
+import useComputeLink from '../../../../utils/hooks/useComputeLink';
 
-// region types
 interface ContainerHeaderSharedProps {
   triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data
 }
-// endregion
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -48,6 +46,8 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+  const computeLink = useComputeLink();
+
   const [displaySubscribers, setDisplaySubscribers] = useState(false);
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
 

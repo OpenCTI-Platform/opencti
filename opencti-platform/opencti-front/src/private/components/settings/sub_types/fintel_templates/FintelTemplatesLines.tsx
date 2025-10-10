@@ -46,7 +46,7 @@ const FintelTemplatesLines: FunctionComponent<FintelTemplatesLinesProps> = ({
     <DataTableWithoutFragment
       dataColumns={dataColumns}
       storageKey={`fintel-templates-${targetType}`}
-      useComputeLink={(t: TemplateType) => {
+      getComputeLink={(t: TemplateType) => {
         return `${resolveLink(t.entity_type)}/${targetType}/templates/${t.id}`;
       }}
       globalCount={fintelTemplates?.edges.length ?? 0}

@@ -28,13 +28,13 @@ import { PaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage'
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import { computeLink } from '../../../../utils/Entity';
 import { PaginationOptions } from '../../../../components/list_lines';
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../../components/i18n';
+import useComputeLink from '../../../../utils/hooks/useComputeLink';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixDomainObject
@@ -152,6 +152,7 @@ type PirInformation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$dat
 
 const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHeaderButtons }: PirKnowledgeEntitiesProps) => {
   const { fd } = useFormatter();
+  const computeLink = useComputeLink();
 
   const {
     viewStorage,
@@ -256,7 +257,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
           entityTypes={['Stix-Domain-Object']}
           searchContextFinal={{ entityTypes: ['Stix-Domain-Object'] }}
           currentView={viewStorage.view}
-          useComputeLink={(e: PirKnowledgeEntities_SourceFlaggedFragment$data) => {
+          getComputeLink={(e: PirKnowledgeEntities_SourceFlaggedFragment$data) => {
             if (!e.entity_type) return '';
             return computeLink(e);
           }}
