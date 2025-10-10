@@ -1,13 +1,5 @@
 import * as R from 'ramda';
-import {
-  buildRestrictedEntity,
-  createEntity,
-  createRelationRaw,
-  deleteElementById,
-  distributionEntities,
-  storeLoadByIdWithRefs,
-  timeSeriesEntities
-} from '../database/middleware';
+import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
 import {
   fullEntitiesList,
   internalFindByIds,
