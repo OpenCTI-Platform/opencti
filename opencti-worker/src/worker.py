@@ -659,7 +659,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             ["worker", "objects_max_refs"],
             config,
             True,
-            100000,
+            0,
         )
         # Telemetry
         self.telemetry_enabled = get_config_variable(
