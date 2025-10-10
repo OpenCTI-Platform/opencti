@@ -279,6 +279,8 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         assert self.channel is not None
         self.current_bundle_id: [str, None] = None
         self.current_bundle_seq: int = 0
+
+        # Small hack to handle any rabbit prefix that could have been configured
         self.listen_too_large_routing = (
             self.connector["config"]["push_routing"]
             .replace("push_routing", "listen_routing")
@@ -389,6 +391,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         except Exception as err:  # pylint: disable=broad-except
                             self.worker_logger.warning(str(err))
                         for too_large_item_bundle in too_large_items_bundles:
+                            self.worker_logger.warning(
+                                "Detected a bundle too large, sending it to dead letter queue...",
+                            )
                             self.send_bundle_to_specific_queue(
                                 push_channel,
                                 self.connector["config"]["listen_exchange"],
@@ -422,6 +427,9 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                         self.api.work.add_expectations(work_id, expectations)
                     # For each bundle too large, send it to the too large queue
                     for too_large_elements_bundle in too_large_elements_bundles:
+                        self.worker_logger.warning(
+                            "Detected a bundle too large, sending it to dead letter queue...",
+                        )
                         self.send_bundle_to_specific_queue(
                             push_channel,
                             self.connector["config"]["listen_exchange"],
