@@ -1743,7 +1743,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const queryIndices = computeQueryIndices(indices, types);
   const computedIndices = getIndicesToQuery(context, user, queryIndices);
   const hits = [];
-  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
+  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, processIds);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
     const workingIds = groupIds[index];
