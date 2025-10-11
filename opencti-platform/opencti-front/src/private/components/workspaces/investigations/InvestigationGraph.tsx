@@ -416,7 +416,7 @@ interface InvestigationGraphComponentProps {
   totalData: number
   currentData: number
   dataInvestigation: InvestigationGraph_fragment$key
-  themes: InvestigationGraphQuery$data['themes']
+  themes: RootInvestigationQuery$data['themes']
   userThemeId: string
 }
 
@@ -562,8 +562,6 @@ const InvestigationGraphComponent = ({
     addRelationInGraph(rel);
   };
 
-  console.log('before woowowouserThemeId', userThemeId);
-
   return (
     <div style={{ display: 'flex', flexFlow: 'column' }}>
       <WorkspaceHeader
@@ -691,7 +689,6 @@ const InvestigationGraph = ({
   );
 
   if (!queryObjectsRef) return null;
-  console.log('PROUT ?? ', themes, userThemeId);
 
   return (
     <Suspense fallback={<Loader />}>
