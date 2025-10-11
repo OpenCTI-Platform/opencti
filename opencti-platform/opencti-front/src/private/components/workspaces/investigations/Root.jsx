@@ -24,6 +24,18 @@ const investigationQuery = graphql`
       type
       ...Investigation_workspace
     }
+    themes {
+      edges {
+        node {
+          id
+          name
+          theme_background
+        }
+      }
+    }
+    me {
+      theme
+    }
   }
 `;
 
@@ -63,6 +75,8 @@ class RootInvestigation extends Component {
                       element={
                         <Investigation
                           workspace={props.workspace}
+                          themes={props.themes}
+                          userThemeId={props.me.theme}
                         />
                     }
                     />

@@ -23,6 +23,7 @@ const ThemeLight = (
   primary: string | null = null,
   secondary: string | null = null,
   accent: string | null = null,
+  text_color = 'rgba(0, 0, 0, 0.87)',
 ): ExtendedThemeOptions => ({
   logo: logo || fileUri(LogoText),
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
@@ -73,12 +74,15 @@ const ThemeLight = (
     body2: {
       fontSize: '0.8rem',
       lineHeight: '1.2rem',
+      color: text_color,
     },
     body1: {
       fontSize: '0.9rem',
+      color: text_color,
     },
     overline: {
       fontWeight: 500,
+      color: text_color,
     },
     h1: {
       margin: '0 0 10px 0',
@@ -86,6 +90,7 @@ const ThemeLight = (
       fontWeight: 400,
       fontSize: 22,
       fontFamily: '"Geologica", sans-serif',
+      color: text_color,
     },
     h2: {
       margin: '0 0 10px 0',
@@ -94,11 +99,12 @@ const ThemeLight = (
       fontSize: 16,
       textTransform: 'uppercase',
       fontFamily: '"Geologica", sans-serif',
+      color: text_color,
     },
     h3: {
       margin: '0 0 10px 0',
       padding: 0,
-      color: '#757575',
+      color: text_color,
       fontWeight: 400,
       fontSize: 13,
       fontFamily: '"Geologica", sans-serif',
@@ -110,24 +116,25 @@ const ThemeLight = (
       textTransform: 'uppercase',
       fontSize: 12,
       fontWeight: 500,
-      color: '#505050',
+      color: text_color,
     },
     h5: {
       fontWeight: 400,
       fontSize: 13,
       textTransform: 'uppercase',
       marginTop: -4,
+      color: text_color,
     },
     h6: {
       fontWeight: 400,
       fontSize: 18,
-      color: primary || THEME_LIGHT_DEFAULT_PRIMARY,
+      color: text_color,
       fontFamily: '"Geologica", sans-serif',
     },
     subtitle2: {
       fontWeight: 400,
       fontSize: 18,
-      color: 'rgba(0, 0, 0, 0.87)',
+      color: text_color,
     },
   },
   components: {
@@ -172,15 +179,37 @@ const ThemeLight = (
       defaultProps: {
         variant: 'standard',
       },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
     },
     MuiTextField: {
       defaultProps: {
         variant: 'standard',
       },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
     },
     MuiSelect: {
       defaultProps: {
         variant: 'standard',
+      },
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
       },
     },
     MuiCssBaseline: {
@@ -210,7 +239,7 @@ const ThemeLight = (
           },
           pre: {
             fontFamily: 'Consolas, monaco, monospace',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
             background: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
             borderRadius: 4,
           },
@@ -221,7 +250,7 @@ const ThemeLight = (
           },
           code: {
             fontFamily: 'Consolas, monaco, monospace',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
             background: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
             padding: 3,
             fontSize: 12,
@@ -246,20 +275,20 @@ const ThemeLight = (
           '.mde-header': {
             border: '0 !important',
             backgroundColor: 'transparent !important',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
           },
           '.mde-header-item button': {
             fontFamily: '"IBM Plex Sans", sans-serif',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
           },
           '.mde-tabs button': {
             fontFamily: '"IBM Plex Sans", sans-serif',
-            color: '#000000 !important',
+            color: `${text_color} !important`,
           },
           '.mde-textarea-wrapper textarea': {
             fontFamily: '"IBM Plex Sans", sans-serif',
             fontSize: 13,
-            color: 'rgba(0, 0, 0, 0.87)',
+            color: `${text_color} !important`,
             background: 'transparent',
             borderBottom: '1px solid rgba(0, 0, 0, 0.87) !important',
             transition: 'borderBottom .3s',
@@ -271,7 +300,7 @@ const ThemeLight = (
             },
           },
           '.mde-preview .mde-preview-content a': {
-            color: `${primary || THEME_LIGHT_DEFAULT_PRIMARY} !important`,
+            color: `${text_color} !important`,
           },
           '.react-grid-placeholder': {
             backgroundColor: `${accent || THEME_LIGHT_DEFAULT_ACCENT} !important`,
@@ -319,6 +348,27 @@ const ThemeLight = (
             boxShadow: `2px 0 ${primary || THEME_LIGHT_DEFAULT_PRIMARY} inset`,
             backgroundColor: hexToRGB(primary || THEME_LIGHT_DEFAULT_PRIMARY, 0.16),
           },
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          color: text_color,
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          color: text_color,
         },
       },
     },

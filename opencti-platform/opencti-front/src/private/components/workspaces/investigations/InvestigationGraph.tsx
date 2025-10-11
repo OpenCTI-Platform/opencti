@@ -6,6 +6,7 @@ import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery 
 import fetchMetaObjectsCount from '@components/workspaces/investigations/utils/fetchMetaObjectsCount';
 import WorkspaceHeader from '@components/workspaces/workspaceHeader/WorkspaceHeader';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
+import { RootInvestigationQuery$data } from '@components/workspaces/investigations/__generated__/RootInvestigationQuery.graphql';
 import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
 import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
 import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
@@ -415,12 +416,16 @@ interface InvestigationGraphComponentProps {
   totalData: number
   currentData: number
   dataInvestigation: InvestigationGraph_fragment$key
+  themes: RootInvestigationQuery$data['themes']
+  userThemeId: string
 }
 
 const InvestigationGraphComponent = ({
   totalData,
   currentData,
   dataInvestigation,
+  themes,
+  userThemeId,
 }: InvestigationGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
@@ -564,6 +569,8 @@ const InvestigationGraphComponent = ({
         variant="investigation"
         handleAddWidget={undefined}
         adjust={undefined}
+        themes={themes}
+        userThemeId={userThemeId}
       />
       <div style={graphContainerStyle} ref={ref}>
         <Graph parentRef={ref} onPositionsChanged={savePositions}>
@@ -665,11 +672,15 @@ const InvestigationGraphLoader = ({
 interface InvestigationGraphProps {
   id: string
   data: NonNullable<InvestigationGraphQuery$data['workspace']>
+  themes: RootInvestigationQuery$data['themes']
+  userThemeId: string
 }
 
 const InvestigationGraph = ({
   id,
   data,
+  themes,
+  userThemeId,
 }: InvestigationGraphProps) => {
   const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<InvestigationGraphObjectsQuery>(
@@ -687,6 +698,8 @@ const InvestigationGraph = ({
         investigationId={id}
         dataPositions={data}
         dataInvestigation={data}
+        themes={themes}
+        userThemeId={userThemeId}
       />
     </Suspense>
   );
