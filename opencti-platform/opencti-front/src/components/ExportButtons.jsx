@@ -69,10 +69,10 @@ class ExportButtons extends Component {
     // viewButtons.setAttribute('style', 'display: none');
 
     const { offsetWidth, offsetHeight } = container;
-    // if (themeId === this.userThemeId && this.adjust) {
-    //   container.setAttribute('style', 'width:3840px; height:2160px');
-    //   this.adjust(true);
-    // }
+    if (themeId === this.userThemeId && this.adjust) {
+      container.setAttribute('style', 'width:3840px; height:2160px');
+      this.adjust(true);
+    }
 
     try {
       const selectedTheme = this.themes.edges.find(
