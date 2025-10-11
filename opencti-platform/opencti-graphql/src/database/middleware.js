@@ -524,7 +524,7 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
   const { version = Version.Stix_2_1 } = opts;
   return instance ? convertStoreToStix(instance, version) : undefined;
 };
-const convertStoreToStixWithResolvedFiles = async (instance, version) => {
+const convertStoreToStixWithResolvedFiles = async (instance, version = Version.Stix_2_1) => {
   const instanceInStix = convertStoreToStix(instance, version);
   const nonResolvedFiles = instanceInStix.extensions[STIX_EXT_OCTI].files;
   if (nonResolvedFiles) {
