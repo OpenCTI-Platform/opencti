@@ -20,7 +20,7 @@ const styles = (theme) => ({
 
 class InvestigationComponent extends Component {
   render() {
-    const { classes, workspace } = this.props;
+    const { classes, workspace, themes, userThemeId } = this.props;
     return (
       <div className={classes.container} id="container">
         <QueryRenderer
@@ -33,6 +33,8 @@ class InvestigationComponent extends Component {
                   <InvestigationGraph
                     id={workspace.id}
                     data={props.workspace}
+                    themes={themes}
+                    userThemeId={userThemeId}
                   />
                 );
               }
@@ -50,6 +52,8 @@ InvestigationComponent.propTypes = {
   workspace: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  themes: PropTypes.array.isRequired,
+  userThemeId: PropTypes.string.isRequired,
 };
 
 const Investigation = createFragmentContainer(InvestigationComponent, {
