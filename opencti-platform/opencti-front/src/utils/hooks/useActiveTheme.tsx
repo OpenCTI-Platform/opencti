@@ -19,7 +19,7 @@ interface UseActiveThemeParams {
   allThemes: RootPrivateQuery$data['themes']; // Add this
 }
 
-export const useActiveTheme = ({
+const useActiveTheme = ({
   userThemeId,
   platformTheme,
   allThemes,

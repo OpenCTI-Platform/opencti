@@ -337,6 +337,7 @@ const rootPrivateQuery = graphql`
           id
           name
           theme_background
+          theme_accent
           theme_paper
           theme_nav
           theme_primary
