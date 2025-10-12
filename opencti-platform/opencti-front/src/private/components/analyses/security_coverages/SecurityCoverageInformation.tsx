@@ -44,33 +44,47 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const classes = useStyles();
+  const genOpts = (score: number | null) => {
+    let chartColors = [theme.palette.action?.disabled ?? '#ffffff'];
+    let labels = [t_i18n('Unknown')];
+    let series = [score ?? 100];
+    if (isNotEmptyField(score)) {
+      chartColors = [theme.palette.success.main ?? '', theme.palette.error.main ?? ''];
+      labels = [t_i18n('Success'), t_i18n('Failure')];
+      series = [score, 100 - score];
+    }
+    const options = donutChartOptions(
+      theme,
+      labels,
+      'bottom',
+      false,
+      chartColors,
+      false,
+      false,
+      true,
+      false,
+      65,
+      false,
+    ) as ApexOptions;
+    return { series, options };
+  };
   if (isEmptyField(coverage_information)) {
-    return <span>-</span>;
+    const { options, series } = genOpts(null);
+    return <div className={classes.chartContainer}>
+      <div className={classes.chart}>
+        <Chart options={options} series={series} type="donut" width={50} height={50}/>
+        <Tooltip title={'Empty coverage'} placement="bottom">
+          <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 18, height: 18 }}>
+            <span style={{ color: '#ffffff' }}>E</span>
+          </Avatar>
+        </Tooltip>
+      </div>
+    </div>;
   }
   return (
     <div className={classes.charts}>
       {(coverage_information ?? []).map((coverageResult) => {
-        let chartColors = [theme.palette.action?.disabled ?? '#ffffff'];
-        let labels = [t_i18n('Unknown')];
-        let series = [coverageResult.coverage_score];
-        if (isNotEmptyField(coverageResult.coverage_score)) {
-          chartColors = [theme.palette.success.main ?? '', theme.palette.error.main ?? ''];
-          labels = [t_i18n('Success'), t_i18n('Failure')];
-          series = [coverageResult.coverage_score, 100 - coverageResult.coverage_score];
-        }
-        const options = donutChartOptions(
-          theme,
-          labels,
-          'bottom',
-          false,
-          chartColors,
-          false,
-          false,
-          true,
-          false,
-          65,
-          false,
-        ) as ApexOptions;
+        const { options, series } = genOpts(coverageResult.coverage_score);
         return <div key={coverageResult.coverage_name} className={classes.chartContainer}>
           <div className={classes.chart}>
             <Chart options={options} series={series} type="donut" width={50} height={50}/>
