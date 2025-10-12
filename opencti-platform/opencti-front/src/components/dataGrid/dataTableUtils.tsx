@@ -272,6 +272,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ created_at }, helpers) => defaultRender(helpers.fd(created_at)),
   },
+  coverage_last_result: {
+    id: 'coverage_last_result',
+    label: 'Last result',
+    percentWidth: 12,
+    isSortable: true,
+    render: ({ coverage_last_result }, { fndt }) => fndt(coverage_last_result),
+  },
   createdBy: {
     id: 'createdBy',
     label: 'Author',
@@ -296,8 +303,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       return defaultRender(value);
     },
   },
-  coverageInformation: {
-    id: 'coverageInformation',
+  coverage_information: {
+    id: 'coverage_information',
     label: 'Coverage',
     percentWidth: 12,
     isSortable: false,
