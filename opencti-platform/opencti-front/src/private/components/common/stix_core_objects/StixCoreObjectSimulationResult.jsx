@@ -294,9 +294,9 @@ const StixCoreObjectSimulationResult = ({ id, coverage }) => {
               {t_i18n('Add Security coverage')}
             </Button>
           </Tooltip>}
-        <Button size="small" component={Link} to={`/dashboard/analyses/security_coverages/${coverage.id}`}>
+        {coverage && <Button size="small" component={Link} to={`/dashboard/analyses/security_coverages/${coverage.id}`}>
           <SecurityCoverageInformation coverage_information={coverage?.coverage_information}/>
-        </Button>
+          </Button>}
       </div>
       <Drawer
         title={t_i18n('Generate a simulation scenario')}
