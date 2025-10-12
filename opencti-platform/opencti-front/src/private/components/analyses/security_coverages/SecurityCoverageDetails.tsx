@@ -6,6 +6,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import { Theme } from '@mui/material/styles/createTheme';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
+import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -40,15 +42,10 @@ const securityCoverageDetailsFragment = graphql`
       coverage_score
     }
     objectCovered {
-      ... on Report {
-        id
-        name
-        entity_type
-      }
-      ... on Malware {
-        id
-        name
-        entity_type
+      id
+      entity_type
+      representative {
+          main
       }
     }
   }
@@ -90,10 +87,14 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             </Typography>
             {data.objectCovered ? (
               <div className={classes.coveredObject}>
-                <ItemIcon type={data.objectCovered.entity_type} />
-                <Typography variant="body1">
-                  {data.objectCovered.name}
-                </Typography>
+                <Button
+                  size="small"
+                  startIcon={<ItemIcon type={data.objectCovered.entity_type} />}
+                  component={Link}
+                  to={`/dashboard/id/${data.objectCovered.id}`}
+                >
+                  {data.objectCovered.representative?.main}
+                </Button>
               </div>
             ) : (
               '-'
@@ -105,6 +106,12 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             </Typography>
             {data.coverage_last_result ? fd(data.coverage_last_result) : '-'}
           </Grid>
+          <Grid item xs={12}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t_i18n('Coverage information')}
+            </Typography>
+            <SecurityCoverageInformation coverage_information={data.coverage_information ?? []}/>
+          </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Valid from')}
@@ -113,15 +120,9 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Valid to')}
+              {t_i18n('Valid until')}
             </Typography>
             {data.coverage_valid_to ? fd(data.coverage_valid_to) : '-'}
-          </Grid>
-          <Grid item xs={12}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Coverage information')}
-            </Typography>
-            <SecurityCoverageInformation coverage_information={data.coverage_information ?? []}/>
           </Grid>
         </Grid>
       </Paper>

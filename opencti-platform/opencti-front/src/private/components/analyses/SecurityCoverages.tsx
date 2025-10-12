@@ -15,6 +15,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const LOCAL_STORAGE_KEY = 'securityCoverages';
 
@@ -117,7 +118,6 @@ const securityCoveragesLinesFragment = graphql`
       edges {
         node {
           id
-          name
           ...SecurityCoveragesLine_node
         }
       }
@@ -133,7 +133,8 @@ const securityCoveragesLinesFragment = graphql`
 const SecurityCoverages: FunctionComponent = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Security Coverages'));
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  setTitle(t_i18n('Security coverages'));
   const initialValues = {
     searchTerm: '',
     sortBy: 'created',
@@ -167,13 +168,23 @@ const SecurityCoverages: FunctionComponent = () => {
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<SecurityCoveragesLinesPaginationQuery>;
 
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
-    name: {},
-    coverageInformation: { percentWidth: 20 },
-    creator: { percentWidth: 10 },
-    objectLabel: {},
-    created: {},
-    objectMarking: {},
+    name: {
+      percentWidth: 25,
+      isSortable: true,
+    },
+    coverage_last_result: { percentWidth: 20 },
+    coverage_information: {},
+    creator: {
+      percentWidth: 12,
+      isSortable: isRuntimeSort,
+    },
+    objectLabel: { percentWidth: 15 },
+    objectMarking: {
+      isSortable: isRuntimeSort,
+      percentWidth: 8,
+    },
   };
 
   return (

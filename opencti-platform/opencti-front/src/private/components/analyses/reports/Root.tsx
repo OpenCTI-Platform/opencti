@@ -58,6 +58,7 @@ const reportQuery = graphql`
       name
       currentUserAccessRight
       securityCoverage {
+          id
           coverage_information {
               coverage_name
               coverage_score

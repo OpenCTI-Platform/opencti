@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import { useNavigate } from 'react-router-dom';
-import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useDeletion from '../../../../utils/hooks/useDeletion';
@@ -38,20 +37,10 @@ const SecurityCoverageDeletion: FunctionComponent<SecurityCoverageDeletionProps>
       variables: {
         id,
       },
-      updater: (store) => {
-        deleteNode(
-          store,
-          'Pagination__securityCoverages',
-          {},
-          id,
-        );
-      },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        if (window.location.pathname.includes(id)) {
-          navigate(objectPath);
-        }
+        navigate(objectPath);
       },
     });
   };
