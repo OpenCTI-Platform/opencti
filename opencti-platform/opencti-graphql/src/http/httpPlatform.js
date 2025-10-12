@@ -34,8 +34,8 @@ import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
 
-export const sanitizeReferer = (refererToSanitize) => {
-  const base = getBaseUrl();
+export const sanitizeReferer = (refererToSanitize, req = null) => {
+  const base = getBaseUrl(req);
   if (!refererToSanitize) return base;
 
   const resolvedUrl = new URL(refererToSanitize, base).toString();
@@ -491,7 +491,7 @@ const createApp = async (app, schema) => {
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
       const referer = req.body.RelayState ?? req.session.referer;
-      const sanitizedReferer = sanitizeReferer(referer);
+      const sanitizedReferer = sanitizeReferer(referer, req);
       res.redirect(sanitizedReferer);
     }
   });
