@@ -35,6 +35,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useAI from '../../../../utils/hooks/useAI';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
   simulationResults: {
@@ -272,7 +273,7 @@ const StixCoreObjectSimulationResult = ({
           let chartColors = [theme.palette.action.disabled];
           let labels = [t_i18n('Unknown')];
           let series = [coverage.coverage_score];
-          if (coverage.coverage_score > 0) {
+          if (isNotEmptyField(coverage.coverage_score)) {
             chartColors = [theme.palette.success.main, theme.palette.error.main];
             labels = [t_i18n('Success'), t_i18n('Failure')];
             series = [coverage.coverage_score, 100 - coverage.coverage_score];
