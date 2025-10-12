@@ -10,13 +10,13 @@ export const INPUT_COVERED = 'objectCovered';
 // region Database types
 export interface BasicStoreEntitySecurityCoverage extends BasicStoreEntity {
   periodicity: string
-  coverage: { name: string, score: number }[]
+  coverage_information: { coverage_name: string, coverage_score: number }[]
 }
 
 export interface StoreEntitySecurityCoverage extends StoreEntity {
   periodicity: string
   [INPUT_COVERED]: BasicStoreEntity
-  coverage: { name: string, score: number }[]
+  coverage_information: { coverage_name: string, coverage_score: number }[]
 }
 // endregion
 
@@ -26,6 +26,7 @@ export interface StixSecurityCoverage extends StixDomainObject {
   description: string // optional
   periodicity: string
   covered_ref: string
+  covered: boolean
   coverage: { name: string, score: number }[]
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
