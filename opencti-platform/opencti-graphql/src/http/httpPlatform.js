@@ -490,7 +490,7 @@ const createApp = async (app, schema) => {
       logApp.error('Error auth provider callback', { cause: e, provider });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
-      const referer = req.body.RelayState ?? req.session.referer;
+      const referer = req.body?.RelayState ?? req.session?.referer ?? null;
       const sanitizedReferer = sanitizeReferer(referer, req);
       res.redirect(sanitizedReferer);
     }
