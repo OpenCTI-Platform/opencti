@@ -24,16 +24,6 @@ const SecurityCoverageResolvers: Resolvers = {
     objectCovered: (SecurityCoverage, _, context) => objectCovered<any>(context, context.user, SecurityCoverage.id),
     toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id)
   },
-  StixCoveredObject: {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    __resolveType(obj) {
-      if (obj.entity_type) {
-        return obj.entity_type.replace(/(?:^|-)(\w)/g, (_, letter) => letter.toUpperCase());
-      }
-      return 'Unknown';
-    },
-  },
   Mutation: {
     securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
     securityCoverageDelete: (_, { id }, context) => securityCoverageDelete(context, context.user, id),
