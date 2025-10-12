@@ -9,8 +9,8 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectSimulationResultContainer from '@components/common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
+import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -182,7 +182,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         {!isKnowledgeOrContent && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
             <AIInsights id={caseData.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
-            <StixCoreObjectSimulationResultContainer id={caseData.id} type="container"/>
+            <StixCoreObjectSimulationResult id={caseData.id} coverate={null}/>
           </div>
         )}
       </Box>
