@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Field, FieldArray, Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
@@ -22,6 +21,7 @@ import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
+import CoverageInformationField from '../../common/form/CoverageInformationField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -163,55 +163,17 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
           />
           <StixCoreObjectsField
             name="objectCovered"
+            label={'Covered instance'}
+            types={['Report']}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             multiple={false}
           />
-          <FieldArray name="coverage_information">
-            {({ remove, push }) => (
-              <div style={{ marginTop: 20 }}>
-                <Typography variant="h4">{t_i18n('Coverage Information')}</Typography>
-                {values.coverage_information.map((_, index) => (
-                  <div key={index} style={{ marginTop: 10 }}>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name={`coverage_information.${index}.coverage_name`}
-                      label={t_i18n('Coverage name')}
-                      fullWidth={true}
-                      style={{ marginBottom: 10 }}
-                    />
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name={`coverage_information.${index}.coverage_score`}
-                      label={t_i18n('Coverage score (0-100)')}
-                      type="number"
-                      fullWidth={true}
-                    />
-                    {values.coverage_information.length > 1 && (
-                      <Button
-                        variant="text"
-                        color="primary"
-                        onClick={() => remove(index)}
-                        style={{ marginTop: 10 }}
-                      >
-                        {t_i18n('Remove')}
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  variant="text"
-                  color="primary"
-                  onClick={() => push({ coverage_name: '', coverage_score: '' })}
-                  style={{ marginTop: 10 }}
-                >
-                  {t_i18n('Add coverage metric')}
-                </Button>
-              </div>
-            )}
-          </FieldArray>
+          <CoverageInformationField
+            name="coverage_information"
+            values={values.coverage_information}
+            setFieldValue={setFieldValue}
+          />
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}

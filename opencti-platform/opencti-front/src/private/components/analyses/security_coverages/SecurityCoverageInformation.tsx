@@ -5,7 +5,7 @@ import { Avatar, Tooltip } from '@mui/material';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
 import { useFormatter } from '../../../../components/i18n';
-import { isNotEmptyField } from '../../../../utils/utils';
+import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import { donutChartOptions } from '../../../../utils/Charts';
 import type { Theme } from '../../../../components/Theme';
 
@@ -44,6 +44,9 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const classes = useStyles();
+  if (isEmptyField(coverage_information)) {
+    return <span>-</span>;
+  }
   return (
     <div className={classes.charts}>
       {(coverage_information ?? []).map((coverageResult) => {

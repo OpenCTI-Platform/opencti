@@ -13998,8 +13998,6 @@ input SecurityPlatformAddInput {
   update: Boolean
 }
 
-union StixCoveredObject = Report | Malware
-
 type CoverageResult {
   coverage_name: String!
   coverage_score: Int!
@@ -14068,7 +14066,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
-  objectCovered: StixCoveredObject
+  objectCovered: StixDomainObject
   toStixBundle: String
 }
 
