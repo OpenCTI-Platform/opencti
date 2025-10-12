@@ -8,6 +8,7 @@ import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
+import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
@@ -293,6 +294,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ creators }) => {
       const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
       return defaultRender(value);
+    },
+  },
+  coverageInformation: {
+    id: 'coverageInformation',
+    label: 'Coverage',
+    percentWidth: 12,
+    isSortable: false,
+    render: ({ coverage_information }) => {
+      return <SecurityCoverageInformation coverage_information={coverage_information} />;
     },
   },
   definition: {

@@ -12,6 +12,7 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -31,7 +32,6 @@ import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, K
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRfiEdition from './CaseRfiEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import CaseRfiDeletion from './CaseRfiDeletion';
 
 const subscription = graphql`
@@ -182,7 +182,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         {!isKnowledgeOrContent && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
             <AIInsights id={caseData.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
-            <StixCoreObjectSimulationResultContainer id={caseData.id} type="container"/>
+            <StixCoreObjectSimulationResult id={caseData.id} coverage={null}/>
           </div>
         )}
       </Box>
