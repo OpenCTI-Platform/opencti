@@ -145,7 +145,7 @@
     "@types/react-relay": "18.2.1",
     "@types/react-syntax-highlighter": "15.5.13",
     "@types/react-transition-group": "4",
-    "@types/relay-runtime": "19.0.2",
+    "@types/relay-runtime": "19.0.3",
     "@types/relay-test-utils": "19.0.0",
     "@vitejs/plugin-react": "5.0.2",
     "babel-plugin-relay": "20.1.1",
@@ -189,7 +189,7 @@
     "webpack": "5.101.3",
     "d3-color": "3.1.0",
     "@types/react": "19.1.8",
-    "@types/relay-runtime": "19.0.2",
+    "@types/relay-runtime": "19.0.3",
     "react": "19.1.0"
   },
   "dependenciesMeta": {
