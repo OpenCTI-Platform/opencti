@@ -3,6 +3,7 @@ import { AutoFix } from 'mdi-material-ui';
 import { graphql } from 'react-relay';
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
 import { useTheme } from '@mui/styles';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { StixCoreRelationshipsLinesPaginationQuery, StixCoreRelationshipsLinesPaginationQuery$variables } from './__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$data } from './__generated__/StixCoreRelationshipsLines_data.graphql';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
@@ -353,6 +354,13 @@ const StixCoreRelationships: FunctionComponent<StixCoreRelationshipsProps> = (
     nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<StixCoreRelationshipsLinesPaginationQuery>;
+
+  useInitCreateRelationshipContext({
+    onCreate: undefined,
+    connectionKey: 'Pagination_stixCoreRelationships',
+    paginationOptions: queryPaginationOptions,
+    reversed: false,
+  });
 
   return (
     <>

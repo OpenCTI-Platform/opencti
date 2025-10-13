@@ -16,6 +16,7 @@ import {
 import { StixDomainObjectAttackPatternsKillChainQuery$variables } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectAttackPatternsKillChainQuery.graphql';
 import { ListItemButton } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { useFormatter } from '../../../../components/i18n';
@@ -31,6 +32,7 @@ interface StixDomainObjectAttackPatternsKillChainLinesProps {
 const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomainObjectAttackPatternsKillChainLinesProps> = ({
   data,
   searchTerm,
+  paginationOptions,
   coursesOfAction,
 }) => {
   const [expandedLines, setExpandedLines] = useState<Record<string, boolean>>({});
@@ -45,6 +47,13 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
           : false,
     });
   };
+
+  useInitCreateRelationshipContext({
+    connectionKey: 'Pagination_attackPatterns',
+    paginationOptions,
+    reversed: false,
+    onCreate: undefined,
+  });
 
   type AttackPatternNode = NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data['attackPatterns']>['edges'][number]['node'];
   type NonNullableCoursesOfAction = NonNullable<NonNullable<NonNullable<AttackPatternNode['coursesOfAction']>['edges']>[number]>;

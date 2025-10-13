@@ -140,7 +140,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
+  }, [queryRef, currentView]);
 
   useInitCreateRelationshipContext({
     onCreate: refetch,
