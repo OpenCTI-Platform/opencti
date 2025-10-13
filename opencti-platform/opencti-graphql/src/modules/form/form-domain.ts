@@ -528,6 +528,8 @@ export const formSubmit = async (
         // @ts-expect-error
         mainEntity[mainEntityFields[i].attributeMapping.attributeName] = values[mainEntityFields[i].name];
       }
+      // Transform special fields after applying all field values
+      mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
       mainEntity = completeEntity(mainEntityType, mainEntity);
       mainStixEntities.push(convertStoreToStix(mainEntity));
       mainEntityStixId = mainEntity.standard_id;
