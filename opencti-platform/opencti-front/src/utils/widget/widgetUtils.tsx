@@ -24,6 +24,7 @@ const widgetVisualizationTypes = [
   {
     key: 'attribute',
     name: 'Attribute',
+    dataSelectionLimit: undefined,
     category: 'attribute',
     availableParameters: [],
     isRelationships: true,
@@ -33,6 +34,7 @@ const widgetVisualizationTypes = [
   {
     key: 'text',
     name: 'Text',
+    dataSelectionLimit: undefined,
     category: 'text',
     availableParameters: [],
     isRelationships: false,
@@ -212,24 +214,24 @@ export const indexedVisualizationTypes = R.indexBy(R.prop('key'), widgetVisualiz
 
 export const getCurrentCategory = (type: string | null) => {
   if (!type) return 'none';
-  return indexedVisualizationTypes[type]?.category ?? 'none';
+  return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.category ?? 'none';
 };
 
 export const getCurrentAvailableParameters = (type: string | null): string[] => {
   if (!type) return [];
-  return indexedVisualizationTypes[type]?.availableParameters ?? [];
+  return [...(indexedVisualizationTypes[type as WidgetVisualizationTypes]?.availableParameters ?? [])];
 };
 
 export const getCurrentDataSelectionLimit = (type: string) => {
-  return indexedVisualizationTypes[type]?.dataSelectionLimit ?? 0;
+  return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.dataSelectionLimit ?? 0;
 };
 
 export const getCurrentIsRelationships = (type: string) => {
-  return indexedVisualizationTypes[type]?.isRelationships ?? false;
+  return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;
 };
 
 export const isWidgetListOrTimeline = (type: string) => {
-  return indexedVisualizationTypes[type]?.key === 'list' || indexedVisualizationTypes[type]?.key === 'timeline';
+  return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'list' || indexedVisualizationTypes[type as WidgetVisualizationTypes]?.key === 'timeline';
 };
 
 export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'medium') => {

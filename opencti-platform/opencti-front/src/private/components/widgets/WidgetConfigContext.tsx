@@ -8,7 +8,7 @@ import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils
 export interface WidgetConfigType {
   fintelVariableName: string | null;
   widget: {
-    type: WidgetVisualizationTypes;
+    type: WidgetVisualizationTypes | '';
     perspective: WidgetPerspective | null;
     dataSelection: WidgetDataSelection[];
     parameters: WidgetParameters;
@@ -62,7 +62,7 @@ const buildConfig = (
   return {
     fintelVariableName: varName ?? null,
     widget: {
-      type: type as WidgetVisualizationTypes,
+      type: type as WidgetVisualizationTypes | '',
       perspective: w?.perspective ?? null,
       parameters: w?.parameters ?? {},
       dataSelection: w?.dataSelection ?? [{

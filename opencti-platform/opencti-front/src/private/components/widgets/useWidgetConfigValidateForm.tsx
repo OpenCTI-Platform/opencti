@@ -33,7 +33,7 @@ const useWidgetConfigValidateForm = () => {
   // Check we are at the last step
   const isLastStep = step === 3;
   // Check there is a type
-  const isTypeFilled = !!type && type !== '';
+  const isTypeFilled = !!type;
 
   // Check the number of results is lower than 100 for lists
   const isDataSelectionNumberCheck = isDataSelectionNumberValid(type, dataSelection);

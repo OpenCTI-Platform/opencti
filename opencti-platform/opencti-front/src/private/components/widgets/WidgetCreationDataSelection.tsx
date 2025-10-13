@@ -86,7 +86,7 @@ const WidgetCreationDataSelection = () => {
     ]);
   };
 
-  const showRelationCountWarning = isWidgetUsingRelationsAggregation(type);
+  const showRelationCountWarning = type && isWidgetUsingRelationsAggregation(type);
 
   return (
     <div style={{ marginTop: 20 }}>

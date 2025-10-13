@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import { useFormatter } from '../../../components/i18n';
-import { fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon, workspacesWidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import { fintelTemplatesWidgetVisualizationTypes, renderWidgetIcon, workspacesWidgetVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
@@ -17,7 +17,7 @@ const WidgetCreationTypes = () => {
     : fintelTemplatesWidgetVisualizationTypes;
 
   const changeType = (type: string) => {
-    setConfigWidget({ ...config.widget, type });
+    setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });
     setStep(type === 'text' || type === 'attribute' ? 3 : 1);
   };
 
