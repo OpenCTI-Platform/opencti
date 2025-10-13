@@ -79,40 +79,38 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 else:
                     # As bundle is received as complete, split and requeue
                     # Create a specific channel to push the split bundles
-                    push_pika_connection = pika.BlockingConnection(self.pika_parameters)
-                    push_channel = push_pika_connection.channel()
-                    try:
-                        push_channel.confirm_delivery()
-                    except Exception as err:  # pylint: disable=broad-except
-                        self.logger.warning(str(err))
-                    # Instance spliter and split the big bundle
-                    event_version = content.get("x_opencti_event_version")
-                    stix2_splitter = OpenCTIStix2Splitter()
-                    expectations, _, bundles = (
-                        stix2_splitter.split_bundle_with_expectations(
-                            content, False, event_version
-                        )
-                    )
-                    # Add expectations to the work
-                    if work_id is not None:
-                        self.api.work.add_expectations(work_id, expectations)
-                    # For each split bundle, send it to the same queue
-                    for bundle in bundles:
-                        text_bundle = json.dumps(bundle)
-                        data["content"] = base64.b64encode(
-                            text_bundle.encode("utf-8", "escape")
-                        ).decode("utf-8")
-                        push_channel.basic_publish(
-                            exchange=self.push_exchange,
-                            routing_key=self.push_routing,
-                            body=json.dumps(data),
-                            properties=pika.BasicProperties(
-                                delivery_mode=2,
-                                content_encoding="utf-8",  # make message persistent
-                            ),
-                        )
-                    push_channel.close()
-                    push_pika_connection.close()
+                    with pika.BlockingConnection(self.pika_parameters) as push_pika_connection:
+                        with push_pika_connection.channel() as push_channel:
+                            try:
+                                push_channel.confirm_delivery()
+                            except Exception as err:  # pylint: disable=broad-except
+                                self.logger.warning(str(err))
+                            # Instance spliter and split the big bundle
+                            event_version = content.get("x_opencti_event_version")
+                            stix2_splitter = OpenCTIStix2Splitter()
+                            expectations, _, bundles = (
+                                stix2_splitter.split_bundle_with_expectations(
+                                    content, False, event_version
+                                )
+                            )
+                            # Add expectations to the work
+                            if work_id is not None:
+                                self.api.work.add_expectations(work_id, expectations)
+                            # For each split bundle, send it to the same queue
+                            for bundle in bundles:
+                                text_bundle = json.dumps(bundle)
+                                data["content"] = base64.b64encode(
+                                    text_bundle.encode("utf-8", "escape")
+                                ).decode("utf-8")
+                                push_channel.basic_publish(
+                                    exchange=self.push_exchange,
+                                    routing_key=self.push_routing,
+                                    body=json.dumps(data),
+                                    properties=pika.BasicProperties(
+                                        delivery_mode=2,
+                                        content_encoding="utf-8",  # make message persistent
+                                    ),
+                                )
             # Event type event
             # Specific OpenCTI event operation with specific operation
             elif event_type == "event":
