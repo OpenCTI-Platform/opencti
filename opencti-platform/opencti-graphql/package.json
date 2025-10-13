@@ -87,7 +87,7 @@
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
-    "axios": "1.12.0",
+    "axios": "1.12.2",
     "axios-cookiejar-support": "6.0.2",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
@@ -207,7 +207,7 @@
     "vitest": "3.2.4"
   },
   "resolutions": {
-    "axios": "1.12.0",
+    "axios": "1.12.2",
     "chokidar": "4.0.3",
     "cross-spawn": "7.0.6",
     "body-parser": "2.2.0",
