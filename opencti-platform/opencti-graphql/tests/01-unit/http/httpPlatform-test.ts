@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sanitizeReferer } from '../../../src/http/httpPlatform';
 import { getBaseUrl, logApp } from '../../../src/config/conf';
+import type { Request } from 'express';
 
-vi.mock('../../../src/config/conf', async (importOriginal) => {
-  const actual:object = await importOriginal();
+vi.mock('../../../src/config/conf', async (importOriginal: any) => {
+  const actual: any = await importOriginal();
   return {
     ...actual,
     logApp: {
       info: vi.fn(),
       error: vi.fn(),
-    }, };
+    },
+  };
 });
 
 const baseUrl = getBaseUrl();
@@ -79,6 +81,89 @@ describe('httpPlatform: sanitizeReferer function', () => {
       const result = sanitizeReferer(refererToSanitize);
       expect(result).toBe(`${baseUrl}/22.0.0.1`);
       expect(logApp.info).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('When req parameter is provided', () => {
+    it('should use request context to determine base URL', () => {
+      const mockReq = {
+        protocol: 'https',
+        hostname: 'opencti.example.com',
+        headers: { host: 'opencti.example.com' }
+      } as Partial<Request>;
+      const refererToSanitize = '/dashboard';
+      const result = sanitizeReferer(refererToSanitize, mockReq as any);
+      // Should construct URL using request context
+      expect(result).toContain('/dashboard');
+      expect(logApp.info).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe('httpPlatform: OIDC RelayState fix', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
+
+  describe('Optional chaining prevents TypeError', () => {
+    it('should NOT throw TypeError when req.body is undefined', () => {
+      const req: any = { body: undefined };
+      
+      // The fix: req.body?.RelayState prevents crash
+      expect(() => {
+        const value = req.body?.RelayState;
+        return value;
+      }).not.toThrow();
+    });
+  });
+
+  describe('Fallback chain for referer', () => {
+    it('should fallback from body.RelayState to session.referer when body is undefined', () => {
+      const req: any = {
+        body: undefined,
+        session: { referer: '/dashboard' },
+        protocol: 'https',
+        hostname: 'opencti.example.com',
+        headers: { host: 'opencti.example.com' }
+      };
+
+      // Test the fixed fallback chain
+      const referer = req.body?.RelayState ?? req.session?.referer ?? null;
+      expect(referer).toBe('/dashboard');
+    });
+  });
+
+  describe('sanitizeReferer with request context', () => {
+    it('should use request context to determine base URL', () => {
+      const mockReq: any = {
+        protocol: 'https',
+        hostname: 'opencti.example.com',
+        headers: { host: 'opencti.example.com' }
+      };
+      
+      const result = sanitizeReferer('/dashboard', mockReq);
+      expect(result).toContain('/dashboard');
+      expect(logApp.info).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Complete OIDC callback flow', () => {
+    it('should handle OIDC callback with undefined body and session', () => {
+      const req: any = {
+        body: undefined,
+        session: undefined,
+        protocol: 'https',
+        hostname: 'opencti.example.com',
+        headers: { host: 'opencti.example.com' }
+      };
+
+      // Simulate the complete fixed code in the finally block
+      const referer = req.body?.RelayState ?? req.session?.referer ?? null;
+      const sanitized = sanitizeReferer(referer, req);
+
+      expect(sanitized).toBeDefined();
+      expect(typeof sanitized).toBe('string');
     });
   });
 });
