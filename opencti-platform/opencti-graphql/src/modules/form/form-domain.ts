@@ -13,7 +13,7 @@ import { generateStandardId } from '../../schema/identifier';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorType, type FormSubmissionInput } from '../../generated/graphql';
+import { ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix } from '../../database/stix-2-1-converter';
@@ -29,6 +29,7 @@ import { detectObservableType } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
+import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -54,7 +55,7 @@ export const addForm = async (
   // Check for duplicate form names with the same main entity type
   const existingForms = await fullEntitiesList(context, user, ['Form'], {
     filters: {
-      mode: 'and',
+      mode: FilterMode.And,
       filters: [
         { key: ['name'], values: [input.name] },
         { key: ['main_entity_type'], values: [parsedSchema.mainEntityType] },
@@ -100,6 +101,9 @@ export const addForm = async (
       message: `creates form intake \`${input.name}\``,
       context_data: { id: element.id, entity_type: ENTITY_TYPE_FORM, input: { name: input.name, mainEntityType: parsedSchema.mainEntityType } },
     });
+
+    // Add telemetry
+    await addFormIntakeCreatedCount();
   }
 
   return element;
@@ -187,6 +191,9 @@ export const formEditField = async (
     context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: element.name } }
   });
 
+  // Add telemetry
+  await addFormIntakeUpdatedCount();
+
   return element;
 };
 
@@ -214,6 +221,9 @@ export const formDelete = async (
       message: `deletes form intake \`${form.name}\``,
       context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: form.name } }
     });
+
+    // Add telemetry
+    await addFormIntakeDeletedCount();
   }
 
   return formId;
@@ -781,6 +791,9 @@ export const formSubmit = async (
     });
 
     logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
+
+    // Add telemetry for form submission
+    await addFormIntakeSubmittedCount();
 
     return {
       success: true,

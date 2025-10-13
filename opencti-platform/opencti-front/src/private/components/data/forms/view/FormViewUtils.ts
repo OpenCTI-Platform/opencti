@@ -63,9 +63,12 @@ export const convertFormSchemaToYupSchema = (
   if (schema.mainEntityLookup) {
     // For lookup mode, validate the lookup field
     if (schema.mainEntityMultiple) {
-      shape.mainEntityLookup = Yup.array().min(1, t_i18n('Please select at least one entity'));
+      shape.mainEntityLookup = Yup.array()
+        .of(Yup.object())
+        .min(1, t_i18n('Please select at least one entity'))
+        .required(t_i18n('Please select at least one entity'));
     } else {
-      shape.mainEntityLookup = Yup.object().nonNullable(t_i18n('Please select an entity'));
+      shape.mainEntityLookup = Yup.object().nullable().required(t_i18n('Please select an entity'));
     }
   } else if (schema.mainEntityMultiple && schema.mainEntityFieldMode === 'parsed') {
     // For parsed mode, validate the text field
@@ -106,15 +109,25 @@ export const convertFormSchemaToYupSchema = (
         // Lookup mode
         if (entity.multiple) {
           const minAmount = entity.minAmount || 0;
-          let validation = Yup.array();
+          const fieldName = `additional_${entity.id}_lookup`;
+          
+          // StixCoreObjectsField stores an array of objects
           if (minAmount > 0) {
-            validation = validation.min(minAmount, t_i18n(`Please select at least ${minAmount} entity(ies)`));
+            const errorMessage = minAmount === 1 
+              ? t_i18n('Please select at least one entity')
+              : t_i18n('Please select at least N entities').replace('N', String(minAmount));
+            shape[fieldName] = Yup.array()
+              .of(Yup.object())
+              .min(minAmount, errorMessage)
+              .required(errorMessage);
+          } else {
+            // Non-required multiple field
+            shape[fieldName] = Yup.array().of(Yup.object()).nullable();
           }
-          shape[`additional_${entity.id}_lookup`] = validation;
         } else {
           let validation = Yup.object().nullable();
           if (entity.required) {
-            validation = Yup.object().nonNullable(t_i18n('Please select an entity'));
+            validation = validation.required(t_i18n('Please select an entity'));
           }
           shape[`additional_${entity.id}_lookup`] = validation;
         }
@@ -144,7 +157,10 @@ export const convertFormSchemaToYupSchema = (
         const minAmount = entity.minAmount || 0;
         let validation = Yup.array().of(Yup.object().shape(fieldShape));
         if (minAmount > 0) {
-          validation = validation.min(minAmount, t_i18n(`At least ${minAmount} entity(ies) required`));
+          const errorMsg = minAmount === 1 
+            ? t_i18n('At least one entity is required')
+            : t_i18n('At least N entities required').replace('N', String(minAmount));
+          validation = validation.min(minAmount, errorMsg);
         }
         shape[`additional_${entity.id}_groups`] = validation;
       } else {

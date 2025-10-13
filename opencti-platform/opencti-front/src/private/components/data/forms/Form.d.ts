@@ -61,6 +61,8 @@ export interface FormBuilderData {
   mainEntityParseMode?: 'comma' | 'line'; // How to parse the field for main entity
   mainEntityParseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
   mainEntityAutoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  autoCreateIndicatorFromObservable?: boolean; // Auto-create indicators from observables
+  autoCreateObservableFromIndicator?: boolean; // Auto-create observables from indicators
   additionalEntities: AdditionalEntity[];
   fields: FormFieldAttribute[];
   relationships: EntityRelationship[];
@@ -95,6 +97,8 @@ export interface FormSchemaDefinition {
   mainEntityParseMode?: 'comma' | 'line';
   mainEntityParseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
   mainEntityAutoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  autoCreateIndicatorFromObservable?: boolean; // Auto-create indicators from observables
+  autoCreateObservableFromIndicator?: boolean; // Auto-create observables from indicators
   additionalEntities: AdditionalEntity[];
   fields: FormFieldDefinition[];
   relationships: FormRelationshipDefinition[];

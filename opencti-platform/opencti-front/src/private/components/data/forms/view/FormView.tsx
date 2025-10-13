@@ -467,7 +467,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         >
           {({ isSubmitting, isValid, values, errors, touched, setFieldValue }) => {
             return (
-              <Form>
+              <Form noValidate>
                 {/* Main Entity Fields */}
                 <div className={classes.section}>
                   <Typography variant="h6" className={classes.sectionTitle}>
@@ -482,7 +482,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           style={{ width: '100%', marginTop: 20 }}
                           helpertext={schema.mainEntityMultiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                           multiple={schema.mainEntityMultiple}
-                          required={true} // Main entity lookup is always required when enabled
                         />
                       );
                     }
@@ -568,7 +567,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   </IconButton>
                                   )}
                                   <Typography variant="subtitle2" gutterBottom>
-                                    {t_i18n(`${schema.mainEntityType} ${index + 1}`)}
+                                    {`${t_i18n(schema.mainEntityType)} ${index + 1}`}
                                   </Typography>
                                   {mainEntityFields.map((field) => (
                                     <FormFieldRenderer
@@ -662,11 +661,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                     return (
                       <div key={additionalEntity.id} className={classes.section}>
                         <Typography variant="h6" className={classes.sectionTitle}>
-                          {additionalEntity.label || `${t_i18n('Additional Entity')} - ${additionalEntity.entityType}`}
+                          {additionalEntity.label || `${t_i18n('Additional Entity')} - ${t_i18n(additionalEntity.entityType)}`}
                         </Typography>
                         {(() => {
                           if (additionalEntity.lookup) {
-                            const isRequired = additionalEntity.required || (additionalEntity.minAmount && additionalEntity.minAmount > 0);
                             return (
                               <StixCoreObjectsField
                                 name={`additional_${additionalEntity.id}_lookup`}
@@ -674,7 +672,6 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 style={{ width: '100%', marginTop: 20 }}
                                 helpertext={additionalEntity.multiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                                 multiple={additionalEntity.multiple}
-                                {...(isRequired ? { required: true } : {})}
                               />
                             );
                           }
@@ -858,7 +855,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         return (
                           <div key={relationship.id} className={classes.section}>
                             <Typography variant="subtitle1" style={{ marginBottom: 10 }}>
-                              {`${fromEntityLabel} → ${t_i18n(`relationship_${relationship.relationshipType}`)} → ${toEntityLabel}`}
+                              {`${fromEntityLabel} → ${t_i18n('relationship_' + relationship.relationshipType)} → ${toEntityLabel}`}
                             </Typography>
                             {relationship.fields && relationship.fields.map((field) => (
                               <FormFieldRenderer

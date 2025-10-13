@@ -135,6 +135,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       mainEntityFieldMode: 'multiple',
       mainEntityParseField: 'text',
       mainEntityParseMode: 'comma',
+      autoCreateIndicatorFromObservable: false,
+      autoCreateObservableFromIndicator: false,
       additionalEntities: [],
       fields: defaultMandatoryFields,
       relationships: [],
@@ -613,7 +615,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                   {t_i18n('This field uses predefined vocabulary values.')}
                 </Typography>
                 <Box style={{ marginTop: 10, paddingLeft: 10 }}>
-                  {attribute.defaultValues.map((value: { id: string; name: string }) => (
+                  {attribute.defaultValues?.map((value: { id: string; name: string }) => (
                     <Typography key={value.id} variant="body2" style={{ marginTop: 5 }}>
                       • {value.name}
                     </Typography>
@@ -1446,14 +1448,45 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
               {/* Show auto-convert to STIX pattern toggle for Indicator type */}
               {formData.mainEntityType === 'Indicator' && (
+                <>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.mainEntityAutoConvertToStixPattern || false}
+                        onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                      />
+                    }
+                    label={t_i18n('Automatically convert to STIX patterns')}
+                    style={{ marginTop: 20 }}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.autoCreateObservableFromIndicator || false}
+                        onChange={() => handleFieldChange('autoCreateObservableFromIndicator', !formData.autoCreateObservableFromIndicator)}
+                      />
+                    }
+                    label={t_i18n('Automatically create observables from indicators')}
+                    style={{ marginTop: 10 }}
+                  />
+                </>
+              )}
+              
+              {/* Show auto-create indicator toggle for Observable types */}
+              {['Artifact', 'Autonomous-System', 'Directory', 'Domain-Name', 'Email-Addr', 'Email-Message', 
+                'Email-Mime-Part-Type', 'File', 'IPv4-Addr', 'IPv6-Addr', 'Mac-Addr', 'Mutex', 'Network-Traffic',
+                'Process', 'Software', 'Url', 'User-Account', 'Windows-Registry-Key', 'Windows-Registry-Value-Type',
+                'X509-Certificate', 'Cryptocurrency-Wallet', 'Hostname', 'Text', 'User-Agent', 'Bank-Account',
+                'Phone-Number', 'Payment-Card', 'Media-Content'
+              ].includes(formData.mainEntityType) && (
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={formData.mainEntityAutoConvertToStixPattern || false}
-                      onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                      checked={formData.autoCreateIndicatorFromObservable || false}
+                      onChange={() => handleFieldChange('autoCreateIndicatorFromObservable', !formData.autoCreateIndicatorFromObservable)}
                     />
                   }
-                  label={t_i18n('Automatically convert to STIX patterns')}
+                  label={t_i18n('Automatically create indicators from observables')}
                   style={{ marginTop: 20 }}
                 />
               )}

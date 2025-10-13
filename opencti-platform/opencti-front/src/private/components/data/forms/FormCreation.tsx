@@ -100,6 +100,8 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
           mainEntityParseMode: schema.mainEntityParseMode || 'comma',
           mainEntityParseFieldMapping: schema.mainEntityParseFieldMapping,
           mainEntityAutoConvertToStixPattern: schema.mainEntityAutoConvertToStixPattern || false,
+          autoCreateIndicatorFromObservable: schema.autoCreateIndicatorFromObservable || false,
+          autoCreateObservableFromIndicator: schema.autoCreateObservableFromIndicator || false,
           additionalEntities: schema.additionalEntities || [],
           fields: (schema.fields || []).map((field: any) => ({
             ...field,

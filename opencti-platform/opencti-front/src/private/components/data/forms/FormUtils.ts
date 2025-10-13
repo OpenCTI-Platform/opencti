@@ -396,6 +396,8 @@ export const convertFormBuilderDataToSchema = (
     mainEntityParseMode: values.mainEntityParseMode,
     mainEntityParseFieldMapping: values.mainEntityParseFieldMapping,
     mainEntityAutoConvertToStixPattern: values.mainEntityAutoConvertToStixPattern,
+    autoCreateIndicatorFromObservable: values.autoCreateIndicatorFromObservable,
+    autoCreateObservableFromIndicator: values.autoCreateObservableFromIndicator,
     additionalEntities: values.additionalEntities,
     fields: values.fields.map((field) => ({
       id: field.id,
