@@ -27,18 +27,6 @@ const dashboardQuery = graphql`
       type
       ...Dashboard_workspace
     }
-    themes {
-      edges {
-        node {
-          id
-          name
-          theme_background
-        }
-      }
-    }
-    me {
-      theme
-    }
   }
 `;
 
@@ -80,8 +68,6 @@ const RootDashboard = () => {
                     element={
                       <Dashboard
                         data={props.workspace}
-                        themes={props.themes}
-                        userThemeId={props.me.theme}
                       />
                     }
                   />

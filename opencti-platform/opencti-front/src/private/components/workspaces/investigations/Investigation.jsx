@@ -33,8 +33,6 @@ class InvestigationComponent extends Component {
                   <InvestigationGraph
                     id={workspace.id}
                     data={props.workspace}
-                    themes={themes}
-                    userThemeId={userThemeId}
                   />
                 );
               }
@@ -52,8 +50,6 @@ InvestigationComponent.propTypes = {
   workspace: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  themes: PropTypes.array.isRequired,
-  userThemeId: PropTypes.string.isRequired,
 };
 
 const Investigation = createFragmentContainer(InvestigationComponent, {

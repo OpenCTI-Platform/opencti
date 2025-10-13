@@ -443,6 +443,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
         schema,
         isXTMHubAccessible: isReachable,
         about,
+        themes,
       }}
     >
       <StyledEngineProvider injectFirst={true}>
