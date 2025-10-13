@@ -416,16 +416,12 @@ interface InvestigationGraphComponentProps {
   totalData: number
   currentData: number
   dataInvestigation: InvestigationGraph_fragment$key
-  themes: RootInvestigationQuery$data['themes']
-  userThemeId: string
 }
 
 const InvestigationGraphComponent = ({
   totalData,
   currentData,
   dataInvestigation,
-  themes,
-  userThemeId,
 }: InvestigationGraphComponentProps) => {
   const ref = useRef(null);
   const theme = useTheme<Theme>();
@@ -670,8 +666,6 @@ const InvestigationGraphLoader = ({
 interface InvestigationGraphProps {
   id: string
   data: NonNullable<InvestigationGraphQuery$data['workspace']>
-  themes: RootInvestigationQuery$data['themes']
-  userThemeId: string
 }
 
 const InvestigationGraph = ({

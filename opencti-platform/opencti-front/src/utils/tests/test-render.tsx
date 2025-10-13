@@ -17,6 +17,7 @@ interface CreateUserContextOptions {
   entitySettings?: unknown,
   platformModuleHelpers?: unknown,
   schema?: unknown,
+  themes?: unknown,
 }
 
 /**
@@ -34,6 +35,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     entitySettings,
     platformModuleHelpers,
     schema,
+    themes,
   } = options ?? {};
 
   return {
@@ -59,6 +61,7 @@ export const createMockUserContext = (options?: CreateUserContextOptions): UserC
     about: {
       version: '6.7.17',
     },
+    themes: (themes ?? {}) as UserContextType['themes'],
   };
 };
 
