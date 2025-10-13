@@ -222,6 +222,8 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
     ... on Indicator {
       name
       description
+      pattern_type
+      valid_until
     }
     ... on Infrastructure {
       name
