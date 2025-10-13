@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import { Add } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
-import React, { useEffect, useState } from 'react';
+import React, { CSSProperties, useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import { FormikHelpers } from 'formik/dist/types';
 import AuthorizedMembersFieldListItem from '@components/common/form/AuthorizedMembersFieldListItem';
@@ -54,6 +54,7 @@ interface AuthorizedMembersFieldProps
   dynamicKeysForPlaybooks?: boolean;
   isCanUseEnable?: boolean;
   customInfoMessage?: string;
+  style?: CSSProperties;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -93,6 +94,7 @@ const AuthorizedMembersField = ({
   dynamicKeysForPlaybooks = false,
   isCanUseEnable = false,
   customInfoMessage,
+  style,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
@@ -326,7 +328,7 @@ const AuthorizedMembersField = ({
   };
 
   return (
-    <>
+    <div style={style}>
       {/* Internal Formik component to be able to use our custom field components */}
       <Formik<AuthorizedMembersFieldInternalValue>
         validationSchema={formikSchema}
@@ -532,7 +534,7 @@ const AuthorizedMembersField = ({
           )}
         />
       )}
-    </>
+    </div>
   );
 };
 
