@@ -171,11 +171,11 @@ const SecurityCoverages: FunctionComponent = () => {
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 25,
+      percentWidth: 35,
       isSortable: true,
     },
-    coverage_last_result: { percentWidth: 20 },
-    coverage_information: {},
+    coverage_last_result: { percentWidth: 15 },
+    coverage_information: { percentWidth: 15 },
     creator: {
       percentWidth: 12,
       isSortable: isRuntimeSort,
