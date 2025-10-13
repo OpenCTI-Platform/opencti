@@ -4311,6 +4311,7 @@
   "You currently do not have any connector manager registered into your platform.": "Al momento non è stato registrato alcun gestore di connettori nella piattaforma.",
   "You do not have any access to support packages of this OpenCTI instance.": "Non avete accesso ai pacchetti di supporto di questa istanza OpenCTI.",
   "You do not have any access to the knowledge of this OpenCTI instance.": "Non hai alcun accesso alla conoscenza di questa istanza OpenCTI.",
+  "You do not have permission to view form intakes.": "Non si ha l'autorizzazione a visualizzare i moduli di assunzione.",
   "You exceeded the characters limit. Please input less than 256 characters.": "È stato superato il limite di caratteri. Si prega di inserire meno di 256 caratteri.",
   "You have canceled the registration process": "Avete annullato il processo di registrazione",
   "You have canceled the unregistration process": "Avete annullato il processo di disregistrazione",

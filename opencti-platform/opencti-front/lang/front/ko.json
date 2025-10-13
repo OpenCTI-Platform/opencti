@@ -4311,6 +4311,7 @@
   "You currently do not have any connector manager registered into your platform.": "현재 플랫폼에 등록된 커넥터 관리자가 없습니다.",
   "You do not have any access to support packages of this OpenCTI instance.": "이 OpenCTI 인스턴스의 지원 패키지에 대한 액세스 권한이 없습니다.",
   "You do not have any access to the knowledge of this OpenCTI instance.": "이 OpenCTI 인스턴스의 지식에 액세스할 수 없습니다.",
+  "You do not have permission to view form intakes.": "양식 접수를 볼 수 있는 권한이 없습니다.",
   "You exceeded the characters limit. Please input less than 256 characters.": "글자 수 제한을 초과했습니다. 256자 미만으로 입력하세요.",
   "You have canceled the registration process": "등록 절차를 취소했습니다",
   "You have canceled the unregistration process": "등록 취소 프로세스를 취소했습니다",

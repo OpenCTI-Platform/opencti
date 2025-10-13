@@ -4311,6 +4311,7 @@
   "You currently do not have any connector manager registered into your platform.": "現在、お客様のプラットフォームにはコネクタ・マネージャが登録されていません。",
   "You do not have any access to support packages of this OpenCTI instance.": "この OpenCTI インスタンスのサポートパッケージにはアクセスできません。",
   "You do not have any access to the knowledge of this OpenCTI instance.": "このOpenCTIインスタンスのナレッジデータにアクセスする権限がありません。",
+  "You do not have permission to view form intakes.": "あなたには、フォームを閲覧する権限がありません。",
   "You exceeded the characters limit. Please input less than 256 characters.": "文字数制限を超えました。256文字以内で入力してください。",
   "You have canceled the registration process": "登録プロセスをキャンセルしました。",
   "You have canceled the unregistration process": "登録解除処理をキャンセルしました。",
