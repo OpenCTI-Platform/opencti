@@ -596,6 +596,12 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config,
             default="",
         )
+        self.targeted_connector_types = get_config_variable(
+            "WORKER_TARGETED_CONNECTOR_TYPES",
+            ["worker", "targeted_connector_types"],
+            config,
+            default=None,
+        )
         # Telemetry
         self.telemetry_enabled = get_config_variable(
             "WORKER_TELEMETRY_ENABLED",
@@ -672,6 +678,16 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 self.connectors = self.api.connector.list()
                 # Check if all queues are consumed
                 for connector in self.connectors:
+                    # Apply connector type filter if needed
+                    if (
+                        self.targeted_connector_types is not None
+                        and "ANY" not in self.targeted_connector_types
+                    ):
+                        if (
+                            connector["connector_type"]
+                            not in self.targeted_connector_types
+                        ):
+                            continue
                     # Push to ingest message
                     push_queue = connector["config"]["push"]
                     self.queues.append(push_queue)
