@@ -19,9 +19,9 @@ import { Link } from 'react-router-dom';
 import { Box } from '@mui/material';
 import type { Theme } from '../../../../../components/Theme';
 import { PirThreatMapMarker } from './pirThreatMapUtils';
-import { dateFormat } from '../../../../../utils/Time';
 import { itemColor } from '../../../../../utils/Colors';
 import { computeLink } from '../../../../../utils/Entity';
+import { useFormatter } from '../../../../../components/i18n';
 
 interface PirThreatMapTooltipProps {
   data?: PirThreatMapMarker[]
@@ -36,6 +36,7 @@ const PirThreatMapTooltip = ({
   x,
   y,
 }: PirThreatMapTooltipProps) => {
+  const { fsd } = useFormatter();
   const theme = useTheme<Theme>();
 
   if (!data) return null;
@@ -94,7 +95,7 @@ const PirThreatMapTooltip = ({
                   }}
                 />
                 <span style={{ whiteSpace: 'nowrap' }}>
-                  {dateFormat(date)} - {name} ({score}%)
+                  {fsd(date)} - {name} ({score}%)
                 </span>
               </Link>
             </Box>
