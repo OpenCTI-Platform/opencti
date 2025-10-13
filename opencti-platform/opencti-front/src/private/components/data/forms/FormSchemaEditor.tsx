@@ -1,26 +1,7 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Add, DeleteOutlined, AddCircleOutlined } from '@mui/icons-material';
-import {
-  Box,
-  IconButton,
-  MenuItem,
-  Tab,
-  Tabs,
-  Typography,
-  TextField,
-  Alert,
-  Button,
-  Select,
-  FormControl,
-  InputLabel,
-  Switch,
-  FormControlLabel,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from '@mui/material';
+import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import {
@@ -33,9 +14,10 @@ import {
   getAvailableFieldTypes,
   getInitialMandatoryFields,
   CONTAINER_TYPES,
+  FIELD_TYPES,
 } from './FormUtils';
-import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
+import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
 
@@ -122,8 +104,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
   const [currentTab, setCurrentTab] = useState(0);
-  const [addFieldDialog, setAddFieldDialog] = useState<{ open: boolean; entityId: string; entityType: string } | null>(null);
-  const [selectedAttribute, setSelectedAttribute] = useState<string>('');
 
   const entityTypes = useMemo(() => {
     if (!schema || !entitySettings) {
@@ -208,10 +188,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     return acc;
   }, {} as Record<string, FormFieldAttribute[]>);
 
-  const getAttributesForEntityType = (entityType: string, fieldType: string) => {
-    return getAttributesUtil(entityType, fieldType, entityTypes, t_i18n);
-  };
-
   const handleMainEntityTypeChange = (value: string) => {
     updateFormData((prev) => {
       // Don't add mandatory fields if we're in parsed mode
@@ -266,72 +242,27 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   };
 
   const handleAddField = (entityId: string, entityType: string) => {
-    // Open dialog for better UX
-    setAddFieldDialog({ open: true, entityId, entityType });
-    setSelectedAttribute('');
-  };
-
-  const handleAddFieldConfirm = () => {
-    if (!addFieldDialog || !selectedAttribute) return;
-
-    const entity = entityTypes.find((e) => e.value === addFieldDialog.entityType);
-    const attribute = entity?.attributes?.find((attr) => attr.name === selectedAttribute);
-
-    if (!attribute) return;
-
     const fieldId = generateFieldId();
-
-    // Check if this is an OpenVocab field
-    const vocabMapping = getVocabularyMappingByAttribute(attribute.name);
-
-    // Determine field type based on attribute
-    let fieldType = 'text';
-
-    if (vocabMapping) {
-      // This is an OpenVocab field
-      fieldType = 'openvocab';
-    } else if (attribute.type === 'numeric' || attribute.type === 'integer' || attribute.type === 'float') {
-      fieldType = 'number';
-    } else if (attribute.type === 'date') {
-      fieldType = 'datetime';
-    } else if (attribute.type === 'boolean') {
-      fieldType = 'toggle';
-    } else if (attribute.defaultValues && attribute.defaultValues.length > 0) {
-      // If attribute has vocabulary, use select/multiselect
-      fieldType = attribute.multiple ? 'multiselect' : 'select';
-    } else if (attribute.type === 'string' || attribute.type === 'text' || attribute.type === 'markdown') {
-      fieldType = attribute.type === 'markdown' || attribute.type === 'text' ? 'textarea' : 'text';
-    } else {
-      // Default to text field for any unrecognized types
-      fieldType = 'text';
-    }
-
     const newField: FormFieldAttribute = {
       id: fieldId,
-      name: attribute.name, // Use attribute name
-      label: attribute.label || t_i18n(attribute.name), // Use attribute label
-      type: fieldType,
+      name: fieldId,
+      label: '',
+      type: 'text', // Default type
       required: false,
       defaultValue: null,
       attributeMapping: {
-        entity: addFieldDialog.entityId,
-        attributeName: attribute.name,
-        mappingType: addFieldDialog.entityId === 'main_entity' ? 'direct' : 'nested',
+        entity: entityId,
+        attributeName: '',
+        mappingType: entityId === 'main_entity' ? 'direct' : 'nested',
       },
-      entityType: addFieldDialog.entityType,
+      entityType,
       isMandatory: false,
-      ...(vocabMapping ? { multiple: vocabMapping.multiple } : {}), // Add multiple if it's an OpenVocab field
-      ...(fieldType === 'multiselect' ? { multiple: true } : {}), // Add multiple for multiselect
     };
 
     updateFormData((prev) => ({
       ...prev,
       fields: [...prev.fields, newField],
     }));
-
-    // Close dialog
-    setAddFieldDialog(null);
-    setSelectedAttribute('');
   };
 
   const handleAddAdditionalEntity = () => {
@@ -526,24 +457,49 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   };
 
   const renderField = (field: FormFieldAttribute, index: number, entityType: string) => {
-    const availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes);
-    let availableAttributes = field.type ? getAttributesForEntityType(entityType, field.type) : [];
     const fieldIndex = formData.fields.findIndex((f) => f.id === field.id);
+
+    // Get all attributes for this entity type (not filtered by field type yet)
+    const entity = entityTypes.find((e) => e.value === entityType);
+    let allAttributes = entity?.attributes || [];
 
     // Check if we're in parsed mode
     let isInParsedMode = false;
 
     // Filter out parsed field mapping if in parsed mode
     if (field.attributeMapping.entity === 'main_entity' && formData.mainEntityFieldMode === 'parsed' && formData.mainEntityParseFieldMapping) {
-      availableAttributes = availableAttributes.filter((attr) => attr.value !== formData.mainEntityParseFieldMapping);
+      allAttributes = allAttributes.filter((attr) => attr.value !== formData.mainEntityParseFieldMapping);
       isInParsedMode = true;
     } else if (field.attributeMapping.entity !== 'main_entity') {
       // For additional entities, check if they're in parsed mode
       const additionalEntity = formData.additionalEntities.find((e) => e.id === field.attributeMapping.entity);
       if (additionalEntity?.fieldMode === 'parsed' && additionalEntity.parseFieldMapping) {
-        availableAttributes = availableAttributes.filter((attr) => attr.value !== additionalEntity.parseFieldMapping);
+        allAttributes = allAttributes.filter((attr) => attr.value !== additionalEntity.parseFieldMapping);
         isInParsedMode = true;
       }
+    }
+
+    // Filter out already used attributes
+    const existingFields = formData.fields
+      .filter((f) => f.attributeMapping.entity === field.attributeMapping.entity && f.id !== field.id)
+      .map((f) => f.attributeMapping.attributeName);
+    allAttributes = allAttributes.filter((attr) => !existingFields.includes(attr.value));
+
+    // Determine available field types based on selected attribute
+    let availableFieldTypes: typeof FIELD_TYPES = [];
+    if (field.attributeMapping.attributeName) {
+      const selectedAttribute = allAttributes.find((attr) => attr.value === field.attributeMapping.attributeName);
+
+      availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes)
+        .filter((fieldType) => {
+          // Filter out multiselect if attribute doesn't support multiple
+          if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
+            return false;
+          }
+
+          const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
+          return attributesForType.some((attr) => attr.value === field.attributeMapping.attributeName);
+        });
     }
 
     return (
@@ -562,6 +518,93 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           )}
         </div>
 
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
+          <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
+          <Select
+            value={field.attributeMapping.attributeName}
+            onChange={(e) => {
+              const attributeName = e.target.value;
+              const selectedAttribute = allAttributes.find((attr) => attr.value === attributeName);
+
+              handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, attributeName);
+
+              // Always update label with attribute label when changing attribute
+              if (selectedAttribute) {
+                handleFieldChange(`fields.${fieldIndex}.label`, selectedAttribute.label || t_i18n(selectedAttribute.name));
+                // Auto-generate name from label
+                const name = (selectedAttribute.label || selectedAttribute.name).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                handleFieldChange(`fields.${fieldIndex}.name`, name || field.id);
+              }
+
+              // Determine and set an appropriate default field type
+              const compatibleTypes = getAvailableFieldTypes(entityType, entityTypes)
+                .filter((fieldType) => {
+                  // Filter out multiselect if attribute doesn't support multiple
+                  if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
+                    return false;
+                  }
+
+                  const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
+                  return attributesForType.some((attr) => attr.value === attributeName);
+                });
+
+              if (compatibleTypes.length > 0) {
+                // Check if it's an OpenVocab field first - always set as default for OpenVocab attributes
+                const vocabMapping = getVocabularyMappingByAttribute(attributeName);
+                if (vocabMapping) {
+                  // Always default to openvocab for OpenVocab-compatible attributes
+                  handleFieldChange(`fields.${fieldIndex}.type`, 'openvocab');
+                  if (vocabMapping.multiple !== undefined) {
+                    handleFieldChange(`fields.${fieldIndex}.multiple`, vocabMapping.multiple);
+                  }
+                } else if (!field.type || !compatibleTypes.some((t) => t.value === field.type)) {
+                  // Only set a default field type if none is selected or current is incompatible
+                  if (selectedAttribute?.defaultValues && selectedAttribute.defaultValues.length > 0) {
+                    // If attribute has vocabulary, suggest select (not multiselect unless multiple is true)
+                    const suggestedType = selectedAttribute.multiple ? 'multiselect' : 'select';
+                    handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
+                    if (suggestedType === 'multiselect') {
+                      handleFieldChange(`fields.${fieldIndex}.multiple`, true);
+                    }
+                  } else {
+                    // Set the first compatible type as default
+                    handleFieldChange(`fields.${fieldIndex}.type`, compatibleTypes[0].value);
+                  }
+                }
+              }
+            }}
+            label={t_i18n('Map to attribute')}
+          >
+            {allAttributes.map((attr) => (
+              <MenuItem key={attr.value} value={attr.value}>
+                {attr.label || t_i18n(attr.name)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl
+          fullWidth
+          variant="standard"
+          style={{ marginTop: 20 }}
+          disabled={!field.attributeMapping.attributeName || (field.isMandatory && !isInParsedMode)}
+        >
+          <InputLabel>{t_i18n('Field Type')}</InputLabel>
+          <Select
+            value={field.type}
+            onChange={(e) => {
+              handleFieldChange(`fields.${fieldIndex}.type`, e.target.value);
+            }}
+            label={t_i18n('Field Type')}
+          >
+            {availableFieldTypes.map((type) => (
+              <MenuItem key={type.value} value={type.value}>
+                {type.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         <TextField
           variant="standard"
           label={t_i18n('Field Label')}
@@ -577,57 +620,10 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           style={{ marginTop: 20 }}
         />
 
-        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
-          <InputLabel>{t_i18n('Field Type')}</InputLabel>
-          <Select
-            value={field.type}
-            onChange={(e) => {
-              handleFieldChange(`fields.${fieldIndex}.type`, e.target.value);
-              handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, '');
-            }}
-            label={t_i18n('Field Type')}
-          >
-            {availableFieldTypes.map((type) => (
-              <MenuItem key={type.value} value={type.value}>
-                {type.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
-          <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
-          <Select
-            value={field.attributeMapping.attributeName}
-            onChange={(e) => {
-              const attributeName = e.target.value;
-              handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, attributeName);
-
-              // Check if this attribute has vocabulary (defaultValues) and auto-set field type
-              const entity = entityTypes.find((ent) => ent.value === entityType);
-              const attribute = entity?.attributes?.find((attr) => attr.name === attributeName);
-              if (attribute?.defaultValues && attribute.defaultValues.length > 0) {
-                // If attribute has vocabulary, suggest select/multiselect based on multiplicity
-                const suggestedType = attribute.multiple ? 'multiselect' : 'select';
-                if (field.type !== suggestedType) {
-                  handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
-                }
-              }
-            }}
-            label={t_i18n('Map to attribute')}
-          >
-            {availableAttributes.map((attr) => (
-              <MenuItem key={attr.value} value={attr.value}>
-                {attr.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
         {(field.type === 'select' || field.type === 'multiselect') && (() => {
           // Check if the mapped attribute has vocabulary (defaultValues)
-          const entity = entityTypes.find((e) => e.value === entityType);
-          const attribute = entity?.attributes?.find((attr) => attr.name === field.attributeMapping.attributeName);
+          const entityForVocab = entityTypes.find((e) => e.value === entityType);
+          const attribute = entityForVocab?.attributes?.find((attr) => attr.name === field.attributeMapping.attributeName);
           const hasVocabulary = attribute?.defaultValues && attribute.defaultValues.length > 0;
 
           if (hasVocabulary) {
@@ -749,18 +745,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           />
         )}
 
-        <FormControlLabel
-          control={
-            <Switch
-              checked={field.required}
-              onChange={(e) => handleFieldChange(`fields.${fieldIndex}.required`, e.target.checked)}
-              disabled={field.isMandatory && !isInParsedMode}
-            />
-          }
-          label={t_i18n('Required')}
-          style={{ marginTop: 20 }}
-        />
-
         <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
           <InputLabel>{t_i18n('Field Width')}</InputLabel>
           <Select
@@ -773,6 +757,18 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             <MenuItem value="third">{t_i18n('Third width')}</MenuItem>
           </Select>
         </FormControl>
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={field.required}
+              onChange={(e) => handleFieldChange(`fields.${fieldIndex}.required`, e.target.checked)}
+              disabled={field.isMandatory && !isInParsedMode}
+            />
+          }
+          label={t_i18n('Required')}
+          style={{ marginTop: 20 }}
+        />
       </Box>
     );
   };
@@ -1224,93 +1220,14 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   };
 
   return (
-    <>
-      {/* Add Field Dialog */}
-      <Dialog
-        open={addFieldDialog?.open || false}
-        onClose={() => {
-          setAddFieldDialog(null);
-          setSelectedAttribute('');
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>{t_i18n('Add Field')}</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
-            <InputLabel>{t_i18n('Select Attribute')}</InputLabel>
-            <Select
-              value={selectedAttribute}
-              onChange={(e) => setSelectedAttribute(e.target.value)}
-              label={t_i18n('Select Attribute')}
-            >
-              {addFieldDialog && (() => {
-                const entity = entityTypes.find((e) => e.value === addFieldDialog.entityType);
-                const existingFields = formData.fields
-                  .filter((f) => f.attributeMapping.entity === addFieldDialog.entityId)
-                  .map((f) => f.attributeMapping.attributeName);
+    <div className={classes.container}>
+      <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
+        <Tab label={t_i18n('Main Entity')} />
+        <Tab label={t_i18n('Additional Entities')} />
+        {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
+      </Tabs>
 
-                return entity?.attributes
-                  ?.filter((attr) => !existingFields.includes(attr.name))
-                  ?.filter((attr) => {
-                    // Filter out complex types that don't make sense in forms
-                    const attrType = attr.type || 'string';
-                    return attrType !== 'object' && attrType !== 'nested';
-                  })
-                  ?.map((attr) => (
-                    <MenuItem key={attr.name} value={attr.name}>
-                      {attr.label || t_i18n(attr.name)}
-                      {attr.defaultValues && attr.defaultValues.length > 0 && (
-                        <Typography variant="caption" color="textSecondary" style={{ marginLeft: 10 }}>
-                          ({t_i18n('Vocabulary')})
-                        </Typography>
-                      )}
-                    </MenuItem>
-                  )) || [];
-              })()}
-            </Select>
-          </FormControl>
-          {selectedAttribute && (() => {
-            const entity = entityTypes.find((e) => e.value === addFieldDialog?.entityType);
-            const attribute = entity?.attributes?.find((attr) => attr.name === selectedAttribute);
-            if (attribute) {
-              return (
-                <Alert severity="info" style={{ marginTop: 20 }}>
-                  {attribute.defaultValues && attribute.defaultValues.length > 0
-                    ? t_i18n('This attribute will use predefined vocabulary values.')
-                    : t_i18n('A field will be created with appropriate type based on the attribute.')}
-                </Alert>
-              );
-            }
-            return null;
-          })()}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => {
-            setAddFieldDialog(null);
-            setSelectedAttribute('');
-          }}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={handleAddFieldConfirm}
-            color="primary"
-            disabled={!selectedAttribute}
-          >
-            {t_i18n('Add')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <div className={classes.container}>
-        <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-          <Tab label={t_i18n('Main Entity')} />
-          <Tab label={t_i18n('Additional Entities')} />
-          {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
-        </Tabs>
-
-        {currentTab === 0 && (
+      {currentTab === 0 && (
         <div className={classes.tabPanel}>
           <FormControl fullWidth variant="standard">
             <InputLabel>{t_i18n('Main Entity Type')}</InputLabel>
@@ -1573,9 +1490,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             );
           })()}
         </div>
-        )}
+      )}
 
-        {currentTab === 1 && (
+      {currentTab === 1 && (
         <div className={classes.tabPanel}>
           {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
           <Button
@@ -1587,9 +1504,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Add additional entity')}
           </Button>
         </div>
-        )}
+      )}
 
-        {currentTab === 2 && hasAdditionalEntities && (
+      {currentTab === 2 && hasAdditionalEntities && (
         <div className={classes.tabPanel}>
           <Typography variant="h6" gutterBottom>
             {t_i18n('Relationships')}
@@ -1604,9 +1521,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Add relationship')}
           </Button>
         </div>
-        )}
-      </div>
-    </>
+      )}
+    </div>
   );
 };
 

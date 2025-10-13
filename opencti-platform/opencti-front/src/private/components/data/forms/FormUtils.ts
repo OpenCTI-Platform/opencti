@@ -35,7 +35,7 @@ export const FIELD_TYPE_TO_ATTRIBUTE_TYPE: Record<string, string[]> = {
   objectMarking: ['refs'], // Multiple references
   objectLabel: ['refs'], // Multiple references
   files: ['files'], // File uploads
-  openvocab: ['vocabulary'], // Special type for open vocabulary fields - matched by attribute name
+  openvocab: ['string'], // OpenVocab fields are string attributes with special rendering
 };
 
 // Container types (backend constants)
@@ -106,11 +106,6 @@ export const getAvailableFieldTypes = (
       // Skip 'ref', 'refs', and 'object' type attributes
       const attrType = attr.type || 'string';
       if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
-        return false;
-      }
-
-      // Skip attributes that are meant for OpenVocab (only when not checking for openvocab type)
-      if (openVocabAttributeNames.includes(attr.name)) {
         return false;
       }
 
@@ -209,11 +204,6 @@ export const getAttributesForEntityType = (
       // Skip 'ref' and 'object' type attributes as they need special handling
       const attrType = attr.type || 'string';
       if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
-        return false;
-      }
-
-      // Skip attributes that are meant for OpenVocab
-      if (openVocabAttributeNames.includes(attr.name)) {
         return false;
       }
 
