@@ -600,7 +600,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(552);
+    expect(data.edges.length).toEqual(554);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -738,7 +738,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(13);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
-    expect(data.edges.length).toEqual(563);
+    expect(data.edges.length).toEqual(565);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
