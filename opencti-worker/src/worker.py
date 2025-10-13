@@ -184,10 +184,10 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
     def stop(self) -> None:
         # Initiate stop for all consumers
         for consumer in self.consumers.values():
-            consumer.stop(False)
+            consumer.request_stop()
         # Wait for all consumers to stop
         for consumer in self.consumers.values():
-            consumer.stop(True)
+            consumer.wait_for_completion()
         if self.telemetry_enabled:
             self.prom_httpd.shutdown()
             self.prom_httpd.server_close()
@@ -277,7 +277,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             "Queue no longer exists, killing thread...",
                             {"queue": consumer_queue},
                         )
-                        self.consumers[consumer_queue].stop(False)
+                        self.consumers[consumer_queue].request_stop()
                         self.consumers.pop(consumer_queue, None)
             except Exception as e:  # pylint: disable=broad-except
                 self.worker_logger.error(type(e).__name__, {"reason": str(e)})

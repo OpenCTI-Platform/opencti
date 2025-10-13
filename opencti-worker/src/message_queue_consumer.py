@@ -1,6 +1,6 @@
 import functools
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any, Callable, Literal
 
@@ -15,9 +15,9 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     pika_parameters: pika.ConnectionParameters
     execution_pool: ThreadPoolExecutor
     handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
+    should_stop: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
-        self.should_stop = False
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
         self.channel.basic_qos(prefetch_count=1)
@@ -97,9 +97,9 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     def is_alive(self) -> bool:
         return self.thread.is_alive()
 
-    def stop(self, wait: bool) -> None:
+    def request_stop(self) -> None:
         self.should_stop = True
-        if wait:
-            self.thread.join()
 
-
+    def wait_for_completion(self) -> None:
+        self.request_stop()
+        self.thread.join()
