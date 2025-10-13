@@ -23,7 +23,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USE
 import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
 import { buildStixBundle } from '../../database/stix-2-1-converter';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
-import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../utils/access';
+import { getUserAccessRight, SYSTEM_USER } from '../../utils/access';
 import { buildUpdateFieldPatch } from '../../database/draft-utils';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
