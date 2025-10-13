@@ -39,9 +39,13 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
 
   // Create theme
   await page.getByTestId('create-theme-btn').click();
+
+  // disable on purpose because we want that fill to be sequentially
+  /* eslint-disable no-await-in-loop */
   for (const [key, value] of Object.entries(THEME)) {
     await page.locator(`input[name="${key}"]`).fill(value);
   }
+
   await page.getByRole('button', { name: 'Create' }).click();
 
   // Assert exists on screen
@@ -54,10 +58,12 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
   let logoSrc = await page
     .getByRole('link', { name: 'logo' })
     .locator('img').getAttribute('src');
-  expect(logoSrc).not.toContain('static/images/logo');
+  expect(logoSrc).not.toContain('/static/images/logo_text_dark-VZM4NTMC.png');
 
   // Edit theme
   openThemeEditMenu(THEME.name, page);
+
+  // edit the logo url by removing the url
   await page
     .locator('input[name="theme_logo"]')
     .fill('');
@@ -65,10 +71,12 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
     closeBtn.click();
   }
   await page.waitForTimeout(1000);
+
+  // expect to have the default dark logo
   logoSrc = await page
     .getByRole('link', { name: 'logo' })
     .locator('img').getAttribute('src');
-  expect(logoSrc).toContain('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png');
+  expect(logoSrc).toContain('logo_text_dark');
 
   // Select Dark theme again to delete custom theme
   await page.locator('#mui-component-select-platform_theme').click();
