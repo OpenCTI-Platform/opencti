@@ -110,6 +110,8 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         ...field,
         // Preserve isMandatory from the schema if it exists
         isMandatory: field.isMandatory || false,
+        // Preserve width configuration if it exists
+        width: field.width || 'full',
       }));
       const formData = {
         name: form.name,

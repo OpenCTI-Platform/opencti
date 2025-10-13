@@ -8,6 +8,7 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, FieldArray, Form, Formik, FormikHelpers } from 'formik';
 import IconButton from '@mui/material/IconButton';
@@ -481,6 +482,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           style={{ width: '100%', marginTop: 20 }}
                           helpertext={schema.mainEntityMultiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                           multiple={schema.mainEntityMultiple}
+                          required={true} // Main entity lookup is always required when enabled
                         />
                       );
                     }
@@ -615,8 +617,27 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         </FieldArray>
                       );
                     }
+                    // Single entity mode - wrap fields in Grid if any have width defined
+                    const hasWidthDefined = mainEntityFields.some((f) => f.width && f.width !== 'full');
+                    if (hasWidthDefined) {
+                      return (
+                        <Grid container spacing={2}>
+                          {mainEntityFields.map((field) => (
+                            <FormFieldRenderer
+                              key={field.name}
+                              field={field}
+                              values={values}
+                              errors={errors as Record<string, string>}
+                              touched={touched as Record<string, boolean>}
+                              setFieldValue={setFieldValue}
+                              entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                              useGridLayout={true}
+                            />
+                          ))}
+                        </Grid>
+                      );
+                    }
                     return (
-                    // Single entity mode
                       mainEntityFields.map((field) => (
                         <FormFieldRenderer
                           key={field.name}
@@ -645,6 +666,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         </Typography>
                         {(() => {
                           if (additionalEntity.lookup) {
+                            const isRequired = additionalEntity.required || (additionalEntity.minAmount && additionalEntity.minAmount > 0);
                             return (
                               <StixCoreObjectsField
                                 name={`additional_${additionalEntity.id}_lookup`}
@@ -652,6 +674,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                 style={{ width: '100%', marginTop: 20 }}
                                 helpertext={additionalEntity.multiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
                                 multiple={additionalEntity.multiple}
+                                {...(isRequired ? { required: true } : {})}
                               />
                             );
                           }
@@ -812,20 +835,26 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 )}
 
                 {/* Relationships */}
-                {schema.relationships && schema.relationships.length > 0 && (
-                  <>
-                    <Typography variant="h6" className={classes.sectionTitle} style={{ marginTop: 30 }}>
-                      {t_i18n('Relationships')}
-                    </Typography>
-                    {schema.relationships.map((relationship) => {
-                      // Find the entities involved
-                      const fromEntityLabel = relationship.fromEntity === 'main_entity'
-                        ? schema.mainEntityType
-                        : schema.additionalEntities?.find((e) => e.id === relationship.fromEntity)?.label || relationship.fromEntity;
-                      const toEntityLabel = relationship.toEntity === 'main_entity'
-                        ? schema.mainEntityType
-                        : schema.additionalEntities?.find((e) => e.id === relationship.toEntity)?.label || relationship.toEntity;
-                      if (relationship.fields && relationship.fields.length > 0) {
+                {(() => {
+                  // Filter to only relationships that have fields
+                  const relationshipsWithFields = (schema.relationships || []).filter(
+                    (rel) => rel.fields && rel.fields.length > 0
+                  );
+                  if (relationshipsWithFields.length === 0) return null;
+                  
+                  return (
+                    <>
+                      <Typography variant="h6" className={classes.sectionTitle} style={{ marginTop: 30 }}>
+                        {t_i18n('Relationships')}
+                      </Typography>
+                      {relationshipsWithFields.map((relationship) => {
+                        // Find the entities involved
+                        const fromEntityLabel = relationship.fromEntity === 'main_entity'
+                          ? schema.mainEntityType
+                          : schema.additionalEntities?.find((e) => e.id === relationship.fromEntity)?.label || relationship.fromEntity;
+                        const toEntityLabel = relationship.toEntity === 'main_entity'
+                          ? schema.mainEntityType
+                          : schema.additionalEntities?.find((e) => e.id === relationship.toEntity)?.label || relationship.toEntity;
                         return (
                           <div key={relationship.id} className={classes.section}>
                             <Typography variant="subtitle1" style={{ marginBottom: 10 }}>
@@ -845,11 +874,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                             ))}
                           </div>
                         );
-                      }
-                      return null;
-                    })}
-                  </>
-                )}
+                      })}
+                    </>
+                  );
+                })()}
 
                 <FormControlLabel
                   className={classes.draftCheckbox}

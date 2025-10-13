@@ -9,6 +9,7 @@ import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
+import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 // Custom field components
 import TextField from '../../../../../components/TextField';
@@ -66,6 +67,7 @@ export interface FormFieldRendererProps {
     }>;
   };
   fieldPrefix?: string;
+  useGridLayout?: boolean;
 }
 
 const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
@@ -73,6 +75,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   values,
   setFieldValue,
   fieldPrefix,
+  useGridLayout = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -114,8 +117,25 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
     setFieldValue(field.name, newFiles);
   };
 
-  // Render based on field type
-  switch (field.type) {
+  // Calculate grid size based on width configuration
+  const getGridSize = () => {
+    if (!field.width) return 12; // default to full width
+    switch (field.width) {
+      case 'full':
+        return 12;
+      case 'half':
+        return 6;
+      case 'third':
+        return 4;
+      default:
+        return 12;
+    }
+  };
+
+  // Render field content based on type
+  const renderFieldContent = () => {
+    // Render based on field type
+    switch (field.type) {
     case 'text':
       return (
         <Field
@@ -350,7 +370,20 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           style={fieldSpacingContainerStyle}
         />
       );
+    }
+  };
+
+  // If grid layout is enabled, wrap in Grid item
+  if (useGridLayout) {
+    return (
+      <Grid item xs={getGridSize()}>
+        {renderFieldContent()}
+      </Grid>
+    );
   }
+
+  // Otherwise return the field directly
+  return renderFieldContent();
 };
 
 export default FormFieldRenderer;

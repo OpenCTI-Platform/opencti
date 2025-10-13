@@ -325,27 +325,55 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
   const renderRelationshipField = (field: FormFieldAttribute, index: number, relationshipIndex: number) => {
     const fieldPath = `relationships.${relationshipIndex}.fields.${index}`;
+    // Available field types for relationships - exclude checkbox, select, multiselect
     const availableFieldTypes = [
       { value: 'text', label: t_i18n('Text') },
       { value: 'textarea', label: t_i18n('Textarea') },
       { value: 'number', label: t_i18n('Number') },
       { value: 'datetime', label: t_i18n('Date/Time') },
-      { value: 'checkbox', label: t_i18n('Checkbox') },
-      { value: 'select', label: t_i18n('Select') },
-      { value: 'multiselect', label: t_i18n('Multi-Select') },
+      { value: 'date', label: t_i18n('Date') },
+      { value: 'createdBy', label: t_i18n('Created By') },
+      { value: 'objectMarking', label: t_i18n('Object Marking') },
+      { value: 'objectLabel', label: t_i18n('Object Label') },
     ];
 
-    // Available attributes for relationships
-    const availableAttributes = [
-      { value: 'description', label: t_i18n('Description') },
-      { value: 'start_time', label: t_i18n('Start time') },
-      { value: 'stop_time', label: t_i18n('Stop time') },
-      { value: 'confidence', label: t_i18n('Confidence') },
-      { value: 'x_opencti_workflow_id', label: t_i18n('Status') },
-      { value: 'createdBy', label: t_i18n('Author') },
-      { value: 'objectMarking', label: t_i18n('Marking definitions') },
-      { value: 'objectLabel', label: t_i18n('Labels') },
-    ];
+    // Available attributes for relationships based on field type
+    const getAvailableAttributesForType = (fieldType: string) => {
+      switch (fieldType) {
+        case 'text':
+        case 'textarea':
+          return [
+            { value: 'description', label: t_i18n('Description') },
+          ];
+        case 'number':
+          return [
+            { value: 'confidence', label: t_i18n('Confidence') },
+            { value: 'x_opencti_workflow_id', label: t_i18n('Status') },
+          ];
+        case 'datetime':
+        case 'date':
+          return [
+            { value: 'start_time', label: t_i18n('Start time') },
+            { value: 'stop_time', label: t_i18n('Stop time') },
+          ];
+        case 'createdBy':
+          return [
+            { value: 'createdBy', label: t_i18n('Created By') },
+          ];
+        case 'objectMarking':
+          return [
+            { value: 'objectMarking', label: t_i18n('Object Marking') },
+          ];
+        case 'objectLabel':
+          return [
+            { value: 'objectLabel', label: t_i18n('Object Label') },
+          ];
+        default:
+          return [];
+      }
+    };
+
+    const availableAttributes = getAvailableAttributesForType(field.type);
 
     return (
       <Box key={field.id} className={classes.fieldGroup}>
@@ -368,18 +396,15 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <TextField
           fullWidth
           variant="standard"
-          label={t_i18n('Field Name')}
-          value={field.name}
-          onChange={(e) => handleFieldChange(`${fieldPath}.name`, e.target.value)}
-          style={{ marginTop: 20 }}
-        />
-
-        <TextField
-          fullWidth
-          variant="standard"
           label={t_i18n('Label')}
           value={field.label}
-          onChange={(e) => handleFieldChange(`${fieldPath}.label`, e.target.value)}
+          onChange={(e) => {
+            const label = e.target.value;
+            // Auto-generate name from label
+            const name = label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            handleFieldChange(`${fieldPath}.label`, label);
+            handleFieldChange(`${fieldPath}.name`, name || field.id);
+          }}
           style={{ marginTop: 20 }}
         />
 
@@ -387,7 +412,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <InputLabel>{t_i18n('Field Type')}</InputLabel>
           <Select
             value={field.type}
-            onChange={(e) => handleFieldChange(`${fieldPath}.type`, e.target.value)}
+            onChange={(e) => {
+              handleFieldChange(`${fieldPath}.type`, e.target.value);
+              // Reset attribute mapping when field type changes
+              handleFieldChange(`${fieldPath}.attributeMapping.attributeName`, '');
+            }}
             label={t_i18n('Field Type')}
           >
             {availableFieldTypes.map((type) => (
@@ -619,6 +648,19 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           label={t_i18n('Required')}
           style={{ marginTop: 20 }}
         />
+
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+          <InputLabel>{t_i18n('Field Width')}</InputLabel>
+          <Select
+            value={field.width || 'full'}
+            onChange={(e) => handleFieldChange(`fields.${fieldIndex}.width`, e.target.value)}
+            label={t_i18n('Field Width')}
+          >
+            <MenuItem value="full">{t_i18n('Full width')}</MenuItem>
+            <MenuItem value="half">{t_i18n('Half width')}</MenuItem>
+            <MenuItem value="third">{t_i18n('Third width')}</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
     );
   };

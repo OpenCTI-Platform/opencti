@@ -405,6 +405,7 @@ export const convertFormBuilderDataToSchema = (
       type: field.type,
       required: field.required,
       isMandatory: field.isMandatory, // Preserve mandatory flag
+      width: field.width, // Preserve field width configuration
       options: field.options,
       attributeMapping: field.attributeMapping,
       defaultValue: field.defaultValue,

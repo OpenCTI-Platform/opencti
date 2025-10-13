@@ -11,6 +11,7 @@ export interface FormFieldAttribute {
   type: string; // Field type: text, select, etc.
   required: boolean;
   isMandatory?: boolean; // Whether this field is for a mandatory attribute
+  width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
   entityType?: string; // The entity type this field belongs to (for field type filtering)
   attributeMapping: {
     entity: string; // Entity ID this field maps to (main_entity or additional entity ID)
@@ -107,6 +108,7 @@ export interface FormFieldDefinition {
   type: string;
   required: boolean;
   isMandatory?: boolean;
+  width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
   relationship?: {
     type: string;
     target: string;
