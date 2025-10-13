@@ -3,6 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -251,19 +252,13 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
               <SubscriptionFocus context={context} fieldName="description" />
             }
           />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="confidence"
-            label={t_i18n('Confidence level')}
-            fullWidth={true}
-            type="number"
-            style={{ marginTop: 20 }}
+          <ConfidenceField
+            entityType="Security-Converage"
             onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="confidence" />
-            }
+            onSubmit={(name, value) => handleSubmitField(name, (value ?? '').toString())}
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
           <CreatedByField
             name="createdBy"

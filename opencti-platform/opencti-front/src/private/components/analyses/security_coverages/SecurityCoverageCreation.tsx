@@ -10,6 +10,7 @@ import { FormikConfig } from 'formik/dist/types';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
 import { SecurityCoveragesLinesPaginationQuery$variables } from '@components/analyses/__generated__/SecurityCoveragesLinesPaginationQuery.graphql';
+import ConfidenceField from '@components/common/form/ConfidenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -19,9 +20,10 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import CoverageInformationField from '../../common/form/CoverageInformationField';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -67,12 +69,17 @@ const securityCoverageValidation = (t: (value: string) => string) => Yup.object(
 interface SecurityCoverageFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onClose?: () => void;
+  inputValue?: string;
+  defaultCreatedBy?: FieldOption;
+  defaultMarkingDefinitions?: FieldOption[];
+  defaultConfidence?: number;
 }
 
 interface SecurityCoverageFormValues {
   name: string;
   description: string;
-  createdBy: { value: string; label?: string } | null;
+  confidence: number | undefined;
+  createdBy?: FieldOption;
   objectMarking: { value: string }[];
   objectLabel: { value: string; label: string }[];
   objectCovered: { value: string; label?: string; entity_type?: string } | null;
@@ -82,6 +89,10 @@ interface SecurityCoverageFormValues {
 export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFormProps> = ({
   updater,
   onClose,
+  inputValue,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -127,17 +138,23 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
     });
   };
 
+  const initialValues = useDefaultValues<SecurityCoverageFormValues>(
+    'Security-Coverage',
+    {
+      name: inputValue ?? '',
+      description: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      confidence: defaultConfidence,
+      objectLabel: [],
+      objectCovered: null,
+      coverage_information: [],
+    },
+  );
+
   return (
     <Formik<SecurityCoverageFormValues>
-      initialValues={{
-        name: '',
-        description: '',
-        createdBy: null,
-        objectMarking: [],
-        objectLabel: [],
-        objectCovered: null,
-        coverage_information: [],
-      }}
+      initialValues={initialValues}
       validationSchema={securityCoverageValidation(t_i18n)}
       onSubmit={onSubmit}
       onReset={onClose}
@@ -160,6 +177,10 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
             multiline={true}
             rows={4}
             style={fieldSpacingContainerStyle}
+          />
+          <ConfidenceField
+            containerStyle={fieldSpacingContainerStyle}
+            entityType="Security-Coverage"
           />
           <StixCoreObjectsField
             name="objectCovered"
@@ -239,10 +260,7 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
   );
 
   return (
-    <Drawer
-      title={t_i18n('Create a security coverage')}
-      controlledDial={CreateSecurityCoverageControlledDial}
-    >
+    <Drawer title={t_i18n('Create a security coverage')} controlledDial={CreateSecurityCoverageControlledDial}>
       <SecurityCoverageCreationForm updater={updater} />
     </Drawer>
   );
