@@ -16,7 +16,7 @@ import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
 import { convertFormBuilderDataToSchema } from './FormUtils';
 import FormSchemaEditor from './FormSchemaEditor';
-import type { FormBuilderData, FormAddInput } from './Form.d';
+import { FormBuilderData, FormAddInput, FormFieldAttribute } from './Form.d';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -103,7 +103,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
           autoCreateIndicatorFromObservable: schema.autoCreateIndicatorFromObservable || false,
           autoCreateObservableFromIndicator: schema.autoCreateObservableFromIndicator || false,
           additionalEntities: schema.additionalEntities || [],
-          fields: (schema.fields || []).map((field: any) => ({
+          fields: (schema.fields || []).map((field: FormFieldAttribute) => ({
             ...field,
             width: field.width || 'full', // Ensure width is preserved
           })),
