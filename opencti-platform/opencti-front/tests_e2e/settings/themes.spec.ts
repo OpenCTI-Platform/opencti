@@ -68,7 +68,7 @@ test('Custom theme creation, edition, and deletion', async ({ page }) => {
   logoSrc = await page
     .getByRole('link', { name: 'logo' })
     .locator('img').getAttribute('src');
-  expect(logoSrc).toContain('static/images/logo');
+  expect(logoSrc).toContain('https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png');
 
   // Select Dark theme again to delete custom theme
   await page.locator('#mui-component-select-platform_theme').click();
