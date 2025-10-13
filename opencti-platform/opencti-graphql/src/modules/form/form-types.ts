@@ -18,6 +18,7 @@ export enum FormFieldType {
   ObjectMarking = 'objectMarking',
   ObjectLabel = 'objectLabel',
   Files = 'files',
+  OpenVocab = 'openvocab',
 }
 
 // Additional entity configuration
@@ -53,6 +54,8 @@ export interface FormFieldDefinition {
   type: FormFieldType;
   required: boolean;
   isMandatory?: boolean; // Whether this field is for a mandatory attribute
+  width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
+  multiple?: boolean; // For openvocab and select/multiselect fields
   attributeMapping: {
     entity: string; // Entity ID this field maps to (main_entity or additional entity ID)
     attributeName: string; // The attribute name on that entity
@@ -94,6 +97,8 @@ export interface FormSchemaDefinition {
   mainEntityParseMode?: 'comma' | 'line'; // How to parse the field for main entity
   mainEntityParseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
   mainEntityAutoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  autoCreateIndicatorFromObservable?: boolean; // Auto-create indicators from observables
+  autoCreateObservableFromIndicator?: boolean; // Auto-create observables from indicators
   additionalEntities?: AdditionalEntity[]; // Additional entities to include in the form
   fields: FormFieldDefinition[];
   relationships?: FormRelationshipDefinition[]; // Relationships between entities
@@ -155,6 +160,8 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
     },
     mainEntityParseFieldMapping: { type: 'string' },
     mainEntityAutoConvertToStixPattern: { type: 'boolean' },
+    autoCreateIndicatorFromObservable: { type: 'boolean' },
+    autoCreateObservableFromIndicator: { type: 'boolean' },
     includeInContainer: { type: 'boolean' },
     isDraftByDefault: { type: 'boolean' },
     allowDraftOverride: { type: 'boolean' },
@@ -214,6 +221,13 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
             enum: Object.values(FormFieldType),
           },
           required: { type: 'boolean' },
+          width: {
+            type: 'string',
+            enum: ['full', 'half', 'third'],
+          },
+          multiple: {
+            type: 'boolean',
+          },
           defaultValue: {
             oneOf: [
               { type: 'string' },

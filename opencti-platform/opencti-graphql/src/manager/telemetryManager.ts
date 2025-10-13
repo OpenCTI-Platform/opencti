@@ -59,6 +59,10 @@ export const TELEMETRY_BACKGROUND_TASK_USER = 'userBackgroundTaskCount';
 export const TELEMETRY_EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount';
 export const TELEMETRY_FORGOT_PASSWORD = 'forgotPasswordCount';
 export const TELEMETRY_CONNECTOR_DEPLOYED = 'connectorDeployedCount';
+export const TELEMETRY_FORM_INTAKE_CREATED = 'formIntakeCreatedCount';
+export const TELEMETRY_FORM_INTAKE_UPDATED = 'formIntakeUpdatedCount';
+export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
+export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -97,6 +101,22 @@ export const addUserEmailSendCount = async () => {
 };
 export const addOnboardingEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND, 1);
+};
+
+export const addFormIntakeCreatedCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_CREATED, 1);
+};
+
+export const addFormIntakeUpdatedCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_UPDATED, 1);
+};
+
+export const addFormIntakeDeletedCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_DELETED, 1);
+};
+
+export const addFormIntakeSubmittedCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_SUBMITTED, 1);
 };
 export const addUserBackgroundTaskCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_BACKGROUND_TASK_USER, 1);

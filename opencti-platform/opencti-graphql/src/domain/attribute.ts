@@ -4,6 +4,7 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
+import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 
 export interface DefaultValue {
   id: string
@@ -35,20 +36,22 @@ export const getSchemaAttributes = () => {
     const attributesArray = Array.from(attributes.values());
 
     // Map attributes to TypeAttribute format
-    const typeAttributes = attributesArray.map((attr) => ({
-      name: attr.name,
-      type: attr.type,
-      label: attr.label || attr.name,
-      mandatory: attr.mandatoryType === 'external',
-      mandatoryType: attr.mandatoryType,
-      editDefault: attr.editDefault,
-      multiple: attr.multiple || false,
-      upsert: attr.upsert || false,
-      // For numeric attributes with scalable property
-      scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
-      // Default values would need to be fetched from entity settings if needed
-      defaultValues: undefined
-    }));
+    const typeAttributes = attributesArray
+      .filter((attr) => !INTERNAL_ATTRIBUTES.includes(attr.name))
+      .map((attr) => ({
+        name: attr.name,
+        type: attr.type,
+        label: attr.label || attr.name,
+        mandatory: attr.mandatoryType === 'external',
+        mandatoryType: attr.mandatoryType,
+        editDefault: attr.editDefault,
+        multiple: attr.multiple || false,
+        upsert: attr.upsert || false,
+        // For numeric attributes with scalable property
+        scale: attr.type === 'numeric' && (attr as any).scalable ? 'default' : undefined,
+        // Default values would need to be fetched from entity settings if needed
+        defaultValues: undefined
+      }));
 
     return {
       type: entityType,

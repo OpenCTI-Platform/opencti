@@ -8,9 +8,10 @@ export interface FormFieldAttribute {
   name: string;
   label: string; // Display label for the field
   description?: string;
-  type: string; // Field type: text, select, etc.
+  type: string; // Field type: text, select, openvocab, etc.
   required: boolean;
   isMandatory?: boolean; // Whether this field is for a mandatory attribute
+  width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
   entityType?: string; // The entity type this field belongs to (for field type filtering)
   attributeMapping: {
     entity: string; // Entity ID this field maps to (main_entity or additional entity ID)
@@ -60,6 +61,8 @@ export interface FormBuilderData {
   mainEntityParseMode?: 'comma' | 'line'; // How to parse the field for main entity
   mainEntityParseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
   mainEntityAutoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  autoCreateIndicatorFromObservable?: boolean; // Auto-create indicators from observables
+  autoCreateObservableFromIndicator?: boolean; // Auto-create observables from indicators
   additionalEntities: AdditionalEntity[];
   fields: FormFieldAttribute[];
   relationships: EntityRelationship[];
@@ -94,6 +97,8 @@ export interface FormSchemaDefinition {
   mainEntityParseMode?: 'comma' | 'line';
   mainEntityParseFieldMapping?: string; // Attribute name where parsed values should be stored when fieldMode is 'parsed'
   mainEntityAutoConvertToStixPattern?: boolean; // For Indicator type with parsed mode: automatically convert to STIX patterns
+  autoCreateIndicatorFromObservable?: boolean; // Auto-create indicators from observables
+  autoCreateObservableFromIndicator?: boolean; // Auto-create observables from indicators
   additionalEntities: AdditionalEntity[];
   fields: FormFieldDefinition[];
   relationships: FormRelationshipDefinition[];
@@ -107,6 +112,8 @@ export interface FormFieldDefinition {
   type: string;
   required: boolean;
   isMandatory?: boolean;
+  width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
+  multiple?: boolean; // For openvocab and select/multiselect fields
   relationship?: {
     type: string;
     target: string;
@@ -116,6 +123,7 @@ export interface FormFieldDefinition {
   attributeMapping: {
     entity: string;
     attributeName: string;
+    mappingType?: 'direct' | 'nested'; // How the field maps to the entity
   };
   options?: Array<{ label: string; value: string }>; // For select/multiselect fields
   defaultValue?: string | number | boolean | string[] | Date | null;

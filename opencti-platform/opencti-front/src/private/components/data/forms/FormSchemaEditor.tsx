@@ -1,7 +1,26 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Add, DeleteOutlined, AddCircleOutlined } from '@mui/icons-material';
-import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  MenuItem,
+  Tab,
+  Tabs,
+  Typography,
+  TextField,
+  Alert,
+  Button,
+  Select,
+  FormControl,
+  InputLabel,
+  Switch,
+  FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import {
@@ -15,6 +34,7 @@ import {
   getInitialMandatoryFields,
   CONTAINER_TYPES,
 } from './FormUtils';
+import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -102,6 +122,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
   const [currentTab, setCurrentTab] = useState(0);
+  const [addFieldDialog, setAddFieldDialog] = useState<{ open: boolean; entityId: string; entityType: string } | null>(null);
+  const [selectedAttribute, setSelectedAttribute] = useState<string>('');
 
   const entityTypes = useMemo(() => {
     if (!schema || !entitySettings) {
@@ -133,6 +155,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       mainEntityFieldMode: 'multiple',
       mainEntityParseField: 'text',
       mainEntityParseMode: 'comma',
+      autoCreateIndicatorFromObservable: false,
+      autoCreateObservableFromIndicator: false,
       additionalEntities: [],
       fields: defaultMandatoryFields,
       relationships: [],
@@ -242,27 +266,72 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   };
 
   const handleAddField = (entityId: string, entityType: string) => {
+    // Open dialog for better UX
+    setAddFieldDialog({ open: true, entityId, entityType });
+    setSelectedAttribute('');
+  };
+
+  const handleAddFieldConfirm = () => {
+    if (!addFieldDialog || !selectedAttribute) return;
+
+    const entity = entityTypes.find((e) => e.value === addFieldDialog.entityType);
+    const attribute = entity?.attributes?.find((attr) => attr.name === selectedAttribute);
+
+    if (!attribute) return;
+
     const fieldId = generateFieldId();
+
+    // Check if this is an OpenVocab field
+    const vocabMapping = getVocabularyMappingByAttribute(attribute.name);
+
+    // Determine field type based on attribute
+    let fieldType = 'text';
+
+    if (vocabMapping) {
+      // This is an OpenVocab field
+      fieldType = 'openvocab';
+    } else if (attribute.type === 'numeric' || attribute.type === 'integer' || attribute.type === 'float') {
+      fieldType = 'number';
+    } else if (attribute.type === 'date') {
+      fieldType = 'datetime';
+    } else if (attribute.type === 'boolean') {
+      fieldType = 'toggle';
+    } else if (attribute.defaultValues && attribute.defaultValues.length > 0) {
+      // If attribute has vocabulary, use select/multiselect
+      fieldType = attribute.multiple ? 'multiselect' : 'select';
+    } else if (attribute.type === 'string' || attribute.type === 'text' || attribute.type === 'markdown') {
+      fieldType = attribute.type === 'markdown' || attribute.type === 'text' ? 'textarea' : 'text';
+    } else {
+      // Default to text field for any unrecognized types
+      fieldType = 'text';
+    }
+
     const newField: FormFieldAttribute = {
       id: fieldId,
-      name: `field_${fieldId}`, // Auto-generated name
-      label: '',
-      type: 'text',
+      name: attribute.name, // Use attribute name
+      label: attribute.label || t_i18n(attribute.name), // Use attribute label
+      type: fieldType,
       required: false,
-      defaultValue: null, // Initialize default value
+      defaultValue: null,
       attributeMapping: {
-        entity: entityId,
-        attributeName: '',
-        mappingType: entityId === 'main_entity' ? 'direct' : 'nested',
+        entity: addFieldDialog.entityId,
+        attributeName: attribute.name,
+        mappingType: addFieldDialog.entityId === 'main_entity' ? 'direct' : 'nested',
       },
-      entityType,
+      entityType: addFieldDialog.entityType,
       isMandatory: false,
+      ...(vocabMapping ? { multiple: vocabMapping.multiple } : {}), // Add multiple if it's an OpenVocab field
+      ...(fieldType === 'multiselect' ? { multiple: true } : {}), // Add multiple for multiselect
     };
 
     updateFormData((prev) => ({
       ...prev,
       fields: [...prev.fields, newField],
     }));
+
+    // Close dialog
+    setAddFieldDialog(null);
+    setSelectedAttribute('');
   };
 
   const handleAddAdditionalEntity = () => {
@@ -325,27 +394,55 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
   const renderRelationshipField = (field: FormFieldAttribute, index: number, relationshipIndex: number) => {
     const fieldPath = `relationships.${relationshipIndex}.fields.${index}`;
+    // Available field types for relationships - exclude checkbox, select, multiselect
     const availableFieldTypes = [
       { value: 'text', label: t_i18n('Text') },
       { value: 'textarea', label: t_i18n('Textarea') },
       { value: 'number', label: t_i18n('Number') },
       { value: 'datetime', label: t_i18n('Date/Time') },
-      { value: 'checkbox', label: t_i18n('Checkbox') },
-      { value: 'select', label: t_i18n('Select') },
-      { value: 'multiselect', label: t_i18n('Multi-Select') },
+      { value: 'date', label: t_i18n('Date') },
+      { value: 'createdBy', label: t_i18n('Created By') },
+      { value: 'objectMarking', label: t_i18n('Object Marking') },
+      { value: 'objectLabel', label: t_i18n('Object Label') },
     ];
 
-    // Available attributes for relationships
-    const availableAttributes = [
-      { value: 'description', label: t_i18n('Description') },
-      { value: 'start_time', label: t_i18n('Start time') },
-      { value: 'stop_time', label: t_i18n('Stop time') },
-      { value: 'confidence', label: t_i18n('Confidence') },
-      { value: 'x_opencti_workflow_id', label: t_i18n('Status') },
-      { value: 'createdBy', label: t_i18n('Author') },
-      { value: 'objectMarking', label: t_i18n('Marking definitions') },
-      { value: 'objectLabel', label: t_i18n('Labels') },
-    ];
+    // Available attributes for relationships based on field type
+    const getAvailableAttributesForType = (fieldType: string) => {
+      switch (fieldType) {
+        case 'text':
+        case 'textarea':
+          return [
+            { value: 'description', label: t_i18n('Description') },
+          ];
+        case 'number':
+          return [
+            { value: 'confidence', label: t_i18n('Confidence') },
+            { value: 'x_opencti_workflow_id', label: t_i18n('Status') },
+          ];
+        case 'datetime':
+        case 'date':
+          return [
+            { value: 'start_time', label: t_i18n('Start time') },
+            { value: 'stop_time', label: t_i18n('Stop time') },
+          ];
+        case 'createdBy':
+          return [
+            { value: 'createdBy', label: t_i18n('Created By') },
+          ];
+        case 'objectMarking':
+          return [
+            { value: 'objectMarking', label: t_i18n('Object Marking') },
+          ];
+        case 'objectLabel':
+          return [
+            { value: 'objectLabel', label: t_i18n('Object Label') },
+          ];
+        default:
+          return [];
+      }
+    };
+
+    const availableAttributes = getAvailableAttributesForType(field.type);
 
     return (
       <Box key={field.id} className={classes.fieldGroup}>
@@ -368,18 +465,15 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <TextField
           fullWidth
           variant="standard"
-          label={t_i18n('Field Name')}
-          value={field.name}
-          onChange={(e) => handleFieldChange(`${fieldPath}.name`, e.target.value)}
-          style={{ marginTop: 20 }}
-        />
-
-        <TextField
-          fullWidth
-          variant="standard"
           label={t_i18n('Label')}
           value={field.label}
-          onChange={(e) => handleFieldChange(`${fieldPath}.label`, e.target.value)}
+          onChange={(e) => {
+            const label = e.target.value;
+            // Auto-generate name from label
+            const name = label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            handleFieldChange(`${fieldPath}.label`, label);
+            handleFieldChange(`${fieldPath}.name`, name || field.id);
+          }}
           style={{ marginTop: 20 }}
         />
 
@@ -387,7 +481,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <InputLabel>{t_i18n('Field Type')}</InputLabel>
           <Select
             value={field.type}
-            onChange={(e) => handleFieldChange(`${fieldPath}.type`, e.target.value)}
+            onChange={(e) => {
+              handleFieldChange(`${fieldPath}.type`, e.target.value);
+              // Reset attribute mapping when field type changes
+              handleFieldChange(`${fieldPath}.attributeMapping.attributeName`, '');
+            }}
             label={t_i18n('Field Type')}
           >
             {availableFieldTypes.map((type) => (
@@ -501,7 +599,21 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
           <Select
             value={field.attributeMapping.attributeName}
-            onChange={(e) => handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, e.target.value)}
+            onChange={(e) => {
+              const attributeName = e.target.value;
+              handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, attributeName);
+
+              // Check if this attribute has vocabulary (defaultValues) and auto-set field type
+              const entity = entityTypes.find((ent) => ent.value === entityType);
+              const attribute = entity?.attributes?.find((attr) => attr.name === attributeName);
+              if (attribute?.defaultValues && attribute.defaultValues.length > 0) {
+                // If attribute has vocabulary, suggest select/multiselect based on multiplicity
+                const suggestedType = attribute.multiple ? 'multiselect' : 'select';
+                if (field.type !== suggestedType) {
+                  handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
+                }
+              }
+            }}
             label={t_i18n('Map to attribute')}
           >
             {availableAttributes.map((attr) => (
@@ -512,58 +624,87 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Select>
         </FormControl>
 
-        {(field.type === 'select' || field.type === 'multiselect') && (
-          <div style={{ marginTop: 20 }}>
-            <Typography variant="caption">{t_i18n('Options')}</Typography>
-            {field.options?.map((option, optIndex) => (
-              <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
-                <TextField
-                  variant="standard"
-                  label={t_i18n('Label')}
-                  value={option.label}
-                  onChange={(e) => {
-                    const newOptions = [...(field.options || [])];
-                    newOptions[optIndex] = { ...option, label: e.target.value };
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                  style={{ flex: 1, marginRight: 10 }}
-                />
-                <TextField
-                  variant="standard"
-                  label={t_i18n('Value')}
-                  value={option.value}
-                  onChange={(e) => {
-                    const newOptions = [...(field.options || [])];
-                    newOptions[optIndex] = { ...option, value: e.target.value };
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                  style={{ flex: 1, marginRight: 10 }}
-                />
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                >
-                  <DeleteOutlined fontSize="small" color="primary" />
-                </IconButton>
-              </Box>
-            ))}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Add />}
-              onClick={() => {
-                const newOptions = [...(field.options || []), { label: '', value: '' }];
-                handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-              }}
-              style={{ marginTop: 10 }}
-            >
-              {t_i18n('Add option')}
-            </Button>
-          </div>
-        )}
+        {(field.type === 'select' || field.type === 'multiselect') && (() => {
+          // Check if the mapped attribute has vocabulary (defaultValues)
+          const entity = entityTypes.find((e) => e.value === entityType);
+          const attribute = entity?.attributes?.find((attr) => attr.name === field.attributeMapping.attributeName);
+          const hasVocabulary = attribute?.defaultValues && attribute.defaultValues.length > 0;
+
+          if (hasVocabulary) {
+            // Use vocabulary from the attribute
+            return (
+              <div style={{ marginTop: 20 }}>
+                <Typography variant="caption">
+                  {t_i18n('Options (from vocabulary)')}
+                </Typography>
+                <Typography variant="body2" color="textSecondary" style={{ marginTop: 5 }}>
+                  {t_i18n('This field uses predefined vocabulary values.')}
+                </Typography>
+                <Box style={{ marginTop: 10, paddingLeft: 10 }}>
+                  {attribute.defaultValues?.map((value: { id: string; name: string }) => (
+                    <Typography key={value.id} variant="body2" style={{ marginTop: 5 }}>
+                      • {value.name}
+                    </Typography>
+                  ))}
+                </Box>
+              </div>
+            );
+          }
+
+          // Custom options for fields without vocabulary
+          return (
+            <div style={{ marginTop: 20 }}>
+              <Typography variant="caption">{t_i18n('Options')}</Typography>
+              {field.options?.map((option, optIndex) => (
+                <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
+                  <TextField
+                    variant="standard"
+                    label={t_i18n('Label')}
+                    value={option.label}
+                    onChange={(e) => {
+                      const newOptions = [...(field.options || [])];
+                      newOptions[optIndex] = { ...option, label: e.target.value };
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <TextField
+                    variant="standard"
+                    label={t_i18n('Value')}
+                    value={option.value}
+                    onChange={(e) => {
+                      const newOptions = [...(field.options || [])];
+                      newOptions[optIndex] = { ...option, value: e.target.value };
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                  >
+                    <DeleteOutlined fontSize="small" color="primary" />
+                  </IconButton>
+                </Box>
+              ))}
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<Add />}
+                onClick={() => {
+                  const newOptions = [...(field.options || []), { label: '', value: '' }];
+                  handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                }}
+                style={{ marginTop: 10 }}
+              >
+                {t_i18n('Add option')}
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Default value field for text, number, textarea, select, and date fields */}
         {(field.type === 'text' || field.type === 'textarea' || field.type === 'number' || field.type === 'date' || field.type === 'datetime' || field.type === 'select') && (
@@ -619,6 +760,19 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           label={t_i18n('Required')}
           style={{ marginTop: 20 }}
         />
+
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+          <InputLabel>{t_i18n('Field Width')}</InputLabel>
+          <Select
+            value={field.width || 'full'}
+            onChange={(e) => handleFieldChange(`fields.${fieldIndex}.width`, e.target.value)}
+            label={t_i18n('Field Width')}
+          >
+            <MenuItem value="full">{t_i18n('Full width')}</MenuItem>
+            <MenuItem value="half">{t_i18n('Half width')}</MenuItem>
+            <MenuItem value="third">{t_i18n('Third width')}</MenuItem>
+          </Select>
+        </FormControl>
       </Box>
     );
   };
@@ -1070,14 +1224,93 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   };
 
   return (
-    <div className={classes.container}>
-      <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-        <Tab label={t_i18n('Main Entity')} />
-        <Tab label={t_i18n('Additional Entities')} />
-        {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
-      </Tabs>
+    <>
+      {/* Add Field Dialog */}
+      <Dialog
+        open={addFieldDialog?.open || false}
+        onClose={() => {
+          setAddFieldDialog(null);
+          setSelectedAttribute('');
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t_i18n('Add Field')}</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+            <InputLabel>{t_i18n('Select Attribute')}</InputLabel>
+            <Select
+              value={selectedAttribute}
+              onChange={(e) => setSelectedAttribute(e.target.value)}
+              label={t_i18n('Select Attribute')}
+            >
+              {addFieldDialog && (() => {
+                const entity = entityTypes.find((e) => e.value === addFieldDialog.entityType);
+                const existingFields = formData.fields
+                  .filter((f) => f.attributeMapping.entity === addFieldDialog.entityId)
+                  .map((f) => f.attributeMapping.attributeName);
 
-      {currentTab === 0 && (
+                return entity?.attributes
+                  ?.filter((attr) => !existingFields.includes(attr.name))
+                  ?.filter((attr) => {
+                    // Filter out complex types that don't make sense in forms
+                    const attrType = attr.type || 'string';
+                    return attrType !== 'object' && attrType !== 'nested';
+                  })
+                  ?.map((attr) => (
+                    <MenuItem key={attr.name} value={attr.name}>
+                      {attr.label || t_i18n(attr.name)}
+                      {attr.defaultValues && attr.defaultValues.length > 0 && (
+                        <Typography variant="caption" color="textSecondary" style={{ marginLeft: 10 }}>
+                          ({t_i18n('Vocabulary')})
+                        </Typography>
+                      )}
+                    </MenuItem>
+                  )) || [];
+              })()}
+            </Select>
+          </FormControl>
+          {selectedAttribute && (() => {
+            const entity = entityTypes.find((e) => e.value === addFieldDialog?.entityType);
+            const attribute = entity?.attributes?.find((attr) => attr.name === selectedAttribute);
+            if (attribute) {
+              return (
+                <Alert severity="info" style={{ marginTop: 20 }}>
+                  {attribute.defaultValues && attribute.defaultValues.length > 0
+                    ? t_i18n('This attribute will use predefined vocabulary values.')
+                    : t_i18n('A field will be created with appropriate type based on the attribute.')}
+                </Alert>
+              );
+            }
+            return null;
+          })()}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setAddFieldDialog(null);
+            setSelectedAttribute('');
+          }}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={handleAddFieldConfirm}
+            color="primary"
+            disabled={!selectedAttribute}
+          >
+            {t_i18n('Add')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <div className={classes.container}>
+        <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
+          <Tab label={t_i18n('Main Entity')} />
+          <Tab label={t_i18n('Additional Entities')} />
+          {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
+        </Tabs>
+
+        {currentTab === 0 && (
         <div className={classes.tabPanel}>
           <FormControl fullWidth variant="standard">
             <InputLabel>{t_i18n('Main Entity Type')}</InputLabel>
@@ -1242,14 +1475,45 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
               {/* Show auto-convert to STIX pattern toggle for Indicator type */}
               {formData.mainEntityType === 'Indicator' && (
+                <>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.mainEntityAutoConvertToStixPattern || false}
+                        onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                      />
+                    }
+                    label={t_i18n('Automatically convert to STIX patterns')}
+                    style={{ marginTop: 20 }}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.autoCreateObservableFromIndicator || false}
+                        onChange={() => handleFieldChange('autoCreateObservableFromIndicator', !formData.autoCreateObservableFromIndicator)}
+                      />
+                    }
+                    label={t_i18n('Automatically create observables from indicators')}
+                    style={{ marginTop: 10 }}
+                  />
+                </>
+              )}
+
+              {/* Show auto-create indicator toggle for Observable types */}
+              {['Artifact', 'Autonomous-System', 'Directory', 'Domain-Name', 'Email-Addr', 'Email-Message',
+                'Email-Mime-Part-Type', 'File', 'IPv4-Addr', 'IPv6-Addr', 'Mac-Addr', 'Mutex', 'Network-Traffic',
+                'Process', 'Software', 'Url', 'User-Account', 'Windows-Registry-Key', 'Windows-Registry-Value-Type',
+                'X509-Certificate', 'Cryptocurrency-Wallet', 'Hostname', 'Text', 'User-Agent', 'Bank-Account',
+                'Phone-Number', 'Payment-Card', 'Media-Content',
+              ].includes(formData.mainEntityType) && (
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={formData.mainEntityAutoConvertToStixPattern || false}
-                      onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                      checked={formData.autoCreateIndicatorFromObservable || false}
+                      onChange={() => handleFieldChange('autoCreateIndicatorFromObservable', !formData.autoCreateIndicatorFromObservable)}
                     />
                   }
-                  label={t_i18n('Automatically convert to STIX patterns')}
+                  label={t_i18n('Automatically create indicators from observables')}
                   style={{ marginTop: 20 }}
                 />
               )}
@@ -1309,9 +1573,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             );
           })()}
         </div>
-      )}
+        )}
 
-      {currentTab === 1 && (
+        {currentTab === 1 && (
         <div className={classes.tabPanel}>
           {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
           <Button
@@ -1323,9 +1587,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Add additional entity')}
           </Button>
         </div>
-      )}
+        )}
 
-      {currentTab === 2 && hasAdditionalEntities && (
+        {currentTab === 2 && hasAdditionalEntities && (
         <div className={classes.tabPanel}>
           <Typography variant="h6" gutterBottom>
             {t_i18n('Relationships')}
@@ -1340,8 +1604,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Add relationship')}
           </Button>
         </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 
