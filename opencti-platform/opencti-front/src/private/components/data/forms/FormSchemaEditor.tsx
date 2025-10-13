@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Add, DeleteOutlined, AddCircleOutlined } from '@mui/icons-material';
-import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel } from '@mui/material';
+import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import {
@@ -102,6 +102,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   const { t_i18n } = useFormatter();
   const { schema } = useAuth();
   const [currentTab, setCurrentTab] = useState(0);
+  const [addFieldDialog, setAddFieldDialog] = useState<{ open: boolean; entityId: string; entityType: string } | null>(null);
+  const [selectedAttribute, setSelectedAttribute] = useState<string>('');
 
   const entityTypes = useMemo(() => {
     if (!schema || !entitySettings) {
@@ -242,27 +244,66 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   };
 
   const handleAddField = (entityId: string, entityType: string) => {
+    // Open dialog for better UX
+    setAddFieldDialog({ open: true, entityId, entityType });
+    setSelectedAttribute('');
+  };
+
+  const handleAddFieldConfirm = () => {
+    if (!addFieldDialog || !selectedAttribute) return;
+
+    const entity = entityTypes.find((e) => e.value === addFieldDialog.entityType);
+    const attribute = entity?.attributes?.find((attr) => attr.name === selectedAttribute);
+    
+    if (!attribute) return;
+
     const fieldId = generateFieldId();
+    
+    // Determine field type based on attribute
+    let fieldType = 'text';
+    if (attribute.type === 'numeric-numeric' || attribute.type === 'numeric') {
+      fieldType = 'number';
+    } else if (attribute.type === 'date-date' || attribute.type === 'date') {
+      fieldType = 'datetime';
+    } else if (attribute.type === 'boolean-boolean' || attribute.type === 'boolean') {
+      fieldType = 'toggle';
+    } else if (attribute.defaultValues && attribute.defaultValues.length > 0) {
+      // If attribute has vocabulary, use select/multiselect
+      fieldType = attribute.multiple ? 'multiselect' : 'select';
+    } else if (attribute.type === 'string-string' || attribute.type === 'string') {
+      fieldType = 'text';
+    } else if (attribute.name === 'createdBy' || attribute.type === 'ref') {
+      fieldType = 'createdBy';
+    } else if (attribute.name === 'objectMarking' || attribute.type === 'refs') {
+      fieldType = 'objectMarking';
+    } else if (attribute.name === 'objectLabel') {
+      fieldType = 'objectLabel';
+    }
+
     const newField: FormFieldAttribute = {
       id: fieldId,
-      name: `field_${fieldId}`, // Auto-generated name
-      label: '',
-      type: 'text',
+      name: attribute.name, // Use attribute name
+      label: attribute.label || t_i18n(attribute.name), // Use attribute label
+      type: fieldType,
       required: false,
-      defaultValue: null, // Initialize default value
+      defaultValue: null,
       attributeMapping: {
-        entity: entityId,
-        attributeName: '',
-        mappingType: entityId === 'main_entity' ? 'direct' : 'nested',
+        entity: addFieldDialog.entityId,
+        attributeName: attribute.name,
+        mappingType: addFieldDialog.entityId === 'main_entity' ? 'direct' : 'nested',
       },
-      entityType,
+      entityType: addFieldDialog.entityType,
       isMandatory: false,
     };
-
+    
     updateFormData((prev) => ({
       ...prev,
       fields: [...prev.fields, newField],
     }));
+    
+    // Close dialog
+    setAddFieldDialog(null);
+    setSelectedAttribute('');
   };
 
   const handleAddAdditionalEntity = () => {
@@ -530,7 +571,21 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
           <Select
             value={field.attributeMapping.attributeName}
-            onChange={(e) => handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, e.target.value)}
+            onChange={(e) => {
+              const attributeName = e.target.value;
+              handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, attributeName);
+              
+              // Check if this attribute has vocabulary (defaultValues) and auto-set field type
+              const entity = entityTypes.find((ent) => ent.value === entityType);
+              const attribute = entity?.attributes?.find((attr) => attr.name === attributeName);
+              if (attribute?.defaultValues && attribute.defaultValues.length > 0) {
+                // If attribute has vocabulary, suggest select/multiselect based on multiplicity
+                const suggestedType = attribute.multiple ? 'multiselect' : 'select';
+                if (field.type !== suggestedType) {
+                  handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
+                }
+              }
+            }}
             label={t_i18n('Map to attribute')}
           >
             {availableAttributes.map((attr) => (
@@ -541,58 +596,87 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Select>
         </FormControl>
 
-        {(field.type === 'select' || field.type === 'multiselect') && (
-          <div style={{ marginTop: 20 }}>
-            <Typography variant="caption">{t_i18n('Options')}</Typography>
-            {field.options?.map((option, optIndex) => (
-              <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
-                <TextField
-                  variant="standard"
-                  label={t_i18n('Label')}
-                  value={option.label}
-                  onChange={(e) => {
-                    const newOptions = [...(field.options || [])];
-                    newOptions[optIndex] = { ...option, label: e.target.value };
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                  style={{ flex: 1, marginRight: 10 }}
-                />
-                <TextField
-                  variant="standard"
-                  label={t_i18n('Value')}
-                  value={option.value}
-                  onChange={(e) => {
-                    const newOptions = [...(field.options || [])];
-                    newOptions[optIndex] = { ...option, value: e.target.value };
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                  style={{ flex: 1, marginRight: 10 }}
-                />
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                >
-                  <DeleteOutlined fontSize="small" color="primary" />
-                </IconButton>
-              </Box>
-            ))}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Add />}
-              onClick={() => {
-                const newOptions = [...(field.options || []), { label: '', value: '' }];
-                handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-              }}
-              style={{ marginTop: 10 }}
-            >
-              {t_i18n('Add option')}
-            </Button>
-          </div>
-        )}
+        {(field.type === 'select' || field.type === 'multiselect') && (() => {
+          // Check if the mapped attribute has vocabulary (defaultValues)
+          const entity = entityTypes.find((e) => e.value === entityType);
+          const attribute = entity?.attributes?.find((attr) => attr.name === field.attributeMapping.attributeName);
+          const hasVocabulary = attribute?.defaultValues && attribute.defaultValues.length > 0;
+          
+          if (hasVocabulary) {
+            // Use vocabulary from the attribute
+            return (
+              <div style={{ marginTop: 20 }}>
+                <Typography variant="caption">
+                  {t_i18n('Options (from vocabulary)')}
+                </Typography>
+                <Typography variant="body2" color="textSecondary" style={{ marginTop: 5 }}>
+                  {t_i18n('This field uses predefined vocabulary values.')}
+                </Typography>
+                <Box style={{ marginTop: 10, paddingLeft: 10 }}>
+                  {attribute.defaultValues.map((value: { id: string; name: string }) => (
+                    <Typography key={value.id} variant="body2" style={{ marginTop: 5 }}>
+                      • {value.name}
+                    </Typography>
+                  ))}
+                </Box>
+              </div>
+            );
+          }
+          
+          // Custom options for fields without vocabulary
+          return (
+            <div style={{ marginTop: 20 }}>
+              <Typography variant="caption">{t_i18n('Options')}</Typography>
+              {field.options?.map((option, optIndex) => (
+                <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
+                  <TextField
+                    variant="standard"
+                    label={t_i18n('Label')}
+                    value={option.label}
+                    onChange={(e) => {
+                      const newOptions = [...(field.options || [])];
+                      newOptions[optIndex] = { ...option, label: e.target.value };
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <TextField
+                    variant="standard"
+                    label={t_i18n('Value')}
+                    value={option.value}
+                    onChange={(e) => {
+                      const newOptions = [...(field.options || [])];
+                      newOptions[optIndex] = { ...option, value: e.target.value };
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                  >
+                    <DeleteOutlined fontSize="small" color="primary" />
+                  </IconButton>
+                </Box>
+              ))}
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<Add />}
+                onClick={() => {
+                  const newOptions = [...(field.options || []), { label: '', value: '' }];
+                  handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                }}
+                style={{ marginTop: 10 }}
+              >
+                {t_i18n('Add option')}
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Default value field for text, number, textarea, select, and date fields */}
         {(field.type === 'text' || field.type === 'textarea' || field.type === 'number' || field.type === 'date' || field.type === 'datetime' || field.type === 'select') && (
@@ -1112,7 +1196,85 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   };
 
   return (
-    <div className={classes.container}>
+    <>
+      {/* Add Field Dialog */}
+      <Dialog
+        open={addFieldDialog?.open || false}
+        onClose={() => {
+          setAddFieldDialog(null);
+          setSelectedAttribute('');
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t_i18n('Add Field')}</DialogTitle>
+        <DialogContent>
+          <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+            <InputLabel>{t_i18n('Select Attribute')}</InputLabel>
+            <Select
+              value={selectedAttribute}
+              onChange={(e) => setSelectedAttribute(e.target.value)}
+              label={t_i18n('Select Attribute')}
+            >
+              {addFieldDialog && (() => {
+                const entity = entityTypes.find((e) => e.value === addFieldDialog.entityType);
+                const existingFields = formData.fields
+                  .filter((f) => f.attributeMapping.entity === addFieldDialog.entityId)
+                  .map((f) => f.attributeMapping.attributeName);
+                
+                return entity?.attributes
+                  ?.filter((attr) => !existingFields.includes(attr.name))
+                  ?.filter((attr) => {
+                    // Filter out complex types that don't make sense in forms
+                    const attrType = attr.type || 'string';
+                    return attrType !== 'object' && attrType !== 'nested';
+                  })
+                  ?.map((attr) => (
+                    <MenuItem key={attr.name} value={attr.name}>
+                      {attr.label || t_i18n(attr.name)}
+                      {attr.defaultValues && attr.defaultValues.length > 0 && (
+                        <Typography variant="caption" color="textSecondary" style={{ marginLeft: 10 }}>
+                          ({t_i18n('Vocabulary')})
+                        </Typography>
+                      )}
+                    </MenuItem>
+                  )) || [];
+              })()}
+            </Select>
+          </FormControl>
+          {selectedAttribute && (() => {
+            const entity = entityTypes.find((e) => e.value === addFieldDialog?.entityType);
+            const attribute = entity?.attributes?.find((attr) => attr.name === selectedAttribute);
+            if (attribute) {
+              return (
+                <Alert severity="info" style={{ marginTop: 20 }}>
+                  {attribute.defaultValues && attribute.defaultValues.length > 0
+                    ? t_i18n('This attribute will use predefined vocabulary values.')
+                    : t_i18n('A field will be created with appropriate type based on the attribute.')}
+                </Alert>
+              );
+            }
+            return null;
+          })()}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => {
+            setAddFieldDialog(null);
+            setSelectedAttribute('');
+          }}>
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            onClick={handleAddFieldConfirm}
+            color="primary"
+            disabled={!selectedAttribute}
+          >
+            {t_i18n('Add')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <div className={classes.container}>
       <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
         <Tab label={t_i18n('Main Entity')} />
         <Tab label={t_i18n('Additional Entities')} />
@@ -1383,7 +1545,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           </Button>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -51,6 +51,22 @@ export const addForm = async (
     throw FunctionalError(`Invalid form schema: ${JSON.stringify(validateSchema.errors)}`);
   }
 
+  // Check for duplicate form names with the same main entity type
+  const existingForms = await fullEntitiesList(context, user, ['Form'], {
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: ['name'], values: [input.name] },
+        { key: ['main_entity_type'], values: [parsedSchema.mainEntityType] },
+      ],
+      filterGroups: [],
+    },
+  });
+
+  if (existingForms.length > 0) {
+    throw FunctionalError(`A form with the name "${input.name}" already exists for entity type "${parsedSchema.mainEntityType}"`);
+  }
+
   const formToCreate: Partial<BasicStoreEntityForm> = {
     name: input.name,
     description: input.description,

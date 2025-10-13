@@ -80,7 +80,43 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const [formBuilderData, setFormBuilderData] = useState<FormBuilderData | null>(null);
+
+  // Parse initial form data if duplicating
+  const initialFormBuilderData: FormBuilderData | undefined = useMemo(() => {
+    if (formData?.form_schema) {
+      try {
+        const schema = JSON.parse(formData.form_schema);
+        return {
+          name: formData.name,
+          description: formData.description || '',
+          mainEntityType: schema.mainEntityType,
+          includeInContainer: schema.includeInContainer || false,
+          isDraftByDefault: schema.isDraftByDefault || false,
+          allowDraftOverride: schema.allowDraftOverride || false,
+          mainEntityMultiple: schema.mainEntityMultiple || false,
+          mainEntityLookup: schema.mainEntityLookup || false,
+          mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',
+          mainEntityParseField: schema.mainEntityParseField || 'text',
+          mainEntityParseMode: schema.mainEntityParseMode || 'comma',
+          mainEntityParseFieldMapping: schema.mainEntityParseFieldMapping,
+          mainEntityAutoConvertToStixPattern: schema.mainEntityAutoConvertToStixPattern || false,
+          additionalEntities: schema.additionalEntities || [],
+          fields: (schema.fields || []).map((field: any) => ({
+            ...field,
+            width: field.width || 'full', // Ensure width is preserved
+          })),
+          relationships: schema.relationships || [],
+          active: formData.active ?? true,
+        };
+      } catch {
+        // Fall through to undefined
+      }
+    }
+    return undefined;
+  }, [formData]);
+
+  // Initialize formBuilderData with the parsed schema if duplicating
+  const [formBuilderData, setFormBuilderData] = useState<FormBuilderData | null>(initialFormBuilderData || null);
 
   const data = usePreloadedQuery(formCreationQuery, queryRef);
   const { schemaAttributes } = data;
@@ -183,35 +219,6 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
     });
   };
 
-  // Parse initial form data if duplicating
-  const initialFormBuilderData: FormBuilderData | undefined = useMemo(() => {
-    if (formData?.form_schema) {
-      try {
-        const schema = JSON.parse(formData.form_schema);
-        return {
-          name: formData.name,
-          description: formData.description || '',
-          mainEntityType: schema.mainEntityType,
-          includeInContainer: schema.includeInContainer || false,
-          isDraftByDefault: schema.isDraftByDefault || false,
-          allowDraftOverride: schema.allowDraftOverride || false,
-          mainEntityMultiple: schema.mainEntityMultiple || false,
-          mainEntityLookup: schema.mainEntityLookup || false,
-          mainEntityFieldMode: schema.mainEntityFieldMode || 'multiple',
-          mainEntityParseField: schema.mainEntityParseField || 'text',
-          mainEntityParseMode: schema.mainEntityParseMode || 'comma',
-          additionalEntities: schema.additionalEntities || [],
-          fields: schema.fields || [],
-          relationships: schema.relationships || [],
-          active: formData.active ?? true,
-        };
-      } catch {
-        // Fall through to undefined
-      }
-    }
-    return undefined;
-  }, [formData]);
-
   return (
     <div>
       <Formik
@@ -220,7 +227,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
         validationSchema={formValidation}
         onSubmit={onSubmit}
       >
-        {({ submitForm, handleReset, isSubmitting }) => (
+        {({ submitForm, isSubmitting }) => (
           <Form>
             <Field
               component={TextField}
@@ -256,7 +263,7 @@ const FormCreation: FunctionComponent<FormCreationProps> = ({
             <div className={classes.buttons}>
               <Button
                 variant="contained"
-                onClick={handleReset}
+                onClick={handleClose}
                 disabled={isSubmitting}
                 classes={{ root: classes.button }}
               >
