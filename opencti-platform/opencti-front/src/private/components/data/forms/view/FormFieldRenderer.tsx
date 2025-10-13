@@ -20,10 +20,12 @@ import MarkdownField from '../../../../../components/fields/MarkdownField';
 import CreatedByField from '../../../common/form/CreatedByField';
 import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../../common/form/ObjectLabelField';
+import OpenVocabField from '../../../common/form/OpenVocabField';
 import { FormFieldDefinition } from '../Form.d';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../../utils/field';
+import { getVocabularyMappingByAttribute } from '../../../../../utils/vocabularyMapping';
 
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
@@ -136,211 +138,228 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   const renderFieldContent = () => {
     // Render based on field type
     switch (field.type) {
-    case 'text':
-      return (
-        <Field
-          component={TextField}
-          name={fieldName}
-          label={displayLabel}
-          fullWidth={true}
-          required={field.isMandatory}
-          helperText={field.description}
-          style={fieldSpacingContainerStyle}
-        />
-      );
+      case 'text':
+        return (
+          <Field
+            component={TextField}
+            name={fieldName}
+            label={displayLabel}
+            fullWidth={true}
+            required={field.isMandatory}
+            helperText={field.description}
+            style={fieldSpacingContainerStyle}
+          />
+        );
 
-    case 'textarea':
-      return (
-        <Field
-          component={MarkdownField}
-          name={fieldName}
-          label={displayLabel}
-          fullWidth={true}
-          required={field.isMandatory}
-          style={fieldSpacingContainerStyle}
-        />
-      );
+      case 'textarea':
+        return (
+          <Field
+            component={MarkdownField}
+            name={fieldName}
+            label={displayLabel}
+            fullWidth={true}
+            required={field.isMandatory}
+            style={fieldSpacingContainerStyle}
+          />
+        );
 
-    case 'number':
-      return (
-        <Field
-          component={TextField}
-          name={fieldName}
-          label={displayLabel}
-          type="number"
-          fullWidth={true}
-          required={field.isMandatory}
-          helperText={field.description}
-          style={fieldSpacingContainerStyle}
-        />
-      );
+      case 'number':
+        return (
+          <Field
+            component={TextField}
+            name={fieldName}
+            label={displayLabel}
+            type="number"
+            fullWidth={true}
+            required={field.isMandatory}
+            helperText={field.description}
+            style={fieldSpacingContainerStyle}
+          />
+        );
 
-    case 'checkbox':
-      return (
-        <FormControlLabel
-          control={
-            <Field
-              component={Checkbox}
-              type="checkbox"
-              name={fieldName}
-            />
+      case 'checkbox':
+        return (
+          <FormControlLabel
+            control={
+              <Field
+                component={Checkbox}
+                type="checkbox"
+                name={fieldName}
+              />
           }
-          label={displayLabel}
-          style={fieldSpacingContainerStyle}
-        />
-      );
+            label={displayLabel}
+            style={fieldSpacingContainerStyle}
+          />
+        );
 
-    case 'toggle':
-      return (
-        <Field
-          component={SwitchField}
-          name={fieldName}
-          label={displayLabel}
-          containerstyle={fieldSpacingContainerStyle}
-          helpertext={field.description}
-        />
-      );
+      case 'toggle':
+        return (
+          <Field
+            component={SwitchField}
+            name={fieldName}
+            label={displayLabel}
+            containerstyle={fieldSpacingContainerStyle}
+            helpertext={field.description}
+          />
+        );
 
-    case 'select':
-      return (
-        <Field
-          component={SelectField}
-          name={fieldName}
-          label={displayLabel}
-          fullWidth={true}
-          required={field.isMandatory}
-          containerstyle={fieldSpacingContainerStyle}
-          variant="standard"
-          helpertext={field.description}
-        >
-          <MenuItem value="">
-            <em>{t_i18n('None')}</em>
-          </MenuItem>
-          {field.options?.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
+      case 'select':
+        return (
+          <Field
+            component={SelectField}
+            name={fieldName}
+            label={displayLabel}
+            fullWidth={true}
+            required={field.isMandatory}
+            containerstyle={fieldSpacingContainerStyle}
+            variant="standard"
+            helpertext={field.description}
+          >
+            <MenuItem value="">
+              <em>{t_i18n('None')}</em>
             </MenuItem>
-          ))}
-        </Field>
-      );
+            {field.options?.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Field>
+        );
 
-    case 'multiselect':
-      return (
-        <Field
-          component={SelectField}
-          name={fieldName}
-          label={displayLabel}
-          fullWidth={true}
-          multiple={true}
-          required={field.isMandatory}
-          containerstyle={fieldSpacingContainerStyle}
-          variant="standard"
-          helpertext={field.description}
-          renderValue={(selected: string[]) => (
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-              {selected.map((value) => {
-                const option = field.options?.find((o) => o.value === value);
-                return <Chip key={value} label={option?.label || value} />;
-              })}
-            </Box>
-          )}
-        >
-          {field.options?.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </Field>
-      );
+      case 'multiselect':
+        return (
+          <Field
+            component={SelectField}
+            name={fieldName}
+            label={displayLabel}
+            fullWidth={true}
+            multiple={true}
+            required={field.isMandatory}
+            containerstyle={fieldSpacingContainerStyle}
+            variant="standard"
+            helpertext={field.description}
+            renderValue={(selected: string[]) => (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                {selected.map((value) => {
+                  const option = field.options?.find((o) => o.value === value);
+                  return <Chip key={value} label={option?.label || value} />;
+                })}
+              </Box>
+            )}
+          >
+            {field.options?.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </Field>
+        );
 
-    case 'date':
-      return (
-        <Field
-          component={DateTimePickerField}
-          name={fieldName}
-          withSeconds={false}
-          textFieldProps={{
-            label: displayLabel,
-            required: field.isMandatory,
-            variant: 'standard',
-            fullWidth: true,
-            style: fieldSpacingContainerStyle,
-            helperText: field.description,
-          }}
-        />
-      );
+      case 'date':
+        return (
+          <Field
+            component={DateTimePickerField}
+            name={fieldName}
+            withSeconds={false}
+            textFieldProps={{
+              label: displayLabel,
+              required: field.isMandatory,
+              variant: 'standard',
+              fullWidth: true,
+              style: fieldSpacingContainerStyle,
+              helperText: field.description,
+            }}
+          />
+        );
 
-    case 'datetime':
-      return (
-        <Field
-          component={DateTimePickerField}
-          name={fieldName}
-          withSeconds={true}
-          textFieldProps={{
-            label: displayLabel,
-            required: field.isMandatory,
-            variant: 'standard',
-            fullWidth: true,
-            style: fieldSpacingContainerStyle,
-            helperText: field.description,
-          }}
-        />
-      );
+      case 'datetime':
+        return (
+          <Field
+            component={DateTimePickerField}
+            name={fieldName}
+            withSeconds={true}
+            textFieldProps={{
+              label: displayLabel,
+              required: field.isMandatory,
+              variant: 'standard',
+              fullWidth: true,
+              style: fieldSpacingContainerStyle,
+              helperText: field.description,
+            }}
+          />
+        );
 
-    case 'createdBy':
-      return (
-        <CreatedByField
-          name={fieldName}
-          label={displayLabel}
-          style={fieldSpacingContainerStyle}
-          required={field.isMandatory}
-          setFieldValue={setFieldValue}
-        />
-      );
+      case 'createdBy':
+        return (
+          <CreatedByField
+            name={fieldName}
+            label={displayLabel}
+            style={fieldSpacingContainerStyle}
+            required={field.isMandatory}
+            setFieldValue={setFieldValue}
+          />
+        );
 
-    case 'objectMarking':
-      return (
-        <ObjectMarkingField
-          name={fieldName}
-          label={displayLabel}
-          style={fieldSpacingContainerStyle}
-          required={field.isMandatory}
-          setFieldValue={setFieldValue}
-        />
-      );
+      case 'objectMarking':
+        return (
+          <ObjectMarkingField
+            name={fieldName}
+            label={displayLabel}
+            style={fieldSpacingContainerStyle}
+            required={field.isMandatory}
+            setFieldValue={setFieldValue}
+          />
+        );
 
-    case 'objectLabel':
-      return (
-        <ObjectLabelField
-          name={fieldName}
-          style={fieldSpacingContainerStyle}
-          required={field.isMandatory}
-          setFieldValue={setFieldValue}
-          values={fieldValue as FieldOption[]}
-        />
-      );
+      case 'objectLabel':
+        return (
+          <ObjectLabelField
+            name={fieldName}
+            style={fieldSpacingContainerStyle}
+            required={field.isMandatory}
+            setFieldValue={setFieldValue}
+            values={fieldValue as FieldOption[]}
+          />
+        );
 
-    case 'files':
-      return (
-        <div className={classes.field}>
-          <InputLabel>{displayLabel}</InputLabel>
-          <div className={classes.fileUpload}>
-            <input
-              accept="*/*"
-              style={{ display: 'none' }}
-              id={`file-upload-${fieldName}`}
-              multiple
-              type="file"
-              onChange={handleFileUpload}
-            />
-            <label htmlFor={`file-upload-${fieldName}`}>
-              <IconButton color="primary" component="span">
-                <CloudUpload />
-              </IconButton>
-            </label>
-            <span>{t_i18n('Upload files')}</span>
-          </div>
-          {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 && (
+      case 'openvocab': {
+      // Infer vocabulary type from the attribute mapping
+        const vocabMapping = getVocabularyMappingByAttribute(field.attributeMapping.attributeName);
+        const vocabularyType = vocabMapping?.vocabularyType || '';
+        return (
+          <OpenVocabField
+            type={vocabularyType}
+            name={fieldName}
+            label={displayLabel}
+            required={field.isMandatory}
+            onChange={setFieldValue}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={field.multiple || false}
+          />
+        );
+      }
+
+      case 'files':
+        return (
+          <div className={classes.field}>
+            <InputLabel>{displayLabel}</InputLabel>
+            <div className={classes.fileUpload}>
+              <input
+                accept="*/*"
+                style={{ display: 'none' }}
+                id={`file-upload-${fieldName}`}
+                multiple
+                type="file"
+                onChange={handleFileUpload}
+              />
+              <label htmlFor={`file-upload-${fieldName}`}>
+                <IconButton color="primary" component="span">
+                  <CloudUpload />
+                </IconButton>
+              </label>
+              <span>{t_i18n('Upload files')}</span>
+            </div>
+            {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 && (
             <div className={classes.fileList}>
               {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
                 <Chip
@@ -351,25 +370,25 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
                 />
               ))}
             </div>
-          )}
-          {field.description && (
+            )}
+            {field.description && (
             <FormHelperText>{field.description}</FormHelperText>
-          )}
-        </div>
-      );
+            )}
+          </div>
+        );
 
-    default:
-      return (
-        <Field
-          component={TextField}
-          name={fieldName}
-          label={displayLabel}
-          fullWidth={true}
-          required={field.isMandatory}
-          helperText={field.description}
-          style={fieldSpacingContainerStyle}
-        />
-      );
+      default:
+        return (
+          <Field
+            component={TextField}
+            name={fieldName}
+            label={displayLabel}
+            fullWidth={true}
+            required={field.isMandatory}
+            helperText={field.description}
+            style={fieldSpacingContainerStyle}
+          />
+        );
     }
   };
 

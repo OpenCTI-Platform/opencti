@@ -2,6 +2,7 @@
  * Utility functions and constants for Form components
  */
 import type { FormFieldAttribute, EntityTypeOption, AttributeOption, RelationshipTypeOption, FormBuilderData, FormSchemaDefinition } from './Form.d';
+import { getOpenVocabAttributes } from '../../../../utils/vocabularyMapping';
 
 // Field type options for the UI
 export const FIELD_TYPES = [
@@ -17,6 +18,7 @@ export const FIELD_TYPES = [
   { value: 'objectMarking', label: 'Object Marking' },
   { value: 'objectLabel', label: 'Object Label' },
   { value: 'files', label: 'Files' },
+  { value: 'openvocab', label: 'Open Vocabulary' },
 ];
 
 // Field type to attribute type mapping
@@ -33,6 +35,7 @@ export const FIELD_TYPE_TO_ATTRIBUTE_TYPE: Record<string, string[]> = {
   objectMarking: ['refs'], // Multiple references
   objectLabel: ['refs'], // Multiple references
   files: ['files'], // File uploads
+  openvocab: ['vocabulary'], // Special type for open vocabulary fields - matched by attribute name
 };
 
 // Container types (backend constants)
@@ -82,11 +85,19 @@ export const getAvailableFieldTypes = (
   // Special field types that are always available
   const specialFieldTypes = ['createdBy', 'objectMarking', 'objectLabel', 'files'];
 
+  // Get list of attributes that support OpenVocab
+  const openVocabAttributeNames = getOpenVocabAttributes();
+
   // Check which field types have matching attributes
   return FIELD_TYPES.filter((fieldType) => {
     // Special field types are always available
     if (specialFieldTypes.includes(fieldType.value)) {
       return true;
+    }
+
+    // For OpenVocab field type, check if any attributes match our vocabulary mapping
+    if (fieldType.value === 'openvocab') {
+      return attributes.some((attr: AttributeOption) => openVocabAttributeNames.includes(attr.name));
     }
 
     const allowedAttributeTypes = FIELD_TYPE_TO_ATTRIBUTE_TYPE[fieldType.value] || [];
@@ -95,6 +106,11 @@ export const getAvailableFieldTypes = (
       // Skip 'ref', 'refs', and 'object' type attributes
       const attrType = attr.type || 'string';
       if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
+        return false;
+      }
+
+      // Skip attributes that are meant for OpenVocab (only when not checking for openvocab type)
+      if (openVocabAttributeNames.includes(attr.name)) {
         return false;
       }
 
@@ -169,6 +185,22 @@ export const getAttributesForEntityType = (
   const entity = entityTypes.find((e) => e.value === entityType);
   if (!entity || !entity.attributes) return [];
 
+  // Get list of attributes that support OpenVocab
+  const openVocabAttributeNames = getOpenVocabAttributes();
+
+  // For OpenVocab field type, filter to only vocabulary-supported attributes
+  if (fieldType === 'openvocab') {
+    return (entity.attributes || [])
+      .filter((attr: { name: string }) => openVocabAttributeNames.includes(attr.name))
+      .map((attr: { type?: string; name: string; label?: string; mandatory?: boolean }) => ({
+        value: attr.name,
+        name: attr.name,
+        label: attr.label || attr.name,
+        mandatory: attr.mandatory || false,
+        type: attr.type || 'string',
+      }));
+  }
+
   const allowedAttributeTypes = FIELD_TYPE_TO_ATTRIBUTE_TYPE[fieldType] || [];
 
   // Filter attributes based on their type
@@ -177,6 +209,11 @@ export const getAttributesForEntityType = (
       // Skip 'ref' and 'object' type attributes as they need special handling
       const attrType = attr.type || 'string';
       if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
+        return false;
+      }
+
+      // Skip attributes that are meant for OpenVocab
+      if (openVocabAttributeNames.includes(attr.name)) {
         return false;
       }
 

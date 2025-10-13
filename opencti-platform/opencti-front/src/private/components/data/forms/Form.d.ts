@@ -8,7 +8,7 @@ export interface FormFieldAttribute {
   name: string;
   label: string; // Display label for the field
   description?: string;
-  type: string; // Field type: text, select, etc.
+  type: string; // Field type: text, select, openvocab, etc.
   required: boolean;
   isMandatory?: boolean; // Whether this field is for a mandatory attribute
   width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
@@ -113,6 +113,7 @@ export interface FormFieldDefinition {
   required: boolean;
   isMandatory?: boolean;
   width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
+  multiple?: boolean; // For openvocab and select/multiselect fields
   relationship?: {
     type: string;
     target: string;
@@ -122,6 +123,7 @@ export interface FormFieldDefinition {
   attributeMapping: {
     entity: string;
     attributeName: string;
+    mappingType?: 'direct' | 'nested'; // How the field maps to the entity
   };
   options?: Array<{ label: string; value: string }>; // For select/multiselect fields
   defaultValue?: string | number | boolean | string[] | Date | null;

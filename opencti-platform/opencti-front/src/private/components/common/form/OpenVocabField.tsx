@@ -163,6 +163,7 @@ const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
 ) => {
   const { name, label, multiple, containerStyle, required } = props;
   const { typeToCategory } = useVocabularyCategory();
+  console.log(props);
   const queryRef = useQueryLoading<OpenVocabFieldQuery>(vocabularyQuery, {
     category: typeToCategory(props.type),
   });

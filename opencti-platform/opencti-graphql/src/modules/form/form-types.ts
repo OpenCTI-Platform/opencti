@@ -18,6 +18,7 @@ export enum FormFieldType {
   ObjectMarking = 'objectMarking',
   ObjectLabel = 'objectLabel',
   Files = 'files',
+  OpenVocab = 'openvocab',
 }
 
 // Additional entity configuration
@@ -54,6 +55,7 @@ export interface FormFieldDefinition {
   required: boolean;
   isMandatory?: boolean; // Whether this field is for a mandatory attribute
   width?: 'full' | 'half' | 'third'; // Field width in grid: full (12), half (6), third (4)
+  multiple?: boolean; // For openvocab and select/multiselect fields
   attributeMapping: {
     entity: string; // Entity ID this field maps to (main_entity or additional entity ID)
     attributeName: string; // The attribute name on that entity
@@ -210,40 +212,43 @@ export const FormSchemaDefinitionSchema: Record<string, any> = {
       type: 'array',
       items: {
         type: 'object',
-          properties: {
-            id: { type: 'string' },
-            name: { type: 'string' },
-            description: { type: 'string' },
-            type: {
-              type: 'string',
-              enum: Object.values(FormFieldType),
-            },
-            required: { type: 'boolean' },
-            width: {
-              type: 'string',
-              enum: ['full', 'half', 'third'],
-            },
-            defaultValue: {
-              oneOf: [
-                { type: 'string' },
-                { type: 'number' },
-                { type: 'boolean' },
-                { type: 'object' },
-                { type: 'array' },
-                { type: 'null' }
-              ]
-            },
-            options: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  label: { type: 'string' },
-                  value: { type: 'string' },
-                },
-                required: ['label', 'value'],
+        properties: {
+          id: { type: 'string' },
+          name: { type: 'string' },
+          description: { type: 'string' },
+          type: {
+            type: 'string',
+            enum: Object.values(FormFieldType),
+          },
+          required: { type: 'boolean' },
+          width: {
+            type: 'string',
+            enum: ['full', 'half', 'third'],
+          },
+          multiple: {
+            type: 'boolean',
+          },
+          defaultValue: {
+            oneOf: [
+              { type: 'string' },
+              { type: 'number' },
+              { type: 'boolean' },
+              { type: 'object' },
+              { type: 'array' },
+              { type: 'null' }
+            ]
+          },
+          options: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                label: { type: 'string' },
+                value: { type: 'string' },
               },
+              required: ['label', 'value'],
             },
+          },
           relationship: {
             type: 'object',
             properties: {

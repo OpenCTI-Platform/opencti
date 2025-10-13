@@ -835,10 +835,10 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                 {(() => {
                   // Filter to only relationships that have fields
                   const relationshipsWithFields = (schema.relationships || []).filter(
-                    (rel) => rel.fields && rel.fields.length > 0
+                    (rel) => rel.fields && rel.fields.length > 0,
                   );
                   if (relationshipsWithFields.length === 0) return null;
-                  
+
                   return (
                     <>
                       <Typography variant="h6" className={classes.sectionTitle} style={{ marginTop: 30 }}>
@@ -855,7 +855,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                         return (
                           <div key={relationship.id} className={classes.section}>
                             <Typography variant="subtitle1" style={{ marginBottom: 10 }}>
-                              {`${fromEntityLabel} → ${t_i18n('relationship_' + relationship.relationshipType)} → ${toEntityLabel}`}
+                              {`${fromEntityLabel} → ${t_i18n(`relationship_${relationship.relationshipType}`)} → ${toEntityLabel}`}
                             </Typography>
                             {relationship.fields && relationship.fields.map((field) => (
                               <FormFieldRenderer

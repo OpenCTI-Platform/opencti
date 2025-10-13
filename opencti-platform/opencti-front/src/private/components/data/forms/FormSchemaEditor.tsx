@@ -1,7 +1,26 @@
 import React, { FunctionComponent, useState, useMemo, useCallback, useEffect } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { Add, DeleteOutlined, AddCircleOutlined } from '@mui/icons-material';
-import { Box, IconButton, MenuItem, Tab, Tabs, Typography, TextField, Alert, Button, Select, FormControl, InputLabel, Switch, FormControlLabel, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  MenuItem,
+  Tab,
+  Tabs,
+  Typography,
+  TextField,
+  Alert,
+  Button,
+  Select,
+  FormControl,
+  InputLabel,
+  Switch,
+  FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import {
@@ -15,6 +34,7 @@ import {
   getInitialMandatoryFields,
   CONTAINER_TYPES,
 } from './FormUtils';
+import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
@@ -256,30 +276,34 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
     const entity = entityTypes.find((e) => e.value === addFieldDialog.entityType);
     const attribute = entity?.attributes?.find((attr) => attr.name === selectedAttribute);
-    
+
     if (!attribute) return;
 
     const fieldId = generateFieldId();
-    
+
+    // Check if this is an OpenVocab field
+    const vocabMapping = getVocabularyMappingByAttribute(attribute.name);
+
     // Determine field type based on attribute
     let fieldType = 'text';
-    if (attribute.type === 'numeric-numeric' || attribute.type === 'numeric') {
+
+    if (vocabMapping) {
+      // This is an OpenVocab field
+      fieldType = 'openvocab';
+    } else if (attribute.type === 'numeric' || attribute.type === 'integer' || attribute.type === 'float') {
       fieldType = 'number';
-    } else if (attribute.type === 'date-date' || attribute.type === 'date') {
+    } else if (attribute.type === 'date') {
       fieldType = 'datetime';
-    } else if (attribute.type === 'boolean-boolean' || attribute.type === 'boolean') {
+    } else if (attribute.type === 'boolean') {
       fieldType = 'toggle';
     } else if (attribute.defaultValues && attribute.defaultValues.length > 0) {
       // If attribute has vocabulary, use select/multiselect
       fieldType = attribute.multiple ? 'multiselect' : 'select';
-    } else if (attribute.type === 'string-string' || attribute.type === 'string') {
+    } else if (attribute.type === 'string' || attribute.type === 'text' || attribute.type === 'markdown') {
+      fieldType = attribute.type === 'markdown' || attribute.type === 'text' ? 'textarea' : 'text';
+    } else {
+      // Default to text field for any unrecognized types
       fieldType = 'text';
-    } else if (attribute.name === 'createdBy' || attribute.type === 'ref') {
-      fieldType = 'createdBy';
-    } else if (attribute.name === 'objectMarking' || attribute.type === 'refs') {
-      fieldType = 'objectMarking';
-    } else if (attribute.name === 'objectLabel') {
-      fieldType = 'objectLabel';
     }
 
     const newField: FormFieldAttribute = {
@@ -296,13 +320,15 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       },
       entityType: addFieldDialog.entityType,
       isMandatory: false,
+      ...(vocabMapping ? { multiple: vocabMapping.multiple } : {}), // Add multiple if it's an OpenVocab field
+      ...(fieldType === 'multiselect' ? { multiple: true } : {}), // Add multiple for multiselect
     };
-    
+
     updateFormData((prev) => ({
       ...prev,
       fields: [...prev.fields, newField],
     }));
-    
+
     // Close dialog
     setAddFieldDialog(null);
     setSelectedAttribute('');
@@ -576,7 +602,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             onChange={(e) => {
               const attributeName = e.target.value;
               handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, attributeName);
-              
+
               // Check if this attribute has vocabulary (defaultValues) and auto-set field type
               const entity = entityTypes.find((ent) => ent.value === entityType);
               const attribute = entity?.attributes?.find((attr) => attr.name === attributeName);
@@ -603,7 +629,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           const entity = entityTypes.find((e) => e.value === entityType);
           const attribute = entity?.attributes?.find((attr) => attr.name === field.attributeMapping.attributeName);
           const hasVocabulary = attribute?.defaultValues && attribute.defaultValues.length > 0;
-          
+
           if (hasVocabulary) {
             // Use vocabulary from the attribute
             return (
@@ -624,7 +650,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
               </div>
             );
           }
-          
+
           // Custom options for fields without vocabulary
           return (
             <div style={{ marginTop: 20 }}>
@@ -1223,7 +1249,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                 const existingFields = formData.fields
                   .filter((f) => f.attributeMapping.entity === addFieldDialog.entityId)
                   .map((f) => f.attributeMapping.attributeName);
-                
+
                 return entity?.attributes
                   ?.filter((attr) => !existingFields.includes(attr.name))
                   ?.filter((attr) => {
@@ -1263,7 +1289,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <Button onClick={() => {
             setAddFieldDialog(null);
             setSelectedAttribute('');
-          }}>
+          }}
+          >
             {t_i18n('Cancel')}
           </Button>
           <Button
@@ -1277,13 +1304,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       </Dialog>
 
       <div className={classes.container}>
-      <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-        <Tab label={t_i18n('Main Entity')} />
-        <Tab label={t_i18n('Additional Entities')} />
-        {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
-      </Tabs>
+        <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
+          <Tab label={t_i18n('Main Entity')} />
+          <Tab label={t_i18n('Additional Entities')} />
+          {hasAdditionalEntities && <Tab label={t_i18n('Relationships')} />}
+        </Tabs>
 
-      {currentTab === 0 && (
+        {currentTab === 0 && (
         <div className={classes.tabPanel}>
           <FormControl fullWidth variant="standard">
             <InputLabel>{t_i18n('Main Entity Type')}</InputLabel>
@@ -1471,13 +1498,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                   />
                 </>
               )}
-              
+
               {/* Show auto-create indicator toggle for Observable types */}
-              {['Artifact', 'Autonomous-System', 'Directory', 'Domain-Name', 'Email-Addr', 'Email-Message', 
+              {['Artifact', 'Autonomous-System', 'Directory', 'Domain-Name', 'Email-Addr', 'Email-Message',
                 'Email-Mime-Part-Type', 'File', 'IPv4-Addr', 'IPv6-Addr', 'Mac-Addr', 'Mutex', 'Network-Traffic',
                 'Process', 'Software', 'Url', 'User-Account', 'Windows-Registry-Key', 'Windows-Registry-Value-Type',
                 'X509-Certificate', 'Cryptocurrency-Wallet', 'Hostname', 'Text', 'User-Agent', 'Bank-Account',
-                'Phone-Number', 'Payment-Card', 'Media-Content'
+                'Phone-Number', 'Payment-Card', 'Media-Content',
               ].includes(formData.mainEntityType) && (
                 <FormControlLabel
                   control={
@@ -1546,9 +1573,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             );
           })()}
         </div>
-      )}
+        )}
 
-      {currentTab === 1 && (
+        {currentTab === 1 && (
         <div className={classes.tabPanel}>
           {formData.additionalEntities.map((entity, idx) => renderAdditionalEntity(entity, idx))}
           <Button
@@ -1560,9 +1587,9 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Add additional entity')}
           </Button>
         </div>
-      )}
+        )}
 
-      {currentTab === 2 && hasAdditionalEntities && (
+        {currentTab === 2 && hasAdditionalEntities && (
         <div className={classes.tabPanel}>
           <Typography variant="h6" gutterBottom>
             {t_i18n('Relationships')}
@@ -1577,7 +1604,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             {t_i18n('Add relationship')}
           </Button>
         </div>
-      )}
+        )}
       </div>
     </>
   );

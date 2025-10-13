@@ -110,10 +110,10 @@ export const convertFormSchemaToYupSchema = (
         if (entity.multiple) {
           const minAmount = entity.minAmount || 0;
           const fieldName = `additional_${entity.id}_lookup`;
-          
+
           // StixCoreObjectsField stores an array of objects
           if (minAmount > 0) {
-            const errorMessage = minAmount === 1 
+            const errorMessage = minAmount === 1
               ? t_i18n('Please select at least one entity')
               : t_i18n('Please select at least N entities').replace('N', String(minAmount));
             shape[fieldName] = Yup.array()
@@ -157,7 +157,7 @@ export const convertFormSchemaToYupSchema = (
         const minAmount = entity.minAmount || 0;
         let validation = Yup.array().of(Yup.object().shape(fieldShape));
         if (minAmount > 0) {
-          const errorMsg = minAmount === 1 
+          const errorMsg = minAmount === 1
             ? t_i18n('At least one entity is required')
             : t_i18n('At least N entities required').replace('N', String(minAmount));
           validation = validation.min(minAmount, errorMsg);
