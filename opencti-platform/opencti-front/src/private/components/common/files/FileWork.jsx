@@ -14,7 +14,7 @@ import { ArchitectureOutlined, CheckCircleOutlined, DeleteOutlined, WarningOutli
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Slide from '@mui/material/Slide';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';

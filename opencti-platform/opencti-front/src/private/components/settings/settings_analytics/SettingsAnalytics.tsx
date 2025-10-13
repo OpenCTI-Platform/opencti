@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import Typography from '@mui/material/Typography';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import EEChip from '@components/common/entreprise_edition/EEChip';

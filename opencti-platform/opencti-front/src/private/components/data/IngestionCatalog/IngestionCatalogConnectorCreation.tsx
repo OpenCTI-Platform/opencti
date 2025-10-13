@@ -9,7 +9,7 @@ import { graphql, useMutation } from 'react-relay';
 import { materialRenderers } from '@jsonforms/material-renderers';
 import { JsonForms } from '@jsonforms/react';
 import { Schema, Validator } from '@cfworker/json-schema';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { JsonSchema } from '@jsonforms/core';
 import Alert from '@mui/material/Alert';
 import Stack from '@mui/material/Stack';

@@ -1,5 +1,5 @@
 import React, { Fragment, FunctionComponent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/styles';
 import DangerZoneChip from '@components/common/danger_zone/DangerZoneChip';

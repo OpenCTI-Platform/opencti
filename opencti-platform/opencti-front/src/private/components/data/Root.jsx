@@ -1,5 +1,5 @@
 import React, { lazy, Suspense } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import useHelper from '../../../utils/hooks/useHelper';
 import { boundaryWrapper } from '../Error';
 import useGranted, {

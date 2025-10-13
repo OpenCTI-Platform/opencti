@@ -4,7 +4,7 @@ import { act, cleanup, render } from '@testing-library/react';
 import { OperationDescriptor, RelayEnvironmentProvider } from 'react-relay/hooks';
 import { createMockEnvironment, MockPayloadGenerator as MockGen } from 'relay-test-utils';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { describe, afterEach, it, expect } from 'vitest';
 import AppIntlProvider from './components/AppIntlProvider';
 import Profile, { profileQuery } from './private/components/profile/Profile';

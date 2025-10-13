@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { graphql } from 'react-relay';
 import { DraftRelationshipsLines_data$data } from '@components/drafts/__generated__/DraftRelationshipsLines_data.graphql';
 import {

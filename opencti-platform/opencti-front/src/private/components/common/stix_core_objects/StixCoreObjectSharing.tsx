@@ -16,7 +16,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ObjectOrganizationField from '../form/ObjectOrganizationField';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
