@@ -108,7 +108,6 @@ const ImportFilesOptions = ({
                   canDeactivate={true}
                   addMeUserWithAdminRights
                   isCanUseEnable
-                  customInfoMessage={'test'}
                   enableAccesses
                   applyAccesses
                 />

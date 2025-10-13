@@ -134,7 +134,6 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
                 canDeactivate={true}
                 addMeUserWithAdminRights
                 isCanUseEnable
-                customInfoMessage={'test'}
                 enableAccesses
                 applyAccesses
                 style={fieldSpacingContainerStyle}

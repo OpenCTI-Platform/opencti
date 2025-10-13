@@ -123,7 +123,6 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
               canDeactivate={true}
               addMeUserWithAdminRights
               isCanUseEnable
-              customInfoMessage={'test'}
               enableAccesses
               applyAccesses
             />
