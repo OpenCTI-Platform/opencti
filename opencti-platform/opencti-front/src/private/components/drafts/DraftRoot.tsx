@@ -52,6 +52,18 @@ const draftRootFragment = graphql`
       totalCount
     }
     draft_status
+    currentUserAccessRight
+    authorizedMembers {
+      id
+      name
+      entity_type
+      access_right
+      member_id
+      groups_restriction {
+        id
+        name
+      }
+    }
     validationWork {
       name
       received_time
