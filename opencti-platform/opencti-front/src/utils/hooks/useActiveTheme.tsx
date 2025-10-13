@@ -16,7 +16,7 @@ interface UseActiveThemeParams {
     theme_logo_collapsed?: string | null;
     theme_logo_login?: string | null;
   } | null;
-  allThemes: RootPrivateQuery$data['themes']; // Add this
+  allThemes: RootPrivateQuery$data['themes'];
 }
 
 const useActiveTheme = ({
