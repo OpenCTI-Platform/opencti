@@ -53,8 +53,6 @@ type WorkspaceHeaderProps = {
   },
   handleAddWidget?: () => void;
   handleImportWidget?: (widgetFile: File) => void
-  themes: RootDashboardQuery$data['themes']
-  userThemeId: string
 };
 
 const WorkspaceHeader = ({
@@ -63,8 +61,6 @@ const WorkspaceHeader = ({
   adjust = () => {},
   handleAddWidget = () => {},
   handleImportWidget = () => {},
-  themes,
-  userThemeId,
 }: WorkspaceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const workspace = useFragment(workspaceHeaderFragment, data);
@@ -115,8 +111,6 @@ const WorkspaceHeader = ({
             name={workspace.name}
             type={workspace.type}
             adjust={adjust}
-            themes={themes}
-            userThemeId={userThemeId}
             handleDownloadAsStixReport={handleDownloadAsStixReport}
             handleExportDashboard={handleExportDashboard}
           />

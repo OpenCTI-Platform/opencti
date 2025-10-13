@@ -32,9 +32,6 @@ class ExportButtons extends Component {
   constructor(props) {
     super(props);
     this.adjust = props.adjust;
-    this.themes = props.themes;
-    this.userThemeId = props.userThemeId;
-
     this.csvLink = React.createRef();
 
     this.state = {
@@ -52,7 +49,7 @@ class ExportButtons extends Component {
     this.setState({ anchorElImage: null });
   }
 
-  async exportImage(domElementId, name, themeId, background) {
+  async exportImage({ domElementId, name, themeId, background, themes, userThemeId }) {
     this.setState({ exporting: true });
     this.handleCloseImage();
     const { pixelRatio = 1, t } = this.props;
@@ -69,13 +66,13 @@ class ExportButtons extends Component {
     // viewButtons.setAttribute('style', 'display: none');
 
     const { offsetWidth, offsetHeight } = container;
-    if (themeId === this.userThemeId && this.adjust) {
+    if (themeId === userThemeId && this.adjust) {
       container.setAttribute('style', 'width:3840px; height:2160px');
       this.adjust(true);
     }
 
     try {
-      const selectedTheme = this.themes.edges.find(
+      const selectedTheme = themes.edges.find(
         (edge) => edge.node.id === themeId,
       )?.node;
 
@@ -95,7 +92,7 @@ class ExportButtons extends Component {
       // viewButtons.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
-        me.setValue(this.userThemeId, 'theme');
+        me.setValue(userThemeId, 'theme');
       });
       this.setState({ exporting: false });
     }
@@ -109,7 +106,7 @@ class ExportButtons extends Component {
     this.setState({ anchorElPdf: null });
   }
 
-  async exportPdf(domElementId, name, themeId, background) {
+  async exportPdf({ domElementId, name, themeId, background, themes, userThemeId }) {
     this.setState({ exporting: true });
     this.handleClosePdf();
 
@@ -123,7 +120,7 @@ class ExportButtons extends Component {
     const buttons = document.getElementById('export-buttons');
     buttons.setAttribute('style', 'display: none');
 
-    const selectedTheme = this.themes.edges.find(
+    const selectedTheme = themes.edges.find(
       (edge) => edge.node.id === themeId,
     )?.node;
 
@@ -140,7 +137,7 @@ class ExportButtons extends Component {
     } finally {
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
-        me.setValue(this.userThemeId, 'theme');
+        me.setValue(userThemeId, 'theme');
       });
       this.setState({ exporting: false });
       buttons.setAttribute('style', 'display: block');
@@ -165,7 +162,8 @@ class ExportButtons extends Component {
     } = this.props;
     return (
       <UserContext.Consumer>
-        {({ me }) => {
+        {({ me, themes }) => {
+          console.log('themes export ', themes);
           const isInDraft = me.draftContext;
           return (
             <div className={classes.exportButtons} id="export-buttons">
@@ -230,28 +228,30 @@ class ExportButtons extends Component {
                 open={Boolean(anchorElImage)}
                 onClose={this.handleCloseImage.bind(this)}
               >
-                {this.themes.edges.flatMap(({ node }) => [
+                {themes.edges.flatMap(({ node }) => [
                   <MenuItem
                     key={`${node.id}-with-bg`}
-                    onClick={this.exportImage.bind(
-                      this,
+                    onClick={() => this.exportImage({
                       domElementId,
                       name,
-                      node.id,
-                      true,
-                    )}
+                      themeId: node.id,
+                      background: false,
+                      themes,
+                      userThemeId: me.theme,
+                    })}
                   >
                     {node.name} {t('(with background)')}
                   </MenuItem>,
                   <MenuItem
                     key={`${node.id}-without-bg`}
-                    onClick={this.exportImage.bind(
-                      this,
+                    onClick={() => this.exportImage({
                       domElementId,
                       name,
-                      node.id,
-                      false,
-                    )}
+                      themeId: node.id,
+                      background: true,
+                      themes,
+                      userThemeId: me.theme,
+                    })}
                   >
                     {node.name} {t('(without background)')}
                   </MenuItem>,
@@ -264,16 +264,17 @@ class ExportButtons extends Component {
                 onClose={this.handleClosePdf.bind(this)}
               >
                 {
-                  this.themes.edges.map(({ node }) => (
+                  themes.edges.map(({ node }) => (
                     <MenuItem
                       key={node.id}
-                      onClick={this.exportPdf.bind(
-                        this,
+                      onClick={() => this.exportPdf({
                         domElementId,
                         name,
-                        node.id,
-                        true,
-                      )}
+                        themeId: node.id,
+                        background: true,
+                        themes,
+                        userThemeId: me.theme,
+                      })}
                     >
                       {node.name}
                     </MenuItem>

@@ -569,8 +569,6 @@ const InvestigationGraphComponent = ({
         variant="investigation"
         handleAddWidget={undefined}
         adjust={undefined}
-        themes={themes}
-        userThemeId={userThemeId}
       />
       <div style={graphContainerStyle} ref={ref}>
         <Graph parentRef={ref} onPositionsChanged={savePositions}>
@@ -679,8 +677,6 @@ interface InvestigationGraphProps {
 const InvestigationGraph = ({
   id,
   data,
-  themes,
-  userThemeId,
 }: InvestigationGraphProps) => {
   const PAGE_SIZE = 500;
   const queryObjectsRef = useQueryLoading<InvestigationGraphObjectsQuery>(
@@ -698,8 +694,6 @@ const InvestigationGraph = ({
         investigationId={id}
         dataPositions={data}
         dataInvestigation={data}
-        themes={themes}
-        userThemeId={userThemeId}
       />
     </Suspense>
   );
