@@ -77,7 +77,7 @@ steps:
     environment:
       APP__BASE_URL: http://api-tests:4010/
       APP__ADMIN__PASSWORD: admin
-      APP__CHILD_LOCKING_PROCESS__ENABLED: true
+      APP__CHILD_LOCKING_PROCESS__ENABLED: false
       APP__ENTERPRISE_EDITION_LICENSE:
         from_secret: ee_license
       APP__SYNC_RAW_START_REMOTE_URI: http://opencti-raw-start:4100/graphql
