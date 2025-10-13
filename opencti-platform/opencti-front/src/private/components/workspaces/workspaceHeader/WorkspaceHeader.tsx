@@ -18,7 +18,6 @@ import WorkspaceHeaderTagManager from '@components/workspaces/workspaceHeader/Wo
 import Button from '@mui/material/Button';
 import WorkspaceEditionContainer from '@components/workspaces/WorkspaceEditionContainer';
 import { WorkspaceHeaderFragment$key } from '@components/workspaces/workspaceHeader/__generated__/WorkspaceHeaderFragment.graphql';
-import { RootDashboardQuery$data } from '@components/workspaces/dashboards/__generated__/RootDashboardQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 const workspaceHeaderFragment = graphql`

@@ -163,7 +163,6 @@ class ExportButtons extends Component {
     return (
       <UserContext.Consumer>
         {({ me, themes }) => {
-          console.log('themes export ', themes);
           const isInDraft = me.draftContext;
           return (
             <div className={classes.exportButtons} id="export-buttons">

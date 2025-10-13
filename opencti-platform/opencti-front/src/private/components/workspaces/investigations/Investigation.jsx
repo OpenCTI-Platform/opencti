@@ -20,7 +20,7 @@ const styles = (theme) => ({
 
 class InvestigationComponent extends Component {
   render() {
-    const { classes, workspace, themes, userThemeId } = this.props;
+    const { classes, workspace } = this.props;
     return (
       <div className={classes.container} id="container">
         <QueryRenderer

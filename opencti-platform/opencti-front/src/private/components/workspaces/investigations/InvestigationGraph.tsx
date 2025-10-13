@@ -6,7 +6,6 @@ import { knowledgeGraphStixCoreObjectQuery, knowledgeGraphStixRelationshipQuery 
 import fetchMetaObjectsCount from '@components/workspaces/investigations/utils/fetchMetaObjectsCount';
 import WorkspaceHeader from '@components/workspaces/workspaceHeader/WorkspaceHeader';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
-import { RootInvestigationQuery$data } from '@components/workspaces/investigations/__generated__/RootInvestigationQuery.graphql';
 import { InvestigationGraphObjectsQuery } from './__generated__/InvestigationGraphObjectsQuery.graphql';
 import { InvestigationGraphObjects_fragment$key } from './__generated__/InvestigationGraphObjects_fragment.graphql';
 import { InvestigationGraphQuery$data } from './__generated__/InvestigationGraphQuery.graphql';
