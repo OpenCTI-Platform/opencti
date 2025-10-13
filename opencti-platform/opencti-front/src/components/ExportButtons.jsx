@@ -30,13 +30,6 @@ const styles = () => ({
 
 const DELAY = 1000;
 
-const setElementStyle = (elementId, style) => {
-  const element = document.getElementById(elementId);
-  if (element) {
-    element.setAttribute('style', style);
-  }
-};
-
 const wait = async (delay = DELAY) => {
   await new Promise((resolve) => {
     // let some delay to display the loading state
