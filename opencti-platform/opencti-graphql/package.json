@@ -79,7 +79,7 @@
     "@opentelemetry/semantic-conventions": "1.25.1",
     "@pyroscope/nodejs": "0.4.5",
     "@sesamecare-oss/redlock": "1.4.0",
-    "ae-cvss-calculator": "1.0.8",
+    "ae-cvss-calculator": "1.0.9",
     "ajv": "8.17.1",
     "ajv-formats": "3.0.1",
     "amqplib": "0.10.9",
