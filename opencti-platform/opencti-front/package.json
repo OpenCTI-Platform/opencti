@@ -186,7 +186,7 @@
     "eslint-plugin-custom-rules": "0.0.1",
     "json5": "2.2.3",
     "glob-parent": "6.0.2",
-    "webpack": "5.101.3",
+    "webpack": "5.102.1",
     "d3-color": "3.1.0",
     "@types/react": "19.1.8",
     "@types/relay-runtime": "19.0.2",
