@@ -235,7 +235,7 @@ export const stixDomainObjectDeleteRelation = async (context, user, stixDomainOb
 export const stixDomainObjectEditField = async (context, user, stixObjectId, input, opts = {}) => {
   const stixDomainObject = await storeLoadById(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
-    throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
+    throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.', { stixObjectId });
   }
   const scoreEditInput = input.find((e) => e.key === 'x_opencti_score');
   if (scoreEditInput) {

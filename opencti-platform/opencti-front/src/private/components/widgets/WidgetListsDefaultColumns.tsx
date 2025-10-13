@@ -8,6 +8,7 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
     { attribute: 'from_relationship_type', label: 'Source name' },
     { attribute: 'to_entity_type', label: 'Target type' },
     { attribute: 'to_relationship_type', label: 'Target name' },
+    { attribute: 'created', label: 'Original creation date' },
     { attribute: 'created_at', label: 'Platform creation date' },
     { attribute: 'createdBy' },
     { attribute: 'objectMarking' },
@@ -15,6 +16,7 @@ const defaultWidgetColumns: Record<string, WidgetColumn[]> = {
   common: [
     { attribute: 'entity_type', label: 'Type' },
     { attribute: 'name', label: 'Name' },
+    { attribute: 'created', label: 'Original creation date' },
     { attribute: 'created_at', label: 'Platform creation date' },
     { attribute: 'modified', label: 'Modification date' },
     { attribute: 'createdBy' },

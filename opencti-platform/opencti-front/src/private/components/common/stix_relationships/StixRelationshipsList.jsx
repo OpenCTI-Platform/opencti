@@ -126,6 +126,7 @@ export const stixRelationshipsListQuery = graphql`
           }
           fromRole
           toRole
+          created
           created_at
           updated_at
           is_inferred

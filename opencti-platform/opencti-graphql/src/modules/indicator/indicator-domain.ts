@@ -400,7 +400,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     if (e.key === VALID_UNTIL) [valid_until] = e.value;
   });
   if (new Date(valid_until) <= new Date(valid_from)) {
-    throw ValidationError('The valid until date must be greater than the valid from date', VALID_FROM, input);
+    throw ValidationError('The valid until date must be greater than the valid from date', VALID_FROM, { input, valid_from, valid_until });
   }
   // check indicator pattern syntax
   const patternEditInput = input.find((e) => e.key === 'pattern');
@@ -522,7 +522,7 @@ export interface IndicatorPatch {
 }
 
 export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator) => {
-  let patch: IndicatorPatch = {};
+  let patch: IndicatorPatch | undefined;
   const model = indicator.decay_applied_rule;
   if (!model || !model.decay_points) {
     return null;

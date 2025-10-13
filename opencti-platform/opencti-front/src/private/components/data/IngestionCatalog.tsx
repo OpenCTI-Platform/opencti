@@ -183,7 +183,10 @@ const IngestionCatalogComponent = ({
             return catalog.contracts.map((contract) => {
               const deploymentCount = deploymentCounts.get(contract.container_image) ?? 0;
               return (
-                <Grid key={contract.title} size={{ lg: 4, xs: 6 }}>
+                <Grid
+                  key={contract.title}
+                  size={{ xs: 12, md: 6, lg: 4, xl: 3 }}
+                >
                   <IngestionCatalogCard
                     node={contract}
                     dataListId={catalog.id}

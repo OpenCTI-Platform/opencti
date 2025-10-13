@@ -5,8 +5,9 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import nconf from 'nconf';
 import express from 'express';
+import { parse as parseContentType } from 'content-type';
 import { findById as findWorkById } from '../domain/work';
-import { basePath, getBaseUrl } from '../config/conf';
+import { basePath, getBaseUrl, logApp } from '../config/conf';
 import { AuthRequired, error, ForbiddenAccess, UNSUPPORTED_ERROR, UnsupportedError } from '../config/errors';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { findById, restAllCollections, restBuildCollection, restCollectionManifest, restCollectionStix } from '../domain/taxii';
@@ -19,13 +20,15 @@ import { ENTITY_TYPE_INGESTION_TAXII_COLLECTION } from '../modules/ingestion/ing
 import { TAXIIAPI } from '../domain/user';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 
-const TAXII_VERSION = 'application/taxii+json;version=2.1';
+const TAXII_REQUEST_ALLOWED_CONTENT_TYPE = ['application/taxii+json', 'application/vnd.oasis.stix+json'];
+const TAXII_VERSION = '2.1';
+const TAXII_RESPONSE_CONTENT_TYPE = `application/taxii+json;version=${TAXII_VERSION}`;
 
 const TaxiiError = (message, code) => {
   return error(UNSUPPORTED_ERROR, message, { http_status: code });
 };
 const sendJsonResponse = (res, data) => {
-  res.setHeader('content-type', TAXII_VERSION);
+  res.setHeader('content-type', TAXII_RESPONSE_CONTENT_TYPE);
   res.json(data);
 };
 
@@ -78,7 +81,13 @@ const extractUserAndCollection = async (req, res, id) => {
 
 const JsonTaxiiMiddleware = express.json({
   type: (req) => {
-    return req.headers['content-type'] === TAXII_VERSION;
+    try {
+      const contentTypeFromRequest = parseContentType(req);
+      return TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION;
+    } catch (e) {
+      logApp.info('[Taxii] Content-Type from incoming request is missing or invalid', { contentType: req?.headers['content-type'] });
+      return false;
+    }
   },
   limit: nconf.get('app:max_payload_body_size') || '50mb'
 });

@@ -65,6 +65,7 @@ import {
 } from '../config/errors';
 import {
   isStixRefRelationship,
+  isStixRefUnidirectionalRelationship,
   RELATION_BORN_IN,
   RELATION_CREATED_BY,
   RELATION_ETHNICITY,
@@ -162,12 +163,12 @@ import {
   INSTANCE_RELATION_FILTER,
   INSTANCE_RELATION_TYPES_FILTER,
   IS_INFERRED_FILTER,
-  RELATION_DYNAMIC_FROM_FILTER,
-  RELATION_DYNAMIC_TO_FILTER,
   isComplexConversionFilterKey,
   LAST_PIR_SCORE_DATE_FILTER_PREFIX,
   PIR_SCORE_FILTER_PREFIX,
   RELATION_DYNAMIC_FILTER,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
   RELATION_FROM_FILTER,
   RELATION_FROM_ROLE_FILTER,
   RELATION_FROM_TYPES_FILTER,
@@ -1562,7 +1563,12 @@ const elDataConverter = (esHit) => {
       // Rebuild rel to stix attributes
       const rel = key.substring(REL_INDEX_PREFIX.length);
       const [relType] = rel.split('.');
-      data[relType] = isSingleRelationsRef(data.entity_type, relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
+      if (isSingleRelationsRef(data.entity_type, relType)) {
+        data[relType] = R.head(val);
+      } else {
+        const relData = [...(data[relType] ?? []), ...val];
+        data[relType] = isStixRefUnidirectionalRelationship(relType) ? R.uniq(relData) : relData;
+      }
     } else {
       data[key] = val;
     }
@@ -1737,7 +1743,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const queryIndices = computeQueryIndices(indices, types);
   const computedIndices = getIndicesToQuery(context, user, queryIndices);
   const hits = [];
-  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
+  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, processIds);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
     const workingIds = groupIds[index];
@@ -1777,9 +1783,15 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       sort: [{ [orderBy]: orderMode }],
       query: {
         bool: {
-          must: [...mustTerms, ...draftMust],
-          must_not: markingRestrictions.must_not,
-        },
+          // Put everything under filter to prevent score computation
+          // Search without score when no sort is applied is faster
+          filter: [{
+            bool: {
+              must: [...mustTerms, ...draftMust],
+              must_not: markingRestrictions.must_not,
+            },
+          }]
+        }
       },
     };
     if (relCount) {
@@ -1799,6 +1811,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       const query = {
         index: computedIndices,
         size: ES_MAX_PAGINATION,
+        track_total_hits: false,
         _source,
         body,
       };
@@ -3712,7 +3725,7 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   }
   const query = {
     index: getIndicesToQuery(context, user, indexName),
-    track_total_hits: true,
+    track_total_hits: false,
     _source: false,
     body,
   };
@@ -4727,16 +4740,21 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
     // 00. Relations must be transformed before indexing.
     const transformedElements = await prepareIndexing(context, user, elements);
     // 01. Bulk the indexing of row elements
-    const body = transformedElements.flatMap((elementDoc) => {
-      const doc = elementDoc;
-      return [
-        { index: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-        R.pipe(R.dissoc('_index'))(doc),
-      ];
-    });
-    if (body.length > 0) {
-      meterManager.directBulk(body.length, { type: indexingType });
-      await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
+    // split since there can be a lot of relationships for the same element
+    const transformedElementsSplit = R.splitEvery(MAX_BULK_OPERATIONS, transformedElements);
+    for (let i = 0; i < transformedElementsSplit.length; i += 1) {
+      const elementsBulk = transformedElementsSplit[i];
+      const body = elementsBulk.flatMap((elementDoc) => {
+        const doc = elementDoc;
+        return [
+          { index: { _index: doc._index, _id: doc._id ?? doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          R.pipe(R.dissoc('_index'))(doc),
+        ];
+      });
+      if (body.length > 0) {
+        meterManager.directBulk(body.length, { type: indexingType });
+        await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body });
+      }
     }
     // 02. If relation, generate impacts for from and to sides
     const cache = {};
@@ -4785,14 +4803,20 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       const sources = targetsElements.map((t) => {
         const field = buildRefRelationKey(t.relation, t.field);
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
-        script += `ctx._source['${field}'].addAll(params['${field}'])`;
+        if (isStixRefUnidirectionalRelationship(t.relation)) {
+          // don't try to add unidirectional ref rel if already present (issue#7535)
+          script += `for(refId in params['${field}']) { 
+          if(!ctx._source['${field}'].contains(refId)) { ctx._source['${field}'].add(refId) }} `;
+        } else {
+          script += `ctx._source['${field}'].addAll(params['${field}']);`;
+        }
         const fromSide = R.find((e) => e.side === 'from', t.elements);
         if (fromSide && isStixRefRelationship(t.relation)) {
           if (isUpdatedAtObject(fromSide.type)) {
-            script += '; ctx._source[\'updated_at\'] = params.updated_at';
+            script += 'ctx._source[\'updated_at\'] = params.updated_at;';
           }
           if (isModifiedObject(fromSide.type)) {
-            script += '; ctx._source[\'modified\'] = params.updated_at';
+            script += 'ctx._source[\'modified\'] = params.updated_at;';
           }
         }
         // if (isStixRelationship(t.relation)) {
@@ -4802,16 +4826,16 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         if (t.relation === RELATION_IN_PIR) {
           // remove pir_information concerning the pir and add the new pir_information
           script += `
-          ; if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
+            if (ctx._source.containsKey('pir_information') && ctx._source['pir_information'] != null) {
               ctx._source['pir_information'].removeIf(item -> params.pir_ids.contains(item.pir_id));
               ctx._source['pir_information'].addAll(params.new_pir_information);
-            } else ctx._source['pir_information'] = params.new_pir_information
+            } else { ctx._source['pir_information'] = params.new_pir_information; }
           `;
         }
         return script;
       });
       // Concat sources scripts by adding a ';' between each script to close each final script line
-      const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
+      const source = sources.length > 1 ? R.join(' ', sources) : `${R.head(sources)}`;
       // Construct params
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
@@ -4831,14 +4855,21 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
       }
       return { ...entity, id: entityId, data: { script: { source, params } } };
     });
-    const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-      { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      R.dissoc('_index', doc.data),
-    ]);
-    if (bodyUpdate.length > 0) {
-      meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
-      const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
-      await Promise.all([bulkPromise]);
+    // bulk update elements (denormalized relations)
+    if (elementsToUpdate.length > 0) {
+      const groupsOfElementsToUpdate = R.splitEvery(MAX_BULK_OPERATIONS, elementsToUpdate);
+      for (let i = 0; i < groupsOfElementsToUpdate.length; i += 1) {
+        const elementsBulk = groupsOfElementsToUpdate[i];
+        const bodyUpdate = elementsBulk.flatMap((doc) => [
+          { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+          R.dissoc('_index', doc.data),
+        ]);
+        if (bodyUpdate.length > 0) {
+          meterManager.sideBulk(bodyUpdate.length, { type: indexingType });
+          const bulkPromise = elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
+          await Promise.all([bulkPromise]);
+        }
+      }
     }
     return transformedElements.length;
   };

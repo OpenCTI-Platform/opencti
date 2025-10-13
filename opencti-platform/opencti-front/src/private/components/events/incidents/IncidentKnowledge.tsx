@@ -5,6 +5,7 @@
 import React from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
+import EntityStixCoreRelationshipsIndicators from '@components/common/stix_core_relationships/views/indicators/EntityStixCoreRelationshipsIndicators';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -215,6 +216,17 @@ const IncidentKnowledge = ({
               isRelationReversed={false}
             />
           )}
+        />
+        <Route
+          path="/indicators"
+          element={
+            <EntityStixCoreRelationshipsIndicators
+              entityId={incident.id}
+              entityLink={link}
+              defaultStartTime={incident.first_seen}
+              defaultStopTime={incident.last_seen}
+            />
+          }
         />
         <Route
           path="/observables"
