@@ -1,13 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { NarrativeWithSubnarrativeLineDummy } from '@components/techniques/narratives/NarrativeWithSubnarrativeLine';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import FiligranIcon from '@components/common/FiligranIcon';
-import { SublistViewIcon } from 'filigran-icon';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
 import { NarrativesLines_data$data } from '@components/techniques/narratives/__generated__/NarrativesLines_data.graphql';
 import { ViewListOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
+import SegmentOutlinedIcon from '@mui/icons-material/SegmentOutlined';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import { narrativeLineFragment } from './narratives/NarrativeLine';
 import { narrativesLinesFragment, narrativesLinesQuery } from './narratives/NarrativesLines';
@@ -196,7 +195,7 @@ const Narratives: FunctionComponent = () => {
                     value="subEntityLines"
                     aria-label="subEntityLines"
                   >
-                    <FiligranIcon icon={SublistViewIcon} color="primary" size="small" />
+                    <SegmentOutlinedIcon color="primary" fontSize="small" />
                   </ToggleButton>
                 </Tooltip>
               )]}

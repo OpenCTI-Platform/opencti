@@ -1,11 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
-import { LibraryBooksOutlined, ViewModuleOutlined } from '@mui/icons-material';
+import { LibraryBooksOutlined, ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import { ToggleButtonGroup } from '@mui/material';
-import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
-import FiligranIcon from '@components/common/FiligranIcon';
+import SegmentOutlinedIcon from '@mui/icons-material/SegmentOutlined';
 import { useFormatter } from './i18n';
 
 interface ViewSwitchingButtonsProps {
@@ -84,7 +83,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
           onClick={() => handleChangeView('lines')}
           aria-label="lines"
         >
-          <FiligranIcon icon={ListViewIcon} color="primary" size="small" />
+          <ViewListOutlined color="primary" fontSize="small" />
         </ToggleButton>
       </Tooltip>
       )}
@@ -93,9 +92,8 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         <ToggleButton
           value="subEntityLines"
           aria-label="subEntityLines"
-          style={{ height: 36 }}
         >
-          <FiligranIcon icon={SublistViewIcon} color="secondary" size="small" />
+          <SegmentOutlinedIcon color="primary" fontSize="small" />
         </ToggleButton>
       </Tooltip>
       )}
