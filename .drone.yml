@@ -239,47 +239,47 @@ steps:
     depends_on:
       - dependencies-checkout
 
-#  - name: client-test-310
-#    image: python:3.10
-#    environment:
-#      OPENCTI_API_URL: http://opencti-pycti-start:4600
-#      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-#    commands:
-#      - cd client-python
-#      - pip3 install -r requirements.txt --user
-#      - pip3 install -r test-requirements.txt --user
-#      - sleep 180
-#      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
-#    depends_on:
-#      - dependencies-checkout
-#
-#  - name: client-test-311
-#    image: python:3.11
-#    environment:
-#      OPENCTI_API_URL: http://opencti-pycti-start:4600
-#      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-#    commands:
-#      - cd client-python
-#      - pip3 install -r requirements.txt --user
-#      - pip3 install -r test-requirements.txt --user
-#      - sleep 180
-#      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
-#    depends_on:
-#      - dependencies-checkout
-#
-#  - name: client-test-312
-#    image: python:3.12
-#    environment:
-#      OPENCTI_API_URL: http://opencti-pycti-start:4600
-#      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-#    commands:
-#      - cd client-python
-#      - pip3 install -r requirements.txt --user
-#      - pip3 install -r test-requirements.txt --user
-#      - sleep 180
-#      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
-#    depends_on:
-#      - dependencies-checkout
+  - name: client-test-310
+    image: python:3.10
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      # - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - client-test-39
+
+  - name: client-test-311
+    image: python:3.11
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      # - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - client-test-310
+
+  - name: client-test-312
+    image: python:3.12
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      # - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - client-test-311
 
   # always run the examples last since they don't clean up
   - name: pycti-example-tests
@@ -294,10 +294,7 @@ steps:
       - cd examples/
        - /bin/bash run_all.sh
     depends_on:
-      #- client-test-312
-      #- client-test-311
-      #- client-test-310
-      - client-test-39
+      - client-test-312
 
   - name: build-circleci
     image: curlimages/curl
