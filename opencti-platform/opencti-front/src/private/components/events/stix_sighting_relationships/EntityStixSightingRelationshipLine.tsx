@@ -7,7 +7,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { HelpOutlined, MoreVertOutlined } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';

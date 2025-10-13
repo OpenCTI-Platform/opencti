@@ -15,7 +15,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { createSearchParams, useNavigate } from 'react-router-dom';
+import { createSearchParams, useNavigate } from 'react-router';
 import Alert from '@mui/material/Alert';
 import { StixCoreObjectMappableContentFieldPatchMutation } from '@components/common/stix_core_objects/__generated__/StixCoreObjectMappableContentFieldPatchMutation.graphql';
 import {

@@ -3,7 +3,7 @@ import Dialog from '@common/dialog/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
 import React, { useEffect, useReducer, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useFormatter } from '../../components/i18n';
 import { APP_BASE_PATH } from '../../relay/environment';
 import { formatSeconds, ONE_SECOND, secondsBetweenDates } from '../../utils/Time';

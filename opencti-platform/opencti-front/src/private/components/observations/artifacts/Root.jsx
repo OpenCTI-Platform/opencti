@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';

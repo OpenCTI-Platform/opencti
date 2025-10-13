@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { SubTypeQuery } from '@components/settings/sub_types/__generated__/SubTypeQuery.graphql';
-import { Outlet, useParams } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import CustomizationMenu from '../CustomizationMenu';
 import Breadcrumbs from '../../../../components/Breadcrumbs';

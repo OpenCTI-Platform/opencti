@@ -2,7 +2,7 @@ import { OpenWithOutlined, Undo } from '@mui/icons-material';
 import React, { useState } from 'react';
 import Dialog from '@mui/material/Dialog';
 import { graphql } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import InvestigationExpandForm, { InvestigationExpandFormProps } from '@components/workspaces/investigations/InvestigationExpandForm';
 import { useInvestigationState } from '@components/workspaces/investigations/utils/useInvestigationState';
 import InvestigationRollBackExpandDialog from '@components/workspaces/investigations/dialog/InvestigationRollBackExpandDialog';

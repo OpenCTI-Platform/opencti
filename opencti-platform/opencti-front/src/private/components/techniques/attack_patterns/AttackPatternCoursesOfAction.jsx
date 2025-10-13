@@ -3,7 +3,7 @@ import { filter } from 'ramda';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import IconButton from '@common/button/IconButton';
 import { Delete } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';

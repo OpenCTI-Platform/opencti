@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import { boundaryWrapper } from '../Error';
 import Notifications from './Notifications';
 import Profile from './Profile';

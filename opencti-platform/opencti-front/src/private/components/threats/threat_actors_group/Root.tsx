@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Route, Routes, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, Navigate, useLocation, useParams } from 'react-router';
 import { graphql, useSubscription, usePreloadedQuery, PreloadedQuery } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootThreatActorGroupQuery } from '@components/threats/threat_actors_group/__generated__/RootThreatActorGroupQuery.graphql';

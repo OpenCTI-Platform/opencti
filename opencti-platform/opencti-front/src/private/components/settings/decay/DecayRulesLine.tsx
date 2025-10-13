@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';

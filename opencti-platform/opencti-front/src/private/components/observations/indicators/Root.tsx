@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootIndicatorQuery } from '@components/observations/indicators/__generated__/RootIndicatorQuery.graphql';

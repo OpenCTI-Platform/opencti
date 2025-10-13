@@ -3,7 +3,7 @@ import IngestionMenu from '@components/data/IngestionMenu';
 import { useQueryLoader } from 'react-relay';
 import IngestionCatalogCard from '@components/data/IngestionCatalog/IngestionCatalogCard';
 import useIngestionCatalogFilters from '@components/data/IngestionCatalog/hooks/useIngestionCatalogFilters';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { Stack } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';

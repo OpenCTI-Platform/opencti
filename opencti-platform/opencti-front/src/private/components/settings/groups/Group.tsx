@@ -10,7 +10,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { InformationOutline } from 'mdi-material-ui';
 import * as R from 'ramda';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import GroupConfidenceLevel from '@components/settings/groups/GroupConfidenceLevel';
 import { uniq } from 'ramda';
 import { ListItemButton } from '@mui/material';

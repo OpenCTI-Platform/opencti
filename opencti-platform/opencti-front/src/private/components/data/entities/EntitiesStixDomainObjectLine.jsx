@@ -5,7 +5,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
 import Skeleton from '@mui/material/Skeleton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';

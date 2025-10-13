@@ -1,5 +1,5 @@
 import { Suspense, useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Route, Routes, useLocation, useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootStixCyberObservableQuery } from '@components/observations/stix_cyber_observables/__generated__/RootStixCyberObservableQuery.graphql';
