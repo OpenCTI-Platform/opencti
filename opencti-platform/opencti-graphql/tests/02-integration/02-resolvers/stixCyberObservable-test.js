@@ -147,7 +147,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('8090');
     networkTrafficInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
-  it('should stixCyberObservable SSH_key created/update', async () => {
+  it('should stixCyberObservable SSH_key created/update/delete', async () => {
     // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
       type: 'SSH-Key',
@@ -184,7 +184,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
         }
       }
     `;
-    // console.log('SSHII', SSHInternalId);
+
     const stixCyberObservableUpdated = await queryAsAdminWithSuccess({
       query: EDIT_QUERY,
       variables: {
@@ -195,9 +195,8 @@ describe('StixCyberObservable resolver standard behavior', () => {
     expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.key_type).toEqual('ecdsa');
     expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.public_key).toEqual('');
     expect(stixCyberObservableUpdated.data.stixCyberObservableEdit.fieldPatch.fingerprint_sha256).toEqual('a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d97f');
-  });
 
-  it('should ssh-key deleted', async () => {
+    // Delete SSH Key
     const DELETE_QUERY = gql`
       mutation stixCyberObservableDelete($id: ID!) {
         stixCyberObservableEdit(id: $id) {
@@ -205,7 +204,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
         }
       }
     `;
-    // Delete
+
     await queryAsAdminWithSuccess({
       query: DELETE_QUERY,
       variables: { id: SSHInternalId },
