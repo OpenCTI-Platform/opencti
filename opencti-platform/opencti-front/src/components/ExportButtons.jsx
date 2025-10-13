@@ -30,6 +30,13 @@ const styles = () => ({
 
 const DELAY = 1000;
 
+const setElementStyle = (elementId, style) => {
+  const element = document.getElementById(elementId);
+  if (element) {
+    element.setAttribute('style', style);
+  }
+};
+
 const wait = async (delay = DELAY) => {
   await new Promise((resolve) => {
     // let some delay to display the loading state
@@ -73,12 +80,15 @@ class ExportButtons extends Component {
     });
 
     const container = document.getElementById(domElementId);
+
     const exportButtons = document.getElementById('export-buttons');
-    // const viewButtons = document.getElementById('container-view-buttons');
-    exportButtons.setAttribute('style', 'display: none');
-    // viewButtons.setAttribute('style', 'display: none');
+    exportButtons?.setAttribute('style', 'display: none');
+
+    const viewButtons = document.getElementById('container-view-buttons');
+    viewButtons?.setAttribute('style', 'display: none');
 
     const { offsetWidth, offsetHeight } = container;
+    // former condition, but don't understand its purpose
     if (themeId === userThemeId && this.adjust) {
       container.setAttribute('style', 'width:3840px; height:2160px');
       this.adjust(true);
@@ -104,8 +114,8 @@ class ExportButtons extends Component {
     } catch {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to image'));
     } finally {
-      exportButtons.setAttribute('style', 'display: block');
-      // viewButtons.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
+      exportButtons?.setAttribute('style', 'display: block');
+      viewButtons?.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
 
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
