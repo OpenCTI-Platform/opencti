@@ -27,6 +27,7 @@ import {
 } from '@components/common/files/import_files/__generated__/ImportFilesDialogEntityMutation.graphql';
 import { Close } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
+import { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import { useFormatter } from '../../../../../components/i18n';
 import Transition from '../../../../../components/Transition';
 import { handleErrorInForm, MESSAGING$ } from '../../../../../relay/environment';
@@ -112,6 +113,7 @@ export type OptionsFormValues = {
   associatedEntity: AssociatedEntityOption | null;
   validationMode?: 'draft' | 'workbench';
   name: string;
+  authorizedMembers?: AuthorizedMembersFieldValue;
 };
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
@@ -175,7 +177,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     type: 'files',
   });
 
-  const createDraft = useCallback(async (name: string, selectedEntityId?: string) => {
+  const createDraft = useCallback(async (name: string, selectedEntityId?: string, authorizedMembers?: AuthorizedMembersFieldValue) => {
     try {
       const { draftWorkspaceAdd } = await new Promise<DraftCreationMutation$data>((resolve, reject) => {
         commitCreationMutation({
@@ -183,6 +185,17 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
             input: {
               name,
               entity_id: selectedEntityId,
+              authorized_members: !authorizedMembers
+                ? null
+                : authorizedMembers
+                  .filter((v) => v.accessRight !== 'none')
+                  .map((member) => ({
+                    id: member.value,
+                    access_right: member.accessRight,
+                    groups_restriction_ids: member.groupsRestriction?.length > 0
+                      ? member.groupsRestriction.map((group) => group.value)
+                      : undefined,
+                  })),
             },
           },
           onCompleted: (response, errors) => {
@@ -305,12 +318,12 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     const selectedEntityId = entityId ?? (values.associatedEntity?.value || undefined);
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
-    const { validationMode, name } = values;
+    const { validationMode, name, authorizedMembers } = values;
     if (validationMode === 'workbench') {
       setUploadStatus('uploading');
       importFiles({ selectedEntityId, fileMarkingIds, validationMode }, setErrors);
     } else if (validationMode === 'draft') {
-      const newDraftId = !draftId ? await createDraft(name, selectedEntityId) : draftId;
+      const newDraftId = !draftId ? await createDraft(name, selectedEntityId, authorizedMembers) : draftId;
       if (!newDraftId) {
         setActiveStep(1);
         setUploadStatus(undefined);

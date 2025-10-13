@@ -7,11 +7,13 @@ import MenuItem from '@mui/material/MenuItem';
 import StixCoreObjectsField from '@components/common/form/StixCoreObjectsField';
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { InformationOutline } from 'mdi-material-ui';
+import AuthorizedMembersField from '@components/common/form/AuthorizedMembersField';
 import { useFormatter } from '../../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { DraftContext } from '../../../../../utils/hooks/useDraftContext';
+import useAuth from '../../../../../utils/hooks/useAuth';
 
 interface ImportFilesOptionsProps {
   optionsFormikContext: FormikContextType<OptionsFormValues>;
@@ -23,6 +25,8 @@ const ImportFilesOptions = ({
   draftContext,
 }: ImportFilesOptionsProps) => {
   const { t_i18n } = useFormatter();
+  const { me: owner, settings } = useAuth();
+  const showAllMembersLine = !settings.platform_organization?.id;
   const { importMode, entityId, files } = useImportFilesContext();
   const isWorkbenchEnabled = files.length === 1;
 
@@ -89,12 +93,26 @@ const ImportFilesOptions = ({
               </Tooltip>
             </div>
             {optionsFormikContext.values.validationMode === 'draft' && (
-              <Field
-                name="name"
-                label={t_i18n('Draft name')}
-                component={TextField}
-                variant="standard"
-              />
+              <>
+                <Field
+                  name="name"
+                  label={t_i18n('Draft name')}
+                  component={TextField}
+                  variant="standard"
+                />
+                <Field
+                  name="authorizedMembers"
+                  component={AuthorizedMembersField}
+                  owner={owner}
+                  showAllMembersLine={showAllMembersLine}
+                  canDeactivate={true}
+                  addMeUserWithAdminRights
+                  isCanUseEnable
+                  customInfoMessage={'test'}
+                  enableAccesses
+                  applyAccesses
+                />
+              </>
             )}
           </>
         )}
