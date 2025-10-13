@@ -85,9 +85,6 @@ export default class DashboardWidgetsPageModel {
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('List of malwares');
-    await this.page.getByRole('combobox', { name: 'Sort mode' }).click();
-    const list = this.page.getByRole('listbox', { name: 'Sort mode' });
-    return list.getByText('Desc', { exact: true }).click();
     await this.createWidget();
   }
 
@@ -100,9 +97,6 @@ export default class DashboardWidgetsPageModel {
     await this.filters.addFilter('Label', 'e2e');
     await this.validateFilters();
     await this.titleField.fill('Timeline of malwares');
-    await this.page.getByRole('combobox', { name: 'Sort mode' }).click();
-    const list = this.page.getByRole('listbox', { name: 'Sort mode' });
-    return list.getByText('Desc', { exact: true }).click();
     await this.createWidget();
   }
 
