@@ -28,6 +28,15 @@ const styles = () => ({
   },
 });
 
+const DELAY = 1000;
+
+const wait = async (delay = DELAY) => {
+  await new Promise((resolve) => {
+    // let some delay to display the loading state
+    setTimeout(resolve, delay);
+  });
+};
+
 class ExportButtons extends Component {
   constructor(props) {
     super(props);
@@ -51,8 +60,12 @@ class ExportButtons extends Component {
 
   async exportImage({ domElementId, name, themeId, background, themes, userThemeId }) {
     this.setState({ exporting: true });
+
     this.handleCloseImage();
     const { pixelRatio = 1, t } = this.props;
+
+    // let some delay to display the loading state
+    await wait();
 
     commitLocalUpdate((store) => {
       const me = store.getRoot().getLinkedRecord('me');
@@ -76,6 +89,9 @@ class ExportButtons extends Component {
         (edge) => edge.node.id === themeId,
       )?.node;
 
+      // add some delay to permit the ui to re-render with the selected theme
+      await wait();
+
       await exportImage(
         domElementId,
         offsetWidth,
@@ -90,10 +106,12 @@ class ExportButtons extends Component {
     } finally {
       exportButtons.setAttribute('style', 'display: block');
       // viewButtons.setAttribute('style', 'display: block, marginLeft: theme.spacing(2)');
+
       commitLocalUpdate((store) => {
         const me = store.getRoot().getLinkedRecord('me');
         me.setValue(userThemeId, 'theme');
       });
+
       this.setState({ exporting: false });
     }
   }
@@ -112,6 +130,9 @@ class ExportButtons extends Component {
 
     const { pixelRatio = 1, t } = this.props;
 
+    // add some delay to display loading state
+    await wait();
+
     commitLocalUpdate((store) => {
       const me = store.getRoot().getLinkedRecord('me');
       me.setValue(themeId, 'theme');
@@ -125,6 +146,9 @@ class ExportButtons extends Component {
     )?.node;
 
     try {
+      // add some delay to permit the ui to re-render with the selected theme
+      await wait();
+
       await exportPdf(
         domElementId,
         name,
@@ -139,6 +163,7 @@ class ExportButtons extends Component {
         const me = store.getRoot().getLinkedRecord('me');
         me.setValue(userThemeId, 'theme');
       });
+
       this.setState({ exporting: false });
       buttons.setAttribute('style', 'display: block');
     }
@@ -234,7 +259,7 @@ class ExportButtons extends Component {
                       domElementId,
                       name,
                       themeId: node.id,
-                      background: false,
+                      background: true,
                       themes,
                       userThemeId: me.theme,
                     })}
@@ -247,7 +272,7 @@ class ExportButtons extends Component {
                       domElementId,
                       name,
                       themeId: node.id,
-                      background: true,
+                      background: false,
                       themes,
                       userThemeId: me.theme,
                     })}
