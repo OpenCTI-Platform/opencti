@@ -199,7 +199,10 @@ const widgetVisualizationTypes = [
     isEntities: true,
     isAudits: true,
   },
-];
+] as const;
+
+export type WidgetVisualizationTypes =
+  (typeof widgetVisualizationTypes)[number]['key'];
 
 export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
 
@@ -287,4 +290,21 @@ export const isDataSelectionNumberValid = (type: string, dataSelection: WidgetDa
     return dataSelection.every((selection) => !selection.number || selection.number <= 100);
   }
   return true;
+};
+
+export const isWidgetUsingRelationsAggregation = (
+  widgetType: WidgetVisualizationTypes,
+): boolean => {
+  const widgetTypesWithRelationsAggregation: Array<WidgetVisualizationTypes> = [
+    'wordcloud',
+    'map',
+    'radar',
+    'polar-area',
+    'horizontal-bar',
+    'donut',
+    'distribution-list',
+    'tree',
+  ];
+
+  return widgetTypesWithRelationsAggregation.includes(widgetType);
 };
