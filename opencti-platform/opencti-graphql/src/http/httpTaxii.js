@@ -85,7 +85,7 @@ const JsonTaxiiMiddleware = express.json({
       const contentTypeFromRequest = parseContentType(req);
       return TAXII_REQUEST_ALLOWED_CONTENT_TYPE.includes(contentTypeFromRequest.type) && contentTypeFromRequest.parameters.version === TAXII_VERSION;
     } catch (e) {
-      logApp.info('[Taxii] Content-Type from incoming request is missing or invalid', { headers: req.headers });
+      logApp.info('[Taxii] Content-Type from incoming request is missing or invalid', { contentType: req?.headers['content-type'] });
       return false;
     }
   },
