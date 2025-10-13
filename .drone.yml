@@ -227,6 +227,9 @@ steps:
   
   - name: client-test-39
     image: python:3.9
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
     commands:
       - cd client-python
       - pip3 install -r requirements.txt --user
@@ -238,6 +241,9 @@ steps:
 
   - name: client-test-310
     image: python:3.10
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
     commands:
       - cd client-python
       - pip3 install -r requirements.txt --user
@@ -249,6 +255,9 @@ steps:
 
   - name: client-test-311
     image: python:3.11
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
     commands:
       - cd client-python
       - pip3 install -r requirements.txt --user
@@ -260,6 +269,9 @@ steps:
 
   - name: client-test-312
     image: python:3.12
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
     commands:
       - cd client-python
       - pip3 install -r requirements.txt --user
@@ -272,6 +284,9 @@ steps:
   # always run the examples last since they don't clean up
   - name: pycti-example-tests
     image: python:3.12
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
     commands:
       - cd client-python
       - pip3 install -r requirements.txt --user
@@ -631,8 +646,7 @@ services:
       - pip install -r src/requirements.txt
       - python3 src/worker.py
 
-  # OpenCTI instance for client python, the name is hardcoded to 'opencti' in test setup.
-  - name: opencti
+  - name: opencti-pycti-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
     - name: cache-opencti-pycti-start-yarn
