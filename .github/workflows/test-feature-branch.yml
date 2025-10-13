@@ -22,7 +22,7 @@ jobs:
     name: worker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -51,7 +51,7 @@ jobs:
     name: platform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: jirutka/setup-alpine@v1
         with:
           branch: v3.20
