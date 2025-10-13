@@ -544,24 +544,20 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 <Typography variant="h3" gutterBottom={true}>
                   {t_i18n('State')}
                 </Typography>
-                {
-                  connector.connector_state ? (
-                    <Tooltip title={connector.connector_state || ''}>
-                      <pre>
-                        <ItemCopy
-                          content={connector.connector_state || ''}
-                          limit={200}
-                        />
-                      </pre>
-                    </Tooltip>
-                  ) : '-'
-                }
+                <FieldOrEmpty source={connector.connector_state}>
+                  <pre>
+                    <ItemCopy
+                      content={connector.connector_state || ''}
+                      limit={200}
+                    />
+                  </pre>
+                </FieldOrEmpty>
               </Grid>
 
               <Grid item xs={6}>
                 {!connector.connector_info && (
                   connector.connector_state
-                && connectorStateConverted !== null
+                  && connectorStateConverted !== null
                 && checkLastRunExistingInState && checkLastRunIsNumber ? (
                   <>
                     <Typography variant="h3" gutterBottom={true}>
