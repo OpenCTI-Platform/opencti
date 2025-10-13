@@ -157,7 +157,7 @@
     "source-map": "0.7.4",
     "tough-cookie": "5.1.2",
     "trino-client": "0.2.8",
-    "turndown": "7.2.0",
+    "turndown": "7.2.1",
     "unzipper": "0.12.3",
     "uuid": "11.1.0",
     "uuid-time": "1.0.0",
