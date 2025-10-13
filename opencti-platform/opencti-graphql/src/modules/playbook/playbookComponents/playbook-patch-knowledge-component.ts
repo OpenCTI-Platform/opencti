@@ -24,7 +24,7 @@ import {
   INPUT_MARKINGS,
   INPUT_PARTICIPANT
 } from '../../../schema/general';
-import { createdBy, objectLabel, objectMarking } from '../../../schema/stixRefRelationship';
+import { createdBy, objectMarking } from '../../../schema/stixRefRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../case/case-types';
@@ -192,18 +192,30 @@ export const PLAYBOOK_PATCH_KNOWLEDGE_COMPONENT: PlaybookComponent<PatchConfigur
                 return convertValue(attributeType, o.value);
               });
               if (action.op === EditOperation.Remove) {
-                return { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionValues.includes(c)) };
+                return {
+                  op: action.op,
+                  attribute: action.attribute,
+                  value: actionValues,
+                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionValues.includes(c)) }
+                };
               }
             }
             const currentValue = R.head(action.value)?.patch_value;
-            return { op: action.op, path, value: convertValue(attributeType, currentValue), action_attribute: action.attribute };
+            return {
+              op: action.op,
+              attribute: action.attribute,
+              value: currentValue,
+              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentValue) }
+            };
           });
         // Enlist operations to execute
         if (elementOperations.length > 0) {
-          const operationObject = [{ key: INPUT_LABELS, value: ['65de1c32-b99d-455b-9824-2f411d1baf7a'], operation: 'remove' }];
+          const operationObject = elementOperations.map((op) => {
+            return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
+          });
           element.extensions[STIX_EXT_OCTI].opencti_operation = 'upsert_patch';
           element.extensions[STIX_EXT_OCTI].opencti_field_patch = operationObject;
-          patchOperations.push(...elementOperations);
+          patchOperations.push(...elementOperations.map((e) => e.patchOperation));
         }
       }
     }
