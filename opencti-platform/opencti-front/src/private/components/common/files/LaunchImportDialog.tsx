@@ -22,6 +22,9 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
+import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
+import useAuth from '../../../../utils/hooks/useAuth';
+import Switch from '@mui/material/Switch';
 
 interface LaunchImportDialogProps {
   file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
