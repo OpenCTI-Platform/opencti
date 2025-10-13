@@ -3667,6 +3667,7 @@
   "Textarea": "Textarea",
   "The alias has been added": "The alias has been added",
   "The alias has been removed": "The alias has been removed",
+  "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.",
   "The attribute is not called in the content": "The attribute is not called in the content",
   "The background task has been executed. You can monitor it on": "The background task has been executed. You can monitor it on",
   "The code is not correct.": "The code is not correct.",

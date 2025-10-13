@@ -3667,6 +3667,7 @@
   "Textarea": "Area di testo",
   "The alias has been added": "L'alias è stato aggiunto",
   "The alias has been removed": "L'alias è stato rimosso",
+  "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "La quantità di risultati può variare in base ai dati/alle relazioni, poiché ogni occorrenza di una relazione dedotta viene contata per questo widget.",
   "The attribute is not called in the content": "L'attributo non è chiamato nel contenuto",
   "The background task has been executed. You can monitor it on": "Il task in background è stato eseguito. Puoi monitorarlo su",
   "The code is not correct.": "Il codice non è corretto.",

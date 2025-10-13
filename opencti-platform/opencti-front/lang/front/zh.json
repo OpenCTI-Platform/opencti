@@ -3667,6 +3667,7 @@
   "Textarea": "文本区域",
   "The alias has been added": "别名已添加",
   "The alias has been removed": "别名已删除",
+  "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "结果的数量可能因数据/关系而异，因为推断关系的每次出现都会计入该 widget 中。",
   "The attribute is not called in the content": "内容中未调用属性",
   "The background task has been executed. You can monitor it on": "后台任务已执行。您可以在",
   "The code is not correct.": "代码不正确。",
