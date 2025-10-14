@@ -404,7 +404,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   });
 
   if (validUntilEditInput || validFromEditInput) {
-    if (new Date(valid_until) <= new Date(valid_from)) {
+    if (new Date(valid_until) < new Date(valid_from)) {
       throw ValidationError('The valid until date must be greater than the valid from date', VALID_FROM, { input, valid_from, valid_until });
     }
   }
@@ -476,7 +476,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       }
 
       if (hasRevokedChangedToFalse) {
-        logApp.info('ANGIE - revoked moved to false');
+        logApp.debug('ANGIE - revoked moved to false');
         // Restart decay as if the score has been put to decay_base_score manually.
         const newScore = indicatorBeforeUpdate.decay_base_score;
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
