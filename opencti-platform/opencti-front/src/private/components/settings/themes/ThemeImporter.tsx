@@ -35,6 +35,13 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
     },
   );
 
+  // empty the input when clicking on it because the browser
+  // doesn't retrigger onclick if it is the same file
+  const handleClick = (event: React.MouseEvent<HTMLInputElement>) => {
+    const target = event.currentTarget;
+    target.value = '';
+  };
+
   const handleImport = (event: FormEvent) => {
     const inputElement = event.target as HTMLInputElement;
     const file = inputElement.files?.[0];
@@ -66,7 +73,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
         data-testid='import-theme-btn'
       >
         <FileUpload fontSize="small" />
-        <VisuallyHiddenInput type="file" accept={'application/json'} />
+        <VisuallyHiddenInput type="file" accept={'application/json'} onClick={handleClick} />
       </IconButton>
     </Tooltip>
   );
