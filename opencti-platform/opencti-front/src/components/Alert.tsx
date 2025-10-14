@@ -1,17 +1,17 @@
 import MuiAlert from '@mui/material/Alert';
-import type { AlertProps } from '@mui/material/Alert';
+import type { AlertProps as MuiAlertProps } from '@mui/material/Alert';
 import Typography from '@mui/material/Typography';
 import React, { CSSProperties, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
 import type { Theme } from './Theme';
 
-type AlertInfoProps = {
+type AlertProps = {
   content: ReactNode;
   style?: CSSProperties;
-  severity?: AlertProps['severity'];
+  severity?: MuiAlertProps['severity'];
 };
 
-const AlertInfo = ({ content, style, severity = 'info' }: AlertInfoProps) => {
+const Alert = ({ content, style, severity = 'info' }: AlertProps) => {
   const theme = useTheme<Theme>();
 
   return (
@@ -27,4 +27,4 @@ const AlertInfo = ({ content, style, severity = 'info' }: AlertInfoProps) => {
   );
 };
 
-export default AlertInfo;
+export default Alert;

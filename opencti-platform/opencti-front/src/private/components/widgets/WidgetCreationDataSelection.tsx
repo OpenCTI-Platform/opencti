@@ -13,7 +13,7 @@ import type { Theme } from '../../../components/Theme';
 import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
-import AlertInfo from '../../../components/AlertInfo';
+import Alert from '../../../components/Alert';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   step_entity: {
@@ -235,7 +235,7 @@ const WidgetCreationDataSelection = () => {
         </Button>
       </div>
       {showRelationCountWarning && (
-        <AlertInfo
+        <Alert
           content={t_i18n(
             'The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.',
           )}
