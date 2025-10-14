@@ -25383,17 +25383,21 @@ export type RuleTask = BackgroundTask & {
 export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'SSHKey';
   cases?: Maybe<CaseConnection>;
+  comment?: Maybe<Scalars['String']['output']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
+  expiration_date?: Maybe<Scalars['DateTime']['output']>;
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  fingerprint_MD5?: Maybe<Scalars['String']['output']>;
   fingerprint_sha256: Scalars['String']['output'];
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -25401,6 +25405,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  key_length?: Maybe<Scalars['String']['output']>;
   key_type?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -43401,17 +43406,21 @@ export type RuleTaskResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['SSHKey'] = ResolversParentTypes['SSHKey']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<SshKeyCasesArgs>>;
+  comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<SshKeyConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<SshKeyContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  expiration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SshKeyExternalReferencesArgs>>;
+  fingerprint_MD5?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   fingerprint_sha256?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SshKeyGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -43419,6 +43428,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<SshKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SshKeyJobsArgs>>;
+  key_length?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SshKeyNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
