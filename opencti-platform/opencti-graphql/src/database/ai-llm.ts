@@ -7,6 +7,7 @@ import { AuthenticationError, AzureOpenAI, OpenAI } from 'openai';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { UnknownError, UnsupportedError } from '../config/errors';
 import { OutputSchema } from '../modules/ai/ai-nlq-schema';
+import type { Output } from '../modules/ai/ai-nlq-schema';
 import { AI_BUS } from '../modules/ai/ai-types';
 import type { AuthUser } from '../types/user';
 import { truncate } from '../utils/format';
@@ -209,7 +210,7 @@ export const queryNLQAi = async (promptValue: ChatPromptValueInterface) => {
 
   logApp.info('[NLQ] Querying AI model for structured output');
   try {
-    return await nlqChat.withStructuredOutput(OutputSchema).invoke(promptValue);
+    return await nlqChat.withStructuredOutput<Output>(OutputSchema).invoke(promptValue);
   } catch (err) {
     if (err instanceof AuthenticationError) {
       throw badAiConfigError;
