@@ -24,7 +24,7 @@ import {
   INPUT_MARKINGS,
   INPUT_PARTICIPANT
 } from '../../../schema/general';
-import { createdBy, objectMarking } from '../../../schema/stixRefRelationship';
+import { createdBy, objectLabel, objectMarking } from '../../../schema/stixRefRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../organization/organization-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../case/case-types';
@@ -35,8 +35,8 @@ const attributePathMapping: any = {
     [ABSTRACT_STIX_RELATIONSHIP]: `/${objectMarking.stixName}`,
   },
   [INPUT_LABELS]: {
-    [ABSTRACT_STIX_CORE_OBJECT]: `/extensions/${STIX_EXT_OCTI}/labels_ids`,
-    [ABSTRACT_STIX_RELATIONSHIP]: `/extensions/${STIX_EXT_OCTI}/labels_ids`,
+    [ABSTRACT_STIX_CORE_OBJECT]: `/${objectLabel.stixName}`,
+    [ABSTRACT_STIX_RELATIONSHIP]: `/${objectLabel.stixName}`,
   },
   [INPUT_CREATED_BY]: {
     [ABSTRACT_STIX_CORE_OBJECT]: `/${createdBy.stixName}`,
@@ -185,6 +185,12 @@ export const PLAYBOOK_PATCH_KNOWLEDGE_COMPONENT: PlaybookComponent<PatchConfigur
           .map(({ action, path, multiple, attributeType }) => {
             if (multiple) {
               const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
+              const actionPatchValues = action.value.map((o) => {
+                // If value is an id, must be converted to standard_id has we work on stix bundle
+                if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
+                // Else, just return the value
+                return convertValue(attributeType, o.patch_value);
+              });
               const actionValues = action.value.map((o) => {
                 // If value is an id, must be converted to standard_id has we work on stix bundle
                 if (cacheIds.has(o.value)) return (cacheIds.get(o.value) as BasicStoreCommon).standard_id;
@@ -196,16 +202,17 @@ export const PLAYBOOK_PATCH_KNOWLEDGE_COMPONENT: PlaybookComponent<PatchConfigur
                   op: action.op,
                   attribute: action.attribute,
                   value: actionValues,
-                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionValues.includes(c)) }
+                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionPatchValues.includes(c)) }
                 };
               }
             }
-            const currentValue = R.head(action.value)?.patch_value;
+            const currentPatchValue = R.head(action.value)?.patch_value;
+            const currentValue = R.head(action.value)?.value;
             return {
               op: action.op,
               attribute: action.attribute,
               value: currentValue,
-              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentValue) }
+              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentPatchValue) }
             };
           });
         // Enlist operations to execute
