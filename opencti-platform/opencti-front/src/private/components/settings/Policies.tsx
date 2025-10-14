@@ -8,11 +8,6 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
 import MenuItem from '@mui/material/MenuItem';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { VpnKeyOutlined } from '@mui/icons-material';
-import ListItemText from '@mui/material/ListItemText';
 import GroupSetDefaultGroupForIngestionUsers from '@components/settings/groups/GroupSetDefaultGroupForIngestionUsers';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
@@ -23,10 +18,10 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import DialogTitle from '@mui/material/DialogTitle';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
+import SSOConfiguration from './SSOConfiguration';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
-import SwitchField from '../../../components/fields/SwitchField';
 import TextField from '../../../components/TextField';
 import { Policies$key } from './__generated__/Policies.graphql';
 import MarkdownField from '../../../components/fields/MarkdownField';
@@ -35,13 +30,13 @@ import SelectField from '../../../components/fields/SelectField';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import ItemBoolean from '../../../components/ItemBoolean';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import Transition from '../../../components/Transition';
 import type { Theme } from '../../../components/Theme';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import { FieldOption } from '../../../utils/field';
+import { AuthProvider } from '@components/settings/AuthProviderForm';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -73,8 +68,14 @@ const PoliciesFragment = graphql`
     password_policy_min_lowercase
     password_policy_min_uppercase
     platform_providers {
-      name
+      identifier
       strategy
+      provider
+      type
+      disabled
+      dynamic
+      valid
+      config
     }
     platform_organization {
       id
@@ -117,6 +118,7 @@ const policiesValidation = () => Yup.object().shape({
   platform_consent_confirm_text: Yup.string().nullable(),
   platform_banner_level: Yup.string().nullable(),
   platform_banner_text: Yup.string().nullable(),
+  platform_providers: Yup.mixed().nullable(),
 });
 
 interface PoliciesComponentProps {
@@ -149,7 +151,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Policies | Security | Settings'));
-  const handleSubmitField = (name: string, value: string | string[] | FieldOption | null) => {
+  const handleSubmitField = (name: string, value: string | string[] | FieldOption | null | AuthProvider | AuthProvider[], object_path?: string) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -159,6 +161,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
             input: {
               key: name,
               value: ((value as FieldOption)?.value ?? value) || '',
+              object_path,
             },
           },
         });
@@ -406,49 +409,50 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                   </Grid>
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Authentication strategies')}
+                      {t_i18n('Platform Banner Configuration')}
                     </Typography>
-                    <Paper style={{
-                      marginTop: 10,
-                    }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
+                    <Paper
+                      classes={{ root: classes.paper }}
+                      className={'paper-for-grid'}
+                      variant="outlined"
                     >
-                      <List style={{ marginTop: -20 }}>
-                        {authProviders.map((provider) => (
-                          <ListItem key={provider.strategy} divider={true}>
-                            <ListItemIcon>
-                              <VpnKeyOutlined color="primary" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={provider.name}
-                              secondary={provider.strategy}
-                            />
-                            <ItemBoolean
-                              variant="inList"
-                              label={t_i18n('Enabled')}
-                              status={true}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
                       <Field
-                        component={SwitchField}
-                        type="checkbox"
-                        name="otp_mandatory"
-                        label={t_i18n('Enforce two-factor authentication')}
-                        containerstyle={{ marginTop: 20 }}
-                        onChange={(name: string, value: string) => handleSubmitField(name, value)
-                        }
-                        tooltip={t_i18n(
-                          'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
-                        )}
+                        component={SelectField}
+                        variant="standard"
+                        name="platform_banner_level"
+                        label={t_i18n('Platform banner level')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 5, width: '100%' }}
+                        onSubmit={(name: string, value: string) => {
+                          return handleSubmitField(name, value);
+                        }}
+                        displ
+                      >
+                        <MenuItem value="">&nbsp;</MenuItem>
+                        <MenuItem value="GREEN">{t_i18n('GREEN')}</MenuItem>
+                        <MenuItem value="RED">{t_i18n('RED')}</MenuItem>
+                        <MenuItem value="YELLOW">{t_i18n('YELLOW')}</MenuItem>
+                      </Field>
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        style={{ marginTop: 20 }}
+                        name="platform_banner_text"
+                        label={t_i18n('Platform banner text')}
+                        fullWidth={true}
+                        onSubmit={handleSubmitField}
                       />
                     </Paper>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Login messages')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <Paper
+                      classes={{ root: classes.paper }}
+                      className={'paper-for-grid'}
+                      variant="outlined"
+                    >
                       <Field
                         component={MarkdownField}
                         name="platform_login_message"
@@ -480,38 +484,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       />
                     </Paper>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t_i18n('Platform Banner Configuration')}
-                    </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="platform_banner_level"
-                        label={t_i18n('Platform banner level')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 5, width: '100%' }}
-                        onSubmit={(name: string, value: string) => {
-                          return handleSubmitField(name, value);
-                        }}
-                        displ
-                      >
-                        <MenuItem value="">&nbsp;</MenuItem>
-                        <MenuItem value="GREEN">{t_i18n('GREEN')}</MenuItem>
-                        <MenuItem value="RED">{t_i18n('RED')}</MenuItem>
-                        <MenuItem value="YELLOW">{t_i18n('YELLOW')}</MenuItem>
-                      </Field>
-                      <Field
-                        component={TextField}
-                        variant="standard"
-                        style={{ marginTop: 20 }}
-                        name="platform_banner_text"
-                        label={t_i18n('Platform banner text')}
-                        fullWidth={true}
-                        onSubmit={handleSubmitField}
-                      />
-                    </Paper>
+                  <Grid item xs={12}>
+                    <SSOConfiguration existingProviders={authProviders} handleSubmitField={handleSubmitField} />
                   </Grid>
                 </Grid>
               </Form>

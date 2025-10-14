@@ -22,9 +22,10 @@ export const rootPublicQuery = graphql`
       platform_theme_light_logo_login
       platform_whitemark
       platform_providers {
-        name
+        identifier
         type
         provider
+        disabled
       }
       playground_enabled
       ...AppThemeProvider_settings

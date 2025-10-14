@@ -4428,5 +4428,22 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to",
   "Zoom": "Zoom",
   "Zoom in": "Zoom in",
-  "Zoom out": "Zoom out"
+  "Zoom out": "Zoom out",
+  "Authentication Providers": "Authentication Providers",
+  "Config file": "Config file",
+  "Create provider": "Create provider",
+  "Update provider": "Update provider",
+  "User Attributes": "User Attributes",
+  "Email Attribute": "Email Attribute",
+  "Account Attribute": "Account Attribute",
+  "First Name Attribute": "First Name Attribute",
+  "Last Name Attribute": "Last Name Attribute",
+  "SSO URL": "SSO URL",
+  "Issuer": "Issuer",
+  "Client ID": "Client ID",
+  "Client Secret": "Client Secret",
+  "Certificate": "Certificate",
+  "Can be overridden": "Can be overridden",
+  "Override": "Override",
+  "Override provider": "Override provider"
 }

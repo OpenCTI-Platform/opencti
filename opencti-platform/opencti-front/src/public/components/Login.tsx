@@ -165,7 +165,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const renderExternalAuth = (
     authButtons?: Array<{
       provider?: string | null;
-      name: string;
+      identifier: string;
     }>,
   ) => (
     <div style={{ marginTop: 10, marginBottom: 20 }}>
@@ -180,7 +180,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           className={renderExternalAuthClassName(value.provider)}
         >
           {renderExternalAuthButton(value.provider)}
-          {value.name}
+          {value.identifier}
         </Button>
       ))}
     </div>

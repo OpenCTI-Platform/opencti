@@ -76,7 +76,7 @@ const sanitizeContainerName = (label: string): string => {
   return sanitized;
 };
 
-const customRenderers = [
+export const customRenderers = [
   ...materialRenderers,
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
@@ -319,11 +319,11 @@ const IngestionCatalogConnectorCreation = ({
             return (
               <Form>
                 <fieldset
-                  disabled={!hasRegisteredManagers}
+                  disabled={false}
                   style={{
                     border: 'none',
                     padding: 0,
-                    ...(!hasRegisteredManagers && { opacity: 0.5, pointerEvents: 'none' }),
+                    ...(hasRegisteredManagers && { opacity: 0.5, pointerEvents: 'none' }),
                   }}
                 >
                   <Field
@@ -385,6 +385,7 @@ const IngestionCatalogConnectorCreation = ({
                               renderers={customRenderers}
                               validationMode={'NoValidation'}
                               onChange={async ({ data }) => {
+                                console.log("Coucou ?");
                                 await setValues({ ...values, ...data });
                               }}
                             />

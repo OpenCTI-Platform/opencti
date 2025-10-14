@@ -1369,10 +1369,14 @@ type Cluster {
 }
 
 type Provider {
-  name: String!
+  identifier: String!
   type: String
-  strategy: String
+  strategy: String!
   provider: String
+  disabled: Boolean
+  config: String!
+  dynamic: Boolean!
+  valid: Boolean!
 }
 
 type UserStatus {
@@ -1455,9 +1459,10 @@ enum CGUStatus {
 }
 
 type PublicProvider {
-  name: String!
+  identifier: String!
   type: String!
   provider: String!
+  disabled: Boolean
 }
 
 interface ThemeSettings {
