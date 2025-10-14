@@ -12408,7 +12408,7 @@ type Notifier implements InternalObject & BasicObject {
   description: String
   notifier_connector: NotifierConnector!
   notifier_connector_id: String!
-  notifier_configuration: String!
+  notifier_configuration: String
   authorized_members: [MemberAccess!]
 }
 
