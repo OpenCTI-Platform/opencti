@@ -519,12 +519,10 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
         }
       }
       // If use have marking, he can access to data with no marking && data with according marking
-      const should = mustNotHaveOneOf.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: m } }));
       const mustNotMarkingTerms = [{
-        bool: {
-          should,
-          minimum_should_match: 1,
-        },
+        terms: {
+          [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf
+        }
       }];
       const markingBool = {
         bool: {
