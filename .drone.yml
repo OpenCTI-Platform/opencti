@@ -125,6 +125,8 @@ steps:
         from_secret: codecov_token
       paths:
         - opencti-platform/opencti-graphql/coverage
+    commands:
+      - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
     depends_on:
       - api-tests
 
