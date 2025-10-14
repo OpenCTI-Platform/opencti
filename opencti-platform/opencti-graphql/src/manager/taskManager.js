@@ -9,7 +9,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
-import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
@@ -64,6 +64,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
+import { doYield } from '../utils/eventloop-utils';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -294,18 +295,11 @@ const standardOperationCallback = async (context, user, task, actionType, operat
   return async (elements) => {
     // Build limited stix object to limit memory footprint
     const objects = [];
-    let startProcessingTime = new Date().getTime();
     for (let index = 0; index < elements.length; index += 1) {
+      await doYield();
       const e = elements[index];
       const object = buildBundleElement(e, actionType, operations);
       objects.push(object);
-      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-        startProcessingTime = new Date().getTime();
-        await new Promise((resolve) => {
-          setImmediate(resolve);
-        });
-      }
     }
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
@@ -496,20 +490,13 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
         const containerObjects = [];
         const sharingElements = await getContainerObjects(context, user, element.internal_id, { all: true });
         const allSharingElements = sharingElements.edges?.map((n) => n.node);
-        let startProcessingTime = new Date().getTime();
         for (let shareIndex = 0; shareIndex < allSharingElements?.length; shareIndex += 1) {
+          await doYield();
           const sharingElement = allSharingElements[shareIndex];
           const sharingElementBundle = buildBundleElement(sharingElement, actionType, operations);
           // We do not want to recursively share elements: we only share elements directly contained in current container
           sharingElementBundle.extensions[STIX_EXT_OCTI].sharing_direct_container = true;
           containerObjects.push(sharingElementBundle);
-          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-            startProcessingTime = new Date().getTime();
-            await new Promise((resolve) => {
-              setImmediate(resolve);
-            });
-          }
         }
         // Add the container at the end
         const container = buildBundleElement(element, actionType, operations);
