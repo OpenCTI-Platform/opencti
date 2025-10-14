@@ -105,3 +105,4 @@ To provide OpenCTI users with cartography features, the platform uses a dedicate
 By using this server, you authorize Filigran to collect this information. Otherwise, you are free to deploy your own OpenStreetMap server and modify the platform configuration accordingly.
 
 If you have started using the Filigran server and change your mind, you have the right to access, limit, rectify, erase and receive your data. To exercise your rights, please send your request to privacy@filigran.io.
+
