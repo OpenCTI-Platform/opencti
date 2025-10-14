@@ -60,7 +60,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
       <IconButton
         color="primary"
         aria-label={t_i18n('Import')}
-        size="large"
+        size="small"
         component="label"
         onChange={handleImport}
         data-testid='import-theme-btn'
