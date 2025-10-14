@@ -67,14 +67,24 @@ def test_format_date_with_tz(opencti_stix2: OpenCTIStix2):
     my_date_str = "2021-03-05T00:00:00.000Z"
     assert my_date_str == opencti_stix2.format_date(my_date)
     assert my_datetime_str == opencti_stix2.format_date(my_datetime_str)
-    assert (
-        str(
-            datetime.datetime.now(tz=datetime.timezone.utc)
-            .isoformat(timespec="seconds")
-            .replace("+00:00", "")
-        )
-        in opencti_stix2.format_date()
+
+    # Test the behavior of format_date() when called without arguments.
+    # Since it relies on the current time, avoid flaky results by comparing only up to the seconds, using dates generated immediately before and after the function call.
+    my_now_date_1 = (
+        datetime.datetime.now(tz=datetime.timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "")
     )
+    stix_now_date = opencti_stix2.format_date()
+    my_now_date_2 = (
+        datetime.datetime.now(tz=datetime.timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "")
+    )
+    assert (str(my_now_date_1) in stix_now_date) or (
+        str(my_now_date_2) in stix_now_date
+    )
+
     with pytest.raises(ValueError):
         opencti_stix2.format_date("No time")
 
