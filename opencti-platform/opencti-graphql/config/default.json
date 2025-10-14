@@ -16,8 +16,7 @@
       "isArray",
       "keys",
       "function",
-      "markdownToHtml",
-      "m2h"
+      "markdownToHtml"
     ],
     "enabled": true,
     "enabled_ui": true,
