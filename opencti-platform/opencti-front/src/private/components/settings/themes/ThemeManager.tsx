@@ -36,8 +36,10 @@ export const refetchableThemesQuery = graphql`
           theme_logo
           theme_logo_collapsed
           theme_logo_login
+          
         }
       }
+    
     }
   }
 `;
@@ -46,8 +48,15 @@ const themeManagerQuery = graphql`
   query ThemeManagerQuery(
     $count: Int!
     $cursor: ID
+    $orderBy: ThemeOrdering
+    $orderMode: OrderingMode
   ) {
-    ...ThemeManager_lines_data @arguments(count: $count, cursor: $cursor)
+    ...ThemeManager_lines_data @arguments(
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -56,11 +65,16 @@ const themesLinesFragment = graphql`
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
+    orderBy: { type: "ThemeOrdering" }
+    orderMode: { type: "OrderingMode" }
+
   )
   @refetchable(queryName: "ThemeManagerLinesRefetchQuery") {
     themes(
       first: $count
       after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
     ) @connection(key: "Pagination_themes") {
       edges {
         node {
@@ -111,13 +125,8 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
   const ref = useRef(null);
 
   const initialValues = {
-    sortBy: 'name',
+    sortBy: 'created_at',
     orderAsc: false,
-    openExports: false,
-    filters: {
-      ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Core-Object']),
-    },
   };
 
   const { helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage<ThemeManagerQuery>(
@@ -136,11 +145,8 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 
   const dataColumns = {
     name: {
-      id: '',
-      label: t_i18n('Name'),
       percentWidth: 100,
       isSortable: false,
-      render: (node: { id: string; name: string }) => node.name,
     },
   };
 
@@ -177,7 +183,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 
           <ThemeImporter
             handleRefetch={handleRefetch}
-            paginationOptions={paginationOptions.variables}
+            paginationOptions={queryPaginationOptions}
           />
         </Box>
       </Stack>
@@ -185,7 +191,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
       <Paper
         ref={ref}
         variant="outlined"
-        style={{ padding: '0 15px 15px' }}
+        style={{ padding: '15px' }}
       >
         {queryRef && (
           <DataTable
@@ -200,7 +206,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
                 <ThemePopover
                   themeData={row}
                   handleRefetch={handleRefetch}
-                  paginationOptions={paginationOptions.variables}
+                  paginationOptions={queryPaginationOptions}
                   canDelete={row.id !== defaultTheme?.id}
                   defaultTheme={defaultTheme}
                 />
@@ -219,7 +225,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
         open={displayCreation}
         handleClose={handleCloseCreation}
         handleRefetch={handleRefetch}
-        paginationOptions={paginationOptions.variables}
+        paginationOptions={queryPaginationOptions}
       />
     </>
   );

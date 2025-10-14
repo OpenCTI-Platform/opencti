@@ -29882,6 +29882,7 @@ export type ThemeEdge = {
 
 export enum ThemeOrdering {
   Score = '_score',
+  CreatedAt = 'created_at',
   Name = 'name'
 }
 
