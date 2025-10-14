@@ -5067,7 +5067,7 @@ __metadata:
 "@types/showdown@npm:2.0.6":
   version: 2.0.6
   resolution: "@types/showdown@npm:2.0.6"
-  checksum: 10/f376e90227c363e1aaf124b3e3fab5e2188273083175006d4a41803243e0809d95136ac4c9e630ab9d6bef1d5999e8e94bd88270d1df08fd562fc8a8d88407af
+  checksum: 10c0/7136e47a9f0b871e74d8f17afcd99bca3d356f9fd81ee4ddb5361beb41be11d6d5705b86cf8f44796b6ca61caa5c4ff408029b772e436f6a1f9021bb73f36f95
   languageName: node
   linkType: hard
 
@@ -10820,6 +10820,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"marked@npm:16.4.0":
+  version: 16.4.0
+  resolution: "marked@npm:16.4.0"
+  bin:
+    marked: bin/marked.js
+  checksum: 10c0/5d5e34a913e888b3ec42b9ad69409cc674d3fb91c75fd66749280c5f0c6cf69de9f3a2076af2a952ca577dd226f05b2f3d00d6850df71c37e662f3492377a582
+  languageName: node
+  linkType: hard
+
 "math-intrinsics@npm:^1.1.0":
   version: 1.1.0
   resolution: "math-intrinsics@npm:1.1.0"
@@ -11767,6 +11776,7 @@ __metadata:
     license-checker-rseidelsohn: "npm:4.4.2"
     lru-cache: "npm:11.2.1"
     luxon: "npm:3.7.1"
+    marked: "npm:16.4.0"
     migrate: "npm:2.1.0"
     mime-types: "npm:3.0.1"
     moment: "npm:2.30.1"
