@@ -13597,6 +13597,7 @@ type ThemeEdge {
 
 enum ThemeOrdering {
   name
+  created_at
   _score
 }
 
