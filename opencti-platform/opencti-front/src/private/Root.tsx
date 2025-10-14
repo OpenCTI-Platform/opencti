@@ -350,7 +350,7 @@ const rootPrivateQuery = graphql`
         }
       }
     }
-    themes {
+    themes(orderBy: created_at, orderMode: desc) {
       edges {
         node {
           id

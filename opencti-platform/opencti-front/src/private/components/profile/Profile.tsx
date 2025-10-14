@@ -25,7 +25,7 @@ export const profileQuery = graphql`
     settings {
       ...ProfileOverview_settings
     }
-    themes {
+    themes(orderBy: created_at, orderMode: desc) {
       edges {
         node {
           id
