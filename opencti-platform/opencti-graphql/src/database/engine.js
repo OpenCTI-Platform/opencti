@@ -509,32 +509,23 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
     } else {
       const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
       // Markings should be grouped by types for restriction
-      const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
-      const allGroupedMarkings = R.groupBy((m) => m.definition_type, allMarkings);
-      const markingGroups = Object.keys(allGroupedMarkings);
       const mustNotHaveOneOf = [];
-      for (let index = 0; index < markingGroups.length; index += 1) {
-        const markingGroup = markingGroups[index];
-        const markingsForGroup = allGroupedMarkings[markingGroup].map((i) => i.internal_id);
-        const userMarkingsForGroup = (userGroupedMarkings[markingGroup] || []).map((i) => i.internal_id);
-        // Get all markings the user has no access for this group
-        const res = markingsForGroup.filter((m) => !userMarkingsForGroup.includes(m));
-        if (res.length > 0) {
-          mustNotHaveOneOf.push(res);
+      const userMarkingsIds = new Set(user.allowed_marking.map((m) => m.internal_id));
+      for (let index = 0; index < allMarkings.length; index += 1) {
+        const marking = allMarkings[index];
+        const markingId = marking.internal_id;
+        if (!userMarkingsIds.has(markingId)) {
+          mustNotHaveOneOf.push(markingId);
         }
       }
       // If use have marking, he can access to data with no marking && data with according marking
-      const mustNotMarkingTerms = [];
-      for (let i = 0; i < mustNotHaveOneOf.length; i += 1) {
-        const markings = mustNotHaveOneOf[i];
-        const should = markings.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: m } }));
-        mustNotMarkingTerms.push({
-          bool: {
-            should,
-            minimum_should_match: 1,
-          },
-        });
-      }
+      const should = mustNotHaveOneOf.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: m } }));
+      const mustNotMarkingTerms = [{
+        bool: {
+          should,
+          minimum_should_match: 1,
+        },
+      }];
       const markingBool = {
         bool: {
           should: [
