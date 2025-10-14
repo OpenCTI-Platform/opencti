@@ -181,24 +181,24 @@ class RootArtifact extends Component {
                           <StixCyberObservable
                             stixCyberObservableData={stixCyberObservable}
                           />
-                                )}
+                        )}
                       />
                       <Route
-                        path="/knowledge"
-                        element={
+                        path="/knowledge/*"
+                        element={(
                           <StixCyberObservableKnowledge
                             stixCyberObservable={stixCyberObservable}
                             connectorsForImport={props.connectorsForImport}
                           />
-                                }
+                        )}
                       />
                       <Route
                         path="/content/*"
-                        element={
+                        element={(
                           <StixCoreObjectContentRoot
                             stixCoreObject={stixCyberObservable}
                           />
-                                }
+                        )}
                       />
                       <Route
                         path="/sightings"
