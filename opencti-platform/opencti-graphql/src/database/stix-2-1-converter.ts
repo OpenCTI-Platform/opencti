@@ -184,13 +184,21 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     created_at: convertToStixDate(instance.created_at),
     updated_at: convertToStixDate(instance.updated_at),
     aliases: instance.x_opencti_aliases ?? [],
-    files: (instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => ({
-      name: file.name,
-      uri: `/storage/get/${file.id}`,
-      version: file.version,
-      mime_type: file.mime_type,
-      object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
-    })),
+    files: (instance.x_opencti_files ?? []).map((file: StoreFileWithRefs) => (isNotEmptyField(file.data)
+      ? {
+        name: file.name,
+        version: file.version,
+        mime_type: file.mime_type,
+        object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
+        data: file.data,
+        uri: 'unknown'
+      } : {
+        name: file.name,
+        uri: `/storage/get/${file.id}`,
+        version: file.version,
+        mime_type: file.mime_type,
+        object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
+      })),
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
     is_inferred: instance._index ? isInferredIndex(instance._index) : undefined, // TODO Use case for empty _index?
     // Refs

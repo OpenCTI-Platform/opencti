@@ -83,6 +83,7 @@ interface StoreFile {
   inCarousel?: boolean;
   file_markings?: string[];
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
+  data?: string;
 }
 
 interface StoreFileWithRefs extends StoreFile {

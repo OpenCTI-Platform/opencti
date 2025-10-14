@@ -312,7 +312,6 @@ const transformSpecialFields = async (
         name: file.name,
         data: file.data, // base64 encoded content
         mime_type: file.mime_type || 'application/octet-stream',
-        no_trigger_import: true
       }));
       if (!isRelationship) {
         (transformed as any).x_opencti_files = files;

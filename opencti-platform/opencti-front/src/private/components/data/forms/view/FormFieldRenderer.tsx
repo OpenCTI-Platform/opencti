@@ -3,7 +3,7 @@ import { Field } from 'formik';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-import { CloudUpload } from '@mui/icons-material';
+import { CloudUploadOutlined } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -390,7 +390,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
               />
               <label htmlFor={`file-upload-${fieldName}`}>
                 <IconButton color="primary" component="span">
-                  <CloudUpload />
+                  <CloudUploadOutlined />
                 </IconButton>
               </label>
               <span>{t_i18n('Upload files')}</span>
