@@ -9,6 +9,7 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { makeStyles } from '@mui/styles';
 import Paper from '@mui/material/Paper';
+import { Stack } from '@mui/material';
 import { SettingsQuery$data } from '../__generated__/SettingsQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -18,7 +19,7 @@ import TextField from '../../../../components/TextField';
 // Do not use it for new code.
 const useStyles = makeStyles(() => ({
   paper: {
-    margin: '5px 0 0 0',
+    // margin: '10px 0 0 0',
     padding: 20,
     borderRadius: 4,
   },
@@ -48,29 +49,32 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
   const { id, editContext } = settings;
   return (
     <>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Third-party analytics')}
-        <EEChip />
-      </Typography>
-      <div style={{ float: 'left', margin: '-2px 0 0 10px' }}>
-        <Tooltip
-          title={
-            <>
-              {t_i18n('If needed, you can set a')}{' '}
-              <Link
-                to={'/dashboard/settings/accesses/policies'}
-                target="_blank"
-              >
-                {t_i18n('consent message')}
-              </Link>{' '}
-              {t_i18n('on user login.')}
-            </>
+      <Stack direction={'row'} alignItems={'center'} gap={0.5} sx={{ height: '30px' }}>
+        <Typography variant="h4" gutterBottom={true} sx={{ margin: 0 }}>
+          {t_i18n('Third-party analytics')}
+        </Typography>
+
+        <Stack direction={'row'} gap={1}>
+          <EEChip />
+          <Tooltip
+            title={
+              <>
+                {t_i18n('If needed, you can set a')}{' '}
+                <Link
+                  to={'/dashboard/settings/accesses/policies'}
+                  target="_blank"
+                >
+                  {t_i18n('consent message')}
+                </Link>{' '}
+                {t_i18n('on user login.')}
+              </>
           }
-        >
-          <InformationOutline fontSize="small" color="primary" />
-        </Tooltip>
-      </div>
-      <div className="clearfix" />
+          >
+            <InformationOutline fontSize="small" color="primary" />
+          </Tooltip>
+        </Stack>
+      </Stack>
+
       <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Formik
           onSubmit={() => {}}

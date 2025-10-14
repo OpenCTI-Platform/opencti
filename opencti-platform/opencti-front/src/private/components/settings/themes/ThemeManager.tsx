@@ -159,7 +159,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
 
   return (
     <>
-      <Stack direction="row" alignItems="center" gap={1} sx={{ marginBottom: 0.5 }}>
+      <Stack direction="row" alignItems="center" gap={1} sx={{ marginBottom: 0, marginTop: -0.7 }}>
         <Typography variant="h4" sx={{ margin: 0 }}>{t_i18n('Themes')}</Typography>
 
         <Box>
@@ -168,7 +168,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
               color="primary"
               aria-label={t_i18n('Add')}
               onClick={handleOpenCreation}
-              size="large"
+              size="small"
               data-testid="create-theme-btn"
             >
               <Add fontSize="small" />

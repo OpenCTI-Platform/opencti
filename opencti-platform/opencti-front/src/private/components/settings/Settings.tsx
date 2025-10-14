@@ -437,7 +437,8 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         </Grid>
       </Grid>
       )}
-      <Grid container={true} spacing={3} style={{ marginBottom: 60 }}>
+
+      <Grid container={true} spacing={3} sx={{ marginBottom: 10 }}>
         <Grid size={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Configuration')}
@@ -564,6 +565,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </Formik>
           </Paper>
         </Grid>
+
         <Grid size={6}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h4" gutterBottom={true}>
@@ -686,6 +688,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </Formik>
           </Paper>
         </Grid>
+
         <Grid size={8}>
           <SettingsMessages settings={settings}/>
         </Grid>
@@ -698,14 +701,14 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           />
         </Grid>
 
-        <Grid size={8}>
+        <Grid size={6}>
           <ThemeManager
             handleRefetch={handleRefetch}
             defaultTheme={settings.platform_theme}
           />
         </Grid>
 
-        <Grid size={4}>
+        <Grid size={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Tools')}
           </Typography>
