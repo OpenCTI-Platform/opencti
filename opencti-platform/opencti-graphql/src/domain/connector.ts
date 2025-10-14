@@ -400,7 +400,7 @@ const updateConnector = async (context: AuthContext, user: AuthUser, connectorId
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for connector \`${element.name}\``,
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for connector:\`${element.name}\` (id:${connectorId})`,
     context_data: { id: connectorId, entity_type: ENTITY_TYPE_CONNECTOR, input }
   });
   // Notify configuration change for caching system

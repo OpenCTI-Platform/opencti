@@ -665,7 +665,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               {
                 connector.is_managed && (
                   <Grid item xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>{t_i18n('Connector name')}</Typography>
+                    <Typography variant="h3" gutterBottom={true}>{t_i18n('Container name')}</Typography>
                     <pre>
                       <ItemCopy content={connector.container_name} />
                     </pre>
