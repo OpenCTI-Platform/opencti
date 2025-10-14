@@ -2353,6 +2353,7 @@
   "Marking definition": "Definición del marcado",
   "Marking definition levels": "Marcar niveles de definición",
   "Marking definitions": "Categorías de clasificación",
+  "Marking Definitions": "Definiciones de marcado",
   "Marking Definitions | Security | Settings": "Definiciones de marcado |Seguridad | Configuración",
   "Marking definitions to use by the csv mapper...": "Definiciones de marcado utilizadas por el mapeador CSV sólo cuando algunos atributos de marcado tienen la política establecida en 'Dejar que el usuario elija las definiciones de marcado'. Si no, estas definiciones de marcado se ignoran.",
   "Markings": "Marcas",
