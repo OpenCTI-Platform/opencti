@@ -2,6 +2,7 @@
  * Utility functions and constants for Form components
  */
 import type { FormFieldAttribute, EntityTypeOption, AttributeOption, RelationshipTypeOption, FormBuilderData, FormSchemaDefinition } from './Form.d';
+import { getOpenVocabAttributes } from '../../../../utils/vocabularyMapping';
 
 // Field type options for the UI
 export const FIELD_TYPES = [
@@ -16,7 +17,9 @@ export const FIELD_TYPES = [
   { value: 'createdBy', label: 'Created By' },
   { value: 'objectMarking', label: 'Object Marking' },
   { value: 'objectLabel', label: 'Object Label' },
+  { value: 'externalReferences', label: 'External References' },
   { value: 'files', label: 'Files' },
+  { value: 'openvocab', label: 'Open Vocabulary' },
 ];
 
 // Field type to attribute type mapping
@@ -32,7 +35,9 @@ export const FIELD_TYPE_TO_ATTRIBUTE_TYPE: Record<string, string[]> = {
   createdBy: ['ref'], // Special reference field
   objectMarking: ['refs'], // Multiple references
   objectLabel: ['refs'], // Multiple references
+  externalReferences: ['refs'], // External references
   files: ['files'], // File uploads
+  openvocab: ['string'], // OpenVocab fields are string attributes with special rendering
 };
 
 // Container types (backend constants)
@@ -80,13 +85,21 @@ export const getAvailableFieldTypes = (
   const { attributes } = entity;
 
   // Special field types that are always available
-  const specialFieldTypes = ['createdBy', 'objectMarking', 'objectLabel', 'files'];
+  const specialFieldTypes = ['createdBy', 'objectMarking', 'objectLabel', 'externalReferences', 'files'];
+
+  // Get list of attributes that support OpenVocab
+  const openVocabAttributeNames = getOpenVocabAttributes();
 
   // Check which field types have matching attributes
   return FIELD_TYPES.filter((fieldType) => {
     // Special field types are always available
     if (specialFieldTypes.includes(fieldType.value)) {
       return true;
+    }
+
+    // For OpenVocab field type, check if any attributes match our vocabulary mapping
+    if (fieldType.value === 'openvocab') {
+      return attributes.some((attr: AttributeOption) => openVocabAttributeNames.includes(attr.name));
     }
 
     const allowedAttributeTypes = FIELD_TYPE_TO_ATTRIBUTE_TYPE[fieldType.value] || [];
@@ -157,6 +170,15 @@ export const getAttributesForEntityType = (
     }];
   }
 
+  if (fieldType === 'externalReferences') {
+    return [{
+      value: 'externalReferences',
+      name: 'externalReferences',
+      label: t_i18n('External References'),
+      mandatory: false,
+    }];
+  }
+
   if (fieldType === 'files') {
     return [{
       value: 'x_opencti_files',
@@ -168,6 +190,22 @@ export const getAttributesForEntityType = (
 
   const entity = entityTypes.find((e) => e.value === entityType);
   if (!entity || !entity.attributes) return [];
+
+  // Get list of attributes that support OpenVocab
+  const openVocabAttributeNames = getOpenVocabAttributes();
+
+  // For OpenVocab field type, filter to only vocabulary-supported attributes
+  if (fieldType === 'openvocab') {
+    return (entity.attributes || [])
+      .filter((attr: { name: string }) => openVocabAttributeNames.includes(attr.name))
+      .map((attr: { type?: string; name: string; label?: string; mandatory?: boolean }) => ({
+        value: attr.name,
+        name: attr.name,
+        label: attr.label || attr.name,
+        mandatory: attr.mandatory || false,
+        type: attr.type || 'string',
+      }));
+  }
 
   const allowedAttributeTypes = FIELD_TYPE_TO_ATTRIBUTE_TYPE[fieldType] || [];
 
@@ -396,6 +434,8 @@ export const convertFormBuilderDataToSchema = (
     mainEntityParseMode: values.mainEntityParseMode,
     mainEntityParseFieldMapping: values.mainEntityParseFieldMapping,
     mainEntityAutoConvertToStixPattern: values.mainEntityAutoConvertToStixPattern,
+    autoCreateIndicatorFromObservable: values.autoCreateIndicatorFromObservable,
+    autoCreateObservableFromIndicator: values.autoCreateObservableFromIndicator,
     additionalEntities: values.additionalEntities,
     fields: values.fields.map((field) => ({
       id: field.id,
@@ -405,6 +445,7 @@ export const convertFormBuilderDataToSchema = (
       type: field.type,
       required: field.required,
       isMandatory: field.isMandatory, // Preserve mandatory flag
+      width: field.width, // Preserve field width configuration
       options: field.options,
       attributeMapping: field.attributeMapping,
       defaultValue: field.defaultValue,

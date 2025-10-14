@@ -110,6 +110,8 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         ...field,
         // Preserve isMandatory from the schema if it exists
         isMandatory: field.isMandatory || false,
+        // Preserve width configuration if it exists
+        width: field.width || 'full',
       }));
       const formData = {
         name: form.name,
@@ -125,6 +127,8 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
         mainEntityParseMode: schema.mainEntityParseMode || 'comma',
         mainEntityParseFieldMapping: schema.mainEntityParseFieldMapping || undefined,
         mainEntityAutoConvertToStixPattern: schema.mainEntityAutoConvertToStixPattern || false,
+        autoCreateIndicatorFromObservable: schema.autoCreateIndicatorFromObservable || false,
+        autoCreateObservableFromIndicator: schema.autoCreateObservableFromIndicator || false,
         additionalEntities: schema.additionalEntities || [],
         fields,
         relationships: schema.relationships || [],

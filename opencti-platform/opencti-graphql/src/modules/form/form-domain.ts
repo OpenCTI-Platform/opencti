@@ -13,7 +13,7 @@ import { generateStandardId } from '../../schema/identifier';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorType, type FormSubmissionInput } from '../../generated/graphql';
+import { ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix } from '../../database/stix-2-1-converter';
@@ -29,6 +29,7 @@ import { detectObservableType } from '../../utils/observable';
 import { createStixPattern } from '../../python/pythonBridge';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
+import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -49,6 +50,22 @@ export const addForm = async (
   const isValid = validateSchema(parsedSchema);
   if (!isValid) {
     throw FunctionalError(`Invalid form schema: ${JSON.stringify(validateSchema.errors)}`);
+  }
+
+  // Check for duplicate form names with the same main entity type
+  const existingForms = await fullEntitiesList(context, user, ['Form'], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['name'], values: [input.name] },
+        { key: ['main_entity_type'], values: [parsedSchema.mainEntityType] },
+      ],
+      filterGroups: [],
+    },
+  });
+
+  if (existingForms.length > 0) {
+    throw FunctionalError(`A form with the name "${input.name}" already exists for entity type "${parsedSchema.mainEntityType}"`);
   }
 
   const formToCreate: Partial<BasicStoreEntityForm> = {
@@ -84,6 +101,9 @@ export const addForm = async (
       message: `creates form intake \`${input.name}\``,
       context_data: { id: element.id, entity_type: ENTITY_TYPE_FORM, input: { name: input.name, mainEntityType: parsedSchema.mainEntityType } },
     });
+
+    // Add telemetry
+    await addFormIntakeCreatedCount();
   }
 
   return element;
@@ -171,6 +191,9 @@ export const formEditField = async (
     context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: element.name } }
   });
 
+  // Add telemetry
+  await addFormIntakeUpdatedCount();
+
   return element;
 };
 
@@ -198,6 +221,9 @@ export const formDelete = async (
       message: `deletes form intake \`${form.name}\``,
       context_data: { id: formId, entity_type: ENTITY_TYPE_FORM, input: { name: form.name } }
     });
+
+    // Add telemetry
+    await addFormIntakeDeletedCount();
   }
 
   return formId;
@@ -279,6 +305,31 @@ const transformSpecialFields = async (
       } else {
         (transformed as any).objectLabel = value.map((label: any) => ({ value: label }));
       }
+    } else if (field.type === 'files' && Array.isArray(value)) {
+      // Transform files to x_opencti_files format
+      // Files should come as array of { name: string, data: string } where data is base64 encoded
+      const files = value.map((file: any) => ({
+        name: file.name,
+        data: file.data, // base64 encoded content
+        mime_type: file.mime_type || 'application/octet-stream',
+        no_trigger_import: true
+      }));
+      if (!isRelationship) {
+        (transformed as any).x_opencti_files = files;
+      }
+    } else if (field.type === 'externalReferences' && Array.isArray(value)) {
+      // Transform external references
+      const references = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const refId of value) {
+        if (typeof refId === 'string') {
+          const refEntity = await internalLoadById(context, user, refId);
+          if (refEntity) {
+            references.push(refEntity);
+          }
+        }
+      }
+      (transformed as any).externalReferences = references;
     } else if (isRelationship && attrName && value !== undefined) {
       // For relationships, apply other fields directly
       transformed[attrName] = value;
@@ -765,6 +816,9 @@ export const formSubmit = async (
     });
 
     logApp.info('[FORM] Bundle sent to connector queue', { formId: form.id, workId: work.id, bundleId: bundle.id });
+
+    // Add telemetry for form submission
+    await addFormIntakeSubmittedCount();
 
     return {
       success: true,

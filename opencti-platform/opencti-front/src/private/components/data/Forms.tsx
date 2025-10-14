@@ -12,7 +12,7 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import Security from '../../../utils/Security';
-import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
+import useGranted, { INGESTION_SETINGESTIONS, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 
@@ -31,6 +31,8 @@ const Forms = () => {
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Form intakes | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
+  const hasIngestionCapability = useGranted([INGESTION_SETINGESTIONS]);
+  const hasKnowledgeUpdateCapability = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const {
     viewStorage,
@@ -134,6 +136,23 @@ const Forms = () => {
       <div className={classes.container}>
         <Alert severity="info">
           {t_i18n('Ingestion manager is disabled or not configured, please go to the platform settings to enable it.')}
+        </Alert>
+      </div>
+    );
+  }
+
+  // Check if user has permission to view forms
+  if (!hasIngestionCapability && !hasKnowledgeUpdateCapability) {
+    return (
+      <div className={classes.container}>
+        <Breadcrumbs elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Ingestion') },
+          { label: t_i18n('Form intakes'), current: true },
+        ]}
+        />
+        <Alert severity="error">
+          {t_i18n('You do not have permission to view form intakes.')}
         </Alert>
       </div>
     );

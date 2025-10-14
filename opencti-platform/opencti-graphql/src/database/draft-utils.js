@@ -124,7 +124,7 @@ export const buildUpdateFieldPatch = (rawUpdatePatch) => {
 export const getConsolidatedUpdatePatch = (currentUpdatePatch, updatedInputsResolved) => {
   const newUpdatePatch = currentUpdatePatch;
   const nonResolvedInput = updatedInputsResolved
-    .map((i) => { return { key: i.key, value: i.value?.map((v) => v.standard_id ?? v), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] }; });
+    .map((i) => { return { key: i.key, value: i.value?.map((v) => v?.standard_id ?? v), operation: i.operation ?? UPDATE_OPERATION_REPLACE, previous: i.previous ?? [] }; });
   for (let i = 0; i < nonResolvedInput.length; i += 1) {
     const currentNonResolvedInput = nonResolvedInput[i];
     const currentUpdates = currentUpdatePatch[currentNonResolvedInput.key];
@@ -158,7 +158,7 @@ export const getConsolidatedUpdatePatch = (currentUpdatePatch, updatedInputsReso
       const replaced_value = currentNonResolvedInput.operation === UPDATE_OPERATION_REPLACE ? currentNonResolvedInput.value : [];
       const added_value = currentNonResolvedInput.operation === UPDATE_OPERATION_ADD ? currentNonResolvedInput.value : [];
       const removed_value = currentNonResolvedInput.operation === UPDATE_OPERATION_REMOVE ? currentNonResolvedInput.value : [];
-      const initial_value = currentNonResolvedInput.previous?.map((p) => p.standard_id ?? p);
+      const initial_value = currentNonResolvedInput.previous?.map((p) => p?.standard_id ?? p);
       newUpdatePatch[currentNonResolvedInput.key] = { replaced_value, added_value, removed_value, initial_value };
     }
   }

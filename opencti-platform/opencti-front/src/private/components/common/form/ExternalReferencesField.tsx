@@ -68,6 +68,7 @@ interface ExternalReferencesFieldProps {
   id?: string;
   dryrun?: boolean;
   required?:boolean;
+  noCreation?: boolean; // Disable inline creation to avoid nested forms
 }
 
 export const ExternalReferencesField: FunctionComponent<
@@ -83,6 +84,7 @@ ExternalReferencesFieldProps
   id,
   dryrun,
   required = false,
+  noCreation = false,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -177,7 +179,7 @@ ExternalReferencesFieldProps
         noOptionsText={t_i18n('No available options')}
         options={externalReferences}
         onInputChange={searchExternalReferences}
-        openCreate={handleOpenExternalReferenceCreation}
+        openCreate={noCreation ? undefined : handleOpenExternalReferenceCreation}
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
@@ -203,62 +205,64 @@ ExternalReferencesFieldProps
         )}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />
-      <ExternalReferenceCreation
-        paginationOptions={undefined}
-        contextual={true}
-        display={true}
-        openContextual={externalReferenceCreation}
-        handleCloseContextual={handleCloseExternalReferenceCreation}
-        dryrun={dryrun}
-        creationCallback={(data: ExternalReferenceCreationMutation$data) => {
-          const newExternalReference = data.externalReferenceAdd;
-          if (id) {
-            const input = {
-              fromId: id,
-              relationship_type: 'external-reference',
-            };
-            commitExternalReference({
-              variables: {
-                id: newExternalReference?.id,
-                input,
-              },
-              updater: (store: RecordSourceSelectorProxy) => {
-                if (!noStoreUpdate) {
-                  insertNode(
-                    store,
-                    'Pagination_externalReferences',
-                    undefined,
-                    'externalReferenceEdit',
-                    id,
-                    'relationAdd',
-                    { input },
-                    'to',
-                  );
-                }
-              },
-            });
-          }
-          if (newExternalReference) {
-            const externalReferenceLabel = `[${
-              newExternalReference.source_name
-            }] ${truncate(
-              newExternalReference.description
+      {!noCreation && (
+        <ExternalReferenceCreation
+          paginationOptions={undefined}
+          contextual={true}
+          display={true}
+          openContextual={externalReferenceCreation}
+          handleCloseContextual={handleCloseExternalReferenceCreation}
+          dryrun={dryrun}
+          creationCallback={(data: ExternalReferenceCreationMutation$data) => {
+            const newExternalReference = data.externalReferenceAdd;
+            if (id) {
+              const input = {
+                fromId: id,
+                relationship_type: 'external-reference',
+              };
+              commitExternalReference({
+                variables: {
+                  id: newExternalReference?.id,
+                  input,
+                },
+                updater: (store: RecordSourceSelectorProxy) => {
+                  if (!noStoreUpdate) {
+                    insertNode(
+                      store,
+                      'Pagination_externalReferences',
+                      undefined,
+                      'externalReferenceEdit',
+                      id,
+                      'relationAdd',
+                      { input },
+                      'to',
+                    );
+                  }
+                },
+              });
+            }
+            if (newExternalReference) {
+              const externalReferenceLabel = `[${
+                newExternalReference.source_name
+              }] ${truncate(
+                newExternalReference.description
                 || newExternalReference.url
                 || newExternalReference.external_id,
-              150,
-            )}`;
-            const newExternalReferences = append(
-              {
-                label: externalReferenceLabel,
-                value: newExternalReference.id,
-                entity: newExternalReference,
-              },
-              values || [],
-            );
-            setFieldValue(name, newExternalReferences ?? []);
-          }
-        }}
-      />
+                150,
+              )}`;
+              const newExternalReferences = append(
+                {
+                  label: externalReferenceLabel,
+                  value: newExternalReference.id,
+                  entity: newExternalReference,
+                },
+                values || [],
+              );
+              setFieldValue(name, newExternalReferences ?? []);
+            }
+          }}
+        />
+      )}
     </>
   );
 };

@@ -14,8 +14,10 @@ import {
   getAvailableFieldTypes,
   getInitialMandatoryFields,
   CONTAINER_TYPES,
+  FIELD_TYPES,
 } from './FormUtils';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
+import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { FormFieldAttribute, AdditionalEntity, EntityRelationship, FormBuilderData, RelationshipTypeOption } from './Form.d';
 import useAuth from '../../../../utils/hooks/useAuth';
 
@@ -133,6 +135,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
       mainEntityFieldMode: 'multiple',
       mainEntityParseField: 'text',
       mainEntityParseMode: 'comma',
+      autoCreateIndicatorFromObservable: false,
+      autoCreateObservableFromIndicator: false,
       additionalEntities: [],
       fields: defaultMandatoryFields,
       relationships: [],
@@ -183,10 +187,6 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     acc[entityId].push(field);
     return acc;
   }, {} as Record<string, FormFieldAttribute[]>);
-
-  const getAttributesForEntityType = (entityType: string, fieldType: string) => {
-    return getAttributesUtil(entityType, fieldType, entityTypes, t_i18n);
-  };
 
   const handleMainEntityTypeChange = (value: string) => {
     updateFormData((prev) => {
@@ -245,11 +245,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     const fieldId = generateFieldId();
     const newField: FormFieldAttribute = {
       id: fieldId,
-      name: `field_${fieldId}`, // Auto-generated name
+      name: fieldId,
       label: '',
-      type: 'text',
+      type: 'text', // Default type
       required: false,
-      defaultValue: null, // Initialize default value
+      defaultValue: null,
       attributeMapping: {
         entity: entityId,
         attributeName: '',
@@ -325,27 +325,55 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
   const renderRelationshipField = (field: FormFieldAttribute, index: number, relationshipIndex: number) => {
     const fieldPath = `relationships.${relationshipIndex}.fields.${index}`;
+    // Available field types for relationships - exclude checkbox, select, multiselect
     const availableFieldTypes = [
       { value: 'text', label: t_i18n('Text') },
       { value: 'textarea', label: t_i18n('Textarea') },
       { value: 'number', label: t_i18n('Number') },
       { value: 'datetime', label: t_i18n('Date/Time') },
-      { value: 'checkbox', label: t_i18n('Checkbox') },
-      { value: 'select', label: t_i18n('Select') },
-      { value: 'multiselect', label: t_i18n('Multi-Select') },
+      { value: 'date', label: t_i18n('Date') },
+      { value: 'createdBy', label: t_i18n('Created By') },
+      { value: 'objectMarking', label: t_i18n('Object Marking') },
+      { value: 'objectLabel', label: t_i18n('Object Label') },
     ];
 
-    // Available attributes for relationships
-    const availableAttributes = [
-      { value: 'description', label: t_i18n('Description') },
-      { value: 'start_time', label: t_i18n('Start time') },
-      { value: 'stop_time', label: t_i18n('Stop time') },
-      { value: 'confidence', label: t_i18n('Confidence') },
-      { value: 'x_opencti_workflow_id', label: t_i18n('Status') },
-      { value: 'createdBy', label: t_i18n('Author') },
-      { value: 'objectMarking', label: t_i18n('Marking definitions') },
-      { value: 'objectLabel', label: t_i18n('Labels') },
-    ];
+    // Available attributes for relationships based on field type
+    const getAvailableAttributesForType = (fieldType: string) => {
+      switch (fieldType) {
+        case 'text':
+        case 'textarea':
+          return [
+            { value: 'description', label: t_i18n('Description') },
+          ];
+        case 'number':
+          return [
+            { value: 'confidence', label: t_i18n('Confidence') },
+            { value: 'x_opencti_workflow_id', label: t_i18n('Status') },
+          ];
+        case 'datetime':
+        case 'date':
+          return [
+            { value: 'start_time', label: t_i18n('Start time') },
+            { value: 'stop_time', label: t_i18n('Stop time') },
+          ];
+        case 'createdBy':
+          return [
+            { value: 'createdBy', label: t_i18n('Created By') },
+          ];
+        case 'objectMarking':
+          return [
+            { value: 'objectMarking', label: t_i18n('Object Marking') },
+          ];
+        case 'objectLabel':
+          return [
+            { value: 'objectLabel', label: t_i18n('Object Label') },
+          ];
+        default:
+          return [];
+      }
+    };
+
+    const availableAttributes = getAvailableAttributesForType(field.type);
 
     return (
       <Box key={field.id} className={classes.fieldGroup}>
@@ -368,18 +396,15 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         <TextField
           fullWidth
           variant="standard"
-          label={t_i18n('Field Name')}
-          value={field.name}
-          onChange={(e) => handleFieldChange(`${fieldPath}.name`, e.target.value)}
-          style={{ marginTop: 20 }}
-        />
-
-        <TextField
-          fullWidth
-          variant="standard"
           label={t_i18n('Label')}
           value={field.label}
-          onChange={(e) => handleFieldChange(`${fieldPath}.label`, e.target.value)}
+          onChange={(e) => {
+            const label = e.target.value;
+            // Auto-generate name from label
+            const name = label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            handleFieldChange(`${fieldPath}.label`, label);
+            handleFieldChange(`${fieldPath}.name`, name || field.id);
+          }}
           style={{ marginTop: 20 }}
         />
 
@@ -387,7 +412,11 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           <InputLabel>{t_i18n('Field Type')}</InputLabel>
           <Select
             value={field.type}
-            onChange={(e) => handleFieldChange(`${fieldPath}.type`, e.target.value)}
+            onChange={(e) => {
+              handleFieldChange(`${fieldPath}.type`, e.target.value);
+              // Reset attribute mapping when field type changes
+              handleFieldChange(`${fieldPath}.attributeMapping.attributeName`, '');
+            }}
             label={t_i18n('Field Type')}
           >
             {availableFieldTypes.map((type) => (
@@ -428,23 +457,103 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
   };
 
   const renderField = (field: FormFieldAttribute, index: number, entityType: string) => {
-    const availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes);
-    let availableAttributes = field.type ? getAttributesForEntityType(entityType, field.type) : [];
     const fieldIndex = formData.fields.findIndex((f) => f.id === field.id);
+
+    // Get all attributes for this entity type (not filtered by field type yet)
+    const entity = entityTypes.find((e) => e.value === entityType);
+    let allAttributes = entity?.attributes || [];
+
+    // Add special attributes that are always available for all entity types
+    const specialAttributes = [
+      {
+        value: 'createdBy',
+        name: 'createdBy',
+        label: t_i18n('Created By'),
+        mandatory: false,
+        type: 'ref',
+      },
+      {
+        value: 'objectMarking',
+        name: 'objectMarking',
+        label: t_i18n('Marking Definitions'),
+        mandatory: false,
+        type: 'refs',
+      },
+      {
+        value: 'objectLabel',
+        name: 'objectLabel',
+        label: t_i18n('Labels'),
+        mandatory: false,
+        type: 'refs',
+      },
+      {
+        value: 'externalReferences',
+        name: 'externalReferences',
+        label: t_i18n('External References'),
+        mandatory: false,
+        type: 'refs',
+      },
+      {
+        value: 'x_opencti_files',
+        name: 'x_opencti_files',
+        label: t_i18n('Files'),
+        mandatory: false,
+        type: 'files',
+      },
+    ];
+
+    // Merge special attributes with entity attributes
+    allAttributes = [...allAttributes, ...specialAttributes];
 
     // Check if we're in parsed mode
     let isInParsedMode = false;
 
     // Filter out parsed field mapping if in parsed mode
     if (field.attributeMapping.entity === 'main_entity' && formData.mainEntityFieldMode === 'parsed' && formData.mainEntityParseFieldMapping) {
-      availableAttributes = availableAttributes.filter((attr) => attr.value !== formData.mainEntityParseFieldMapping);
+      allAttributes = allAttributes.filter((attr) => attr.value !== formData.mainEntityParseFieldMapping);
       isInParsedMode = true;
     } else if (field.attributeMapping.entity !== 'main_entity') {
       // For additional entities, check if they're in parsed mode
       const additionalEntity = formData.additionalEntities.find((e) => e.id === field.attributeMapping.entity);
       if (additionalEntity?.fieldMode === 'parsed' && additionalEntity.parseFieldMapping) {
-        availableAttributes = availableAttributes.filter((attr) => attr.value !== additionalEntity.parseFieldMapping);
+        allAttributes = allAttributes.filter((attr) => attr.value !== additionalEntity.parseFieldMapping);
         isInParsedMode = true;
+      }
+    }
+
+    // Filter out already used attributes
+    const existingFields = formData.fields
+      .filter((f) => f.attributeMapping.entity === field.attributeMapping.entity && f.id !== field.id)
+      .map((f) => f.attributeMapping.attributeName);
+    allAttributes = allAttributes.filter((attr) => !existingFields.includes(attr.value));
+
+    // Determine available field types based on selected attribute
+    let availableFieldTypes: typeof FIELD_TYPES = [];
+    if (field.attributeMapping.attributeName) {
+      const selectedAttribute = allAttributes.find((attr) => attr.value === field.attributeMapping.attributeName);
+
+      // Check if it's a special attribute first
+      if (field.attributeMapping.attributeName === 'createdBy') {
+        availableFieldTypes = [{ value: 'createdBy', label: 'Created By' }];
+      } else if (field.attributeMapping.attributeName === 'objectMarking') {
+        availableFieldTypes = [{ value: 'objectMarking', label: 'Object Marking' }];
+      } else if (field.attributeMapping.attributeName === 'objectLabel') {
+        availableFieldTypes = [{ value: 'objectLabel', label: 'Object Label' }];
+      } else if (field.attributeMapping.attributeName === 'externalReferences') {
+        availableFieldTypes = [{ value: 'externalReferences', label: 'External References' }];
+      } else if (field.attributeMapping.attributeName === 'x_opencti_files') {
+        availableFieldTypes = [{ value: 'files', label: 'Files' }];
+      } else {
+        availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes)
+          .filter((fieldType) => {
+            // Filter out multiselect if attribute doesn't support multiple
+            if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
+              return false;
+            }
+
+            const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
+            return attributesForType.some((attr) => attr.value === field.attributeMapping.attributeName);
+          });
       }
     }
 
@@ -464,6 +573,109 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           )}
         </div>
 
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
+          <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
+          <Select
+            value={field.attributeMapping.attributeName}
+            onChange={(e) => {
+              const attributeName = e.target.value;
+              const selectedAttribute = allAttributes.find((attr) => attr.value === attributeName);
+              handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, attributeName);
+              // Always update label with attribute label when changing attribute
+              if (selectedAttribute) {
+                handleFieldChange(`fields.${fieldIndex}.label`, selectedAttribute.label || t_i18n(selectedAttribute.name));
+                let name: string;
+                if (['createdBy', 'objectMarking', 'objectLabel', 'externalReferences', 'x_opencti_files'].includes(attributeName)) {
+                  // Use the attribute name directly for special fields
+                  name = attributeName === 'x_opencti_files' ? 'files' : attributeName;
+                } else {
+                  // Auto-generate name from label for regular fields
+                  name = (selectedAttribute.label || selectedAttribute.name).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                }
+                handleFieldChange(`fields.${fieldIndex}.name`, name || field.id);
+              }
+              // Check for special attributes first
+              if (attributeName === 'createdBy') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'createdBy');
+              } else if (attributeName === 'objectMarking') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'objectMarking');
+              } else if (attributeName === 'objectLabel') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'objectLabel');
+              } else if (attributeName === 'externalReferences') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'externalReferences');
+              } else if (attributeName === 'x_opencti_files') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'files');
+              } else {
+                // Determine and set an appropriate default field type for regular attributes
+                const compatibleTypes = getAvailableFieldTypes(entityType, entityTypes)
+                  .filter((fieldType) => {
+                    // Filter out multiselect if attribute doesn't support multiple
+                    if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
+                      return false;
+                    }
+
+                    const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
+                    return attributesForType.some((attr) => attr.value === attributeName);
+                  });
+
+                if (compatibleTypes.length > 0) {
+                  // Check if it's an OpenVocab field first - always set as default for OpenVocab attributes
+                  const vocabMapping = getVocabularyMappingByAttribute(attributeName);
+                  if (vocabMapping) {
+                    // Always default to openvocab for OpenVocab-compatible attributes
+                    handleFieldChange(`fields.${fieldIndex}.type`, 'openvocab');
+                    if (vocabMapping.multiple !== undefined) {
+                      handleFieldChange(`fields.${fieldIndex}.multiple`, vocabMapping.multiple);
+                    }
+                  } else if (!field.type || !compatibleTypes.some((t) => t.value === field.type)) {
+                    // Only set a default field type if none is selected or current is incompatible
+                    if (selectedAttribute?.defaultValues && selectedAttribute.defaultValues.length > 0) {
+                      // If attribute has vocabulary, suggest select (not multiselect unless multiple is true)
+                      const suggestedType = selectedAttribute.multiple ? 'multiselect' : 'select';
+                      handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
+                      if (suggestedType === 'multiselect') {
+                        handleFieldChange(`fields.${fieldIndex}.multiple`, true);
+                      }
+                    } else {
+                      // Set the first compatible type as default
+                      handleFieldChange(`fields.${fieldIndex}.type`, compatibleTypes[0].value);
+                    }
+                  }
+                }
+              }
+            }}
+            label={t_i18n('Map to attribute')}
+          >
+            {allAttributes.map((attr) => (
+              <MenuItem key={attr.value} value={attr.value}>
+                {attr.label || t_i18n(attr.name)}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl
+          fullWidth
+          variant="standard"
+          style={{ marginTop: 20 }}
+          disabled={!field.attributeMapping.attributeName || (field.isMandatory && !isInParsedMode)}
+        >
+          <InputLabel>{t_i18n('Field Type')}</InputLabel>
+          <Select
+            value={field.type}
+            onChange={(e) => {
+              handleFieldChange(`fields.${fieldIndex}.type`, e.target.value);
+            }}
+            label={t_i18n('Field Type')}
+          >
+            {availableFieldTypes.map((type) => (
+              <MenuItem key={type.value} value={type.value}>
+                {type.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
         <TextField
           variant="standard"
           label={t_i18n('Field Label')}
@@ -479,91 +691,87 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           style={{ marginTop: 20 }}
         />
 
-        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
-          <InputLabel>{t_i18n('Field Type')}</InputLabel>
-          <Select
-            value={field.type}
-            onChange={(e) => {
-              handleFieldChange(`fields.${fieldIndex}.type`, e.target.value);
-              handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, '');
-            }}
-            label={t_i18n('Field Type')}
-          >
-            {availableFieldTypes.map((type) => (
-              <MenuItem key={type.value} value={type.value}>
-                {type.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {(field.type === 'select' || field.type === 'multiselect') && (() => {
+          // Check if the mapped attribute has vocabulary (defaultValues)
+          const entityForVocab = entityTypes.find((e) => e.value === entityType);
+          const attribute = entityForVocab?.attributes?.find((attr) => attr.name === field.attributeMapping.attributeName);
+          const hasVocabulary = attribute?.defaultValues && attribute.defaultValues.length > 0;
 
-        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }} disabled={field.isMandatory && !isInParsedMode}>
-          <InputLabel>{t_i18n('Map to attribute')}</InputLabel>
-          <Select
-            value={field.attributeMapping.attributeName}
-            onChange={(e) => handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, e.target.value)}
-            label={t_i18n('Map to attribute')}
-          >
-            {availableAttributes.map((attr) => (
-              <MenuItem key={attr.value} value={attr.value}>
-                {attr.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          if (hasVocabulary) {
+            // Use vocabulary from the attribute
+            return (
+              <div style={{ marginTop: 20 }}>
+                <Typography variant="caption">
+                  {t_i18n('Options (from vocabulary)')}
+                </Typography>
+                <Typography variant="body2" color="textSecondary" style={{ marginTop: 5 }}>
+                  {t_i18n('This field uses predefined vocabulary values.')}
+                </Typography>
+                <Box style={{ marginTop: 10, paddingLeft: 10 }}>
+                  {attribute.defaultValues?.map((value: { id: string; name: string }) => (
+                    <Typography key={value.id} variant="body2" style={{ marginTop: 5 }}>
+                      • {value.name}
+                    </Typography>
+                  ))}
+                </Box>
+              </div>
+            );
+          }
 
-        {(field.type === 'select' || field.type === 'multiselect') && (
-          <div style={{ marginTop: 20 }}>
-            <Typography variant="caption">{t_i18n('Options')}</Typography>
-            {field.options?.map((option, optIndex) => (
-              <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
-                <TextField
-                  variant="standard"
-                  label={t_i18n('Label')}
-                  value={option.label}
-                  onChange={(e) => {
-                    const newOptions = [...(field.options || [])];
-                    newOptions[optIndex] = { ...option, label: e.target.value };
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                  style={{ flex: 1, marginRight: 10 }}
-                />
-                <TextField
-                  variant="standard"
-                  label={t_i18n('Value')}
-                  value={option.value}
-                  onChange={(e) => {
-                    const newOptions = [...(field.options || [])];
-                    newOptions[optIndex] = { ...option, value: e.target.value };
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                  style={{ flex: 1, marginRight: 10 }}
-                />
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
-                    handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-                  }}
-                >
-                  <DeleteOutlined fontSize="small" color="primary" />
-                </IconButton>
-              </Box>
-            ))}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<Add />}
-              onClick={() => {
-                const newOptions = [...(field.options || []), { label: '', value: '' }];
-                handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
-              }}
-              style={{ marginTop: 10 }}
-            >
-              {t_i18n('Add option')}
-            </Button>
-          </div>
-        )}
+          // Custom options for fields without vocabulary
+          return (
+            <div style={{ marginTop: 20 }}>
+              <Typography variant="caption">{t_i18n('Options')}</Typography>
+              {field.options?.map((option, optIndex) => (
+                <Box key={optIndex} display="flex" alignItems="center" style={{ marginTop: 10 }}>
+                  <TextField
+                    variant="standard"
+                    label={t_i18n('Label')}
+                    value={option.label}
+                    onChange={(e) => {
+                      const newOptions = [...(field.options || [])];
+                      newOptions[optIndex] = { ...option, label: e.target.value };
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <TextField
+                    variant="standard"
+                    label={t_i18n('Value')}
+                    value={option.value}
+                    onChange={(e) => {
+                      const newOptions = [...(field.options || [])];
+                      newOptions[optIndex] = { ...option, value: e.target.value };
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                    style={{ flex: 1, marginRight: 10 }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      const newOptions = field.options?.filter((_, i) => i !== optIndex) || [];
+                      handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                    }}
+                  >
+                    <DeleteOutlined fontSize="small" color="primary" />
+                  </IconButton>
+                </Box>
+              ))}
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<Add />}
+                onClick={() => {
+                  const newOptions = [...(field.options || []), { label: '', value: '' }];
+                  handleFieldChange(`fields.${fieldIndex}.options`, newOptions);
+                }}
+                style={{ marginTop: 10 }}
+              >
+                {t_i18n('Add option')}
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Default value field for text, number, textarea, select, and date fields */}
         {(field.type === 'text' || field.type === 'textarea' || field.type === 'number' || field.type === 'date' || field.type === 'datetime' || field.type === 'select') && (
@@ -607,6 +815,19 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             style={{ marginTop: 20 }}
           />
         )}
+
+        <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+          <InputLabel>{t_i18n('Field Width')}</InputLabel>
+          <Select
+            value={field.width || 'full'}
+            onChange={(e) => handleFieldChange(`fields.${fieldIndex}.width`, e.target.value)}
+            label={t_i18n('Field Width')}
+          >
+            <MenuItem value="full">{t_i18n('Full width')}</MenuItem>
+            <MenuItem value="half">{t_i18n('Half width')}</MenuItem>
+            <MenuItem value="third">{t_i18n('Third width')}</MenuItem>
+          </Select>
+        </FormControl>
 
         <FormControlLabel
           control={
@@ -1242,14 +1463,45 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
               {/* Show auto-convert to STIX pattern toggle for Indicator type */}
               {formData.mainEntityType === 'Indicator' && (
+                <>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.mainEntityAutoConvertToStixPattern || false}
+                        onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                      />
+                    }
+                    label={t_i18n('Automatically convert to STIX patterns')}
+                    style={{ marginTop: 20 }}
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={formData.autoCreateObservableFromIndicator || false}
+                        onChange={() => handleFieldChange('autoCreateObservableFromIndicator', !formData.autoCreateObservableFromIndicator)}
+                      />
+                    }
+                    label={t_i18n('Automatically create observables from indicators')}
+                    style={{ marginTop: 10 }}
+                  />
+                </>
+              )}
+
+              {/* Show auto-create indicator toggle for Observable types */}
+              {['Artifact', 'Autonomous-System', 'Directory', 'Domain-Name', 'Email-Addr', 'Email-Message',
+                'Email-Mime-Part-Type', 'File', 'IPv4-Addr', 'IPv6-Addr', 'Mac-Addr', 'Mutex', 'Network-Traffic',
+                'Process', 'Software', 'Url', 'User-Account', 'Windows-Registry-Key', 'Windows-Registry-Value-Type',
+                'X509-Certificate', 'Cryptocurrency-Wallet', 'Hostname', 'Text', 'User-Agent', 'Bank-Account',
+                'Phone-Number', 'Payment-Card', 'Media-Content',
+              ].includes(formData.mainEntityType) && (
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={formData.mainEntityAutoConvertToStixPattern || false}
-                      onChange={() => handleFieldChange('mainEntityAutoConvertToStixPattern', !formData.mainEntityAutoConvertToStixPattern)}
+                      checked={formData.autoCreateIndicatorFromObservable || false}
+                      onChange={() => handleFieldChange('autoCreateIndicatorFromObservable', !formData.autoCreateIndicatorFromObservable)}
                     />
                   }
-                  label={t_i18n('Automatically convert to STIX patterns')}
+                  label={t_i18n('Automatically create indicators from observables')}
                   style={{ marginTop: 20 }}
                 />
               )}
