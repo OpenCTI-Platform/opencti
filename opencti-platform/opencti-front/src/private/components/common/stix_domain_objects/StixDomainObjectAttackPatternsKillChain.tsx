@@ -48,6 +48,7 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { fetchQuery } from '../../../../relay/environment';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
+import { useInitCreateRelationshipContext } from '../stix_core_relationships/CreateRelationshipContextProvider';
 
 export const stixDomainObjectAttackPatternsKillChainQuery = graphql`
   query StixDomainObjectAttackPatternsKillChainQuery(
@@ -139,7 +140,13 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   const refetch = React.useCallback(() => {
     loadQuery(paginationOptions, { fetchPolicy: 'store-and-network' });
-  }, [queryRef]);
+  }, [queryRef, currentView]);
+
+  useInitCreateRelationshipContext({
+    onCreate: refetch,
+    relationshipTypes: ['uses', 'related-to', 'should-cover'],
+    reversed: false,
+  });
 
   const handleAdd = (entity: TargetEntity) => {
     setTargetEntities([entity]);
