@@ -166,7 +166,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
             keepMounted={true}
             onClose={() => handleReset()}
             fullWidth={true}
-            onClick={stopEvent}
+            onClick={(event) => event.stopPropagation()}
           >
             <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
             <DialogContent>
