@@ -139,8 +139,8 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
               )}
             />
             <Route
-              path="/knowledge"
-              element={(
+              path="/knowledge/*"
+              element={
                 <div key={forceUpdate}>
                   <StixCyberObservableKnowledge
                     stixCyberObservable={stixCyberObservable}

@@ -142,7 +142,7 @@ class RootArtifact extends Component {
                         )}
                       />
                       <Route
-                        path="/knowledge"
+                        path="/knowledge/*"
                         element={(
                           <StixCyberObservableKnowledge
                             stixCyberObservable={stixCyberObservable}
