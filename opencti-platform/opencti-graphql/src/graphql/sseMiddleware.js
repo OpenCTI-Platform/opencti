@@ -304,6 +304,7 @@ const createSseMiddleware = () => {
     try {
       const { user, context } = req;
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
+      const withInternal = extractQueryParameter(req, 'withInternal') ?? undefined;
       const startStreamId = convertParameterToStreamId(paramStartFrom);
       // Generic stream only available for bypass users
       if (!isUserHasCapability(user, BYPASS)) {
@@ -312,7 +313,7 @@ const createSseMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
-      const opts = { autoReconnect: true };
+      const opts = { autoReconnect: true, withInternal };
       const processor = createStreamProcessor(user, user.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
