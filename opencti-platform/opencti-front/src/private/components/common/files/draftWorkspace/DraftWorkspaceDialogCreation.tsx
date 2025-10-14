@@ -131,9 +131,8 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
                 component={AuthorizedMembersField}
                 owner={owner}
                 showAllMembersLine={showAllMembersLine}
-                canDeactivate={true}
+                canDeactivate
                 addMeUserWithAdminRights
-                isCanUseEnable
                 enableAccesses
                 applyAccesses
                 style={fieldSpacingContainerStyle}

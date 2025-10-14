@@ -120,9 +120,8 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
               component={AuthorizedMembersField}
               owner={owner}
               showAllMembersLine={showAllMembersLine}
-              canDeactivate={true}
+              canDeactivate
               addMeUserWithAdminRights
-              isCanUseEnable
               enableAccesses
               applyAccesses
             />

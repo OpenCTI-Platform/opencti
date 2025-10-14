@@ -215,9 +215,8 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   component={AuthorizedMembersField}
                   owner={owner}
                   showAllMembersLine={showAllMembersLine}
-                  canDeactivate={true}
+                  canDeactivate
                   addMeUserWithAdminRights
-                  isCanUseEnable
                   enableAccesses
                   applyAccesses
                   style={fieldSpacingContainerStyle}
