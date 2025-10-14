@@ -45,7 +45,7 @@ steps:
       - dependencies-checkout
 
   - name: frontend-verify-licenses
-    image: node:22.14.0
+    image: node:22.20.0
     volumes:
       - name: cache-frontend-verify-licenses-yarn
         path: /root/.yarn/berry
@@ -60,7 +60,7 @@ steps:
       - dependencies-checkout
 
   - name: generate-licenses
-    image: node:22.14.0
+    image: node:22.20.0
     commands:
       - chmod 777 scripts/*
       - ./scripts/generate-licenses.sh
@@ -149,7 +149,7 @@ steps:
         - generate-licenses
 
   - name: frontend-e2e-tests
-    image: node:22.18.0
+    image: node:22.20.0
     volumes:
     - name: cache-frontend-e2e-tests-yarn
       path: /root/.yarn/berry
@@ -173,7 +173,7 @@ steps:
       - frontend-tests
 
   - name: upload-build-artefact
-    image: node:22.18.0
+    image: node:22.20.0
     failure: ignore
     when:
       status:
@@ -205,7 +205,7 @@ steps:
       - api-tests
 
   - name: frontend-verify-translation
-    image: node:22.18.0
+    image: node:22.20.0
     commands:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
