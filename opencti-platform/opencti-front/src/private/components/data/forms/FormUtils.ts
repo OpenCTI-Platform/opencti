@@ -17,6 +17,7 @@ export const FIELD_TYPES = [
   { value: 'createdBy', label: 'Created By' },
   { value: 'objectMarking', label: 'Object Marking' },
   { value: 'objectLabel', label: 'Object Label' },
+  { value: 'externalReferences', label: 'External References' },
   { value: 'files', label: 'Files' },
   { value: 'openvocab', label: 'Open Vocabulary' },
 ];
@@ -34,6 +35,7 @@ export const FIELD_TYPE_TO_ATTRIBUTE_TYPE: Record<string, string[]> = {
   createdBy: ['ref'], // Special reference field
   objectMarking: ['refs'], // Multiple references
   objectLabel: ['refs'], // Multiple references
+  externalReferences: ['refs'], // External references
   files: ['files'], // File uploads
   openvocab: ['string'], // OpenVocab fields are string attributes with special rendering
 };
@@ -83,7 +85,7 @@ export const getAvailableFieldTypes = (
   const { attributes } = entity;
 
   // Special field types that are always available
-  const specialFieldTypes = ['createdBy', 'objectMarking', 'objectLabel', 'files'];
+  const specialFieldTypes = ['createdBy', 'objectMarking', 'objectLabel', 'externalReferences', 'files'];
 
   // Get list of attributes that support OpenVocab
   const openVocabAttributeNames = getOpenVocabAttributes();
@@ -164,6 +166,15 @@ export const getAttributesForEntityType = (
       value: 'objectLabel',
       name: 'objectLabel',
       label: t_i18n('Labels'),
+      mandatory: false,
+    }];
+  }
+
+  if (fieldType === 'externalReferences') {
+    return [{
+      value: 'externalReferences',
+      name: 'externalReferences',
+      label: t_i18n('External References'),
       mandatory: false,
     }];
   }

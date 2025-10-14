@@ -26,6 +26,7 @@ const getYupValidationForField = (
     case 'multiselect':
     case 'objectMarking':
     case 'objectLabel':
+    case 'externalReferences':
     case 'files':
       validation = Yup.array();
       break;
@@ -39,7 +40,7 @@ const getYupValidationForField = (
   // Add required validation if field is mandatory
   if (field.isMandatory) {
     if (field.type === 'multiselect' || field.type === 'objectMarking'
-        || field.type === 'objectLabel' || field.type === 'files') {
+        || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
       validation = (validation as Yup.ArraySchema<unknown[], Yup.AnyObject>).min(1, t_i18n('This field is required'));
     } else if (field.type === 'checkbox' || field.type === 'toggle') {
       // For boolean fields, we might want to ensure they're checked
@@ -238,6 +239,13 @@ export const formatFormDataForSubmission = (
       // Extract label values from the array of label objects
       if (Array.isArray(value)) {
         return value.map((l: Record<string, unknown>) => l?.label || l?.value || l).filter((label: unknown) => label);
+      }
+      return value;
+    }
+
+    if (field.type === 'externalReferences') {
+      if (Array.isArray(value)) {
+        return value.map((l: Record<string, unknown>) => l?.id || l?.value || l).filter((label: unknown) => label);
       }
       return value;
     }

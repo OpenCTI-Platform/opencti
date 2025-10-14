@@ -21,6 +21,7 @@ import CreatedByField from '../../../common/form/CreatedByField';
 import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../../common/form/ObjectLabelField';
 import OpenVocabField from '../../../common/form/OpenVocabField';
+import { ExternalReferencesField } from '../../../common/form/ExternalReferencesField';
 import { FormFieldDefinition } from '../Form.d';
 import { useFormatter } from '../../../../../components/i18n';
 import type { Theme } from '../../../../../components/Theme';
@@ -30,7 +31,7 @@ import { getVocabularyMappingByAttribute } from '../../../../../utils/vocabulary
 // Styles
 const useStyles = makeStyles<Theme>(() => ({
   field: {
-    marginBottom: 20,
+    marginBottom: 0, // Reduced from 20 to match other fields
   },
   fileUpload: {
     display: 'flex',
@@ -52,7 +53,21 @@ export interface FormFieldRendererProps {
   values: Record<string, unknown>;
   errors: Record<string, string>;
   touched: Record<string, boolean>;
-  setFieldValue: (field: string, value: string | number | boolean | string[] | Date | null | FieldOption[] | { name?: string; data?: string }[]) => void;
+  setFieldValue: (
+    field: string,
+    value: string | number | boolean | string[] | Date | null | FieldOption[] | { name?: string; data?: string }[] | {
+      label?: string;
+      value: string;
+      entity?: {
+        created: string;
+        description?: string | null;
+        external_id?: string | null;
+        id: string;
+        source_name: string;
+        url?: string | null;
+      };
+    }[],
+  ) => void;
   entitySettings?: {
     edges: ReadonlyArray<{
       node: {
@@ -96,8 +111,8 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             resolve({
               name: file.name,
               data: reader.result?.toString().split(',')[1], // Remove data:type;base64, prefix
+              mime_type: file.type || 'application/octet-stream',
               size: file.size,
-              type: file.type,
             });
           };
           reader.onerror = reject;
@@ -323,7 +338,6 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         );
 
       case 'openvocab': {
-      // Infer vocabulary type from the attribute mapping
         const vocabMapping = getVocabularyMappingByAttribute(field.attributeMapping.attributeName);
         const vocabularyType = vocabMapping?.vocabularyType || '';
         return (
@@ -339,9 +353,31 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
         );
       }
 
+      case 'externalReferences':
+        return (
+          <ExternalReferencesField
+            name={fieldName}
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={fieldValue as {
+              label?: string;
+              value: string;
+              entity?: {
+                created: string;
+                description?: string | null;
+                external_id?: string | null;
+                id: string;
+                source_name: string;
+                url?: string | null;
+              };
+            }[]}
+            required={field.isMandatory}
+          />
+        );
+
       case 'files':
         return (
-          <div className={classes.field}>
+          <div className={classes.field} style={{ marginTop: 20 }}>
             <InputLabel>{displayLabel}</InputLabel>
             <div className={classes.fileUpload}>
               <input

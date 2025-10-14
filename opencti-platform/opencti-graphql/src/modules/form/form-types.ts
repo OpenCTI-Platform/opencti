@@ -17,6 +17,7 @@ export enum FormFieldType {
   CreatedBy = 'createdBy',
   ObjectMarking = 'objectMarking',
   ObjectLabel = 'objectLabel',
+  ExternalReferences = 'externalReferences',
   Files = 'files',
   OpenVocab = 'openvocab',
 }

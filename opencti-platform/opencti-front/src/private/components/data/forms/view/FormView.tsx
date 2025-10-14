@@ -196,7 +196,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     mainEntityFields.forEach((field) => {
       if (field.type === 'checkbox' || field.type === 'toggle') {
         fieldsObj[field.name] = false;
-      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
         fieldsObj[field.name] = field.defaultValue || [];
       } else if (field.type === 'datetime') {
         fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
@@ -211,7 +211,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     mainEntityFields.forEach((field) => {
       if (field.type === 'checkbox' || field.type === 'toggle') {
         fieldGroup[field.name] = false;
-      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
         fieldGroup[field.name] = field.defaultValue || [];
       } else if (field.type === 'datetime') {
         fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
@@ -225,7 +225,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
     mainEntityFields.forEach((field) => {
       if (field.type === 'checkbox' || field.type === 'toggle') {
         initialValues[field.name] = false;
-      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+      } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
         initialValues[field.name] = field.defaultValue || [];
       } else if (field.type === 'datetime') {
         initialValues[field.name] = field.defaultValue || new Date().toISOString();
@@ -245,7 +245,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         relationship.fields.forEach((field) => {
           if (field.type === 'checkbox' || field.type === 'toggle') {
             relationshipFields[field.name] = false;
-          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel') {
+          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences') {
             relationshipFields[field.name] = field.defaultValue || [];
           } else if (field.type === 'datetime') {
             relationshipFields[field.name] = field.defaultValue || new Date().toISOString();
@@ -278,7 +278,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         entityFields.forEach((field) => {
           if (field.type === 'checkbox' || field.type === 'toggle') {
             fieldsObj[field.name] = false;
-          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
             fieldsObj[field.name] = field.defaultValue || [];
           } else if (field.type === 'datetime') {
             fieldsObj[field.name] = field.defaultValue || new Date().toISOString();
@@ -293,7 +293,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         entityFields.forEach((field) => {
           if (field.type === 'checkbox' || field.type === 'toggle') {
             fieldGroup[field.name] = false;
-          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
             fieldGroup[field.name] = field.defaultValue || [];
           } else if (field.type === 'datetime') {
             fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
@@ -308,7 +308,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         entityFields.forEach((field) => {
           if (field.type === 'checkbox' || field.type === 'toggle') {
             entityValues[field.name] = false;
-          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
             entityValues[field.name] = field.defaultValue || [];
           } else if (field.type === 'datetime') {
             entityValues[field.name] = field.defaultValue || new Date().toISOString();

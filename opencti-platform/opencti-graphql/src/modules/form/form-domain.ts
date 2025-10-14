@@ -305,6 +305,31 @@ const transformSpecialFields = async (
       } else {
         (transformed as any).objectLabel = value.map((label: any) => ({ value: label }));
       }
+    } else if (field.type === 'files' && Array.isArray(value)) {
+      // Transform files to x_opencti_files format
+      // Files should come as array of { name: string, data: string } where data is base64 encoded
+      const files = value.map((file: any) => ({
+        name: file.name,
+        data: file.data, // base64 encoded content
+        mime_type: file.mime_type || 'application/octet-stream',
+        no_trigger_import: true
+      }));
+      if (!isRelationship) {
+        (transformed as any).x_opencti_files = files;
+      }
+    } else if (field.type === 'externalReferences' && Array.isArray(value)) {
+      // Transform external references
+      const references = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const refId of value) {
+        if (typeof refId === 'string') {
+          const refEntity = await internalLoadById(context, user, refId);
+          if (refEntity) {
+            references.push(refEntity);
+          }
+        }
+      }
+      (transformed as any).externalReferences = references;
     } else if (isRelationship && attrName && value !== undefined) {
       // For relationships, apply other fields directly
       transformed[attrName] = value;

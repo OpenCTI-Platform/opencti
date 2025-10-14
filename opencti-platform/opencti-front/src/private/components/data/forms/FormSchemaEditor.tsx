@@ -463,6 +463,48 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     const entity = entityTypes.find((e) => e.value === entityType);
     let allAttributes = entity?.attributes || [];
 
+    // Add special attributes that are always available for all entity types
+    const specialAttributes = [
+      {
+        value: 'createdBy',
+        name: 'createdBy',
+        label: t_i18n('Created By'),
+        mandatory: false,
+        type: 'ref',
+      },
+      {
+        value: 'objectMarking',
+        name: 'objectMarking',
+        label: t_i18n('Marking Definitions'),
+        mandatory: false,
+        type: 'refs',
+      },
+      {
+        value: 'objectLabel',
+        name: 'objectLabel',
+        label: t_i18n('Labels'),
+        mandatory: false,
+        type: 'refs',
+      },
+      {
+        value: 'externalReferences',
+        name: 'externalReferences',
+        label: t_i18n('External References'),
+        mandatory: false,
+        type: 'refs',
+      },
+      {
+        value: 'x_opencti_files',
+        name: 'x_opencti_files',
+        label: t_i18n('Files'),
+        mandatory: false,
+        type: 'files',
+      },
+    ];
+
+    // Merge special attributes with entity attributes
+    allAttributes = [...allAttributes, ...specialAttributes];
+
     // Check if we're in parsed mode
     let isInParsedMode = false;
 
@@ -490,16 +532,29 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     if (field.attributeMapping.attributeName) {
       const selectedAttribute = allAttributes.find((attr) => attr.value === field.attributeMapping.attributeName);
 
-      availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes)
-        .filter((fieldType) => {
-          // Filter out multiselect if attribute doesn't support multiple
-          if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
-            return false;
-          }
+      // Check if it's a special attribute first
+      if (field.attributeMapping.attributeName === 'createdBy') {
+        availableFieldTypes = [{ value: 'createdBy', label: 'Created By' }];
+      } else if (field.attributeMapping.attributeName === 'objectMarking') {
+        availableFieldTypes = [{ value: 'objectMarking', label: 'Object Marking' }];
+      } else if (field.attributeMapping.attributeName === 'objectLabel') {
+        availableFieldTypes = [{ value: 'objectLabel', label: 'Object Label' }];
+      } else if (field.attributeMapping.attributeName === 'externalReferences') {
+        availableFieldTypes = [{ value: 'externalReferences', label: 'External References' }];
+      } else if (field.attributeMapping.attributeName === 'x_opencti_files') {
+        availableFieldTypes = [{ value: 'files', label: 'Files' }];
+      } else {
+        availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes)
+          .filter((fieldType) => {
+            // Filter out multiselect if attribute doesn't support multiple
+            if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
+              return false;
+            }
 
-          const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
-          return attributesForType.some((attr) => attr.value === field.attributeMapping.attributeName);
-        });
+            const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
+            return attributesForType.some((attr) => attr.value === field.attributeMapping.attributeName);
+          });
+      }
     }
 
     return (
@@ -525,50 +580,66 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             onChange={(e) => {
               const attributeName = e.target.value;
               const selectedAttribute = allAttributes.find((attr) => attr.value === attributeName);
-
               handleFieldChange(`fields.${fieldIndex}.attributeMapping.attributeName`, attributeName);
-
               // Always update label with attribute label when changing attribute
               if (selectedAttribute) {
                 handleFieldChange(`fields.${fieldIndex}.label`, selectedAttribute.label || t_i18n(selectedAttribute.name));
-                // Auto-generate name from label
-                const name = (selectedAttribute.label || selectedAttribute.name).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                let name: string;
+                if (['createdBy', 'objectMarking', 'objectLabel', 'externalReferences', 'x_opencti_files'].includes(attributeName)) {
+                  // Use the attribute name directly for special fields
+                  name = attributeName === 'x_opencti_files' ? 'files' : attributeName;
+                } else {
+                  // Auto-generate name from label for regular fields
+                  name = (selectedAttribute.label || selectedAttribute.name).toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+                }
                 handleFieldChange(`fields.${fieldIndex}.name`, name || field.id);
               }
-
-              // Determine and set an appropriate default field type
-              const compatibleTypes = getAvailableFieldTypes(entityType, entityTypes)
-                .filter((fieldType) => {
-                  // Filter out multiselect if attribute doesn't support multiple
-                  if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
-                    return false;
-                  }
-
-                  const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
-                  return attributesForType.some((attr) => attr.value === attributeName);
-                });
-
-              if (compatibleTypes.length > 0) {
-                // Check if it's an OpenVocab field first - always set as default for OpenVocab attributes
-                const vocabMapping = getVocabularyMappingByAttribute(attributeName);
-                if (vocabMapping) {
-                  // Always default to openvocab for OpenVocab-compatible attributes
-                  handleFieldChange(`fields.${fieldIndex}.type`, 'openvocab');
-                  if (vocabMapping.multiple !== undefined) {
-                    handleFieldChange(`fields.${fieldIndex}.multiple`, vocabMapping.multiple);
-                  }
-                } else if (!field.type || !compatibleTypes.some((t) => t.value === field.type)) {
-                  // Only set a default field type if none is selected or current is incompatible
-                  if (selectedAttribute?.defaultValues && selectedAttribute.defaultValues.length > 0) {
-                    // If attribute has vocabulary, suggest select (not multiselect unless multiple is true)
-                    const suggestedType = selectedAttribute.multiple ? 'multiselect' : 'select';
-                    handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
-                    if (suggestedType === 'multiselect') {
-                      handleFieldChange(`fields.${fieldIndex}.multiple`, true);
+              // Check for special attributes first
+              if (attributeName === 'createdBy') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'createdBy');
+              } else if (attributeName === 'objectMarking') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'objectMarking');
+              } else if (attributeName === 'objectLabel') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'objectLabel');
+              } else if (attributeName === 'externalReferences') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'externalReferences');
+              } else if (attributeName === 'x_opencti_files') {
+                handleFieldChange(`fields.${fieldIndex}.type`, 'files');
+              } else {
+                // Determine and set an appropriate default field type for regular attributes
+                const compatibleTypes = getAvailableFieldTypes(entityType, entityTypes)
+                  .filter((fieldType) => {
+                    // Filter out multiselect if attribute doesn't support multiple
+                    if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
+                      return false;
                     }
-                  } else {
-                    // Set the first compatible type as default
-                    handleFieldChange(`fields.${fieldIndex}.type`, compatibleTypes[0].value);
+
+                    const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
+                    return attributesForType.some((attr) => attr.value === attributeName);
+                  });
+
+                if (compatibleTypes.length > 0) {
+                  // Check if it's an OpenVocab field first - always set as default for OpenVocab attributes
+                  const vocabMapping = getVocabularyMappingByAttribute(attributeName);
+                  if (vocabMapping) {
+                    // Always default to openvocab for OpenVocab-compatible attributes
+                    handleFieldChange(`fields.${fieldIndex}.type`, 'openvocab');
+                    if (vocabMapping.multiple !== undefined) {
+                      handleFieldChange(`fields.${fieldIndex}.multiple`, vocabMapping.multiple);
+                    }
+                  } else if (!field.type || !compatibleTypes.some((t) => t.value === field.type)) {
+                    // Only set a default field type if none is selected or current is incompatible
+                    if (selectedAttribute?.defaultValues && selectedAttribute.defaultValues.length > 0) {
+                      // If attribute has vocabulary, suggest select (not multiselect unless multiple is true)
+                      const suggestedType = selectedAttribute.multiple ? 'multiselect' : 'select';
+                      handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
+                      if (suggestedType === 'multiselect') {
+                        handleFieldChange(`fields.${fieldIndex}.multiple`, true);
+                      }
+                    } else {
+                      // Set the first compatible type as default
+                      handleFieldChange(`fields.${fieldIndex}.type`, compatibleTypes[0].value);
+                    }
                   }
                 }
               }
