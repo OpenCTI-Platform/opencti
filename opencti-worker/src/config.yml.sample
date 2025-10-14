@@ -7,3 +7,4 @@ opencti:
 worker:
   log_level: 'info'
   telemetry_enabled: false
+  targeted_connector_types: ['ANY'] # If not configured, or configured with 'ANY', all connectors will be targeted. Otherwise, only target connector types will be processed
