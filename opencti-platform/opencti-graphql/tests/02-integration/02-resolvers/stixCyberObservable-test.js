@@ -162,7 +162,6 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    expect(stixCyberObservableSSH).not.toBeNull();
     expect(stixCyberObservableSSH.data.stixCyberObservableAdd).not.toBeNull();
     expect(stixCyberObservableSSH.data.stixCyberObservableAdd.public_key).toEqual('ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGmZ9d3b0QYpU2c9m7xKJ5V2rQy4s1aZr7Jk8Qw0t6u9');
     expect(stixCyberObservableSSH.data.stixCyberObservableAdd.fingerprint_sha256).toEqual('a35f9c12e84b07d46ab13e95c728f06d2a8e41bb9d630cfa7419e2568b30d96f');
