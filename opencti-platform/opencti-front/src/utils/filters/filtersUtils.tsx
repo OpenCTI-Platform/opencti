@@ -2,14 +2,14 @@ import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import React from 'react';
-import { subDays } from 'date-fns';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
-import { uniqueArray, isEmptyField } from '../utils';
+import { isEmptyField, uniqueArray } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
+import { dateFiltersValueForDisplay } from '../Time';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -400,10 +400,7 @@ export const filterValue = (filterKey: string, value?: string | null, filterType
       return value;
     }
     const dateConvertor = filterOperator === 'within' ? smhd : nsd;
-    if (filterOperator && value && ['lte', 'gt'].includes(filterOperator)) {
-      return dateConvertor(subDays(value, 1));
-    }
-    return dateConvertor(value);
+    return dateConvertor(dateFiltersValueForDisplay(value, filterOperator));
   }
   if (filterKey === 'relationship_type' || filterKey === 'type') {
     return t_i18n(`relationship_${value}`);

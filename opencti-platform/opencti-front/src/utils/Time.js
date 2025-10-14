@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import { subDays } from 'date-fns';
 import { isNone } from '../components/i18n';
 
 const defaultDateFormat = 'YYYY-MM-DD';
@@ -198,4 +199,18 @@ export const formatUptime = (uptimeInSeconds, t_i18n) => {
   }
 
   return parts.join(', ');
+};
+
+/**
+ * Convert a date value stored in filters to a date value displayed in frontend according to the operator
+ *
+ * @param dateValue - The date value stored in filters
+ * @param operator - The associated filter operator
+ * @returns The date value to be displayed
+ */
+export const dateFiltersValueForDisplay = (dateFilterValue, filterOperator) => {
+  if (filterOperator && dateFilterValue && ['lte', 'gt'].includes(filterOperator)) {
+    return subDays(dateFilterValue, 1);
+  }
+  return dateFilterValue;
 };
