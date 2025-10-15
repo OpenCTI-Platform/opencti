@@ -62,7 +62,7 @@ export const SYNC_START_QUERY = `mutation SynchronizerStart($id: ID!) {
     }
   `;
 
-export const VOCABULARY_NUMBERS = 353;
+export const VOCABULARY_NUMBERS = 357;
 export const INDICATOR_NUMBERS = 28;
 export const MALWARE_NUMBERS = 27;
 export const LABEL_NUMBERS = 17;
