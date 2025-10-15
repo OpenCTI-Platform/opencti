@@ -53,7 +53,7 @@ import {
 } from '../schema/general';
 import type { StixId } from './stix-2-1-common';
 import { type EditOperation, type PageInfo, StatusScope } from '../generated/graphql';
-import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
+import type { windows_integrity_level_enum, ssh_key_type_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
 import { RELATION_MEMBER_OF, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
 
@@ -561,6 +561,11 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   window_title: string;
   persona_name: string;
   persona_type: string;
+  public_key: string;
+  fingerprint_sha256: string;
+  fingerprint_md5: string;
+  key_length: number;
+  comment: string;
   // custom
   x_opencti_product: string;
   // date
@@ -582,7 +587,8 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   private_key_usage_period_not_before: Date;
   private_key_usage_period_not_after: Date;
   expiration_date: Date;
-  publication_date: Date,
+  publication_date: Date;
+  created: Date;
   // boolean
   defanged: boolean;
   is_multipart: boolean;
@@ -624,6 +630,7 @@ interface BasicStoreCyberObservable extends BasicStoreCommon {
   service_type: windows_service_type_enum;
   service_status: windows_service_status_enum;
   integrity_level: windows_integrity_level_enum;
+  key_type: ssh_key_type_enum;
 }
 
 interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
