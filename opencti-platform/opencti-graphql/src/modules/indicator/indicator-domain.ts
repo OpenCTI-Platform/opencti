@@ -395,13 +395,20 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   }
   // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
   let { valid_from, valid_until } = indicatorBeforeUpdate;
+  const validUntilEditInput = input.find((e) => e.key === VALID_UNTIL);
+  const validFromEditInput = input.find((e) => e.key === VALID_FROM);
+
   input.forEach((e) => {
     if (e.key === VALID_FROM) [valid_from] = e.value;
     if (e.key === VALID_UNTIL) [valid_until] = e.value;
   });
-  if (new Date(valid_until) <= new Date(valid_from)) {
-    throw ValidationError('The valid until date must be greater than the valid from date', VALID_FROM, { input, valid_from, valid_until });
+
+  if (validUntilEditInput || validFromEditInput) {
+    if (new Date(valid_until) < new Date(valid_from)) {
+      throw ValidationError('The valid until date must be greater than the valid from date', VALID_FROM, { input, valid_from, valid_until });
+    }
   }
+
   // check indicator pattern syntax
   const patternEditInput = input.find((e) => e.key === 'pattern');
   if (patternEditInput) {
@@ -419,7 +426,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   const finalInput = input.filter((editInput) => { return editInput.key !== VALID_UNTIL && editInput.key !== X_SCORE && editInput.key !== REVOKED; });
 
   const isDecayEnabledOnIndicator: boolean = indicatorBeforeUpdate.decay_applied_rule !== undefined && indicatorBeforeUpdate.decay_applied_rule.decay_revoke_score !== undefined;
-  const validUntilEditInput = input.find((e) => e.key === VALID_UNTIL);
+
   const revokedEditInput = input.find((e) => e.key === REVOKED);
   const nowDate = new Date();
   let hasRevokedChangedToTrue: boolean = false;
@@ -469,7 +476,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       }
 
       if (hasRevokedChangedToFalse) {
-        logApp.info('ANGIE - revoked moved to false');
+        logApp.debug('ANGIE - revoked moved to false');
         // Restart decay as if the score has been put to decay_base_score manually.
         const newScore = indicatorBeforeUpdate.decay_base_score;
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
