@@ -261,6 +261,12 @@ const updateWorkTaskToComplete = async (context, user, work) => {
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   const { isComplete, total } = await redisUpdateWorkFigures(workId);
+  // Ensure that work hasn't been deleted in the meantime
+  const workAlive = await isWorkAlive(context, user, workId);
+  if (!workAlive) {
+    await redisDeleteWorks(workId);
+    return workId;
+  }
   if (isComplete || errorData) {
     const params = { now: timestamp };
     let sourceScript = '';
@@ -310,7 +316,13 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
   await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
-  return redisUpdateActionExpectation(user, workId, expectations);
+  await redisUpdateActionExpectation(user, workId, expectations);
+  // Ensure that work hasn't been deleted in the meantime in case of race condition
+  const workAlive = await isWorkAlive(context, user, workId);
+  if (!workAlive) {
+    await redisDeleteWorks(workId);
+  }
+  return workId;
 };
 
 /**
