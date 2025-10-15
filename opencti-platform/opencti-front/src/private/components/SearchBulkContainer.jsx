@@ -120,16 +120,16 @@ const SearchBulkContainer = () => {
             variant="outlined"
           />
         </Grid>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={currentTab}
-            onChange={(event, value) => handleChangeTab(value)}
-          >
-            <Tab label={t_i18n('Known entities')} />
-            <Tab label={t_i18n('Unknown entities')} />
-          </Tabs>
-        </Box>
         <Grid item xs={10}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', marginBottom: 3, marginTop: -3 }}>
+            <Tabs
+              value={currentTab}
+              onChange={(_, value) => handleChangeTab(value)}
+            >
+              <Tab label={t_i18n('Known entities')} />
+              <Tab label={t_i18n('Unknown entities')} />
+            </Tabs>
+          </Box>
           {currentTab === 0 && textFieldValue.length > 0
             && <SearchBulk textFieldValue={textFieldValue} dataColumns={dataColumns} />
           }
