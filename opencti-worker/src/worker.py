@@ -139,7 +139,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             False,
             "0.0.0.0",
         )
-        self.stix_object_max_refs = get_config_variable(
+        self.stix_objects_max_refs = get_config_variable(
             "WORKER_OBJECTS_MAX_REFS",
             ["worker", "objects_max_refs"],
             config,
@@ -247,7 +247,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             pika_parameters,
                             bundles_global_counter,
                             bundles_processing_time_gauge,
-                            self.stix_object_max_refs,
+                            self.stix_objects_max_refs,
                         )
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
