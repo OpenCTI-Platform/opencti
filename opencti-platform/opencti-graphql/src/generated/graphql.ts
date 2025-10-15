@@ -14696,7 +14696,6 @@ export type Mutation = {
   draftWorkspaceAdd?: Maybe<DraftWorkspace>;
   draftWorkspaceDelete?: Maybe<Scalars['ID']['output']>;
   draftWorkspaceEditAuthorizedMembers?: Maybe<DraftWorkspace>;
-  draftWorkspaceFieldPatch?: Maybe<DraftWorkspace>;
   draftWorkspaceValidate?: Maybe<Work>;
   emailTemplateAdd?: Maybe<EmailTemplate>;
   emailTemplateDelete?: Maybe<Scalars['ID']['output']>;
@@ -15593,13 +15592,7 @@ export type MutationDraftWorkspaceDeleteArgs = {
 
 export type MutationDraftWorkspaceEditAuthorizedMembersArgs = {
   id: Scalars['ID']['input'];
-  input: Array<MemberAccessInput>;
-};
-
-
-export type MutationDraftWorkspaceFieldPatchArgs = {
-  id: Scalars['ID']['input'];
-  input: Array<EditInput>;
+  input?: InputMaybe<Array<MemberAccessInput>>;
 };
 
 
@@ -41218,8 +41211,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   disseminationListSend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDisseminationListSendArgs, 'id' | 'input'>>;
   draftWorkspaceAdd?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceAddArgs, 'input'>>;
   draftWorkspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceDeleteArgs, 'id'>>;
-  draftWorkspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceEditAuthorizedMembersArgs, 'id' | 'input'>>;
-  draftWorkspaceFieldPatch?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceFieldPatchArgs, 'id' | 'input'>>;
+  draftWorkspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceEditAuthorizedMembersArgs, 'id'>>;
   draftWorkspaceValidate?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceValidateArgs, 'id'>>;
   emailTemplateAdd?: Resolver<Maybe<ResolversTypes['EmailTemplate']>, ParentType, ContextType, RequireFields<MutationEmailTemplateAddArgs, 'input'>>;
   emailTemplateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationEmailTemplateDeleteArgs, 'id'>>;

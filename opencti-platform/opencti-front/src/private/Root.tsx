@@ -161,6 +161,18 @@ const meUserFragment = graphql`
       name
       draft_status
       processingCount
+      currentUserAccessRight
+      authorizedMembers {
+        id
+        name
+        entity_type
+        access_right
+        member_id
+        groups_restriction {
+          id
+          name
+        }
+      }
     }
     effective_confidence_level {
       max_confidence

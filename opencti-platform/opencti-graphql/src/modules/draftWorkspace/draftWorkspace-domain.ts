@@ -3,6 +3,7 @@ import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelat
 import {
   type DraftWorkspaceAddInput,
   FilterMode,
+  type MemberAccessInput,
   type QueryDraftWorkspaceEntitiesArgs,
   type QueryDraftWorkspaceRelationshipsArgs,
   type QueryDraftWorkspacesArgs,
@@ -40,6 +41,7 @@ import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
+import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -215,6 +217,23 @@ export const addDraftWorkspace = async (context: AuthContext, user: AuthUser, in
   });
 
   return notify(BUS_TOPICS[ENTITY_TYPE_DRAFT_WORKSPACE].ADDED_TOPIC, createdDraftWorkspace, user);
+};
+
+export const draftWorkspaceEditAuthorizedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  workspaceId: string,
+  input: MemberAccessInput[],
+) => {
+  const args = {
+    entityId: workspaceId,
+    input,
+    requiredCapabilities: ['EXPLORE_EXUPDATE_EXDELETE'],
+    entityType: ENTITY_TYPE_DRAFT_WORKSPACE,
+    busTopicKey: ENTITY_TYPE_DRAFT_WORKSPACE,
+  };
+  // @ts-expect-error TODO improve busTopicKey types to avoid this
+  return editAuthorizedMembers(context, user, args);
 };
 
 const findAllUsersWithDraftContext = async (context: AuthContext, user: AuthUser, draftId: string) => {

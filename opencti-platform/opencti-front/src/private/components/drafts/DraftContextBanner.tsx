@@ -10,7 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import DraftProcessingStatus from '@components/drafts/DraftProcessingStatus';
 import Alert from '@mui/material/Alert';
-import { AlertTitle } from '@mui/material';
+import { AlertTitle, IconButton, Tooltip } from '@mui/material';
 import { interval } from 'rxjs';
 import { DraftContextBannerQuery } from '@components/drafts/__generated__/DraftContextBannerQuery.graphql';
 import { DraftContextBanner_data$key } from '@components/drafts/__generated__/DraftContextBanner_data.graphql';
@@ -22,6 +22,11 @@ import { MESSAGING$ } from '../../../relay/environment';
 import Transition from '../../../components/Transition';
 import { TEN_SECONDS } from '../../../utils/Time';
 import ErrorNotFound from '../../../components/ErrorNotFound';
+import { LockOutlined } from '@mui/icons-material';
+import { FormAuthorizedMembersInputs } from '@components/common/form/FormAuthorizedMembers';
+import { authorizedMembersToOptions } from '../../../utils/authorizedMembers';
+import { FormikHelpers } from 'formik';
+import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
 
 const interval$ = interval(TEN_SECONDS * 3);
 
@@ -34,6 +39,23 @@ const draftContextBannerFragment = graphql`
     processingCount
     objectsCount {
       totalCount
+    }
+    currentUserAccessRight
+    authorizedMembers {
+      id
+      name
+      entity_type
+      access_right
+      member_id
+      groups_restriction {
+        id
+        name
+      }
+    }
+    creators {
+      id
+      name
+      entity_type
     }
   }
 `;
@@ -69,6 +91,18 @@ export const draftContextBannerValidateDraftMutation = graphql`
   }
 `;
 
+export const draftContextBannerDraftEditAuthorizedMembersMutation = graphql`
+  mutation DraftContextBannerDraftEditAuthorizedMembersMutation(
+    $id: ID!
+    $input: [MemberAccessInput!]
+  ) {
+    draftWorkspaceEditAuthorizedMembers(id: $id, input: $input) {
+      id
+      ...DraftRootFragment
+    }
+  }
+`;
+
 interface DraftContextBannerComponentProps {
   queryRef: PreloadedQuery<DraftContextBannerQuery>;
   refetch: () => void;
@@ -80,6 +114,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
   const [commitValidateDraft] = useApiMutation(draftContextBannerValidateDraftMutation);
   const [displayApprove, setDisplayApprove] = useState(false);
   const [approving, setApproving] = useState(false);
+  const [displayAuthorizeMembersDialog, setDisplayAuthorizeMembersDialog] = useState(false);
   const navigate = useNavigate();
   const draftContext = useDraftContext();
 
@@ -88,7 +123,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
     return (<ErrorNotFound />);
   }
 
-  const { name, processingCount, objectsCount, entity_id } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
+  const { id, name, processingCount, objectsCount, entity_id, creators, authorizedMembers, currentUserAccessRight } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
   const currentlyProcessing = processingCount > 0;
   const handleExitDraft = () => {
     commitExitDraft({
@@ -143,10 +178,35 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
   }, []);
 
   return (
-    <div style={{ padding: '0 12px', flex: 1 }}>
-      <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-        <div style={{ padding: '0 12px' }}>
-          <DraftProcessingStatus forceRefetch={refetch}/>
+    <div style={{ padding: "0 12px", flex: 1 }}>
+      <div style={{ display: "flex", width: "100%", alignItems: "center" }}>
+        <div style={{ padding: "0 12px" }}>
+          {currentUserAccessRight === 'admin' && (
+            <Tooltip title={t_i18n("Authorized members")}>
+              <IconButton
+                onClick={() => {
+                  setDisplayAuthorizeMembersDialog(true);
+                }}
+                color="primary"
+              >
+                <LockOutlined />
+              </IconButton>
+            </Tooltip>
+          )}
+          {displayAuthorizeMembersDialog && (
+            <FormAuthorizedMembersDialog
+              id={id}
+              mutation={draftContextBannerDraftEditAuthorizedMembersMutation}
+              authorizedMembers={authorizedMembersToOptions(authorizedMembers)}
+              open={displayAuthorizeMembersDialog}
+              handleClose={() => setDisplayAuthorizeMembersDialog(false)}
+              owner={creators?.[0]}
+              canDeactivate
+            />
+          )}
+        </div>
+        <div style={{ padding: "0 12px" }}>
+          <DraftProcessingStatus forceRefetch={refetch} />
         </div>
         <div style={{ padding: '0 12px', flex: 1 }}>
           <DraftBlock body={truncate(name, 40)}/>
