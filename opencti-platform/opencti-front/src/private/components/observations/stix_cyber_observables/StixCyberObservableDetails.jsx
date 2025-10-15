@@ -516,6 +516,16 @@ const StixCyberObservableDetails = createFragmentContainer(
                 persona_name
                 persona_type
             }
+            ... on SSHKey {
+                key_type
+                public_key
+                fingerprint_sha256
+                fingerprint_MD5
+                key_length
+                expiration_date
+                comment
+                created
+            }
             ...StixCyberObservableIndicators_stixCyberObservable
         }
     `,
