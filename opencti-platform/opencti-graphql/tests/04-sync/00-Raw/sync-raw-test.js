@@ -55,7 +55,7 @@ describe('Database sync raw', () => {
       // to uncomment for debug if counters are failing
       // expect(execution.messages.length, `Execution messages ${JSON.stringify(execution.messages)}`).toEqual(0);
 
-      const queryResultAfter = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 350 } });
+      const queryResultAfter = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 354 } });
 
       const vocabBefore = queryResultBefore.data.vocabularies.edges.map((e) => e.node);
       const vocabAfter = queryResultAfter.data.vocabularies.edges.map((e) => e.node);
