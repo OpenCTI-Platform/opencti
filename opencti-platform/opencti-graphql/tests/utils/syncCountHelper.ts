@@ -123,6 +123,7 @@ testDeletedCounter.note = 2;
 testDeletedCounter.opinion = 3;
 testDeletedCounter['email-addr'] = 1;
 testDeletedCounter.persona = 1;
+testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.relationship = 1;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter['network-traffic'] = 1;
