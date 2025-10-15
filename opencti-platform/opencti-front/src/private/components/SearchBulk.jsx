@@ -6,7 +6,7 @@ import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } fro
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
 
-const LOCAL_STORAGE_KEY = 'search_bulk';
+const LOCAL_STORAGE_KEY = 'searchBulk';
 
 const searchBulkLineFragment = graphql`
   fragment SearchBulkLine_node on StixCoreObject {
@@ -118,18 +118,14 @@ export const searchBulkFragment = graphql`
   }
 `;
 
-const buildQueryParams = (textFieldValue, filters) => {
-  const values = textFieldValue
-    .split('\n')
-    .filter((o) => o.length > 1)
-    .map((val) => val.trim());
+const buildSearchBulkFilters = (values, filters) => {
   const queryFilters = values.length > 0
     ? addFilter(filters, allEntitiesKeyList, values)
     : filters;
-  return { values, queryFilters, count: 5000 };
+  return queryFilters;
 };
 
-const SearchBulk = ({ textFieldValue, dataColumns }) => {
+const SearchBulk = ({ inputValues, dataColumns }) => {
   const initialValues = {
     searchTerm: '',
     sortBy: 'entity_type',
@@ -146,9 +142,9 @@ const SearchBulk = ({ textFieldValue, dataColumns }) => {
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
 
-  const { values, queryFilters, count } = buildQueryParams(textFieldValue, contextFilters);
+  const queryFilters = buildSearchBulkFilters(inputValues, contextFilters);
 
-  const queryPaginationOptions = { ...paginationOptions, filters: queryFilters, count };
+  const queryPaginationOptions = { ...paginationOptions, filters: queryFilters, count: 5000 };
 
   const queryRef = useQueryLoading(searchBulkQuery, queryPaginationOptions);
 

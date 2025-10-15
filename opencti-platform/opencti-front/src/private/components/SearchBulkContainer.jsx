@@ -8,6 +8,7 @@ import { isEmpty } from 'ramda';
 import Chip from '@mui/material/Chip';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '@mui/styles';
+import SearchBulkUnknownEntities from './SearchBulkUnknownEntities';
 import { useFormatter } from '../../components/i18n';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
@@ -29,6 +30,10 @@ const SearchBulkContainer = () => {
   const handleChangeTab = (value) => {
     setCurrentTab(value);
   };
+  const values = textFieldValue
+    .split('\n')
+    .filter((o) => o.length > 1)
+    .map((val) => val.trim()) ?? [];
 
   const handleChangeTextField = (event) => {
     const { value } = event.target;
@@ -130,11 +135,14 @@ const SearchBulkContainer = () => {
               <Tab label={t_i18n('Unknown entities')} />
             </Tabs>
           </Box>
-          {currentTab === 0 && textFieldValue.length > 0
-            && <SearchBulk textFieldValue={textFieldValue} dataColumns={dataColumns} />
+          {currentTab === 0 && values.length > 0
+            && <SearchBulk inputValues={values} dataColumns={dataColumns} />
           }
           {currentTab === 0 && isEmpty(textFieldValue)
             && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} />
+          }
+          {currentTab === 1
+            && <SearchBulkUnknownEntities values={values ?? []} />
           }
         </Grid>
       </Grid>
