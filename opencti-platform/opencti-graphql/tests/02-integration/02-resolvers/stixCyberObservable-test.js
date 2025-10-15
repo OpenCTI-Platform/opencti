@@ -211,7 +211,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     // Verify is no longer found
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: sshKeyStixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.stixCyberObservableUpdated).toBeNull();
+    expect(queryResult.data.stixCyberObservable).toBeNull();
   });
   it('should stixCyberObservable loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });
