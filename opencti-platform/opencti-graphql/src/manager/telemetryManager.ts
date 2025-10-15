@@ -63,7 +63,7 @@ export const TELEMETRY_FORM_INTAKE_CREATED = 'formIntakeCreatedCount';
 export const TELEMETRY_FORM_INTAKE_UPDATED = 'formIntakeUpdatedCount';
 export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
-export const TELEMETRY_USER_LOGIN = 'formIntakeSubmittedCount';
+export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
