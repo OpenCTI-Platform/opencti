@@ -13,6 +13,7 @@ import { fileManagerAskJobImportMutation } from '@components/common/files/FileMa
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$data } from '@components/common/files/__generated__/ImportWorksDrawerQuery.graphql';
 import { fileWorksQuery } from '@components/common/files/ImportWorksDrawer';
+import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import { ImportWorkbenchesContentFileLine_file$data } from '@components/data/import/__generated__/ImportWorkbenchesContentFileLine_file.graphql';
 import { ImportFilesContentFileLine_file$data } from '@components/data/import/__generated__/ImportFilesContentFileLine_file.graphql';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
@@ -20,7 +21,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapperUtils';
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
-import stopEvent from '../../../../utils/domEvent';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 interface LaunchImportDialogProps {
   file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
@@ -42,8 +43,11 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   isDraftContext = false,
 }) => {
   const { t_i18n } = useFormatter();
+  const { me: owner, settings } = useAuth();
+  const showAllMembersLine = !settings.platform_organization?.id;
   const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
   const [selectedConnector, setSelectedConnector] = React.useState<ConnectorType | null>(null);
+  const [selectedMode, setSelectedMode] = React.useState<'draft' | 'workbench' | null>(null);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = React.useState(false);
 
   const handleSetCsvMapper = (_: UIEvent, csvMapper: string) => {
@@ -65,16 +69,21 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
     setSelectedConnector(connector);
   };
 
+  const handleSelectMode = (_: UIEvent, value: 'draft' | 'workbench') => {
+    setSelectedMode(value);
+  };
+
   const onSubmitImport = (
     values: {
       connector_id: string;
       configuration: string;
       objectMarking: FieldOption[];
-      validation_mode: string
+      validation_mode: string;
+      authorizedMembers?: AuthorizedMembersFieldValue;
     },
     { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
   ) => {
-    const { connector_id, configuration, objectMarking, validation_mode } = values;
+    const { connector_id, configuration, objectMarking, validation_mode, authorizedMembers } = values;
     let config = configuration;
 
     // Dynamically inject the markings chosen by the user into the csv mapper
@@ -95,6 +104,17 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         connectorId: connector_id,
         configuration: config,
         validationMode: validation_mode,
+        authorized_members: !authorizedMembers
+          ? null
+          : authorizedMembers
+            .filter((v) => v.accessRight !== 'none')
+            .map((member) => ({
+              id: member.value,
+              access_right: member.accessRight,
+              groups_restriction_ids: member.groupsRestriction?.length > 0
+                ? member.groupsRestriction.map((group) => group.value)
+                : undefined,
+            })),
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -144,7 +164,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
             keepMounted={true}
             onClose={() => handleReset()}
             fullWidth={true}
-            onClick={stopEvent}
+            onClick={(event) => event.stopPropagation()}
           >
             <DialogTitle>{t_i18n('Launch an import')}</DialogTitle>
             <DialogContent>
@@ -181,10 +201,24 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   fullWidth={true}
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
+                  onChange={handleSelectMode}
                 >
                   <MenuItem value="workbench">Workbench</MenuItem>
                   <MenuItem value="draft">Draft</MenuItem>
                 </Field>
+              )}
+              {selectedMode === 'draft' && (
+                <Field
+                  name="authorizedMembers"
+                  component={AuthorizedMembersField}
+                  owner={owner}
+                  showAllMembersLine={showAllMembersLine}
+                  canDeactivate
+                  addMeUserWithAdminRights
+                  enableAccesses
+                  applyAccesses
+                  style={fieldSpacingContainerStyle}
+                />
               )}
               {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
                 <Field

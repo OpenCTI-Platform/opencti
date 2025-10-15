@@ -6868,8 +6868,10 @@ export type DraftVersion = {
 
 export type DraftWorkspace = BasicObject & InternalObject & {
   __typename?: 'DraftWorkspace';
+  authorizedMembers: Array<MemberAccess>;
   created_at: Scalars['DateTime']['output'];
   creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
   draft_status: DraftStatus;
   entity_id?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
@@ -6889,6 +6891,7 @@ export type DraftWorkspaceWorksArgs = {
 };
 
 export type DraftWorkspaceAddInput = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   entity_id?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
 };
@@ -14529,6 +14532,8 @@ export type Mutation = {
   disseminationListSend?: Maybe<Scalars['Boolean']['output']>;
   draftWorkspaceAdd?: Maybe<DraftWorkspace>;
   draftWorkspaceDelete?: Maybe<Scalars['ID']['output']>;
+  draftWorkspaceEditAuthorizedMembers?: Maybe<DraftWorkspace>;
+  draftWorkspaceFieldPatch?: Maybe<DraftWorkspace>;
   draftWorkspaceValidate?: Maybe<Work>;
   emailTemplateAdd?: Maybe<EmailTemplate>;
   emailTemplateDelete?: Maybe<Scalars['ID']['output']>;
@@ -15419,6 +15424,18 @@ export type MutationDraftWorkspaceAddArgs = {
 
 export type MutationDraftWorkspaceDeleteArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationDraftWorkspaceEditAuthorizedMembersArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<MemberAccessInput>;
+};
+
+
+export type MutationDraftWorkspaceFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
 };
 
 
@@ -37858,8 +37875,10 @@ export type DraftVersionResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type DraftWorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspace'] = ResolversParentTypes['DraftWorkspace']> = ResolversObject<{
+  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draft_status?: Resolver<ResolversTypes['DraftStatus'], ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -40736,6 +40755,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   disseminationListSend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDisseminationListSendArgs, 'id' | 'input'>>;
   draftWorkspaceAdd?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceAddArgs, 'input'>>;
   draftWorkspaceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceDeleteArgs, 'id'>>;
+  draftWorkspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceEditAuthorizedMembersArgs, 'id' | 'input'>>;
+  draftWorkspaceFieldPatch?: Resolver<Maybe<ResolversTypes['DraftWorkspace']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceFieldPatchArgs, 'id' | 'input'>>;
   draftWorkspaceValidate?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<MutationDraftWorkspaceValidateArgs, 'id'>>;
   emailTemplateAdd?: Resolver<Maybe<ResolversTypes['EmailTemplate']>, ParentType, ContextType, RequireFields<MutationEmailTemplateAddArgs, 'input'>>;
   emailTemplateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationEmailTemplateDeleteArgs, 'id'>>;

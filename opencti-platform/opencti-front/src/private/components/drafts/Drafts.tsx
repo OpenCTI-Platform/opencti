@@ -44,7 +44,19 @@ const DraftLineFragment = graphql`
                 import_processed_number
             }
         }
-    }
+        currentUserAccessRight
+        authorizedMembers {
+          id
+          name
+          entity_type
+          access_right
+          member_id
+          groups_restriction {
+            id
+            name
+          }
+        }
+      }
 `;
 export const draftsLinesQuery = graphql`
     query DraftsLinesPaginationQuery(
@@ -248,12 +260,14 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
               />
             )}
           />
-          <DraftWorkspaceDialogCreation
-            paginationOptions={queryPaginationOptions}
-            handleCloseCreate={setOpenCreate}
-            entityId={entityId}
-            openCreate={openCreate}
-          />
+          {openCreate && (
+            <DraftWorkspaceDialogCreation
+              paginationOptions={queryPaginationOptions}
+              handleCloseCreate={setOpenCreate}
+              entityId={entityId}
+              openCreate={openCreate}
+            />
+          )}
         </>
       )}
     </span>

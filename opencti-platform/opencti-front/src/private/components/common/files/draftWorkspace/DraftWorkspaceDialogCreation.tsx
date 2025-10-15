@@ -10,12 +10,15 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
+import AuthorizedMembersField, { AuthorizedMembersFieldValue } from '@components/common/form/AuthorizedMembersField';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { insertNode } from '../../../../../utils/store';
 import { DraftWorkspaceDialogCreationMutation, DraftWorkspaceDialogCreationMutation$variables } from './__generated__/DraftWorkspaceDialogCreationMutation.graphql';
+import useAuth from '../../../../../utils/hooks/useAuth';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 const draftWorkspaceDialogCreationMutation = graphql`
   mutation DraftWorkspaceDialogCreationMutation($input: DraftWorkspaceAddInput!) {
@@ -36,6 +39,7 @@ interface DraftWorkspaceCreationProps {
 
 interface DraftAddInput {
   name: string;
+  authorizedMembers?: AuthorizedMembersFieldValue;
 }
 
 const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProps> = ({
@@ -45,6 +49,8 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const { me: owner, settings } = useAuth();
+  const showAllMembersLine = !settings.platform_organization?.id;
   const [commit] = useApiMutation<DraftWorkspaceDialogCreationMutation>(
     draftWorkspaceDialogCreationMutation,
     undefined,
@@ -65,6 +71,17 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
     const input: DraftWorkspaceDialogCreationMutation$variables['input'] = {
       name: values.name,
       entity_id: entityId,
+      authorized_members: !values.authorizedMembers
+        ? null
+        : values.authorizedMembers
+          .filter((v) => v.accessRight !== 'none')
+          .map((member) => ({
+            id: member.value,
+            access_right: member.accessRight,
+            groups_restriction_ids: member.groupsRestriction?.length > 0
+              ? member.groupsRestriction.map((group) => group.value)
+              : undefined,
+          })),
     };
     commit({
       variables: {
@@ -85,7 +102,7 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
   };
 
   return (
-    <Formik
+    <Formik<DraftAddInput>
       enableReinitialize={true}
       initialValues={{ name: '' }}
       validationSchema={draftValidation}
@@ -108,6 +125,17 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
                 name="name"
                 label={t_i18n('Name')}
                 fullWidth
+              />
+              <Field
+                name="authorizedMembers"
+                component={AuthorizedMembersField}
+                owner={owner}
+                showAllMembersLine={showAllMembersLine}
+                canDeactivate
+                addMeUserWithAdminRights
+                enableAccesses
+                applyAccesses
+                style={fieldSpacingContainerStyle}
               />
             </DialogContent>
             <DialogActions>
