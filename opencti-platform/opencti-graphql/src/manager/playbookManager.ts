@@ -46,9 +46,8 @@ import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookEx
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isStixRelation } from '../schema/stixRelationship';
-import { storeLoadById } from '../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
+import type { PirStreamConfiguration } from '../modules/playbook/playbookComponents/playbook-data-stream-pir-component';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -301,31 +300,34 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                 }
               }
             }
-            if (instance && instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM_PIR') {
-              if (scope === 'internal') {
-                if (isStixRelation(data) && data.relationship_type === RELATION_IN_PIR) {
-                  const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-                  const {
-                    update,
-                    create,
-                    delete: deletion,
-                    filters
-                  } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
-                  const jsonFilters = filters ? JSON.parse(filters) : null;
-                  let validEventType = false;
-                  if (type === 'create' && create === true) validEventType = true;
-                  if (type === 'update' && update === true) validEventType = true;
-                  if (type === 'delete' && deletion === true) validEventType = true;
-                  const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
-                  // 02. Execute the component
-                  if (validEventType && isMatch) {
-                    const entity = await storeLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
+            if (instance && instance.component_id === 'PLAYBOOK_DATA_STREAM_PIR') {
+              if (scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR) {
+                const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+                const {
+                  // update,
+                  create,
+                  // delete: deletion,
+                  filters: sourceFilters,
+                  inPirFilters
+                } = (JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration);
+                const filtersOnInPirRel = inPirFilters ? JSON.parse(inPirFilters) : null;
+                const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
+                let validEventType = false;
+                if (type === 'create' && create === true) validEventType = true;
+                // if (type === 'update' && update === true) validEventType = true;
+                // if (type === 'delete' && deletion === true) validEventType = true;
+                const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, filtersOnInPirRel);
+                // 02. Execute the component
+                if (validEventType && isMatch) {
+                  const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
+                  const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersOnSource);
+                  if (isEntityMatch) {
                     const nextStep = { component: connector, instance };
                     const bundle: StixBundle = {
                       id: uuidv4(),
                       spec_version: STIX_SPEC_VERSION,
                       type: 'bundle',
-                      objects: [convertStoreToStix(entity)]
+                      objects: [entity]
                     };
                     await playbookExecutor({
                       eventId,
