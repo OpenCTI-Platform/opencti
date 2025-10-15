@@ -146,8 +146,8 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 self.logger.warning(str(err))
                             # Instance spliter and split the big bundle
                             event_version = content.get("x_opencti_event_version")
-                            stix2_splitter = OpenCTIStix2Splitter(self.objects_max_refs)
-                            expectations, _, bundles, too_large_elements_bundles = (
+                            stix2_splitter = OpenCTIStix2Splitter()
+                            expectations, _, bundles = (
                                 stix2_splitter.split_bundle_with_expectations(
                                     content, False, event_version
                                 )
@@ -155,25 +155,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             # Add expectations to the work
                             if work_id is not None:
                                 self.api.work.add_expectations(work_id, expectations)
-                                # For each bundle too large, send it to the too large queue
-                            for too_large_elements_bundle in too_large_elements_bundles:
-                                too_large_elements_bundle["original_connector_id"] = (
-                                    self.connector_id
-                                )
-                                self.logger.warning(
-                                    "Detected a bundle too large, sending it to dead letter queue...",
-                                    {
-                                        "bundle_id": too_large_elements_bundle["id"],
-                                        "connector_id": self.connector_id,
-                                    },
-                                )
-                                self.send_bundle_to_specific_queue(
-                                    push_channel,
-                                    self.listen_exchange,
-                                    self.dead_letter_routing,
-                                    data,
-                                    too_large_elements_bundle,
-                                )
                             # For each split bundle, send it to the same queue
                             for bundle in bundles:
                                 self.send_bundle_to_specific_queue(
