@@ -8123,10 +8123,10 @@ input SSHKeyAddInput {
   key_type: String
   public_key: String
 
-  "*Constraints:*\n* Minimal length: `5`\n"
+  "*Constraints:*\n* Minimal length: `54`\n"
   fingerprint_sha256: String!
 
-  "*Constraints:*\n* Minimal length: `5`\n"
+  "*Constraints:*\n* Minimal length: `128`\n"
   fingerprint_md5: String
   key_length: String
   comment: String
