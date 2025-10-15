@@ -210,6 +210,7 @@ export const connectorConfig = (id, listen_callback_uri = undefined) => ({
   listen_routing: listenRouting(id),
   listen_exchange: CONNECTOR_EXCHANGE,
   listen_callback_uri,
+  dead_letter_routing: listenRouting(CONNECTOR_QUEUE_BUNDLES_TOO_LARGE.id),
 });
 
 export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;

@@ -244,6 +244,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             connector_config["push_exchange"],
                             connector_config["listen_exchange"],
                             connector_config["push_routing"],
+                            connector_config["dead_letter_routing"],
                             pika_parameters,
                             bundles_global_counter,
                             bundles_processing_time_gauge,

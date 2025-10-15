@@ -2226,6 +2226,7 @@ type ConnectorConfig {
   push: String!
   push_routing: String!
   push_exchange: String!
+  dead_letter_routing: String!
 }
 
 type ConnectorMetadata {

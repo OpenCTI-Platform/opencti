@@ -22,6 +22,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     push_exchange: str
     listen_exchange: str
     push_routing: str
+    dead_letter_routing: str
     pika_parameters: pika.ConnectionParameters
     bundles_global_counter: Any
     bundles_processing_time_gauge: Any
@@ -35,10 +36,6 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
             json_logging=self.json_logging,
             ssl_verify=self.ssl_verify,
         )
-        # Small hack to handle any rabbit prefix that could have been configured
-        self.listen_too_large_routing = self.push_routing.replace(
-            "push_routing", "listen_routing"
-        ).replace(self.connector_id, "too-large-bundle")
 
     def send_bundle_to_specific_queue(
         self,
@@ -111,7 +108,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                     )
                     if len(too_large_items_bundles) > 0:
                         with pika.BlockingConnection(
-                                self.pika_parameters
+                            self.pika_parameters
                         ) as push_pika_connection:
                             with push_pika_connection.channel() as push_channel:
                                 try:
@@ -119,18 +116,20 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 except Exception as err:  # pylint: disable=broad-except
                                     self.logger.warning(str(err))
                                 for too_large_item_bundle in too_large_items_bundles:
-                                    too_large_item_bundle["original_connector_id"] = self.connector_id
+                                    too_large_item_bundle["original_connector_id"] = (
+                                        self.connector_id
+                                    )
                                     self.logger.warning(
                                         "Detected a bundle too large, sending it to dead letter queue...",
                                         {
                                             "bundle_id": too_large_item_bundle["id"],
-                                            "connector_id": self.connector_id
-                                        }
+                                            "connector_id": self.connector_id,
+                                        },
                                     )
                                     self.send_bundle_to_specific_queue(
                                         push_channel,
                                         self.listen_exchange,
-                                        self.listen_too_large_routing,
+                                        self.dead_letter_routing,
                                         data,
                                         too_large_item_bundle,
                                     )
@@ -158,18 +157,20 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 self.api.work.add_expectations(work_id, expectations)
                                 # For each bundle too large, send it to the too large queue
                             for too_large_elements_bundle in too_large_elements_bundles:
-                                too_large_elements_bundle["original_connector_id"] = self.connector_id
+                                too_large_elements_bundle["original_connector_id"] = (
+                                    self.connector_id
+                                )
                                 self.logger.warning(
                                     "Detected a bundle too large, sending it to dead letter queue...",
                                     {
                                         "bundle_id": too_large_elements_bundle["id"],
-                                        "connector_id": self.connector_id
-                                    }
+                                        "connector_id": self.connector_id,
+                                    },
                                 )
                                 self.send_bundle_to_specific_queue(
                                     push_channel,
                                     self.listen_exchange,
-                                    self.listen_too_large_routing,
+                                    self.dead_letter_routing,
                                     data,
                                     too_large_elements_bundle,
                                 )
