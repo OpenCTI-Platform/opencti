@@ -922,7 +922,12 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     // Delete the file
     await deleteFile(context, user, fileId);
     // Patch the updated_at to force live stream evolution
-    const files = (previous.x_opencti_files ?? []).filter((f) => f.id !== fileId);
+    const previousFiles = previous.x_opencti_files ?? [];
+    const files = previousFiles.filter((f) => f.id !== fileId);
+    if (files.length === previousFiles.length) {
+      logApp.warn('File linked to entity is not listed in entity itself', { fileId, entityId });
+      return;
+    }
     const nonResolvedFiles = files.map((f) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [INPUT_MARKINGS]: markingInput, ...nonResolvedFile } = f;
