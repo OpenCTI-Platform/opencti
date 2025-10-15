@@ -1203,6 +1203,12 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'hazel' },
     { key: 'other' },
   ],
+  key_type_ov: [
+    { key: 'rsa' },
+    { key: 'ecdsa' },
+    { key: 'ed25519' },
+    { key: 'dsa' },
+  ]
 };
 
 export const getVocabulariesCategories = (): VocabularyDefinition[] => {
