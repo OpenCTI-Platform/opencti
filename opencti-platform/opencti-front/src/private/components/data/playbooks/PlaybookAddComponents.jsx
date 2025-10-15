@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import { ListItemButton } from '@mui/material';
+import PirField from '../../common/form/PirField';
 import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
@@ -627,10 +628,20 @@ const PlaybookAddComponentsContent = ({
                       <ObjectOrganizationField
                         key={k}
                         name="organizations"
-                        style={{ marginTop: 20, width: '100%' }}
+                        style={fieldSpacingContainerStyle}
                         label={'Target organizations'}
                         multiple={true}
                         alert={false}
+                      />
+                    );
+                  }
+                  if (k === 'inPirFilters') {
+                    return (
+                      <PirField
+                        key={k}
+                        name="inPirFilters"
+                        style={fieldSpacingContainerStyle}
+                        multiple={true}
                       />
                     );
                   }
