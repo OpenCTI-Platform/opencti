@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ChangeEvent, MouseEvent, useState } from 'react';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
@@ -7,15 +7,16 @@ import Tab from '@mui/material/Tab';
 import { isEmpty } from 'ramda';
 import Chip from '@mui/material/Chip';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import SearchBulkUnknownEntities from './SearchBulkUnknownEntities';
 import { useFormatter } from '../../components/i18n';
 import Breadcrumbs from '../../components/Breadcrumbs';
 import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
-import SearchBulk from './SearchBulk';
+import SearchBulk, { BULK_SEARCH_LOCAL_STORAGE_KEY } from './SearchBulk';
 import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithoutFragment';
 import { resolveLink } from '../../utils/Entity';
 import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
+import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 
 const SearchBulkContainer = () => {
   const { t_i18n, n } = useFormatter();
@@ -30,7 +31,7 @@ const SearchBulkContainer = () => {
   const [numberOfKnownEntities, setNumberOfKnownEntities] = useState(0);
   const [numberOfUnknownEntities, setNumberOfUnknownEntities] = useState(0);
 
-  const handleChangeTab = (value) => {
+  const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
   const values = textFieldValue
@@ -38,7 +39,7 @@ const SearchBulkContainer = () => {
     .filter((o) => o.length > 1)
     .map((val) => val.trim()) ?? [];
 
-  const handleChangeTextField = (event) => {
+  const handleChangeTextField = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
     setTextFieldValue(
       value
@@ -52,7 +53,7 @@ const SearchBulkContainer = () => {
     );
   };
 
-  const dataColumns = {
+  const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: {
       isSortable: true,
     },
@@ -71,7 +72,7 @@ const SearchBulkContainer = () => {
         const analysesNumber = containersNumber?.total;
         const link = `${resolveLink(entity_type)}/${id}`;
         const linkAnalyses = `${link}/analyses`;
-        const analysesChipStyle = {
+        const analysesChipStyle: React.CSSProperties = {
           fontSize: 13,
           lineHeight: '12px',
           height: 20,
@@ -86,7 +87,7 @@ const SearchBulkContainer = () => {
                   label={n(analysesNumber)}
                  />)
               : (<Chip
-                  style={{
+                  sx={{
                     ...analysesChipStyle,
                     cursor: 'pointer',
                     '&:hover': {
@@ -94,7 +95,7 @@ const SearchBulkContainer = () => {
                     },
                   }}
                   label={n(analysesNumber)}
-                  onClick={(e) => {
+                  onClick={(e: MouseEvent<HTMLDivElement>) => {
                     e.preventDefault();
                     e.stopPropagation();
                     navigate(linkAnalyses);
@@ -110,7 +111,7 @@ const SearchBulkContainer = () => {
 
   return (
     <>
-      <Breadcrumbs variant="standard" elements={[{ label: t_i18n('Search') }, { label: t_i18n('Bulk search'), current: true }]} />
+      <Breadcrumbs elements={[{ label: t_i18n('Search') }, { label: t_i18n('Bulk search'), current: true }]} />
       <div className="clearfix" />
       <Grid
         container={true}
@@ -142,7 +143,7 @@ const SearchBulkContainer = () => {
             && <SearchBulk inputValues={values} dataColumns={dataColumns} setNumberOfEntities={setNumberOfKnownEntities} />
           }
           {currentTab === 0 && isEmpty(textFieldValue)
-            && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} />
+            && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY} />
           }
           {currentTab === 1
             && <SearchBulkUnknownEntities values={values} setNumberOfEntities={setNumberOfUnknownEntities} />

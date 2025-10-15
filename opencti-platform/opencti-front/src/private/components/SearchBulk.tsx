@@ -1,12 +1,17 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import { SearchBulkQuery, SearchBulkQuery$variables } from './__generated__/SearchBulkQuery.graphql';
+import { SearchBulkQuery_data$data } from './__generated__/SearchBulkQuery_data.graphql';
 import { allEntitiesKeyList } from './common/bulk/utils/querySearchEntityByText';
 import DataTable from '../../components/dataGrid/DataTable';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
+import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
+import { UsePreloadedPaginationFragment } from '../../utils/hooks/usePreloadedPaginationFragment';
+import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 
-const LOCAL_STORAGE_KEY = 'searchBulk';
+export const BULK_SEARCH_LOCAL_STORAGE_KEY = 'searchBulk';
 
 export const searchBulkLineFragment = graphql`
   fragment SearchBulkLine_node on StixCoreObject {
@@ -118,10 +123,16 @@ export const searchBulkFragment = graphql`
   }
 `;
 
-const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }) => {
-  const buildSearchBulkFilters = (values, filters) => {
+interface SearchBulkProps {
+  inputValues: string[],
+  dataColumns: DataTableProps['dataColumns'],
+  setNumberOfEntities: (n: number) => void,
+}
+
+const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBulkProps) => {
+  const buildSearchBulkFilters = (values: string[], filters: FilterGroup) => {
     return values.length > 0
-      ? addFilter(filters, allEntitiesKeyList, values)
+      ? addFilter(filters, allEntitiesKeyList as unknown as string, values) // TODO INVALID TYPE
       : filters;
   };
 
@@ -132,12 +143,12 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }) => {
     filters: emptyFilterGroup,
   };
 
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage(
-    LOCAL_STORAGE_KEY,
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SearchBulkQuery>(
+    BULK_SEARCH_LOCAL_STORAGE_KEY,
     initialValues,
   );
   const { filters, numberOfElements } = viewStorage;
-  setNumberOfEntities(numberOfElements.number);
+  setNumberOfEntities(numberOfElements?.number ?? 0);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
 
@@ -147,9 +158,9 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }) => {
     ...paginationOptions,
     filters: queryFilters,
     count: 5000,
-  };
+  } as SearchBulkQuery$variables;
 
-  const queryRef = useQueryLoading(searchBulkQuery, queryPaginationOptions);
+  const queryRef = useQueryLoading<SearchBulkQuery>(searchBulkQuery, queryPaginationOptions);
 
   const preloadedPaginationProps = {
     linesQuery: searchBulkQuery,
@@ -157,20 +168,19 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }) => {
     queryRef,
     nodePath: ['globalSearch', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
-  };
+  } as UsePreloadedPaginationFragment<SearchBulkQuery>;
 
   return (
     <>
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
-          resolvePath={(data) => data.globalSearch?.edges?.map((n) => n?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
+          resolvePath={(data: SearchBulkQuery_data$data) => data.globalSearch?.edges?.map((n) => n?.node)}
+          storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={queryFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           exportContext={{ entity_type: 'Stix-Core-Object' }}
-          paginationOptions={queryPaginationOptions}
           lineFragment={searchBulkLineFragment}
           hideSearch
           disableToolBar

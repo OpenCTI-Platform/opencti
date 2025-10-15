@@ -20,7 +20,7 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const StixObjectOrStixRelationship = lazy(() => import('./components/StixObjectOrStixRelationship'));
-const RootSearchBulk = lazy(() => import('@components/SearchBulkContainer'));
+const RootSearchBulk = lazy(() => import('./components/SearchBulkContainer'));
 const RootAnalyses = lazy(() => import('./components/analyses/Root'));
 const RootCases = lazy(() => import('./components/cases/Root'));
 const RootEvents = lazy(() => import('./components/events/Root'));
