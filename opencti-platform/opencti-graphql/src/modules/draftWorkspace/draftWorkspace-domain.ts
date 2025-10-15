@@ -1,5 +1,16 @@
-import type { AuthContext, AuthUser } from '../../types/user';
+import { BUS_TOPICS, logApp } from '../../config/conf';
+import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
+import { buildUpdateFieldPatch } from '../../database/draft-utils';
+import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
+import { deleteAllDraftFiles } from '../../database/file-storage-helper';
+import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelationsConnection, storeLoadById } from '../../database/middleware-loader';
+import { pushToWorkerForConnector } from '../../database/rabbitmq';
+import { notify } from '../../database/redis';
+import { buildStixBundle } from '../../database/stix-2-1-converter';
+import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
   type DraftWorkspaceAddInput,
   FilterMode,
@@ -9,39 +20,28 @@ import {
   type QueryDraftWorkspacesArgs,
   type QueryDraftWorkspaceSightingRelationshipsArgs
 } from '../../generated/graphql';
-import { now } from '../../utils/format';
-import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from './draftWorkspace-types';
-import { elDeleteDraftContextFromUsers, elDeleteDraftContextFromWorks, elDeleteDraftElements, resolveDraftUpdateFiles } from '../../database/draft-engine';
-import { computeSumOfList, isDraftIndex, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { createEntity, deleteElementById, stixLoadByIds, updateAttribute } from '../../database/middleware';
-import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
-import { isStixCoreObject } from '../../schema/stixCoreObject';
-import { BUS_TOPICS, logApp } from '../../config/conf';
-import { getDraftContext } from '../../utils/draftContext';
-import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
-import { elAggregationCount, elCount, elList, elLoadById, loadDraftElement } from '../../database/engine';
-import { buildStixBundle } from '../../database/stix-2-1-converter';
-import { pushToWorkerForConnector } from '../../database/rabbitmq';
-import { getUserAccessRight, SYSTEM_USER } from '../../utils/access';
-import { buildUpdateFieldPatch } from '../../database/draft-utils';
-import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
-import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
-import { isStixRefRelationship } from '../../schema/stixRefRelationship';
-import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
-import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import { isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
-import { deleteAllDraftFiles } from '../../database/file-storage-helper';
-import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
-import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
+import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { isStixCoreObject } from '../../schema/stixCoreObject';
+import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { isStixRefRelationship } from '../../schema/stixRefRelationship';
+import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
+import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { AuthContext, AuthUser } from '../../types/user';
+import { getUserAccessRight, SYSTEM_USER } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
+import { getDraftContext } from '../../utils/draftContext';
+import { now } from '../../utils/format';
+import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
+import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
+import { DRAFT_VALIDATION_CONNECTOR } from './draftWorkspace-connector';
+import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from './draftWorkspace-types';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -223,7 +223,7 @@ export const draftWorkspaceEditAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
   workspaceId: string,
-  input: MemberAccessInput[] | undefined | null,
+  input: MemberAccessInput[],
 ) => {
   const args = {
     entityId: workspaceId,
