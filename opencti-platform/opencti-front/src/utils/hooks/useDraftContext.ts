@@ -5,6 +5,7 @@ export interface DraftContext {
   name: string;
   draft_status: string;
   processingCount: number;
+  currentUserAccessRight: string | null | undefined;
 }
 
 const useDraftContext = (): DraftContext | null | undefined => {
