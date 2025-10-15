@@ -87,125 +87,123 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
     connectorsForImport,
   } = usePreloadedQuery<RootObservedDataQuery>(observedDataQuery, queryRef);
 
+  if (!observedData) {
+    return <ErrorNotFound />;
+  }
+
   return (
     <>
-      {observedData ? (
-        <>
-          <div>
-            <Breadcrumbs elements={[
-              { label: t_i18n('Events') },
-              { label: t_i18n('Observed datas'), link: '/dashboard/events/observed_data' },
-              { label: observedData.name, current: true },
-            ]}
-            />
-            <ContainerHeader
-              container={observedData}
-              EditComponent={(
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <ObservedDataEdition observedDataId={observedData.id} />
-                </Security>
+      <div>
+        <Breadcrumbs elements={[
+          { label: t_i18n('Events') },
+          { label: t_i18n('Observed datas'), link: '/dashboard/events/observed_data' },
+          { label: observedData.name, current: true },
+        ]}
+        />
+        <ContainerHeader
+          container={observedData}
+          EditComponent={(
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ObservedDataEdition observedDataId={observedData.id} />
+            </Security>
                     )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
-                <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                  <ObservedDataDeletion id={observedData.id} isOpen={isOpen} handleClose={onClose} />
-                </Security>
-              )}
-              redirectToContent = {false}
-              disableAuthorizedMembers={true}
-              enableEnricher={false}
+          DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+            <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+              <ObservedDataDeletion id={observedData.id} isOpen={isOpen} handleClose={onClose} />
+            </Security>
+          )}
+          redirectToContent = {false}
+          disableAuthorizedMembers={true}
+          enableEnricher={false}
+        />
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: 'divider',
+            marginBottom: 3,
+          }}
+        >
+          <Tabs
+            value={location.pathname}
+          >
+            <Tab
+              component={Link}
+              to={`/dashboard/events/observed_data/${observedData.id}`}
+              value={`/dashboard/events/observed_data/${observedData.id}`}
+              label={t_i18n('Overview')}
             />
-            <Box
-              sx={{
-                borderBottom: 1,
-                borderColor: 'divider',
-                marginBottom: 3,
-              }}
-            >
-              <Tabs
-                value={location.pathname}
-              >
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/observed_data/${observedData.id}`}
-                  value={`/dashboard/events/observed_data/${observedData.id}`}
-                  label={t_i18n('Overview')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/observed_data/${observedData.id}/entities`}
-                  value={`/dashboard/events/observed_data/${observedData.id}/entities`}
-                  label={t_i18n('Entities')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/observed_data/${observedData.id}/observables`}
-                  value={`/dashboard/events/observed_data/${observedData.id}/observables`}
-                  label={t_i18n('Observables')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/observed_data/${observedData.id}/files`}
-                  value={`/dashboard/events/observed_data/${observedData.id}/files`}
-                  label={t_i18n('Data')}
-                />
-                <Tab
-                  component={Link}
-                  to={`/dashboard/events/observed_data/${observedData.id}/history`}
-                  value={`/dashboard/events/observed_data/${observedData.id}/history`}
-                  label={t_i18n('History')}
-                />
-              </Tabs>
-            </Box>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <ObservedData observedDataData={observedData} />
+            <Tab
+              component={Link}
+              to={`/dashboard/events/observed_data/${observedData.id}/entities`}
+              value={`/dashboard/events/observed_data/${observedData.id}/entities`}
+              label={t_i18n('Entities')}
+            />
+            <Tab
+              component={Link}
+              to={`/dashboard/events/observed_data/${observedData.id}/observables`}
+              value={`/dashboard/events/observed_data/${observedData.id}/observables`}
+              label={t_i18n('Observables')}
+            />
+            <Tab
+              component={Link}
+              to={`/dashboard/events/observed_data/${observedData.id}/files`}
+              value={`/dashboard/events/observed_data/${observedData.id}/files`}
+              label={t_i18n('Data')}
+            />
+            <Tab
+              component={Link}
+              to={`/dashboard/events/observed_data/${observedData.id}/history`}
+              value={`/dashboard/events/observed_data/${observedData.id}/history`}
+              label={t_i18n('History')}
+            />
+          </Tabs>
+        </Box>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ObservedData observedDataData={observedData} />
                       }
-              />
-              <Route
-                path="/entities"
-                element={
-                  <ContainerStixDomainObjects container={observedData} />
+          />
+          <Route
+            path="/entities"
+            element={
+              <ContainerStixDomainObjects container={observedData} />
                       }
-              />
-              <Route
-                path="/observables"
-                element={
-                  <ContainerStixCyberObservables container={observedData} />
+          />
+          <Route
+            path="/observables"
+            element={
+              <ContainerStixCyberObservables container={observedData} />
                       }
+          />
+          <Route
+            path="/files"
+            element={
+              <FileManager
+                id={observedDataId}
+                connectorsExport={connectorsForExport}
+                connectorsImport={connectorsForImport}
+                entity={observedData}
               />
-              <Route
-                path="/files"
-                element={
-                  <FileManager
-                    id={observedDataId}
-                    connectorsExport={connectorsForExport}
-                    connectorsImport={connectorsForImport}
-                    entity={observedData}
-                  />
                       }
-              />
-              <Route
-                path="/history"
-                element={
-                  <StixCoreObjectHistory stixCoreObjectId={observedDataId} />
+          />
+          <Route
+            path="/history"
+            element={
+              <StixCoreObjectHistory stixCoreObjectId={observedDataId} />
                       }
+          />
+          <Route
+            path="/knowledge/relations/:relationId/"
+            element={
+              <StixCoreRelationship
+                entityId={observedData.id}
               />
-              <Route
-                path="/knowledge/relations/:relationId/"
-                element={
-                  <StixCoreRelationship
-                    entityId={observedData.id}
-                  />
                       }
-              />
-            </Routes>
-          </div>
-        </>
-      ) : (
-        <ErrorNotFound />
-      )}
+          />
+        </Routes>
+      </div>
     </>
   );
 };
