@@ -19,6 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { StixCyberObservableNestedEntitiesTable_node$data } from './__generated__/StixCyberObservableNestedEntitiesTable_node.graphql';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import stopEvent from '../../../../utils/domEvent';
+import { computeLink } from '../../../../utils/Entity';
 
 const LOCAL_STORAGE_KEY = 'StixCyberObservableNestedEntitiesTable';
 
@@ -338,6 +339,15 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
     },
   };
 
+  const getRedirectionLink = (stixObject: StixCyberObservableNestedEntitiesTable_node$data) => {
+    const targetObject = stixObject.from?.id === stixCyberObservableId ? stixObject.to : stixObject.from;
+    if (targetObject) {
+      const reconstructedTarget = { ...targetObject, id: targetObject.id ?? '', entity_type: targetObject.entity_type ?? '' };
+      return computeLink(reconstructedTarget);
+    }
+    return undefined;
+  };
+
   return (
     <Box style={{
       marginBlockStart: isInLine ? 0 : -25,
@@ -356,6 +366,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
           hideSearch
           hideHeaders={isInLine}
           disableLineSelection
+          useComputeLink={getRedirectionLink}
           icon={(data: StixCyberObservableNestedEntitiesTable_node$data) => <ItemIcon type={data.to?.entity_type}/>}
           actions={(data: StixCyberObservableNestedEntitiesTable_node$data) => {
             return (
