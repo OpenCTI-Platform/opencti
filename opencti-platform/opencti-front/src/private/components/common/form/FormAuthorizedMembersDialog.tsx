@@ -37,7 +37,8 @@ const FormAuthorizedMembersDialog = ({
   customInfoMessage,
 }: FormAuthorizedMembersDialogProps) => {
   const draftContext = useDraftContext();
-  const disabledInDraft = !!draftContext;
+  const isDraftEntity = !!draftContext && id === draftContext.id;
+  const disabledInDraft = !!draftContext || !!isDraftEntity;
   const { t_i18n } = useFormatter();
   const [openDrawer, setOpenDrawer] = useState(false);
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -107,6 +108,7 @@ const FormAuthorizedMembersDialog = ({
         showAllMembersLine={showAllMembersLine}
         isCanUseEnable={isCanUseEnable}
         customInfoMessage={customInfoMessage}
+        isDraftEntity={isDraftEntity}
       />
     </>
   );
