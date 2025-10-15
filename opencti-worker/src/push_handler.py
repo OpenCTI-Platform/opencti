@@ -119,8 +119,13 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         except Exception as err:  # pylint: disable=broad-except
                             self.logger.warning(str(err))
                         for too_large_item_bundle in too_large_items_bundles:
+                            too_large_item_bundle["original_connector_id"] = self.connector_id
                             self.logger.warning(
                                 "Detected a bundle too large, sending it to dead letter queue...",
+                                {
+                                    "bundle_id": too_large_item_bundle["id"],
+                                    "connector_id": self.connector_id
+                                }
                             )
                             self.send_bundle_to_specific_queue(
                                 push_channel,
@@ -153,8 +158,13 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                                 self.api.work.add_expectations(work_id, expectations)
                                 # For each bundle too large, send it to the too large queue
                             for too_large_elements_bundle in too_large_elements_bundles:
+                                too_large_elements_bundle["original_connector_id"] = self.connector_id
                                 self.logger.warning(
                                     "Detected a bundle too large, sending it to dead letter queue...",
+                                    {
+                                        "bundle_id": too_large_elements_bundle["id"],
+                                        "connector_id": self.connector_id
+                                    }
                                 )
                                 self.send_bundle_to_specific_queue(
                                     push_channel,
