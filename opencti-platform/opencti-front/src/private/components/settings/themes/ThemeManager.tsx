@@ -7,7 +7,6 @@ import { ThemeManagerQuery, ThemeManagerQuery$variables } from '@components/sett
 import { ThemeManager_lines_data$data } from '@components/settings/themes/__generated__/ThemeManager_lines_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
-import { emptyFilterGroup, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
@@ -21,7 +20,7 @@ const LOCAL_STORAGE_KEY = 'themes';
 export const refetchableThemesQuery = graphql`
   fragment ThemeManager_themes on Query
   @refetchable(queryName: "ThemeManagerThemesRefetchQuery") {
-    themes {
+    themes(orderBy: created_at, orderMode: desc) {
       edges {
         node {
           id
@@ -36,10 +35,8 @@ export const refetchableThemesQuery = graphql`
           theme_logo
           theme_logo_collapsed
           theme_logo_login
-          
         }
       }
-    
     }
   }
 `;
@@ -217,6 +214,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
             initialValues={initialValues}
             lineFragment={themesLineFragment}
             preloadedPaginationProps={preloadedPaginationOptions}
+
           />
         )}
       </Paper>
