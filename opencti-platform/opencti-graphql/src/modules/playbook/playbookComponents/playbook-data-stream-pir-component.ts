@@ -5,17 +5,22 @@ export interface PirStreamConfiguration {
   create: boolean,
   update: boolean,
   delete: boolean,
-  inPirFilters: string,
+  inPirFilters: { value: string }[],
   filters: string,
 }
 
 const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = {
   type: 'object',
   properties: {
+    inPirFilters: {
+      type: 'array',
+      uniqueItems: true,
+      default: [],
+      items: { type: 'string', oneOf: [] }
+    },
     create: { type: 'boolean', default: true },
     update: { type: 'boolean', default: false },
     delete: { type: 'boolean', default: false },
-    inPirFilters: { type: 'string' },
     filters: { type: 'string' },
   },
   required: ['create', 'update', 'delete'],

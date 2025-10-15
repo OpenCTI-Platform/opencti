@@ -98,7 +98,14 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
       .filter((f) => isNotEmptyField(f))
       .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
       .flat();
-    filteringIds.push(...playbookFilterIds);
+
+    const playbookinPirFilterIds = ((JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition)) as ComponentDefinition)
+      .nodes.map((n) => JSON.parse(n.configuration))
+      .map((config) => config.inPirFilters)
+      .map((f) => (f ?? []).map((i:{ value:string }) => i.value))
+      .flat();
+
+    filteringIds.push(...playbookFilterIds, ...playbookinPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
     const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPir).pir_filters));
     const pirCriteriaIds = (instance as BasicStoreEntityPir).pir_criteria
