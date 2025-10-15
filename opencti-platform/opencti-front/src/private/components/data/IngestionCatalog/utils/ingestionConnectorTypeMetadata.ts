@@ -14,38 +14,38 @@ export const getConnectorMetadata = (
     case 'EXTERNAL_IMPORT':
       return {
         label: t_i18n('External import'),
-        color: 'primary' as const,
+        color: 'secondary' as const,
       };
     case 'INTERNAL_ENRICHMENT':
       return {
         label: t_i18n('Internal enrichment'),
-        color: 'secondary' as const,
+        color: 'warning' as const,
       };
     case 'INTERNAL_EXPORT_FILE':
       return {
         label: t_i18n('Internal export file'),
-        color: 'error' as const,
+        color: 'warning' as const,
       };
     case 'INTERNAL_IMPORT_FILE':
       return {
         label: t_i18n('Internal import file'),
-        color: 'success' as const,
+        color: 'warning' as const,
       };
     case 'INTERNAL_INGESTION':
       return {
         label: t_i18n('Internal ingestion'),
-        color: 'success' as const,
+        color: 'warning' as const,
       };
     case 'STREAM':
       return {
         label: t_i18n('Stream'),
-        color: 'warning' as const,
+        color: '#ff78ffff',
       };
     default:
       // return raw type if type not handled
       return {
         label: containerType,
-        color: 'primary' as const,
+        color: 'default' as const,
       };
   }
 };

@@ -59,6 +59,7 @@ const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
           fontWeight: 800,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          display: '-webkit-box',
           WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical',
           opacity: 0.9,
@@ -71,7 +72,7 @@ const ConnectorTitle = ({ title }: ConnectorTitleProps) => {
 };
 
 interface ConnectorActionsProps {
-  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' };
+  connectorMetadata: { label: string; color?: 'primary' | 'secondary' | 'error' | 'warning' | 'success' | string };
   isEnterpriseEdition: boolean;
   deploymentCount: number;
   onClickDeploy: () => void;
@@ -92,17 +93,16 @@ const ConnectorActions = ({
         gap: 1,
         alignItems: 'flex-end',
       }}
-      onClick={(e) => e.stopPropagation()}
     >
       <IngestionCatalogChip
         label={connectorMetadata.label}
         color={connectorMetadata.color}
       />
       <Stack
-        sx={{
-          marginLeft: '0!important',
-        }}
-        direction="row" gap={1}
+        sx={{ marginLeft: '0!important' }}
+        direction="row"
+        gap={1}
+        onClick={(e) => e.stopPropagation()}
       >
         <Security needs={[INGESTION_SETINGESTIONS]}>
           {isEnterpriseEdition ? (
@@ -199,6 +199,7 @@ const IngestionCatalogCard = ({
             WebkitLineClamp: 5,
             WebkitBoxOrient: 'vertical',
             lineHeight: 1.5,
+            opacity: 0.8,
           }}
         >
           {connector.short_description}
