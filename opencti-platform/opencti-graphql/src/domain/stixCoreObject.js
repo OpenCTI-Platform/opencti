@@ -924,7 +924,7 @@ export const stixCoreObjectImportDelete = async (context, user, fileId) => {
     // Patch the updated_at to force live stream evolution
     const previousFiles = previous.x_opencti_files ?? [];
     const files = previousFiles.filter((f) => f.id !== fileId);
-    if (files.length !== previousFiles.length) {
+    if (files.length === previousFiles.length) {
       logApp.warn('File linked to entity is not listed in entity itself', { fileId, entityId });
       return;
     }
