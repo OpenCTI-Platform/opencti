@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Chip from '@mui/material/Chip';
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
@@ -14,6 +14,7 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import DataTable from '../../components/dataGrid/DataTable';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
 
 const searchBulkLineFragment = graphql`
   fragment SearchBulkLine_node on StixCoreObject {
@@ -142,6 +143,7 @@ const SearchBulk = () => {
   const { t_i18n, n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const theme = useTheme();
+  const navigate = useNavigate();
 
   setTitle(t_i18n('Bulk Search'));
 
@@ -210,37 +212,36 @@ const SearchBulk = () => {
         const analysesNumber = containersNumber?.total;
         const link = `${resolveLink(entity_type)}/${id}`;
         const linkAnalyses = `${link}/analyses`;
+        const analysesChipStyle = {
+          fontSize: 13,
+          lineHeight: '12px',
+          height: 20,
+          textTransform: 'uppercase',
+          borderRadius: 4,
+        };
         return (
           <>
-            {['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'].includes(entity_type) ? (
-              <Chip
-                style={{
-                  fontSize: 13,
-                  lineHeight: '12px',
-                  height: 20,
-                  textTransform: 'uppercase',
-                  borderRadius: 4,
-                }}
-                label={n(analysesNumber)}
-              />
-            ) : (
-              <Chip
-                style={{
-                  fontSize: 13,
-                  lineHeight: '12px',
-                  height: 20,
-                  textTransform: 'uppercase',
-                  borderRadius: 4,
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: theme.palette.primary.main,
-                  },
-                }}
-                label={n(analysesNumber)}
-                component={Link}
-                to={linkAnalyses}
-              />
-            )}
+            {typesWithNoAnalysesTab.includes(entity_type)
+              ? (<Chip
+                  style={analysesChipStyle}
+                  label={n(analysesNumber)}
+                 />)
+              : (<Chip
+                  style={{
+                    ...analysesChipStyle,
+                    cursor: 'pointer',
+                    '&:hover': {
+                      backgroundColor: theme.palette.primary.main,
+                    },
+                  }}
+                  label={n(analysesNumber)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(linkAnalyses);
+                  }}
+                 />)
+            }
           </>
         );
       },
