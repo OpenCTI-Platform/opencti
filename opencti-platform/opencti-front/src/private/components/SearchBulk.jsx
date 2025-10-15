@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
 import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import Chip from '@mui/material/Chip';
-import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
+import { useNavigate } from 'react-router-dom';
+import { graphql } from 'react-relay';
 import { allEntitiesKeyList } from './common/bulk/utils/querySearchEntityByText';
-import { useFormatter } from '../../components/i18n';
-import { resolveLink } from '../../utils/Entity';
-import Breadcrumbs from '../../components/Breadcrumbs';
-import useConnectedDocumentModifier from '../../utils/hooks/useConnectedDocumentModifier';
-import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import DataTable from '../../components/dataGrid/DataTable';
+import { resolveLink } from '../../utils/Entity';
+import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
+import useQueryLoading from '../../utils/hooks/useQueryLoading';
+import { useFormatter } from '../../components/i18n';
+
+const LOCAL_STORAGE_KEY = 'search_bulk';
 
 const searchBulkLineFragment = graphql`
   fragment SearchBulkLine_node on StixCoreObject {
@@ -137,17 +136,10 @@ const buildQueryParams = (textFieldValue, filters) => {
   return { values, queryFilters, count: 5000 };
 };
 
-const LOCAL_STORAGE_KEY = 'search_bulk';
-
-const SearchBulk = () => {
-  const { t_i18n, n } = useFormatter();
-  const { setTitle } = useConnectedDocumentModifier();
+const SearchBulk = ({ textFieldValue }) => {
   const theme = useTheme();
   const navigate = useNavigate();
-
-  setTitle(t_i18n('Bulk Search'));
-
-  const [textFieldValue, setTextFieldValue] = useState('');
+  const { n } = useFormatter();
 
   const initialValues = {
     searchTerm: '',
@@ -177,20 +169,6 @@ const SearchBulk = () => {
     queryRef,
     nodePath: ['globalSearch', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
-  };
-
-  const handleChangeTextField = (event) => {
-    const { value } = event.target;
-    setTextFieldValue(
-      value
-        .split('\n')
-        .map((o) => o
-          .split(',')
-          .map((p) => p.split(';'))
-          .flat())
-        .flat()
-        .join('\n'),
-    );
   };
 
   const dataColumns = {
@@ -251,43 +229,22 @@ const SearchBulk = () => {
 
   return (
     <>
-      <Breadcrumbs variant="standard" elements={[{ label: t_i18n('Search') }, { label: t_i18n('Bulk search'), current: true }]} />
-      <div className="clearfix" />
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ marginBottom: 20, marginTop: 0 }}
-      >
-        <Grid item xs={2} style={{ marginTop: -20 }}>
-          <TextField
-            onChange={handleChangeTextField}
-            value={textFieldValue}
-            multiline={true}
-            fullWidth={true}
-            minRows={20}
-            placeholder={t_i18n('One keyword by line or separated by commas')}
-            variant="outlined"
-          />
-        </Grid>
-        <Grid item xs={10} style={{ marginTop: -20 }}>
-          {queryRef && (
-          <DataTable
-            dataColumns={dataColumns}
-            resolvePath={(data) => data.globalSearch?.edges?.map((n) => n?.node)}
-            storageKey={LOCAL_STORAGE_KEY}
-            initialValues={initialValues}
-            toolbarFilters={queryFilters}
-            preloadedPaginationProps={preloadedPaginationProps}
-            exportContext={{ entity_type: 'Stix-Core-Object' }}
-            paginationOptions={queryPaginationOptions}
-            lineFragment={searchBulkLineFragment}
-            hideSearch
-            disableToolBar
-            disableLineSelection
-          />
-          )}
-        </Grid>
-      </Grid>
+      {queryRef && (
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data) => data.globalSearch?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={queryFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          exportContext={{ entity_type: 'Stix-Core-Object' }}
+          paginationOptions={queryPaginationOptions}
+          lineFragment={searchBulkLineFragment}
+          hideSearch
+          disableToolBar
+          disableLineSelection
+        />
+      )}
     </>
   );
 };
