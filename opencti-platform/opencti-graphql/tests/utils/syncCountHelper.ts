@@ -130,6 +130,7 @@ testDeletedCounter['network-traffic'] = 1;
 testDeletedCounter.tool = 2;
 testDeletedCounter.sighting = 1;
 testDeletedCounter.vulnerability = 1;
+testDeletedCounter['ssh-key'] = 1;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
   const allRecordKeys = Object.keys(eventCounter);
