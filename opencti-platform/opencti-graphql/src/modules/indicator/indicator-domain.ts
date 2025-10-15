@@ -480,7 +480,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
       }
 
       if (hasRevokedChangedToFalse) {
-        logApp.debug('ANGIE - revoked moved to false');
+        logApp.debug('Indicator revoked moved to false', { id: indicatorBeforeUpdate.id });
         // Restart decay as if the score has been put to decay_base_score manually.
         const newScore = indicatorBeforeUpdate.decay_base_score;
         const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
