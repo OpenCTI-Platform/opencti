@@ -250,7 +250,6 @@ const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 const DOCUMENT_MISSING_EXCEPTION = 'document_missing_exception';
 export const ES_RETRY_ON_CONFLICT = 30;
 export const BULK_TIMEOUT = '1h';
-const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
 const MAX_AGGREGATION_SIZE = 100;
 
@@ -1734,7 +1733,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices, baseData = false, baseFields = [] } = opts;
   const { withoutRels = true, toMap = false, mapWithAllIds = false, type = null } = opts;
   const { relCount = false } = opts;
-  const { orderBy = 'created_at', orderMode = 'asc' } = opts;
+  const { orderBy = null, orderMode = 'asc' } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -1744,7 +1743,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const queryIndices = computeQueryIndices(indices, types);
   const computedIndices = getIndicesToQuery(context, user, queryIndices);
   const hits = [];
-  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, processIds);
+  // Leave room in split size compared to max pagination to minimize data loss risk in case of duplicated ids in database
+  const splitSize = Math.max(ES_MAX_PAGINATION - 100, ES_DEFAULT_PAGINATION);
+  const groupIds = R.splitEvery(splitSize, processIds);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
     const workingIds = groupIds[index];
@@ -1781,7 +1782,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
-      sort: [{ [orderBy]: orderMode }],
       query: {
         bool: {
           // Put everything under filter to prevent score computation
@@ -1800,47 +1800,34 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
       };
     }
-    let searchAfter;
-    let hasNextPage = true;
-    while (hasNextPage) {
-      if (searchAfter) {
-        body.search_after = searchAfter;
-      }
-      const _source = { excludes: [] };
-      if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
-      if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
-      const query = {
-        index: computedIndices,
-        size: ES_MAX_PAGINATION,
-        track_total_hits: false,
-        _source,
-        body,
-      };
-      if (withoutRels) { // Force denorm rel security
-        query.docvalue_fields = REL_DEFAULT_FETCH;
-      }
-      logApp.debug('[SEARCH] elInternalLoadById', { query });
-      const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
-      const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-        throw DatabaseError('Find direct ids fail', { cause: err, query, searchType });
-      });
-      const elements = data.hits.hits;
-      if (elements.length > workingIds.length) {
-        logApp.warn('Search query returned more elements than expected', { ids: workingIds });
-      }
-      if (elements.length > 0) {
-        const convertedHits = await elConvertHits(elements);
-        hits.push(...convertedHits);
-        if (elements.length < ES_MAX_PAGINATION) {
-          hasNextPage = false;
-        } else {
-          const { sort } = elements[elements.length - 1];
-          searchAfter = sort;
-          hasNextPage = true;
-        }
-      } else {
-        hasNextPage = false;
-      }
+    if (isNotEmptyField(orderBy)) {
+      body.sort = [{ [orderBy]: orderMode }];
+    }
+    const _source = { excludes: [] };
+    if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
+    if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
+    const query = {
+      index: computedIndices,
+      size: ES_MAX_PAGINATION,
+      track_total_hits: false,
+      _source,
+      body,
+    };
+    if (withoutRels) { // Force denorm rel security
+      query.docvalue_fields = REL_DEFAULT_FETCH;
+    }
+    logApp.debug('[SEARCH] elInternalLoadById', { query });
+    const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
+    const data = await elRawSearch(context, user, searchType, query).catch((err) => {
+      throw DatabaseError('Find direct ids fail', { cause: err, query, searchType });
+    });
+    const elements = data.hits.hits;
+    if (elements.length > workingIds.length) {
+      logApp.warn('Search query returned more elements than expected', { ids: workingIds });
+    }
+    if (elements.length > 0) {
+      const convertedHits = await elConvertHits(elements);
+      hits.push(...convertedHits);
     }
   }
   if (toMap) {
