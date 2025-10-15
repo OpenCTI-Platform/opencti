@@ -8119,6 +8119,11 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   key_type: String
   public_key: String
   fingerprint_sha256: String!
+  fingerprint_MD5: String
+  key_length: String
+  expiration_date: DateTime
+  comment: String
+  created: DateTime
   creators: [Creator!]
   toStix: String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
