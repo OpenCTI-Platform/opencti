@@ -17,6 +17,7 @@ import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../utils/access';
 import { enrichWithRemoteCredentials } from './credentials';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
+import { addUserLoginCount } from '../manager/telemetryManager';
 
 // Admin user initialization
 export const initializeAdminUser = async (context) => {
