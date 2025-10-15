@@ -10,6 +10,7 @@ from requests import RequestException, Timeout
 ERROR_TYPE_BAD_GATEWAY = "Bad Gateway"
 ERROR_TYPE_TIMEOUT = "Request timed out"
 
+
 @dataclass(unsafe_hash=True)
 class ListenHandler:
     logger: Any
@@ -50,9 +51,7 @@ class ListenHandler:
             return "requeue"
         except Exception as ex:
             # Technical unmanaged exception
-            self.logger.error(
-                "Error executing listen handling", {"reason": str(ex)}
-            )
+            self.logger.error("Error executing listen handling", {"reason": str(ex)})
             error_msg = traceback.format_exc()
             if ERROR_TYPE_BAD_GATEWAY in error_msg or ERROR_TYPE_TIMEOUT in error_msg:
                 # Nack the message and requeue

@@ -41,6 +41,7 @@ running_ingestion_units_gauge = meter.create_gauge(
     description="Number of running ingestion units",
 )
 
+
 @dataclass(unsafe_hash=True)
 class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
     consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
@@ -138,7 +139,13 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             False,
             "0.0.0.0",
         )
-
+        self.stix_object_max_refs = get_config_variable(
+            "WORKER_OBJECTS_MAX_REFS",
+            ["worker", "objects_max_refs"],
+            config,
+            True,
+            0,
+        )
         # Telemetry
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
@@ -146,7 +153,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             )
             provider = MeterProvider(
                 resource=Resource(attributes={SERVICE_NAME: "opencti-worker"}),
-                metric_readers=[PrometheusMetricReader()]
+                metric_readers=[PrometheusMetricReader()],
             )
             metrics.set_meter_provider(provider)
 
@@ -162,7 +169,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         )
         self.worker_logger = self.api.logger_class("worker")
 
-    def build_pika_parameters(self, connector_config: Dict[str, Any]) -> pika.ConnectionParameters:
+    def build_pika_parameters(
+        self, connector_config: Dict[str, Any]
+    ) -> pika.ConnectionParameters:
         ssl_options = None
         if connector_config["connection"]["use_ssl"]:
             ssl_options = pika.SSLOptions(
@@ -231,11 +240,14 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.opencti_url,
                             self.opencti_token,
                             self.opencti_ssl_verify,
+                            connector["id"],
                             connector_config["push_exchange"],
+                            connector_config["listen_exchange"],
                             connector_config["push_routing"],
                             pika_parameters,
                             bundles_global_counter,
-                            bundles_processing_time_gauge
+                            bundles_processing_time_gauge,
+                            self.stix_object_max_refs,
                         )
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
@@ -243,7 +255,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             push_queue,
                             pika_parameters,
                             push_execution_pool,
-                            push_handler.handle_message
+                            push_handler.handle_message,
                         )
 
                     # Listen for webhook message
@@ -288,10 +300,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 if __name__ == "__main__":
     worker: Worker = Worker()
 
-
     def exit_handler(_signum, _frame):
         worker.stop()
-
 
     signal.signal(signal.SIGINT, exit_handler)
     signal.signal(signal.SIGTERM, exit_handler)

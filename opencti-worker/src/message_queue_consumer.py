@@ -75,7 +75,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
                     {
                         "consumer_type": self.consumer_type,
                         "queue": self.queue_name,
-                        "tag": method.delivery_tag
+                        "tag": method.delivery_tag,
                     },
                 )
                 task_future = self.execution_pool.submit(
