@@ -86,7 +86,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
+import { addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount, addUserLoginCount } from '../manager/telemetryManager';
 import { sendMail } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
@@ -1640,6 +1640,12 @@ export const authenticateUserByTokenOrUserId = async (context, req, tokenOrId) =
       }
     }
     validateUser(authenticatedUser, settings);
+    if (tokenOrId === authenticatedUser.id) {
+      // On auth succeed - Increment telemetry for SSO and local login
+      // (we don't count token auth, only "humans")
+      await addUserLoginCount();
+    }
+    console.log(`[1] User authenticated with ${tokenOrId}`, authenticatedUser);
     return userWithOrigin(req, authenticatedUser);
   }
   throw FunctionalError(`Cant identify with ${tokenOrId}`);
@@ -1706,6 +1712,7 @@ export const sessionAuthenticateUser = async (context, req, user, provider) => {
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   validateUser(logged, settings);
+  console.log(`[2] User authenticated ${user.id}`);
   // Build and save the session
   req.session.user = { id: user.id, session_creation: now(), otp_validated: false };
   req.session.session_provider = provider;
