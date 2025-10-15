@@ -34,7 +34,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { READ_STIX_INDICES } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
+import { FilterMode, type MutationPlaybookStepExecutionArgs } from '../generated/graphql';
 import { STIX_SPEC_VERSION } from '../database/stix';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
@@ -310,13 +310,21 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                   filters: sourceFilters,
                   inPirFilters
                 } = (JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration);
-                const filtersOnInPirRel = inPirFilters ? JSON.parse(inPirFilters) : null;
+                const filtersOnInPirRel = inPirFilters ? {
+                  filterGroups: [],
+                  mode: FilterMode.And,
+                  filters: [{
+                    key: ['toId'],
+                    values: inPirFilters.map((n) => n.value),
+                  }],
+                } : null;
                 const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
+
                 let validEventType = false;
                 if (type === 'create' && create === true) validEventType = true;
                 // if (type === 'update' && update === true) validEventType = true;
                 // if (type === 'delete' && deletion === true) validEventType = true;
-                const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, filtersOnInPirRel);
+                const isMatch = !filtersOnInPirRel || await isStixMatchFilterGroup(context, SYSTEM_USER, data, filtersOnInPirRel);
                 // 02. Execute the component
                 if (validEventType && isMatch) {
                   const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);

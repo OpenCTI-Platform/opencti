@@ -334,7 +334,7 @@ export const testRelationFrom = (stix: any, filter: Filter) => {
  * - depending on stix type (relation or sighting), we might search in target_ref or where_sighted_refs (plurals!)
  */
 export const testRelationTo = (stix: any, filter: Filter) => {
-  if (stix.type === STIX_TYPE_RELATION) {
+  if (stix.type === STIX_TYPE_RELATION || stix.type === ABSTRACT_INTERNAL_RELATIONSHIP) {
     const stixValues: string[] = toValidArray(stix.target_ref);
     return testStringFilter(filter, stixValues);
   }
