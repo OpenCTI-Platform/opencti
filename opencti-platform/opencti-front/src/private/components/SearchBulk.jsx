@@ -118,14 +118,14 @@ export const searchBulkFragment = graphql`
   }
 `;
 
-const buildSearchBulkFilters = (values, filters) => {
-  const queryFilters = values.length > 0
-    ? addFilter(filters, allEntitiesKeyList, values)
-    : filters;
-  return queryFilters;
-};
+const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }) => {
+  const buildSearchBulkFilters = (values, filters) => {
+    const queryFilters = values.length > 0
+      ? addFilter(filters, allEntitiesKeyList, values)
+      : filters;
+    return queryFilters;
+  };
 
-const SearchBulk = ({ inputValues, dataColumns }) => {
   const initialValues = {
     searchTerm: '',
     sortBy: 'entity_type',
@@ -138,7 +138,8 @@ const SearchBulk = ({ inputValues, dataColumns }) => {
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const { filters } = viewStorage;
+  const { filters, numberOfElements } = viewStorage;
+  setNumberOfEntities(numberOfElements.number);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
 
