@@ -53,10 +53,13 @@ describe.concurrent('notification manager utils', () => {
 
   it('should convert markdown to html', async () => {
     const octiTool = new NotificationTool();
-    expect(octiTool.markdownToHtml('#Title1')).toEqual('<h1 id="title1">Title1</h1>');
-    expect(octiTool.markdownToHtml('**description**')).toEqual('<p><strong>description</strong></p>');
-    expect(octiTool.markdownToHtml('*description*')).toEqual('<p><em>description</em></p>');
-    expect(octiTool.markdownToHtml('Description with a link: [clic](content)'))
-      .toEqual('<p>Description with a link: <a href="content">clic</a></p>');
+    expect(octiTool.markdownToHtml('### Title1')).toEqual('<h3>Title1</h3>\n');
+    expect(octiTool.markdownToHtml('some text')).toEqual('<p>some text</p>\n');
+    expect(octiTool.markdownToHtml('**description in bold**')).toEqual('<p><strong>description in bold</strong></p>\n');
+    expect(octiTool.markdownToHtml('*description in italics*')).toEqual('<p><em>description in italics</em></p>\n');
+    expect(octiTool.markdownToHtml('Text in **bold**, *italics* and ~~crossed-out~~'))
+      .toEqual('<p>Text in <strong>bold</strong>, <em>italics</em> and <del>crossed-out</del></p>\n');
+    expect(octiTool.markdownToHtml('Description with a link: [clic](url)'))
+      .toEqual('<p>Description with a link: <a href="url">clic</a></p>\n');
   });
 });
