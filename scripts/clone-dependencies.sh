@@ -11,12 +11,11 @@ PR_TARGET_BRANCH=$2
 WORKSPACE=$3
 PR_NUMBER=$4
 
-
-CLI_PYTHON_DIR="${WORKSPACE}/client-python"
 CONNECTOR_DIR="${WORKSPACE}/opencti-connectors"
-echo "CLI_PYTHON_DIR=${CLI_PYTHON_DIR}"
 echo "CONNECTOR_DIR=${CONNECTOR_DIR}"
 
+# For PR build, we check if api-test can be skipped
+# Keeping old function name during client-python migration, will rename after.
 clone_for_pr_build() {
     cd ${WORKSPACE}
     export GH_TOKEN="${GITHUB_TOKEN}"
@@ -24,122 +23,26 @@ clone_for_pr_build() {
     gh auth login --hostname github.com --with-token ${GH_TOKEN}
     gh auth status
     gh repo set-default https://github.com/OpenCTI-Platform/opencti
+    gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --depth=1
 
-    #Check current PR to see if label "multi-repository" is set
-    IS_MULTI_REPO=$(gh pr view ${PR_NUMBER} --json labels | grep -c "multi-repository")
-    if [[ ${IS_MULTI_REPO} -eq 1 ]]
+    cd ${WORKSPACE}
+    CHANGES_OUSTIDE_FRONT_COUNT=$(gh pr diff ${PR_NUMBER} --name-only | grep -v "opencti-platform/opencti-front" | wc -l)
+    if [[ ${CHANGES_OUSTIDE_FRONT_COUNT} -eq 0 ]]
     then
-        TARGET_BRANCH="${PR_BRANCH_NAME}"
-
-        # ------
-        # For client-python, maybe one day we will refactor to a function.
-        echo "[CLONE-DEPS][CLIENT-PYTHON] Multi repository PR, looking for client-python related branch"
-        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --branch ${PR_TARGET_BRANCH}
-        cd ${CLI_PYTHON_DIR}
-
-        # search for the first opencti PR that matches OPENCTI_BRANCH
-        gh repo set-default https://github.com/OpenCTI-Platform/client-python
-        gh pr list --label "multi-repository" > multi-repo-cli-python-prs.txt
-
-        cat multi-repo-cli-python-prs.txt
-
-        CLI_PYTHON_PR_NUMBER=$(cat multi-repo-cli-python-prs.txt | grep "${TARGET_BRANCH}" | head -n 1 | sed 's/#//g' | awk '{print $1}')
-        echo "CLI_PYTHON_PR_NUMBER=${CLI_PYTHON_PR_NUMBER}"
-
-        if [[ "${CLI_PYTHON_PR_NUMBER}" != "" ]]
-        then
-            echo "[CLONE-DEPS][CLIENT-PYTHON] Found a PR in client-python with number ${CLI_PYTHON_PR_NUMBER}, using it."
-            gh pr checkout ${CLI_PYTHON_PR_NUMBER}
-            pip install -e .
-        else
-            echo "[CLONE-DEPS][CLIENT-PYTHON] No PR found in client-python side, keeping client-python:${PR_TARGET_BRANCH}"
-            # Repository already clone on PR_TARGET_BRANCH branch
-        fi
-        
-        # ------
-        # For connector, maybe one day we will refactor to a function.
-        echo "[CLONE-DEPS][CONNECTOR] Multi repository PR, looking for connectors related branch"
-        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR}  -- --branch ${PR_TARGET_BRANCH}  --depth=1
-        cd ${CONNECTOR_DIR}
-
-        # search for the first opencti PR that matches OPENCTI_BRANCH
-        gh repo set-default https://github.com/OpenCTI-Platform/connectors
-        gh pr list --label "multi-repository" > multi-repo-connector-prs.txt
-
-        cat multi-repo-connector-prs.txt
-
-        CONNECTOR_PR_NUMBER=$(cat multi-repo-connector-prs.txt | grep "${TARGET_BRANCH}" | head -n 1 | sed 's/#//g' | awk '{print $1}')
-        echo "CONNECTOR_PR_NUMBER=${CONNECTOR_PR_NUMBER}"
-
-        if [[ "${CONNECTOR_PR_NUMBER}" != "" ]]
-        then
-            echo "[CLONE-DEPS][CONNECTOR] Found a PR in connectors with number ${CONNECTOR_PR_NUMBER}, using it."
-            gh pr checkout ${CONNECTOR_PR_NUMBER}
-        else
-            echo "[CLONE-DEPS][CONNECTOR] No PR found in connectors side, keeping connector:${PR_TARGET_BRANCH}"
-            # Repository already clone on PR_TARGET_BRANCH branch
-        fi
-
+        echo "[CLONE-DEPS][BUILD] Only frontend changes on this PR, api-test can be skipped."
+        touch "${WORKSPACE}/api-test.skip"
     else
-
-        echo "[CLONE-DEPS] NOT multi repo, cloning client-python:${PR_TARGET_BRANCH} and connector:${PR_TARGET_BRANCH}"
-        
-        gh repo clone https://github.com/OpenCTI-Platform/client-python ${CLI_PYTHON_DIR} -- --depth=1
-        cd ${CLI_PYTHON_DIR}
-        git ls-remote --exit-code --heads origin $PR_TARGET_BRANCH >/dev/null 2>&1
-        EXIT_CODE=$?
-
-        if [[ $EXIT_CODE == '0' ]]; then
-            echo "Git branch '$PR_TARGET_BRANCH' exists in the remote repository in ${CLI_PYTHON_DIR}"
-            git switch $PR_TARGET_BRANCH
-        elif [[ $EXIT_CODE == '2' ]]; then
-            echo "Git branch '$PR_TARGET_BRANCH' does not exist in the remote repository, using default in ${CLI_PYTHON_DIR}"
-        fi
-
-        gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --depth=1
-        cd ${CONNECTOR_DIR}
-        if [[ $EXIT_CODE == '0' ]]; then
-            echo "Git branch '$PR_TARGET_BRANCH' exists in the remote repository ${CONNECTOR_DIR}"
-            git switch $PR_TARGET_BRANCH
-        elif [[ $EXIT_CODE == '2' ]]; then
-            echo "Git branch '$PR_TARGET_BRANCH' does not exist in the remote repository, using default in ${CONNECTOR_DIR}"
-        fi
-
-        cd ${WORKSPACE}
-        CHANGES_OUSTIDE_FRONT_COUNT=$(gh pr diff ${PR_NUMBER} --name-only | grep -v "opencti-platform/opencti-front" | wc -l)
-        if [[ ${CHANGES_OUSTIDE_FRONT_COUNT} -eq 0 ]]
-        then
-            echo "[CLONE-DEPS][BUILD] Only frontend changes on this PR, api-test can be skipped."
-            touch "${WORKSPACE}/api-test.skip"
-        else
-            echo "[CLONE-DEPS][BUILD] There is more than frontend changes, api-test will be run."
-        fi
-        
+        echo "[CLONE-DEPS][BUILD] There is more than frontend changes, api-test will be run."
     fi
 }
 
+# For branch only build (like master or release/current) we skip nothing.
+# Keeping old function name during client-python migration, will rename after.
 clone_for_push_build() {
     # It's the fallback script, but the issue here is that push build is started without any PR.
     # it's still needed on some use case, a like a first push build.
-
-    echo "[CLONE-DEPS][CLIENT-PYTHON] Build from a commit, checking if a dedicated branch is required."
-    if [[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/$PR_BRANCH_NAME)")" != '' ]]
-    then
-        CLIENT_PYTHON_BRANCH=${PR_BRANCH_NAME}
-    else
-        CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo 'master')
-    fi
-    git clone -b $CLIENT_PYTHON_BRANCH https://github.com/OpenCTI-Platform/client-python.git ${CLI_PYTHON_DIR}
-
-    echo "[CLONE-DEPS][CONNECTOR] Build from a commit, checking if a dedicated branch is required."
-    if [[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/$PR_BRANCH_NAME)")" != '' ]]
-    then
-        CONNECTOR_BRANCH=${PR_BRANCH_NAME}
-    else
-        CONNECTOR_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git refs/heads/opencti/$PR_BRANCH_NAME)")" != '' ]] && echo opencti/$PR_BRANCH_NAME || echo 'master')
-    fi
-
-    git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git ${CONNECTOR_DIR}
+    echo "[CLONE-DEPS][CONNECTOR] Build from a commit, cloning connector on ${CONNECTOR_DIR}."
+    gh repo clone https://github.com/OpenCTI-Platform/connectors ${CONNECTOR_DIR} -- --depth=1
 }
 
 echo "[CLONE-DEPS] START; with PR_BRANCH_NAME=${PR_BRANCH_NAME},PR_TARGET_BRANCH=${PR_TARGET_BRANCH}, PR_NUMBER=${PR_NUMBER}, OPENCTI_DIR=${OPENCTI_DIR}."
@@ -167,7 +70,5 @@ fi
 
 cd ${CONNECTOR_DIR}
 echo "[CLONE-DEPS] END; Using connectors on branch:$(git branch --show-current)"
-cd ${CLI_PYTHON_DIR}
-echo "[CLONE-DEPS] END; Using client-python on branch:$(git branch --show-current)"
 
 cd ${WORKSPACE}
