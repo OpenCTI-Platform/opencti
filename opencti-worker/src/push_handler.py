@@ -110,30 +110,30 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                         )
                     )
                     if len(too_large_items_bundles) > 0:
-                        push_pika_connection = pika.BlockingConnection(
-                            self.pika_parameters
-                        )
-                        push_channel = push_pika_connection.channel()
-                        try:
-                            push_channel.confirm_delivery()
-                        except Exception as err:  # pylint: disable=broad-except
-                            self.logger.warning(str(err))
-                        for too_large_item_bundle in too_large_items_bundles:
-                            too_large_item_bundle["original_connector_id"] = self.connector_id
-                            self.logger.warning(
-                                "Detected a bundle too large, sending it to dead letter queue...",
-                                {
-                                    "bundle_id": too_large_item_bundle["id"],
-                                    "connector_id": self.connector_id
-                                }
-                            )
-                            self.send_bundle_to_specific_queue(
-                                push_channel,
-                                self.listen_exchange,
-                                self.listen_too_large_routing,
-                                data,
-                                too_large_item_bundle,
-                            )
+                        with pika.BlockingConnection(
+                                self.pika_parameters
+                        ) as push_pika_connection:
+                            with push_pika_connection.channel() as push_channel:
+                                try:
+                                    push_channel.confirm_delivery()
+                                except Exception as err:  # pylint: disable=broad-except
+                                    self.logger.warning(str(err))
+                                for too_large_item_bundle in too_large_items_bundles:
+                                    too_large_item_bundle["original_connector_id"] = self.connector_id
+                                    self.logger.warning(
+                                        "Detected a bundle too large, sending it to dead letter queue...",
+                                        {
+                                            "bundle_id": too_large_item_bundle["id"],
+                                            "connector_id": self.connector_id
+                                        }
+                                    )
+                                    self.send_bundle_to_specific_queue(
+                                        push_channel,
+                                        self.listen_exchange,
+                                        self.listen_too_large_routing,
+                                        data,
+                                        too_large_item_bundle,
+                                    )
                 else:
                     # As bundle is received as complete, split and requeue
                     # Create a specific channel to push the split bundles
