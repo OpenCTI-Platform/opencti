@@ -8,7 +8,7 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 
 const LOCAL_STORAGE_KEY = 'searchBulk';
 
-const searchBulkLineFragment = graphql`
+export const searchBulkLineFragment = graphql`
   fragment SearchBulkLine_node on StixCoreObject {
     id
     entity_type
@@ -120,14 +120,12 @@ export const searchBulkFragment = graphql`
 
 const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }) => {
   const buildSearchBulkFilters = (values, filters) => {
-    const queryFilters = values.length > 0
+    return values.length > 0
       ? addFilter(filters, allEntitiesKeyList, values)
       : filters;
-    return queryFilters;
   };
 
   const initialValues = {
-    searchTerm: '',
     sortBy: 'entity_type',
     orderAsc: true,
     openExports: false,
@@ -145,7 +143,11 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }) => {
 
   const queryFilters = buildSearchBulkFilters(inputValues, contextFilters);
 
-  const queryPaginationOptions = { ...paginationOptions, filters: queryFilters, count: 5000 };
+  const queryPaginationOptions = {
+    ...paginationOptions,
+    filters: queryFilters,
+    count: 5000,
+  };
 
   const queryRef = useQueryLoading(searchBulkQuery, queryPaginationOptions);
 

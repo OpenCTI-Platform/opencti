@@ -27,7 +27,9 @@ const SearchBulkContainer = () => {
 
   const [textFieldValue, setTextFieldValue] = useState('');
   const [currentTab, setCurrentTab] = useState(0);
-  const [numberOfEntities, setNumberOfEntities] = useState(0);
+  const [numberOfKnownEntities, setNumberOfKnownEntities] = useState(0);
+  const [numberOfUnknownEntities, setNumberOfUnknownEntities] = useState(0);
+
   const handleChangeTab = (value) => {
     setCurrentTab(value);
   };
@@ -132,18 +134,18 @@ const SearchBulkContainer = () => {
               value={currentTab}
               onChange={(_, value) => handleChangeTab(value)}
             >
-              <Tab label={`${t_i18n('Known entities')} (${numberOfEntities})`} />
-              <Tab label={t_i18n('Unknown entities')} />
+              <Tab label={`${t_i18n('Known entities')} (${numberOfKnownEntities})`} />
+              <Tab label={`${t_i18n('Unknown entities')} (${numberOfUnknownEntities})`} />
             </Tabs>
           </Box>
           {currentTab === 0 && values.length > 0
-            && <SearchBulk inputValues={values} dataColumns={dataColumns} setNumberOfEntities={setNumberOfEntities} />
+            && <SearchBulk inputValues={values} dataColumns={dataColumns} setNumberOfEntities={setNumberOfKnownEntities} />
           }
           {currentTab === 0 && isEmpty(textFieldValue)
             && <DataTableWithoutFragment data={[]} globalCount={0} dataColumns={dataColumns} />
           }
           {currentTab === 1
-            && <SearchBulkUnknownEntities values={values ?? []} />
+            && <SearchBulkUnknownEntities values={values} setNumberOfEntities={setNumberOfUnknownEntities} />
           }
         </Grid>
       </Grid>
