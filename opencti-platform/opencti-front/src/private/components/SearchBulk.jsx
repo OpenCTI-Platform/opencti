@@ -1,17 +1,10 @@
-import Grid from '@mui/material/Grid';
 import React from 'react';
-import Chip from '@mui/material/Chip';
-import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
 import { graphql } from 'react-relay';
 import { allEntitiesKeyList } from './common/bulk/utils/querySearchEntityByText';
 import DataTable from '../../components/dataGrid/DataTable';
-import { resolveLink } from '../../utils/Entity';
-import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
-import { useFormatter } from '../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'search_bulk';
 
@@ -136,11 +129,7 @@ const buildQueryParams = (textFieldValue, filters) => {
   return { values, queryFilters, count: 5000 };
 };
 
-const SearchBulk = ({ textFieldValue }) => {
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const { n } = useFormatter();
-
+const SearchBulk = ({ textFieldValue, dataColumns }) => {
   const initialValues = {
     searchTerm: '',
     sortBy: 'entity_type',
@@ -169,62 +158,6 @@ const SearchBulk = ({ textFieldValue }) => {
     queryRef,
     nodePath: ['globalSearch', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
-  };
-
-  const dataColumns = {
-    entity_type: {
-      isSortable: true,
-    },
-    value: {
-      isSortable: true,
-    },
-    createdBy: {},
-    creators: {},
-    objectLabel: {},
-    created_at: {},
-    analyses: {
-      id: 'analyses',
-      label: 'Analyses',
-      isSortable: false,
-      render: ({ id, entity_type, containersNumber }) => {
-        const analysesNumber = containersNumber?.total;
-        const link = `${resolveLink(entity_type)}/${id}`;
-        const linkAnalyses = `${link}/analyses`;
-        const analysesChipStyle = {
-          fontSize: 13,
-          lineHeight: '12px',
-          height: 20,
-          textTransform: 'uppercase',
-          borderRadius: 4,
-        };
-        return (
-          <>
-            {typesWithNoAnalysesTab.includes(entity_type)
-              ? (<Chip
-                  style={analysesChipStyle}
-                  label={n(analysesNumber)}
-                 />)
-              : (<Chip
-                  style={{
-                    ...analysesChipStyle,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: theme.palette.primary.main,
-                    },
-                  }}
-                  label={n(analysesNumber)}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    navigate(linkAnalyses);
-                  }}
-                 />)
-            }
-          </>
-        );
-      },
-    },
-    objectMarking: {},
   };
 
   return (
