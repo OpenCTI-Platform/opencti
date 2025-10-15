@@ -42,7 +42,7 @@ describe('Database sync raw', () => {
   it(
     'Should python raw sync succeed',
     async () => {
-      const queryResultBefore = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 350 } });
+      const queryResultBefore = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 354 } });
 
       // Pre check
       const { objectMap, relMap, initStixReport } = await checkPreSyncContent();
