@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { append, filter, map, pathOr, pipe, union } from 'ramda';
+import { filter, map, pipe } from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -90,23 +90,23 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
   const handleOpenLabels = () => setOpenLabels(true);
   const handleCloseLabels = () => setOpenLabels(false);
 
-  const searchLabels = (event) => {
+  const searchLabels = async (event) => {
     setLabelInput(event && event.target.value !== 0 ? event.target.value : '');
-    fetchQuery(labelsSearchQuery, {
+
+    const data = await fetchQuery(labelsSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const transformLabels = pipe(
-          pathOr([], ['labels', 'edges']),
-          map((n) => ({
-            label: n.node.value,
-            value: n.node.id,
-            color: n.node.color,
-          })),
-        )(data);
-        setStateLabels(union(stateLabels, transformLabels));
-      });
+      orderBy: 'value',
+      orderMode: 'asc',
+    }).toPromise();
+
+    const edges = data?.labels?.edges ?? [];
+    const labelOptions = edges.map((n) => ({
+      label: n.node.value,
+      value: n.node.id,
+      color: n.node.color,
+    }));
+
+    setStateLabels(labelOptions);
   };
 
   const onSubmit = (values, { setSubmitting, resetForm }) => {
@@ -351,16 +351,11 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
               inputValue={labelInput}
               handleClose={handleCloseCreate}
               creationCallback={(data) => {
-                setFieldValue(
-                  'new_labels',
-                  append(
-                    {
-                      label: data.labelAdd.value,
-                      value: data.labelAdd.id,
-                    },
-                    values.new_labels,
-                  ),
-                );
+                const newLabel = {
+                  label: data.labelAdd.value,
+                  value: data.labelAdd.id,
+                };
+                setFieldValue('new_labels', [...values.new_labels, newLabel]);
               }}
             />
           </Dialog>
