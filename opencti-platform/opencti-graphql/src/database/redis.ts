@@ -915,7 +915,6 @@ export const redisInitializeWork = async (workId: string) => {
   await redisTx(getClientBase(), async (tx) => {
     await updateObjectRaw(tx, workId, { is_initialized: true });
   });
-  return workId;
 };
 // endregion
 
