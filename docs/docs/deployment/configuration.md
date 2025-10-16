@@ -454,6 +454,12 @@ Can be configured manually using the configuration file `config.yml` or through 
 |:-------------------------------|:-------------------------------|:--------------|:-----------------------------------------------------------|
 | worker:log_level               | WORKER_LOG_LEVEL               | info          | The log level (error, warning, info or debug)              |
 
+#### Technical
+
+| Parameter               | Environment variable           | Default value | Description                                                                                                                                                              |
+|:------------------------|:-------------------------------|:--------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| worker:objects_max_refs | WORKER_OBJECTS_MAX_REFS               | 0             | The refs amount threshold: if set to a value higher than 0, all objects that have a number of refs higher than this will be sent to a dead letter queue and not ingested |
+
 #### Telemetry
 
 | Parameter                          | Environment variable               | Default value | Description                               |
