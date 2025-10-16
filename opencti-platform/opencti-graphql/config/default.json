@@ -15,7 +15,8 @@
       "toLocaleString",
       "isArray",
       "keys",
-      "function"
+      "function",
+      "markdownToHtml"
     ],
     "enabled": true,
     "enabled_ui": true,

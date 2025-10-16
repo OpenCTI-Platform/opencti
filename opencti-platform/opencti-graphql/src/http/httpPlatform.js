@@ -7,7 +7,7 @@ import bodyParser from 'body-parser';
 import compression, { filter as compressionFilter } from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
-import showdown from 'showdown';
+import { marked } from 'marked';
 import archiver from 'archiver';
 import validator from 'validator';
 import archiverZipEncrypted from 'archiver-zip-encrypted';
@@ -304,8 +304,7 @@ const createApp = async (app, schema) => {
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
         const markDownData = await getFileContent(file);
-        const converter = new showdown.Converter();
-        const html = converter.makeHtml(markDownData);
+        const html = marked(markDownData);
         await publishFileRead(context, context.user, data);
         res.set({ 'Content-Security-Policy': 'sandbox' });
         res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');

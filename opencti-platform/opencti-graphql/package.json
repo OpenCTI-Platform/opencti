@@ -129,6 +129,7 @@
     "license-checker-rseidelsohn": "4.4.2",
     "lru-cache": "11.2.1",
     "luxon": "3.7.1",
+    "marked": "16.4.0",
     "migrate": "2.1.0",
     "mime-types": "3.0.1",
     "moment": "2.30.1",
@@ -153,7 +154,6 @@
     "rate-limiter-flexible": "7.3.0",
     "semver": "7.7.2",
     "set-interval-async": "3.0.3",
-    "showdown": "2.1.0",
     "source-map": "0.7.6",
     "tough-cookie": "5.1.2",
     "trino-client": "0.2.8",
@@ -203,6 +203,7 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "1.4.0",
     "graphql-tag": "2.12.6",
+    "marked": "16.4.0",
     "typescript": "5.9.2",
     "vitest": "3.2.4"
   },

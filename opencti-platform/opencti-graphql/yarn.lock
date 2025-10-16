@@ -6688,13 +6688,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"commander@npm:^9.0.0":
-  version: 9.5.0
-  resolution: "commander@npm:9.5.0"
-  checksum: 10c0/5f7784fbda2aaec39e89eb46f06a999e00224b3763dc65976e05929ec486e174fe9aac2655f03ba6a5e83875bd173be5283dc19309b7c65954701c02025b3c1d
-  languageName: node
-  linkType: hard
-
 "common-tags@npm:1.8.2":
   version: 1.8.2
   resolution: "common-tags@npm:1.8.2"
@@ -10813,6 +10806,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"marked@npm:16.4.0":
+  version: 16.4.0
+  resolution: "marked@npm:16.4.0"
+  bin:
+    marked: bin/marked.js
+  checksum: 10c0/5d5e34a913e888b3ec42b9ad69409cc674d3fb91c75fd66749280c5f0c6cf69de9f3a2076af2a952ca577dd226f05b2f3d00d6850df71c37e662f3492377a582
+  languageName: node
+  linkType: hard
+
 "math-intrinsics@npm:^1.1.0":
   version: 1.1.0
   resolution: "math-intrinsics@npm:1.1.0"
@@ -11759,6 +11761,7 @@ __metadata:
     license-checker-rseidelsohn: "npm:4.4.2"
     lru-cache: "npm:11.2.1"
     luxon: "npm:3.7.1"
+    marked: "npm:16.4.0"
     migrate: "npm:2.1.0"
     mime-types: "npm:3.0.1"
     moment: "npm:2.30.1"
@@ -11783,7 +11786,6 @@ __metadata:
     rate-limiter-flexible: "npm:7.3.0"
     semver: "npm:7.7.2"
     set-interval-async: "npm:3.0.3"
-    showdown: "npm:2.1.0"
     source-map: "npm:0.7.6"
     tough-cookie: "npm:5.1.2"
     trino-client: "npm:0.2.8"
@@ -13215,17 +13217,6 @@ __metadata:
   version: 1.8.1
   resolution: "shell-quote@npm:1.8.1"
   checksum: 10c0/8cec6fd827bad74d0a49347057d40dfea1e01f12a6123bf82c4649f3ef152fc2bc6d6176e6376bffcd205d9d0ccb4f1f9acae889384d20baff92186f01ea455a
-  languageName: node
-  linkType: hard
-
-"showdown@npm:2.1.0":
-  version: 2.1.0
-  resolution: "showdown@npm:2.1.0"
-  dependencies:
-    commander: "npm:^9.0.0"
-  bin:
-    showdown: bin/showdown.js
-  checksum: 10c0/8508e060874c42338b9ebfe884763e8042d9575185d9dd3a12f7380736732893a4738f37140add97bde0c4c87d6bad66ed0761505f310df6044ee3385e2ae349
   languageName: node
   linkType: hard
 

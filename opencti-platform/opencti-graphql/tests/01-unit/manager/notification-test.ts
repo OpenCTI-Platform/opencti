@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isTimeTrigger, type ResolvedDigest } from '../../../src/manager/notificationManager';
 import { utcDate } from '../../../src/utils/format';
+import NotificationTool from '../../../src/utils/NotificationTool';
 
 const digest = (period: 'hour' | 'day' | 'week' | 'month', triggerTime = ''): ResolvedDigest => {
   return {
@@ -48,5 +49,18 @@ describe.concurrent('notification manager utils', () => {
     expect(isTimeTrigger(digest('month', '1-12:00:00.000Z'), utcDate('2022-01-01T12:00:00.000Z'))).toEqual(true);
     expect(isTimeTrigger(digest('month', '2-12:00:00.000Z'), utcDate('2022-12-02T12:00:00.000Z'))).toEqual(true);
     expect(isTimeTrigger(digest('month', '1-12:00:00.000Z'), utcDate('2022-12-02T12:00:00.000Z'))).toEqual(false);
+  });
+
+  it('should convert markdown to html', async () => {
+    const octiTool = new NotificationTool();
+    expect(octiTool.markdownToHtml(undefined)).toEqual(undefined);
+    expect(octiTool.markdownToHtml('### Title1')).toEqual('<h3>Title1</h3>\n');
+    expect(octiTool.markdownToHtml('some text')).toEqual('<p>some text</p>\n');
+    expect(octiTool.markdownToHtml('**description in bold**')).toEqual('<p><strong>description in bold</strong></p>\n');
+    expect(octiTool.markdownToHtml('*description in italics*')).toEqual('<p><em>description in italics</em></p>\n');
+    expect(octiTool.markdownToHtml('Text in **bold**, *italics* and ~~crossed-out~~'))
+      .toEqual('<p>Text in <strong>bold</strong>, <em>italics</em> and <del>crossed-out</del></p>\n');
+    expect(octiTool.markdownToHtml('Description with a link: [clic](url)'))
+      .toEqual('<p>Description with a link: <a href="url">clic</a></p>\n');
   });
 });
