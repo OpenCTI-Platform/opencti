@@ -1,7 +1,7 @@
 import { graphql } from 'react-relay';
 import React, { ChangeEvent, CSSProperties, useState, HTMLAttributes } from 'react';
 import { Field } from 'formik';
-import { PirFieldQuery$data } from '@components/common/form/__generated__/PirFieldQuery.graphql';
+import { PirFieldQuery$data } from './__generated__/PirFieldQuery.graphql';
 import { FieldOption } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -46,20 +46,17 @@ const PirField = ({
   const { t_i18n } = useFormatter();
   const [pirs, setPirs] = useState<FieldOption[]>([]);
 
-  const searchPirs = (event: ChangeEvent<HTMLInputElement>) => {
-    fetchQuery(pirsQuery, {
-      search: event.target.value ? event.target.value : '',
-      first: 50,
-    })
-      .toPromise()
-      .then((result) => {
-        const data = result as PirFieldQuery$data;
-        setPirs((data?.pirs?.edges ?? []).flatMap((n) => (!n ? [] : {
-          label: n.node.name,
-          value: n.node.id,
-          type: n.node.entity_type,
-        })));
-      });
+  const searchPirs = async ({ target }: ChangeEvent<HTMLInputElement>) => {
+    const data = await fetchQuery(
+      pirsQuery,
+      { search: target.value ?? '', first: 50 },
+    ).toPromise() as PirFieldQuery$data;
+
+    setPirs((data?.pirs?.edges ?? []).flatMap((n) => (!n ? [] : {
+      label: n.node.name,
+      value: n.node.id,
+      type: n.node.entity_type,
+    })));
   };
 
   return (
@@ -86,7 +83,7 @@ const PirField = ({
       ) => (
         <li {...renderProps}>
           <div style={{ paddingTop: 4, display: 'inline-block' }}>
-            <ItemIcon type="pir"/>
+            <ItemIcon type="pir" />
           </div>
           <div style={{
             display: 'inline-block',
