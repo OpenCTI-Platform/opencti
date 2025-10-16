@@ -15,7 +15,6 @@ import {
   ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
 import { ENTITY_PERSONA, ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import type { StixObject } from '../../types/stix-2-1-common';
@@ -28,6 +27,8 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/th
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
