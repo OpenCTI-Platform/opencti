@@ -39,6 +39,7 @@ export const INSTANCE_RELATION_TYPES_FILTER = 'elementWithTargetTypes'; // TODO 
 export const CONNECTED_TO_INSTANCE_FILTER = 'connectedToId'; // TODO Rename/migrate to triggerListenId
 export const CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER = 'connectedToId_sideEvents';
 export const RELATION_IN_PIR_FILTER = 'inPir';
+export const EVENT_TRANSITION_AFTER_FILTER = 'eventsTransitionAfter';
 
 // Values that do not need resolution when matching against stix object
 export const ID_FILTER = 'id';
