@@ -3963,6 +3963,7 @@ export type ConnectorWorksArgs = {
 export type ConnectorConfig = {
   __typename?: 'ConnectorConfig';
   connection: RabbitMqConnection;
+  dead_letter_routing: Scalars['String']['output'];
   listen: Scalars['String']['output'];
   listen_callback_uri?: Maybe<Scalars['String']['output']>;
   listen_exchange: Scalars['String']['output'];
@@ -36830,6 +36831,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
 
 export type ConnectorConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorConfig'] = ResolversParentTypes['ConnectorConfig']> = ResolversObject<{
   connection?: Resolver<ResolversTypes['RabbitMQConnection'], ParentType, ContextType>;
+  dead_letter_routing?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   listen?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   listen_callback_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   listen_exchange?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
