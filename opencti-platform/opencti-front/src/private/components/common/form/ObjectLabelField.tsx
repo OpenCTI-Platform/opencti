@@ -1,6 +1,5 @@
 import { makeStyles } from '@mui/styles';
 import { Field } from 'formik';
-import { union } from 'ramda';
 import React, { FunctionComponent, useState } from 'react';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
@@ -57,24 +56,25 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   const [labels, setLabels] = useState<FieldOption[]>([]);
   const [labelInput, setLabelInput] = useState('');
 
-  const searchLabels = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const searchLabels = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setLabelInput(event?.target?.value ? event.target.value : '');
-    fetchQuery(labelsSearchQuery, {
+
+    const data = await fetchQuery(labelsSearchQuery, {
       search: event?.target?.value ? event.target.value : '',
-    })
-      .toPromise()
-      .then((data) => {
-        const newLabels = (
-          (data as LabelsQuerySearchQuery$data).labels?.edges ?? []
-        ).map(
-          ({ node }) => ({
-            label: node.value,
-            value: node.id,
-            color: node.color,
-          }) as FieldOption,
-        );
-        setLabels(union(labels, newLabels));
-      });
+      orderBy: 'value',
+      orderMode: 'asc',
+    }).toPromise();
+
+    const edges = (data as LabelsQuerySearchQuery$data)?.labels?.edges ?? [];
+    const labelOptions = edges.map((n) => {
+      return {
+        label: n.node.value,
+        value: n.node.id,
+        color: n.node.color,
+      } as FieldOption;
+    });
+
+    setLabels(labelOptions);
   };
 
   return (
