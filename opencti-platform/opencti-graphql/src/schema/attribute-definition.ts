@@ -287,6 +287,22 @@ export const authorizedAuthorities: AttributeDefinition = {
   isFilterable: false,
 };
 
+export const metrics: AttributeDefinition = {
+  name: 'metrics',
+  label: 'Entity metrics',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isFilterable: true,
+  mappings: [
+    { name: 'name', label: 'Metric name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    { name: 'value', label: 'Metric value', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+  ]
+};
+
 // -- ENTITY TYPE --
 
 export const parentTypes: AttributeDefinition = {
