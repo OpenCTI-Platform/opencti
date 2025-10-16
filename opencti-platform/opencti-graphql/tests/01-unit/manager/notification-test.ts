@@ -53,6 +53,7 @@ describe.concurrent('notification manager utils', () => {
 
   it('should convert markdown to html', async () => {
     const octiTool = new NotificationTool();
+    expect(octiTool.markdownToHtml(undefined)).toEqual(undefined);
     expect(octiTool.markdownToHtml('### Title1')).toEqual('<h3>Title1</h3>\n');
     expect(octiTool.markdownToHtml('some text')).toEqual('<p>some text</p>\n');
     expect(octiTool.markdownToHtml('**description in bold**')).toEqual('<p><strong>description in bold</strong></p>\n');
