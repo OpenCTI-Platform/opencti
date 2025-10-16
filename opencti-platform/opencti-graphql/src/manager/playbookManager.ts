@@ -305,7 +305,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
               if (scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR) {
                 const connector = PLAYBOOK_COMPONENTS[instance.component_id];
                 const {
-                  // update,
+                  update,
                   create,
                   // delete: deletion,
                   filters: sourceFilters,
@@ -323,7 +323,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
 
                 let validEventType = false;
                 if (type === 'create' && create === true) validEventType = true;
-                // if (type === 'update' && update === true) validEventType = true;
+                if (type === 'update' && update === true) validEventType = true;
                 // if (type === 'delete' && deletion === true) validEventType = true;
                 const isMatch = !filtersOnInPirRel || await isStixMatchFilterGroup(context, SYSTEM_USER, data, filtersOnInPirRel);
                 // 02. Execute the component
@@ -335,12 +335,13 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                     filters: [
                       { key: [EVENT_TRANSITION_AFTER_FILTER],
                         values: [
-                          { key: 'confidence', values: [50], operator: 'gte' },
+                          { key: ['pir_score'], values: [20], operator: 'gte' },
                         ],
                       },
                     ],
                     filterGroups: filtersOnSource ? [filtersOnSource] : [],
                   };
+                  console.log({ filtersForTest, eventPatch });
                   const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersForTest, eventPatch);
                   if (isEntityMatch) {
                     const nextStep = { component: connector, instance };
