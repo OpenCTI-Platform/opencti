@@ -1256,6 +1256,7 @@
   "Duplicate the dashboard": "ダッシュボードの複製",
   "Dynamic filter": "ダイナミック・フィルター",
   "Dynamic from the main entity triggering the playbook": "プレイブックをトリガーする主体からの動的なもの",
+  "Dynamic from the objects in the bundle of the playbook": "再生ブックのバンドル内のオブジェクトから動的な",
   "Dynamic source filters": "ダイナミック・ソース・フィルタ",
   "Dynamic target filters": "動的ターゲットフィルタ",
   "Each line must contain a valid email address": "各行には有効なEメールアドレスを記載すること",

@@ -1256,6 +1256,7 @@
   "Duplicate the dashboard": "复制仪表板",
   "Dynamic filter": "动态过滤器",
   "Dynamic from the main entity triggering the playbook": "来自触发播放本的主体的动态",
+  "Dynamic from the objects in the bundle of the playbook": "从播放列表捆绑包中的对象动态生成",
   "Dynamic source filters": "动态源过滤器",
   "Dynamic target filters": "动态目标过滤器",
   "Each line must contain a valid email address": "每行必须包含一个有效的电子邮件地址",

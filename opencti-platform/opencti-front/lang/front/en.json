@@ -1256,6 +1256,7 @@
   "Duplicate the dashboard": "Duplicate the dashboard",
   "Dynamic filter": "Dynamic filter",
   "Dynamic from the main entity triggering the playbook": "Dynamic from the main entity triggering the playbook",
+  "Dynamic from the objects in the bundle of the playbook": "Dynamic from the objects in the bundle of the playbook",
   "Dynamic source filters": "Dynamic source filters",
   "Dynamic target filters": "Dynamic target filters",
   "Each line must contain a valid email address": "Each line must contain a valid email address",

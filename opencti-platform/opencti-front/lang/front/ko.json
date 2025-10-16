@@ -1256,6 +1256,7 @@
   "Duplicate the dashboard": "대시보드 복제",
   "Dynamic filter": "동적 필터",
   "Dynamic from the main entity triggering the playbook": "플레이북을 트리거하는 주 엔터티에서 동적",
+  "Dynamic from the objects in the bundle of the playbook": "플레이북 번들의 오브젝트에서 동적으로 가져오기",
   "Dynamic source filters": "동적 소스 필터",
   "Dynamic target filters": "동적 대상 필터",
   "Each line must contain a valid email address": "각 줄에는 유효한 이메일 주소가 포함되어야 합니다",
