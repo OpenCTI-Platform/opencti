@@ -19,7 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { StixCyberObservableNestedEntitiesTable_node$data } from './__generated__/StixCyberObservableNestedEntitiesTable_node.graphql';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import stopEvent from '../../../../utils/domEvent';
-import { computeLink } from '../../../../utils/Entity';
+import { computeLink, ComputeLinkNode } from '../../../../utils/Entity';
 
 const LOCAL_STORAGE_KEY = 'StixCyberObservableNestedEntitiesTable';
 
@@ -342,8 +342,7 @@ const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNested
   const getRedirectionLink = (stixObject: StixCyberObservableNestedEntitiesTable_node$data) => {
     const targetObject = stixObject.from?.id === stixCyberObservableId ? stixObject.to : stixObject.from;
     if (targetObject) {
-      const reconstructedTarget = { ...targetObject, id: targetObject.id ?? '', entity_type: targetObject.entity_type ?? '' };
-      return computeLink(reconstructedTarget);
+      return computeLink(targetObject as ComputeLinkNode);
     }
     return undefined;
   };
