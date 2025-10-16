@@ -737,6 +737,12 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
         for (let index2 = 0; index2 < creators.length; index2 += 1) {
           finalAccessRestrictions.push({ ...accessRestriction, value: creators[index2] });
         }
+      } else if (accessRestriction.value === 'BUNDLE_ORGANIZATIONS') {
+        const bundleOrganizations = bundle.objects.filter((o) => o.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
+        const bundleOrganizationsIds = bundleOrganizations.map((o) => o.extensions[STIX_EXT_OCTI].id);
+        for (let index2 = 0; index2 < bundleOrganizationsIds.length; index2 += 1) {
+          finalAccessRestrictions.push({ ...accessRestriction, value: bundleOrganizationsIds[index2] });
+        }
       } else {
         finalAccessRestrictions.push(accessRestriction);
       }
