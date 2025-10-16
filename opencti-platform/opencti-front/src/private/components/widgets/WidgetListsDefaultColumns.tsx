@@ -168,7 +168,7 @@ export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: Widget
 
 type MetricsColumn = {
   entity_type: string
-  metrics?: readonly string[] | null
+  metrics?: string[]
 };
 
 export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, metrics?: readonly MetricsColumn[] | MetricsColumn[]): WidgetColumn[] => {
