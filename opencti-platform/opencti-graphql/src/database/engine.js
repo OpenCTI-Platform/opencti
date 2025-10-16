@@ -1730,10 +1730,18 @@ const REL_COUNT_SCRIPT_FIELD = {
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices, baseData = false, baseFields = [] } = opts;
-  const { withoutRels = true, toMap = false, mapWithAllIds = false, type = null } = opts;
-  const { relCount = false } = opts;
-  const { orderBy = null, orderMode = 'asc' } = opts;
+  const {
+    indices,
+    baseData = false,
+    baseFields = [],
+    withoutRels = true,
+    toMap = false,
+    mapWithAllIds = false,
+    type = null,
+    relCount = false,
+    orderBy = null,
+    orderMode = 'asc',
+  } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
