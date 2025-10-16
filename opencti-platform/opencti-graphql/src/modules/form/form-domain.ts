@@ -477,14 +477,20 @@ export const formSubmit = async (
         }
       }
       if (!additionalEntity.lookup && !additionalEntity.multiple) {
-        schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
-          if (field.isMandatory || field.required) {
-            const fieldValue = values[field.name];
-            if (isEmptyField(fieldValue)) {
-              errors.push(`Required field "${field.label || field.name}" is missing`);
+        // Only validate mandatory fields if the entity is required or if at least one field is filled
+        const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
+        const hasAnyFieldFilled = entityFields.some((field) => isNotEmptyField(values[field.name]));
+        
+        if (additionalEntity.required || hasAnyFieldFilled) {
+          entityFields.forEach((field) => {
+            if (field.isMandatory || field.required) {
+              const fieldValue = values[field.name];
+              if (isEmptyField(fieldValue)) {
+                errors.push(`Required field "${field.label || field.name}" is missing`);
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
   }
@@ -679,19 +685,24 @@ export const formSubmit = async (
             }
           }
         } else {
-          let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
-          for (let i = 0; i < additionalEntityFields.length; i += 1) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[additionalEntityFields[i].name];
-          }
-          newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-          const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
-          bundle.objects.push(stixAdditionalEntity);
-          if (additionalEntitiesMap[additionalEntity.id]) {
-            additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
-          } else {
-            additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+          // Single entity mode - only create if required or has any field filled
+          const hasAnyFieldFilled = additionalEntityFields.some((field) => isNotEmptyField(values[field.name]));
+          
+          if (additionalEntity.required || hasAnyFieldFilled) {
+            let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
+            for (let i = 0; i < additionalEntityFields.length; i += 1) {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-expect-error
+              newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[additionalEntityFields[i].name];
+            }
+            newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
+            const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
+            bundle.objects.push(stixAdditionalEntity);
+            if (additionalEntitiesMap[additionalEntity.id]) {
+              additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
+            } else {
+              additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+            }
           }
         }
       }

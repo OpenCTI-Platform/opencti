@@ -142,12 +142,28 @@ export const convertFormSchemaToYupSchema = (
         shape[`additional_${entity.id}_parsed`] = validation;
 
         // Also add validation for additional fields in parsed mode
-        const fieldsShape: Record<string, Yup.Schema<unknown>> = {};
-        entityFields.forEach((field: FormFieldDefinition) => {
-          fieldsShape[field.name] = getYupValidationForField(field, t_i18n);
-        });
-        if (Object.keys(fieldsShape).length > 0) {
-          shape[`additional_${entity.id}_fields`] = Yup.object().shape(fieldsShape);
+        // Only validate fields if the parsed field has content or minAmount > 0
+        if (entityFields.length > 0) {
+          if (minAmount > 0) {
+            // If entities are required, always validate fields
+            const fieldsShape: Record<string, Yup.Schema<unknown>> = {};
+            entityFields.forEach((field: FormFieldDefinition) => {
+              fieldsShape[field.name] = getYupValidationForField(field, t_i18n);
+            });
+            shape[`additional_${entity.id}_fields`] = Yup.object().shape(fieldsShape);
+          } else {
+            // If entities are optional, use conditional validation
+            const fieldsShape: Record<string, Yup.Schema<unknown>> = {};
+            entityFields.forEach((field: FormFieldDefinition) => {
+              fieldsShape[field.name] = getYupValidationForField(field, t_i18n);
+            });
+            shape[`additional_${entity.id}_fields`] = Yup.object().shape(fieldsShape)
+              .when(`additional_${entity.id}_parsed`, {
+                is: (value: unknown) => !value || value === '',
+                then: (schema) => schema.optional(),
+                otherwise: (schema) => schema,
+              });
+          }
         }
       } else if (entity.multiple && entity.fieldMode === 'multiple') {
         // Multi mode
@@ -175,15 +191,30 @@ export const convertFormSchemaToYupSchema = (
         if (entity.required) {
           shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
         } else {
-          // For optional entities, we don't add validation - fields are optional
-          const optionalEntityShape: Record<string, Yup.Schema<unknown>> = {};
-          entityFields.forEach((field: FormFieldDefinition) => {
-            // Only validate if field is mandatory regardless of entity requirement
-            if (field.isMandatory) {
-              optionalEntityShape[field.name] = getYupValidationForField(field, t_i18n);
+          // For optional entities, use lazy validation to only validate when entity is being filled
+          shape[`additional_${entity.id}`] = Yup.lazy((value: unknown) => {
+            const entityValue = value as Record<string, unknown> | undefined;
+            
+            // Check if any field has been filled
+            const hasAnyFieldFilled = entityValue && entityFields.some((field) => {
+              const fieldValue = entityValue[field.name];
+              if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+                return false;
+              }
+              if (Array.isArray(fieldValue) && fieldValue.length === 0) {
+                return false;
+              }
+              return true;
+            });
+
+            // If no fields are filled, don't validate (entity is optional)
+            if (!hasAnyFieldFilled) {
+              return Yup.object().shape({});
             }
+
+            // If at least one field is filled, validate all mandatory fields
+            return Yup.object().shape(entityShape);
           });
-          shape[`additional_${entity.id}`] = Yup.object().shape(optionalEntityShape);
         }
       }
     });

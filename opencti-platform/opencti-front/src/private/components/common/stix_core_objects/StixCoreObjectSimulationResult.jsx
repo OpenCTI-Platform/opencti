@@ -14,7 +14,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import { graphql, usePreloadedQuery } from 'react-relay';
-import * as Yup from 'yup';
+import * as Yup from 'yup';²
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '../drawer/Drawer';
