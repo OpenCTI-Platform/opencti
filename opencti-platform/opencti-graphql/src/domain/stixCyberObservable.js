@@ -192,7 +192,6 @@ export const addStixCyberObservable = async (context, user, input) => {
     url,
   } = input;
   const graphQLType = type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
-  console.log('input', input);
   if (!input[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
@@ -301,7 +300,6 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     input,
     opts
   );
-
   // Delete the key when updating a numeric field with an empty value (e.g. to delete this value) to avoid a schema error
   Object.entries(stixCyberObservable).forEach(([key, value]) => {
     if (isNumericAttribute(key) && value === '') delete stixCyberObservable[key];
