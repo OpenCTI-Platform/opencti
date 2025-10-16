@@ -12,7 +12,8 @@ import {
   parentTypes,
   refreshedAt,
   standardId,
-  updatedAt
+  updatedAt,
+  metrics
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_BASIC_OBJECT } from '../../schema/general';
@@ -31,5 +32,6 @@ const basicObjectAttributes: Array<AttributeDefinition> = [
   updatedAt,
   refreshedAt,
   creators,
+  metrics,
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_OBJECT, basicObjectAttributes);

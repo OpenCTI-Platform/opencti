@@ -1432,6 +1432,11 @@ type PublicSettings implements ThemeSettings & IntlSettings {
     playground_enabled: Boolean!
 }
 
+type MetricDefinition {
+    entity_type: String!
+    metrics: [String!]
+}
+
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
   standard_id: String!
@@ -1507,6 +1512,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
+  metrics_definition: [MetricDefinition!]
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS_SETPARAMETERS])
   # XTM Hub

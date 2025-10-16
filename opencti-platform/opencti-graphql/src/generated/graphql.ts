@@ -14472,6 +14472,23 @@ export type MessagesStats = {
   ack_details?: Maybe<AckDetails>;
 };
 
+export type Metric = {
+  __typename?: 'Metric';
+  name: Scalars['ID']['output'];
+  value: Scalars['Float']['output'];
+};
+
+export type MetricDefinition = {
+  __typename?: 'MetricDefinition';
+  entity_type: Scalars['String']['output'];
+  metrics?: Maybe<Array<Scalars['String']['output']>>;
+};
+
+export type Metrics = {
+  __typename?: 'Metrics';
+  metrics: Array<Metric>;
+};
+
 export type MetricsByMimeType = {
   __typename?: 'MetricsByMimeType';
   count: Scalars['Int']['output'];
@@ -14716,6 +14733,7 @@ export type Mutation = {
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
   meEdit?: Maybe<MeUser>;
   meTokenRenew?: Maybe<MeUser>;
+  metricPatch?: Maybe<Array<Maybe<Metric>>>;
   narrativeAdd?: Maybe<Narrative>;
   narrativeContextClean?: Maybe<Narrative>;
   narrativeContextPatch?: Maybe<Narrative>;
@@ -16148,6 +16166,12 @@ export type MutationMarkingDefinitionEditArgs = {
 export type MutationMeEditArgs = {
   input: Array<InputMaybe<EditInput>>;
   password?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationMetricPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: PatchMetricInput;
 };
 
 
@@ -19565,6 +19589,11 @@ export type ParticipantEdge = {
   __typename?: 'ParticipantEdge';
   cursor: Scalars['String']['output'];
   node: Participant;
+};
+
+export type PatchMetricInput = {
+  name: Scalars['String']['input'];
+  value: Scalars['Float']['input'];
 };
 
 export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -26091,6 +26120,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   filigran_chatbot_ai_url?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   messages_administration?: Maybe<Array<SettingsMessage>>;
+  metrics_definition?: Maybe<Array<MetricDefinition>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   password_policy_max_length?: Maybe<Scalars['Int']['output']>;
@@ -34296,6 +34326,9 @@ export type ResolversTypes = ResolversObject<{
   MemberGroupRestriction: ResolverTypeWrapper<MemberGroupRestriction>;
   MemberType: MemberType;
   MessagesStats: ResolverTypeWrapper<MessagesStats>;
+  Metric: ResolverTypeWrapper<Metric>;
+  MetricDefinition: ResolverTypeWrapper<MetricDefinition>;
+  Metrics: ResolverTypeWrapper<Metrics>;
   MetricsByMimeType: ResolverTypeWrapper<MetricsByMimeType>;
   Module: ResolverTypeWrapper<Module>;
   MultiDistribution: ResolverTypeWrapper<Omit<MultiDistribution, 'data'> & { data?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>> }>;
@@ -34366,6 +34399,7 @@ export type ResolversTypes = ResolversObject<{
   Participant: ResolverTypeWrapper<Participant>;
   ParticipantConnection: ResolverTypeWrapper<ParticipantConnection>;
   ParticipantEdge: ResolverTypeWrapper<ParticipantEdge>;
+  PatchMetricInput: PatchMetricInput;
   PaymentCard: ResolverTypeWrapper<Omit<PaymentCard, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   PaymentCardAddInput: PaymentCardAddInput;
   Persona: ResolverTypeWrapper<Omit<Persona, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -35225,6 +35259,9 @@ export type ResolversParentTypes = ResolversObject<{
   MemberEdge: Omit<MemberEdge, 'node'> & { node: ResolversParentTypes['Member'] };
   MemberGroupRestriction: MemberGroupRestriction;
   MessagesStats: MessagesStats;
+  Metric: Metric;
+  MetricDefinition: MetricDefinition;
+  Metrics: Metrics;
   MetricsByMimeType: MetricsByMimeType;
   Module: Module;
   MultiDistribution: Omit<MultiDistribution, 'data'> & { data?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>> };
@@ -35286,6 +35323,7 @@ export type ResolversParentTypes = ResolversObject<{
   Participant: Participant;
   ParticipantConnection: ParticipantConnection;
   ParticipantEdge: ParticipantEdge;
+  PatchMetricInput: PatchMetricInput;
   PaymentCard: Omit<PaymentCard, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   PaymentCardAddInput: PaymentCardAddInput;
   Persona: Omit<Persona, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -40806,6 +40844,23 @@ export type MessagesStatsResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MetricResolvers<ContextType = any, ParentType extends ResolversParentTypes['Metric'] = ResolversParentTypes['Metric']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MetricDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricDefinition'] = ResolversParentTypes['MetricDefinition']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Metrics'] = ResolversParentTypes['Metrics']> = ResolversObject<{
+  metrics?: Resolver<Array<ResolversTypes['Metric']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MetricsByMimeTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricsByMimeType'] = ResolversParentTypes['MetricsByMimeType']> = ResolversObject<{
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   mimeType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41049,6 +41104,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
   meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
   meTokenRenew?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
+  metricPatch?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType, RequireFields<MutationMetricPatchArgs, 'id' | 'input'>>;
   narrativeAdd?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeAddArgs, 'input'>>;
   narrativeContextClean?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextCleanArgs, 'id'>>;
   narrativeContextPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextPatchArgs, 'id' | 'input'>>;
@@ -43617,6 +43673,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   filigran_chatbot_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
+  metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -46540,6 +46597,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MemberEdge?: MemberEdgeResolvers<ContextType>;
   MemberGroupRestriction?: MemberGroupRestrictionResolvers<ContextType>;
   MessagesStats?: MessagesStatsResolvers<ContextType>;
+  Metric?: MetricResolvers<ContextType>;
+  MetricDefinition?: MetricDefinitionResolvers<ContextType>;
+  Metrics?: MetricsResolvers<ContextType>;
   MetricsByMimeType?: MetricsByMimeTypeResolvers<ContextType>;
   Module?: ModuleResolvers<ContextType>;
   MultiDistribution?: MultiDistributionResolvers<ContextType>;

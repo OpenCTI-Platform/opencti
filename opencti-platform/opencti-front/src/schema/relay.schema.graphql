@@ -1523,6 +1523,11 @@ type PublicSettings implements ThemeSettings & IntlSettings {
   playground_enabled: Boolean!
 }
 
+type MetricDefinition {
+  entity_type: String!
+  metrics: [String!]
+}
+
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
   standard_id: String!
@@ -1597,6 +1602,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
+  metrics_definition: [MetricDefinition!]
   editContext: [EditUserContext!]
   xtm_hub_token: String
   xtm_hub_registration_user_id: String
@@ -9736,6 +9742,7 @@ type Mutation {
   formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
   formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
+  metricPatch(id: ID!, input: PatchMetricInput!): [Metric]
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -14274,4 +14281,18 @@ type FormSubmissionResponse {
 
 type CheckXTMHubConnectivityResponse {
   status: XTMHubRegistrationStatus
+}
+
+type Metric {
+  name: ID!
+  value: Float!
+}
+
+type Metrics {
+  metrics: [Metric!]!
+}
+
+input PatchMetricInput {
+  name: String!
+  value: Float!
 }
