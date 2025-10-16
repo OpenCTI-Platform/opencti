@@ -577,6 +577,7 @@ const iconSelector = (
       return <PlaylistRemoveOutlined style={style} fontSize={fontSize} role="img" />;
     case 'disseminationlist':
       return <AlternateEmailOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'email-template':
     case 'emailtemplate':
       return <EmailOutlined style={style} fontSize={fontSize} role="img" />;
     case 'finteldesign':

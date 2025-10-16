@@ -17,15 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
-import {
-  AUTOMATION_MANAGER_USER,
-  AUTOMATION_MANAGER_USER_UUID,
-  executionContext,
-  INTERNAL_USERS,
-  isUserCanAccessStixElement,
-  isUserInPlatformOrganization,
-  SYSTEM_USER
-} from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -65,7 +57,7 @@ import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/st
 import { connectorsForPlaybook } from '../../database/repository';
 import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
@@ -77,8 +69,7 @@ import { stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
 import { storeNotificationEvent } from '../../database/redis';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import type { AuthUser } from '../../types/user';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { createStixPattern } from '../../python/pythonBridge';
 import { generateKeyValueForIndicator } from '../../domain/stixCyberObservable';
@@ -104,12 +95,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { removeOrganizationRestriction } from '../../domain/stix';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-
-const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
-  const baseData = bundle.objects.find((o) => o.id === instanceId);
-  if (!baseData) throw FunctionalError('Playbook base element no longer accessible');
-  return baseData;
-};
+import { convertAuthorizedMemberToUsers, extractBundleBaseElement } from './playbook-utils';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -1181,22 +1167,6 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
   }
 };
 
-const convertAuthorizedMemberToUsers = async (authorized_members: { value: string }[]) => {
-  if (isEmptyField(authorized_members)) {
-    return [];
-  }
-  const context = executionContext('playbook_components');
-  const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const triggerAuthorizedMembersIds = authorized_members?.map((member) => member.value) ?? [];
-  const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
-    .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
-  const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
-    .some((id: string) => triggerAuthorizedMembersIds.includes(id)));
-  const usersFromIds = platformUsers.filter((user) => triggerAuthorizedMembersIds.includes(user.id));
-  const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
-    .filter((u) => INTERNAL_USERS[u.id] === undefined);
-  return R.uniqBy(R.prop('id'), withoutInternalUsers);
-};
 export interface NotifierConfiguration {
   notifiers: string[]
   authorized_members: object
@@ -1231,11 +1201,12 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
     const schemaElement = { properties: { notifiers: { items: { oneOf: elements } } } };
     return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA, schemaElement);
   },
-  executor: async ({ playbookId, playbookNode, bundle }) => {
+  executor: async ({ dataInstanceId, playbookId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
-    const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[]);
+    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+    const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[], baseData, bundle);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const notificationsCall = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
