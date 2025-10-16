@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import type { EditInput, EmailTemplateAddInput, QueryEmailTemplatesArgs } from '../../generated/graphql';
@@ -35,6 +35,11 @@ export const findById = async (context: AuthContext, user: AuthUser, id: string)
 export const findEmailTemplatePaginated = async (context: AuthContext, user: AuthUser, args: QueryEmailTemplatesArgs) => {
   await checkEnterpriseEdition(context);
   return pageEntitiesConnection<BasicStoreEntityEmailTemplate>(context, user, [ENTITY_TYPE_EMAIL_TEMPLATE], args);
+};
+
+export const findAllEmailTemplate = async (context: AuthContext, user: AuthUser, args: QueryEmailTemplatesArgs) => {
+  await checkEnterpriseEdition(context);
+  return fullEntitiesList<BasicStoreEntityEmailTemplate>(context, user, [ENTITY_TYPE_EMAIL_TEMPLATE], args);
 };
 
 export const sendTestEmail = async (context: AuthContext, user: AuthUser, id: string) => {

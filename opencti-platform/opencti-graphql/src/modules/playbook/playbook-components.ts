@@ -16,7 +16,7 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
+import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type ExecutorParameters, type PlaybookComponent } from './playbook-types';
 import {
   AUTOMATION_MANAGER_USER,
   AUTOMATION_MANAGER_USER_UUID,
@@ -63,7 +63,7 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
@@ -74,7 +74,6 @@ import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIO
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
-import { usableNotifiers } from '../notifier/notifier-domain';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
 import { storeNotificationEvent } from '../../database/redis';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -103,6 +102,10 @@ import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-te
 import type { BasicStoreSettings } from '../../types/settings';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { removeOrganizationRestriction } from '../../domain/stix';
+import { findAllEmailTemplate } from '../emailTemplate/emailTemplate-domain';
+import { organizationMembersPaginated } from '../organization/organization-domain';
+import { findById, sendEmailToUser } from '../../domain/user';
+import { usableNotifiers } from '../notifier/notifier-domain';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -1199,6 +1202,7 @@ const convertAuthorizedMemberToUsers = async (authorized_members: { value: strin
 export interface NotifierConfiguration {
   notifiers: string[]
   authorized_members: object
+  member_from_org: boolean
 }
 const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> = {
   type: 'object',
@@ -1211,12 +1215,109 @@ const PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA: JSONSchemaType<NotifierConfiguration> 
       items: { type: 'string', oneOf: [] }
     },
     authorized_members: { type: 'object' },
+    member_from_org: { type: 'boolean' }
   },
   required: ['notifiers', 'authorized_members'],
 };
+
+const hackNotifierForTemplate = async (params: ExecutorParameters<NotifierConfiguration>) => {
+  const { playbookId, playbookNode, bundle } = params;
+  logApp.info('[PLAYBOOK EXEC] Notif component - EMAIL template');
+  const context = executionContext('playbook_components');
+  const { notifiers } = playbookNode.configuration;
+
+  for (let i = 0; i < bundle.objects.length; i += 1) {
+    const bundleObject: StixObject = bundle.objects[i];
+    if (bundleObject.extensions[STIX_EXT_OCTI].type === 'Organization') {
+      const internalId = bundleObject.extensions[STIX_EXT_OCTI].id;
+      const allMembers = await organizationMembersPaginated(context, SYSTEM_USER, internalId, {});
+      logApp.info('[PLAYBOOK EXEC] ==> Send email to all member of org', { orgId: bundleObject.id, template: notifiers[0] });
+      for (let j = 0; j < allMembers.edges.length; j += 1) {
+        const currentMember: any = allMembers.edges[j].node;
+        logApp.info('[PLAYBOOK EXEC] ==> Send email to user', { userId: currentMember.id, templateId: notifiers[0] });
+        await sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: currentMember.id, email_template_id: notifiers[0] });
+      }
+    } else {
+      logApp.info('[PLAYBOOK EXEC] NO EMAIL', { bundleObject });
+    }
+  }
+  return { output_port: undefined, bundle };
+};
+
+const extendNotifierForOrg = async (params: ExecutorParameters<NotifierConfiguration>) => {
+  const { playbookId, playbookNode, bundle } = params;
+  logApp.info('[PLAYBOOK EXEC] Notif component - NOTIFIER');
+  const context = executionContext('playbook_components');
+  const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
+  const { notifiers, authorized_members } = playbookNode.configuration;
+  // const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[]);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const notificationsCall = [];
+
+  for (let i = 0; i < bundle.objects.length; i += 1) {
+    const bundleObject: StixObject = bundle.objects[i];
+    if (bundleObject.extensions[STIX_EXT_OCTI].type === 'Organization') {
+      const internalId = bundleObject.extensions[STIX_EXT_OCTI].id;
+      const allMembers = await organizationMembersPaginated(context, SYSTEM_USER, internalId, {});
+      logApp.info('[PLAYBOOK EXEC] ==> Send NOTIF to all member of org', { orgId: bundleObject.id, template: notifiers[0] });
+      for (let j = 0; j < allMembers.edges.length; j += 1) {
+        const currentMember: any = allMembers.edges[j].node;
+        const targetUser = await findById(context, SYSTEM_USER, currentMember.id);
+        logApp.info('[PLAYBOOK EXEC] ==> Send NOTIF to user', { userId: targetUser.id });
+        const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
+        const userContext = { ...context, user_inside_platform_organization };
+        const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
+        const notificationEvent: DigestEvent = {
+          version: EVENT_NOTIFICATION_VERSION,
+          playbook_source: playbook.name,
+          notification_id: playbookNode.id,
+          target: convertToNotificationUser(targetUser, notifiers),
+          type: 'digest',
+          data: stixElements.map((stixObject) => ({
+            notification_id: playbookNode.id,
+            instance: stixObject,
+            type: 'create', // TODO Improve that with type event follow up
+            message: generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }) === '-' ? playbookNode.name : generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }),
+          }))
+        };
+        notificationsCall.push(storeNotificationEvent(context, notificationEvent));
+      }
+    } else {
+      logApp.info('[PLAYBOOK EXEC] NO EMAIL', { bundleObject });
+    }
+  }
+
+  /*
+  for (let index = 0; index < targetUsers.length; index += 1) {
+    const targetUser = targetUsers[index];
+    const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
+    const userContext = { ...context, user_inside_platform_organization };
+    const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
+    const notificationEvent: DigestEvent = {
+      version: EVENT_NOTIFICATION_VERSION,
+      playbook_source: playbook.name,
+      notification_id: playbookNode.id,
+      target: convertToNotificationUser(targetUser, notifiers),
+      type: 'digest',
+      data: stixElements.map((stixObject) => ({
+        notification_id: playbookNode.id,
+        instance: stixObject,
+        type: 'create', // TODO Improve that with type event follow up
+        message: generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }) === '-' ? playbookNode.name : generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }),
+      }))
+    };
+    notificationsCall.push(storeNotificationEvent(context, notificationEvent));
+  }
+  */
+  if (notificationsCall.length > 0) {
+    await Promise.all(notificationsCall);
+  }
+  return { output_port: undefined, bundle };
+};
+
 const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
   id: 'PLAYBOOK_NOTIFIER_COMPONENT',
-  name: 'Send to notifier',
+  name: 'Send email to members',
   description: 'Send user notification',
   icon: 'notification',
   is_entry_point: false,
@@ -1225,43 +1326,14 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
   configuration_schema: PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA,
   schema: async () => {
     const context = executionContext('playbook_components');
+    // const notifiers = await findAllEmailTemplate(context, SYSTEM_USER, {}); // TODO filter ?
     const notifiers = await usableNotifiers(context, SYSTEM_USER);
     const elements = notifiers.map((c) => ({ const: c.id, title: c.name }));
     const schemaElement = { properties: { notifiers: { items: { oneOf: elements } } } };
     return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA, schemaElement);
   },
-  executor: async ({ playbookId, playbookNode, bundle }) => {
-    const context = executionContext('playbook_components');
-    const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
-    const { notifiers, authorized_members } = playbookNode.configuration;
-    const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[]);
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const notificationsCall = [];
-    for (let index = 0; index < targetUsers.length; index += 1) {
-      const targetUser = targetUsers[index];
-      const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
-      const userContext = { ...context, user_inside_platform_organization };
-      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
-      const notificationEvent: DigestEvent = {
-        version: EVENT_NOTIFICATION_VERSION,
-        playbook_source: playbook.name,
-        notification_id: playbookNode.id,
-        target: convertToNotificationUser(targetUser, notifiers),
-        type: 'digest',
-        data: stixElements.map((stixObject) => ({
-          notification_id: playbookNode.id,
-          instance: stixObject,
-          type: 'create', // TODO Improve that with type event follow up
-          message: generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }) === '-' ? playbookNode.name : generateCreateMessage({ ...stixObject, entity_type: convertStixToInternalTypes(stixObject.type) }),
-        }))
-      };
-      notificationsCall.push(storeNotificationEvent(context, notificationEvent));
-    }
-    if (notificationsCall.length > 0) {
-      await Promise.all(notificationsCall);
-    }
-    return { output_port: undefined, bundle };
-  }
+  executor: extendNotifierForOrg
+  // executor: hackNotifierForTemplate
 };
 interface CreateIndicatorConfiguration {
   all: boolean

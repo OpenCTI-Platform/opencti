@@ -389,6 +389,8 @@ const initPlaybookManager = () => {
     }
   };
   const shouldTriggerNow = (cronConfiguration: CronConfiguration, baseDate: Moment): boolean => {
+    logApp.info(`[PLAYBOOK] baseDate: ${baseDate}`);
+    return true; // FIXME remove
     const now = baseDate.clone().startOf('minutes'); // 2022-11-25T19:11:00.000Z
     const { triggerTime } = cronConfiguration;
     switch (cronConfiguration.period) {
