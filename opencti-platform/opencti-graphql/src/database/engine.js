@@ -4811,8 +4811,8 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         } else {
           script += `ctx._source['${field}'].addAll(params['${field}']);`;
         }
-        const fromSide = R.find((e) => e.side === 'from', t.elements);
-        const toSide = R.find((e) => e.side === 'to', t.elements);
+        const fromSide = t.elements.find((e) => e.side === 'from');
+        const toSide = t.elements.find((e) => e.side === 'to');
         if (fromSide && isStixRefRelationship(t.relation)) {
           // updated_at and modified only updated for ref relationships
           if (isUpdatedAtObject(fromSide.type)) {
