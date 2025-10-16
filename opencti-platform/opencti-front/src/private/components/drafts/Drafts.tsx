@@ -257,6 +257,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
                 draftId={row.id}
                 draftLocked={row.draft_status !== 'open'}
                 paginationOptions={queryPaginationOptions}
+                currentUserAccessRight={row.currentUserAccessRight}
               />
             )}
           />
