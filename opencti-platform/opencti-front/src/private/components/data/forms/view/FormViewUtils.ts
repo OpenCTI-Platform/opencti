@@ -160,8 +160,8 @@ export const convertFormSchemaToYupSchema = (
             shape[`additional_${entity.id}_fields`] = Yup.object().shape(fieldsShape)
               .when(`additional_${entity.id}_parsed`, {
                 is: (value: unknown) => !value || value === '',
-                then: (schema) => schema.optional(),
-                otherwise: (schema) => schema,
+                then: (fieldSchema) => fieldSchema.optional(),
+                otherwise: (fieldSchema) => fieldSchema,
               });
           }
         }
@@ -191,30 +191,57 @@ export const convertFormSchemaToYupSchema = (
         if (entity.required) {
           shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
         } else {
-          // For optional entities, use lazy validation to only validate when entity is being filled
-          shape[`additional_${entity.id}`] = Yup.lazy((value: unknown) => {
-            const entityValue = value as Record<string, unknown> | undefined;
-            
-            // Check if any field has been filled
-            const hasAnyFieldFilled = entityValue && entityFields.some((field) => {
-              const fieldValue = entityValue[field.name];
-              if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
-                return false;
-              }
-              if (Array.isArray(fieldValue) && fieldValue.length === 0) {
-                return false;
-              }
-              return true;
-            });
-
-            // If no fields are filled, don't validate (entity is optional)
-            if (!hasAnyFieldFilled) {
-              return Yup.object().shape({});
+          // For optional entities, use conditional validation
+          // Only validate mandatory fields if at least one field is filled
+          const optionalEntityShape: Record<string, Yup.Schema<unknown>> = {};
+          entityFields.forEach((field: FormFieldDefinition) => {
+            // Make all fields optional by default
+            let fieldValidation = getYupValidationForField(field, t_i18n);
+            if (!field.isMandatory && !field.required) {
+              // If field is not mandatory, make it optional
+              fieldValidation = fieldValidation.optional();
             }
-
-            // If at least one field is filled, validate all mandatory fields
-            return Yup.object().shape(entityShape);
+            optionalEntityShape[field.name] = fieldValidation;
           });
+          shape[`additional_${entity.id}`] = Yup.object().shape(optionalEntityShape).test(
+            'optional-entity-validation',
+            'Mandatory fields are required when entity is filled',
+            function validateOptionalEntity(value) {
+              if (!value) return true;
+
+              // Check if any field has been filled
+              const hasAnyFieldFilled = entityFields.some((field) => {
+                const fieldValue = value[field.name];
+                if (fieldValue === undefined || fieldValue === null || fieldValue === '') {
+                  return false;
+                }
+                if (Array.isArray(fieldValue) && fieldValue.length === 0) {
+                  return false;
+                }
+                return true;
+              });
+
+              // If no fields are filled, the entity is optional, so it's valid
+              if (!hasAnyFieldFilled) return true;
+
+              // If at least one field is filled, validate mandatory fields
+              const errors: string[] = [];
+              entityFields.forEach((field) => {
+                if ((field.isMandatory || field.required) && !value[field.name]) {
+                  errors.push(field.name);
+                }
+              });
+
+              if (errors.length > 0) {
+                return this.createError({
+                  message: `Required fields missing: ${errors.join(', ')}`,
+                  path: this.path,
+                });
+              }
+
+              return true;
+            },
+          );
         }
       }
     });

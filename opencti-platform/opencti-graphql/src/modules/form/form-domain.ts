@@ -480,7 +480,7 @@ export const formSubmit = async (
         // Only validate mandatory fields if the entity is required or if at least one field is filled
         const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
         const hasAnyFieldFilled = entityFields.some((field) => isNotEmptyField(values[field.name]));
-        
+
         if (additionalEntity.required || hasAnyFieldFilled) {
           entityFields.forEach((field) => {
             if (field.isMandatory || field.required) {
@@ -687,7 +687,7 @@ export const formSubmit = async (
         } else {
           // Single entity mode - only create if required or has any field filled
           const hasAnyFieldFilled = additionalEntityFields.some((field) => isNotEmptyField(values[field.name]));
-          
+
           if (additionalEntity.required || hasAnyFieldFilled) {
             let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
             for (let i = 0; i < additionalEntityFields.length; i += 1) {
