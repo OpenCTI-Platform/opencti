@@ -122,15 +122,17 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
       - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=67; else ID=66; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
-      - name: deploy via awx
-        uses: certara/github-action-ansible-tower-awx@master
-        with:
-          ansible-tower-user: ${{ secrets.AWX_USER }}
-          ansible-tower-pass: ${{ secrets.AWX_PASSWORD }}
-          ansible-tower-url: ${{ secrets.AWX_URL }}
-          template-id: "${{ env.AWX_TPL_ID }}"
-          additional-vars: |
-            { "octi_version": "${{steps.meta.outputs.version}}", "octi_config": ${{ inputs.octi_config }}, "redis_cluster": ${{ inputs.redis_cluster }} }
+
+      - name: Deploy feature environment via AWX
+        run: |
+          awx --conf.host https://awx.filigran.io \
+            --conf.username ${{ secrets.AWX_USER }} \
+            --conf.password ${{ secrets.AWX_PASSWORD }} \
+            -f human job_templates launch 'Deploy OpenCTI feature branch for testing' \
+            --inventory eu-west-staging \
+            --extra_vars "{\"env\":\"Development\",\"xtmhub_version\":\"${{ inputs.pr_number }}\",\"xtmhub_node_env\":\"${{ env.NODE_ENV }}\"}"
+            --extra_vars "{\"octi_version\":\"${{steps.meta.outputs.version}}\",\"octi_config\":\"${{ inputs.octi_config }}\",\"redis_cluster\":\"${{ inputs.redis_cluster }}\"}"
+
       - name: Forge URL to match playbook limitations
         id: urlforge
         run: |
