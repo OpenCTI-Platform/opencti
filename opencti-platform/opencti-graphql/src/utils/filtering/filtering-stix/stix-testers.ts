@@ -468,12 +468,15 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
   return testStringFilter(filter, value);
 };
 
-export const testEventTransitionAfter = (stix: any, filter: Filter, updateContext?: UpdateEvent['context']) => {
+export const testEventTransitionAfter = (_: any, filter: Filter, updateContext?: UpdateEvent['context']) => {
   const patch = updateContext?.patch ?? [];
   const results: boolean[] = [];
   filter.values.forEach((patchFilter: Filter) => {
     const [attributeKey] = patchFilter.key; // TODO in this case key should be an array with 1 element
-    const patchOfFilter = patch.find((p) => p.path.split('/')[1] === attributeKey); // TODO can we have several patch with same path?
+    const patchOfFilter = patch.find((p) => {
+      return p.path === `/${attributeKey}`
+        || p.path === `/extensions/${STIX_EXT_OCTI}/${attributeKey}`;
+    }); // TODO can we have several patch with same path?
     if (!patchOfFilter || patchOfFilter.op !== 'replace') { // TODO by defautl op = replace, so pass if op is undefined ?
       results.push(false);
     } else {
