@@ -123,6 +123,9 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
       - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=67; else ID=66; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
 
+      - name: Install AWX cli
+        run: pip install awxkit
+        
       - name: Deploy feature environment via AWX
         run: |
           awx --conf.host ${{ secrets.AWX_URL }} \
