@@ -103,6 +103,7 @@ import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-te
 import type { BasicStoreSettings } from '../../types/settings';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { removeOrganizationRestriction } from '../../domain/stix';
+import { PLAYBOOK_DATA_STREAM_PIR } from './playbookComponents/playbook-data-stream-pir-component';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -1621,6 +1622,7 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
 export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_INTERNAL_MANUAL_TRIGGER.id]: PLAYBOOK_INTERNAL_MANUAL_TRIGGER,
   [PLAYBOOK_INTERNAL_DATA_STREAM.id]: PLAYBOOK_INTERNAL_DATA_STREAM,
+  [PLAYBOOK_DATA_STREAM_PIR.id]: PLAYBOOK_DATA_STREAM_PIR,
   [PLAYBOOK_INTERNAL_DATA_CRON.id]: PLAYBOOK_INTERNAL_DATA_CRON,
   [PLAYBOOK_LOGGER_COMPONENT.id]: PLAYBOOK_LOGGER_COMPONENT,
   [PLAYBOOK_INGESTION_COMPONENT.id]: PLAYBOOK_INGESTION_COMPONENT,

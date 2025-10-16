@@ -27,7 +27,7 @@ const useStyles = makeStyles({
 
 export const groupsQuery = graphql`
   query GroupFieldQuery(
-      $orderMode: OrderingMode
+    $orderMode: OrderingMode
     $orderBy: GroupsOrdering
     $filters: FilterGroup
   ) {

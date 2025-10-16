@@ -23,7 +23,7 @@ import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import type { SseEvent, StreamDataEvent } from '../types/event';
+import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../utils/format';
 import { findById } from '../modules/playbook/playbook-domain';
@@ -34,7 +34,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { READ_STIX_INDICES } from '../database/utils';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
+import { FilterMode, type MutationPlaybookStepExecutionArgs } from '../generated/graphql';
 import { STIX_SPEC_VERSION } from '../database/stix';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
@@ -44,6 +44,11 @@ import { stixLoadById } from '../database/middleware';
 import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-utils';
 import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookExecution';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
+import { RELATION_IN_PIR } from '../schema/internalRelationship';
+import { isStixRelation } from '../schema/stixRelationship';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
+import type { PirStreamConfiguration } from '../modules/playbook/playbookComponents/playbook-data-stream-pir-component';
+import { EVENT_TRANSITION_AFTER_FILTER } from '../utils/filtering/filtering-constants';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -244,7 +249,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
     const playbooks = await getEntitiesListFromCache<BasicStoreEntityPlaybook>(context, SYSTEM_USER, ENTITY_TYPE_PLAYBOOK);
     for (let index = 0; index < streamEvents.length; index += 1) {
       const streamEvent = streamEvents[index];
-      const { id: eventId, data: { data, type, origin } } = streamEvent;
+      const { id: eventId, data: { data, type, origin, scope } } = streamEvent;
       // For each event we need to check ifs
       for (let playbookIndex = 0; playbookIndex < playbooks.length; playbookIndex += 1) {
         const playbook = playbooks[playbookIndex];
@@ -256,37 +261,112 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             // 01. Find the starting point of the playbook
             const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
             if (instance && instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM') {
-              const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-              const { update, create, delete: deletion, filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
-              const jsonFilters = filters ? JSON.parse(filters) : null;
-              let validEventType = false;
-              if (type === 'create' && create === true) validEventType = true;
-              if (type === 'update' && update === true) validEventType = true;
-              if (type === 'delete' && deletion === true) validEventType = true;
-              const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
-              // 02. Execute the component
-              if (validEventType && isMatch) {
-                const nextStep = { component: connector, instance };
-                const bundle: StixBundle = {
-                  id: uuidv4(),
-                  spec_version: STIX_SPEC_VERSION,
-                  type: 'bundle',
-                  objects: [data]
-                };
-                await playbookExecutor({
-                  eventId,
-                  // Basic
-                  executionId: uuidv4(),
-                  playbookId: playbook.id,
-                  dataInstanceId: data.id,
-                  definition: def,
-                  // Steps
-                  previousStep: null,
-                  nextStep,
-                  // Data
-                  previousStepBundle: null,
-                  bundle,
-                });
+              if (scope === 'external') {
+                const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+                const {
+                  update,
+                  create,
+                  delete: deletion,
+                  filters
+                } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
+                const jsonFilters = filters ? JSON.parse(filters) : null;
+                let validEventType = false;
+                if (type === 'create' && create === true) validEventType = true;
+                if (type === 'update' && update === true) validEventType = true;
+                if (type === 'delete' && deletion === true) validEventType = true;
+                const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
+                // 02. Execute the component
+                if (validEventType && isMatch) {
+                  const nextStep = { component: connector, instance };
+                  const bundle: StixBundle = {
+                    id: uuidv4(),
+                    spec_version: STIX_SPEC_VERSION,
+                    type: 'bundle',
+                    objects: [data]
+                  };
+                  await playbookExecutor({
+                    eventId,
+                    // Basic
+                    executionId: uuidv4(),
+                    playbookId: playbook.id,
+                    dataInstanceId: data.id,
+                    definition: def,
+                    // Steps
+                    previousStep: null,
+                    nextStep,
+                    // Data
+                    previousStepBundle: null,
+                    bundle,
+                  });
+                }
+              }
+            }
+            if (instance && instance.component_id === 'PLAYBOOK_DATA_STREAM_PIR') {
+              if (scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR) {
+                const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+                const {
+                  update,
+                  create,
+                  // delete: deletion,
+                  filters: sourceFilters,
+                  inPirFilters
+                } = (JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration);
+                const filtersOnInPirRel = inPirFilters ? {
+                  filterGroups: [],
+                  mode: FilterMode.And,
+                  filters: [{
+                    key: ['toId'],
+                    values: inPirFilters.map((n) => n.value),
+                  }],
+                } : null;
+                const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
+
+                let validEventType = false;
+                if (type === 'create' && create === true) validEventType = true;
+                if (type === 'update' && update === true) validEventType = true;
+                // if (type === 'delete' && deletion === true) validEventType = true;
+                const isMatch = !filtersOnInPirRel || await isStixMatchFilterGroup(context, SYSTEM_USER, data, filtersOnInPirRel);
+                // 02. Execute the component
+                if (validEventType && isMatch) {
+                  const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
+                  const eventPatch = type === 'update' ? (streamEvent.data as UpdateEvent).context : undefined;
+                  const filtersForTest = {
+                    mode: FilterMode.And,
+                    filters: [
+                      { key: [EVENT_TRANSITION_AFTER_FILTER],
+                        values: [
+                          { key: ['pir_score'], values: [20], operator: 'gte' },
+                        ],
+                      },
+                    ],
+                    filterGroups: filtersOnSource ? [filtersOnSource] : [],
+                  };
+                  console.log({ filtersForTest, eventPatch });
+                  const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersForTest, eventPatch);
+                  if (isEntityMatch) {
+                    const nextStep = { component: connector, instance };
+                    const bundle: StixBundle = {
+                      id: uuidv4(),
+                      spec_version: STIX_SPEC_VERSION,
+                      type: 'bundle',
+                      objects: [entity]
+                    };
+                    await playbookExecutor({
+                      eventId,
+                      // Basic
+                      executionId: uuidv4(),
+                      playbookId: playbook.id,
+                      dataInstanceId: data.id,
+                      definition: def,
+                      // Steps
+                      previousStep: null,
+                      nextStep,
+                      // Data
+                      previousStepBundle: null,
+                      bundle,
+                    });
+                  }
+                }
               }
             }
           }
@@ -370,7 +450,7 @@ const initPlaybookManager = () => {
       lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running playbook manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Playbook manager', playbookStreamHandler);
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Playbook manager', playbookStreamHandler, { withInternal: true });
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
