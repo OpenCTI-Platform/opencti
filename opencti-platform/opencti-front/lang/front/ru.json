@@ -4165,6 +4165,7 @@
   "Validate this workbench": "Проверьте этот рабочий стол",
   "Validated": "Проверено",
   "Validation mode": "Режим проверки",
+  "Validation mode has already been setted in platform configuration": "Режим проверки уже установлен в конфигурации платформы",
   "Validation progress": "Ход валидации",
   "Validator group membership:": "Членство в группе валидаторов:",
   "Validator membership:": "Членство в валидаторе:",

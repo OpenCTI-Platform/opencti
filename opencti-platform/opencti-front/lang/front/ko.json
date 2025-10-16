@@ -4165,6 +4165,7 @@
   "Validate this workbench": "이 작업대 검증",
   "Validated": "Validated",
   "Validation mode": "유효성 검사 모드",
+  "Validation mode has already been setted in platform configuration": "유효성 검사 모드는 이미 플랫폼 구성에 설정되어 있습니다",
   "Validation progress": "유효성 검사 진행",
   "Validator group membership:": "검증자 그룹 멤버십:",
   "Validator membership:": "유효성 검사자 멤버십:",

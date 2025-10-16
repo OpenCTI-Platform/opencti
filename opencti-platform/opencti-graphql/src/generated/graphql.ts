@@ -26069,6 +26069,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_trash_enabled: Scalars['Boolean']['output'];
   platform_url?: Maybe<Scalars['String']['output']>;
   platform_user_statuses: Array<UserStatus>;
+  platform_validation_mode?: Maybe<ValidationMode>;
   platform_whitemark?: Maybe<Scalars['Boolean']['output']>;
   platform_xtmhub_url?: Maybe<Scalars['String']['output']>;
   playground_enabled: Scalars['Boolean']['output'];
@@ -43476,6 +43477,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_trash_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_user_statuses?: Resolver<Array<ResolversTypes['UserStatus']>, ParentType, ContextType>;
+  platform_validation_mode?: Resolver<Maybe<ResolversTypes['ValidationMode']>, ParentType, ContextType>;
   platform_whitemark?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_xtmhub_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   playground_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

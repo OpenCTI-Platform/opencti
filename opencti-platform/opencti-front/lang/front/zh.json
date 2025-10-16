@@ -4165,6 +4165,7 @@
   "Validate this workbench": "验证此工作区",
   "Validated": "已验证",
   "Validation mode": "验证模式",
+  "Validation mode has already been setted in platform configuration": "已在平台配置中设置验证模式",
   "Validation progress": "验证进度",
   "Validator group membership:": "验证程序组的成员资格：",
   "Validator membership:": "验证者成员：",

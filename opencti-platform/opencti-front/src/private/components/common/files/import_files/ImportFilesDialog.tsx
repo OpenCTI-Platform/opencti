@@ -38,6 +38,12 @@ import { RelayError } from '../../../../../relay/relayTypes';
 import { KNOWLEDGE_KNASKIMPORT } from '../../../../../utils/hooks/useGranted';
 import Security from '../../../../../utils/Security';
 import { FieldOption } from '../../../../../utils/field';
+import useAuth from '../../../../../utils/hooks/useAuth';
+
+export enum ValidationMode {
+  Workbench = 'workbench',
+  Draft = 'draft',
+}
 
 export const CSV_MAPPER_NAME = '[FILE] CSV Mapper import';
 
@@ -110,13 +116,14 @@ interface ImportFilesDialogProps {
 export type OptionsFormValues = {
   fileMarkings: FieldOption[];
   associatedEntity: AssociatedEntityOption | null;
-  validationMode?: 'draft' | 'workbench';
+  validationMode?: ValidationMode;
   name: string;
 };
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   const { t_i18n } = useFormatter();
 
+  const { settings } = useAuth();
   const draftContext = useDraftContext();
   const {
     activeStep,
@@ -236,7 +243,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     }: {
       selectedEntityId?: string,
       fileMarkingIds: string[],
-      validationMode?: 'workbench' | 'draft',
+      validationMode?: ValidationMode,
       newDraftId?: string,
     },
     setErrors: (errors: FormikErrors<OptionsFormValues>) => void,
@@ -306,10 +313,10 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     const fileMarkingIds = values.fileMarkings.map(({ value }) => value);
 
     const { validationMode, name } = values;
-    if (validationMode === 'workbench') {
+    if (validationMode === ValidationMode.Workbench) {
       setUploadStatus('uploading');
       importFiles({ selectedEntityId, fileMarkingIds, validationMode }, setErrors);
-    } else if (validationMode === 'draft') {
+    } else if (validationMode === ValidationMode.Draft) {
       const newDraftId = !draftId ? await createDraft(name, selectedEntityId) : draftId;
       if (!newDraftId) {
         setActiveStep(1);
@@ -324,12 +331,14 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     }
   };
 
+  const forcedValidationMode = settings?.platform_validation_mode;
+
   const optionsContext = useFormik<OptionsFormValues>({
     enableReinitialize: true,
     initialValues: {
       fileMarkings: [] as FieldOption[],
       associatedEntity: entity ? { value: entity.id, label: entity.name || entity.id, type: entity.entity_type } : null,
-      validationMode: importMode === 'manual' ? 'draft' : undefined,
+      validationMode: forcedValidationMode as ValidationMode || (importMode === 'manual' ? ValidationMode.Draft : undefined),
       name: '',
     },
     onSubmit,
@@ -349,7 +358,10 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   }, [files, importMode, selectedFormId]);
 
   const isValidImport = useMemo(() => {
-    return (optionsContext.values.validationMode === 'draft' && optionsContext.values.name.length > 0) || draftId || optionsContext.values.validationMode === 'workbench' || importMode === 'auto';
+    return (optionsContext.values.validationMode === ValidationMode.Draft && optionsContext.values.name.length > 0)
+      || draftId
+      || optionsContext.values.validationMode === ValidationMode.Workbench
+      || importMode === 'auto';
   }, [optionsContext.values, importMode]);
 
   const renderActions = useMemo(() => {
@@ -382,7 +394,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     // If upload is completed successfully
     if (uploadStatus === 'success') {
       // If draft
-      if (optionsContext.values.validationMode === 'draft') {
+      if (optionsContext.values.validationMode === ValidationMode.Draft) {
         // If already in draft do show redirect
         if (inDraftContext) return (<></>);
 

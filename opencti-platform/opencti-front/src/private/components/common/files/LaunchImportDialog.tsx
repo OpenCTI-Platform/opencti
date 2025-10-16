@@ -6,6 +6,7 @@ import DialogContent from '@mui/material/DialogContent';
 import MenuItem from '@mui/material/MenuItem';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
 import * as Yup from 'yup';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
@@ -21,6 +22,7 @@ import { resolveHasUserChoiceParsedCsvMapper } from '../../../../utils/csvMapper
 import SelectField from '../../../../components/fields/SelectField';
 import { useFormatter } from '../../../../components/i18n';
 import stopEvent from '../../../../utils/domEvent';
+import useAuth from '../../../../utils/hooks/useAuth';
 
 interface LaunchImportDialogProps {
   file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
@@ -46,6 +48,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const [selectedConnector, setSelectedConnector] = React.useState<ConnectorType | null>(null);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = React.useState(false);
 
+  const { settings } = useAuth();
   const handleSetCsvMapper = (_: UIEvent, csvMapper: string) => {
     try {
       const parsedCsvMapper = JSON.parse(csvMapper);
@@ -123,12 +126,14 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
     && selectedConnector?.configurations?.length === 0;
 
+  const forcedValidationMode = settings?.platform_validation_mode;
+
   return (
     <Formik
       enableReinitialize={true}
       initialValues={{
         connector_id: '',
-        validation_mode: isDraftContext ? 'draft' : 'workbench',
+        validation_mode: forcedValidationMode || 'draft',
         configuration: '',
         objectMarking: [],
       }}
@@ -173,18 +178,23 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                 })}
               </Field>
               {!isDraftContext && (
-                <Field
-                  component={SelectField}
-                  variant="standard"
-                  name="validation_mode"
-                  label={t_i18n('Validation mode')}
-                  fullWidth={true}
-                  containerstyle={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
+                <Tooltip
+                  title={forcedValidationMode ? t_i18n('Validation mode has already been setted in platform configuration') : ''}
                 >
-                  <MenuItem value="workbench">Workbench</MenuItem>
-                  <MenuItem value="draft">Draft</MenuItem>
-                </Field>
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="validation_mode"
+                    label={t_i18n('Validation mode')}
+                    fullWidth={true}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    disabled={!!forcedValidationMode}
+                  >
+                    <MenuItem value="draft">{t_i18n('Draft')}</MenuItem>
+                    <MenuItem value="workbench">{t_i18n('Workbench')}</MenuItem>
+                  </Field>
+                </Tooltip>
               )}
               {selectedConnector?.configurations && selectedConnector?.configurations?.length > 0 ? (
                 <Field
