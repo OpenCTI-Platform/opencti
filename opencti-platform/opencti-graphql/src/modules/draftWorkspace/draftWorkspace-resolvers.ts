@@ -10,7 +10,8 @@ import {
   listDraftObjects,
   listDraftRelations,
   listDraftSightingRelations,
-  validateDraftWorkspace
+  validateDraftWorkspace,
+  draftWorkspaceEditAuthorizedMembers
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import { filterMembersWithUsersOrgs } from '../../utils/access';
@@ -48,6 +49,9 @@ const draftWorkspaceResolvers: Resolvers = {
   Mutation: {
     draftWorkspaceAdd: (_, { input }, context) => {
       return addDraftWorkspace(context, context.user, input);
+    },
+    draftWorkspaceEditAuthorizedMembers: (_, { id, input }, context) => {
+      return draftWorkspaceEditAuthorizedMembers(context, context.user, id, input);
     },
     draftWorkspaceValidate: (_, { id }, context) => {
       return validateDraftWorkspace(context, context.user, id);
