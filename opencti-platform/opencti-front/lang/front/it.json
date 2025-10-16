@@ -3706,6 +3706,7 @@
   "The Max Confidence Level is currently inherited from...": "La confidenza massima è attualmente ereditata da {link}",
   "The min value cannot be greater than max value": "Il valore minimo non può essere maggiore del valore massimo",
   "The NLQ model didn't find filters corresponding to your question": "Il modello NLQ non ha trovato i filtri corrispondenti alla sua domanda",
+  "The number of results should be lower than": "Il numero di risultati deve essere inferiore a",
   "The number of results should be lower than 100": "Il numero di risultati dovrebbe essere inferiore a 100",
   "The operators and modes are restricted for these filters.": "Gli operatori e le modalità sono limitati per questi filtri.",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "Le opinioni non hanno valore definito nel tuo vocabolario. Aggiungili prima per poter aggiungere opinioni.",

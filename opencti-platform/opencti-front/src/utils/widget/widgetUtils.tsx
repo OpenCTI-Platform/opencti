@@ -277,6 +277,16 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
   }
 };
 
+export const getMaxResultCount = (type: string) => {
+  let maxResultCount = 100;
+
+  if (type === 'list') {
+    maxResultCount = 500;
+  }
+
+  return maxResultCount;
+};
+
 export const isDataSelectionNumberValid = (type: string, dataSelection: WidgetDataSelection[]) => {
   if (type === 'list'
     || type === 'distribution-list'
@@ -289,7 +299,7 @@ export const isDataSelectionNumberValid = (type: string, dataSelection: WidgetDa
     || type === 'map'
     || type === 'wordcloud'
   ) {
-    return dataSelection.every((selection) => !selection.number || selection.number <= 100);
+    return dataSelection.every((selection) => !selection.number || selection.number <= getMaxResultCount(type));
   }
   return true;
 };

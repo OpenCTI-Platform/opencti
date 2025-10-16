@@ -3706,6 +3706,7 @@
   "The Max Confidence Level is currently inherited from...": "Максимальный уровень доверия в настоящее время унаследован от...",
   "The min value cannot be greater than max value": "Минимальное значение не может быть больше максимального",
   "The NLQ model didn't find filters corresponding to your question": "Модель NLQ не нашла фильтров, соответствующих вашему вопросу",
+  "The number of results should be lower than": "Количество результатов должно быть меньше, чем",
   "The number of results should be lower than 100": "Количество результатов должно быть меньше 100",
   "The operators and modes are restricted for these filters.": "Операторы и режимы для этих фильтров ограничены.",
   "The opinions has no value defined in your vocabulary. Please add them first to be able to add opinions.": "Мнения не имеет значения, определенного в вашем словаре. Пожалуйста, сначала добавьте их, чтобы иметь возможность добавлять мнения.",
