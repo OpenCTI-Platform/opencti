@@ -2506,7 +2506,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   x_opencti_order: Int!
   x_opencti_color: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
 }
 
@@ -2572,7 +2572,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   value: String
   color: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
 }
 
@@ -2790,7 +2790,7 @@ interface StixCoreObject {
   stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
   stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -2897,7 +2897,7 @@ interface StixDomainObject {
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -3011,7 +3011,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   isSubAttackPattern: Boolean
   dataComponents: DataComponentConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -3152,7 +3152,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   last_seen: DateTime
   objective: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -3342,7 +3342,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   note_types: [String]
   likelihood: Int
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -3481,7 +3481,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   name: String!
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -3591,7 +3591,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   authors: [String]
   opinion: String!
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -3728,7 +3728,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   published: DateTime
   objectParticipant: [Participant!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -3845,7 +3845,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   x_opencti_log_sources: [String]
   attackPatterns: AttackPatternConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -3955,7 +3955,7 @@ interface Identity {
   x_opencti_aliases: [String]
   x_opencti_reliability: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4063,7 +4063,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   x_opencti_lastname: String
   organizations: OrganizationConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4179,7 +4179,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   isSubSector: Boolean
   targetedOrganizations: StixCoreRelationshipConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4288,7 +4288,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_lastname: String
   organizations: OrganizationConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4404,7 +4404,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   last_seen: DateTime
   killChainPhases: [KillChainPhase!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4519,7 +4519,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   secondary_motivations: [String]
   locations: LocationConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4630,7 +4630,7 @@ interface Location {
   precision: Float
   x_opencti_aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4739,7 +4739,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   postal_code: String
   city: City
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4851,7 +4851,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   country: Country
   administrativeArea: AdministrativeArea
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -4958,7 +4958,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_aliases: [String]
   region: Region
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5066,7 +5066,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   subRegions: RegionConnection
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5131,6 +5131,11 @@ type MalwareEdge {
   node: Malware!
 }
 
+enum Version {
+  stix_2_0
+  stix_2_1
+}
+
 type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID!
   standard_id: String!
@@ -5184,7 +5189,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   killChainPhases: [KillChainPhase!]
   samples: [StixCyberObservable!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5311,7 +5316,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   locations: LocationConnection
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5389,7 +5394,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   locations: LocationConnection
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5504,7 +5509,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   tool_version: String
   killChainPhases: [KillChainPhase!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5661,7 +5666,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   x_opencti_first_seen_active: DateTime
   softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5824,7 +5829,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   source: String
   objectParticipant: [Participant!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5924,7 +5929,7 @@ interface StixCyberObservable {
   observable_value: String!
   indicators(first: Int): IndicatorConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -5972,7 +5977,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   name: String
   rir: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6029,7 +6034,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   mtime: DateTime
   atime: DateTime
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6084,7 +6089,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6136,7 +6141,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   value: String
   display_name: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6194,7 +6199,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   received_lines: [String]
   body: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6253,7 +6258,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   content_type: String
   content_disposition: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6328,7 +6333,7 @@ interface HashedObservable {
   indicators(first: Int): IndicatorConnection
   hashes: [Hash]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6380,7 +6385,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   decryption_key: String
   x_opencti_additional_names: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6448,7 +6453,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_additional_names: [String]
   obsContent: Artifact
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6536,7 +6541,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   certificate_policies: String
   policy_mappings: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6615,7 +6620,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   value: String
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6669,7 +6674,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   value: String
   countries: CountryConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6720,7 +6725,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6771,7 +6776,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   indicators(first: Int): IndicatorConnection
   name: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6834,7 +6839,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   src_packets: Int
   dst_packets: Int
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6917,7 +6922,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   service_type: String
   service_status: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -6996,7 +7001,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_product: String
   vulnerabilities: VulnerabilityConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7063,7 +7068,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7128,7 +7133,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   account_first_login: DateTime
   account_last_login: DateTime
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7194,7 +7199,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   modified_time: DateTime
   number_of_subkeys: Int
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7249,7 +7254,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   data: String
   data_type: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7302,7 +7307,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7353,7 +7358,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7404,7 +7409,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7455,7 +7460,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7506,7 +7511,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7559,7 +7564,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   bic: String
   account_number: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7612,7 +7617,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7663,7 +7668,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7714,7 +7719,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   indicators(first: Int): IndicatorConnection
   value: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7768,7 +7773,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   cvv: Int
   holder_name: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7827,7 +7832,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   url: String
   publication_date: DateTime
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -7883,7 +7888,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   persona_name: String!
   persona_type: String!
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -8030,7 +8035,7 @@ interface StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
-  toStix: String
+  toStix(version: Version): String
   draftVersion: DraftVersion
   creators: [Creator!]
 }
@@ -8129,7 +8134,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
@@ -8234,7 +8239,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
@@ -8325,7 +8330,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
-  toStix: String
+  toStix(version: Version): String
   creators: [Creator!]
   editContext: [EditUserContext!]
 }
@@ -9698,7 +9703,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   channel_types: [String]
   aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -9832,7 +9837,7 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   name: String!
   aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -9935,7 +9940,7 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   stop_time: DateTime
   aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10050,7 +10055,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   context: String!
   x_opencti_aliases: [String]
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10167,7 +10172,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   subNarratives: NarrativeConnection
   isSubNarrative: Boolean
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10433,7 +10438,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10537,7 +10542,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10772,7 +10777,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   cases(first: Int): CaseConnection
   country: Country
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -10878,7 +10883,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11024,7 +11029,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -11151,7 +11156,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11287,7 +11292,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11419,7 +11424,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11547,7 +11552,7 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], viaTypes: [String]): ContainerConnection
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
@@ -11809,7 +11814,7 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   objectParticipant: [Participant!]
   avatar: OpenCtiFile
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -12047,7 +12052,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   bornIn: Country
   ethnicity: Country
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -12705,7 +12710,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   decayLiveDetails: DecayLiveDetails
   decayChartData: DecayChartData
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -12871,7 +12876,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   default_hidden_types: [String!]
   restrict_access: Boolean
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -13987,7 +13992,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_reliability: String
   security_platform_type: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
