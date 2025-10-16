@@ -1,11 +1,14 @@
 import type { JSONSchemaType } from 'ajv';
 import * as R from 'ramda';
+import { Promise as BluePromise } from 'bluebird';
 import { type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext, SYSTEM_USER } from '../../../utils/access';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
 import { sendEmailToUser } from '../../../domain/user';
+import { ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../../../database/engine';
+import { loadFile } from '../../../database/file-storage';
 
 export interface SendEmailTemplateConfiguration {
   email_template: string,
@@ -42,15 +45,19 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
     const { email_template, targets } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const targetUsers = await convertMembersToUsers(targets as { value: string }[], baseData, bundle);
-    const sendEmailCall = [];
+    const sendEmailUserIds = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
       const targetUser = targetUsers[index];
       if (!targetUser.user_service_account) {
-        sendEmailCall.push(sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: targetUser.id, email_template_id: email_template }));
+        sendEmailUserIds.push(targetUser.id);
       }
     }
-    if (sendEmailCall.length > 0) {
-      await Promise.all(sendEmailCall);
+    if (sendEmailUserIds.length > 0) {
+      await BluePromise.map(
+        sendEmailUserIds,
+        (user_id) => sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: user_id, email_template_id: email_template }),
+        { concurrency: 3 }
+      );
     }
     return { output_port: undefined, bundle };
   }
