@@ -76,7 +76,7 @@ type JsonMapper implements InternalObject & BasicObject {
     id: ID!
     entity_type: String! @auth
     standard_id: String! @auth
-    parent_types: [String!]! @auth
+    parent_types: [String]! @auth
     # JsonMapper
     name: String! @auth
     variables: [JsonMapperVariable!] @auth

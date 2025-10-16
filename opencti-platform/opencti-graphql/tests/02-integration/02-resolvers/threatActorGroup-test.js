@@ -24,6 +24,12 @@ const LIST_QUERY = gql`
           id
           name
           description
+          objectAssignee {
+            id
+          }
+          objectMarking {
+            spec_version
+          }
         }
       }
     }
@@ -36,6 +42,12 @@ const READ_QUERY = gql`
       id
       name
       description
+      objectAssignee {
+        id
+      }
+      objectMarking {
+        spec_version
+      }
       toStix
     }
   }
@@ -51,6 +63,12 @@ describe('Threat actor group resolver standard behavior', () => {
           id
           name
           description
+          objectAssignee {
+            id
+          }
+          objectMarking {
+            spec_version
+          }
         }
       }
     `;
@@ -75,6 +93,7 @@ describe('Threat actor group resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: threatActorGroupInternalId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.threatActorGroup).not.toBeNull();
+    expect(queryResult.data.threatActorGroup.id).toEqual(threatActorGroupInternalId);
     expect(queryResult.data.threatActorGroup.id).toEqual(threatActorGroupInternalId);
     expect(queryResult.data.threatActorGroup.toStix.length).toBeGreaterThan(5);
   });

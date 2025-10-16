@@ -1,9 +1,10 @@
 import type { JSONSchemaType } from 'ajv';
 import type { NotifierConnector } from '../../generated/graphql';
-import type { BasicStoreEntityNotifier } from './notifier-types';
+import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from './notifier-types';
 import { HEADER_TEMPLATE } from '../../utils/emailTemplates/header';
 import { FOOTER_TEMPLATE } from '../../utils/emailTemplates/footer';
 import { LOGO_TEMPLATE } from '../../utils/emailTemplates/logo';
+import { ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 
 // region Notifier User interface
 export const NOTIFIER_CONNECTOR_UI = 'f39b8ab2c-8f5c-4167-a249-229f34d9442b';
@@ -159,6 +160,9 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
   // @ts-ignore
   {
     id: STATIC_NOTIFIER_UI,
+    standard_id: `notifier--${STATIC_NOTIFIER_UI}`,
+    entity_type: ENTITY_TYPE_NOTIFIER,
+    parent_types: [ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT],
     internal_id: STATIC_NOTIFIER_UI,
     built_in: true,
     name: 'User interface',
@@ -169,6 +173,9 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
   // @ts-ignore
   {
     id: STATIC_NOTIFIER_EMAIL,
+    standard_id: `notifier--${STATIC_NOTIFIER_UI}`,
+    entity_type: ENTITY_TYPE_NOTIFIER,
+    parent_types: [ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT],
     internal_id: STATIC_NOTIFIER_EMAIL,
     built_in: true,
     name: 'Default mailer',
