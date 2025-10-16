@@ -166,7 +166,12 @@ export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: Widget
   return [];
 };
 
-export const getWidgetColumns = (type: WidgetEntityType, entityType?: string): WidgetColumn[] => {
+type MetricsColumn = {
+  entity_type: string
+  metrics?: readonly string[] | null
+};
+
+export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, metrics?: readonly MetricsColumn[] | MetricsColumn[]): WidgetColumn[] => {
   const { containerTypes, aliasedTypes } = useAttributes();
 
   if (type === 'relationships') {
@@ -186,8 +191,20 @@ export const getWidgetColumns = (type: WidgetEntityType, entityType?: string): W
       }
 
       if (availableWidgetColumns[entityType]) {
-        return [...baseColumns, ...availableWidgetColumns[entityType]];
+        baseColumns.push(...availableWidgetColumns[entityType]);
       }
+
+      if (metrics) {
+        const metricsForEntity = metrics.find((m) => m.entity_type === entityType);
+        if (metricsForEntity?.metrics) {
+          const metricsColumns = metricsForEntity.metrics.map((metricName) => ({
+            attribute: metricName,
+            label: metricName,
+          }));
+          baseColumns.push(...metricsColumns);
+        }
+      }
+
       return baseColumns;
     }
 
