@@ -26,7 +26,9 @@ const PublicRoot = () => {
     rootPublicQuery,
     queryRef,
   );
+
   const isPlaygroundEnabled = settings.playground_enabled;
+
   return (
     <PublicSettingsProvider settings={settings}>
       <StyledEngineProvider injectFirst={true}>

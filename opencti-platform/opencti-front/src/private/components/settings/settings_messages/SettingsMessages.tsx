@@ -7,6 +7,7 @@ import React, { useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
 import { SettingsMessagesLine_settingsMessage$data } from '@components/settings/settings_messages/__generated__/SettingsMessagesLine_settingsMessage.graphql';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
@@ -126,19 +127,20 @@ const SettingsMessages = ({
   const handleCloseCreate = () => setDisplayCreate(false);
   return (
     <>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {t_i18n('Platform announcement')}
-      </Typography>
-      <IconButton
-        style={{ float: 'left', marginTop: -15 }}
-        color="primary"
-        aria-label="Add"
-        onClick={handleOpenCreate}
-        size="large"
-      >
-        <Add fontSize="small" />
-      </IconButton>
-      <div className="clearfix" />
+      <Stack direction={'row'} alignItems={'center'}>
+        <Typography variant="h4" gutterBottom={true} sx={{ margin: 0 }}>
+          {t_i18n('Platform announcement')}
+        </Typography>
+        <IconButton
+          color="primary"
+          aria-label="Add"
+          onClick={handleOpenCreate}
+          size="small"
+        >
+          <Add fontSize="small" />
+        </IconButton>
+      </Stack>
+
       <Paper
         ref={ref}
         classes={{ root: classes.paper }}

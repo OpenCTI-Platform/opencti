@@ -42,9 +42,7 @@ const PublicDataSharing = () => {
     queryRef,
   );
 
-  const loginLogo = theme.palette.mode === 'dark'
-    ? settings.platform_theme_dark_logo_login
-    : settings.platform_theme_light_logo_login;
+  const loginLogo = settings.platform_theme?.theme_logo_login || theme.logo;
 
   return (
     <>
