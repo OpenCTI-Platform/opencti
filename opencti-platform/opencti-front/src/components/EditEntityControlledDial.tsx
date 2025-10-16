@@ -4,6 +4,8 @@ import { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import { CommonProps } from '@mui/material/OverridableComponent';
 import { ButtonOwnProps } from '@mui/material/Button/Button';
 import { useFormatter } from './i18n';
+import useDraftContext from '../utils/hooks/useDraftContext';
+import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 
 const EditEntityControlledDial = ({
   onOpen,
@@ -15,7 +17,12 @@ const EditEntityControlledDial = ({
 }: ButtonOwnProps & CommonProps & DrawerControlledDialProps) => {
   const { t_i18n } = useFormatter();
   const buttonLabel = t_i18n('Update');
-  return (
+  // Remove create button in Draft context without the minimal right access "canEdit"
+  const draftContext = useDraftContext();
+  const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const canDisplayButton = !draftContext || currentAccessRight.canEdit;
+
+  return canDisplayButton && (
     <Button
       onClick={onOpen}
       color={color}
