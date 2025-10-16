@@ -95,7 +95,7 @@ import type { BasicStoreSettings } from '../../types/settings';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { removeOrganizationRestriction } from '../../domain/stix';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { convertAuthorizedMemberToUsers, extractBundleBaseElement } from './playbook-utils';
+import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 
 // region built in playbook components
 interface LoggerConfiguration {
@@ -1206,7 +1206,7 @@ const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguration> = {
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const targetUsers = await convertAuthorizedMemberToUsers(authorized_members as { value: string }[], baseData, bundle);
+    const targetUsers = await convertMembersToUsers(authorized_members as { value: string }[], baseData, bundle);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const notificationsCall = [];
     for (let index = 0; index < targetUsers.length; index += 1) {

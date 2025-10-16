@@ -15,7 +15,7 @@ export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle)
   return baseData;
 };
 
-export const convertAuthorizedMemberToUsers = async (members: { value: string }[], baseData: StixObject, bundle: StixBundle) => {
+export const convertMembersToUsers = async (members: { value: string }[], baseData: StixObject, bundle: StixBundle) => {
   if (isEmptyField(members)) {
     return [];
   }

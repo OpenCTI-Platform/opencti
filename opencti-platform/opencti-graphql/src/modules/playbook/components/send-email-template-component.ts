@@ -4,7 +4,7 @@ import { type PlaybookComponent } from '../playbook-types';
 import { AUTOMATION_MANAGER_USER, executionContext, SYSTEM_USER } from '../../../utils/access';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
-import { convertAuthorizedMemberToUsers, extractBundleBaseElement } from '../playbook-utils';
+import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
 import { sendEmailToUser } from '../../../domain/user';
 
 export interface SendEmailTemplateConfiguration {
@@ -25,7 +25,7 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
   id: 'PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT',
   name: 'Send email from template',
   description: 'Send email from template to targets',
-  icon: 'email-template',
+  icon: 'emailtemplate',
   is_entry_point: false,
   is_internal: true,
   ports: [],
@@ -41,7 +41,7 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
     const context = executionContext('playbook_components');
     const { email_template, targets } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
-    const targetUsers = await convertAuthorizedMemberToUsers(targets as { value: string }[], baseData, bundle);
+    const targetUsers = await convertMembersToUsers(targets as { value: string }[], baseData, bundle);
     const sendEmailCall = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
       const targetUser = targetUsers[index];
