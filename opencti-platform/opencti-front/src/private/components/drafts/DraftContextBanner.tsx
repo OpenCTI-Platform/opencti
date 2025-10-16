@@ -230,7 +230,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             {t_i18n('Exit draft')}
           </Button>
         </div>
-        {currentAccessRight.canManage && (
+        {currentAccessRight.canEdit && (
           <div style={{ padding: '0 12px' }}>
             <Button
               variant="contained"
