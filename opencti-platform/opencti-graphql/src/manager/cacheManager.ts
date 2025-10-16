@@ -92,7 +92,6 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
     const connFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
     filteringIds.push(...connFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
-    console.log('--------------', instance);
     const definition = JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition) as ComponentDefinition;
     const configurations = definition.nodes.map((n) => JSON.parse(n.configuration));
     // IDs from filters in playbook components.
@@ -101,7 +100,6 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .filter((f) => isNotEmptyField(f))
       .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
       .flat();
-    console.log('--------------', playbookFilterIds);
     // IDs from list of PIRs to listen.
     const playbookInPirFilterIds = configurations
       .map((config) => config.inPirFilters)
