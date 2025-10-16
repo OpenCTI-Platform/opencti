@@ -21228,6 +21228,7 @@ export type Query = {
   ingestionTaxiis?: Maybe<IngestionTaxiiConnection>;
   intrusionSet?: Maybe<IntrusionSet>;
   intrusionSets?: Maybe<IntrusionSetConnection>;
+  isWorkAlive?: Maybe<Scalars['Boolean']['output']>;
   jsonMapper?: Maybe<JsonMapper>;
   jsonMappers?: Maybe<JsonMapperConnection>;
   killChainPhase?: Maybe<KillChainPhase>;
@@ -22505,6 +22506,11 @@ export type QueryIntrusionSetsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryIsWorkAliveArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -42542,6 +42548,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   ingestionTaxiis?: Resolver<Maybe<ResolversTypes['IngestionTaxiiConnection']>, ParentType, ContextType, Partial<QueryIngestionTaxiisArgs>>;
   intrusionSet?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<QueryIntrusionSetArgs>>;
   intrusionSets?: Resolver<Maybe<ResolversTypes['IntrusionSetConnection']>, ParentType, ContextType, Partial<QueryIntrusionSetsArgs>>;
+  isWorkAlive?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryIsWorkAliveArgs, 'id'>>;
   jsonMapper?: Resolver<Maybe<ResolversTypes['JsonMapper']>, ParentType, ContextType, RequireFields<QueryJsonMapperArgs, 'id'>>;
   jsonMappers?: Resolver<Maybe<ResolversTypes['JsonMapperConnection']>, ParentType, ContextType, Partial<QueryJsonMappersArgs>>;
   killChainPhase?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<QueryKillChainPhaseArgs, 'id'>>;
