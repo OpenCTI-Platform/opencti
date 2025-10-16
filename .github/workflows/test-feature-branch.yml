@@ -125,12 +125,11 @@ jobs:
 
       - name: Deploy feature environment via AWX
         run: |
-          awx --conf.host https://awx.filigran.io \
+          awx --conf.host ${{ secrets.AWX_URL }} \
             --conf.username ${{ secrets.AWX_USER }} \
             --conf.password ${{ secrets.AWX_PASSWORD }} \
             -f human job_templates launch 'Deploy OpenCTI feature branch for testing' \
             --inventory eu-west-staging \
-            --extra_vars "{\"env\":\"Development\",\"xtmhub_version\":\"${{ inputs.pr_number }}\",\"xtmhub_node_env\":\"${{ env.NODE_ENV }}\"}"
             --extra_vars "{\"octi_version\":\"${{steps.meta.outputs.version}}\",\"octi_config\":\"${{ inputs.octi_config }}\",\"redis_cluster\":\"${{ inputs.redis_cluster }}\"}"
 
       - name: Forge URL to match playbook limitations
