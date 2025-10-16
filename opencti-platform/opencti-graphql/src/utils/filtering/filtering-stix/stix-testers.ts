@@ -45,7 +45,8 @@ import {
   TYPE_FILTER,
   WORKFLOW_FILTER,
   RELATION_IN_PIR_FILTER,
-  PATTERN_TYPE_FILTER
+  PATTERN_TYPE_FILTER,
+  EVENT_TRANSITION_AFTER_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -54,6 +55,7 @@ import { type AuthorizedMember, isUserInAuthorizedMember } from '../../access';
 import type { AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
 import { RELATION_IN_PIR } from '../../../schema/internalRelationship';
+import type { UpdateEvent } from '../../../types/event';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -466,6 +468,35 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
   return testStringFilter(filter, value);
 };
 
+export const testEventTransitionAfter = (stix: any, filter: Filter, updateContext?: UpdateEvent['context']) => {
+  const patch = updateContext?.patch ?? [];
+  const results: boolean[] = [];
+  filter.values.forEach((patchFilter: Filter) => {
+    const [attributeKey] = patchFilter.key; // TODO in this case key should be an array with 1 element
+    const patchOfFilter = patch.find((p) => p.path.split('/')[1] === attributeKey); // TODO can we have several patch with same path?
+    if (!patchOfFilter || patchOfFilter.op !== 'replace') { // TODO by defautl op = replace, so pass if op is undefined ?
+      results.push(false);
+    } else {
+      const valueToCheck = patchOfFilter.value; // TODO check it is never an array
+      switch (typeof valueToCheck) {
+        case 'boolean':
+          results.push(testBooleanFilter(patchFilter, valueToCheck));
+          break;
+        case 'string':
+          results.push(testStringFilter(patchFilter, [valueToCheck]));
+          break;
+        case 'number':
+          results.push(testNumericFilter(patchFilter, valueToCheck));
+          break;
+        default:
+          results.push(false);
+          break;
+      }
+    }
+  });
+  return filter.mode === 'and' ? results.every((r) => r) : results.some((r) => r);
+};
+
 /**
  * TODO: This mapping could be given by the schema, like we do with stix converters
  */
@@ -512,5 +543,6 @@ export const FILTER_KEY_TESTERS_MAP: Record<string, TesterFunction> = {
   [RELATION_TO_FILTER]: testRelationTo,
   [RELATION_TO_TYPES_FILTER]: testRelationToTypes,
   [REPRESENTATIVE_FILTER]: testRepresentative,
-  [RELATION_IN_PIR_FILTER]: testRelationInPir
+  [RELATION_IN_PIR_FILTER]: testRelationInPir,
+  [EVENT_TRANSITION_AFTER_FILTER]: testEventTransitionAfter, // filter on update events
 };

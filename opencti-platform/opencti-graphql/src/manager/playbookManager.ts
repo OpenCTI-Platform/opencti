@@ -23,7 +23,7 @@ import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import type { SseEvent, StreamDataEvent } from '../types/event';
+import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../utils/format';
 import { findById } from '../modules/playbook/playbook-domain';
@@ -48,6 +48,7 @@ import { RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isStixRelation } from '../schema/stixRelationship';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import type { PirStreamConfiguration } from '../modules/playbook/playbookComponents/playbook-data-stream-pir-component';
+import { EVENT_TRANSITION_AFTER_FILTER } from '../utils/filtering/filtering-constants';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -328,7 +329,19 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                 // 02. Execute the component
                 if (validEventType && isMatch) {
                   const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
-                  const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersOnSource);
+                  const eventPatch = type === 'update' ? (streamEvent.data as UpdateEvent).context : undefined;
+                  const filtersForTest = {
+                    mode: FilterMode.And,
+                    filters: [
+                      { key: [EVENT_TRANSITION_AFTER_FILTER],
+                        values: [
+                          { key: 'confidence', values: [50], operator: 'gte' },
+                        ],
+                      },
+                    ],
+                    filterGroups: filtersOnSource ? [filtersOnSource] : [],
+                  };
+                  const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersForTest, eventPatch);
                   if (isEntityMatch) {
                     const nextStep = { component: connector, instance };
                     const bundle: StixBundle = {

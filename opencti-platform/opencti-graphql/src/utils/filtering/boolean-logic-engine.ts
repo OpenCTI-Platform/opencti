@@ -1,6 +1,7 @@
 import moment from 'moment';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import { isFilterGroupNotEmpty } from './filtering-utils';
+import type { UpdateEvent } from '../../types/event';
 
 type FilterLogic = Pick<Filter, 'mode' | 'operator'>;
 type FilterExcerpt = Pick<Filter, 'mode' | 'operator' | 'values'>;
@@ -173,7 +174,7 @@ export const testDateFilter = ({ mode, operator, values }: FilterExcerpt, stixCa
 
 // generic representation of a tester function
 // its implementations are dependent on the data model, to find the information requested by the filter
-export type TesterFunction = (data: any, filter: Filter) => boolean;
+export type TesterFunction = (data: any, filter: Filter, updateContext?: UpdateEvent['context']) => boolean;
 
 /**
  * Recursive function that tests a complex filter group.
@@ -184,16 +185,21 @@ export type TesterFunction = (data: any, filter: Filter) => boolean;
  * @param testerByFilterKeyMap function that gives a function to test a filter, according to the filter key
  *                               see unit tests for an example.
  */
-export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>) : boolean => {
+export const testFilterGroup = (
+  data: any,
+  filterGroup: FilterGroup,
+  testerByFilterKeyMap: Record<string, TesterFunction>,
+  updateContext?: UpdateEvent['context'],
+) : boolean => {
   if (!isFilterGroupNotEmpty(filterGroup)) return true; // no filters -> stix always match
   if (filterGroup.mode === 'and') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
       // note that we are not compatible with multiple keys yet, so we'll always check the first one only
-      results.push(filterGroup.filters.every((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter)));
+      results.push(filterGroup.filters.every((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter, updateContext)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, testerByFilterKeyMap)));
+      results.push(filterGroup.filterGroups.every((fg) => testFilterGroup(data, fg, testerByFilterKeyMap, updateContext)));
     }
     return results.length > 0 && results.every((isTrue) => isTrue);
   }
@@ -201,10 +207,10 @@ export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFil
   if (filterGroup.mode === 'or') {
     const results: boolean[] = [];
     if (filterGroup.filters.length > 0) {
-      results.push(filterGroup.filters.some((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter)));
+      results.push(filterGroup.filters.some((filter) => testerByFilterKeyMap[filter.key[0]]?.(data, filter, updateContext)));
     }
     if (filterGroup.filterGroups.length > 0) {
-      results.push(filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap)));
+      results.push(filterGroup.filterGroups.some((fg) => testFilterGroup(data, fg, testerByFilterKeyMap, updateContext)));
     }
     return results.length > 0 && results.some((isTrue) => isTrue);
   }
