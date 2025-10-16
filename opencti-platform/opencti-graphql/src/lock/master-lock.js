@@ -40,15 +40,19 @@ export const initLockFork = () => {
   }
 };
 
+const removeAllCallbacksForOperation = (operation) => {
+  lockProcess.callbacks.delete(`${operation}-lock`);
+  lockProcess.callbacks.delete(`${operation}-unlock`);
+  lockProcess.callbacks.delete(`${operation}-abort`);
+};
+
 // Unlock definition
 const childUnlockResources = async (operation) => {
   return new Promise((resolve, reject) => {
     // Set up the unlock callback
     lockProcess.callbacks.set(`${operation}-unlock`, (msg) => {
       // Cleanup the callback map
-      lockProcess.callbacks.delete(`${operation}-lock`);
-      lockProcess.callbacks.delete(`${operation}-unlock`);
-      lockProcess.callbacks.delete(`${operation}-abort`);
+      removeAllCallbacksForOperation(operation);
       // Resolve or reject depending on the unlock result
       if (msg.success) {
         resolve(msg);
@@ -80,6 +84,8 @@ const childLockResources = async (ids, args = {}) => {
         const unlock = () => childUnlockResources(msg.operation);
         resolve({ operation, signal, unlock, result: msg });
       } else {
+        // Cleanup the callback map
+        removeAllCallbacksForOperation(operation);
         reject(msg.error);
       }
     });
