@@ -103,7 +103,7 @@ export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<Inges
               className={classes.bodyItem}
               style={{ width: dataColumns.id.width, paddingRight: 10 }}
             >
-              <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects`} variant="inLine"/>
+              <ItemCopy content={`${window.location.origin}${APP_BASE_PATH}/taxii2/root/collections/${data.id}/objects/`} variant="inLine"/>
             </div>
             <div
               className={classes.bodyItem}
