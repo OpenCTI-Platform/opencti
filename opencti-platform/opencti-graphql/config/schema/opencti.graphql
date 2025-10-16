@@ -12804,6 +12804,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Artifact
   | StixFile
   | X509Certificate
+  | SSHKey
   | IPv4Addr
   | IPv6Addr
   | MacAddr
@@ -12893,6 +12894,7 @@ union StixObjectOrStixRelationship =
   | Artifact
   | StixFile
   | X509Certificate
+  | SSHKey
   | IPv4Addr
   | IPv6Addr
   | MacAddr
@@ -12977,6 +12979,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | Artifact
   | StixFile
   | X509Certificate
+  | SSHKey
   | IPv4Addr
   | IPv6Addr
   | MacAddr
