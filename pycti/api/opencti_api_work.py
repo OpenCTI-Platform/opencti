@@ -204,6 +204,15 @@ class OpenCTIApiWork:
         result = self.api.query(query, {"id": work_id}, True)
         return result["data"]["work"]
 
+    def get_is_work_alive(self, work_id: str) -> Dict:
+        query = """
+        query WorkAliveQuery($id: ID!) {
+            isWorkAlive(id: $id)
+        }
+        """
+        result = self.api.query(query, {"id": work_id}, True)
+        return result["data"]["isWorkAlive"]
+
     def get_connector_works(self, connector_id: str) -> List[Dict]:
         query = """
         query ConnectorWorksQuery(
