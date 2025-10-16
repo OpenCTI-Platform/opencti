@@ -75,7 +75,6 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_firstname',
   'x_opencti_lastname',
   // CVSS 3
-  'x_opencti_cvss_base_score',
   'x_opencti_cvss_base_severity',
   'x_opencti_cvss_attack_vector',
   'x_opencti_cvss_attack_complexity',
@@ -90,7 +89,6 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_cvss_report_confidence',
   'x_opencti_cvss_temporal_score',
   // CVSS 2
-  'x_opencti_cvss_v2_base_score',
   'x_opencti_cvss_v2_access_vector',
   'x_opencti_cvss_v2_access_complexity',
   'x_opencti_cvss_v2_authentication',
@@ -102,7 +100,6 @@ export const INTERNAL_ATTRIBUTES = [
   'x_opencti_cvss_v2_report_confidence',
   'x_opencti_cvss_v2_temporal_score',
   // CVSS 4
-  'x_opencti_cvss_v4_base_score',
   'x_opencti_cvss_v4_base_severity',
   'x_opencti_cvss_v4_attack_vector',
   'x_opencti_cvss_v4_attack_complexity',
