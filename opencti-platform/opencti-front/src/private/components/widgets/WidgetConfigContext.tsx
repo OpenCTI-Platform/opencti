@@ -69,7 +69,7 @@ const buildConfig = (
         label: '',
         number: 10,
         sort_by: 'created_at',
-        sort_mode: 'asc',
+        sort_mode: 'desc',
         attribute: 'entity_type',
         date_attribute: 'created_at',
         perspective: null,
