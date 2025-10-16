@@ -3667,6 +3667,7 @@
   "Textarea": "Textarea",
   "The alias has been added": "Псевдоним был добавлен",
   "The alias has been removed": "Псевдоним был удален",
+  "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "Количество результатов может отличаться в зависимости от данных/отношений, поскольку для этого виджета учитывается каждое появление предполагаемого отношения.",
   "The attribute is not called in the content": "Атрибут не вызывается в содержимом",
   "The background task has been executed. You can monitor it on": "Фоновое задание выполнено. Вы можете наблюдать за ним на",
   "The code is not correct.": "Код некорректен.",

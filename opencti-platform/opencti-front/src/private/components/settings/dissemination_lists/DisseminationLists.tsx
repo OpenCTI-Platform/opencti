@@ -18,7 +18,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import AlertInfo from '../../../../components/AlertInfo';
+import Alert from '../../../../components/Alert';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../../components/PageContainer';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -162,7 +162,7 @@ const DisseminationLists = () => {
           <EnterpriseEdition feature="Dissemination lists" />
         ) : (
           <>
-            <AlertInfo
+            <Alert
               style={{ marginBottom: '16px' }}
               content={t_i18n('Dissemination lists can be used to send files to a list of recipients that do not necessarily have an OpenCTI account.')}
             />

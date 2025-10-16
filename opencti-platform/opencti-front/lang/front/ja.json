@@ -3667,6 +3667,7 @@
   "Textarea": "テキストエリア",
   "The alias has been added": "別名を追加しました",
   "The alias has been removed": "エイリアスは削除されました",
+  "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "推論された関係の各出現がこのウィジェットのためにカウントされるので，結果の量は，データ/関係によって異なる可能性がある．",
   "The attribute is not called in the content": "属性がコンテンツ内で呼び出されていない",
   "The background task has been executed. You can monitor it on": "バックグラウンドタスクが実行されました。タスクは",
   "The code is not correct.": "コードが正しくない。",

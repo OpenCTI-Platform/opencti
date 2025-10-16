@@ -17,7 +17,7 @@ import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStora
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
 import ItemIcon from '../../../../components/ItemIcon';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import AlertInfo from '../../../../components/AlertInfo';
+import Alert from '../../../../components/Alert';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import PageContainer from '../../../../components/PageContainer';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
@@ -157,7 +157,7 @@ const EmailTemplates = () => {
           <EnterpriseEdition feature="Email templates" />
         ) : (
           <>
-            <AlertInfo
+            <Alert
               style={{ marginBottom: '16px' }}
               content={t_i18n('These template emails are only used for one time email, not for notifications or dissemination.')}
             />

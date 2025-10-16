@@ -3667,6 +3667,7 @@
   "Textarea": "텍스트 영역",
   "The alias has been added": "별명이 추가되었습니다",
   "The alias has been removed": "별명이 제거되었습니다",
+  "The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.": "이 위젯에서는 추론된 관계가 발생할 때마다 계산되므로 결과의 양은 데이터/관계에 따라 달라질 수 있습니다.",
   "The attribute is not called in the content": "콘텐츠에서 속성이 호출되지 않았습니다",
   "The background task has been executed. You can monitor it on": "백그라운드 작업이 실행되었습니다. 모니터링할 수 있습니다",
   "The code is not correct.": "코드가 올바르지 않습니다.",
