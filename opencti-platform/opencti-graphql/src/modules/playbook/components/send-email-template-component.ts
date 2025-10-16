@@ -7,8 +7,6 @@ import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
 import { sendEmailToUser } from '../../../domain/user';
-import { ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../../../database/engine';
-import { loadFile } from '../../../database/file-storage';
 
 export interface SendEmailTemplateConfiguration {
   email_template: string,
