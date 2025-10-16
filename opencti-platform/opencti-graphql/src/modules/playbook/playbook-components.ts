@@ -103,6 +103,7 @@ import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-te
 import type { BasicStoreSettings } from '../../types/settings';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { removeOrganizationRestriction } from '../../domain/stix';
+import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -1637,4 +1638,5 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_CREATE_INDICATOR_COMPONENT.id]: PLAYBOOK_CREATE_INDICATOR_COMPONENT,
   [PLAYBOOK_REDUCING_COMPONENT.id]: PLAYBOOK_REDUCING_COMPONENT,
   [PLAYBOOK_CREATE_OBSERVABLE_COMPONENT.id]: PLAYBOOK_CREATE_OBSERVABLE_COMPONENT,
+  [PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT.id]: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT
 };
