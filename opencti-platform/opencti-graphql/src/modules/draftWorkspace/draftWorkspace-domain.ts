@@ -223,7 +223,7 @@ export const draftWorkspaceEditAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
   workspaceId: string,
-  input: MemberAccessInput[],
+  input: MemberAccessInput[] | undefined | null,
 ) => {
   const args = {
     entityId: workspaceId,
