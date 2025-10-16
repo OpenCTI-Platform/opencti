@@ -45,7 +45,9 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
     const sendEmailCall = [];
     for (let index = 0; index < targetUsers.length; index += 1) {
       const targetUser = targetUsers[index];
-      sendEmailCall.push(sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: targetUser.id, email_template_id: email_template }));
+      if (!targetUser.user_service_account) {
+        sendEmailCall.push(sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: targetUser.id, email_template_id: email_template }));
+      }
     }
     if (sendEmailCall.length > 0) {
       await Promise.all(sendEmailCall);
