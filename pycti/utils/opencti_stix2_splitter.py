@@ -196,6 +196,7 @@ class OpenCTIStix2Splitter:
                 )
             else:
                 is_compatible = is_id_supported(item_id)
+
             if is_compatible:
                 self.elements.append(item)
             else:
@@ -262,7 +263,11 @@ class OpenCTIStix2Splitter:
                 )
             )
 
-        return number_expectations, self.incompatible_items, bundles
+        return (
+            number_expectations,
+            self.incompatible_items,
+            bundles,
+        )
 
     @deprecated("Use split_bundle_with_expectations instead")
     def split_bundle(self, bundle, use_json=True, event_version=None) -> list:

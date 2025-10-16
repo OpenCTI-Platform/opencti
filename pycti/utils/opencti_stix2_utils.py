@@ -233,3 +233,17 @@ class OpenCTIStix2Utils:
                 if hasattr(attribute, method):
                     return attribute
         return None
+
+    @staticmethod
+    def compute_object_refs_number(entity: Dict):
+        refs_number = 0
+        for key in list(entity.keys()):
+            if key.endswith("_refs") and entity[key] is not None:
+                refs_number += len(entity[key])
+            elif key.endswith("_ref"):
+                refs_number += 1
+            elif key == "external_references" and entity[key] is not None:
+                refs_number += len(entity[key])
+            elif key == "kill_chain_phases" and entity[key] is not None:
+                refs_number += len(entity[key])
+        return refs_number

@@ -8,7 +8,7 @@ import random
 import time
 import traceback
 import uuid
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datefinder
 import dateutil.parser
@@ -32,6 +32,7 @@ from pycti.utils.opencti_stix2_utils import (
     STIX_CORE_OBJECTS,
     STIX_CYBER_OBSERVABLE_MAPPING,
     STIX_META_OBJECTS,
+    OpenCTIStix2Utils,
 )
 
 datefinder.ValueError = ValueError, OverflowError
@@ -196,7 +197,7 @@ class OpenCTIStix2:
         file_path: str,
         update: bool = False,
         types: List = None,
-    ) -> Optional[List]:
+    ) -> Optional[Tuple[list, list]]:
         """import a stix2 bundle from a file
 
         :param file_path: valid path to the file
@@ -221,7 +222,8 @@ class OpenCTIStix2:
         update: bool = False,
         types: List = None,
         work_id: str = None,
-    ) -> List:
+        objects_max_refs: int = 0,
+    ) -> Tuple[list, list]:
         """import a stix2 bundle from JSON data
 
         :param json_data: JSON data
@@ -231,11 +233,13 @@ class OpenCTIStix2:
         :param types: list of stix2 types, defaults to None
         :type types: list, optional
         :param work_id work_id: str, optional
-        :return: list of imported stix2 objects
-        :rtype: List
+        :param objects_max_refs: max deps amount of objects, reject object import if larger than configured amount
+        :type objects_max_refs: int, optional
+        :return: list of imported stix2 objects and a list of stix2 objects with too many deps
+        :rtype: Tuple[List,List]
         """
         data = json.loads(json_data)
-        return self.import_bundle(data, update, types, work_id)
+        return self.import_bundle(data, update, types, work_id, objects_max_refs)
 
     def resolve_author(self, title: str) -> Optional[Identity]:
         if "fireeye" in title.lower() or "mandiant" in title.lower():
@@ -3060,7 +3064,8 @@ class OpenCTIStix2:
         update: bool = False,
         types: List = None,
         work_id: str = None,
-    ) -> List:
+        objects_max_refs: int = 0,
+    ) -> Tuple[list, list]:
         # Check if the bundle is correctly formatted
         if "type" not in stix_bundle or stix_bundle["type"] != "bundle":
             raise ValueError("JSON data type is not a STIX2 bundle")
@@ -3094,12 +3099,27 @@ class OpenCTIStix2:
 
         # Import every element in a specific order
         imported_elements = []
+        too_large_elements_bundles = []
         for bundle in bundles:
             for item in bundle["objects"]:
-                self.import_item(item, update, types, 0, work_id)
-                imported_elements.append({"id": item["id"], "type": item["type"]})
+                # If item is considered too large, meaning that it has a number of refs higher than inputted objects_max_refs, do not import it
+                nb_refs = OpenCTIStix2Utils.compute_object_refs_number(item)
+                if 0 < objects_max_refs <= nb_refs:
+                    self.opencti.work.report_expectation(
+                        work_id,
+                        {
+                            "error": "Too large element in bundle",
+                            "source": "Element "
+                            + item["id"]
+                            + " is too large and couldn't be processed",
+                        },
+                    )
+                    too_large_elements_bundles.append(item)
+                else:
+                    self.import_item(item, update, types, 0, work_id)
+                    imported_elements.append({"id": item["id"], "type": item["type"]})
 
-        return imported_elements
+        return imported_elements, too_large_elements_bundles
 
     @staticmethod
     def put_attribute_in_extension(

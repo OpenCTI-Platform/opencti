@@ -79,6 +79,7 @@ class OpenCTIApiConnector:
                         push
                         push_exchange
                         push_routing
+                        dead_letter_routing
                     }
                 }
             }
