@@ -12659,8 +12659,8 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
 input SSHKeyAddInput {
   key_type: String
   public_key: String
-  fingerprint_sha256: String! @constraint(minLength: 54)
-  fingerprint_md5: String @constraint(minLength: 128)
+  fingerprint_sha256: String! @constraint(minLength: 5)
+  fingerprint_md5: String @constraint(minLength: 5)
   key_length: String
   comment: String
   created: DateTime
