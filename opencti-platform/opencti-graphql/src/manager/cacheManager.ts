@@ -92,20 +92,20 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
     const connFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse(connFilters));
     filteringIds.push(...connFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PLAYBOOK) {
-    const playbookFilterIds = ((JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition)) as ComponentDefinition)
-      .nodes.map((n) => JSON.parse(n.configuration))
+    const definition = JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition) as ComponentDefinition;
+    const configurations = definition.nodes.map((n) => JSON.parse(n.configuration));
+    // IDs from filters in playbook components.
+    const playbookFilterIds = configurations
       .map((config) => config.filters)
       .filter((f) => isNotEmptyField(f))
       .map((f) => extractFilterGroupValuesToResolveForCache(JSON.parse(f)))
       .flat();
-
-    const playbookinPirFilterIds = ((JSON.parse((instance as BasicStoreEntityPlaybook).playbook_definition)) as ComponentDefinition)
-      .nodes.map((n) => JSON.parse(n.configuration))
+    // IDs from list of PIRs to listen.
+    const playbookInPirFilterIds = configurations
       .map((config) => config.inPirFilters)
       .map((f) => (f ?? []).map((i:{ value:string }) => i.value))
       .flat();
-
-    filteringIds.push(...playbookFilterIds, ...playbookinPirFilterIds);
+    filteringIds.push(...playbookFilterIds, ...playbookInPirFilterIds);
   } else if (instance.entity_type === ENTITY_TYPE_PIR) {
     const pirFilterIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityPir).pir_filters));
     const pirCriteriaIds = (instance as BasicStoreEntityPir).pir_criteria
@@ -113,7 +113,10 @@ const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) => {
       .flat();
     filteringIds.push(...pirFilterIds, ...pirCriteriaIds);
   } else {
-    throw FunctionalError('Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type', { entity_type: instance.entity_type });
+    throw FunctionalError(
+      'Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type',
+      { entity_type: instance.entity_type }
+    );
   }
   return filteringIds;
 };
