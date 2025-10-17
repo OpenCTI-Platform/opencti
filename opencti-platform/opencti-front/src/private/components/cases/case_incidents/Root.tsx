@@ -10,7 +10,7 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -182,7 +182,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         {!isKnowledgeOrContent && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
             <AIInsights id={caseData.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
-            <StixCoreObjectSimulationResult id={caseData.id} coverate={null}/>
+            <StixCoreObjectSecurityCoverage id={caseData.id} coverate={null}/>
           </div>
         )}
       </Box>

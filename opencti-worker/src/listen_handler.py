@@ -28,6 +28,7 @@ class ListenHandler:
                 headers={
                     "User-Agent": f"pycti/{__version__}",
                     "Authorization": f"Bearer {self.connector_token}",
+                    "Content-Type": "application/json",
                 },
                 verify=self.listen_api_ssl_verify,
                 proxies={
