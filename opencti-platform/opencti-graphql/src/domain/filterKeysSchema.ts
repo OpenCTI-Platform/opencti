@@ -321,7 +321,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
         label: 'Number of validated reports',
         multiple: false,
         elementsForFilterValuesSearch: [],
-        subEntityTypes: [],
+        subEntityTypes,
         subFilters: []
       }
     );
