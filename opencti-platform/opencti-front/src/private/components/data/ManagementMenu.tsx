@@ -9,8 +9,8 @@ const ManagementMenu = () => {
     },
     {
       path: '/dashboard/data/restriction/drafts',
-      label: 'Drafts'
-    }
+      label: 'Drafts',
+    },
   ];
   return <NavToolbarMenu entries={entries} />;
 };
