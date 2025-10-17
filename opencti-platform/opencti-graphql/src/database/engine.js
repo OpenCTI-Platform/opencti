@@ -221,6 +221,7 @@ import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-type
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { asyncFilter, asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { isMetricsName } from '../modules/metrics/metrics-utils';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -3266,8 +3267,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
       }
 
-      // FIXME take filter name from config
-      if (filterKey === 'number_of_validated_reports') {
+      if (isMetricsName(filterKey)) {
         const { newFilter } = await adaptFilterForMetricsFilterKeys(filter);
         finalFilters.push(newFilter);
       }

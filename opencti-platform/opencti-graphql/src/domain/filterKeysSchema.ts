@@ -205,6 +205,23 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   filterDefinitionsMap: Map<string, FilterDefinition>, // filter definition map to complete
   subEntityTypes: string[],
 ) => {
+  if (type === 'Organization') {
+    // FIXME to be taken from settings
+    console.log('FILTER on Organization');
+    filterDefinitionsMap.set(
+      'number_of_validated_reports',
+      {
+        filterKey: 'number_of_validated_reports',
+        type: 'float',
+        label: 'Number of validated reports',
+        multiple: false,
+        elementsForFilterValuesSearch: [],
+        subEntityTypes,
+        subFilters: []
+      }
+    );
+  }
+
   if (isStixCoreObject(type)) {
     // In regards of (exist relationship of the given relationship types for the given entities)
     filterDefinitionsMap.set(INSTANCE_REGARDING_OF, {
