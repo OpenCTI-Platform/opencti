@@ -3,6 +3,7 @@ import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRelat
 import {
   type DraftWorkspaceAddInput,
   FilterMode,
+  FilterOperator,
   type MemberAccessInput,
   type QueryDraftWorkspaceEntitiesArgs,
   type QueryDraftWorkspaceRelationshipsArgs,
@@ -42,6 +43,8 @@ import { notify } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
+import { authorizedMembers } from '../../schema/attribute-definition';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
@@ -49,6 +52,15 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findDraftWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
+};
+
+export const findDraftWorkspaceRestrictedPaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  const filters = addFilter(args.filters, `${authorizedMembers.name}.id`, [], FilterOperator.NotNil);
+
+  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    ...args,
+    filters,
+  });
 };
 
 export const getObjectsCount = async (context: AuthContext, user: AuthUser, draft: BasicStoreEntityDraftWorkspace) => {

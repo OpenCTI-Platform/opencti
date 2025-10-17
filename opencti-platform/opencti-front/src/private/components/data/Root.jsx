@@ -40,7 +40,7 @@ const IngestionCatalogConnector = lazy(() => import('./IngestionCatalog/Ingestio
 const Playbooks = lazy(() => import('./Playbooks'));
 const RootPlaybook = lazy(() => import('./playbooks/Root'));
 const RootImport = lazy(() => import('./import/Root'));
-const Management = lazy(() => import('./Management'));
+const Management = lazy(() => import('./restriction/Root'));
 
 const Root = () => {
   const { isFeatureEnable } = useHelper();
