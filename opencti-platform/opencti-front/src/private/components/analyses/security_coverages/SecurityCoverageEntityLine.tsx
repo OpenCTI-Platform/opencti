@@ -60,13 +60,6 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
       onClick={() => onToggleEntity(entity)}
       selected={isSelected}
     >
-      <ListItemIcon style={{ paddingLeft: 10 }}>
-        {isSelected ? (
-          <CheckCircleOutlined color="primary" />
-        ) : (
-          <CircleOutlined />
-        )}
-      </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type={entity.entity_type} />
       </ListItemIcon>
