@@ -443,14 +443,26 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
 };
 
-export const playbookAdd = async (context: AuthContext, user: AuthUser, input: PlaybookAddInput) => {
+type PlaybookCreationType = {
+  name: string,
+  description?: string | null,
+  playbook_start?: string,
+  playbook_running?: boolean,
+  playbook_mode?: string,
+  playbook_definition?: string
+};
+const createPlaybook = async (context: AuthContext, user: AuthUser, playbookCreationInput: PlaybookCreationType) => {
   await checkEnterpriseEdition(context);
-  const playbook_definition = JSON.stringify({ nodes: [], links: [] });
-  const playbook = { ...input, playbook_definition, playbook_running: false };
-  const created = await createEntity(context, user, playbook, ENTITY_TYPE_PLAYBOOK);
+  const created = await createEntity(context, user, playbookCreationInput, ENTITY_TYPE_PLAYBOOK);
   const playbookId = created.internal_id;
   await registerConnectorQueues(playbookId, `Playbook ${playbookId} queue`, 'internal', 'playbook');
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
+};
+
+export const playbookAdd = async (context: AuthContext, user: AuthUser, input: PlaybookAddInput) => {
+  const playbook_definition = JSON.stringify({ nodes: [], links: [] });
+  const fullPlaybookInput = { ...input, playbook_definition, playbook_running: false };
+  return createPlaybook(context, user, fullPlaybookInput);
 };
 
 export const playbookDelete = async (context: AuthContext, user: AuthUser, playbookId: string) => {
@@ -502,7 +514,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     playbook_mode: config.playbook_mode,
     playbook_definition: config.playbook_definition,
   };
-  const importPlaybook = await createEntity(context, user, importData, ENTITY_TYPE_PLAYBOOK);
+  const importPlaybook = await createPlaybook(context, user, importData);
   const importPlaybookId = importPlaybook.id;
   await publishUserAction({
     user,
