@@ -136,8 +136,8 @@ const rootSettingsFragment = graphql`
     metrics_definition {
       entity_type
       metrics {
-              name
-              attribute
+        attribute
+        name
       }
     }
   }
