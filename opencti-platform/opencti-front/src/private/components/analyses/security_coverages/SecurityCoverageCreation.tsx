@@ -29,7 +29,7 @@ import CoverageInformationField from '../../common/form/CoverageInformationField
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { useAvailableFilterKeysForEntityTypes, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
 
@@ -295,19 +295,13 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [orderAsc, setOrderAsc] = useState(false);
-  const [filters, helpers] = useFiltersState({
-    mode: 'and',
-    filters: [{
-      key: 'entity_type',
-      values: DEFAULT_ENTITY_TYPES,
-      operator: 'eq',
-      mode: 'or',
-    }],
-    filterGroups: [],
-  });
+  const initialFilters = {
+    ...emptyFilterGroup,
+    filters: useGetDefaultFilterObject(['entity_type'], DEFAULT_ENTITY_TYPES),
+  };
 
-  const contextFilters = useBuildEntityTypeBasedFilterContext(DEFAULT_ENTITY_TYPES, filters);
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Domain-Object']);
+  const [filters, helpers] = useFiltersState(initialFilters);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
 
   // When we have a preselected entity, we skip the "Select entity" step
   const steps = preSelectedEntityId
@@ -364,9 +358,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     setActiveStep(preSelectedEntityId ? 1 : 2);
   };
 
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-  };
+  // Removed handleBack - users should click on stepper steps directly
 
   const handleClose = () => {
     // Reset all state when closing drawer
@@ -572,7 +564,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
           search: searchTerm,
           filters: contextFilters,
           orderBy: sortBy,
-          orderMode: orderAsc ? 'asc' : 'desc',
+          orderMode: orderAsc ? 'asc' : 'desc' as 'asc' | 'desc',
           count: 50,
           cursor: null,
         };
@@ -586,8 +578,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         };
 
         return (
-          <Box style={{ display: 'flex', flexDirection: 'column' }}>
-            <Box style={{ flexGrow: 1, minHeight: 0 }}>
+          <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+            <Box style={{ flexGrow: 1, overflow: 'auto' }}>
               <ListLines
                 helpers={helpers}
                 sortBy={sortBy}
@@ -595,8 +587,15 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 dataColumns={buildColumns()}
                 handleSort={handleSort}
                 handleSearch={handleSearch}
-                handleAddFilter={(helpers as { handleAddFilter: (key: string, value: string) => void }).handleAddFilter}
-                handleRemoveFilter={(helpers as { handleRemoveFilter?: (key: string, value: string) => void; handleRemoveFilterById: (id: string) => void }).handleRemoveFilter || helpers.handleRemoveFilterById}
+                handleAddFilter={(
+                  helpers as { handleAddFilter: (key: string, value: string) => void }
+                ).handleAddFilter}
+                handleRemoveFilter={(
+                  helpers as {
+                    handleRemoveFilter?: (key: string, value: string) => void;
+                    handleRemoveFilterById: (id: string) => void;
+                  }
+                ).handleRemoveFilter || helpers.handleRemoveFilterById}
                 handleSwitchFilter={helpers.handleSwitchGlobalMode}
                 handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
                 handleSwitchLocalMode={helpers.handleSwitchLocalMode}
@@ -604,7 +603,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 filters={filters}
                 paginationOptions={queryPaginationOptions}
                 numberOfElements={{ number: 0, symbol: '' }}
-                availableFilterKeys={availableFilterKeys}
+                availableFilterKeys={['entity_type', 'objectLabel', 'createdBy', 'objectMarking', 'created_start_date', 'created_end_date', 'created_at_start_date', 'created_at_end_date']}
+                availableEntityTypes={DEFAULT_ENTITY_TYPES}
                 noPadding={true}
                 disableCards={true}
                 noHeaders={false}
@@ -642,13 +642,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               </ListLines>
             </Box>
             <div className={classes.buttons} style={{ marginTop: 20, flexShrink: 0 }}>
-              <Button
-                variant="contained"
-                onClick={handleBack}
-                classes={{ root: classes.button }}
-              >
-                {t_i18n('Back')}
-              </Button>
               <Button
                 variant="contained"
                 onClick={handleClose}
@@ -838,6 +831,7 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
     </Drawer>
   );
 };
+
 
 // Wrapper component to handle preselected entity fetching
 export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFormProps> = (props) => {
