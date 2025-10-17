@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const StixCoreObjectSimulationResult = ({ id, coverage }) => {
+const StixCoreObjectSecurityCoverage = ({ id, coverage }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const theme = useTheme();
@@ -352,4 +352,4 @@ const StixCoreObjectSimulationResult = ({ id, coverage }) => {
   );
 };
 
-export default StixCoreObjectSimulationResult;
+export default StixCoreObjectSecurityCoverage;

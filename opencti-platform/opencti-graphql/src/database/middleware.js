@@ -3471,9 +3471,9 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
     loadById: () => stixLoadByIdStringify(context, user, data.element.internal_id),
     bundleById: () => stixBundleByIdStringify(context, user, data.element.entity_type, data.element.internal_id),
   };
-  if (data.isCreation) {
+  if (data.isCreation && !opts.noEnrichment) {
     await createEntityAutoEnrichment(context, user, data.element, type, loaders);
-  } else { // upsert
+  } else if (!opts.noEnrichment) { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element, loaders);
   }
   return isCompleteResult ? data : data.element;
