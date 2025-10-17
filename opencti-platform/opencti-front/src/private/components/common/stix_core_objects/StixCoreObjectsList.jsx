@@ -122,6 +122,10 @@ export const stixCoreObjectsListQuery = graphql`
             x_opencti_aliases
             x_opencti_organization_type
             x_opencti_score
+            metrics {
+              name
+              value
+            }
           }
           ... on Sector {
             name
