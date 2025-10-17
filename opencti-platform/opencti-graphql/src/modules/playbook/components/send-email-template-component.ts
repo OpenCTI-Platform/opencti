@@ -34,7 +34,7 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
   configuration_schema: PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA,
   schema: async () => {
     const context = executionContext('playbook_components');
-    const emailTemplates = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_EMAIL_TEMPLATE]);
+    const emailTemplates = await fullEntitiesList(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_EMAIL_TEMPLATE]);
     const elements = emailTemplates.map((c) => ({ const: c.id, title: c.name }));
     const schemaElement = { properties: { email_template: { oneOf: elements } } };
     return R.mergeDeepRight<JSONSchemaType<SendEmailTemplateConfiguration>, any>(PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT_SCHEMA, schemaElement);

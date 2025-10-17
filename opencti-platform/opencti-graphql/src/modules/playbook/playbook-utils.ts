@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { isEmptyField } from '../../database/utils';
-import { executionContext, INTERNAL_USERS, SYSTEM_USER } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, INTERNAL_USERS, SYSTEM_USER } from '../../utils/access';
 import { getEntitiesListFromCache } from '../../database/cache';
 import type { AuthUser } from '../../types/user';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -20,7 +20,7 @@ export const convertMembersToUsers = async (members: { value: string }[], baseDa
     return [];
   }
   const context = executionContext('playbook_components');
-  const platformUsers = await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const platformUsers = await getEntitiesListFromCache<AuthUser>(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_USER);
 
   const membersIds: string[] = [];
   members?.forEach((m) => {
