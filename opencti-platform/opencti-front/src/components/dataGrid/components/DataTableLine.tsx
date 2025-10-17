@@ -94,7 +94,7 @@ const DataTableLine = ({
   const {
     columns,
     useLineData,
-    useComputeLink,
+    getComputeLink,
     actions,
     icon,
     disableNavigation,
@@ -120,7 +120,7 @@ const DataTableLine = ({
   const data = useLineData(row);
 
   // Memoize link to avoid recomputations
-  let link = useMemo(() => useComputeLink(data), [data]);
+  let link = useMemo(() => getComputeLink(data), [data]);
   if (redirectionMode && redirectionMode !== 'overview' && link !== undefined) {
     link = `${link}/${redirectionMode}`;
   }

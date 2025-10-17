@@ -211,7 +211,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
         toolbarFilters={contextFilters}
         lineFragment={pirHistoryLogFragment}
         entityTypes={['History']}
-        useComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
+        getComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
           return pirLogRedirectUri(context_data);
         }}
         searchContextFinal={{ entityTypes: ['History'] }}
