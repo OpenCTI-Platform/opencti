@@ -90,8 +90,11 @@ const SearchBulkUnknownEntitiesContent = ({ values, queryRef }: SearchBulkUnknow
     value: value.trim(),
   }));
   const dataColumns: DataTableProps['dataColumns'] = {
-    entity_type: {},
+    entity_type: {
+      percentWidth: 15,
+    },
     value: {
+      percentWidth: 85,
       isSortable: false,
     },
   };
