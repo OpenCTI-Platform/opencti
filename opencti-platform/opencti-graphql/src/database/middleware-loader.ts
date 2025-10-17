@@ -327,7 +327,7 @@ export const buildAggregationRelationFilter = <T extends BasicStoreCommon>(relat
 };
 
 // entities
-export const buildEntityFilters = <T extends BasicStoreCommon>(entityTypes: string | Array<string> | undefined, args: EntityFilters<T> = {}) => {
+export const buildEntityFilters = <T extends BasicStoreCommon>(entityTypes: string | Array<string> | undefined | null, args: EntityFilters<T> = {}) => {
   const types = !entityTypes || isEmptyField(entityTypes) ? [ABSTRACT_STIX_CORE_OBJECT] : entityTypes;
   return buildRelationsFilter(types, args);
 };
@@ -355,7 +355,7 @@ export const fullEntitiesThoughAggregationConnection = async (context: AuthConte
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 
-export const fullEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
+export const fullEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string> | null,
   args: EntityOptions<T> = {}): Promise<Array<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
