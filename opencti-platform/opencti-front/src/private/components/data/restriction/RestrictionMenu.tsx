@@ -9,7 +9,7 @@ const RestrictionMenu = () => {
     },
     {
       path: '/dashboard/data/restriction/drafts',
-      label: 'Drafts',
+      label: 'Restricted drafts',
     },
   ];
   return <NavToolbarMenu entries={entries} />;

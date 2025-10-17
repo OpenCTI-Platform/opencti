@@ -125,7 +125,7 @@ const RestrictedEntities = () => {
   const { t_i18n } = useFormatter();
 
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Restriction | Data'));
+  setTitle(t_i18n('Restricted Entities | Restriction | Data'));
 
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },

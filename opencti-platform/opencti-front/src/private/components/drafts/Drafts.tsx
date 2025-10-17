@@ -23,6 +23,7 @@ import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocum
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import { hexToRGB } from '../../../utils/Colors';
 import type { Theme } from '../../../components/Theme';
+import { computeValidationProgress } from '../../../utils/draft/draftUtils';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -114,17 +115,6 @@ export const draftsLinesFragment = graphql`
 `;
 
 const LOCAL_STORAGE_KEY = 'draftWorkspaces';
-
-const computeValidationProgress = (validationWork: Drafts_node$data['validationWork']) => {
-  if (!validationWork) {
-    return '';
-  }
-  if (!validationWork.tracking?.import_expected_number || !validationWork.tracking?.import_processed_number) {
-    return '0%';
-  }
-
-  return `${Math.floor(100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number))}%`;
-};
 
 interface DraftsProps {
   entityId?: string;
