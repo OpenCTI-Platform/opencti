@@ -6,6 +6,7 @@ import { logApp } from '../../config/conf';
 import type { EditInput, PatchMetricInput } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
 import { UnknownError } from '../../config/errors';
+import { getEntityMetricsConfiguration } from './metrics-utils';
 
 export const patchMetric = async (context: AuthContext, user: AuthUser, entityId: string, input: PatchMetricInput) => {
   await checkEnterpriseEdition(context);
@@ -14,16 +15,22 @@ export const patchMetric = async (context: AuthContext, user: AuthUser, entityId
   if (!entity) {
     throw UnknownError('The entity cannot be found', { entityId });
   }
-  logApp.info(`Updating metrics on ${entity.id}`, input);
-  // TODO Check that this metric is allowed on this entity from configuration
 
-  // TODO one day use path to replace only required
+  const allKnownAttributes = getEntityMetricsConfiguration();
+  const entityConfiguration = allKnownAttributes.find((metricDefinition) => metricDefinition.entity_type === entity.entity_type);
+  if (!entityConfiguration) {
+    throw UnknownError('The metric entity is not allowed', { name: input.name, entityId, entityType: entity.entity_type });
+  }
+  if (!entityConfiguration.metrics.some((metricDescription) => metricDescription.attribute === input.name)) {
+    throw UnknownError('The metric name is not allowed', { name: input.name, entityId });
+  }
+
+  // TODO one day use path to replace only required + manage lock on updates.
   //  for now throw not implemented + check config mono metric
   // We take all but the one in parameters
   const metrics = entity.metrics?.filter((existingMetric) => existingMetric.name !== input.name) || [];
   metrics.push({ name: input.name, value: input.value });
   const patch: EditInput[] = [{ key: 'metrics', value: metrics }];
-  logApp.info(`Patch ready ${entity.id}`, patch);
-  const { element } = await updateAttribute(context, user, entity.id, entity.type, patch);
+  const { element } = await updateAttribute(context, user, entity.id, entity.entity_type, patch);
   return element.metrics;
 };

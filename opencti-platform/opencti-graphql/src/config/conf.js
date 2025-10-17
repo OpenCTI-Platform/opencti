@@ -41,6 +41,7 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWork
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_FINTEL_DESIGN } from '../modules/fintelDesign/fintelDesign-types';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
+import { loadEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -547,6 +548,9 @@ export const getStoppingState = () => platformState.stopping;
 export const setStoppingState = (state) => {
   platformState.stopping = state;
 };
+
+// Metrics settings
+loadEntityMetricsConfiguration();
 
 // Feature flags can be enabled in the configuration file
 export const ENABLED_FEATURE_FLAGS = nconf.get('app:enabled_dev_features') ?? [];

@@ -135,7 +135,10 @@ const rootSettingsFragment = graphql`
     xtm_hub_registration_status
     metrics_definition {
       entity_type
-      metrics
+      metrics {
+          name
+          attribute
+      }
     }
   }
 `;

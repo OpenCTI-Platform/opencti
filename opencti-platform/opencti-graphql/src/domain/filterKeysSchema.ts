@@ -48,6 +48,7 @@ import { isBasicRelationship, isStixRelationship, isStixRelationshipExceptRef } 
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 
 export type FilterDefinition = {
   filterKey: string
@@ -205,6 +206,29 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   filterDefinitionsMap: Map<string, FilterDefinition>, // filter definition map to complete
   subEntityTypes: string[],
 ) => {
+  // Add custom filters from metrics
+  const allEntityMetrics = getEntityMetricsConfiguration();
+  for (let i = 0; i < allEntityMetrics.length; i += 1) {
+    if (type === allEntityMetrics[i].entity_type) {
+      const currentMetricAttributes = allEntityMetrics[i].metrics;
+      for (let j = 0; j < currentMetricAttributes.length; j += 1) {
+        console.log(`FILTER on ${allEntityMetrics[i].entity_type} - ${currentMetricAttributes[j].attribute}`);
+        filterDefinitionsMap.set(
+          currentMetricAttributes[j].attribute,
+          {
+            filterKey: currentMetricAttributes[j].attribute,
+            type: 'float',
+            label: currentMetricAttributes[j].name,
+            multiple: false,
+            elementsForFilterValuesSearch: [],
+            subEntityTypes,
+            subFilters: []
+          }
+        );
+      }
+    }
+  }
+
   if (isStixCoreObject(type)) {
     // In regards of (exist relationship of the given relationship types for the given entities)
     filterDefinitionsMap.set(INSTANCE_REGARDING_OF, {
@@ -311,22 +335,6 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       elementsForFilterValuesSearch: [],
     });
   }
-
-  if (type === 'Organization') {
-    filterDefinitionsMap.set(
-      'number_of_validated_reports',
-      {
-        filterKey: 'number_of_validated_reports',
-        type: 'float',
-        label: 'Number of validated reports',
-        multiple: false,
-        elementsForFilterValuesSearch: [],
-        subEntityTypes,
-        subFilters: []
-      }
-    );
-  }
-
   if (type === ENTITY_TYPE_HISTORY) {
     // add context filters
     filterDefinitionsMap.set(CONTEXT_OBJECT_LABEL_FILTER, {
