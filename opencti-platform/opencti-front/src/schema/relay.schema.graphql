@@ -1524,9 +1524,15 @@ type PublicSettings implements ThemeSettings & IntlSettings {
   playground_enabled: Boolean!
 }
 
+type MetricAttributes {
+  attribute: String!
+  name: String!
+  description: String
+}
+
 type MetricDefinition {
   entity_type: String!
-  metrics: [String!]
+  metrics: [MetricAttributes!]
 }
 
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {

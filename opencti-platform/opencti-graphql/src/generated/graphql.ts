@@ -14555,10 +14555,17 @@ export type Metric = {
   value: Scalars['Float']['output'];
 };
 
+export type MetricAttributes = {
+  __typename?: 'MetricAttributes';
+  attribute: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+};
+
 export type MetricDefinition = {
   __typename?: 'MetricDefinition';
   entity_type: Scalars['String']['output'];
-  metrics?: Maybe<Array<Scalars['String']['output']>>;
+  metrics?: Maybe<Array<MetricAttributes>>;
 };
 
 export type Metrics = {
@@ -34461,6 +34468,7 @@ export type ResolversTypes = ResolversObject<{
   MemberType: MemberType;
   MessagesStats: ResolverTypeWrapper<MessagesStats>;
   Metric: ResolverTypeWrapper<Metric>;
+  MetricAttributes: ResolverTypeWrapper<MetricAttributes>;
   MetricDefinition: ResolverTypeWrapper<MetricDefinition>;
   Metrics: ResolverTypeWrapper<Metrics>;
   MetricsByMimeType: ResolverTypeWrapper<MetricsByMimeType>;
@@ -35394,6 +35402,7 @@ export type ResolversParentTypes = ResolversObject<{
   MemberGroupRestriction: MemberGroupRestriction;
   MessagesStats: MessagesStats;
   Metric: Metric;
+  MetricAttributes: MetricAttributes;
   MetricDefinition: MetricDefinition;
   Metrics: Metrics;
   MetricsByMimeType: MetricsByMimeType;
@@ -41061,9 +41070,16 @@ export type MetricResolvers<ContextType = any, ParentType extends ResolversParen
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MetricAttributesResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricAttributes'] = ResolversParentTypes['MetricAttributes']> = ResolversObject<{
+  attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type MetricDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricDefinition'] = ResolversParentTypes['MetricDefinition']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  metrics?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<ResolversTypes['MetricAttributes']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -46866,6 +46882,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MemberGroupRestriction?: MemberGroupRestrictionResolvers<ContextType>;
   MessagesStats?: MessagesStatsResolvers<ContextType>;
   Metric?: MetricResolvers<ContextType>;
+  MetricAttributes?: MetricAttributesResolvers<ContextType>;
   MetricDefinition?: MetricDefinitionResolvers<ContextType>;
   Metrics?: MetricsResolvers<ContextType>;
   MetricsByMimeType?: MetricsByMimeTypeResolvers<ContextType>;

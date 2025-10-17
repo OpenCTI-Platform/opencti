@@ -38,7 +38,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreObject } from '../../types/store';
 import { idLabel } from '../../schema/schema-labels';
 import { INTERNAL_RELATIONSHIPS } from '../../schema/internalRelationship';
-import { getMetricsNames } from '../../modules/metrics/metrics-utils';
+import { getMetricsAttributesNames } from '../../modules/metrics/metrics-utils';
 
 export const emptyFilterGroup: FilterGroup = {
   mode: FilterMode.And,
@@ -425,7 +425,7 @@ const getAvailableKeys = () => {
     const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
     const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
     const availableConvertedInternalRelations = getConvertedRelationsNames(INTERNAL_RELATIONSHIPS);
-    const availableConvertedMetrics = getMetricsNames();
+    const availableConvertedMetrics = getMetricsAttributesNames();
     const availableKeys = availableAttributes
       .concat(availableRefRelations)
       .concat(availableConvertedRefRelations)
@@ -451,6 +451,7 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
       || k.startsWith(RULE_PREFIX)
       || k.startsWith(PIR_SCORE_FILTER_PREFIX)
       || k.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
+      || getMetricsAttributesNames()
     ));
 
   if (incorrectKeys.length > 0) {

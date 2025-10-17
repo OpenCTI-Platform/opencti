@@ -2823,7 +2823,7 @@ const adaptFilterForMetricsFilterKeys = async (filter) => {
     key: ['metrics'],
     mode: 'and',
     nested: [
-      { key: 'name', values: ['number_of_validated_reports'], operator: 'eq' },
+      { key: 'name', values: [filter.key], operator: 'eq' },
       { key: 'value', values: filter.values, operator: filter.operator, mode: filter.mode },
     ]
   };
