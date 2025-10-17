@@ -49,13 +49,15 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
   selectedEntity,
 }) => {
   const classes = useStyles();
-  const isSelected = selectedEntity?.id === node.id;
+  // Handle both edge.node and direct node structures
+  const entity = node.node || node;
+  const isSelected = selectedEntity?.id === entity.id;
   
   return (
     <ListItemButton
       classes={{ root: classes.item }}
       divider={true}
-      onClick={() => onToggleEntity(node)}
+      onClick={() => onToggleEntity(entity)}
       selected={isSelected}
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
@@ -66,7 +68,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
         )}
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.entity_type} />
+        <ItemIcon type={entity.entity_type} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -75,19 +77,19 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              <ItemEntityType entityType={node.entity_type} />
+              <ItemEntityType entityType={entity.entity_type} />
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.value.width }}
             >
-              {getMainRepresentative(node)}
+              {getMainRepresentative(entity)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
             >
-              {node.createdBy?.name ?? '-'}
+              {entity.createdBy?.name ?? '-'}
             </div>
             <div
               className={classes.bodyItem}
@@ -95,7 +97,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
             >
               <StixCoreObjectLabels
                 variant="inList"
-                labels={node.objectLabel || []}
+                labels={entity.objectLabel || []}
                 onClick={onLabelClick}
               />
             </div>
@@ -105,7 +107,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitions={node.objectMarking ?? []}
+                markingDefinitions={entity.objectMarking ?? []}
                 limit={1}
               />
             </div>
