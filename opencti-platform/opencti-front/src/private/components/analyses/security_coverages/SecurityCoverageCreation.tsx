@@ -368,7 +368,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-
   const handleClose = () => {
     // Reset all state when closing drawer
     setActiveStep(0);
@@ -596,8 +595,8 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 dataColumns={buildColumns()}
                 handleSort={handleSort}
                 handleSearch={handleSearch}
-                 handleAddFilter={(helpers as { handleAddFilter: (key: string, value: string) => void }).handleAddFilter}
-                 handleRemoveFilter={(helpers as { handleRemoveFilter?: (key: string, value: string) => void; handleRemoveFilterById: (id: string) => void }).handleRemoveFilter || helpers.handleRemoveFilterById}
+                handleAddFilter={(helpers as { handleAddFilter: (key: string, value: string) => void }).handleAddFilter}
+                handleRemoveFilter={(helpers as { handleRemoveFilter?: (key: string, value: string) => void; handleRemoveFilterById: (id: string) => void }).handleRemoveFilter || helpers.handleRemoveFilterById}
                 handleSwitchFilter={helpers.handleSwitchGlobalMode}
                 handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
                 handleSwitchLocalMode={helpers.handleSwitchLocalMode}
@@ -633,7 +632,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                         selectedElements={{}}
                         selectAll={false}
                         onToggleEntity={handleSelectEntity}
-                         onLabelClick={(helpers as { handleAddFilter: (key: string, value: string) => void }).handleAddFilter}
+                        onLabelClick={(helpers as { handleAddFilter: (key: string, value: string) => void }).handleAddFilter}
                         redirectionMode={undefined}
                         selectedEntity={selectedEntity}
                       />
@@ -843,7 +842,7 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
 // Wrapper component to handle preselected entity fetching
 export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFormProps> = (props) => {
   const { preSelectedEntityId } = props;
-  
+
   if (preSelectedEntityId) {
     return (
       <QueryRenderer
@@ -853,13 +852,13 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
           if (!queryProps || !queryProps.stixCoreObject) {
             return <Loader variant={LoaderVariant.inElement} />;
           }
-          
+
           return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={queryProps.stixCoreObject} />;
         }}
       />
     );
   }
-  
+
   return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={null} />;
 };
 
