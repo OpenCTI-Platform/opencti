@@ -1984,6 +1984,11 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
   }
+  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)
+    && !impactedInputs.find((i) => i.key === 'refreshed_at')) {
+    const refreshedAtInput = { key: 'refreshed_at', value: [today] };
+    impactedInputs.push(refreshedAtInput);
+  }
   return {
     updatedInputs, // Sourced inputs for event stream
     impactedInputs, // All inputs that need to be re-indexed. (so without meta relationships)

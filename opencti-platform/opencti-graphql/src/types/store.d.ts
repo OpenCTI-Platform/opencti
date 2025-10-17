@@ -111,6 +111,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   spec_version: string;
   created_at: Date;
   updated_at: Date;
+  refreshed_at?: Date;
   x_opencti_files?: Array<StoreFile>;
   x_opencti_aliases?: Array<string>;
   x_opencti_stix_ids?: Array<StixId>;

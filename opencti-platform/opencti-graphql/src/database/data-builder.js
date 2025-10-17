@@ -52,7 +52,10 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
   }
   // Some internal objects have dates
   if (isDatedInternalObject(type)) {
-    data = R.pipe(R.assoc('created_at', today), R.assoc('updated_at', today))(data);
+    data = R.pipe(
+      R.assoc('created_at', today),
+      R.assoc('updated_at', today)
+    )(data);
   }
   // Stix-Object
   if (isStixObject(type)) {
@@ -65,7 +68,8 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
       R.assoc(IDS_STIX, stixIds),
       R.dissoc('stix_id'),
       R.assoc('created_at', today),
-      R.assoc('updated_at', today)
+      R.assoc('updated_at', today),
+      R.assoc('refreshed_at', today)
     )(data);
   }
   // Stix-Meta-Object
@@ -183,6 +187,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   data.creator_id = [user.internal_id];
   data.created_at = today;
   data.updated_at = today;
+  data.refreshed_at = today;
   // region re-work data
   // stix-relationship
   if (isStixRelationshipExceptRef(relationshipType)) {
@@ -330,6 +335,7 @@ const buildRelationInput = (input) => {
   relationAttributes.relationship_type = relationshipType;
   relationAttributes.created_at = today;
   relationAttributes.updated_at = today;
+  relationAttributes.refreshed_at = today;
   // stix-relationship
   if (isStixRelationshipExceptRef(relationshipType)) {
     const stixIds = input.x_opencti_stix_ids || [];
