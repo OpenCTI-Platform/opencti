@@ -405,17 +405,18 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
       case 0:
         // Step 1: Choose Type (Manual or Automated)
         return (
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 4,
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: '40vh',
-              flexWrap: 'wrap',
-              marginTop: 4,
-            }}
-          >
+          <Box>
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 4,
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '40vh',
+                flexWrap: 'wrap',
+                marginTop: 4,
+              }}
+            >
             <Card
               variant="outlined"
               style={{
@@ -493,6 +494,16 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
                 </CardContent>
               </CardActionArea>
             </Card>
+            </Box>
+            <div className={classes.buttons} style={{ marginTop: 20 }}>
+              <Button
+                variant="contained"
+                onClick={handleClose}
+                classes={{ root: classes.button }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+            </div>
           </Box>
         );
 
@@ -517,62 +528,85 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
         };
 
         return (
-          <ListLines
-            helpers={{
-              ...helpers,
-              handleSort,
-              handleSearch,
-            }}
-            sortBy={sortBy}
-            orderAsc={orderAsc}
-            dataColumns={buildColumns()}
-            handleSort={handleSort}
-            handleSearch={handleSearch}
-            handleAddFilter={(helpers as any).handleAddFilter}
-            handleRemoveFilter={(helpers as any).handleRemoveFilter || helpers.handleRemoveFilterById}
-            handleSwitchFilter={(helpers as any).handleSwitchFilter || helpers.handleSwitchGlobalMode}
-            handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-            handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-            keyword={searchTerm}
-            filters={filters}
-            paginationOptions={queryPaginationOptions}
-            numberOfElements={{ number: 0, symbol: '' }}
-            availableFilterKeys={availableFilterKeys}
-            noPadding={true}
-            disableCards={true}
-            noHeaders={false}
-          >
-            <QueryRenderer
-              query={securityCoverageEntitiesQuery}
-              variables={queryPaginationOptions}
-              render={(renderProps: { props: EntitiesQueryProps | null }) => {
-                const { props } = renderProps;
-                if (!props || !props.stixCoreObjects) {
-                  return <Loader variant={LoaderVariant.inElement} />;
-                }
-                return (
-                  <ListLinesContent
-                    initialLoading={false}
-                    loadMore={() => {}}
-                    hasMore={() => false}
-                    isLoading={() => false}
-                    dataList={props.stixCoreObjects.edges.map((e) => e.node)}
-                    globalCount={props.stixCoreObjects.edges.length}
-                    LineComponent={SecurityCoverageEntityLine}
-                    DummyLineComponent={() => null}
-                    dataColumns={buildColumns()}
-                    paginationOptions={queryPaginationOptions}
-                    selectedElements={{}}
-                    selectAll={false}
-                    onToggleEntity={handleSelectEntity}
-                    onLabelClick={(helpers as any).handleAddFilter}
-                    redirectionMode={undefined}
-                    selectedEntity={selectedEntity}
-                  />
-                );
-              }}
-            />
-          </ListLines>
+          <Box style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <ListLines
+              helpers={helpers}
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={buildColumns()}
+              handleSort={handleSort}
+              handleSearch={handleSearch}
+              handleAddFilter={helpers.handleAddFilter}
+              handleRemoveFilter={helpers.handleRemoveFilter || helpers.handleRemoveFilterById}
+              handleSwitchFilter={helpers.handleSwitchGlobalMode}
+              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+              keyword={searchTerm}
+              filters={filters}
+              paginationOptions={queryPaginationOptions}
+              numberOfElements={{ number: 0, symbol: '' }}
+              availableFilterKeys={availableFilterKeys}
+              noPadding={true}
+              disableCards={true}
+              noHeaders={false}
+            >
+              <QueryRenderer
+                query={securityCoverageEntitiesQuery}
+                variables={queryPaginationOptions}
+                render={(renderProps: { props: EntitiesQueryProps | null }) => {
+                  const { props } = renderProps;
+                  if (!props || !props.stixCoreObjects) {
+                    return <Loader variant={LoaderVariant.inElement} />;
+                  }
+                  return (
+                    <ListLinesContent
+                      initialLoading={false}
+                      loadMore={() => {}}
+                      hasMore={() => false}
+                      isLoading={() => false}
+                      dataList={props.stixCoreObjects.edges.slice(0, 50)}
+                      globalCount={Math.min(props.stixCoreObjects.edges.length, 50)}
+                      LineComponent={SecurityCoverageEntityLine}
+                      DummyLineComponent={() => null}
+                      dataColumns={buildColumns()}
+                      paginationOptions={queryPaginationOptions}
+                      selectedElements={{}}
+                      selectAll={false}
+                      onToggleEntity={handleSelectEntity}
+                      onLabelClick={helpers.handleAddFilter}
+                      redirectionMode={undefined}
+                      selectedEntity={selectedEntity}
+                    />
+                  );
+                }}
+              />
+            </ListLines>
+            <div className={classes.buttons} style={{ marginTop: 20 }}>
+              <Button
+                variant="contained"
+                onClick={handleBack}
+                classes={{ root: classes.button }}
+              >
+                {t_i18n('Back')}
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleClose}
+                classes={{ root: classes.button }}
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setActiveStep(2)}
+                disabled={!selectedEntity}
+                classes={{ root: classes.button }}
+              >
+                {t_i18n('Next')}
+              </Button>
+            </div>
+          </Box>
         );
       }
 
@@ -706,45 +740,6 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
           </Form>
         )}
       </Formik>
-
-      {activeStep === 0 && (
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleClose}
-            classes={{ root: classes.button }}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-        </div>
-      )}
-      {activeStep === 1 && (
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleBack}
-            classes={{ root: classes.button }}
-          >
-            {t_i18n('Back')}
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleClose}
-            classes={{ root: classes.button }}
-          >
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => setActiveStep(2)}
-            disabled={!selectedEntity}
-            classes={{ root: classes.button }}
-          >
-            {t_i18n('Next')}
-          </Button>
-        </div>
-      )}
     </Box>
   );
 };
