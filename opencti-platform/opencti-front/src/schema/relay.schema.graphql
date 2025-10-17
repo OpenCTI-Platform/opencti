@@ -9829,7 +9829,7 @@ type Mutation {
   securityPlatformContextClean(id: ID!): SecurityPlatform
   securityPlatformRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityPlatformRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityPlatform
-  securityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage
+  securityCoverageAdd(input: SecurityCoverageAddInput!, noEnrichment: Boolean): SecurityCoverage
   securityCoverageDelete(id: ID!): ID
   securityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage
   securityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage
@@ -14337,6 +14337,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
+  periodicity: String
   objectCovered: StixDomainObject
   toStixBundle: String
 }
@@ -14378,6 +14379,7 @@ input SecurityCoverageAddInput {
   x_opencti_workflow_id: String
   externalReferences: [String]
   update: Boolean
+  periodicity: String
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime

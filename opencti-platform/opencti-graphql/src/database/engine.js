@@ -2194,7 +2194,7 @@ const buildLocalMustFilter = async (validFilter) => {
               [nestedFieldKey]: { gte: nestedValues[0], lte: nestedValues[1] }
             }
           });
-        } else {
+        } else if (isNotEmptyField(nestedValues)) {
           for (let i = 0; i < nestedValues.length; i += 1) {
             const nestedSearchValue = nestedValues[i].toString();
             if (nestedOperator === 'wildcard') {

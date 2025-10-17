@@ -13,7 +13,7 @@ import { RootReportSubscription } from '@components/analyses/reports/__generated
 import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import GroupingDeletion from '@components/analyses/groupings/GroupingDeletion';
-import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
 import GroupingKnowledge from './GroupingKnowledge';
@@ -181,7 +181,7 @@ const RootGrouping = () => {
                       />
                     </Tabs>
                     {isOverview && (
-                      <StixCoreObjectSimulationResult id={grouping.id} coverage={null} />
+                      <StixCoreObjectSecurityCoverage id={grouping.id} coverage={null} />
                     )}
                   </Box>
                   <Routes>

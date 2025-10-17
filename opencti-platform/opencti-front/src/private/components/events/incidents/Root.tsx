@@ -8,7 +8,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import StixCoreObjectSimulationResult from '@components/common/stix_core_objects/StixCoreObjectSimulationResult';
+import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
@@ -206,7 +206,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                 />
               </Tabs>
               {isOverview && (
-                <StixCoreObjectSimulationResult id={incident.id} coverage={null} />
+                <StixCoreObjectSecurityCoverage id={incident.id} coverage={null} />
               )}
             </Box>
             <Routes>

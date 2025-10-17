@@ -16721,6 +16721,7 @@ export type MutationSectorEditArgs = {
 
 export type MutationSecurityCoverageAddArgs = {
   input: SecurityCoverageAddInput;
+  noEnrichment?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -25977,6 +25978,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   opinions_metrics?: Maybe<OpinionsMetrics>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
+  periodicity?: Maybe<Scalars['String']['output']>;
   pirInformation?: Maybe<PirInformation>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
@@ -26160,6 +26162,7 @@ export type SecurityCoverageAddInput = {
   objectCovered: Scalars['String']['input'];
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  periodicity?: InputMaybe<Scalars['String']['input']>;
   revoked?: InputMaybe<Scalars['Boolean']['input']>;
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
@@ -44086,6 +44089,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoveragePendingFilesArgs>>;
+  periodicity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SecurityCoveragePirInformationArgs, 'pirId'>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SecurityCoverageReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
