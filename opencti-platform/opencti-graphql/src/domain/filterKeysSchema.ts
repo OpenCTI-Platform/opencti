@@ -212,7 +212,6 @@ const completeFilterDefinitionMapWithSpecialKeys = (
     if (type === allEntityMetrics[i].entity_type) {
       const currentMetricAttributes = allEntityMetrics[i].metrics;
       for (let j = 0; j < currentMetricAttributes.length; j += 1) {
-        console.log(`FILTER on ${allEntityMetrics[i].entity_type} - ${currentMetricAttributes[j].attribute}`);
         filterDefinitionsMap.set(
           currentMetricAttributes[j].attribute,
           {

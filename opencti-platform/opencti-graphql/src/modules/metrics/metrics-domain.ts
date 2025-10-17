@@ -2,7 +2,6 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { ABSTRACT_BASIC_OBJECT } from '../../schema/general';
 import { storeLoadById } from '../../database/middleware-loader';
-import { logApp } from '../../config/conf';
 import type { EditInput, PatchMetricInput } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
 import { UnknownError } from '../../config/errors';
