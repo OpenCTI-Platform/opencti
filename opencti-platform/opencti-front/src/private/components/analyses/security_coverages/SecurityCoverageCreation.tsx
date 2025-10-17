@@ -528,7 +528,7 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
             dataColumns={buildColumns()}
             handleSort={handleSort}
             handleSearch={handleSearch}
-            handleAddFilter={helpers.handleAddFilter}
+            handleAddFilter={(helpers as any).handleAddFilter}
             handleRemoveFilter={(helpers as any).handleRemoveFilter || helpers.handleRemoveFilterById}
             handleSwitchFilter={(helpers as any).handleSwitchFilter || helpers.handleSwitchGlobalMode}
             handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
@@ -565,7 +565,7 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
                     selectedElements={{}}
                     selectAll={false}
                     onToggleEntity={handleSelectEntity}
-                    onLabelClick={helpers.handleAddFilter}
+                    onLabelClick={(helpers as any).handleAddFilter}
                     redirectionMode={undefined}
                     selectedEntity={selectedEntity}
                   />
@@ -737,7 +737,7 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
           <Button
             variant="contained"
             color="primary"
-            onClick={handleNext}
+            onClick={() => setActiveStep(2)}
             disabled={!selectedEntity}
             classes={{ root: classes.button }}
           >
