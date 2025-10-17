@@ -234,6 +234,34 @@ export interface FormParsed extends Omit<StoreEntityForm, 'form_schema'> {
 }
 
 // Helper function to transform special fields for STIX conversion (entities and relationships)
+// Helper function to convert string values to proper types based on field type
+const convertFieldType = (value: any, field: FormFieldDefinition): any => {
+  // Don't convert if already the right type or if value is null/undefined
+  if (isEmptyField(value)) {
+    return value;
+  }
+
+  // Handle boolean fields
+  if (field.type === 'checkbox' || field.type === 'toggle') {
+    if (typeof value === 'string') {
+      return value === 'true' || value === '1';
+    }
+    return Boolean(value);
+  }
+
+  // Handle number fields
+  if (field.type === 'number') {
+    if (typeof value === 'string') {
+      const num = Number(value);
+      return Number.isNaN(num) ? value : num;
+    }
+    return value;
+  }
+
+  // For other types, return as-is
+  return value;
+};
+
 const transformSpecialFields = async (
   context: AuthContext,
   user: AuthUser,
@@ -477,14 +505,29 @@ export const formSubmit = async (
         }
       }
       if (!additionalEntity.lookup && !additionalEntity.multiple) {
-        schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id).forEach((field) => {
-          if (field.isMandatory || field.required) {
-            const fieldValue = values[field.name];
-            if (isEmptyField(fieldValue)) {
-              errors.push(`Required field "${field.label || field.name}" is missing`);
+        // Only validate mandatory fields if the entity is required or if at least one field is filled
+        const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
+        const entityData = values[`additional_${additionalEntity.id}`];
+
+        // Check if entity data exists and has any meaningful content
+        let hasAnyFieldFilled = false;
+        if (entityData && typeof entityData === 'object') {
+          hasAnyFieldFilled = entityFields.some((field) => {
+            const fieldValue = entityData[field.name];
+            return isNotEmptyField(fieldValue);
+          });
+        }
+
+        if (additionalEntity.required || hasAnyFieldFilled) {
+          entityFields.forEach((field) => {
+            if (field.isMandatory || field.required) {
+              const fieldValue = entityData ? entityData[field.name] : undefined;
+              if (isEmptyField(fieldValue)) {
+                errors.push(`Required field "${field.label || field.name}" is missing`);
+              }
             }
-          }
-        });
+          });
+        }
       }
     }
   }
@@ -520,9 +563,13 @@ export const formSubmit = async (
       for (let index = 0; index < values.mainEntityGroups.length; index += 1) {
         let mainEntity = { entity_type: mainEntityType } as StoreEntity;
         for (let i = 0; i < mainEntityFields.length; i += 1) {
+          const field = mainEntityFields[i];
+          const fieldValue = values.mainEntityGroups[index][field.name];
+          // Convert the field value to the correct type
+          const convertedValue = convertFieldType(fieldValue, field);
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
-          mainEntity[mainEntityFields[i].attributeMapping.attributeName] = values.mainEntityGroups[index][mainEntityFields[i].name];
+          mainEntity[field.attributeMapping.attributeName] = convertedValue;
         }
         mainEntity = completeEntity(mainEntityType, mainEntity);
         mainStixEntities.push(convertStoreToStix(mainEntity));
@@ -550,11 +597,14 @@ export const formSubmit = async (
         if (values.mainEntityFields) {
           const additionalMainEntityFields = schema.fields.filter((field) => field.attributeMapping.entity === 'main_entity');
           for (let i = 0; i < additionalMainEntityFields.length; i += 1) {
-            const fieldValue = values.mainEntityFields[additionalMainEntityFields[i].attributeMapping.attributeName];
+            const field = additionalMainEntityFields[i];
+            const fieldValue = values.mainEntityFields[field.attributeMapping.attributeName];
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+              // Convert the field value to the correct type
+              const convertedValue = convertFieldType(fieldValue, field);
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-expect-error
-              mainEntity[additionalMainEntityFields[i].attributeMapping.attributeName] = fieldValue;
+              mainEntity[field.attributeMapping.attributeName] = convertedValue;
             }
           }
           // Transform special fields after applying all field values
@@ -574,9 +624,13 @@ export const formSubmit = async (
     } else {
       let mainEntity = { entity_type: mainEntityType } as StoreEntity;
       for (let i = 0; i < mainEntityFields.length; i += 1) {
+        const field = mainEntityFields[i];
+        const fieldValue = values[field.name];
+        // Convert the field value to the correct type
+        const convertedValue = convertFieldType(fieldValue, field);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
-        mainEntity[mainEntityFields[i].attributeMapping.attributeName] = values[mainEntityFields[i].name];
+        mainEntity[field.attributeMapping.attributeName] = convertedValue;
       }
       // Transform special fields after applying all field values
       mainEntity = await transformSpecialFields(context, user, mainEntity, mainEntityFields, false);
@@ -615,9 +669,13 @@ export const formSubmit = async (
             for (let index2 = 0; index2 < values[`additional_${additionalEntity.id}_groups`].length; index2 += 1) {
               let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
               for (let i = 0; i < additionalEntityFields.length; i += 1) {
+                const field = additionalEntityFields[i];
+                const fieldValue = values[`additional_${additionalEntity.id}_groups`][index2][field.name];
+                // Convert the field value to the correct type
+                const convertedValue = convertFieldType(fieldValue, field);
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error
-                newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[`additional_${additionalEntity.id}_groups`][index2][additionalEntityFields[i].name];
+                newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
               }
               newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
               const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
@@ -651,11 +709,14 @@ export const formSubmit = async (
               // Apply additional fields to all parsed entities
               if (values[`additional_${additionalEntity.id}_fields`]) {
                 for (let i = 0; i < additionalEntityFields.length; i += 1) {
-                  const fieldValue = values[`additional_${additionalEntity.id}_fields`][additionalEntityFields[i].attributeMapping.attributeName];
+                  const field = additionalEntityFields[i];
+                  const fieldValue = values[`additional_${additionalEntity.id}_fields`][field.attributeMapping.attributeName];
                   if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+                    // Convert the field value to the correct type
+                    const convertedValue = convertFieldType(fieldValue, field);
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-expect-error
-                    newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = fieldValue;
+                    newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
                   }
                 }
                 // Transform special fields after applying all field values
@@ -679,19 +740,52 @@ export const formSubmit = async (
             }
           }
         } else {
-          let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
-          for (let i = 0; i < additionalEntityFields.length; i += 1) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            newAdditionalEntity[additionalEntityFields[i].attributeMapping.attributeName] = values[additionalEntityFields[i].name];
-          }
-          newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
-          const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
-          bundle.objects.push(stixAdditionalEntity);
-          if (additionalEntitiesMap[additionalEntity.id]) {
-            additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
-          } else {
-            additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+          // Single entity mode - check if data exists under the properly namespaced key
+          const entityData = values[`additional_${additionalEntity.id}`];
+
+          // Only process if we have entity data and it's either required or has meaningful content
+          if (entityData && typeof entityData === 'object') {
+            // Check if any field has meaningful content
+            const hasAnyFieldFilled = additionalEntityFields.some((field) => {
+              const value = entityData[field.name];
+              return isNotEmptyField(value);
+            });
+
+            if (additionalEntity.required || hasAnyFieldFilled) {
+              let newAdditionalEntity = { entity_type: additionalEntityType } as StoreEntity;
+              for (let i = 0; i < additionalEntityFields.length; i += 1) {
+                const field = additionalEntityFields[i];
+                const fieldValue = entityData[field.name];
+
+                if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+                  // Convert the field value to the correct type
+                  const convertedValue = convertFieldType(fieldValue, field);
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-expect-error
+                  newAdditionalEntity[field.attributeMapping.attributeName] = convertedValue;
+                }
+              }
+
+              // Transform special fields (e.g., createdBy, objectMarking)
+              newAdditionalEntity = await transformSpecialFields(context, user, newAdditionalEntity, additionalEntityFields, false);
+
+              // Set defaults for specific entity types if needed
+              if (additionalEntityType === ENTITY_TYPE_MALWARE && isEmptyField(newAdditionalEntity.is_family)) {
+                newAdditionalEntity.is_family = true;
+              }
+              if (additionalEntityType === ENTITY_TYPE_CONTAINER_GROUPING && isEmptyField(newAdditionalEntity.context)) {
+                newAdditionalEntity.context = 'form';
+              }
+
+              newAdditionalEntity = completeEntity(additionalEntityType, newAdditionalEntity);
+              const stixAdditionalEntity = convertStoreToStix(newAdditionalEntity);
+              bundle.objects.push(stixAdditionalEntity);
+              if (additionalEntitiesMap[additionalEntity.id]) {
+                additionalEntitiesMap[additionalEntity.id].push(stixAdditionalEntity.id);
+              } else {
+                additionalEntitiesMap[additionalEntity.id] = [stixAdditionalEntity.id];
+              }
+            }
           }
         }
       }

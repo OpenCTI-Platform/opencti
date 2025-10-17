@@ -237,6 +237,45 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         return prev;
       }
       current[lastKey] = value;
+
+      // Auto-set required flag for single additional entities with default values
+      // Check if we're setting a default value for a field in an additional entity
+      if (path.includes('fields.') && path.endsWith('.defaultValue')) {
+        const fieldMatch = path.match(/fields\.(\d+)\.defaultValue/);
+        if (fieldMatch) {
+          const fieldIndex = parseInt(fieldMatch[1], 10);
+          const field = (newData as FormBuilderData).fields[fieldIndex];
+
+          if (field && field.attributeMapping.entity !== 'main_entity') {
+            // This field belongs to an additional entity
+            const entityId = field.attributeMapping.entity;
+            const additionalEntity = (newData as FormBuilderData).additionalEntities.find((e) => e.id === entityId);
+
+            // Only apply auto-require logic for single (not multiple) additional entities
+            if (additionalEntity && !additionalEntity.multiple) {
+              // Check if any field in this entity has a non-empty default value
+              const entityHasDefaultValues = (newData as FormBuilderData).fields.some((f) => {
+                if (f.attributeMapping.entity !== entityId) return false;
+
+                // If this is the field being updated, use the new value
+                if (f.id === field.id) {
+                  return value !== null && value !== undefined && value !== '';
+                }
+
+                // Check existing default values
+                return f.defaultValue !== null && f.defaultValue !== undefined && f.defaultValue !== '';
+              });
+
+              // Update the entity's required flag
+              const entityIndex = (newData as FormBuilderData).additionalEntities.findIndex((e) => e.id === entityId);
+              if (entityIndex >= 0) {
+                ((newData as FormBuilderData).additionalEntities[entityIndex] as AdditionalEntity).required = entityHasDefaultValues;
+              }
+            }
+          }
+        }
+      }
+
       return newData;
     });
   };
@@ -804,16 +843,31 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
         {/* Default value for checkbox/toggle */}
         {(field.type === 'checkbox' || field.type === 'toggle') && (
-          <FormControlLabel
-            control={
-              <Switch
-                checked={!!field.defaultValue}
-                onChange={(e) => handleFieldChange(`fields.${fieldIndex}.defaultValue`, e.target.checked)}
-              />
-            }
-            label={t_i18n('Default checked')}
-            style={{ marginTop: 20 }}
-          />
+          <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
+            <InputLabel>{t_i18n('Default value')}</InputLabel>
+            <Select
+              value={(() => {
+                if (field.defaultValue === true) return 'true';
+                if (field.defaultValue === false) return 'false';
+                return 'none';
+              })()}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === 'true') {
+                  handleFieldChange(`fields.${fieldIndex}.defaultValue`, true);
+                } else if (val === 'false') {
+                  handleFieldChange(`fields.${fieldIndex}.defaultValue`, false);
+                } else {
+                  handleFieldChange(`fields.${fieldIndex}.defaultValue`, null);
+                }
+              }}
+              label={t_i18n('Default value')}
+            >
+              <MenuItem value="none">{t_i18n('No default')}</MenuItem>
+              <MenuItem value="true">{t_i18n('Default checked (true)')}</MenuItem>
+              <MenuItem value="false">{t_i18n('Default unchecked (false)')}</MenuItem>
+            </Select>
+          </FormControl>
         )}
 
         <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
@@ -953,18 +1007,28 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
             helperText={t_i18n('Minimum number of instances required (0 means optional)')}
             style={{ marginTop: 20 }}
           />
-        ) : (
-          <FormControlLabel
-            control={
-              <Switch
-                checked={entity.required || false}
-                onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.required`, e.target.checked)}
-              />
-            }
-            label={t_i18n('Required')}
-            style={{ marginTop: 20, display: 'block' }}
-          />
-        )}
+        ) : (() => {
+          // Check if this entity has any fields with default values
+          const entityHasDefaultValues = entityFields.some((field) => {
+            return field.defaultValue !== null && field.defaultValue !== undefined && field.defaultValue !== '';
+          });
+
+          return (
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={entity.required || false}
+                  onChange={(e) => handleFieldChange(`additionalEntities.${entityIndex}.required`, e.target.checked)}
+                  disabled={entityHasDefaultValues}
+                />
+              }
+              label={entityHasDefaultValues
+                ? t_i18n('Required (auto-set due to default values)')
+                : t_i18n('Required')}
+              style={{ marginTop: 20, display: 'block' }}
+            />
+          );
+        })()}
 
         {entity.multiple && !entity.lookup && (
           <FormControl fullWidth variant="standard" style={{ marginTop: 20 }}>
