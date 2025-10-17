@@ -22,7 +22,7 @@ import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent, StreamDataEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../utils/format';
@@ -453,7 +453,7 @@ const initPlaybookManager = () => {
             const queryOptions = await convertFiltersToQueryOptions(convertedFilters, conversionOpts);
             if (cronConfiguration.includeAll) {
               const opts = { ...queryOptions, };
-              const results = await stixLoadByFilters(context, SYSTEM_USER, null, opts);
+              const results = await stixLoadByFilters(context, AUTOMATION_MANAGER_USER, null, opts);
               if (results && results.length > 0) {
                 try {
                   const eventId = streamEventId(null);
