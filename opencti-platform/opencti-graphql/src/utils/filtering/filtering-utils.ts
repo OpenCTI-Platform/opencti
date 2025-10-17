@@ -424,6 +424,7 @@ const getAvailableKeys = () => {
     const availableConvertedRefRelations = getConvertedRelationsNames(schemaRelationsRefDefinition.getAllDatabaseName());
     const availableConvertedStixCoreRelationships = getConvertedRelationsNames(STIX_CORE_RELATIONSHIPS);
     const availableConvertedInternalRelations = getConvertedRelationsNames(INTERNAL_RELATIONSHIPS);
+    const availableConvertedMetrics = ['number_of_validated_reports']; // FIXME to be taken from settings
     const availableKeys = availableAttributes
       .concat(availableRefRelations)
       .concat(availableConvertedRefRelations)
@@ -431,7 +432,8 @@ const getAvailableKeys = () => {
       .concat(availableConvertedStixCoreRelationships)
       .concat(INTERNAL_RELATIONSHIPS)
       .concat(availableConvertedInternalRelations)
-      .concat(SPECIAL_FILTER_KEYS);
+      .concat(SPECIAL_FILTER_KEYS)
+      .concat(availableConvertedMetrics);
     availableKeysCache = new Set(availableKeys);
   }
   return availableKeysCache;
