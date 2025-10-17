@@ -215,7 +215,7 @@ const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
   const { settings, schema } = useAuth();
 
-  const { metrics_definition } = settings;
+  const { metrics_definition } = settings;
 
   const { sdos, scos } = schema;
   const stixDomainObjectTypes = sdos.map((sdo) => sdo.id);
