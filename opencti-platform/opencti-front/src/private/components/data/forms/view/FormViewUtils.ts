@@ -191,12 +191,12 @@ export const convertFormSchemaToYupSchema = (
         if (entity.required) {
           shape[`additional_${entity.id}`] = Yup.object().shape(entityShape);
         } else {
-          // For optional entities, make ALL fields optional by default
-          // and only validate mandatory fields if the entity is being filled
+          // For optional entities, don't add any validation
+          // The entity and all its fields are completely optional
           const optionalShape: Record<string, Yup.Schema<unknown>> = {};
 
           entityFields.forEach((field: FormFieldDefinition) => {
-            // Start with the base validation but make it optional
+            // All fields are optional/nullable for optional entities
             let fieldValidation: Yup.Schema<unknown>;
 
             switch (field.type) {
@@ -224,17 +224,18 @@ export const convertFormSchemaToYupSchema = (
                 break;
             }
 
+            // Don't add required validation for any field in an optional entity
             optionalShape[field.name] = fieldValidation;
           });
 
-          // Create a test that validates mandatory fields only when entity has meaningful data
+          // For optional entities, only validate mandatory fields if ANY field has meaningful content
           shape[`additional_${entity.id}`] = Yup.object().shape(optionalShape).test(
             'conditional-required-fields',
             function validateConditionalRequired(this: Yup.TestContext, value: Record<string, unknown> | undefined) {
               if (!value) return true;
 
-              // Check if any field has meaningful content (not just initialized defaults)
-              const hasMeaningfulContent = entityFields.some((field) => {
+              // Check if ANY field (mandatory or not) has meaningful content
+              const hasAnyMeaningfulContent = entityFields.some((field) => {
                 const fieldValue = value[field.name];
 
                 // Check for meaningful content based on field type
@@ -245,18 +246,15 @@ export const convertFormSchemaToYupSchema = (
                 }
 
                 if (field.type === 'checkbox' || field.type === 'toggle') {
-                  // Convert string values to boolean for comparison
-                  // Form values often come as strings "true"/"false"
+                  // Checkboxes/toggles are tricky - only consider them filled if explicitly set
                   if (typeof fieldValue === 'string') {
-                    // Any string value means the user has interacted with the field
-                    return fieldValue === 'true' || fieldValue === 'false' || fieldValue === '1' || fieldValue === '0';
+                    return fieldValue === 'true' || fieldValue === '1';
                   }
-                  // For actual boolean values
-                  return fieldValue === true || fieldValue === false;
+                  return fieldValue === true;
                 }
 
                 if (field.type === 'number') {
-                  return fieldValue !== null && fieldValue !== undefined && fieldValue !== '';
+                  return fieldValue !== null && fieldValue !== undefined && fieldValue !== '' && !Number.isNaN(fieldValue);
                 }
 
                 if (field.type === 'createdBy') {
@@ -269,36 +267,38 @@ export const convertFormSchemaToYupSchema = (
                        && fieldValue !== '' && typeof fieldValue === 'string' && fieldValue.trim() !== '';
               });
 
-              // If no meaningful content, entity is optional - all valid
-              if (!hasMeaningfulContent) {
+              // If no field has meaningful content, the entity is completely optional - skip all validation
+              if (!hasAnyMeaningfulContent) {
                 return true;
               }
 
-              // If there is meaningful content, check mandatory fields
+              // If ANY field has meaningful content, then validate mandatory fields
+              const mandatoryFields = entityFields.filter((field) => field.isMandatory || field.required);
               const errors: string[] = [];
-              entityFields.forEach((field) => {
-                if (field.isMandatory || field.required) {
-                  const fieldValue = value[field.name];
 
-                  // Check if mandatory field is empty
-                  if (field.type === 'multiselect' || field.type === 'objectMarking'
-                      || field.type === 'objectLabel' || field.type === 'externalReferences'
-                      || field.type === 'files') {
-                    if (!Array.isArray(fieldValue) || fieldValue.length === 0) {
-                      errors.push(field.label || field.name);
-                    }
-                  } else if (field.type === 'createdBy') {
-                    if (!fieldValue || (typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0)) {
-                      errors.push(field.label || field.name);
-                    }
-                  } else if (field.type !== 'checkbox' && field.type !== 'toggle') {
-                    // For non-boolean fields
-                    if (fieldValue === null || fieldValue === undefined || fieldValue === ''
-                        || (typeof fieldValue === 'string' && fieldValue.trim() === '')) {
-                      errors.push(field.label || field.name);
-                    }
+              mandatoryFields.forEach((field) => {
+                const fieldValue = value[field.name];
+
+                // Check if mandatory field is empty
+                if (field.type === 'multiselect' || field.type === 'objectMarking'
+                    || field.type === 'objectLabel' || field.type === 'externalReferences'
+                    || field.type === 'files') {
+                  if (!Array.isArray(fieldValue) || fieldValue.length === 0) {
+                    errors.push(field.label || field.name);
+                  }
+                } else if (field.type === 'createdBy') {
+                  if (!fieldValue || (typeof fieldValue === 'object' && Object.keys(fieldValue).length === 0)) {
+                    errors.push(field.label || field.name);
+                  }
+                } else if (field.type !== 'checkbox' && field.type !== 'toggle') {
+                  // For non-boolean fields
+                  if (fieldValue === null || fieldValue === undefined || fieldValue === ''
+                      || (typeof fieldValue === 'string' && fieldValue.trim() === '')) {
+                    errors.push(field.label || field.name);
                   }
                 }
+                // Note: We don't validate checkboxes/toggles as mandatory even if marked as such
+                // because boolean fields should have a default value
               });
 
               if (errors.length > 0) {
@@ -521,39 +521,58 @@ export const formatFormDataForSubmission = (
       } else {
         // Single entity mode - properly namespace the fields under the additional entity
         const entityValues = values[`additional_${entity.id}`] || {};
-        const entityData: Record<string, unknown> = {};
-        let hasAnyData = false;
 
+        // For optional entities, check if it has been touched/filled
+        if (!entity.required) {
+          // Check if ANY field has meaningful non-default content
+          const hasRealContent = entityFields.some((field: FormFieldDefinition) => {
+            const value = (entityValues as Record<string, unknown>)[field.name];
+
+            // Skip if value is undefined or null
+            if (value === undefined || value === null) return false;
+
+            // Check for meaningful content based on field type
+            if (field.type === 'multiselect' || field.type === 'objectMarking'
+                || field.type === 'objectLabel' || field.type === 'externalReferences'
+                || field.type === 'files') {
+              return Array.isArray(value) && value.length > 0;
+            } if (field.type === 'checkbox' || field.type === 'toggle') {
+              // For boolean fields, only consider it filled if it's true
+              // or if it has a default value that differs from the current value
+              if (field.defaultValue !== undefined && field.defaultValue !== null) {
+                // If there's a default value and it differs from current, user has interacted
+                return value !== field.defaultValue;
+              }
+              // Otherwise, only consider true as meaningful
+              return value === true || value === 'true' || value === '1';
+            } if (field.type === 'createdBy') {
+              return value && typeof value === 'object' && Object.keys(value).length > 0;
+            } if (field.type === 'number') {
+              // Check if it's a meaningful number (not empty string or NaN)
+              const numValue = typeof value === 'number' ? value : parseFloat(value as string);
+              return !Number.isNaN(numValue) && value !== '';
+            }
+            // For text fields
+            return value !== '' && typeof value === 'string' && value.trim() !== '';
+          });
+
+          // If no real content, don't include this entity in submission
+          if (!hasRealContent) {
+            return; // Skip this entity entirely
+          }
+        }
+
+        // Process entity data (for required entities or optional entities with content)
+        const entityData: Record<string, unknown> = {};
         entityFields.forEach((field: FormFieldDefinition) => {
           const value = (entityValues as Record<string, unknown>)[field.name];
           const extractedValue = extractFieldValue(field, value);
           if (extractedValue !== undefined) {
             entityData[field.name] = extractedValue;
-            // Check if this is meaningful data (not just empty defaults)
-            if ((field.type === 'multiselect' || field.type === 'objectMarking'
-                 || field.type === 'objectLabel' || field.type === 'externalReferences'
-                 || field.type === 'files') && Array.isArray(extractedValue) && extractedValue.length > 0) {
-              hasAnyData = true;
-            } else if ((field.type === 'checkbox' || field.type === 'toggle')) {
-              // The extractedValue has already been converted to boolean by extractFieldValue
-              // Consider any boolean value (true or false) as meaningful data
-              if (extractedValue === true || extractedValue === false) {
-                hasAnyData = true;
-              }
-            } else if (field.type === 'createdBy' && extractedValue) {
-              hasAnyData = true;
-            } else if (extractedValue && typeof extractedValue === 'string' && extractedValue.trim() !== '') {
-              hasAnyData = true;
-            } else if (typeof extractedValue === 'number' && !Number.isNaN(extractedValue)) {
-              hasAnyData = true;
-            }
           }
         });
 
-        // Only include the additional entity data if it has meaningful content
-        if (hasAnyData) {
-          formattedData[`additional_${entity.id}`] = entityData;
-        }
+        formattedData[`additional_${entity.id}`] = entityData;
       }
     });
   }

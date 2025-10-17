@@ -302,12 +302,31 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
           }
         });
         initialValues[`additional_${entity.id}_groups`] = [fieldGroup];
+      } else if (!entity.required) {
+        // Single entity mode - optional entities
+        // For optional entities, only initialize if there are default values
+        // Don't initialize empty values for optional entities
+        const entityValues: Record<string, unknown> = {};
+        let hasDefaultValues = false;
+
+        entityFields.forEach((field) => {
+          // Only initialize if field has a default value
+          if (field.defaultValue !== undefined && field.defaultValue !== null && field.defaultValue !== '') {
+            hasDefaultValues = true;
+            entityValues[field.name] = field.defaultValue;
+          }
+        });
+
+        // Only set initial values if there are actual default values
+        if (hasDefaultValues) {
+          initialValues[`additional_${entity.id}`] = entityValues;
+        }
       } else {
-        // Single entity mode
+        // For required entities, initialize all fields as before
         const entityValues: Record<string, unknown> = {};
         entityFields.forEach((field) => {
           if (field.type === 'checkbox' || field.type === 'toggle') {
-            entityValues[field.name] = false;
+            entityValues[field.name] = field.defaultValue !== undefined ? field.defaultValue : false;
           } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
             entityValues[field.name] = field.defaultValue || [];
           } else if (field.type === 'datetime') {
