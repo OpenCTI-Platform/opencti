@@ -1524,9 +1524,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
 };
 
+type MetricConf = {
+  attribute: string
+  name: string
+};
+
 export type MetricsDefinition = {
   readonly entity_type: string
-  readonly metrics: readonly string[] | null | undefined
+  readonly metrics: readonly MetricConf[] | null | undefined
 };
 
 export type Metric = {
@@ -1545,17 +1550,17 @@ export const buildMetricsColumns = (
 
   const metricsColumns: DataTableProps['dataColumns'] = {};
 
-  for (const metricName of metricsForEntity.metrics) {
-    metricsColumns[metricName] = {
-      id: metricName,
-      label: metricName,
+  for (const metricDefinition of metricsForEntity.metrics) {
+    metricsColumns[metricDefinition.attribute] = {
+      id: metricDefinition.attribute,
+      label: metricDefinition.name,
       percentWidth: 12,
       isSortable: false,
       render: (data) => {
         if (Array.isArray(data.metrics)) {
-          const metric = data.metrics.find((m: Metric) => m.name === metricName);
-          if (metric) {
-            return defaultRender(metric.value);
+          const metricFound = data.metrics.find((m: Metric) => m.name === metricDefinition.attribute);
+          if (metricFound) {
+            return defaultRender(metricFound.value);
           }
         }
         return defaultRender('-');

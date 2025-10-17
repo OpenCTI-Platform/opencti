@@ -166,12 +166,17 @@ export const getDefaultWidgetColumns = (type: WidgetEntityType, context?: Widget
   return [];
 };
 
-type MetricsColumn = {
-  readonly entity_type: string
-  readonly metrics?: readonly string[] | null
+type MetricConf = {
+  attribute: string
+  name: string
 };
 
-export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, metrics?: readonly MetricsColumn[] | MetricsColumn[]): WidgetColumn[] => {
+export type MetricsColumn = {
+  readonly entity_type: string
+  readonly metrics: readonly MetricConf[] | null | undefined
+};
+
+export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, metrics?: readonly MetricsColumn[]): WidgetColumn[] => {
   const { containerTypes, aliasedTypes } = useAttributes();
 
   if (type === 'relationships') {
@@ -197,9 +202,9 @@ export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, me
       if (metrics) {
         const metricsForEntity = metrics.find((m) => m.entity_type === entityType);
         if (metricsForEntity?.metrics) {
-          const metricsColumns = metricsForEntity.metrics.map((metricName) => ({
-            attribute: metricName,
-            label: metricName,
+          const metricsColumns = metricsForEntity.metrics.map((metricConf) => ({
+            attribute: metricConf.attribute,
+            label: metricConf.name,
           }));
           baseColumns.push(...metricsColumns);
         }
