@@ -25,7 +25,7 @@ const SecurityCoverageResolvers: Resolvers = {
     toStixBundle: (SecurityCoverage, _, context) => securityCoverageStixBundle(context, context.user, SecurityCoverage.id)
   },
   Mutation: {
-    securityCoverageAdd: (_, { input }, context) => addSecurityCoverage(context, context.user, input),
+    securityCoverageAdd: (_, { input, noEnrichment }, context) => addSecurityCoverage(context, context.user, input, noEnrichment),
     securityCoverageDelete: (_, { id }, context) => securityCoverageDelete(context, context.user, id),
     securityCoverageFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
