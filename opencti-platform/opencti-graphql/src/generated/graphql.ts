@@ -14817,7 +14817,7 @@ export type Mutation = {
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
   meEdit?: Maybe<MeUser>;
   meTokenRenew?: Maybe<MeUser>;
-  metricPatch?: Maybe<Array<Maybe<Metric>>>;
+  metricPatch?: Maybe<BasicObject>;
   narrativeAdd?: Maybe<Narrative>;
   narrativeContextClean?: Maybe<Narrative>;
   narrativeContextPatch?: Maybe<Narrative>;
@@ -41331,7 +41331,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
   meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
   meTokenRenew?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
-  metricPatch?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType, RequireFields<MutationMetricPatchArgs, 'id' | 'input'>>;
+  metricPatch?: Resolver<Maybe<ResolversTypes['BasicObject']>, ParentType, ContextType, RequireFields<MutationMetricPatchArgs, 'id' | 'input'>>;
   narrativeAdd?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeAddArgs, 'input'>>;
   narrativeContextClean?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextCleanArgs, 'id'>>;
   narrativeContextPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextPatchArgs, 'id' | 'input'>>;

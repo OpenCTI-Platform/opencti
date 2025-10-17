@@ -9831,7 +9831,7 @@ type Mutation {
   formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
   formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
-  metricPatch(id: ID!, input: PatchMetricInput!): [Metric]
+  metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
