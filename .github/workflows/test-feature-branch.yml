@@ -59,28 +59,27 @@ jobs:
             git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
 
 
-      - name: Delete nodejs-current
+      - name: Delete current install
         run: |
           npm --version || true
           node --version || true
           apk del nodejs-current || true
           apk del nodejs || true
-          apk del nodejs || true
+          apk del npm || true
           npm --version || true
           node --version || true
         shell: alpine.sh --root {0}
           
 
-      - name: Delete nodejs-current
+      - name: Install nodejs
         run: |
-          apk add --no-cache npm
+          apk add --no-cache nodejs=22.19.0-r3 npm=
           npm --version
           node --version
         shell: alpine.sh --root {0}
 
       - name: Setup Node.js & python
         run: |
-          apk 
           npm install -g node-gyp corepack
           python -V
         shell: alpine.sh --root {0}
