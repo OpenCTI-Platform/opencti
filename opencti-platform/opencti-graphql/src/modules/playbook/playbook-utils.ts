@@ -39,6 +39,8 @@ export const convertMembersToUsers = async (members: { value: string }[], baseDa
       const bundleOrganizations = bundle.objects.filter((o) => o.extensions[STIX_EXT_OCTI].type === ENTITY_TYPE_IDENTITY_ORGANIZATION);
       const bundleOrganizationsIds = bundleOrganizations.map((o) => o.extensions[STIX_EXT_OCTI].id);
       membersIds.push(...bundleOrganizationsIds);
+    } else {
+      membersIds.push(m.value);
     }
   });
 
