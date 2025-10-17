@@ -44,7 +44,8 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'onLineClick'
 | 'data'
 | 'emptyStateMessage'
-| 'disableLineSelection'>;
+| 'disableLineSelection'
+| 'pageSize'>;
 
 const DataTableComponent = ({
   dataColumns,
@@ -73,13 +74,14 @@ const DataTableComponent = ({
   selectOnLineClick,
   onLineClick,
   emptyStateMessage,
+  pageSize,
 }: DataTableComponentProps) => {
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
 
   const paginationLocalStorage = useDataTablePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
   const {
-    viewStorage: { pageSize },
+    viewStorage: { pageSize: viewStoragePageSize },
     helpers,
   } = paginationLocalStorage;
 
@@ -149,7 +151,17 @@ const DataTableComponent = ({
   // QUERY PART
   const [page, setPage] = useState<number>(1);
   const defaultPageSize = variant === DataTableVariant.default ? 25 : 100;
-  const currentPageSize = pageSize ? Number.parseInt(pageSize, 10) : defaultPageSize;
+
+  let currentPageSize = 0;
+
+  if (pageSize) {
+    currentPageSize = Number.parseInt(pageSize, 10);
+  } else if (viewStoragePageSize) {
+    currentPageSize = Number.parseInt(viewStoragePageSize, 10);
+  } else {
+    currentPageSize = defaultPageSize;
+  }
+
   const pageStart = useMemo(() => {
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
