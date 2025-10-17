@@ -57,9 +57,10 @@ interface SearchBulkUnknownEntitiesContentProps {
   values: string[],
   queryRef: PreloadedQuery<SearchBulkUnknownEntitiesQuery>,
   setNumberOfEntities: (n: number) => void,
+  isDisplayed: boolean,
 }
 
-const SearchBulkUnknownEntitiesContent = ({ values, queryRef, setNumberOfEntities }: SearchBulkUnknownEntitiesContentProps) => {
+const SearchBulkUnknownEntitiesContent = ({ values, queryRef, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesContentProps) => {
   const matchStixObjectWithSearchValue = (
     stixObject: {
       representative?: { main: string },
@@ -87,7 +88,7 @@ const SearchBulkUnknownEntitiesContent = ({ values, queryRef, setNumberOfEntitie
   });
   useEffect(() => {
     setNumberOfEntities(unknownValues.length ?? 0);
-  }, [values]);
+  }, [unknownValues.length]);
 
   const unknownEntities = unknownValues.map((value) => ({
     id: value.trim(),
@@ -104,21 +105,25 @@ const SearchBulkUnknownEntitiesContent = ({ values, queryRef, setNumberOfEntitie
     },
   };
   return (
-    <DataTableWithoutFragment
-      data={unknownEntities}
-      globalCount={unknownEntities.length}
-      dataColumns={dataColumns}
-      storageKey={LOCAL_STORAGE_KEY}
-    />
+    <>
+      {isDisplayed
+        && <DataTableWithoutFragment
+          data={unknownEntities}
+          globalCount={unknownEntities.length}
+          dataColumns={dataColumns}
+          storageKey={LOCAL_STORAGE_KEY}
+           />}
+    </>
   );
 };
 
 interface SearchBulkUnknownEntitiesProps {
   values: string[],
   setNumberOfEntities: (n: number) => void,
+  isDisplayed: boolean,
 }
 
-const SearchBulkUnknownEntities = ({ values, setNumberOfEntities }: SearchBulkUnknownEntitiesProps) => {
+const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesProps) => {
   const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', undefined);
 
   const queryFilters = values.length > 0
@@ -156,6 +161,7 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities }: SearchBulkUn
           values={values}
           queryRef={queryRef}
           setNumberOfEntities={setNumberOfEntities}
+          isDisplayed={isDisplayed}
         />
       </React.Suspense>}
     </>);

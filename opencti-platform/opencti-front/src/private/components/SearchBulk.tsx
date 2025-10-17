@@ -126,10 +126,9 @@ export const searchBulkFragment = graphql`
 interface SearchBulkProps {
   inputValues: string[],
   dataColumns: DataTableProps['dataColumns'],
-  setNumberOfEntities: (n: number) => void,
 }
 
-const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBulkProps) => {
+const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
   const buildSearchBulkFilters = (values: string[], filters: FilterGroup) => {
     return values.length > 0
       ? addFilter(filters, allEntitiesKeyList as unknown as string, values) // TODO INVALID TYPE
@@ -147,8 +146,7 @@ const SearchBulk = ({ inputValues, dataColumns, setNumberOfEntities }: SearchBul
     BULK_SEARCH_LOCAL_STORAGE_KEY,
     initialValues,
   );
-  const { filters, numberOfElements } = viewStorage;
-  setNumberOfEntities(numberOfElements?.number ?? 0);
+  const { filters } = viewStorage;
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', filters);
 
