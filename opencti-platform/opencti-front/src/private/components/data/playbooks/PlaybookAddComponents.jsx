@@ -634,6 +634,18 @@ const PlaybookAddComponentsContent = ({
                       />
                     );
                   }
+                  if (k === 'targets') {
+                    return (
+                      <ObjectMembersField
+                        key={k}
+                        label={t_i18n('Targets')}
+                        style={{ marginTop: 20 }}
+                        multiple={true}
+                        name="targets"
+                        dynamicKeysForPlaybooks={true}
+                      />
+                    );
+                  }
                   if (k === 'caseTemplates') {
                     const isCaseContainer = values?.container_type && ['Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(values?.container_type);
                     if (values?.caseTemplates && values?.caseTemplates.length > 0 && !isCaseContainer) {

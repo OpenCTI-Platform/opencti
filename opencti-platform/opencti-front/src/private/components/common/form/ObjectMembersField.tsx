@@ -95,6 +95,11 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
       value: 'PARTICIPANTS',
       label: t_i18n('Participants'),
     },
+    {
+      type: t_i18n('Dynamic from the objects in the bundle of the playbook'),
+      value: 'BUNDLE_ORGANIZATIONS',
+      label: t_i18n('Organizations'),
+    },
   ] : []);
   const searchMembers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(objectMembersFieldSearchQuery, {
