@@ -8,6 +8,7 @@ import { useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filter
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import Loader from '../../components/Loader';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
+import type { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 
 const LOCAL_STORAGE_KEY = 'searchBulk_unknownEntities';
 
@@ -88,9 +89,11 @@ const SearchBulkUnknownEntitiesContent = ({ values, queryRef }: SearchBulkUnknow
     entity_type: 'Unknown',
     value: value.trim(),
   }));
-  const dataColumns = {
+  const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: {},
-    value: {},
+    value: {
+      isSortable: false,
+    },
   };
   return (
     <DataTableWithoutFragment

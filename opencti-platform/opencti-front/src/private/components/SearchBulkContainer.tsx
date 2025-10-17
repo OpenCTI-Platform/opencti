@@ -58,13 +58,16 @@ const SearchBulkContainer = () => {
       isSortable: true,
     },
     value: {
-      isSortable: true,
+      isSortable: false,
     },
     createdBy: {},
     creators: {},
     objectLabel: {},
-    created_at: {},
+    created_at: {
+      percentWidth: 14,
+    },
     analyses: {
+      percentWidth: 7,
       id: 'analyses',
       label: 'Analyses',
       isSortable: false,
