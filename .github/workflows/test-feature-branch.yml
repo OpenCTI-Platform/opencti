@@ -61,9 +61,14 @@ jobs:
 
       - name: Delete nodejs-current
         run: |
-          apk del nodejs-current || true
           npm --version || true
           node --version || true
+          apk del nodejs-current || true
+          apk del nodejs || true
+          apk del nodejs || true
+          npm --version || true
+          node --version || true
+        shell: alpine.sh --root {0}
           
 
       - name: Delete nodejs-current
@@ -71,6 +76,7 @@ jobs:
           apk add --no-cache npm
           npm --version
           node --version
+        shell: alpine.sh --root {0}
 
       - name: Setup Node.js & python
         run: |
