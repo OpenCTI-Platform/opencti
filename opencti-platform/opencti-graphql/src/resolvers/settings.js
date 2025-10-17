@@ -25,7 +25,7 @@ import { internalFindByIds } from '../database/middleware-loader';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
 import { CguStatus } from '../generated/graphql';
-import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-domain';
+import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 
 const settingsResolvers = {
   Query: {

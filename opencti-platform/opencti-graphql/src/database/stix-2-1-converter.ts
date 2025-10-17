@@ -213,6 +213,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
     pir_refs_ids: (instance[INPUT_IN_PIR] ?? []).map((m) => m.internal_id),
+    // TODO metrics: [{name:'number_of_validated_reports' , value: 2}]
   };
   return cleanObject(octiExtensions);
 };
