@@ -29,10 +29,7 @@ import CoverageInformationField from '../../common/form/CoverageInformationField
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  useAvailableFilterKeysForEntityTypes,
-  useBuildEntityTypeBasedFilterContext,
-} from '../../../../utils/filters/filtersUtils';
+import { useAvailableFilterKeysForEntityTypes, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
 
@@ -262,14 +259,14 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
     }],
     filterGroups: [],
   });
-  
+
   const contextFilters = useBuildEntityTypeBasedFilterContext(DEFAULT_ENTITY_TYPES, filters);
-  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(DEFAULT_ENTITY_TYPES);
+  const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Domain-Object']);
 
   const steps = [
-    t_i18n('Choose Type'),
-    t_i18n('Select Entity to Cover'),
-    t_i18n('Coverage Details'),
+    t_i18n('Choose type'),
+    t_i18n('Select entity to cover'),
+    t_i18n('Coverage details'),
   ];
 
   const buildColumns = () => {
@@ -394,12 +391,12 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
   );
 
   const renderStepContent = (
-    step: number, 
-    values: SecurityCoverageFormValues, 
+    step: number,
+    values: SecurityCoverageFormValues,
     setFieldValue: (field: string, value: any) => void,
     isSubmitting: boolean,
     submitForm: () => void,
-    resetForm: () => void
+    resetForm: () => void,
   ) => {
     switch (step) {
       case 0:
@@ -417,83 +414,83 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
                 marginTop: 4,
               }}
             >
-            <Card
-              variant="outlined"
-              style={{
-                width: CARD_WIDTH,
-                height: CARD_HEIGHT,
-                textAlign: 'center',
-              }}
-            >
-              <CardActionArea
-                onClick={() => handleSelectMode('manual')}
-                sx={{
-                  height: '100%',
-                  '&:hover': {
-                    backgroundColor: 'action.hover',
-                  },
+              <Card
+                variant="outlined"
+                style={{
+                  width: CARD_WIDTH,
+                  height: CARD_HEIGHT,
+                  textAlign: 'center',
                 }}
-                aria-label={t_i18n('Manual Input')}
               >
-                <CardContent>
-                  <EditOutlined sx={{ fontSize: 40 }} color="primary" />
-                  <Typography
-                    gutterBottom
-                    variant="h2"
-                    style={{ marginTop: 20 }}
-                  >
-                    {t_i18n('Manual Input')}
-                  </Typography>
-                  <br />
-                  <Typography variant="body1">
-                    {t_i18n('Manually enter security coverage metrics and scores for your report')}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
+                <CardActionArea
+                  onClick={() => handleSelectMode('manual')}
+                  sx={{
+                    height: '100%',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                    },
+                  }}
+                  aria-label={t_i18n('Manual Input')}
+                >
+                  <CardContent>
+                    <EditOutlined sx={{ fontSize: 40 }} color="primary" />
+                    <Typography
+                      gutterBottom
+                      variant="h2"
+                      style={{ marginTop: 20 }}
+                    >
+                      {t_i18n('Manual Input')}
+                    </Typography>
+                    <br />
+                    <Typography variant="body1">
+                      {t_i18n('Manually enter security coverage metrics and scores for your report')}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
 
-            <Card
-              variant="outlined"
-              style={{
-                width: CARD_WIDTH,
-                height: CARD_HEIGHT,
-                textAlign: 'center',
-                opacity: hasEnrichmentConnectors ? 1 : 0.5,
-              }}
-            >
-              <CardActionArea
-                onClick={() => hasEnrichmentConnectors && handleSelectMode('automated')}
-                disabled={!hasEnrichmentConnectors}
-                sx={{
-                  height: '100%',
-                  '&:hover': hasEnrichmentConnectors ? {
-                    backgroundColor: 'action.hover',
-                  } : {},
+              <Card
+                variant="outlined"
+                style={{
+                  width: CARD_WIDTH,
+                  height: CARD_HEIGHT,
+                  textAlign: 'center',
+                  opacity: hasEnrichmentConnectors ? 1 : 0.5,
                 }}
-                aria-label={t_i18n('Automated using enrichment')}
               >
-                <CardContent>
-                  <AutoModeOutlined sx={{ fontSize: 40 }} color={hasEnrichmentConnectors ? 'primary' : 'disabled'} />
-                  <Typography
-                    gutterBottom
-                    variant="h2"
-                    style={{ marginTop: 20 }}
-                    color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
-                  >
-                    {t_i18n('Automated using enrichment')}
-                  </Typography>
-                  <br />
-                  <Typography
-                    variant="body1"
-                    color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
-                  >
-                    {hasEnrichmentConnectors
-                      ? t_i18n('OpenAEV can be used to automate security coverage assessment')
-                      : t_i18n('No enrichment connector available for Security Coverage')}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
+                <CardActionArea
+                  onClick={() => hasEnrichmentConnectors && handleSelectMode('automated')}
+                  disabled={!hasEnrichmentConnectors}
+                  sx={{
+                    height: '100%',
+                    '&:hover': hasEnrichmentConnectors ? {
+                      backgroundColor: 'action.hover',
+                    } : {},
+                  }}
+                  aria-label={t_i18n('Automated using enrichment')}
+                >
+                  <CardContent>
+                    <AutoModeOutlined sx={{ fontSize: 40 }} color={hasEnrichmentConnectors ? 'primary' : 'disabled'} />
+                    <Typography
+                      gutterBottom
+                      variant="h2"
+                      style={{ marginTop: 20 }}
+                      color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
+                    >
+                      {t_i18n('Automated using enrichment')}
+                    </Typography>
+                    <br />
+                    <Typography
+                      variant="body1"
+                      color={hasEnrichmentConnectors ? 'textPrimary' : 'textSecondary'}
+                    >
+                      {hasEnrichmentConnectors
+                        ? t_i18n('OpenAEV can be used to automate security coverage assessment')
+                        : t_i18n('No enrichment connector available for Security Coverage')}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
             </Box>
             <div className={classes.buttons} style={{ marginTop: 20 }}>
               <Button
@@ -536,8 +533,8 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
               dataColumns={buildColumns()}
               handleSort={handleSort}
               handleSearch={handleSearch}
-              handleAddFilter={helpers.handleAddFilter}
-              handleRemoveFilter={helpers.handleRemoveFilter || helpers.handleRemoveFilterById}
+              handleAddFilter={(helpers as any).handleAddFilter}
+              handleRemoveFilter={(helpers as any).handleRemoveFilter || helpers.handleRemoveFilterById}
               handleSwitchFilter={helpers.handleSwitchGlobalMode}
               handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
               handleSwitchLocalMode={helpers.handleSwitchLocalMode}
@@ -573,7 +570,7 @@ export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFor
                       selectedElements={{}}
                       selectAll={false}
                       onToggleEntity={handleSelectEntity}
-                      onLabelClick={helpers.handleAddFilter}
+                      onLabelClick={(helpers as any).handleAddFilter}
                       redirectionMode={undefined}
                       selectedEntity={selectedEntity}
                     />
