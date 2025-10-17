@@ -2,7 +2,6 @@ import React from 'react';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { CheckCircleOutlined, CircleOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -33,12 +32,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+interface EntityNode {
+  id: string;
+  entity_type: string;
+  representative?: { main?: string };
+  createdBy?: { name?: string };
+  objectLabel?: Array<{ value: string; color: string }>;
+  objectMarking?: Array<{ id: string; definition_type: string; definition: string }>;
+}
+
 interface SecurityCoverageEntityLineProps {
   dataColumns: DataColumns;
-  node: any;
+  node: { node?: EntityNode } | EntityNode;
   onLabelClick: (key: string, value: string) => void;
-  onToggleEntity: (entity: any) => void;
-  selectedEntity: any | null;
+  onToggleEntity: (entity: EntityNode) => void;
+  selectedEntity: EntityNode | null;
 }
 
 const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
@@ -52,7 +60,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
   // Handle both edge.node and direct node structures
   const entity = node.node || node;
   const isSelected = selectedEntity?.id === entity.id;
-  
+
   return (
     <ListItemButton
       classes={{ root: classes.item }}
