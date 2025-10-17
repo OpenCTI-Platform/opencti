@@ -4,7 +4,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { elUpdateByQueryForMigration } from '../database/engine';
 import { isEmptyField, READ_DATA_INDICES } from '../database/utils';
-import { PLAYBOOK_INTERNAL_DATA_CRON } from '../modules/playbook/playbook-components';
+import { PLAYBOOK_INTERNAL_DATA_CRON_ID } from '../modules/playbook/playbook-components';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -93,7 +93,7 @@ export const up = async (next) => {
       const newDefinitionNodes = [];
       for (let i = 0; i < definitionNodes.length; i += 1) {
         const node = definitionNodes[i];
-        if (node.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
+        if (node.component_id === PLAYBOOK_INTERNAL_DATA_CRON_ID) {
           const nodeConfiguration = JSON.parse(node.configuration);
           const { filters } = nodeConfiguration;
           if (filters) {

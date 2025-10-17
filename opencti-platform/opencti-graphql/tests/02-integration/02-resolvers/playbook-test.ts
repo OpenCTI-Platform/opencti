@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { adminQueryWithError, adminQueryWithSuccess } from '../../utils/testQueryHelper';
 import type { PlaybookAddNodeInput } from '../../../src/generated/graphql';
-import { PLAYBOOK_INTERNAL_DATA_CRON, PLAYBOOK_MATCHING_COMPONENT } from '../../../src/modules/playbook/playbook-components';
+import { PLAYBOOK_INTERNAL_DATA_CRON_ID, PLAYBOOK_MATCHING_COMPONENT_ID } from '../../../src/modules/playbook/playbook-components';
 import { UNSUPPORTED_ERROR } from '../../../src/config/errors';
 
 const LIST_PLAYBOOKS = gql`
@@ -127,7 +127,7 @@ describe('Playbook resolver standard behavior', () => {
       filters: emptyStringFilters,
     };
     const addNodeInput: PlaybookAddNodeInput = {
-      component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+      component_id: PLAYBOOK_INTERNAL_DATA_CRON_ID,
       configuration: JSON.stringify(configuration),
       name: 'node1',
       position: {
@@ -155,7 +155,7 @@ describe('Playbook resolver standard behavior', () => {
       filters: emptyStringFilters,
     };
     const addNodeInput: PlaybookAddNodeInput = {
-      component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+      component_id: PLAYBOOK_INTERNAL_DATA_CRON_ID,
       configuration: JSON.stringify(configuration),
       name: 'node1',
       position: {
@@ -212,7 +212,7 @@ describe('Playbook resolver standard behavior', () => {
       filters: incorrectStringFilters,
     };
     const addNodeInput: PlaybookAddNodeInput = {
-      component_id: PLAYBOOK_INTERNAL_DATA_CRON.id,
+      component_id: PLAYBOOK_INTERNAL_DATA_CRON_ID,
       configuration: JSON.stringify(configuration),
       name: 'incorrectNode',
       position: { x: 1, y: 1 },
@@ -241,7 +241,7 @@ describe('Playbook resolver standard behavior', () => {
       filters: incorrectStringFilters,
     };
     const addNodeInput: PlaybookAddNodeInput = {
-      component_id: PLAYBOOK_MATCHING_COMPONENT.id,
+      component_id: PLAYBOOK_MATCHING_COMPONENT_ID,
       configuration: JSON.stringify(configuration),
       name: 'incorrectNode',
       position: { x: 1, y: 1 },
