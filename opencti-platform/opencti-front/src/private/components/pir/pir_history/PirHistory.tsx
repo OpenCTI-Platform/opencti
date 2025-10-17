@@ -214,7 +214,7 @@ const PirHistory = ({ data }: PirHistoryProps) => {
         useComputeLink={({ context_data }: PirHistoryLogFragment$data) => {
           return pirLogRedirectUri(context_data);
         }}
-        searchContextFinal={{ entityTypes: ['History'] }}
+        searchContextFinal={{ entityTypes: ['History'], elementType: 'Pir' }}
         availableFilterKeys={[
           'timestamp',
           'contextObjectLabel',
@@ -222,7 +222,6 @@ const PirHistory = ({ data }: PirHistoryProps) => {
           'contextCreator',
           'contextCreatedBy',
           'contextEntityType',
-          'contextEntityId',
         ]}
         resolvePath={(d: PirHistoryLogsFragment$data) => {
           return d.pirLogs?.edges?.map((e) => e?.node);
