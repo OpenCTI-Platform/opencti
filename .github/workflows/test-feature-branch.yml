@@ -58,10 +58,22 @@ jobs:
           packages: >
             git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
 
-      - name: Setup Node.js & python
+
+      - name: Delete nodejs-current
         run: |
           apk del nodejs-current || true
-          apk add --no-cache nodejs=22.19.0-r3 npm
+          npm --version || true
+          node --version || true
+          
+
+      - name: Delete nodejs-current
+        run: |
+          apk add --no-cache npm
+          npm --version
+          node --version
+
+      - name: Setup Node.js & python
+        run: |
           apk 
           npm install -g node-gyp corepack
           python -V
