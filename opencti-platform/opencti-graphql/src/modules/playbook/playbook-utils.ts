@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { isEmptyField } from '../../database/utils';
-import { AUTOMATION_MANAGER_USER, executionContext, INTERNAL_USERS, SYSTEM_USER } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, INTERNAL_USERS } from '../../utils/access';
 import { getEntitiesListFromCache } from '../../database/cache';
 import type { AuthUser } from '../../types/user';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';

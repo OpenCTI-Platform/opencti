@@ -2,7 +2,7 @@ import type { JSONSchemaType } from 'ajv';
 import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import { type PlaybookComponent } from '../playbook-types';
-import { AUTOMATION_MANAGER_USER, executionContext, SYSTEM_USER } from '../../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext } from '../../../utils/access';
 import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
