@@ -73,7 +73,8 @@ jobs:
 
       - name: Install nodejs
         run: |
-          apk add --no-cache nodejs=22.19.0-r3 npm=
+          apk add --no-cache nodejs=22.19.0-r3
+          apk add --no-cache npm          
           npm --version
           node --version
         shell: alpine.sh --root {0}
