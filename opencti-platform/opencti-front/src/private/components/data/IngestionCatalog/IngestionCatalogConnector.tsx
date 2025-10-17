@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import React, { Suspense } from 'react';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';

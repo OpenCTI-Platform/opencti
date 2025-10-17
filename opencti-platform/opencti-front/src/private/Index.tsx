@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
@@ -101,9 +101,7 @@ const Index = ({ settings }: IndexProps) => {
           <Suspense fallback={<Loader />}>
             <Routes>
               <Route path="/" element={draftContext?.id
-                ? (
-                  <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true}/>
-                )
+                ? <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true}/>
                 : boundaryWrapper(Dashboard)}
               />
               {/* Search need to be rework */}

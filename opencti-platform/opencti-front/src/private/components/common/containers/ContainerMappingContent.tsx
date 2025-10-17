@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader
 import Grid from '@mui/material/Grid';
 import StixCoreObjectMappableContent from '@components/common/stix_core_objects/StixCoreObjectMappableContent';
 import Paper from '@mui/material/Paper';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ContainerStixCoreObjectsSuggestedMapping, { containerStixCoreObjectsSuggestedMappingQuery } from '@components/common/containers/ContainerStixCoreObjectsSuggestedMapping';
 import {
   ContainerStixCoreObjectsSuggestedMappingQuery,

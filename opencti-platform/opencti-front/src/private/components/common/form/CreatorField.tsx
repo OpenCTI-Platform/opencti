@@ -2,7 +2,7 @@ import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { fetchQuery } from '../../../../relay/environment';

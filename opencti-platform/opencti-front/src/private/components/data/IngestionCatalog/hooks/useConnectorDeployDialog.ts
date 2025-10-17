@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import { resolveLink } from '../../../../../utils/Entity';
 

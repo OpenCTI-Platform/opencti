@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes, useParams } from 'react-router-dom';
+import { Route, Routes, useParams } from 'react-router';
 import { graphql } from 'react-relay';
 import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
 import Dashboard from './Dashboard';

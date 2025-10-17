@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
 import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Handle, Position } from 'reactflow';
 import { useFormatter } from 'src/components/i18n';
 import type { Theme } from '../../../../../../../components/Theme';

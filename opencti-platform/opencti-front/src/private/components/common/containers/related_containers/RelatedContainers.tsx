@@ -1,5 +1,5 @@
 import React, { useMemo, useState, Suspense } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { NorthEastOutlined, LoupeOutlined } from '@mui/icons-material';
 import { VectorLink } from 'mdi-material-ui';
 import IconButton from '@mui/material/IconButton';

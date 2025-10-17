@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql } from 'react-relay';

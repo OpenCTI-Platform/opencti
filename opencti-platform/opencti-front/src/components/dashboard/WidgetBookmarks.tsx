@@ -1,7 +1,7 @@
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import CardHeader from '@mui/material/CardHeader';
 import Avatar from '@mui/material/Avatar';
 import React from 'react';

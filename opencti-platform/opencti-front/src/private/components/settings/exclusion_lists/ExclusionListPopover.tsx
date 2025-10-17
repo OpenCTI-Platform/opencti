@@ -7,7 +7,7 @@ import { graphql } from 'react-relay';
 import { ExclusionListsLine_node$data } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLine_node.graphql';
 import { ExclusionListsLinesPaginationQuery$variables } from '@components/settings/exclusion_lists/__generated__/ExclusionListsLinesPaginationQuery.graphql';
 import ExclusionListEdition, { exclusionListMutationFieldPatch } from '@components/settings/exclusion_lists/ExclusionListEdition';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { APP_BASE_PATH } from 'src/relay/environment';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';

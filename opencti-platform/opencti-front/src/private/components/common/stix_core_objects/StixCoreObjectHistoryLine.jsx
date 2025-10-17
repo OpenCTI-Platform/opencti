@@ -20,7 +20,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DialogContentText from '@mui/material/DialogContentText';
 import IconButton from '@mui/material/IconButton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import withTheme from '@mui/styles/withTheme';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';

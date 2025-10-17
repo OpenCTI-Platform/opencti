@@ -6,7 +6,7 @@ import { KeyboardArrowRightOutlined, CheckCircleOutlined, DoNotDisturbOnOutlined
 import ListItem from '@mui/material/ListItem';
 import Skeleton from '@mui/material/Skeleton';
 import { ListItemButton } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';

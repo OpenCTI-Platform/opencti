@@ -6,7 +6,7 @@ import { PopoverProps } from '@mui/material/Popover';
 import Menu from '@mui/material/Menu';
 import { connectorDeletionMutation, connectorResetStateMutation, connectorWorkDeleteMutation } from '@components/data/connectors/Connector';
 import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import ManagedConnectorEdition from '@components/data/connectors/ManagedConnectorEdition';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';

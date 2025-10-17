@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router';
 import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../utils/ListParameters';
 import { QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';

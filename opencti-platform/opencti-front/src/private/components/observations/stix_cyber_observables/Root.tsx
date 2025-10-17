@@ -1,5 +1,5 @@
 import React, { Suspense, useMemo } from 'react';
-import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
@@ -181,7 +181,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
               }
             />
             <Route
-              path="/knowledge"
+              path="/knowledge/*"
               element={
                 <div key={forceUpdate}>
                   <StixCyberObservableKnowledge

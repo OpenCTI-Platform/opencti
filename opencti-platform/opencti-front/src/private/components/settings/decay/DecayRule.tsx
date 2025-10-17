@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { DecayRuleQuery } from '@components/settings/decay/__generated__/DecayRuleQuery.graphql';
 import { useTheme } from '@mui/styles';
 import DecayRuleEdition from './DecayRuleEdition';

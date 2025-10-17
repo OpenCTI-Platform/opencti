@@ -1,7 +1,7 @@
 import React, { Fragment } from 'react';
 import DialogContentText from '@mui/material/DialogContentText';
 import Box from '@mui/material/Box';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import DialogContent from '@mui/material/DialogContent';
 import Button from '@mui/material/Button';
 import DialogActions from '@mui/material/DialogActions';

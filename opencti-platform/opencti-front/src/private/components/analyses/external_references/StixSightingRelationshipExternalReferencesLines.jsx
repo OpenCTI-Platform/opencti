@@ -20,7 +20,7 @@ import { interval } from 'rxjs';
 import ListItem from '@mui/material/ListItem';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';

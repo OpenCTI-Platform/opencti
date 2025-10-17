@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import Alert from '@mui/material/Alert';
 import { Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 

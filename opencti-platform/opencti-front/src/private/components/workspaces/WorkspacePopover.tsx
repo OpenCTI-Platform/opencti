@@ -4,7 +4,7 @@ import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Box from '@mui/material/Box';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { graphql, useFragment } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import PublicDashboardCreationForm from './dashboards/public_dashboards/PublicDashboardCreationForm';

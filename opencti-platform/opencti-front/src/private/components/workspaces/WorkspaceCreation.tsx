@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { FileUploadOutlined } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useTheme } from '@mui/styles';
 import ToggleButton from '@mui/material/ToggleButton';
 import { FormikConfig } from 'formik/dist/types';

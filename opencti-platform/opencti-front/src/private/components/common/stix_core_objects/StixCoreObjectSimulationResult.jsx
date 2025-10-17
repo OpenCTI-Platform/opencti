@@ -8,7 +8,7 @@ import { CheckOutlined, ErrorOutlined, LaunchOutlined, OpenInNewOutlined, Sensor
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';

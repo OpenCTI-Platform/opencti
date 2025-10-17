@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import CardHeader from '@mui/material/CardHeader';
 import IconButton from '@mui/material/IconButton';
 import { StarBorderOutlined } from '@mui/icons-material';

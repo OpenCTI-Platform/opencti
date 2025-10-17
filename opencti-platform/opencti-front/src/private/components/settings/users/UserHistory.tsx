@@ -7,7 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { StorageOutlined } from '@mui/icons-material';
 import { VectorRadius } from 'mdi-material-ui';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';

@@ -14,7 +14,7 @@ import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import Tooltip from '@mui/material/Tooltip';
 import TimelineDot from '@mui/lab/TimelineDot';
 import { graphql, createRefetchContainer } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Slide from '@mui/material/Slide';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';

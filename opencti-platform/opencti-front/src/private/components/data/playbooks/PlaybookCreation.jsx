@@ -19,7 +19,7 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import ToggleButton from '@mui/material/ToggleButton';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Routes, Link } from 'react-router-dom';
+import { Route, Routes, Link } from 'react-router';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import Box from '@mui/material/Box';
@@ -181,24 +181,24 @@ class RootArtifact extends Component {
                           <StixCyberObservable
                             stixCyberObservableData={stixCyberObservable}
                           />
-                                )}
+                        )}
                       />
                       <Route
-                        path="/knowledge"
-                        element={
+                        path="/knowledge/*"
+                        element={(
                           <StixCyberObservableKnowledge
                             stixCyberObservable={stixCyberObservable}
                             connectorsForImport={props.connectorsForImport}
                           />
-                                }
+                        )}
                       />
                       <Route
                         path="/content/*"
-                        element={
+                        element={(
                           <StixCoreObjectContentRoot
                             stixCoreObject={stixCyberObservable}
                           />
-                                }
+                        )}
                       />
                       <Route
                         path="/sightings"

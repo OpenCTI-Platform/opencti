@@ -1,6 +1,6 @@
 import React from 'react';
 import { EffectiveConfidenceLevelSourceType } from '@components/settings/users/__generated__/User_user.graphql';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useFormatter } from '../../../../components/i18n';
 
 type UserConfidenceOverridesProps = {

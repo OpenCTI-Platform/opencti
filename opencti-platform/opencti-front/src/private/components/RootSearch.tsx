@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router';
 import React from 'react';
 import { NoMatch } from '@components/Error';
 import Search from './Search';

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import { graphql, useFragment } from 'react-relay';

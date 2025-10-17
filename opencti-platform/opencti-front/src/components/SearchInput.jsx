@@ -4,7 +4,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { BiotechOutlined, ContentPasteSearchOutlined, Search } from '@mui/icons-material';
 import { LogoXtmOneIcon } from 'filigran-icon';
 import IconButton from '@mui/material/IconButton';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { useTheme } from '@mui/styles';

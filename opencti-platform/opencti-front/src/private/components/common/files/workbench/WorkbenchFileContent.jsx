@@ -22,7 +22,7 @@ import { Field, Form, Formik } from 'formik';
 import * as R from 'ramda';
 import React, { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { v4 as uuid } from 'uuid';
 import * as Yup from 'yup';
 import Alert from '@mui/material/Alert';

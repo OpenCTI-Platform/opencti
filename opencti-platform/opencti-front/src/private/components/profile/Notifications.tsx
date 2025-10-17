@@ -14,7 +14,7 @@ import { NotificationsLine_node$data } from '@components/profile/__generated__/N
 import { NotificationsLinesPaginationQuery, NotificationsLinesPaginationQuery$variables } from '@components/profile/__generated__/NotificationsLinesPaginationQuery.graphql';
 import { NotificationsLines_data$data } from '@components/profile/__generated__/NotificationsLines_data.graphql';
 import DigestNotificationDrawer from '@components/profile/notifications/DigestNotificationDrawer';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';

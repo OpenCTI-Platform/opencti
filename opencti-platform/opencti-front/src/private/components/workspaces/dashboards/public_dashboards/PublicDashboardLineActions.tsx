@@ -2,7 +2,7 @@ import { PublicDashboards_PublicDashboard$data } from '@components/workspaces/da
 import MoreVert from '@mui/icons-material/MoreVert';
 import { IconButton, Menu, MenuItem, MenuProps } from '@mui/material';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { graphql } from 'react-relay';
 import { PublicDashboardsListQuery$variables } from '@components/workspaces/dashboards/public_dashboards/__generated__/PublicDashboardsListQuery.graphql';
 import { useFormatter } from '../../../../../components/i18n';

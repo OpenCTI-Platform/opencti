@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { Tooltip } from '@mui/material';
 import { InformationOutline } from 'mdi-material-ui';
 import { filterValue, SELF_ID_VALUE } from '../utils/filters/filtersUtils';

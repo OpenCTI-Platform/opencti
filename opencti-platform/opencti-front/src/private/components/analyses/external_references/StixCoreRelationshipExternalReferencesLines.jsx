@@ -17,7 +17,7 @@ import DialogActions from '@mui/material/DialogActions';
 import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import Slide from '@mui/material/Slide';
 import { interval } from 'rxjs';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';

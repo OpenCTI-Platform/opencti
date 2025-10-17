@@ -13,7 +13,7 @@ import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Tooltip from '@mui/material/Tooltip';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import InputAdornment from '@mui/material/InputAdornment';
 import useApiMutation from 'src/utils/hooks/useApiMutation';
 import {

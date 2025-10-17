@@ -10,7 +10,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import Drawer from '@components/common/drawer/Drawer';
 import CaseTaskOverview from '@components/cases/tasks/CaseTaskOverview';
 import { NorthEastOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../../../../components/ItemIcon';
 import type { Theme } from '../../../../components/Theme';

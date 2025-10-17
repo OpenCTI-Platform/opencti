@@ -12,7 +12,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { VisibilityOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { stixDomainObjectsLinesSearchQuery } from './StixDomainObjectsLines';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';

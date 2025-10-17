@@ -1,6 +1,6 @@
 import React from 'react';
 import Button from '@mui/material/Button';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import makeStyles from '@mui/styles/makeStyles';
 import Security from '../utils/Security';
 import { SETTINGS_SETACCESSES } from '../utils/hooks/useGranted';

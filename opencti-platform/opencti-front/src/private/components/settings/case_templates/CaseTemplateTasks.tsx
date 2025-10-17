@@ -1,7 +1,7 @@
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { Box, styled } from '@mui/material';
