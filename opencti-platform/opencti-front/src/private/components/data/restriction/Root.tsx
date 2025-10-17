@@ -3,7 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import RestrictedEntities from './RestrictedEntities';
 import RestrictedDrafts from './RestrictedDrafts';
 import useHelper from '../../../../utils/hooks/useHelper';
-import ManagementMenu from '../ManagementMenu';
+import RestrictionMenu from './RestrictionMenu';
 import PageContainer from '../../../../components/PageContainer';
 
 const RestrictionRoot = () => {
@@ -13,7 +13,7 @@ const RestrictionRoot = () => {
   return (
     <div data-testid="data-management-page" style={{ height: '100%' }}>
       {isRightMenuManagementEnable && (
-        <ManagementMenu />
+        <RestrictionMenu />
       )}
       <PageContainer
         withGap
