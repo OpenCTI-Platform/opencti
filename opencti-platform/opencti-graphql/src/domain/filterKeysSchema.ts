@@ -311,6 +311,22 @@ const completeFilterDefinitionMapWithSpecialKeys = (
       elementsForFilterValuesSearch: [],
     });
   }
+
+  if (type === 'Organization') {
+    filterDefinitionsMap.set(
+      'number_of_validated_reports',
+      {
+        filterKey: 'number_of_validated_reports',
+        type: 'float',
+        label: 'Number of validated reports',
+        multiple: false,
+        elementsForFilterValuesSearch: [],
+        subEntityTypes: [],
+        subFilters: []
+      }
+    );
+  }
+
   if (type === ENTITY_TYPE_HISTORY) {
     // add context filters
     filterDefinitionsMap.set(CONTEXT_OBJECT_LABEL_FILTER, {
@@ -467,21 +483,6 @@ export const generateFilterKeysSchema = async () => {
     const filterDefinitionsMap: Map<string, FilterDefinition> = new Map(); // map that will contain the filterKeys schema for the entity type
     completeFilterDefinitionsMapForTypeAndSubtypes(filterDefinitionsMap, type);
     handleRemoveSpecialKeysFromFilterDefinitionsMap(filterDefinitionsMap, type, isNotEnterpriseEdition);
-    if (type === 'Organization') {
-      // FIXME to be taken from settings
-      filterDefinitionsMap.set(
-        'number_of_validated_reports',
-        {
-          filterKey: 'number_of_validated_reports',
-          type: 'float',
-          label: 'Number of validated reports',
-          multiple: false,
-          elementsForFilterValuesSearch: [],
-          subEntityTypes: [],
-          subFilters: []
-        }
-      );
-    }
     filterKeysSchema.set(type, filterDefinitionsMap);
   });
   // B. add special types
