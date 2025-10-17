@@ -44,7 +44,6 @@ import { stixLoadByFilters, stixLoadById } from '../database/middleware';
 import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-utils';
 import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookExecution';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
-import { fullEntitiesList } from '../database/middleware-loader';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
