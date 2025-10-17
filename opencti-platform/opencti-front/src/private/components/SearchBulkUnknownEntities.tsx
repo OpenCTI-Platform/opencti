@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { allEntitiesKeyList } from '@components/common/bulk/utils/querySearchEntityByText';
 import { SearchBulkUnknownEntitiesQuery, SearchBulkUnknownEntitiesQuery$variables } from '@components/__generated__/SearchBulkUnknownEntitiesQuery.graphql';
@@ -56,9 +56,10 @@ const searchBulkUnknownEntitiesQuery = graphql`
 interface SearchBulkUnknownEntitiesContentProps {
   values: string[],
   queryRef: PreloadedQuery<SearchBulkUnknownEntitiesQuery>,
+  setNumberOfEntities: (n: number) => void,
 }
 
-const SearchBulkUnknownEntitiesContent = ({ values, queryRef }: SearchBulkUnknownEntitiesContentProps) => {
+const SearchBulkUnknownEntitiesContent = ({ values, queryRef, setNumberOfEntities }: SearchBulkUnknownEntitiesContentProps) => {
   const matchStixObjectWithSearchValue = (
     stixObject: {
       representative?: { main: string },
@@ -84,6 +85,10 @@ const SearchBulkUnknownEntitiesContent = ({ values, queryRef }: SearchBulkUnknow
     const resolvedStixCoreObjects = nodes.filter((o) => matchStixObjectWithSearchValue(o, value)) ?? [];
     return resolvedStixCoreObjects.length === 0;
   });
+  useEffect(() => {
+    setNumberOfEntities(unknownValues.length ?? 0);
+  }, [values]);
+
   const unknownEntities = unknownValues.map((value) => ({
     id: value.trim(),
     entity_type: 'Unknown',
@@ -131,11 +136,10 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities }: SearchBulkUn
     sortBy: 'value',
     orderAsc: true,
   };
-  const { viewStorage, paginationOptions } = usePaginationLocalStorage<SearchBulkUnknownEntitiesQuery>(
+  const { paginationOptions } = usePaginationLocalStorage<SearchBulkUnknownEntitiesQuery>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
-  setNumberOfEntities(viewStorage.numberOfElements?.number ?? 0);
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -151,6 +155,7 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities }: SearchBulkUn
         <SearchBulkUnknownEntitiesContent
           values={values}
           queryRef={queryRef}
+          setNumberOfEntities={setNumberOfEntities}
         />
       </React.Suspense>}
     </>);
