@@ -296,10 +296,10 @@ export const metrics: AttributeDefinition = {
   editDefault: false,
   multiple: true,
   upsert: true,
-  isFilterable: true,
+  isFilterable: false,
   mappings: [
-    { name: 'name', label: 'Metric name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
-    { name: 'value', label: 'Metric value', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
+    { name: 'name', label: 'Metric name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'value', label: 'Metric value', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
   ]
 };
 

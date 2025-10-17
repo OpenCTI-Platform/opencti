@@ -132,7 +132,8 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
 export const isComplexConversionFilterKey = (filterKey: string) => {
   return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey)
     || filterKey.startsWith(PIR_SCORE_FILTER_PREFIX)
-    || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX);
+    || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
+    || filterKey === 'number_of_validated_reports'; // FIXME to be taken from conf
 };
 
 // list of the special filtering keys

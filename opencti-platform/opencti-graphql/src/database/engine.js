@@ -2816,6 +2816,19 @@ const adaptFilterToPirFilterKeys = async (context, user, filterKey, filter) => {
   return { newFilter, newFilterGroup: undefined };
 };
 
+// FIXME to take metrics name from config
+const adaptFilterForMetricsFilterKeys = async (filter) => {
+  const newFilter = {
+    key: ['metrics'],
+    mode: 'and',
+    nested: [
+      { key: 'name', values: ['number_of_validated_reports'], operator: 'eq' },
+      { key: 'value', values: filter.values, operator: filter.operator, mode: filter.mode },
+    ]
+  };
+  return { newFilter, newFilterGroup: undefined };
+};
+
 const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) => {
   const { key, operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -3251,6 +3264,12 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         } else {
           finalFilters.push(filter); // nothing to modify
         }
+      }
+
+      // FIXME take filter name from config
+      if (filterKey === 'number_of_validated_reports') {
+        const { newFilter } = await adaptFilterForMetricsFilterKeys(filter);
+        finalFilters.push(newFilter);
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
