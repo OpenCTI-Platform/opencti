@@ -33,7 +33,7 @@ import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
 
 const WidgetCreationParameters = () => {
-  const { settings } = useAuth();
+  const { metricsDefinition } = useAttributes();
 
   const { t_i18n } = useFormatter();
   const {
@@ -81,20 +81,6 @@ const WidgetCreationParameters = () => {
   const alreadyUsedInstances = (fintelWidgets ?? []).flatMap(({ widget }) => {
     if (widget.type !== 'attribute') return [];
     return widget.dataSelection[0].instance_id ?? [];
-  });
-
-  const settingsMetrics = settings?.metrics_definition?.map((md) => {
-    const metrics = md?.metrics?.map((metricName) => {
-      if (metricName === 'number_of_validated_reports') {
-        return t_i18n('number_of_validated_reports');
-      }
-      return metricName;
-    });
-
-    return {
-      ...md,
-      metrics,
-    };
   });
 
   const handleChangeDataValidationParameter = (
@@ -831,7 +817,7 @@ const WidgetCreationParameters = () => {
               return (
                 <WidgetColumnsCustomizationInput
                   key={index}
-                  availableColumns={getWidgetColumns(perspective, entityType || undefined, settingsMetrics)}
+                  availableColumns={getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined)}
                   defaultColumns={defaultWidgetColumnsByType}
                   value={[...(columns ?? defaultWidgetColumnsByType)]}
                   onChange={(newColumns) => setColumns(index, newColumns)}

@@ -1524,4 +1524,46 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
 };
 
+export type MetricsDefinition = {
+  readonly entity_type: string
+  readonly metrics: readonly string[] | null | undefined
+};
+
+export type Metric = {
+  readonly name: string
+  readonly value: string
+};
+
+export const buildMetricsColumns = (
+  entityType: string | undefined,
+  metricsDefinition: readonly MetricsDefinition[],
+): DataTableProps['dataColumns'] => {
+  if (!entityType || !metricsDefinition) return {};
+
+  const metricsForEntity = metricsDefinition.find((m) => m.entity_type === entityType);
+  if (!metricsForEntity?.metrics) return {};
+
+  const metricsColumns: DataTableProps['dataColumns'] = {};
+
+  for (const metricName of metricsForEntity.metrics) {
+    metricsColumns[metricName] = {
+      id: metricName,
+      label: metricName,
+      percentWidth: 12,
+      isSortable: false,
+      render: (data) => {
+        if (Array.isArray(data.metrics)) {
+          const metric = data.metrics.find((m: Metric) => m.name === metricName);
+          if (metric) {
+            return defaultRender(metric.value);
+          }
+        }
+        return defaultRender('-');
+      },
+    };
+  }
+
+  return metricsColumns;
+};
+
 export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(Object.entries(defaultColumns));

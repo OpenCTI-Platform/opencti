@@ -2,7 +2,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
-import { defaultColumnsMap } from '../dataTableUtils';
+import { buildMetricsColumns, defaultColumnsMap } from '../dataTableUtils';
 import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableProvider } from './DataTableContext';
@@ -17,6 +17,7 @@ import {
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
+import useAttributes from '../../../utils/hooks/useAttributes';
 
 type DataTableComponentProps = Pick<DataTableProps,
 | 'dataColumns'
@@ -76,6 +77,8 @@ const DataTableComponent = ({
   emptyStateMessage,
   pageSize,
 }: DataTableComponentProps) => {
+  const { metricsDefinition } = useAttributes();
+
   const defaultComputeLink = useDataTableComputeLink();
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
@@ -86,8 +89,33 @@ const DataTableComponent = ({
     helpers,
   } = paginationLocalStorage;
 
+  const getMetricsColumns = () => {
+    if (!data || !metricsDefinition || !Array.isArray(data)) return {};
+
+    const entityTypes: string[] = [];
+    for (const item of data) {
+      if (item.entity_type) {
+        if (!entityTypes.includes(item.entity_type)) {
+          entityTypes.push(item.entity_type);
+        }
+      }
+    }
+
+    const allMetrics: Record<string, DataTableColumn> = {};
+    for (const entityType of entityTypes) {
+      const metricsForType = buildMetricsColumns(entityType, metricsDefinition);
+      Object.assign(allMetrics, metricsForType);
+    }
+
+    return allMetrics;
+  };
+
+  const metricsColumns = getMetricsColumns();
+
   const buildColumns = (withLocalStorage = true) => {
-    const dataColumnsKeys = Object.keys(dataColumns);
+    const allDataColumns = { ...dataColumns, ...metricsColumns };
+
+    const dataColumnsKeys = Object.keys(allDataColumns);
     const localStorageColumnsKeys = Object.keys(localStorageColumns)
       .filter((key) => key !== 'select' && key !== 'navigate' && key !== 'icon');
 
@@ -98,6 +126,11 @@ const DataTableComponent = ({
     // Only use localStorage if order matches and we are allowed to
     const useLocalStorage = isOrderSame && withLocalStorage;
 
+    const extendedColumnsMap = new Map(defaultColumnsMap);
+    Object.entries(metricsColumns).forEach(([key, value]) => {
+      extendedColumnsMap.set(key, value);
+    });
+
     return [
       // Checkbox if necessary
       ...(!disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
@@ -106,9 +139,9 @@ const DataTableComponent = ({
       // Our real columns
       ...Object.entries(dataColumns).map(([key, column], index) => {
         const currentColumn = localStorageColumns?.[key];
-        const percentWidth = column.percentWidth ?? defaultColumnsMap.get(key)?.percentWidth;
+        const percentWidth = column.percentWidth ?? extendedColumnsMap.get(key)?.percentWidth;
 
-        return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
+        return R.mergeDeepRight(extendedColumnsMap.get(key) as DataTableColumn, {
           ...column,
           // Override column config with what we have in local storage
           order: useLocalStorage && currentColumn?.index ? currentColumn?.index : index,
