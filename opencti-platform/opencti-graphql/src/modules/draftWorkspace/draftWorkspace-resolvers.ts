@@ -3,6 +3,7 @@ import {
   addDraftWorkspace,
   deleteDraftWorkspace,
   findDraftWorkspacePaginated,
+  findDraftWorkspaceRestrictedPaginated,
   findById,
   getCurrentUserAccessRight,
   getObjectsCount,
@@ -11,7 +12,7 @@ import {
   listDraftRelations,
   listDraftSightingRelations,
   validateDraftWorkspace,
-  draftWorkspaceEditAuthorizedMembers
+  draftWorkspaceEditAuthorizedMembers,
 } from './draftWorkspace-domain';
 import { findById as findWorkById, worksForDraft } from '../../domain/work';
 import { filterMembersWithUsersOrgs } from '../../utils/access';
@@ -21,6 +22,7 @@ const draftWorkspaceResolvers: Resolvers = {
   Query: {
     draftWorkspace: (_, { id }, context) => findById(context, context.user, id),
     draftWorkspaces: (_, args, context) => findDraftWorkspacePaginated(context, context.user, args),
+    draftWorkspacesRestricted: (_, args, context) => findDraftWorkspaceRestrictedPaginated(context, context.user, args),
     draftWorkspaceEntities: (_, args, context) => listDraftObjects(context, context.user, args),
     draftWorkspaceRelationships: async (_, args, context) => {
       context.changeDraftContext(args.draftId);
