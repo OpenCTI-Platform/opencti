@@ -56,11 +56,11 @@ jobs:
         with:
           branch: v3.20
           packages: >
-            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
+            nodejs=22.19.0-r3 npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
 
       - name: Setup Node.js & python
         run: |
-          npm install -g node-gyp yarn
+          npm install -g node-gyp corepack
           python -V
         shell: alpine.sh --root {0}
 
