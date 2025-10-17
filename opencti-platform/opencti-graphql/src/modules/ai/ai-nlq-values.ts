@@ -411,6 +411,7 @@ enum EntityObservableEnum {
   WINDOWS_REGISTRY_KEY = 'Windows-Registry-Key',
   WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type',
   X509_CERTIFICATE = 'X509-Certificate',
+  SSH_KEY = 'SSH-Key',
 }
 
 export const entityObservableDescription = {
@@ -672,6 +673,9 @@ export const entityObservableDescription = {
   },
   [EntityObservableEnum.X509_CERTIFICATE]: {
     description: 'A digital certificate conforming to the X.509 standard.',
+  },
+  [EntityObservableEnum.SSH_KEY]: {
+    description: 'A key used to securely authenticate to servers and services over SSH.',
   },
 };
 
@@ -981,6 +985,14 @@ export enum FilterEnum {
   CERTIFICATE_POLICIES = 'certificate_policies',
   POLICY_MAPPINGS = 'policy_mappings',
 
+  // SSHKey
+  KEY_PUBLIC = 'key_public',
+  KEY_TYPE = 'key_type',
+  KEY_LENGTH = 'key_length',
+  FINGERPRINT_SHA256 = 'fingerprint_sha256',
+  FINGERPRINT_MD5 = 'fingerprint_md5',
+  COMMENT = 'comment',
+
   // INTERVALLES GÉNÉRIQUES (TEMPS, ACTIVITÉ)
   START = 'start',
   END = 'end',
@@ -1189,4 +1201,9 @@ export const filterKeysSmall = [
   FilterEnum.NUMBER,
   FilterEnum.VALUE,
   FilterEnum.CONTENT_TYPE,
+  FilterEnum.KEY_TYPE,
+  FilterEnum.KEY_PUBLIC,
+  FilterEnum.FINGERPRINT_MD5,
+  FilterEnum.FINGERPRINT_SHA256,
+  FilterEnum.EXPIRATION_DATE,
 ];
