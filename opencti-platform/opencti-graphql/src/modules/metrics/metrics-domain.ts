@@ -31,5 +31,5 @@ export const patchMetric = async (context: AuthContext, user: AuthUser, entityId
   metrics.push({ name: input.name, value: input.value });
   const patch: EditInput[] = [{ key: 'metrics', value: metrics }];
   const { element } = await updateAttribute(context, user, entity.id, entity.entity_type, patch);
-  return element.metrics;
+  return element;
 };

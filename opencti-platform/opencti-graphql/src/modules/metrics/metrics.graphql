@@ -12,5 +12,5 @@ input PatchMetricInput {
 }
 
 type Mutation {
-  metricPatch(id: ID!, input: PatchMetricInput!): [Metric] @auth(for: [KNOWLEDGE_KNUPDATE])
+  metricPatch(id: ID!, input: PatchMetricInput!): BasicObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
