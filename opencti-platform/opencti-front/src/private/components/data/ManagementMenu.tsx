@@ -7,6 +7,10 @@ const ManagementMenu = () => {
       path: '/dashboard/data/restriction/restricted',
       label: 'Restricted entities',
     },
+    {
+      path: '/dashboard/data/restriction/drafts',
+      label: 'Drafts'
+    }
   ];
   return <NavToolbarMenu entries={entries} />;
 };
