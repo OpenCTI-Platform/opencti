@@ -1508,6 +1508,7 @@
   "Entity_type": "Type",
   "entity_type": "Type d'entité",
   "entity_types": "Types d'entité",
+  "entity_Unknown": "Inconnu",
   "entity_Url": "URL",
   "entity_User": "Utilisateur",
   "entity_User-Account": "Compte utilisateur",

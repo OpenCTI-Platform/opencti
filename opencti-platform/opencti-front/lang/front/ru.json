@@ -1508,6 +1508,7 @@
   "Entity_type": "Тип",
   "entity_type": "Тип организации",
   "entity_types": "Типы сущностей",
+  "entity_Unknown": "Неизвестный",
   "entity_Url": "URL",
   "entity_User": "Пользователь",
   "entity_User-Account": "Учетная запись пользователя",

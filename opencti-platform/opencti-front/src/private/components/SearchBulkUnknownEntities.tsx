@@ -85,7 +85,7 @@ const SearchBulkUnknownEntitiesContent = ({ values, queryRef }: SearchBulkUnknow
   });
   const unknownEntities = unknownValues.map((value) => ({
     id: value.trim(),
-    type: 'Unknown',
+    entity_type: 'Unknown',
     value: value.trim(),
   }));
   const dataColumns = {
