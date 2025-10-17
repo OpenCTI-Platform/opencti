@@ -14,6 +14,7 @@ import { createWork, updateExpectationsNumber } from '../../domain/work';
 import {
   type DraftWorkspaceAddInput,
   FilterMode,
+  FilterOperator,
   type MemberAccessInput,
   type QueryDraftWorkspaceEntitiesArgs,
   type QueryDraftWorkspaceRelationshipsArgs,
@@ -22,6 +23,7 @@ import {
 } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { addDraftCreationCount, addDraftValidationCount } from '../../manager/telemetryManager';
+import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../schema/general';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { isStixCoreObject } from '../../schema/stixCoreObject';
@@ -37,6 +39,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { getUserAccessRight, SYSTEM_USER } from '../../utils/access';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { getDraftContext } from '../../utils/draftContext';
+import { addFilter } from '../../utils/filtering/filtering-utils';
 import { now } from '../../utils/format';
 import { DRAFT_OPERATION_CREATE, DRAFT_OPERATION_DELETE, DRAFT_OPERATION_UPDATE } from './draftOperations';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
@@ -49,6 +52,15 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
 
 export const findDraftWorkspacePaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], args);
+};
+
+export const findDraftWorkspaceRestrictedPaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  const filters = addFilter(args.filters, `${authorizedMembers.name}.id`, [], FilterOperator.NotNil);
+
+  return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
+    ...args,
+    filters,
+  });
 };
 
 export const getObjectsCount = async (context: AuthContext, user: AuthUser, draft: BasicStoreEntityDraftWorkspace) => {

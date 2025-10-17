@@ -64,6 +64,14 @@ type Query {
         filters: FilterGroup
         search: String
     ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
+    draftWorkspacesRestricted(
+        first: Int
+        after: ID
+        orderBy: DraftWorkspacesOrdering
+        orderMode: OrderingMode
+        filters: FilterGroup
+        search: String
+    ): DraftWorkspaceConnection @auth(for: [KNOWLEDGE])
     draftWorkspaceEntities(
         draftId: String!,
         types: [String]
