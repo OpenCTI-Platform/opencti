@@ -1,28 +1,28 @@
-import React, { FunctionComponent } from 'react';
-import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import DraftWorkspaceDialogCreation from '@components/common/files/draftWorkspace/DraftWorkspaceDialogCreation';
+import ImportMenu from '@components/data/ImportMenu';
 import DraftCreation from '@components/drafts/DraftCreation';
-import { graphql } from 'react-relay';
-import { DraftsLines_data$data } from '@components/drafts/__generated__/DraftsLines_data.graphql';
-import { Drafts_node$data } from '@components/drafts/__generated__/Drafts_node.graphql';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
-import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import ImportMenu from '@components/data/ImportMenu';
-import DraftWorkspaceDialogCreation from '@components/common/files/draftWorkspace/DraftWorkspaceDialogCreation';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { useFormatter } from '../../../components/i18n';
-import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { FunctionComponent } from 'react';
+import { graphql } from 'react-relay';
 import Breadcrumbs from '../../../components/Breadcrumbs';
-import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
-import DraftPopover from './DraftPopover';
-import useDraftContext from '../../../utils/hooks/useDraftContext';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
-import { hexToRGB } from '../../../utils/Colors';
+import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
+import { hexToRGB } from '../../../utils/Colors';
+import { computeValidationProgress } from '../../../utils/draft/draftUtils';
+import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
+import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
+import useQueryLoading from '../../../utils/hooks/useQueryLoading';
+import { DraftsLines_data$data } from './__generated__/DraftsLines_data.graphql';
+import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from './__generated__/DraftsLinesPaginationQuery.graphql';
+import DraftPopover from './DraftPopover';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -114,17 +114,6 @@ export const draftsLinesFragment = graphql`
 `;
 
 const LOCAL_STORAGE_KEY = 'draftWorkspaces';
-
-const computeValidationProgress = (validationWork: Drafts_node$data['validationWork']) => {
-  if (!validationWork) {
-    return '';
-  }
-  if (!validationWork.tracking?.import_expected_number || !validationWork.tracking?.import_processed_number) {
-    return '0%';
-  }
-
-  return `${Math.floor(100 * (validationWork.tracking.import_processed_number / validationWork.tracking.import_expected_number))}%`;
-};
 
 interface DraftsProps {
   entityId?: string;
