@@ -451,7 +451,7 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
       || k.startsWith(RULE_PREFIX)
       || k.startsWith(PIR_SCORE_FILTER_PREFIX)
       || k.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
-      || getMetricsAttributesNames()
+      || getMetricsAttributesNames().includes(k)
     ));
 
   if (incorrectKeys.length > 0) {
