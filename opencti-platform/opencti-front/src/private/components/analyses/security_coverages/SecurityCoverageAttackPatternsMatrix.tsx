@@ -1,7 +1,41 @@
 import React, { FunctionComponent } from 'react';
 import { createRefetchContainer, graphql, RelayRefetchProp } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import { SecurityCoverageAttackPatternsMatrix_securityCoverage$data } from './__generated__/SecurityCoverageAttackPatternsMatrix_securityCoverage.graphql';
+import { commitMutation } from '../../../../relay/environment';
+import { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+
+const addRelationshipMutation = graphql`
+  mutation SecurityCoverageAttackPatternsMatrixAddRelationMutation(
+    $input: StixCoreRelationshipAddInput!
+  ) {
+    stixCoreRelationshipAdd(input: $input) {
+      id
+      from {
+        ... on SecurityCoverage {
+          id
+          attackPatterns: stixCoreRelationships(
+            relationship_type: "has-covered"
+            toTypes: ["Attack-Pattern"]
+          ) {
+            edges {
+              node {
+                id
+                to {
+                  ... on AttackPattern {
+                    id
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 
 interface SecurityCoverageAttackPatternsMatrixProps {
   securityCoverage: SecurityCoverageAttackPatternsMatrix_securityCoverage$data;
@@ -14,11 +48,34 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
   securityCoverage,
   searchTerm,
   selectedKillChain,
+  relay,
 }) => {
   const attackPatterns = (securityCoverage.attackPatterns?.edges ?? [])
     .map((edge) => edge.node)
     .filter((node) => node !== null && node !== undefined)
     .map((node) => node.to);
+
+  const handleAdd = (entity: TargetEntity) => {
+    commitMutation({
+      mutation: addRelationshipMutation,
+      variables: {
+        input: {
+          fromId: securityCoverage.id,
+          toId: entity.id,
+          relationship_type: 'has-covered',
+        },
+      },
+      updater: (_store: RecordSourceSelectorProxy) => {
+        // Refresh the component to show the new relationship
+        relay.refetch({ id: securityCoverage.id });
+      },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onCompleted: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
+    });
+  };
 
   return (
     <div style={{ marginTop: 20, marginBottom: 20 }}>
@@ -26,7 +83,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
         attackPatterns={attackPatterns}
         searchTerm={searchTerm}
         entityType="Security-Coverage"
-        handleAdd={() => {}} // No add functionality for covered patterns
+        handleAdd={handleAdd}
         selectedKillChain={selectedKillChain}
         attackPatternIdsToOverlap={[]}
         isModeOnlyActive={false}

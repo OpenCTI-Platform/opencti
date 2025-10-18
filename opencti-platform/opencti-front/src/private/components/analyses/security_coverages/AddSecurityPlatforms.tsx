@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSecurityPlatformsLines, { addSecurityPlatformsLinesQuery } from './AddSecurityPlatformsLines';
+import { AddSecurityPlatformsLinesQuery$data } from './__generated__/AddSecurityPlatformsLinesQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -82,14 +83,14 @@ const AddSecurityPlatforms: FunctionComponent<AddSecurityPlatformsProps> = ({
           </div>
         )}
       >
-        {open && (
+        {open ? (
           <QueryRenderer
             query={addSecurityPlatformsLinesQuery}
             variables={{
               search,
               count: 20,
             }}
-            render={({ props }: { props: any }) => {
+            render={({ props }: { props: AddSecurityPlatformsLinesQuery$data | null | undefined }) => {
               if (props) {
                 return (
                   <AddSecurityPlatformsLines
@@ -102,7 +103,7 @@ const AddSecurityPlatforms: FunctionComponent<AddSecurityPlatformsProps> = ({
               return <div />;
             }}
           />
-        )}
+        ) : null}
       </Drawer>
     </>
   );
