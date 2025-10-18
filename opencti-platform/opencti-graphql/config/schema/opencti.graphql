@@ -2039,6 +2039,8 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
@@ -2184,6 +2186,8 @@ type Connector implements BasicObject & InternalObject {
   title: String!
   active: Boolean
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   connector_trigger_filters: String
@@ -2645,7 +2649,6 @@ input KillChainPhaseAddInput {
 }
 
 ######## STIX CORE OBJECT ENTITIES
-
 type Representative {
   main: String!
   secondary: String
@@ -4439,6 +4442,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input ReportAddInput {
   stix_id: StixId
@@ -12452,6 +12456,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Individual
   | Organization
   | SecurityPlatform
+  | SecurityCoverage
   | Sector
   | System
   | Indicator
@@ -12869,6 +12874,12 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
 }
+
+input SecurityCoverageExpectation {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
 input StixCoreRelationshipAddInput {
   # StixRelationship
   stix_id: StixId
@@ -12892,6 +12903,8 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  coverage: [SecurityCoverageExpectation!]
+  # Technical
   clientMutationId: String
   update: Boolean
 }

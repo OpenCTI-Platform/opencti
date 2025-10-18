@@ -395,12 +395,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     </Tooltip>
                   </Grid>
                   <Grid item xs={6}>
-                    <Tooltip title={isNotEmptyField(openBASUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenBAS now')}>
+                    <Tooltip title={isNotEmptyField(openBASUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
                       <a className={classes.xtmItem} href={isNotEmptyField(openBASUrl) ? openBASUrl : 'https://filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
                         <Badge variant="dot" color={isNotEmptyField(openBASUrl) ? 'success' : 'warning'}>
                           <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
                         </Badge>
-                        <div className={classes.product}>OpenBAS</div>
+                        <div className={classes.product}>OpenAEV</div>
                       </a>
                     </Tooltip>
                   </Grid>
