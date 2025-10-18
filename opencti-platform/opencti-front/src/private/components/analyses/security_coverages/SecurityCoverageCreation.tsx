@@ -352,8 +352,12 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     setActiveStep(1);
   };
 
-  const handleSelectEntity = (entity: StixCoreObjectNode) => {
+  const handleSelectEntity = (entity: StixCoreObjectNode, setFieldValue?: (field: string, value: unknown) => void) => {
     setSelectedEntity(entity);
+    // Update the form name with the selected entity's representative name
+    if (setFieldValue && (entity.representative?.main || entity.name)) {
+      setFieldValue('name', entity.representative?.main || entity.name);
+    }
     // Automatically move to the coverage details step
     setActiveStep(preSelectedEntityId ? 1 : 2);
   };
@@ -578,70 +582,61 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         };
 
         return (
-          <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-            <Box style={{ flexGrow: 1, overflow: 'auto' }}>
-              <ListLines
-                helpers={helpers}
-                sortBy={sortBy}
-                orderAsc={orderAsc}
-                dataColumns={buildColumns()}
-                handleSort={handleSort}
-                handleSearch={handleSearch}
-                handleAddFilter={(
-                  helpers as { handleAddFilter: (key: string, value: string) => void }
-                ).handleAddFilter}
-                handleRemoveFilter={(
-                  helpers as {
-                    handleRemoveFilter?: (key: string, value: string) => void;
-                    handleRemoveFilterById: (id: string) => void;
+          <>
+            <ListLines
+              helpers={helpers}
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={buildColumns()}
+              handleSort={handleSort}
+              handleSearch={handleSearch}
+              handleAddFilter={helpers.handleAddSingleValueFilter}
+              handleRemoveFilter={helpers.handleRemoveRepresentationFilter}
+              handleSwitchFilter={helpers.handleSwitchGlobalMode}
+              handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
+              handleSwitchLocalMode={helpers.handleSwitchLocalMode}
+              keyword={searchTerm}
+              filters={filters}
+              paginationOptions={queryPaginationOptions}
+              numberOfElements={{ number: 0, symbol: '' }}
+              availableFilterKeys={['entity_type', 'objectLabel', 'createdBy', 'objectMarking', 'created_start_date', 'created_end_date', 'created_at_start_date', 'created_at_end_date']}
+              availableEntityTypes={DEFAULT_ENTITY_TYPES}
+              noPadding={true}
+              disableCards={true}
+              noHeaders={false}
+            >
+              <QueryRenderer
+                query={securityCoverageEntitiesQuery}
+                variables={queryPaginationOptions}
+                render={(renderProps: { props: EntitiesQueryProps | null }) => {
+                  const { props } = renderProps;
+                  if (!props || !props.stixCoreObjects) {
+                    return <Loader variant={LoaderVariant.inElement} />;
                   }
-                ).handleRemoveFilter || helpers.handleRemoveFilterById}
-                handleSwitchFilter={helpers.handleSwitchGlobalMode}
-                handleSwitchGlobalMode={helpers.handleSwitchGlobalMode}
-                handleSwitchLocalMode={helpers.handleSwitchLocalMode}
-                keyword={searchTerm}
-                filters={filters}
-                paginationOptions={queryPaginationOptions}
-                numberOfElements={{ number: 0, symbol: '' }}
-                availableFilterKeys={['entity_type', 'objectLabel', 'createdBy', 'objectMarking', 'created_start_date', 'created_end_date', 'created_at_start_date', 'created_at_end_date']}
-                availableEntityTypes={DEFAULT_ENTITY_TYPES}
-                noPadding={true}
-                disableCards={true}
-                noHeaders={false}
-              >
-                <QueryRenderer
-                  query={securityCoverageEntitiesQuery}
-                  variables={queryPaginationOptions}
-                  render={(renderProps: { props: EntitiesQueryProps | null }) => {
-                    const { props } = renderProps;
-                    if (!props || !props.stixCoreObjects) {
-                      return <Loader variant={LoaderVariant.inElement} />;
-                    }
-                    return (
-                      <ListLinesContent
-                        initialLoading={false}
-                        loadMore={() => {}}
-                        hasMore={() => false}
-                        isLoading={() => false}
-                        dataList={props.stixCoreObjects.edges.slice(0, 50)}
-                        globalCount={Math.min(props.stixCoreObjects.edges.length, 50)}
-                        LineComponent={SecurityCoverageEntityLine}
-                        DummyLineComponent={() => null}
-                        dataColumns={buildColumns()}
-                        paginationOptions={queryPaginationOptions}
-                        selectedElements={{}}
-                        selectAll={false}
-                        onToggleEntity={handleSelectEntity}
-                        onLabelClick={(helpers as { handleAddFilter: (key: string, value: string) => void }).handleAddFilter}
-                        redirectionMode={undefined}
-                        selectedEntity={selectedEntity}
-                      />
-                    );
-                  }}
-                />
-              </ListLines>
-            </Box>
-            <div className={classes.buttons} style={{ marginTop: 20, flexShrink: 0 }}>
+                  return (
+                    <ListLinesContent
+                      initialLoading={false}
+                      loadMore={() => {}}
+                      hasMore={() => false}
+                      isLoading={() => false}
+                      dataList={props.stixCoreObjects.edges.slice(0, 50)}
+                      globalCount={Math.min(props.stixCoreObjects.edges.length, 50)}
+                      LineComponent={SecurityCoverageEntityLine}
+                      DummyLineComponent={() => null}
+                      dataColumns={buildColumns()}
+                      paginationOptions={queryPaginationOptions}
+                      selectedElements={{}}
+                      selectAll={false}
+                      onToggleEntity={(entity: StixCoreObjectNode) => handleSelectEntity(entity, setFieldValue)}
+                      onLabelClick={helpers.handleAddSingleValueFilter}
+                      redirectionMode={undefined}
+                      selectedEntity={selectedEntity}
+                    />
+                  );
+                }}
+              />
+            </ListLines>
+            <div className={classes.buttons} style={{ marginTop: 10, flexShrink: 0 }}>
               <Button
                 variant="contained"
                 onClick={handleClose}
@@ -650,7 +645,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 {t_i18n('Cancel')}
               </Button>
             </div>
-          </Box>
+          </>
         );
       }
 
@@ -784,6 +779,29 @@ interface SecurityCoverageCreationProps {
   paginationOptions: SecurityCoveragesLinesPaginationQuery$variables;
 }
 
+// Wrapper component to handle preselected entity fetching
+export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFormProps> = (props) => {
+  const { preSelectedEntityId } = props;
+
+  if (preSelectedEntityId) {
+    return (
+      <QueryRenderer
+        query={securityCoveragePreselectedEntityQuery}
+        variables={{ id: preSelectedEntityId }}
+        render={({ props: queryProps }: { props: { stixCoreObject: StixCoreObjectNode | null } | null }) => {
+          if (!queryProps || !queryProps.stixCoreObject) {
+            return <Loader variant={LoaderVariant.inElement} />;
+          }
+
+          return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={queryProps.stixCoreObject} />;
+        }}
+      />
+    );
+  }
+
+  return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={null} />;
+};
+
 const SecurityCoverageCreationWrapper: FunctionComponent<{ updater: (store: RecordSourceSelectorProxy, key: string) => void; onClose?: () => void }> = ({ updater, onClose }) => {
   return (
     <QueryRenderer
@@ -830,30 +848,6 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
       {({ onClose }) => <SecurityCoverageCreationWrapper updater={updater} onClose={onClose} />}
     </Drawer>
   );
-};
-
-
-// Wrapper component to handle preselected entity fetching
-export const SecurityCoverageCreationForm: FunctionComponent<SecurityCoverageFormProps> = (props) => {
-  const { preSelectedEntityId } = props;
-
-  if (preSelectedEntityId) {
-    return (
-      <QueryRenderer
-        query={securityCoveragePreselectedEntityQuery}
-        variables={{ id: preSelectedEntityId }}
-        render={({ props: queryProps }: { props: { stixCoreObject: StixCoreObjectNode | null } | null }) => {
-          if (!queryProps || !queryProps.stixCoreObject) {
-            return <Loader variant={LoaderVariant.inElement} />;
-          }
-
-          return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={queryProps.stixCoreObject} />;
-        }}
-      />
-    );
-  }
-
-  return <SecurityCoverageCreationFormInner {...props} preSelectedEntity={null} />;
 };
 
 export default SecurityCoverageCreation;

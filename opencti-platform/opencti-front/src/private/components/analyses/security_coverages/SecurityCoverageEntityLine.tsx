@@ -58,7 +58,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
 }) => {
   const classes = useStyles();
   // Handle both edge.node and direct node structures
-  const entity = node.node || node;
+  const entity = 'node' in node && node.node ? node.node : node as EntityNode;
   const isSelected = selectedEntity?.id === entity.id;
 
   return (
