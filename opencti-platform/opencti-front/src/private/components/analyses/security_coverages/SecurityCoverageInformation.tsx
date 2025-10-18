@@ -56,9 +56,10 @@ interface SecurityCoverageInformationProps {
     readonly coverage_name: string;
     readonly coverage_score: number;
   }> | null | undefined;
+  variant?: 'header' | 'details';
 }
 
-const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformationProps> = ({ coverage_information }) => {
+const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformationProps> = ({ coverage_information, variant = 'header' }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const classes = useStyles();
@@ -86,6 +87,42 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
     ) as ApexOptions;
     return { series, options };
   };
+  
+  // Original variant for header
+  if (variant === 'header') {
+    if (isEmptyField(coverage_information)) {
+      const { options, series } = genOpts(null);
+      return <div className={classes.chartContainer} style={{ width: 40, height: 40 }}>
+        <div className={classes.chart}>
+          <Chart options={options} series={series} type="donut" width={50} height={50}/>
+          <Tooltip title={'Empty coverage'} placement="bottom">
+            <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 18, height: 18 }} style={{ top: 16, left: 16, fontSize: 18 }}>
+              <span style={{ color: '#ffffff' }}>E</span>
+            </Avatar>
+          </Tooltip>
+        </div>
+      </div>;
+    }
+    return (
+      <div style={{ display: 'flex' }}>
+        {(coverage_information ?? []).map((coverageResult) => {
+          const { options, series } = genOpts(coverageResult.coverage_score);
+          return <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: 40, height: 40, padding: 4 }}>
+            <div className={classes.chart}>
+              <Chart options={options} series={series} type="donut" width={50} height={50}/>
+              <Tooltip title={`${t_i18n(coverageResult.coverage_name)}`} placement="bottom">
+                <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 18, height: 18 }} style={{ top: 16, left: 16, fontSize: 18 }}>
+                  <span style={{ color: '#ffffff' }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
+                </Avatar>
+              </Tooltip>
+            </div>
+          </div>;
+        })}
+      </div>
+    );
+  }
+  
+  // Details variant with scores
   if (isEmptyField(coverage_information)) {
     const { options, series } = genOpts(null);
     return (

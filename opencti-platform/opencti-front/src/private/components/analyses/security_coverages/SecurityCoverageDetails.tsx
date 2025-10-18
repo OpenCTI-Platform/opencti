@@ -3,14 +3,20 @@ import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemButton from '@mui/material/ListItemButton';
 import { Theme } from '@mui/material/styles/createTheme';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
-import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { SecurityCoverageDetails_securityCoverage$key } from './__generated__/SecurityCoverageDetails_securityCoverage.graphql';
 import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
@@ -18,11 +24,6 @@ import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 4,
-  },
   coveredObject: {
     display: 'flex',
     alignItems: 'center',
@@ -63,6 +64,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   securityCoverage,
 }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n, fd } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
 
@@ -90,7 +92,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
               {t_i18n('Coverage information')}
             </Typography>
             <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
-              <SecurityCoverageInformation coverage_information={data.coverage_information ?? []}/>
+              <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
             </Paper>
           </Grid>
           <Grid item xs={6}>
@@ -101,22 +103,29 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Object covered')}
+              {t_i18n('Covered entity')}
             </Typography>
-            {data.objectCovered ? (
-              <div className={classes.coveredObject}>
-                <Button
-                  size="small"
-                  startIcon={<ItemIcon type={data.objectCovered.entity_type} />}
-                  component={Link}
-                  to={`/dashboard/id/${data.objectCovered.id}`}
-                >
-                  {data.objectCovered.representative?.main}
-                </Button>
-              </div>
-            ) : (
-              '-'
-            )}
+            <List style={{ marginTop: -10 }}>
+              <FieldOrEmpty source={data.objectCovered}>
+                {data.objectCovered && (
+                  <ListItem
+                    dense={true}
+                    divider={true}
+                    disablePadding={true}
+                  >
+                    <ListItemButton
+                      component={Link}
+                      to={`/dashboard/id/${data.objectCovered.id}`}
+                    >
+                      <ListItemIcon>
+                        <ItemIcon type={data.objectCovered.entity_type} />
+                      </ListItemIcon>
+                      <ListItemText primary={data.objectCovered.representative?.main} />
+                    </ListItemButton>
+                  </ListItem>
+                )}
+              </FieldOrEmpty>
+            </List>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
