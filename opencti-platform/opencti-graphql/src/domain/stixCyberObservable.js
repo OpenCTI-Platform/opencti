@@ -292,7 +292,6 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     }
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
-
   const { element: stixCyberObservable } = await updateAttribute(
     context,
     user,
