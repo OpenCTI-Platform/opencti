@@ -6590,12 +6590,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.17.2":
-  version: 22.17.2
-  resolution: "@types/node@npm:22.17.2"
+"@types/node@npm:22.18.10":
+  version: 22.18.10
+  resolution: "@types/node@npm:22.18.10"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10c0/23cd13aa35da6322a6d66cf4b3a45dbd40764ba726ab8681960270156c3abba776dd8dc173250c467f708d40612ecd725755d7659b775b513904680d5205eaff
+  checksum: 10c0/37b34553f1953ab8fc25b7467d44701446400f62547adb62c842cebac091350985470aeed87acd60f5295778c370d9721d477310e643677a7eab03a8dc6ed74f
   languageName: node
   linkType: hard
 
@@ -15416,7 +15416,7 @@ __metadata:
     "@testing-library/user-event": "npm:14.6.1"
     "@types/d3-scale": "npm:4.0.9"
     "@types/html-to-pdfmake": "npm:2.4.4"
-    "@types/node": "npm:22.17.2"
+    "@types/node": "npm:22.18.10"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.31.1"
     "@types/react": "npm:19.1.8"
