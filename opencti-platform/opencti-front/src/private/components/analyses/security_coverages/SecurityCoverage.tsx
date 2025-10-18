@@ -105,10 +105,10 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
         classes={{ container: classes.gridContainer }}
       >
         <Grid item xs={6}>
-          <StixDomainObjectOverview stixDomainObject={securityCoverage} />
+          <SecurityCoverageDetails securityCoverage={securityCoverage} />
         </Grid>
         <Grid item xs={6}>
-          <SecurityCoverageDetails securityCoverage={securityCoverage} />
+          <StixDomainObjectOverview stixDomainObject={securityCoverage} />
         </Grid>
         <Grid item xs={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={securityCoverage.id} />
