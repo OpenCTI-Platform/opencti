@@ -15,7 +15,7 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader from '../../../../components/Loader';
 import { RootSecurityCoverageSubscription } from './__generated__/RootSecurityCoverageSubscription.graphql';
 import { RootSecurityCoverageQuery$data } from './__generated__/RootSecurityCoverageQuery.graphql';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import ContainerHeader from '../../common/containers/ContainerHeader';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
@@ -101,9 +101,8 @@ const SecurityCoverageRoot = () => {
                     { label: getMainRepresentative(securityCoverage), current: true },
                   ]}
                   />
-                  <StixDomainObjectHeader
-                    entityType={'Security-Coverage'}
-                    stixDomainObject={securityCoverage}
+                  <ContainerHeader
+                    container={securityCoverage}
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <SecurityCoverageEdition securityCoverageId={securityCoverage.id} />
@@ -114,8 +113,13 @@ const SecurityCoverageRoot = () => {
                         <SecurityCoverageDeletion id={securityCoverage.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>
                     )}
-                    noAliases={true}
+                    enableQuickSubscription={true}
+                    enableQuickExport={true}
+                    enableEnrollPlaybook={true}
+                    enableAskAi={false}
+                    overview={location.pathname === `/dashboard/analyses/security_coverages/${securityCoverage.id}`}
                     redirectToContent={true}
+                    enableEnricher={true}
                   />
                   <Box
                     sx={{

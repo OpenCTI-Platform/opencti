@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { filter } from 'ramda';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -11,7 +10,7 @@ import { LinkOff } from '@mui/icons-material';
 import { LockPattern } from 'mdi-material-ui';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { ListItemButton } from '@mui/material';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { RecordSourceSelectorProxy, RecordProxy } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -41,7 +40,15 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
 }) => {
   const { t_i18n } = useFormatter();
 
-  const removeSecurityPlatform = (securityPlatformEdge: any) => {
+  const removeSecurityPlatform = (securityPlatformEdge: {
+    node: {
+      id: string;
+      to: {
+        id?: string;
+      } | null | undefined;
+    };
+  }) => {
+    if (!securityPlatformEdge.node.to?.id) return;
     commitMutation({
       mutation: removeMutation,
       variables: {
@@ -55,15 +62,19 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
           const securityPlatforms = node.getLinkedRecord('securityPlatforms');
           if (securityPlatforms) {
             const edges = securityPlatforms.getLinkedRecords('edges');
-            const newEdges = filter(
+            const newEdges = (edges || []).filter(
               (n) => n?.getLinkedRecord('node')?.getValue('id')
-                !== securityPlatformEdge.node.id,
-              edges,
-            );
+                !== securityPlatformEdge.node.id
+            ) as RecordProxy[];
             securityPlatforms.setLinkedRecords(newEdges, 'edges');
           }
         }
       },
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
+      onCompleted: undefined,
+      onError: undefined,
+      setSubmitting: undefined,
     });
   };
 
