@@ -122,7 +122,6 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
             </Button>
           </Tooltip>
         )}
-
         {coverage && (
           <Button
             size="small"
@@ -133,7 +132,6 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
           </Button>
         )}
       </div>
-
       <Drawer
         title={t_i18n('Create a security coverage')}
         open={open}
@@ -146,9 +144,7 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
             if (!entityProps) {
               return <Loader variant={LoaderVariant.inElement} />;
             }
-
             const entityName = entityProps?.stixCoreObject?.representative?.main;
-
             return (
               <QueryRenderer
                 query={securityCoverageConnectorsQuery}
