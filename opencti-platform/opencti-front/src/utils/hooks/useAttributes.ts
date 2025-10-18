@@ -27,6 +27,7 @@ const ignoredAttributes = [
   'startup_info',
   'creator_id',
   'opinions_metrics',
+  'metrics',
 ];
 
 const workbenchAttributes = [
