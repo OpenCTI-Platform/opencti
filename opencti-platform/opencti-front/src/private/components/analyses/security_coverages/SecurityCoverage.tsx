@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
@@ -8,8 +8,7 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
-import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
+import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
 import { SecurityCoverage_securityCoverage$key } from './__generated__/SecurityCoverage_securityCoverage.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -88,8 +87,7 @@ const securityCoverageFragment = graphql`
       coverage_score
     }
     ...SecurityCoverageDetails_securityCoverage
-    ...SecurityCoverageSecurityPlatforms_securityCoverage
-    ...SecurityCoverageVulnerabilities_securityCoverage
+    ...SecurityCoverageAttackPatternsMatrix_securityCoverage
   }
 `;
 
@@ -100,6 +98,8 @@ interface SecurityCoverageProps {
 const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) => {
   const classes = useStyles();
   const securityCoverage = useFragment(securityCoverageFragment, data);
+  const [searchTerm] = useState('');
+  const [selectedKillChain] = useState('mitre-attack');
 
   return (
     <>
@@ -114,6 +114,13 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
         <Grid item xs={6}>
           <StixDomainObjectOverview stixDomainObject={securityCoverage} />
         </Grid>
+        <Grid item xs={12}>
+          <SecurityCoverageAttackPatternsMatrix
+            securityCoverage={securityCoverage}
+            searchTerm={searchTerm}
+            selectedKillChain={selectedKillChain}
+          />
+        </Grid>
         <Grid item xs={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={securityCoverage.id} />
         </Grid>
@@ -122,12 +129,6 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
         </Grid>
         <Grid item xs={12}>
           <StixCoreObjectOrStixCoreRelationshipNotes stixCoreObjectOrStixCoreRelationshipId={securityCoverage.id} />
-        </Grid>
-        <Grid item xs={6}>
-          <SecurityCoverageSecurityPlatforms securityCoverage={securityCoverage} />
-        </Grid>
-        <Grid item xs={6}>
-          <SecurityCoverageVulnerabilities securityCoverage={securityCoverage} />
         </Grid>
       </Grid>
     </>

@@ -16,6 +16,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddSecurityPlatforms from './AddSecurityPlatforms';
+import { SecurityCoverageSecurityPlatforms_securityCoverage$data } from './__generated__/SecurityCoverageSecurityPlatforms_securityCoverage.graphql';
 
 const removeMutation = graphql`
   mutation SecurityCoverageSecurityPlatformsRelationDeleteMutation(
@@ -31,30 +32,8 @@ const removeMutation = graphql`
   }
 `;
 
-interface SecurityPlatformNode {
-  id: string;
-  name: string;
-  description?: string;
-  parent_types: string[];
-}
-
-interface SecurityPlatformRelationshipNode {
-  id: string;
-  to: SecurityPlatformNode;
-}
-
 interface SecurityCoverageSecurityPlatformsProps {
-  securityCoverage: {
-    id: string;
-    name: string;
-    parent_types: string[];
-    entity_type: string;
-    securityPlatforms: {
-      edges: Array<{
-        node: SecurityPlatformRelationshipNode;
-      }>;
-    };
-  };
+  securityCoverage: SecurityCoverageSecurityPlatforms_securityCoverage$data;
 }
 
 const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCoverageSecurityPlatformsProps> = ({
@@ -62,7 +41,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
 }) => {
   const { t_i18n } = useFormatter();
 
-  const removeSecurityPlatform = (securityPlatformEdge: { node: SecurityPlatformRelationshipNode }) => {
+  const removeSecurityPlatform = (securityPlatformEdge: any) => {
     commitMutation({
       mutation: removeMutation,
       variables: {
@@ -96,13 +75,13 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
         </Typography>
         <AddSecurityPlatforms
           securityCoverage={securityCoverage}
-          securityCoverageSecurityPlatforms={securityCoverage.securityPlatforms.edges}
+          securityCoverageSecurityPlatforms={securityCoverage.securityPlatforms?.edges || []}
         />
       </div>
       <div className="clearfix" />
       <List style={{ marginTop: -10 }}>
-        <FieldOrEmpty source={securityCoverage.securityPlatforms.edges}>
-          {securityCoverage.securityPlatforms.edges.map((securityPlatformEdge) => {
+        <FieldOrEmpty source={securityCoverage.securityPlatforms?.edges || []}>
+          {(securityCoverage.securityPlatforms?.edges || []).map((securityPlatformEdge) => {
             const securityPlatform = securityPlatformEdge.node.to;
             return (
               <ListItem
@@ -122,12 +101,12 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
               >
                 <ListItemButton
                   component={Link}
-                  to={`/dashboard/entities/security_platforms/${securityPlatform.id}`}
+                  to={`/dashboard/entities/security_platforms/${securityPlatform?.id}`}
                 >
                   <ListItemIcon>
                     <LockPattern color="primary"/>
                   </ListItemIcon>
-                  <ListItemText primary={securityPlatform.name}/>
+                  <ListItemText primary={securityPlatform?.name}/>
                 </ListItemButton>
               </ListItem>
             );

@@ -12,6 +12,8 @@ import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { SecurityCoverageDetails_securityCoverage$key } from './__generated__/SecurityCoverageDetails_securityCoverage.graphql';
+import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
+import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -48,6 +50,8 @@ const securityCoverageDetailsFragment = graphql`
           main
       }
     }
+    ...SecurityCoverageSecurityPlatforms_securityCoverage
+    ...SecurityCoverageVulnerabilities_securityCoverage
   }
 `;
 
@@ -125,6 +129,12 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
               {t_i18n('Valid until')}
             </Typography>
             {data.coverage_valid_to ? fd(data.coverage_valid_to) : '-'}
+          </Grid>
+          <Grid item xs={6}>
+            <SecurityCoverageSecurityPlatforms securityCoverage={data} />
+          </Grid>
+          <Grid item xs={6}>
+            <SecurityCoverageVulnerabilities securityCoverage={data} />
           </Grid>
         </Grid>
       </Paper>

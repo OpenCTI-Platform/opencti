@@ -16,6 +16,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddVulnerabilities from './AddVulnerabilities';
+import { SecurityCoverageVulnerabilities_securityCoverage$data } from './__generated__/SecurityCoverageVulnerabilities_securityCoverage.graphql';
 
 const removeMutation = graphql`
   mutation SecurityCoverageVulnerabilitiesRelationDeleteMutation(
@@ -31,30 +32,8 @@ const removeMutation = graphql`
   }
 `;
 
-interface VulnerabilityNode {
-  id: string;
-  name: string;
-  description?: string;
-  parent_types: string[];
-}
-
-interface VulnerabilityRelationshipNode {
-  id: string;
-  to: VulnerabilityNode;
-}
-
 interface SecurityCoverageVulnerabilitiesProps {
-  securityCoverage: {
-    id: string;
-    name: string;
-    parent_types: string[];
-    entity_type: string;
-    vulnerabilities: {
-      edges: Array<{
-        node: VulnerabilityRelationshipNode;
-      }>;
-    };
-  };
+  securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
 }
 
 const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCoverageVulnerabilitiesProps> = ({
@@ -62,7 +41,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
 }) => {
   const { t_i18n } = useFormatter();
 
-  const removeVulnerability = (vulnerabilityEdge: { node: VulnerabilityRelationshipNode }) => {
+  const removeVulnerability = (vulnerabilityEdge: any) => {
     commitMutation({
       mutation: removeMutation,
       variables: {
