@@ -1,6 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import SecurityCoverageDetails from './SecurityCoverageDetails';
@@ -10,6 +12,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
 import { SecurityCoverage_securityCoverage$key } from './__generated__/SecurityCoverage_securityCoverage.graphql';
+import { useFormatter } from '../../../../components/i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -97,6 +100,7 @@ interface SecurityCoverageProps {
 
 const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) => {
   const classes = useStyles();
+  const { t_i18n } = useFormatter();
   const securityCoverage = useFragment(securityCoverageFragment, data);
   const [searchTerm] = useState('');
   const [selectedKillChain] = useState('mitre-attack');
@@ -114,13 +118,26 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
         <Grid item xs={6}>
           <StixDomainObjectOverview stixDomainObject={securityCoverage} />
         </Grid>
-        <Grid item xs={12}>
+      <Grid item xs={12}>
+        <Typography variant="h4" gutterBottom={true}>
+          {t_i18n('Attack patterns coverage')}
+        </Typography>
+        <Paper 
+          variant="outlined" 
+          style={{ 
+            marginTop: 10, 
+            padding: 15, 
+            borderRadius: 4 
+          }} 
+          className="paper-for-grid"
+        >
           <SecurityCoverageAttackPatternsMatrix
             securityCoverage={securityCoverage}
             searchTerm={searchTerm}
             selectedKillChain={selectedKillChain}
           />
-        </Grid>
+        </Paper>
+      </Grid>
         <Grid item xs={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={securityCoverage.id} />
         </Grid>

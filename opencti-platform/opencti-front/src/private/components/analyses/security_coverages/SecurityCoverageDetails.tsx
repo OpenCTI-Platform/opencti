@@ -89,11 +89,17 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Coverage information')}
             </Typography>
-            <Paper elevation={2} style={{ padding: 20, marginTop: 10, backgroundColor: 'rgba(255, 255, 255, 0.02)' }}>
+            <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
               <SecurityCoverageInformation coverage_information={data.coverage_information ?? []}/>
             </Paper>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={6}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t_i18n('Last result')}
+            </Typography>
+            {data.coverage_last_result ? fd(data.coverage_last_result) : '-'}
+          </Grid>
+          <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Object covered')}
             </Typography>
@@ -111,12 +117,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             ) : (
               '-'
             )}
-          </Grid>
-          <Grid item xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Last result')}
-            </Typography>
-            {data.coverage_last_result ? fd(data.coverage_last_result) : '-'}
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
