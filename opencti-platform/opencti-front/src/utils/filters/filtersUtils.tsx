@@ -19,6 +19,7 @@ export interface FilterSearchContext {
   entityTypes: string[]
   elementId?: string[]
   connectorsScope?: boolean
+  elementType?: string
 }
 
 export type FiltersRestrictions = {
