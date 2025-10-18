@@ -9,9 +9,17 @@ import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import { donutChartOptions } from '../../../../utils/Charts';
 import type { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme: Theme) => ({
   charts: {
     display: 'flex',
+    gap: theme.spacing(3),
+    flexWrap: 'wrap',
+  },
+  chartItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: theme.spacing(1),
   },
   chart: {
     position: 'absolute',
@@ -21,15 +29,25 @@ const useStyles = makeStyles(() => ({
   chartContainer: {
     position: 'relative',
     overflow: 'hidden',
-    width: 40,
-    height: 40,
+    width: 60,
+    height: 60,
     padding: 4,
   },
   iconOverlay: {
-    fontSize: 18,
+    fontSize: 24,
     position: 'absolute',
-    top: 16,
-    left: 16,
+    top: 22,
+    left: 22,
+  },
+  scoreText: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: theme.palette.text?.primary || '#ffffff',
+  },
+  coverageName: {
+    fontSize: 12,
+    color: theme.palette.text?.secondary || '#999999',
+    textAlign: 'center',
   },
 }));
 
@@ -70,31 +88,55 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
   };
   if (isEmptyField(coverage_information)) {
     const { options, series } = genOpts(null);
-    return <div className={classes.chartContainer}>
-      <div className={classes.chart}>
-        <Chart options={options} series={series} type="donut" width={50} height={50}/>
-        <Tooltip title={'Empty coverage'} placement="bottom">
-          <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 18, height: 18 }}>
-            <span style={{ color: '#ffffff' }}>E</span>
-          </Avatar>
-        </Tooltip>
+    return (
+      <div className={classes.charts}>
+        <div className={classes.chartItem}>
+          <div className={classes.chartContainer}>
+            <div className={classes.chart}>
+              <Chart options={options} series={series} type="donut" width={70} height={70}/>
+              <Tooltip title={'Empty coverage'} placement="top">
+                <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }}>
+                  <span style={{ color: '#ffffff', fontSize: 18 }}>E</span>
+                </Avatar>
+              </Tooltip>
+            </div>
+          </div>
+          <div className={classes.scoreText}>--%</div>
+          <div className={classes.coverageName}>{t_i18n('Empty coverage')}</div>
+        </div>
       </div>
-    </div>;
+    );
   }
   return (
     <div className={classes.charts}>
       {(coverage_information ?? []).map((coverageResult) => {
         const { options, series } = genOpts(coverageResult.coverage_score);
-        return <div key={coverageResult.coverage_name} className={classes.chartContainer}>
-          <div className={classes.chart}>
-            <Chart options={options} series={series} type="donut" width={50} height={50}/>
-            <Tooltip title={`${t_i18n(coverageResult.coverage_name)}`} placement="bottom">
-              <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 18, height: 18 }}>
-                <span style={{ color: '#ffffff' }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
-              </Avatar>
-            </Tooltip>
+        const warningColor = (theme.palette as any).warning?.main;
+        const scoreColor = coverageResult.coverage_score >= 70 
+          ? theme.palette.success.main 
+          : coverageResult.coverage_score >= 40 
+            ? warningColor || theme.palette.primary.main
+            : theme.palette.error.main;
+        return (
+          <div key={coverageResult.coverage_name} className={classes.chartItem}>
+            <div className={classes.chartContainer}>
+              <div className={classes.chart}>
+                <Chart options={options} series={series} type="donut" width={70} height={70}/>
+                <Tooltip title={`${t_i18n(coverageResult.coverage_name)}`} placement="top">
+                  <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }}>
+                    <span style={{ color: '#ffffff', fontSize: 18 }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
+                  </Avatar>
+                </Tooltip>
+              </div>
+            </div>
+            <div className={classes.scoreText} style={{ color: scoreColor }}>
+              {coverageResult.coverage_score}%
+            </div>
+            <div className={classes.coverageName}>
+              {t_i18n(coverageResult.coverage_name)}
+            </div>
           </div>
-        </div>;
+        );
       })}
     </div>
   );

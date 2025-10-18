@@ -81,16 +81,16 @@ const AddSecurityPlatformsLines = createPaginationContainer(
   },
   {
     direction: 'forward',
-    getConnectionFromProps(props: any) {
+    getConnectionFromProps(props) {
       return props.data && props.data.securityPlatforms;
     },
-    getFragmentVariables(prevVars: any, totalCount: number) {
+    getFragmentVariables(prevVars, totalCount) {
       return {
         ...prevVars,
         count: totalCount,
       };
     },
-    getVariables(props: any, { count, cursor }: any, fragmentVariables: any) {
+    getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         count,
         cursor,

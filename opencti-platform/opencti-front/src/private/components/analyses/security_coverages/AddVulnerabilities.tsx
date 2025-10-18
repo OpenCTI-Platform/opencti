@@ -8,6 +8,7 @@ import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddVulnerabilitiesLines, { addVulnerabilitiesLinesQuery } from './AddVulnerabilitiesLines';
+import { AddVulnerabilitiesLinesQuery$data } from './__generated__/AddVulnerabilitiesLinesQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -82,14 +83,14 @@ const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({
           </div>
         )}
       >
-        {open && (
+        {open ? (
           <QueryRenderer
             query={addVulnerabilitiesLinesQuery}
             variables={{
               search,
               count: 20,
             }}
-            render={({ props }: { props: any }) => {
+            render={({ props }: { props: AddVulnerabilitiesLinesQuery$data | null | undefined }) => {
               if (props) {
                 return (
                   <AddVulnerabilitiesLines
@@ -102,7 +103,7 @@ const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({
               return <div />;
             }}
           />
-        )}
+        ) : null}
       </Drawer>
     </>
   );
