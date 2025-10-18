@@ -3,8 +3,15 @@ import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
+import SearchInput from '../../../../components/SearchInput';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { AttackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
+import { attackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import SecurityCoverageDetails from './SecurityCoverageDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
@@ -102,8 +109,25 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const securityCoverage = useFragment(securityCoverageFragment, data);
-  const [searchTerm] = useState('');
-  const [selectedKillChain] = useState('mitre-attack');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
+  
+  const handleKillChainChange = (event: SelectChangeEvent<unknown>) => {
+    setSelectedKillChain(event.target.value as string);
+  };
+  
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+  };
+  
+  // Load kill chain data
+  const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(
+    attackPatternsMatrixQuery,
+    {},
+  );
+  
+  const killChains: string[] = ['mitre-attack', 'capec', 'disarm'];
+  const showKillChainSelector = killChains.length > 1;
 
   return (
     <>
@@ -118,26 +142,57 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
         <Grid item xs={6}>
           <StixDomainObjectOverview stixDomainObject={securityCoverage} />
         </Grid>
-      <Grid item xs={12}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t_i18n('Attack patterns coverage')}
-        </Typography>
+      </Grid>
+      <div style={{ marginTop: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15 }}>
+          <Typography variant="h4" style={{ flex: 1 }}>
+            {t_i18n('Attack patterns coverage')}
+          </Typography>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            {showKillChainSelector && (
+              <FormControl size="small" style={{ width: 194, height: 30 }}>
+                <Select
+                  value={selectedKillChain}
+                  onChange={handleKillChainChange}
+                  variant="outlined"
+                  displayEmpty
+                  style={{ height: 30 }}
+                >
+                  <MenuItem value="mitre-attack">MITRE ATT&CK</MenuItem>
+                  <MenuItem value="capec">CAPEC</MenuItem>
+                  <MenuItem value="disarm">DISARM</MenuItem>
+                </Select>
+              </FormControl>
+            )}
+            <SearchInput
+              variant="thin"
+              onSubmit={handleSearch}
+            />
+          </div>
+        </div>
         <Paper 
           variant="outlined" 
           style={{ 
-            marginTop: 10, 
-            padding: 15, 
-            borderRadius: 4 
+            padding: 0, 
+            borderRadius: 4,
+            overflow: 'hidden'
           }} 
           className="paper-for-grid"
         >
-          <SecurityCoverageAttackPatternsMatrix
-            securityCoverage={securityCoverage}
-            searchTerm={searchTerm}
-            selectedKillChain={selectedKillChain}
-          />
+          <div style={{ padding: 15 }}>
+            <SecurityCoverageAttackPatternsMatrix
+              securityCoverage={securityCoverage}
+              searchTerm={searchTerm}
+              selectedKillChain={selectedKillChain}
+            />
+          </div>
         </Paper>
-      </Grid>
+      </div>
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginTop: 10 }}
+      >
         <Grid item xs={6}>
           <StixCoreObjectExternalReferences stixCoreObjectId={securityCoverage.id} />
         </Grid>
