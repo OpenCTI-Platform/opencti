@@ -3,6 +3,7 @@ type Form implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
+  metrics:[Metric]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!

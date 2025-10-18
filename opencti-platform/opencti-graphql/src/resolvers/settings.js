@@ -25,6 +25,7 @@ import { internalFindByIds } from '../database/middleware-loader';
 import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
 import { CguStatus } from '../generated/graphql';
+import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
 
 const settingsResolvers = {
   Query: {
@@ -58,6 +59,7 @@ const settingsResolvers = {
     request_access_enabled: (_, __, context) => isRequestAccessEnabled(context, context.user),
     platform_ai_enabled: (settings) => settings.platform_ai_enabled ?? true,
     filigran_chatbot_ai_cgu_status: (settings) => settings.filigran_chatbot_ai_cgu_status ?? CguStatus.Pending,
+    metrics_definition: () => getEntityMetricsConfiguration(),
   },
   AppInfo: {
     memory: getMemoryStatistics(),
