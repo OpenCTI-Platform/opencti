@@ -48,9 +48,9 @@ const AddVulnerabilitiesLinesContainer: FunctionComponent<AddVulnerabilitiesLine
       relationshipType="has-covered"
       availableDatas={data?.vulnerabilities}
       existingDatas={securityCoverageVulnerabilities}
-      updaterOptions={{ 
+      updaterOptions={{
         path: 'vulnerabilities',
-        connectionName: 'Pagination_vulnerabilities' 
+        connectionName: 'Pagination_vulnerabilities',
       }}
       isRelationReversed={false}
     />

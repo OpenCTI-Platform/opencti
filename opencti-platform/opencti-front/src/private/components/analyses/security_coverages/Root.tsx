@@ -117,6 +117,7 @@ const SecurityCoverageRoot = () => {
                     enableQuickExport={true}
                     enableEnrollPlaybook={true}
                     enableAskAi={false}
+                    disableSharing={false}
                     overview={location.pathname === `/dashboard/analyses/security_coverages/${securityCoverage.id}`}
                     redirectToContent={true}
                     enableEnricher={true}

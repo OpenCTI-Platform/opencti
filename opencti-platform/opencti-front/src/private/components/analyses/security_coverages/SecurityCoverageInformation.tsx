@@ -87,7 +87,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
     ) as ApexOptions;
     return { series, options };
   };
-  
+
   // Original variant for header
   if (variant === 'header') {
     if (isEmptyField(coverage_information)) {
@@ -121,7 +121,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
       </div>
     );
   }
-  
+
   // Details variant with scores
   if (isEmptyField(coverage_information)) {
     const { options, series } = genOpts(null);
@@ -149,11 +149,14 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
       {(coverage_information ?? []).map((coverageResult) => {
         const { options, series } = genOpts(coverageResult.coverage_score);
         const warningColor = (theme.palette as any).warning?.main;
-        const scoreColor = coverageResult.coverage_score >= 70 
-          ? theme.palette.success.main 
-          : coverageResult.coverage_score >= 40 
-            ? warningColor || theme.palette.primary.main
-            : theme.palette.error.main;
+        let scoreColor;
+        if (coverageResult.coverage_score >= 70) {
+          scoreColor = theme.palette.success.main;
+        } else if (coverageResult.coverage_score >= 40) {
+          scoreColor = warningColor || theme.palette.primary.main;
+        } else {
+          scoreColor = theme.palette.error.main;
+        }
         return (
           <div key={coverageResult.coverage_name} className={classes.chartItem}>
             <div className={classes.chartContainer}>
