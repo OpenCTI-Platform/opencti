@@ -8,10 +8,14 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
+import * as R from 'ramda';
 import SearchInput from '../../../../components/SearchInput';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { AttackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
 import { attackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
+import { attackPatternsMatrixColumnsFragment } from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
+import { AttackPatternsMatrixColumns_data$key } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixColumns_data.graphql';
 import SecurityCoverageDetails from './SecurityCoverageDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
@@ -126,7 +130,22 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
     {},
   );
   
-  const killChains: string[] = ['mitre-attack', 'capec', 'disarm'];
+  // Always call the hook but handle null queryRef
+  const killChainsData = queryRef ? usePreloadedFragment<AttackPatternsMatrixQuery, AttackPatternsMatrixColumns_data$key>({
+    queryDef: attackPatternsMatrixQuery,
+    fragmentDef: attackPatternsMatrixColumnsFragment,
+    queryRef,
+  }) : null;
+  
+  // Get available kill chains from backend data
+  const killChainsPhaseData = killChainsData?.attackPatternsMatrix?.attackPatternsOfPhases ?? [];
+  const killChains = R.uniq(killChainsPhaseData.map((a) => a.kill_chain_name)).sort((a, b) => a.localeCompare(b));
+  
+  // Update selected kill chain if current one is not available
+  if (killChains.length > 0 && !killChains.includes(selectedKillChain)) {
+    setSelectedKillChain(killChains[0]);
+  }
+  
   const showKillChainSelector = killChains.length > 1;
 
   return (
@@ -158,9 +177,14 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
                   displayEmpty
                   style={{ height: 30 }}
                 >
-                  <MenuItem value="mitre-attack">MITRE ATT&CK</MenuItem>
-                  <MenuItem value="capec">CAPEC</MenuItem>
-                  <MenuItem value="disarm">DISARM</MenuItem>
+                  {killChains.map((chain) => (
+                    <MenuItem key={chain} value={chain}>
+                      {chain === 'mitre-attack' ? 'MITRE ATT&CK' : 
+                       chain === 'capec' ? 'CAPEC' : 
+                       chain === 'disarm' ? 'DISARM' : 
+                       chain.toUpperCase()}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             )}
@@ -170,22 +194,19 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
             />
           </div>
         </div>
-        <Paper 
-          variant="outlined" 
-          style={{ 
-            padding: 0, 
+        <Paper
+          variant="outlined"
+          style={{
+            padding: 15,
             borderRadius: 4,
-            overflow: 'hidden'
-          }} 
+          }}
           className="paper-for-grid"
         >
-          <div style={{ padding: 15 }}>
-            <SecurityCoverageAttackPatternsMatrix
-              securityCoverage={securityCoverage}
-              searchTerm={searchTerm}
-              selectedKillChain={selectedKillChain}
-            />
-          </div>
+          <SecurityCoverageAttackPatternsMatrix
+            securityCoverage={securityCoverage}
+            searchTerm={searchTerm}
+            selectedKillChain={selectedKillChain}
+          />
         </Paper>
       </div>
       <Grid

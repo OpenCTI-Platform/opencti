@@ -48,9 +48,9 @@ const AddSecurityPlatformsLinesContainer: FunctionComponent<AddSecurityPlatforms
       relationshipType="has-covered"
       availableDatas={data?.securityPlatforms}
       existingDatas={securityCoverageSecurityPlatforms}
-      updaterOptions={{ 
+      updaterOptions={{
         path: 'securityPlatforms',
-        connectionName: 'Pagination_securityPlatforms' 
+        connectionName: 'Pagination_securityPlatforms',
       }}
       isRelationReversed={false}
     />

@@ -8,7 +8,6 @@ import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddSecurityPlatformsLines, { addSecurityPlatformsLinesQuery } from './AddSecurityPlatformsLines';
-import { AddSecurityPlatformsLinesQuery$data } from './__generated__/AddSecurityPlatformsLinesQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -23,7 +22,11 @@ interface AddSecurityPlatformsProps {
   securityCoverage: {
     id: string;
   };
-  securityCoverageSecurityPlatforms: Array<{
+  securityCoverageSecurityPlatforms: ReadonlyArray<{
+    readonly node: {
+      readonly id: string;
+    };
+  }> | Array<{
     node: {
       id: string;
     };
@@ -90,12 +93,12 @@ const AddSecurityPlatforms: FunctionComponent<AddSecurityPlatformsProps> = ({
               search,
               count: 20,
             }}
-            render={({ props }: { props: AddSecurityPlatformsLinesQuery$data | null | undefined }) => {
+            render={({ props }: any) => {
               if (props) {
                 return (
                   <AddSecurityPlatformsLines
                     securityCoverage={securityCoverage}
-                    securityCoverageSecurityPlatforms={securityCoverageSecurityPlatforms}
+                    securityCoverageSecurityPlatforms={securityCoverageSecurityPlatforms as any}
                     data={props}
                   />
                 );

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
@@ -76,7 +76,7 @@ interface ConnectorsQueryProps {
 
 const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCoverageProps> = ({
   id,
-  coverage,
+  coverage: initialCoverage,
   onCoverageCreated,
 }) => {
   const { t_i18n } = useFormatter();
@@ -84,6 +84,12 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
   const isGrantedToUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
 
   const [open, setOpen] = useState(false);
+  const [coverage, setCoverage] = useState(initialCoverage);
+
+  // Update local state when prop changes
+  useEffect(() => {
+    setCoverage(initialCoverage);
+  }, [initialCoverage]);
 
   const handleClose = () => {
     setOpen(false);
@@ -97,10 +103,28 @@ const StixCoreObjectSecurityCoverage: FunctionComponent<StixCoreObjectSecurityCo
     // Custom updater logic for handling the security coverage creation
     // This will be called after successful creation
     const newCoverage = store.getRootField(key);
-    if (newCoverage && onCoverageCreated) {
+    if (newCoverage) {
       const coverageId = newCoverage.getValue('id');
       if (typeof coverageId === 'string') {
-        onCoverageCreated(coverageId);
+        // Update local state to show the new coverage
+        const coverageInformation = newCoverage.getLinkedRecords('coverage_information');
+        const informationArray = coverageInformation ? coverageInformation.map((info) => ({
+          coverage_name: info?.getValue('coverage_name') as string,
+          coverage_score: info?.getValue('coverage_score') as number,
+        })) : [];
+
+        setCoverage({
+          id: coverageId,
+          coverage_information: informationArray,
+        });
+
+        // Close the drawer
+        handleClose();
+
+        // Call the callback if provided
+        if (onCoverageCreated) {
+          onCoverageCreated(coverageId);
+        }
       }
     }
   };

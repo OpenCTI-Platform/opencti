@@ -99,6 +99,10 @@ const securityCoverageMutation = graphql`
       description
       entity_type
       parent_types
+      coverage_information {
+        coverage_name
+        coverage_score
+      }
       ...SecurityCoveragesLine_node
     }
   }
