@@ -50,10 +50,10 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
   selectedKillChain,
   relay,
 }) => {
-  const attackPatterns = (securityCoverage.attackPatterns?.edges ?? [])
+  const attackPatterns = ((securityCoverage.attackPatterns?.edges ?? [])
     .map((edge) => edge.node)
     .filter((node) => node !== null && node !== undefined)
-    .map((node) => node.to) as any;
+    .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
 
   const handleAdd = (entity: TargetEntity) => {
     commitMutation({
@@ -86,6 +86,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
       selectedKillChain={selectedKillChain}
       attackPatternIdsToOverlap={[]}
       isModeOnlyActive={false}
+      noRightMargin={true}
     />
   );
 };

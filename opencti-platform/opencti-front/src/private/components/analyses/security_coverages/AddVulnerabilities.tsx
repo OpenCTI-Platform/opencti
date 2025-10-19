@@ -7,7 +7,7 @@ import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddVulnerabilitiesLines, { addVulnerabilitiesLinesQuery } from './AddVulnerabilitiesLines';
+import AddVulnerabilitiesLines, { addVulnerabilitiesLinesQuery, type AddVulnerabilitiesLinesProps } from './AddVulnerabilitiesLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -93,12 +93,12 @@ const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({
               search,
               count: 20,
             }}
-            render={({ props }: any) => {
+            render={({ props }: { props: AddVulnerabilitiesLinesProps['data'] | null | undefined }) => {
               if (props) {
                 return (
                   <AddVulnerabilitiesLines
                     securityCoverage={securityCoverage}
-                    securityCoverageVulnerabilities={securityCoverageVulnerabilities as any}
+                    securityCoverageVulnerabilities={securityCoverageVulnerabilities as AddVulnerabilitiesLinesProps['securityCoverageVulnerabilities']}
                     data={props}
                   />
                 );

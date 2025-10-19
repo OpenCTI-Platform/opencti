@@ -13,7 +13,7 @@ export const addSecurityPlatformsLinesQuery = graphql`
   }
 `;
 
-interface AddSecurityPlatformsLinesProps {
+export interface AddSecurityPlatformsLinesProps {
   securityCoverage: {
     id: string;
   };
@@ -50,7 +50,10 @@ const AddSecurityPlatformsLinesContainer: FunctionComponent<AddSecurityPlatforms
       existingDatas={securityCoverageSecurityPlatforms}
       updaterOptions={{
         path: 'securityPlatforms',
-        connectionName: 'Pagination_securityPlatforms',
+        params: {
+          relationship_type: 'has-covered',
+          toTypes: ['SecurityPlatform'],
+        },
       }}
       isRelationReversed={false}
     />

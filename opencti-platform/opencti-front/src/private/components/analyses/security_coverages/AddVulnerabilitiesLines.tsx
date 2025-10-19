@@ -13,7 +13,7 @@ export const addVulnerabilitiesLinesQuery = graphql`
   }
 `;
 
-interface AddVulnerabilitiesLinesProps {
+export interface AddVulnerabilitiesLinesProps {
   securityCoverage: {
     id: string;
   };
@@ -50,7 +50,10 @@ const AddVulnerabilitiesLinesContainer: FunctionComponent<AddVulnerabilitiesLine
       existingDatas={securityCoverageVulnerabilities}
       updaterOptions={{
         path: 'vulnerabilities',
-        connectionName: 'Pagination_vulnerabilities',
+        params: {
+          relationship_type: 'has-covered',
+          toTypes: ['Vulnerability'],
+        },
       }}
       isRelationReversed={false}
     />
