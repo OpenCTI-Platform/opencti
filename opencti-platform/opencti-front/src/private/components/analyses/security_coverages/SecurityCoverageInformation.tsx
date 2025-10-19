@@ -148,7 +148,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
     <div className={classes.charts}>
       {(coverage_information ?? []).map((coverageResult) => {
         const { options, series } = genOpts(coverageResult.coverage_score);
-        const warningColor = (theme.palette as any).warning?.main;
+        const warningColor = (theme.palette as { warning?: { main: string } }).warning?.main;
         let scoreColor;
         if (coverageResult.coverage_score >= 70) {
           scoreColor = theme.palette.success.main;

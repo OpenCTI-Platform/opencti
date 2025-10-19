@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
@@ -8,7 +8,6 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
-import * as R from 'ramda';
 import SearchInput from '../../../../components/SearchInput';
 import SecurityCoverageDetails from './SecurityCoverageDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -195,10 +194,12 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
                 >
                   {killChains.map((chain) => (
                     <MenuItem key={chain} value={chain}>
-                      {chain === 'mitre-attack' ? 'MITRE ATT&CK'
-                        : chain === 'capec' ? 'CAPEC'
-                          : chain === 'disarm' ? 'DISARM'
-                            : chain.toUpperCase()}
+                      {(() => {
+                        if (chain === 'mitre-attack') return 'MITRE ATT&CK';
+                        if (chain === 'capec') return 'CAPEC';
+                        if (chain === 'disarm') return 'DISARM';
+                        return chain.toUpperCase();
+                      })()}
                     </MenuItem>
                   ))}
                 </Select>

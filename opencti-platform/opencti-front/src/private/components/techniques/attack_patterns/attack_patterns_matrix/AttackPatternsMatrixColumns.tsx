@@ -148,6 +148,7 @@ const AttackPatternsMatrixColumns = ({
   handleAdd,
   selectedKillChain,
   isModeOnlyActive,
+  noRightMargin,
 }: AttackPatternsMatrixColumnsProps) => {
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
@@ -225,7 +226,7 @@ const AttackPatternsMatrixColumns = ({
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
-    const rightOffset = !containerTypes.includes(entityType) ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
+    const rightOffset = !containerTypes.includes(entityType) && !noRightMargin ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
     return baseOffset + rightOffset;
   }, [entityType, navOpen]);
 
