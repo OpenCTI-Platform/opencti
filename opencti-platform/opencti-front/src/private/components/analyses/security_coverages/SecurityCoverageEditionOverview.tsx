@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import ConfidenceField from '@components/common/form/ConfidenceField';
@@ -210,7 +210,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
 
   const handleSubmitField = (
     name: string,
-    value: FieldOption | string | FieldOption[] | number | number[] | null,
+    value: FieldOption | string | FieldOption[] | number | number[] | null | object | object[],
   ) => {
     securityValidator
       .validateAt(name, { [name]: value })
@@ -218,7 +218,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
         editor.fieldPatch({
           variables: {
             id: securityCoverageData.id,
-            input: [{ key: name, value: value ?? '' }],
+            input: [{ key: name, value: adaptFieldValue(value) ?? '' }],
           },
         });
       })
@@ -248,7 +248,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
         values,
         setFieldValue,
       }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
+        <div style={{ margin: '20px 0 20px 0' }}>
           <AlertConfidenceForEntity entity={securityCoverageData} />
           <Field
             component={TextField}
@@ -256,6 +256,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             name="name"
             label={t_i18n('Name')}
             fullWidth={true}
+            required
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
             helperText={
@@ -277,7 +278,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             }
           />
           <ConfidenceField
-            entityType="Security-Converage"
+            entityType="Security-Coverage"
             onFocus={editor.changeFocus}
             onSubmit={(name, value) => handleSubmitField(name, (value ?? '').toString())}
             containerStyle={fieldSpacingContainerStyle}
@@ -287,7 +288,17 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
           <CoverageInformationField
             name="coverage_information"
             values={values.coverage_information}
-            setFieldValue={setFieldValue}
+            setFieldValue={(fieldName, fieldValue) => {
+              setFieldValue(fieldName, fieldValue);
+              // Automatically save coverage_information changes
+              if (fieldName === 'coverage_information') {
+                const coverageInfoToSubmit = (fieldValue as { coverage_name: string; coverage_score: number | string }[])?.map((info) => ({
+                  coverage_name: info.coverage_name,
+                  coverage_score: Number(info.coverage_score),
+                }));
+                handleSubmitField('coverage_information', coverageInfoToSubmit);
+              }
+            }}
           />
           <CreatedByField
             name="createdBy"
@@ -307,7 +318,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             setFieldValue={setFieldValue}
             onChange={editor.changeMarking}
           />
-        </Form>
+        </div>
       )}
     </Formik>
   );

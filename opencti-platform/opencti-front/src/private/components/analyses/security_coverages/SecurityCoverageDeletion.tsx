@@ -13,14 +13,14 @@ const securityCoverageDeletionMutation = graphql`
 `;
 
 interface SecurityCoverageDeletionProps {
-  id: string;
+  securityCoverageId: string;
   isOpen: boolean;
   handleClose: () => void;
   objectPath?: string;
 }
 
 const SecurityCoverageDeletion: FunctionComponent<SecurityCoverageDeletionProps> = ({
-  id,
+  securityCoverageId,
   isOpen,
   handleClose,
   objectPath = '/dashboard/analyses/security_coverages',
@@ -35,7 +35,7 @@ const SecurityCoverageDeletion: FunctionComponent<SecurityCoverageDeletionProps>
     setDeleting(true);
     commitMutation({
       variables: {
-        id,
+        id: securityCoverageId,
       },
       onCompleted: () => {
         setDeleting(false);
