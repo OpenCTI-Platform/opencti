@@ -1,88 +1,66 @@
-import { graphql, useSubscription } from 'react-relay';
-import { Link, Route, Routes, useParams, useLocation } from 'react-router-dom';
-import React, { useMemo } from 'react';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
+import React from 'react';
+import { graphql } from 'react-relay';
+import { Link, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
-import SecurityCoverageDeletion from './SecurityCoverageDeletion';
-import SecurityCoverageEdition from './SecurityCoverageEdition';
-import SecurityCoverage from './SecurityCoverage';
 import { QueryRenderer } from '../../../../relay/environment';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
-import Loader from '../../../../components/Loader';
-import { RootSecurityCoverageSubscription } from './__generated__/RootSecurityCoverageSubscription.graphql';
+import SecurityCoverage from './SecurityCoverage';
 import { RootSecurityCoverageQuery$data } from './__generated__/RootSecurityCoverageQuery.graphql';
-import ContainerHeader from '../../common/containers/ContainerHeader';
-import FileManager from '../../common/files/FileManager';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import { useFormatter } from '../../../../components/i18n';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import Loader from '../../../../components/Loader';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
+import { useFormatter } from '../../../../components/i18n';
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
-
-const subscription = graphql`
-  subscription RootSecurityCoverageSubscription($id: ID!) {
-    stixDomainObject(id: $id) {
-      ... on SecurityCoverage {
-        ...SecurityCoverage_securityCoverage
-      }
-      ...FileImportViewer_entity
-      ...FileExportViewer_entity
-      ...FileExternalReferencesViewer_entity
-      ...WorkbenchFileViewer_entity
-    }
-  }
-`;
+import SecurityCoverageEdition from './SecurityCoverageEdition';
+import SecurityCoverageDeletion from './SecurityCoverageDeletion';
 
 const securityCoverageQuery = graphql`
   query RootSecurityCoverageQuery($id: String!) {
     securityCoverage(id: $id) {
       id
-      draftVersion {
-        draft_id
-        draft_operation
-      }
       standard_id
+      entity_type
       name
       description
       x_opencti_graph_data
       coverage_last_result
       coverage_valid_from
       coverage_valid_to
+      coverage_information {
+        coverage_name
+        coverage_score
+      }
+      objectMarking {
+        id
+      }
       ...SecurityCoverage_securityCoverage
+      ...StixCoreObjectContent_stixCoreObject
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...StixCoreObjectSharingListFragment
     }
-    connectorsForImport {
-      ...FileManager_connectorsImport
-    }
     connectorsForExport {
-      ...FileManager_connectorsExport
+      ...StixCoreObjectFilesAndHistory_connectorsExport
+    }
+    connectorsForImport {
+      ...StixCoreObjectFilesAndHistory_connectorsImport
     }
   }
 `;
 
-const SecurityCoverageRoot = () => {
+const RootSecurityCoverage = () => {
   const { securityCoverageId } = useParams() as { securityCoverageId: string };
-  const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootSecurityCoverageSubscription>
-  >(
-    () => ({
-      subscription,
-      variables: { id: securityCoverageId },
-    }),
-    [securityCoverageId],
-  );
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  useSubscription(subConfig);
+
   return (
     <>
       <QueryRenderer
@@ -92,17 +70,19 @@ const SecurityCoverageRoot = () => {
           if (props) {
             if (props.securityCoverage) {
               const { securityCoverage } = props;
-              const paddingRight = getPaddingRight(location.pathname, securityCoverage.id, '/dashboard/analyses/security_coverages', false);
+              const paddingRight = getPaddingRight(location.pathname, securityCoverageId, '/dashboard/analyses/security_coverages', false);
+
               return (
                 <div style={{ paddingRight }}>
                   <Breadcrumbs elements={[
                     { label: t_i18n('Analyses') },
-                    { label: t_i18n('Security coverages'), link: '/dashboard/analyses/security_coverages' },
-                    { label: getMainRepresentative(securityCoverage), current: true },
+                    { label: t_i18n('Security Coverages'), link: '/dashboard/analyses/security_coverages' },
+                    { label: securityCoverage.name, current: true },
                   ]}
                   />
-                  <ContainerHeader
-                    container={securityCoverage}
+                  <StixDomainObjectHeader
+                    entityType="Security-Coverage"
+                    stixDomainObject={securityCoverage}
                     EditComponent={(
                       <Security needs={[KNOWLEDGE_KNUPDATE]}>
                         <SecurityCoverageEdition securityCoverageId={securityCoverage.id} />
@@ -110,17 +90,14 @@ const SecurityCoverageRoot = () => {
                     )}
                     DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
                       <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                        <SecurityCoverageDeletion id={securityCoverage.id} isOpen={isOpen} handleClose={onClose} />
+                        <SecurityCoverageDeletion securityCoverageId={securityCoverage.id} isOpen={isOpen} handleClose={onClose} />
                       </Security>
                     )}
                     enableQuickSubscription={true}
                     enableQuickExport={true}
-                    enableEnrollPlaybook={true}
                     enableAskAi={false}
-                    disableSharing={false}
-                    overview={location.pathname === `/dashboard/analyses/security_coverages/${securityCoverage.id}`}
-                    redirectToContent={true}
                     enableEnricher={true}
+                    redirectToContent={true}
                   />
                   <Box
                     sx={{
@@ -129,9 +106,7 @@ const SecurityCoverageRoot = () => {
                       marginBottom: 3,
                     }}
                   >
-                    <Tabs
-                      value={getCurrentTab(location.pathname, securityCoverage.id, '/dashboard/analyses/security_coverages')}
-                    >
+                    <Tabs value={getCurrentTab(location.pathname, securityCoverage.id, '/dashboard/analyses/security_coverages')}>
                       <Tab
                         component={Link}
                         to={`/dashboard/analyses/security_coverages/${securityCoverage.id}`}
@@ -140,52 +115,52 @@ const SecurityCoverageRoot = () => {
                       />
                       <Tab
                         component={Link}
-                        to={`/dashboard/analyses/security_coverages/${securityCoverage.id}/files`}
-                        value={`/dashboard/analyses/security_coverages/${securityCoverage.id}/files`}
-                        label={t_i18n('Data')}
+                        to={`/dashboard/analyses/security_coverages/${securityCoverage.id}/content`}
+                        value={`/dashboard/analyses/security_coverages/${securityCoverage.id}/content`}
+                        label={t_i18n('Content')}
                       />
                       <Tab
                         component={Link}
-                        to={`/dashboard/analyses/security_coverages/${securityCoverage.id}/history`}
-                        value={`/dashboard/analyses/security_coverages/${securityCoverage.id}/history`}
-                        label={t_i18n('History')}
+                        to={`/dashboard/analyses/security_coverages/${securityCoverage.id}/files`}
+                        value={`/dashboard/analyses/security_coverages/${securityCoverage.id}/files`}
+                        label={t_i18n('Data')}
                       />
                     </Tabs>
                   </Box>
                   <Routes>
                     <Route
                       path="/"
-                      element={<SecurityCoverage data={securityCoverage}/>}
+                      element={
+                        <SecurityCoverage data={securityCoverage} />
+                      }
                     />
                     <Route
-                      path="/knowledge/relations/:relationId"
+                      path="/content/*"
                       element={
-                        <StixCoreRelationship
-                          entityId={securityCoverageId}
-                        />}
+                        <StixCoreObjectContentRoot
+                          stixCoreObject={securityCoverage}
+                          isContainer={false}
+                        />
+                      }
                     />
                     <Route
                       path="/files"
                       element={
-                        <FileManager
+                        <StixCoreObjectFilesAndHistory
                           id={securityCoverageId}
-                          connectorsImport={props.connectorsForImport}
                           connectorsExport={props.connectorsForExport}
+                          connectorsImport={props.connectorsForImport}
                           entity={securityCoverage}
-                        />}
-                    />
-                    <Route
-                      path="/history"
-                      element={
-                        <StixCoreObjectHistory
-                          stixCoreObjectId={securityCoverageId}
-                        />}
+                          withoutRelations={true}
+                          bypassEntityId={true}
+                        />
+                      }
                     />
                   </Routes>
                 </div>
               );
             }
-            return <ErrorNotFound/>;
+            return <ErrorNotFound />;
           }
           return <Loader />;
         }}
@@ -193,4 +168,5 @@ const SecurityCoverageRoot = () => {
     </>
   );
 };
-export default SecurityCoverageRoot;
+
+export default RootSecurityCoverage;
