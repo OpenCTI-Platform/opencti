@@ -64,7 +64,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
             const edges = vulnerabilities.getLinkedRecords('edges');
             const newEdges = (edges || []).filter(
               (n) => n?.getLinkedRecord('node')?.getValue('id')
-                !== vulnerabilityEdge.node.id
+                !== vulnerabilityEdge.node.id,
             ) as RecordProxy[];
             vulnerabilities.setLinkedRecords(newEdges, 'edges');
           }
@@ -84,16 +84,16 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Vulnerabilities')}
         </Typography>
-      <AddVulnerabilities
-        securityCoverage={securityCoverage}
-        securityCoverageVulnerabilities={securityCoverage.vulnerabilities?.edges || []}
-      />
-    </div>
-    <div className="clearfix" />
-    <List style={{ marginTop: -10 }}>
-      <FieldOrEmpty source={securityCoverage.vulnerabilities?.edges}>
-        {securityCoverage.vulnerabilities?.edges?.map((vulnerabilityEdge) => {
-          const vulnerability = vulnerabilityEdge.node.to;
+        <AddVulnerabilities
+          securityCoverage={securityCoverage}
+          securityCoverageVulnerabilities={securityCoverage.vulnerabilities?.edges || []}
+        />
+      </div>
+      <div className="clearfix" />
+      <List style={{ marginTop: -10 }}>
+        <FieldOrEmpty source={securityCoverage.vulnerabilities?.edges}>
+          {securityCoverage.vulnerabilities?.edges?.map((vulnerabilityEdge) => {
+            const vulnerability = vulnerabilityEdge.node.to;
             return (
               <ListItem
                 key={vulnerabilityEdge.node.id}
@@ -110,14 +110,14 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                   </IconButton>
                 }
               >
-            <ListItemButton
-              component={Link}
-              to={`/dashboard/arsenal/vulnerabilities/${vulnerability?.id}`}
-            >
-              <ListItemIcon>
-                <Bug color="primary"/>
-              </ListItemIcon>
-              <ListItemText primary={vulnerability?.name}/>
+                <ListItemButton
+                  component={Link}
+                  to={`/dashboard/arsenal/vulnerabilities/${vulnerability?.id}`}
+                >
+                  <ListItemIcon>
+                    <Bug color="primary"/>
+                  </ListItemIcon>
+                  <ListItemText primary={vulnerability?.name}/>
                 </ListItemButton>
               </ListItem>
             );
@@ -140,7 +140,8 @@ const SecurityCoverageVulnerabilities = createFragmentContainer(
         vulnerabilities: stixCoreRelationships(
           relationship_type: "has-covered"
           toTypes: ["Vulnerability"]
-        ) {
+          first: 200
+        ) @connection(key: "Pagination_vulnerabilities") {
           edges {
             node {
               id

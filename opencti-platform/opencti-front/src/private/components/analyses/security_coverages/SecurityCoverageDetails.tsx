@@ -23,13 +23,7 @@ import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  coveredObject: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    marginTop: theme.spacing(1),
-  },
+const useStyles = makeStyles<Theme>((_theme) => ({
 }));
 
 const securityCoverageDetailsFragment = graphql`
@@ -64,6 +58,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   securityCoverage,
 }) => {
   const classes = useStyles();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const theme = useTheme<Theme>();
   const { t_i18n, fd } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);

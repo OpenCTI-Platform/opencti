@@ -8,7 +8,6 @@ import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
 import AddVulnerabilitiesLines, { addVulnerabilitiesLinesQuery } from './AddVulnerabilitiesLines';
-import { AddVulnerabilitiesLinesQuery$data } from './__generated__/AddVulnerabilitiesLinesQuery.graphql';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -23,7 +22,11 @@ interface AddVulnerabilitiesProps {
   securityCoverage: {
     id: string;
   };
-  securityCoverageVulnerabilities: Array<{
+  securityCoverageVulnerabilities: ReadonlyArray<{
+    readonly node: {
+      readonly id: string;
+    };
+  }> | Array<{
     node: {
       id: string;
     };
@@ -90,12 +93,12 @@ const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({
               search,
               count: 20,
             }}
-            render={({ props }: { props: AddVulnerabilitiesLinesQuery$data | null | undefined }) => {
+            render={({ props }: any) => {
               if (props) {
                 return (
                   <AddVulnerabilitiesLines
                     securityCoverage={securityCoverage}
-                    securityCoverageVulnerabilities={securityCoverageVulnerabilities}
+                    securityCoverageVulnerabilities={securityCoverageVulnerabilities as any}
                     data={props}
                   />
                 );

@@ -64,7 +64,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
             const edges = securityPlatforms.getLinkedRecords('edges');
             const newEdges = (edges || []).filter(
               (n) => n?.getLinkedRecord('node')?.getValue('id')
-                !== securityPlatformEdge.node.id
+                !== securityPlatformEdge.node.id,
             ) as RecordProxy[];
             securityPlatforms.setLinkedRecords(newEdges, 'edges');
           }
@@ -140,7 +140,8 @@ const SecurityCoverageSecurityPlatforms = createFragmentContainer(
         securityPlatforms: stixCoreRelationships(
           relationship_type: "has-covered"
           toTypes: ["SecurityPlatform"]
-        ) {
+          first: 200
+        ) @connection(key: "Pagination_securityPlatforms") {
           edges {
             node {
               id
