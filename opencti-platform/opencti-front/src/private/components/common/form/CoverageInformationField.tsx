@@ -25,8 +25,15 @@ const CoverageInformationField: FunctionComponent<CoverageInformationFieldProps>
   name,
   values,
   containerStyle,
+  setFieldValue,
 }): ReactElement => {
   const { t_i18n } = useFormatter();
+
+  const handleUpdate = (newValues: CoverageInformationInput[]) => {
+    if (setFieldValue) {
+      setFieldValue(name, newValues);
+    }
+  };
 
   return (
     <div style={{ ...fieldSpacingContainerStyle, ...containerStyle }}>
@@ -36,7 +43,7 @@ const CoverageInformationField: FunctionComponent<CoverageInformationFieldProps>
       <FieldArray name={name} render={(arrayHelpers) => (
         <>
           <div>
-            {values?.map((_, index) => (
+            {values?.map((item, index) => (
               <div
                 key={index}
                 style={{
@@ -59,7 +66,10 @@ const CoverageInformationField: FunctionComponent<CoverageInformationFieldProps>
                     name={`${name}.${index}.coverage_name`}
                     required={true}
                     onChange={(__, value) => {
-                      arrayHelpers.replace(index, { ...values[index], coverage_name: value.toString() });
+                      const updatedValues = [...values];
+                      updatedValues[index] = { ...values[index], coverage_name: value.toString() };
+                      arrayHelpers.replace(index, updatedValues[index]);
+                      handleUpdate(updatedValues);
                     }}
                     containerStyle={{ marginTop: 3, width: '100%' }}
                     multiple={false}
@@ -86,7 +96,9 @@ const CoverageInformationField: FunctionComponent<CoverageInformationFieldProps>
                   id={`deleteCoverageInfo_${index}`}
                   aria-label="Delete"
                   onClick={() => {
+                    const updatedValues = values.filter((val, i) => i !== index);
                     arrayHelpers.remove(index);
+                    handleUpdate(updatedValues);
                   }}
                   size="large"
                   style={{ position: 'absolute', right: -10, top: 5 }}
@@ -103,7 +115,9 @@ const CoverageInformationField: FunctionComponent<CoverageInformationFieldProps>
               aria-label="Add"
               id="addCoverageInfo"
               onClick={() => {
+                const updatedValues = [...values, { coverage_name: '', coverage_score: '' }];
                 arrayHelpers.push({ coverage_name: '', coverage_score: '' });
+                handleUpdate(updatedValues);
               }}
               style={{ marginTop: 20 }}
             >
