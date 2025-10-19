@@ -1,5 +1,5 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
+import React, { FunctionComponent, useState, useEffect } from 'react';
+import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -10,12 +10,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import * as R from 'ramda';
 import SearchInput from '../../../../components/SearchInput';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
-import { AttackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixQuery.graphql';
-import { attackPatternsMatrixQuery } from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
-import { attackPatternsMatrixColumnsFragment } from '../../techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
-import { AttackPatternsMatrixColumns_data$key } from '../../techniques/attack_patterns/attack_patterns_matrix/__generated__/AttackPatternsMatrixColumns_data.graphql';
 import SecurityCoverageDetails from './SecurityCoverageDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
@@ -23,6 +17,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
 import { SecurityCoverage_securityCoverage$key } from './__generated__/SecurityCoverage_securityCoverage.graphql';
+import { SecurityCoverageKillChainsQuery } from './__generated__/SecurityCoverageKillChainsQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -32,6 +27,20 @@ const useStyles = makeStyles<Theme>(() => ({
     marginBottom: 20,
   },
 }));
+
+const securityCoverageKillChainsQuery = graphql`
+  query SecurityCoverageKillChainsQuery {
+    allAttackPatterns: attackPatterns(first: 1000) {
+      edges {
+        node {
+          killChainPhases {
+            kill_chain_name
+          }
+        }
+      }
+    }
+  }
+`;
 
 const securityCoverageFragment = graphql`
   fragment SecurityCoverage_securityCoverage on SecurityCoverage {
@@ -115,37 +124,44 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
   const securityCoverage = useFragment(securityCoverageFragment, data);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
-  
+
+  // Fetch all available kill chains from attack patterns
+  const killChainsData = useLazyLoadQuery<SecurityCoverageKillChainsQuery>(
+    securityCoverageKillChainsQuery,
+    {},
+  );
+
   const handleKillChainChange = (event: SelectChangeEvent<unknown>) => {
     setSelectedKillChain(event.target.value as string);
   };
-  
+
   const handleSearch = (value: string) => {
     setSearchTerm(value);
   };
-  
-  // Load kill chain data
-  const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(
-    attackPatternsMatrixQuery,
-    {},
-  );
-  
-  // Always call the hook but handle null queryRef
-  const killChainsData = queryRef ? usePreloadedFragment<AttackPatternsMatrixQuery, AttackPatternsMatrixColumns_data$key>({
-    queryDef: attackPatternsMatrixQuery,
-    fragmentDef: attackPatternsMatrixColumnsFragment,
-    queryRef,
-  }) : null;
-  
-  // Get available kill chains from backend data
-  const killChainsPhaseData = killChainsData?.attackPatternsMatrix?.attackPatternsOfPhases ?? [];
-  const killChains = R.uniq(killChainsPhaseData.map((a) => a.kill_chain_name)).sort((a, b) => a.localeCompare(b));
-  
-  // Update selected kill chain if current one is not available
-  if (killChains.length > 0 && !killChains.includes(selectedKillChain)) {
-    setSelectedKillChain(killChains[0]);
+
+  // Extract unique kill chains from all attack patterns
+  const killChainsSet = new Set<string>();
+  if (killChainsData.allAttackPatterns?.edges) {
+    killChainsData.allAttackPatterns.edges.forEach((edge) => {
+      if (edge?.node?.killChainPhases) {
+        edge.node.killChainPhases.forEach((phase) => {
+          if (phase?.kill_chain_name) {
+            killChainsSet.add(phase.kill_chain_name);
+          }
+        });
+      }
+    });
   }
-  
+
+  const killChains = Array.from(killChainsSet).sort((a, b) => a.localeCompare(b));
+
+  // Update selected kill chain if current one is not available
+  useEffect(() => {
+    if (killChains.length > 0 && !killChains.includes(selectedKillChain)) {
+      setSelectedKillChain(killChains[0]);
+    }
+  }, [killChains.length, selectedKillChain]); // Use killChains.length instead of killChains to avoid dependency array issues
+
   const showKillChainSelector = killChains.length > 1;
 
   return (
@@ -179,10 +195,10 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
                 >
                   {killChains.map((chain) => (
                     <MenuItem key={chain} value={chain}>
-                      {chain === 'mitre-attack' ? 'MITRE ATT&CK' : 
-                       chain === 'capec' ? 'CAPEC' : 
-                       chain === 'disarm' ? 'DISARM' : 
-                       chain.toUpperCase()}
+                      {chain === 'mitre-attack' ? 'MITRE ATT&CK'
+                        : chain === 'capec' ? 'CAPEC'
+                          : chain === 'disarm' ? 'DISARM'
+                            : chain.toUpperCase()}
                     </MenuItem>
                   ))}
                 </Select>
