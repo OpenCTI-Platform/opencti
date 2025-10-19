@@ -17,6 +17,7 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
+import CoverageInformationField from '../../common/form/CoverageInformationField';
 
 const SECURITY_COVERAGE_TYPE = 'Security-Coverage';
 
@@ -85,6 +86,10 @@ const securityCoverageEditionOverviewFragment = graphql`
     name
     description
     confidence
+    coverage_information {
+      coverage_name
+      coverage_score
+    }
     createdBy {
       ... on Identity {
         id
@@ -124,6 +129,7 @@ interface SecurityCoverageEditionFormValues {
   name: string;
   description: string | null;
   confidence: number | null;
+  coverage_information: { coverage_name: string; coverage_score: number | string }[];
   createdBy: FieldOption | null;
   objectMarking: FieldOption[];
 }
@@ -156,6 +162,15 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
+    coverage_information: Yup.array().of(
+      Yup.object().shape({
+        coverage_name: Yup.string().required(t_i18n('This field is required')),
+        coverage_score: Yup.number()
+          .required(t_i18n('This field is required'))
+          .min(0, t_i18n('Score must be at least 0'))
+          .max(100, t_i18n('Score must be at most 100')),
+      }),
+    ).nullable(),
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
   }, mandatoryAttributes);
@@ -176,6 +191,10 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
+      coverage_information: values.coverage_information?.map((info) => ({
+        coverage_name: info.coverage_name,
+        coverage_score: Number(info.coverage_score),
+      })),
     }).map(([k, v]) => ({ key: k, value: adaptFieldValue(v) }));
 
     editor.fieldPatch({
@@ -206,10 +225,14 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       .catch(() => false);
   };
 
-  const initialValues = {
+  const initialValues: SecurityCoverageEditionFormValues = {
     name: securityCoverageData.name,
     description: securityCoverageData.description ?? null,
     confidence: securityCoverageData.confidence ?? null,
+    coverage_information: (securityCoverageData.coverage_information ?? []).map((item) => ({
+      coverage_name: item.coverage_name,
+      coverage_score: item.coverage_score,
+    })),
     createdBy: convertCreatedBy(securityCoverageData) as FieldOption,
     objectMarking: convertMarkings(securityCoverageData),
   };
@@ -222,6 +245,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       onSubmit={onSubmit}
     >
       {({
+        values,
         setFieldValue,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
@@ -259,6 +283,11 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+          />
+          <CoverageInformationField
+            name="coverage_information"
+            values={values.coverage_information}
+            setFieldValue={setFieldValue}
           />
           <CreatedByField
             name="createdBy"

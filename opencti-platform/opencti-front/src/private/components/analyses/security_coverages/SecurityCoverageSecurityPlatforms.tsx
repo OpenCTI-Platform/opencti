@@ -10,8 +10,9 @@ import { LinkOff } from '@mui/icons-material';
 import { LockPattern } from 'mdi-material-ui';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { ListItemButton } from '@mui/material';
-import { RecordSourceSelectorProxy, RecordProxy } from 'relay-runtime';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
+import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import AddSecurityPlatforms from './AddSecurityPlatforms';
@@ -57,18 +58,16 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
         relationship_type: 'has-covered',
       },
       updater: (store: RecordSourceSelectorProxy) => {
-        const node = store.get(securityCoverage.id);
-        if (node) {
-          const securityPlatforms = node.getLinkedRecord('securityPlatforms');
-          if (securityPlatforms) {
-            const edges = securityPlatforms.getLinkedRecords('edges');
-            const newEdges = (edges || []).filter(
-              (n) => n?.getLinkedRecord('node')?.getValue('id')
-                !== securityPlatformEdge.node.id,
-            ) as RecordProxy[];
-            securityPlatforms.setLinkedRecords(newEdges, 'edges');
-          }
-        }
+        deleteNodeFromEdge(
+          store,
+          'securityPlatforms',
+          securityCoverage.id,
+          securityPlatformEdge.node.id,
+          {
+            relationship_type: 'has-covered',
+            toTypes: ['SecurityPlatform'],
+          },
+        );
       },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,

@@ -7,7 +7,7 @@ import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddSecurityPlatformsLines, { addSecurityPlatformsLinesQuery } from './AddSecurityPlatformsLines';
+import AddSecurityPlatformsLines, { addSecurityPlatformsLinesQuery, type AddSecurityPlatformsLinesProps } from './AddSecurityPlatformsLines';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -93,12 +93,12 @@ const AddSecurityPlatforms: FunctionComponent<AddSecurityPlatformsProps> = ({
               search,
               count: 20,
             }}
-            render={({ props }: any) => {
+            render={({ props }: { props: AddSecurityPlatformsLinesProps['data'] | null | undefined }) => {
               if (props) {
                 return (
                   <AddSecurityPlatformsLines
                     securityCoverage={securityCoverage}
-                    securityCoverageSecurityPlatforms={securityCoverageSecurityPlatforms as any}
+                    securityCoverageSecurityPlatforms={securityCoverageSecurityPlatforms as AddSecurityPlatformsLinesProps['securityCoverageSecurityPlatforms']}
                     data={props}
                   />
                 );

@@ -23,7 +23,15 @@ import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
-const useStyles = makeStyles<Theme>((_theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
+  paper: {
+    marginTop: theme.spacing(1),
+    padding: '15px',
+    borderRadius: 4,
+    position: 'relative',
+    display: 'flex',
+    flexFlow: 'column',
+  },
 }));
 
 const securityCoverageDetailsFragment = graphql`
@@ -66,9 +74,9 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
+        {t_i18n('Entity details')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>
             <Typography variant="h3" gutterBottom={true}>
