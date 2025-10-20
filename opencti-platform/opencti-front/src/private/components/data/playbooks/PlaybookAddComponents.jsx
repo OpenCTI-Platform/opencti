@@ -120,8 +120,10 @@ const PlaybookAddComponentsContent = ({
   const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
+  const initialFiltersBefore = currentConfig?.filtersBefore ? deserializeFilterGroupForFrontend(currentConfig?.filtersBefore) : emptyFilterGroup;
   const availableQueryFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
   const [filters, helpers] = useFiltersState(initialFilters);
+  const [filtersBefore, helpersBefore] = useFiltersState(initialFiltersBefore);
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],
   );
@@ -486,6 +488,10 @@ const PlaybookAddComponentsContent = ({
       const jsonFilters = serializeFilterGroupForBackend(filters);
       finalConfig = { ...finalConfig, filters: jsonFilters };
     }
+    if (configurationSchema?.properties?.filtersBefore) {
+      const jsonFilters = serializeFilterGroupForBackend(filtersBefore);
+      finalConfig = { ...finalConfig, filtersBefore: jsonFilters };
+    }
     if (configurationSchema?.properties?.triggerTime) {
       // Important to translate to UTC before formatting
       let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
@@ -656,7 +662,9 @@ const PlaybookAddComponentsContent = ({
                       </Box>
                     );
                   }
-                  if (k === 'filters') {
+                  if (k === 'filters' || k === 'filtersBefore') {
+                    const currentFilters = k === 'filters' ? filters : filtersBefore;
+                    const currentHelpers = k === 'filters' ? helpers : helpersBefore;
                     return (
                       <div key={k}>
                         <Box
@@ -667,15 +675,15 @@ const PlaybookAddComponentsContent = ({
                           }}
                         >
                           <Filters
-                            helpers={helpers}
+                            helpers={currentHelpers}
                             availableFilterKeys={componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? availableQueryFilterKeys : stixFilters}
                             searchContext={searchContext}
                           />
                         </Box>
                         <div className="clearfix" />
                         <FilterIconButton
-                          filters={filters}
-                          helpers={helpers}
+                          filters={currentFilters}
+                          helpers={currentHelpers}
                           entityTypes={entityTypes}
                           searchContext={searchContext}
                           styleNumber={2}

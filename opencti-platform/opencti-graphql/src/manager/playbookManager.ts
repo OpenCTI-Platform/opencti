@@ -23,7 +23,7 @@ import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import type { SseEvent, StreamDataEvent } from '../types/event';
+import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../utils/format';
 import { findById } from '../modules/playbook/playbook-domain';
@@ -308,6 +308,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                   create,
                   // delete: deletion,
                   filters: sourceFilters,
+                  filtersBefore: sourceFiltersBefore,
                   inPirFilters
                 } = (JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration);
                 const filtersOnInPirRel = inPirFilters ? {
@@ -319,6 +320,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                   }],
                 } : null;
                 const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
+                const filtersBeforeOnSource = sourceFiltersBefore ? JSON.parse(sourceFiltersBefore) : null;
 
                 let validEventType = false;
                 if (type === 'create' && create === true) validEventType = true;
@@ -327,15 +329,25 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                 const isMatch = !filtersOnInPirRel || await isStixMatchFilterGroup(context, SYSTEM_USER, data, filtersOnInPirRel);
                 // 02. Execute the component
                 if (validEventType && isMatch) {
-                  const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
-                  const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersOnSource);
+                  const stixEntity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
+                  const isEntityMatch = stixEntity && await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntity, filtersOnSource);
+
+                  if (type === 'update' && stixEntity) {
+                    const updateEvent = streamEvent.data as UpdateEvent; // correspond à la relation
+                    const reversePatchOperations = updateEvent.context.reverse_patch;
+                    console.log('=====================', JSON.stringify({ stixEntity, reversePatchOperations }, null, 2));
+                    const stixEntityBefore = jsonpatch.applyPatch(structuredClone(stixEntity), reversePatchOperations).newDocument;
+                    const isEntityBeforeMatch = stixEntity && await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntityBefore, filtersBeforeOnSource);
+                    console.log('---------------------', JSON.stringify({ stixEntityBefore, isEntityBeforeMatch }, null, 2));
+                  }
+
                   if (isEntityMatch) {
                     const nextStep = { component: connector, instance };
                     const bundle: StixBundle = {
                       id: uuidv4(),
                       spec_version: STIX_SPEC_VERSION,
                       type: 'bundle',
-                      objects: [entity]
+                      objects: [stixEntity]
                     };
                     await playbookExecutor({
                       eventId,
