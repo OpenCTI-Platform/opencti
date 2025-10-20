@@ -22,8 +22,8 @@ export const pageSecurityCoverageConnections = (context: AuthContext, user: Auth
   return pageEntitiesConnection<BasicStoreEntitySecurityCoverage>(context, user, [ENTITY_TYPE_SECURITY_COVERAGE], args);
 };
 
-export const findSecurityCoverageByCoveredId = async <T extends BasicStoreEntity> (context: AuthContext, user: AuthUser, coveredId: string) => {
-  return loadEntityThroughRelationsPaginated<T>(context, user, coveredId, RELATION_COVERED, ABSTRACT_STIX_DOMAIN_OBJECT, true);
+export const findSecurityCoverageByCoveredId = async (context: AuthContext, user: AuthUser, coveredId: string) => {
+  return loadEntityThroughRelationsPaginated<BasicStoreEntitySecurityCoverage>(context, user, coveredId, RELATION_COVERED, ABSTRACT_STIX_DOMAIN_OBJECT, true);
 };
 
 export const addSecurityCoverage = async (context: AuthContext, user: AuthUser, securityCoverageInput: SecurityCoverageAddInput, noEnrichment: boolean | null | undefined) => {

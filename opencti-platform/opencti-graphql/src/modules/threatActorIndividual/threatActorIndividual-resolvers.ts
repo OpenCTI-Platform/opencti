@@ -11,6 +11,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { utcDate } from '../../utils/format';
 import { loadThroughDenormalized } from '../../resolvers/stix';
 import { INPUT_BORN_IN, INPUT_ETHNICITY } from '../../schema/general';
+import { findSecurityCoverageByCoveredId } from '../securityCoverage/securityCoverage-domain';
 
 const threatActorIndividualResolvers: Resolvers = {
   Query: {
@@ -26,6 +27,7 @@ const threatActorIndividualResolvers: Resolvers = {
     weight: (threatActorIndividual, _, __) => (threatActorIndividual.weight ?? [])
       .map((weight, index) => ({ ...weight, index }))
       .sort((a, b) => utcDate(a.date_seen).diff(utcDate(b.date_seen))),
+    securityCoverage: (threatActorIndividual, _, context) => findSecurityCoverageByCoveredId(context, context.user, threatActorIndividual.id),
   },
   Mutation: {
     threatActorIndividualAdd: (_, { input }, context) => {

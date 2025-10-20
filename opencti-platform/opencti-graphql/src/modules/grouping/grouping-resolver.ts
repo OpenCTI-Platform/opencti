@@ -1,8 +1,8 @@
 import type { Resolvers } from '../../generated/graphql';
 import {
   addGrouping,
-  findGroupingPaginated,
   findById,
+  findGroupingPaginated,
   groupingContainsStixObjectOrStixRelationship,
   groupingsDistributionByEntity,
   groupingsNumber,
@@ -22,6 +22,7 @@ import {
 } from '../../domain/stixDomainObject';
 import { distributionEntities } from '../../database/middleware';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from './grouping-types';
+import { findSecurityCoverageByCoveredId } from '../securityCoverage/securityCoverage-domain';
 
 const groupingResolvers: Resolvers = {
   Query: {
@@ -54,6 +55,9 @@ const groupingResolvers: Resolvers = {
     groupingContainsStixObjectOrStixRelationship: (_, args, context) => {
       return groupingContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
+  },
+  Grouping: {
+    securityCoverage: (grouping, _, context) => findSecurityCoverageByCoveredId(context, context.user, grouping.id),
   },
   Mutation: {
     groupingAdd: (_, { input }, context) => {
