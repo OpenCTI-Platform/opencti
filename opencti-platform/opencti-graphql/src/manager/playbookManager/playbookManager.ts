@@ -15,13 +15,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import * as jsonpatch from 'fast-json-patch';
-import moment from 'moment';
 import type { Moment } from 'moment/moment';
-import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from '../../database/redis';
+import { createStreamProcessor, type StreamProcessor } from '../../database/redis';
 import { lockResources } from '../../lock/master-lock';
 import conf, { booleanConf, logApp } from '../../config/conf';
-import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle } from '../../types/stix-2-1-common';
@@ -29,12 +27,12 @@ import { streamEventId, utcDate } from '../../utils/format';
 import { findById } from '../../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
-import type { BasicStoreEntityPlaybook, ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../../modules/playbook/playbook-types';
+import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../../modules/playbook/playbook-types';
 import { READ_STIX_INDICES } from '../../database/utils';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { FilterMode, type MutationPlaybookStepExecutionArgs } from '../../generated/graphql';
+import { type MutationPlaybookStepExecutionArgs } from '../../generated/graphql';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -42,198 +40,20 @@ import { convertFiltersToQueryOptions } from '../../utils/filtering/filtering-re
 import { elPaginate } from '../../database/engine';
 import { stixLoadByFilters, stixLoadById } from '../../database/middleware';
 import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-utils';
-import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../../types/playbookExecution';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { isStixRelation } from '../../schema/stixRelationship';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import type { PirStreamConfiguration } from '../../modules/playbook/playbookComponents/playbook-data-stream-pir-component';
+import { isEventMatchesPir } from './listenPirEventsUtils';
+import { isValidEventType } from './playbookManagerUtils';
+import { playbookExecutor } from './playbookExecutor';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
 const PLAYBOOK_CRON_MAX_SIZE = conf.get('playbook_manager:cron_max_size') || 500;
 const STREAM_SCHEDULE_TIME = 10000;
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
-
-// Only way to force the step_literal checking
-// Don't try to understand, just trust
-function keyStep<V>(k: `step_${string}`, v: V): { [P in `step_${string}`]: V } {
-  return { [k]: v } as any; // Trust the entry checking
-}
-
-type ObservationFn = {
-  message: string,
-  status: 'success' | 'error',
-  executionId: string,
-  playbookId: string,
-  start: string,
-  end: string,
-  diff: number,
-  previousStepId?: string,
-  stepId: string,
-  previousBundle?: StixBundle | null
-  bundle?: StixBundle | null
-  error?: string
-  forceBundleTracking: boolean
-};
-const registerStepObservation = async (data: ObservationFn) => {
-  const patch = data.previousBundle && data.bundle ? jsonpatch.compare(data.previousBundle, data.bundle) : [];
-  const bundlePatch = data.previousStepId && !data.forceBundleTracking ? { patch } : { bundle: data.bundle };
-  const step: ExecutionEnvelopStep = {
-    message: data.message,
-    status: data.status,
-    previous_step_id: data.previousStepId,
-    in_timestamp: data.start,
-    out_timestamp: data.end,
-    duration: data.diff,
-    error: data.error,
-    ...bundlePatch
-  };
-  const envelop: ExecutionEnvelop = {
-    playbook_execution_id: data.executionId,
-    playbook_id: data.playbookId,
-    last_execution_step: data.stepId,
-    ...keyStep(`step_${data.stepId}`, step)
-  };
-  await redisPlaybookUpdate(envelop);
-};
-
-type ExecutorFn = {
-  eventId: string,
-  executionId: string,
-  playbookId: string,
-  dataInstanceId: string,
-  definition: ComponentDefinition,
-  previousStep: PlaybookExecutionStep<object> | null
-  nextStep: PlaybookExecutionStep<object>,
-  previousStepBundle: StixBundle | null
-  bundle: StixBundle
-  externalCallback?: {
-    externalStartDate: Date
-  }
-};
-export const playbookExecutor = async ({
-  eventId,
-  executionId,
-  playbookId,
-  dataInstanceId,
-  definition,
-  previousStep,
-  nextStep,
-  previousStepBundle,
-  bundle,
-  externalCallback
-} : ExecutorFn) => {
-  const isExternalCallback = externalCallback !== undefined;
-  const start = isExternalCallback ? externalCallback.externalStartDate : utcDate();
-  const instanceWithConfig = { ...nextStep.instance, configuration: JSON.parse(nextStep.instance.configuration ?? '{}') };
-  if (nextStep.component.is_internal || isExternalCallback) {
-    let execution: PlaybookExecution;
-    const baseBundle = structuredClone(isExternalCallback ? previousStepBundle : bundle);
-    try {
-      execution = await nextStep.component.executor({
-        eventId,
-        executionId,
-        dataInstanceId,
-        playbookId,
-        previousPlaybookNodeId: previousStep?.instance.id,
-        previousStepBundle,
-        playbookNode: instanceWithConfig,
-        bundle
-      });
-      // Execution was done correctly, log the step
-      // For internal component, register directly the observability
-      const end = utcDate();
-      const durationDiff = end.diff(start);
-      const duration = moment.duration(durationDiff);
-      const observation: ObservationFn = {
-        message: `${nextStep.instance.name.trim()} successfully executed in ${duration.humanize()}`,
-        status: 'success',
-        executionId,
-        previousStepId: previousStep?.instance?.id,
-        stepId: nextStep.instance.id,
-        start: start.toISOString(),
-        end: end.toISOString(),
-        diff: durationDiff,
-        playbookId,
-        previousBundle: baseBundle,
-        bundle: execution.bundle,
-        forceBundleTracking: execution.forceBundleTracking ?? false
-      };
-      await registerStepObservation(observation);
-    } catch (error) {
-      // Error executing the step, register
-      const executionError = error as Error;
-      logApp.error('[OPENCTI-MODULE] Playbook manager executor error', { cause: error, manager: 'PLAYBOOK_MANAGER', step: instanceWithConfig, bundle: baseBundle });
-      const end = utcDate();
-      const durationDiff = end.diff(start);
-      const duration = moment.duration(durationDiff);
-      const logError = { message: executionError.message, stack: executionError.stack, name: executionError.name };
-      const observation: ObservationFn = {
-        message: `${nextStep.component.name.trim()} fail execution in ${duration.humanize()}`,
-        status: 'error',
-        executionId,
-        previousStepId: undefined,
-        stepId: nextStep.instance.id,
-        start: start.toISOString(),
-        end: end.toISOString(),
-        diff: durationDiff,
-        playbookId,
-        bundle: baseBundle,
-        error: JSON.stringify(logError, null, 2),
-        forceBundleTracking: false
-      };
-      await registerStepObservation(observation);
-      return;
-    }
-    // Send the result to the next component if needed
-    if (execution.output_port) {
-      // Find the next op for this attachment
-      const connections = definition.links.filter((c) => c.from.id === nextStep.instance.id && c.from.port === execution.output_port);
-      for (let connectionIndex = 0; connectionIndex < connections.length; connectionIndex += 1) {
-        const connection = connections[connectionIndex];
-        const nextInstance = definition.nodes.find((c) => c.id === connection.to.id);
-        const fromInstance = definition.nodes.find((c) => c.id === connection.from.id);
-        if (!nextInstance || !fromInstance) {
-          throw UnsupportedError('Invalid playbook, nextInstance needed');
-        }
-        const fromConnector = PLAYBOOK_COMPONENTS[fromInstance.component_id];
-        const nextConnector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
-        await playbookExecutor({
-          eventId,
-          executionId,
-          playbookId,
-          dataInstanceId,
-          definition,
-          previousStep: { component: fromConnector, instance: fromInstance },
-          nextStep: { component: nextConnector, instance: nextInstance },
-          previousStepBundle,
-          bundle: execution.bundle
-        });
-      }
-    }
-  } else {
-    if (!nextStep.component.notify) {
-      throw UnsupportedError('Notify definition is required');
-    }
-    // Component must rely on an external call.
-    // Execution will be continued through an external API call
-    try {
-      await nextStep.component.notify({
-        eventId,
-        executionId,
-        dataInstanceId,
-        playbookId,
-        previousPlaybookNodeId: previousStep?.instance.id,
-        playbookNode: instanceWithConfig,
-        previousStepBundle,
-        bundle
-      });
-    } catch (notifyError) {
-      // For now any problem sending in notification will not be tracked
-    }
-  }
-};
 
 const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEvent>>) => {
   try {
@@ -262,20 +82,17 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             if (instance && instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM') {
               if (scope === 'external') {
                 const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+                const configuration = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
                 const {
-                  update,
-                  create,
-                  delete: deletion,
                   filters
-                } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
+                } = configuration;
                 const jsonFilters = filters ? JSON.parse(filters) : null;
-                let validEventType = false;
-                if (type === 'create' && create === true) validEventType = true;
-                if (type === 'update' && update === true) validEventType = true;
-                if (type === 'delete' && deletion === true) validEventType = true;
+
+                const isValidEvent = isValidEventType(type, configuration);
                 const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, data, jsonFilters);
+
                 // 02. Execute the component
-                if (validEventType && isMatch) {
+                if (isValidEvent && isMatch) {
                   const nextStep = { component: connector, instance };
                   const bundle: StixBundle = {
                     id: uuidv4(),
@@ -303,30 +120,25 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
             if (instance && instance.component_id === 'PLAYBOOK_DATA_STREAM_PIR') {
               if (scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR) {
                 const connector = PLAYBOOK_COMPONENTS[instance.component_id];
+                const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
+
                 const {
-                  update,
-                  create,
-                  delete: deletion,
                   filters: sourceFilters,
                   inPirFilters
-                } = (JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration);
-                const filtersOnInPirRel = inPirFilters ? {
-                  filterGroups: [],
-                  mode: FilterMode.And,
-                  filters: [{
-                    key: ['toId'],
-                    values: inPirFilters.map((n) => n.value),
-                  }],
-                } : null;
+                } = configuration;
+
+                const isMatchPir = await isEventMatchesPir(
+                  context,
+                  inPirFilters,
+                  data
+                );
+
                 const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
 
-                let validEventType = false;
-                if (type === 'create' && create === true) validEventType = true;
-                if (type === 'update' && update === true) validEventType = true;
-                if (type === 'delete' && deletion === true) validEventType = true;
-                const isMatch = !filtersOnInPirRel || await isStixMatchFilterGroup(context, SYSTEM_USER, data, filtersOnInPirRel);
+                const isValidEvent = isValidEventType(type, configuration);
+
                 // 02. Execute the component
-                if (validEventType && isMatch) {
+                if (isValidEvent && isMatchPir) {
                   const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
                   const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersOnSource);
                   if (isEntityMatch) {
