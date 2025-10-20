@@ -477,6 +477,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   openExports?: boolean;
   handleReverseRelation?: () => void;
   currentView?: string;
+  isCoverage?: boolean;
 }
 
 interface StixCoreRelationshipCreationFromEntityForm {
@@ -487,6 +488,7 @@ interface StixCoreRelationshipCreationFromEntityForm {
   killChainPhases: FieldOption[];
   objectMarking: FieldOption[];
   externalReferences: FieldOption[];
+  coverage?: Array<{ coverage_name: string; coverage_score: number }>;
 }
 
 export interface TargetEntity {
@@ -513,6 +515,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     openExports = false,
     handleReverseRelation = undefined,
     currentView,
+    isCoverage = false,
   } = props;
 
   const LOCAL_STORAGE_KEY = `stixCoreRelationshipCreationFromEntity-${entityId}-${targetStixDomainObjectTypes?.join('-')}-${targetStixCyberObservableTypes?.join('-')}`;
@@ -683,6 +686,10 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
           'externalReferences',
           R.pluck('value', values.externalReferences),
         ),
+        isCoverage && values.coverage ? R.assoc('coverage', values.coverage.map((c) => ({
+          coverage_name: c.coverage_name,
+          coverage_score: typeof c.coverage_score === 'string' ? parseInt(c.coverage_score, 10) : c.coverage_score,
+        }))) : R.identity,
       )(values);
       try {
         // eslint-disable-next-line no-await-in-loop
@@ -969,6 +976,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               defaultConfidence={undefined}
               defaultCreatedBy={undefined}
               defaultMarkingDefinitions={undefined}
+              isCoverage={isCoverage}
             />
           );
         }}

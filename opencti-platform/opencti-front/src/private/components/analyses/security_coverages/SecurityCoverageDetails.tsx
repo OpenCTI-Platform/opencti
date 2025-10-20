@@ -3,7 +3,6 @@ import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -66,8 +65,6 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   securityCoverage,
 }) => {
   const classes = useStyles();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const theme = useTheme<Theme>();
   const { t_i18n, fd } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
 
@@ -142,10 +139,10 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             </Typography>
             {data.coverage_valid_to ? fd(data.coverage_valid_to) : '-'}
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <SecurityCoverageSecurityPlatforms securityCoverage={data} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <SecurityCoverageVulnerabilities securityCoverage={data} />
           </Grid>
         </Grid>

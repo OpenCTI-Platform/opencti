@@ -13053,6 +13053,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     filters: FilterGroup
   ): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
+  coverage: [CoverageResult!]
   # Technical
   creators: [Creator!]
   toStix: String
