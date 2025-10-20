@@ -25618,7 +25618,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   expiration_date?: Maybe<Scalars['DateTime']['output']>;
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
-  fingerprint_MD5?: Maybe<Scalars['String']['output']>;
+  fingerprint_md5?: Maybe<Scalars['String']['output']>;
   fingerprint_sha256: Scalars['String']['output'];
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
@@ -44171,7 +44171,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   expiration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SshKeyExternalReferencesArgs>>;
-  fingerprint_MD5?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  fingerprint_md5?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   fingerprint_sha256?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SshKeyGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;

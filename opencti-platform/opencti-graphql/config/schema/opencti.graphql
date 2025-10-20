@@ -12640,7 +12640,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   key_type: String
   public_key: String
   fingerprint_sha256: String!
-  fingerprint_MD5: String
+  fingerprint_md5: String
   key_length: String
   expiration_date: DateTime
   comment: String
