@@ -109,10 +109,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     orderAsc: false,
     openExports: false,
     redirectionMode: 'overview',
-    filters: {
-      ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['context'], ['Workspace']),
-    },
+    filters: emptyFilterGroup,
   };
   const {
     viewStorage,

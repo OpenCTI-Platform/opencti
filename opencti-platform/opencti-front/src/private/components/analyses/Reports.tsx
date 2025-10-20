@@ -146,10 +146,7 @@ const Reports: FunctionComponent = () => {
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
 
   const initialValues = {
-    filters: {
-      ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['entity_type'], ['Report']),
-    },
+    filters: emptyFilterGroup,
     searchTerm: '',
     sortBy: 'published',
     orderAsc: false,
