@@ -150,7 +150,7 @@ export const editAuthorizedMembers = async (
   },
 ) => {
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
-  
+
   // Allow authorized members edition only on draft type but not for other entity types in draft
   const draftId = getDraftContext(context, user);
   if (draftId && draftId !== entityId) throw UnsupportedError('Cannot edit authorized members in draft');
