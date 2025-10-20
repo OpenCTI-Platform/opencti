@@ -1964,6 +1964,7 @@
   "incident_type": "インシデントの種類",
   "Incidents": "インシデント",
   "Incidents | Events": "イベント",
+  "Include all entities in a single bundle": "すべてのエンティティを単一のバンドルに含める",
   "Include entities in container": "コンテナにエンティティを含める",
   "Include files not related to any knowledge (data import)": "知識とは関係のないファイルを含める（データインポート）",
   "Include headers in the feed": "フィードにヘッダを含める",

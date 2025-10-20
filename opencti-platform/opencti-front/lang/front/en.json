@@ -1964,6 +1964,7 @@
   "incident_type": "Incident type",
   "Incidents": "Incidents",
   "Incidents | Events": "Incidents | Events",
+  "Include all entities in a single bundle": "Include all entities in a single bundle",
   "Include entities in container": "Include entities in container",
   "Include files not related to any knowledge (data import)": "Include files not related to any knowledge (data import)",
   "Include headers in the feed": "Include headers in the feed",

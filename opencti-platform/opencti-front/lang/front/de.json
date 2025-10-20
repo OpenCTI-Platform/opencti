@@ -1964,6 +1964,7 @@
   "incident_type": "Vorfall-Typ",
   "Incidents": "Vorfälle",
   "Incidents | Events": "Vorfälle | Ereignisse",
+  "Include all entities in a single bundle": "Alle Entitäten in ein einziges Bündel einschließen",
   "Include entities in container": "Entitäten in Container einschließen",
   "Include files not related to any knowledge (data import)": "Dateien einschließen, die sich nicht auf einen Wissensstand beziehen (Datenimport)",
   "Include headers in the feed": "Kopfzeilen in den Feed einbeziehen",
