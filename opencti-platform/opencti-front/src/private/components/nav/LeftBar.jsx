@@ -664,7 +664,7 @@ const LeftBar = () => {
                 { type: 'Report', link: '/dashboard/analyses/reports', label: 'Reports', icon: <DescriptionOutlined fontSize="small" /> },
                 { type: 'Grouping', link: '/dashboard/analyses/groupings', label: 'Groupings', icon: <WorkspacesOutlined fontSize="small" /> },
                 { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: 'Malware analyses', icon: <BiotechOutlined fontSize="small" /> },
-                { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: 'Security Coverage', icon: <SecurityOutlined fontSize="inherit" /> },
+                { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: 'Security coverages', icon: <SecurityOutlined fontSize="inherit" /> },
                 { type: 'Note', link: '/dashboard/analyses/notes', label: 'Notes', icon: <SubjectOutlined fontSize="inherit" /> },
                 { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: 'External references', icon: <LocalOfferOutlined fontSize="small" /> },
               ],

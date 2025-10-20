@@ -35,9 +35,7 @@ const SecurityCoverageEditionContainer: FunctionComponent<SecurityCoverageEditio
   controlledDial,
 }) => {
   const { t_i18n } = useFormatter();
-
   const { securityCoverage } = usePreloadedQuery(securityCoverageEditionContainerQuery, queryRef);
-
   return (
     <Drawer
       title={t_i18n('Update a security coverage')}

@@ -159,6 +159,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
   # Cases
   name: String!
   description: String
