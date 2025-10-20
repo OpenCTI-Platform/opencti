@@ -435,6 +435,7 @@ const iconSelector = (
     case 'tracking-number':
     case 'media-content':
     case 'persona':
+    case 'ssh-key':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
     case 'sighting':
