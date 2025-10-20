@@ -1,16 +1,18 @@
 import { resolveLink } from '../Entity';
 import useSchema from './useSchema';
 
+export type ComputeLinkNode = {
+  id: string;
+  entity_type: string;
+  relationship_type?: string;
+  from?: { entity_type: string; id: string };
+  to?: { entity_type: string; id: string };
+  type?: string;
+};
+
 const useComputeLink = () => {
   const { isRelationship } = useSchema();
-  const computeLink = (node: {
-    id: string;
-    entity_type: string;
-    relationship_type?: string;
-    from?: { entity_type: string; id: string };
-    to?: { entity_type: string; id: string };
-    type?: string;
-  }): string | undefined => {
+  const computeLink = (node: ComputeLinkNode): string | undefined => {
     let redirectLink;
     if (node.relationship_type === 'stix-sighting-relationship' && node.from) {
       redirectLink = `${resolveLink(node.from.entity_type)}/${
