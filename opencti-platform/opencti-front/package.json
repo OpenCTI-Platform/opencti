@@ -168,7 +168,7 @@
     "i18n-auto-translation": "2.2.3",
     "jsdom": "26.1.0",
     "license-checker-rseidelsohn": "4.4.2",
-    "monocart-reporter": "2.9.21",
+    "monocart-reporter": "2.9.23",
     "relay-compiler": "20.1.1",
     "relay-test-utils": "20.1.1",
     "typescript": "5.9.3",
