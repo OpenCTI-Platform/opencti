@@ -103,6 +103,7 @@ import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-te
 import type { BasicStoreSettings } from '../../types/settings';
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { removeOrganizationRestriction } from '../../domain/stix';
+import { PLAYBOOK_PATCH_KNOWLEDGE_COMPONENT } from './playbookComponents/playbook-patch-knowledge-component';
 
 const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -1627,6 +1628,7 @@ export const PLAYBOOK_COMPONENTS: { [k: string]: PlaybookComponent<object> } = {
   [PLAYBOOK_MATCHING_COMPONENT.id]: PLAYBOOK_MATCHING_COMPONENT,
   [PLAYBOOK_CONNECTOR_COMPONENT.id]: PLAYBOOK_CONNECTOR_COMPONENT,
   [PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT,
+  [PLAYBOOK_PATCH_KNOWLEDGE_COMPONENT.id]: PLAYBOOK_PATCH_KNOWLEDGE_COMPONENT,
   [PLAYBOOK_CONTAINER_WRAPPER_COMPONENT.id]: PLAYBOOK_CONTAINER_WRAPPER_COMPONENT,
   [PLAYBOOK_SHARING_COMPONENT.id]: PLAYBOOK_SHARING_COMPONENT,
   [PLAYBOOK_UNSHARING_COMPONENT.id]: PLAYBOOK_UNSHARING_COMPONENT,
