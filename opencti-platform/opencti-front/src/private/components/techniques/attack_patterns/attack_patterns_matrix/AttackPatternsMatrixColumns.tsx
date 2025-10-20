@@ -148,7 +148,7 @@ const AttackPatternsMatrixColumns = ({
   handleAdd,
   selectedKillChain,
   isModeOnlyActive,
-  noRightMargin,
+  inPaper,
 }: AttackPatternsMatrixColumnsProps) => {
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
@@ -226,7 +226,10 @@ const AttackPatternsMatrixColumns = ({
 
   const matrixWidth = useMemo(() => {
     const baseOffset = LAYOUT_SIZE.BASE_WIDTH + (navOpen ? LAYOUT_SIZE.NAV_WIDTH : 0);
-    const rightOffset = !containerTypes.includes(entityType) && !noRightMargin ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
+    let rightOffset = !containerTypes.includes(entityType) ? LAYOUT_SIZE.MARGIN_RIGHT_WIDTH : 0;
+    if (inPaper) {
+      rightOffset = 40;
+    }
     return baseOffset + rightOffset;
   }, [entityType, navOpen]);
 
@@ -234,7 +237,6 @@ const AttackPatternsMatrixColumns = ({
     <UserContext.Consumer>
       {({ bannerSettings }) => {
         const matrixHeight = LAYOUT_SIZE.BASE_HEIGHT + (bannerSettings?.bannerHeightNumber || 0) * 2;
-
         return (
           <Box
             sx={{

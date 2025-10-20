@@ -27297,6 +27297,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   confidence?: Maybe<Scalars['Int']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
+  coverage?: Maybe<Array<CoverageResult>>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -44533,6 +44534,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  coverage?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
