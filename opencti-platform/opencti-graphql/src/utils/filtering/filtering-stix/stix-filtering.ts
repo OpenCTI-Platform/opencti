@@ -9,7 +9,6 @@ import { type Filter, type FilterGroup } from '../../../generated/graphql';
 import type { FilterResolutionMap } from '../filtering-resolution';
 import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filtering-resolution';
 import { UnsupportedError } from '../../../config/errors';
-import type { UpdateEvent } from '../../../types/event';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -54,7 +53,6 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   stix: any,
   filterGroup: FilterGroup | undefined,
   resolutionMap: FilterResolutionMap,
-  updateContext?: UpdateEvent['context'],
 ) : Promise<boolean> => {
   // we are limited to certain filter keys right now, so better throw an explicit error if a key is not compatible
   // Note that similar check is done when saving a filter in stream, taxii, feed, or playbook node.
@@ -74,7 +72,7 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
   const resolvedFilterGroup = await resolveFilterGroup(context, user, filterGroup, resolutionMap);
 
   // then call our boolean engine on the filter group using the stix testers
-  return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP, updateContext);
+  return testFilterGroup(stix, resolvedFilterGroup, FILTER_KEY_TESTERS_MAP);
 };
 
 /**
@@ -94,7 +92,6 @@ export const isStixMatchFilterGroup = async (
   user: AuthUser,
   stix: any,
   filterGroup?: FilterGroup,
-  updateContext?: UpdateEvent['context'],
 ) : Promise<boolean> => {
   // resolve some of the ids as we filter on their corresponding values or standard-id for instance
   // the provided map will contain replacements for filter values, if any necessary.
@@ -103,5 +100,5 @@ export const isStixMatchFilterGroup = async (
   const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   const map = filterGroup ? await buildResolutionMapForFilterGroup(context, user, filterGroup, cache) : new Map();
 
-  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map, updateContext);
+  return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map);
 };
