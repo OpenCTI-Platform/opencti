@@ -7,7 +7,7 @@ import { fullEntitiesList } from '../../../database/middleware-loader';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../../emailTemplate/emailTemplate-types';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
 import { sendEmailToUser } from '../../../domain/user';
-import { ACCOUNT_STATUS_ACTIVE } from '../../../config/conf';
+import { ACCOUNT_STATUS_ACTIVE, logApp } from '../../../config/conf';
 
 export interface SendEmailTemplateConfiguration {
   email_template: string,
@@ -51,10 +51,17 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
         sendEmailUserIds.push(targetUser.id);
       }
     }
+    const emailSend = async (user_id: string) => {
+      try {
+        await sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: user_id, email_template_id: email_template });
+      } catch (err) {
+        logApp.warn('Could not send email to user', { user_id });
+      }
+    };
     if (sendEmailUserIds.length > 0) {
       await BluePromise.map(
         sendEmailUserIds,
-        (user_id) => sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: user_id, email_template_id: email_template }),
+        (user_id) => emailSend(user_id),
         { concurrency: 3 }
       );
     }
