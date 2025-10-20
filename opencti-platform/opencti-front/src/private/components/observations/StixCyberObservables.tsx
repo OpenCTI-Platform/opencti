@@ -40,7 +40,7 @@ const StixCyberObservables: FunctionComponent = () => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['entity_type', 'sightedBy'], ['Stix-Cyber-Observable']),
+      filters: useGetDefaultFilterObject(['entity_type'], ['Stix-Cyber-Observable']),
     },
     searchTerm: '',
     sortBy: 'created_at',

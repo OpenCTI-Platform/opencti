@@ -148,7 +148,7 @@ const Reports: FunctionComponent = () => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,
-      filters: useGetDefaultFilterObject(['context'], ['Report']),
+      filters: useGetDefaultFilterObject(['entity_type'], ['Report']),
     },
     searchTerm: '',
     sortBy: 'published',
