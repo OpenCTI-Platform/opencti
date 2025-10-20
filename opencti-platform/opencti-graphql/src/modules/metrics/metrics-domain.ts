@@ -16,7 +16,8 @@ export const patchMetric = async (context: AuthContext, user: AuthUser, entityId
   }
 
   const allKnownAttributes = getEntityMetricsConfiguration();
-  const entityConfiguration = allKnownAttributes.find((metricDefinition) => metricDefinition.entity_type === entity.entity_type);
+  // metricDefinition is in env var or json, it's all lower case there, comparison must not be case-sensitive
+  const entityConfiguration = allKnownAttributes.find((metricDefinition) => metricDefinition.entity_type.toLowerCase() === entity.entity_type.toLowerCase());
   if (!entityConfiguration) {
     throw UnknownError('The metric entity is not allowed', { name: input.name, entityId, entityType: entity.entity_type });
   }

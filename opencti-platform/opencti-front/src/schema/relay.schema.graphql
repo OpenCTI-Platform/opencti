@@ -14428,10 +14428,6 @@ type Metric {
   value: Float!
 }
 
-type Metrics {
-  metrics: [Metric!]!
-}
-
 input PatchMetricInput {
   name: String!
   value: Float!

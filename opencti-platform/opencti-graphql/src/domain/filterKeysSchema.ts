@@ -209,7 +209,7 @@ const completeFilterDefinitionMapWithSpecialKeys = (
   // Add custom filters from metrics
   const allEntityMetrics = getEntityMetricsConfiguration();
   for (let i = 0; i < allEntityMetrics.length; i += 1) {
-    if (type === allEntityMetrics[i].entity_type) {
+    if (type.toLowerCase() === allEntityMetrics[i].entity_type) {
       const currentMetricAttributes = allEntityMetrics[i].metrics;
       for (let j = 0; j < currentMetricAttributes.length; j += 1) {
         filterDefinitionsMap.set(

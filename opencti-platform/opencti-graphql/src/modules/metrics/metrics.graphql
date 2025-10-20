@@ -2,9 +2,6 @@ type Metric {
     name: ID!
     value: Float!
 }
-type Metrics {
-    metrics: [Metric!]!
-}
 
 input PatchMetricInput {
     name: String!

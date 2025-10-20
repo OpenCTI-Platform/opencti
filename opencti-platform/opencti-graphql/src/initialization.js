@@ -22,6 +22,7 @@ import { initializeData, patchPlatformId } from './database/data-initialization'
 import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 import { lockResources } from './lock/master-lock';
+import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -130,6 +131,9 @@ const platformInit = async (withMarkings = true) => {
       await initDecayRules(context, SYSTEM_USER);
     }
     await initExclusionListCache();
+
+    // parse schema metrics conf to throw error on start if bad configured
+    loadEntityMetricsConfiguration();
   } catch (e) {
     if (e.name === TYPE_LOCK_ERROR) {
       const reason = 'Platform cant get the lock for initialization (can be due to other instance currently migrating/initializing)';

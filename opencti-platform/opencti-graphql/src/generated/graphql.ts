@@ -14568,11 +14568,6 @@ export type MetricDefinition = {
   metrics?: Maybe<Array<MetricAttributes>>;
 };
 
-export type Metrics = {
-  __typename?: 'Metrics';
-  metrics: Array<Metric>;
-};
-
 export type MetricsByMimeType = {
   __typename?: 'MetricsByMimeType';
   count: Scalars['Int']['output'];
@@ -34470,7 +34465,6 @@ export type ResolversTypes = ResolversObject<{
   Metric: ResolverTypeWrapper<Metric>;
   MetricAttributes: ResolverTypeWrapper<MetricAttributes>;
   MetricDefinition: ResolverTypeWrapper<MetricDefinition>;
-  Metrics: ResolverTypeWrapper<Metrics>;
   MetricsByMimeType: ResolverTypeWrapper<MetricsByMimeType>;
   Module: ResolverTypeWrapper<Module>;
   MultiDistribution: ResolverTypeWrapper<Omit<MultiDistribution, 'data'> & { data?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>> }>;
@@ -35404,7 +35398,6 @@ export type ResolversParentTypes = ResolversObject<{
   Metric: Metric;
   MetricAttributes: MetricAttributes;
   MetricDefinition: MetricDefinition;
-  Metrics: Metrics;
   MetricsByMimeType: MetricsByMimeType;
   Module: Module;
   MultiDistribution: Omit<MultiDistribution, 'data'> & { data?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>> };
@@ -41080,11 +41073,6 @@ export type MetricAttributesResolvers<ContextType = any, ParentType extends Reso
 export type MetricDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricDefinition'] = ResolversParentTypes['MetricDefinition']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<ResolversTypes['MetricAttributes']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type MetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Metrics'] = ResolversParentTypes['Metrics']> = ResolversObject<{
-  metrics?: Resolver<Array<ResolversTypes['Metric']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -46884,7 +46872,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Metric?: MetricResolvers<ContextType>;
   MetricAttributes?: MetricAttributesResolvers<ContextType>;
   MetricDefinition?: MetricDefinitionResolvers<ContextType>;
-  Metrics?: MetricsResolvers<ContextType>;
   MetricsByMimeType?: MetricsByMimeTypeResolvers<ContextType>;
   Module?: ModuleResolvers<ContextType>;
   MultiDistribution?: MultiDistributionResolvers<ContextType>;
