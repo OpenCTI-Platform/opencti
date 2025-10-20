@@ -15,6 +15,7 @@ generates:
       maybeValue: T | null | undefined
       inputMaybeValue: T | null
       mappers:
+        BasicObject: ../types/store.d#BasicStoreBase
         Feed: ../types/store.d#BasicStoreEntityFeed
         Channel: ../modules/channel/channel-types#BasicStoreEntityChannel
         Catalog: ../modules/catalog/catalog-types#GraphqlCatalog
