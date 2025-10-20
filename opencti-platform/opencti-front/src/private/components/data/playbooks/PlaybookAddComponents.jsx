@@ -869,7 +869,7 @@ const PlaybookAddComponentsContent = ({
                       />
                     );
                   }
-                  if (v.type === 'string' && isNotEmptyField(v.oneOf)) {
+                  if (v.type === 'string' && v.oneOf) {
                     return (
                       <Field
                         key={k}
