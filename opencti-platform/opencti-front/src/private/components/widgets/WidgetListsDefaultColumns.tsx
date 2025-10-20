@@ -200,7 +200,7 @@ export const getWidgetColumns = (type: WidgetEntityType, entityType?: string, me
       }
 
       if (metrics) {
-        const metricsForEntity = metrics.find((m) => m.entity_type === entityType);
+        const metricsForEntity = metrics.find((m) => m.entity_type === entityType.toLowerCase());
         if (metricsForEntity?.metrics) {
           const metricsColumns = metricsForEntity.metrics.map((metricConf) => ({
             attribute: metricConf.attribute,

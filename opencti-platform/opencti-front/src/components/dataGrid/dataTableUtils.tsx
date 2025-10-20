@@ -1544,8 +1544,7 @@ export const buildMetricsColumns = (
   metricsDefinition: readonly MetricsDefinition[],
 ): DataTableProps['dataColumns'] => {
   if (!entityType || !metricsDefinition) return {};
-
-  const metricsForEntity = metricsDefinition.find((m) => m.entity_type === entityType);
+  const metricsForEntity = metricsDefinition.find((m) => m.entity_type === entityType.toLowerCase());
   if (!metricsForEntity?.metrics) return {};
 
   const metricsColumns: DataTableProps['dataColumns'] = {};
