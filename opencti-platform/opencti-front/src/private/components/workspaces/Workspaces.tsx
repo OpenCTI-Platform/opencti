@@ -8,7 +8,7 @@ import Security from '../../../utils/Security';
 import { EXPLORE, EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import DataTable from '../../../components/dataGrid/DataTable';
@@ -109,7 +109,10 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     orderAsc: false,
     openExports: false,
     redirectionMode: 'overview',
-    filters: emptyFilterGroup,
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['context'], ['Workspace']),
+    },
   };
   const {
     viewStorage,
