@@ -312,7 +312,7 @@ const createSseMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
-      const opts = { autoReconnect: true };
+      const opts = { autoReconnect: true, withInternal: true };
       const processor = createStreamProcessor(user, user.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
