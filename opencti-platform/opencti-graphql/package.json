@@ -129,7 +129,7 @@
     "license-checker-rseidelsohn": "4.4.2",
     "lru-cache": "11.2.1",
     "luxon": "3.7.1",
-    "marked": "16.4.0",
+    "marked": "16.4.1",
     "migrate": "2.1.0",
     "mime-types": "3.0.1",
     "moment": "2.30.1",
@@ -203,7 +203,7 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "1.4.0",
     "graphql-tag": "2.12.6",
-    "marked": "16.4.0",
+    "marked": "16.4.1",
     "typescript": "5.9.3",
     "vitest": "3.2.4"
   },
