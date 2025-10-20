@@ -53,7 +53,7 @@ const StixRelationshipsMultiAreaChart = ({
       const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
         ? selection.date_attribute
         : 'created_at';
-      const { filters } = buildFiltersAndOptionsForWidgets(selection.filters);
+      const { filters } = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
       return {
         field: dataSelectionDateAttribute,
         filters,
