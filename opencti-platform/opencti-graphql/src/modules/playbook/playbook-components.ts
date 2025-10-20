@@ -196,6 +196,7 @@ export interface CronConfiguration {
   period: 'day' | 'hour' | 'minute' | 'month' | 'week',
   triggerTime: string
   onlyLast: boolean
+  includeAll: boolean
   filters: string
 }
 const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
@@ -204,6 +205,7 @@ const PLAYBOOK_INTERNAL_DATA_CRON_SCHEMA: JSONSchemaType<CronConfiguration> = {
     period: { type: 'string', default: 'hour' },
     triggerTime: { type: 'string' },
     onlyLast: { type: 'boolean', $ref: 'Only last modified entities after the last run', default: false },
+    includeAll: { type: 'boolean', $ref: 'Include all entities in a single bundle', default: false },
     filters: { type: 'string' },
   },
   required: ['period', 'triggerTime', 'onlyLast', 'filters'],

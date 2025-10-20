@@ -1967,6 +1967,7 @@
   "incident_type": "事件类型",
   "Incidents": "安全事件",
   "Incidents | Events": "事件|事件",
+  "Include all entities in a single bundle": "将所有实体纳入单一捆绑包",
   "Include entities in container": "在容器中包含实体",
   "Include files not related to any knowledge (data import)": "包含与任何知识无关的文件（数据导入）",
   "Include headers in the feed": "在提要中包含标题",

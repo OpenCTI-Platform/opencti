@@ -1967,6 +1967,7 @@
   "incident_type": "사건 유형",
   "Incidents": "사건",
   "Incidents | Events": "사건 | 이벤트",
+  "Include all entities in a single bundle": "모든 엔티티를 단일 번들에 포함하기",
   "Include entities in container": "컨테이너에 엔티티 포함",
   "Include files not related to any knowledge (data import)": "어떤 지식과도 관련이 없는 파일 포함 (데이터 가져오기)",
   "Include headers in the feed": "피드에 헤더 포함",

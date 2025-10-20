@@ -1967,6 +1967,7 @@
   "incident_type": "тип происшествия",
   "Incidents": "Инциденты",
   "Incidents | Events": "Инциденты | События",
+  "Include all entities in a single bundle": "Включите все сущности в один пакет",
   "Include entities in container": "Включить сущности в контейнер",
   "Include files not related to any knowledge (data import)": "Включение файлов, не относящихся к какому-либо знанию (импорт данных)",
   "Include headers in the feed": "Включите заголовки в ленту",

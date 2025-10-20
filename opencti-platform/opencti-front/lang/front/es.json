@@ -1967,6 +1967,7 @@
   "incident_type": "Tipo de incidente",
   "Incidents": "Incidentes",
   "Incidents | Events": "Incidencias/Eventos:",
+  "Include all entities in a single bundle": "Incluir todas las entidades en un único paquete",
   "Include entities in container": "Incluir entidades en el contenedor",
   "Include files not related to any knowledge (data import)": "Incluir archivos no relacionados con ningún conocimiento (importación de datos)",
   "Include headers in the feed": "Incluir cabeceras en la fuente de información",
