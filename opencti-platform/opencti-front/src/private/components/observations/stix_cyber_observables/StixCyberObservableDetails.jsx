@@ -520,7 +520,7 @@ const StixCyberObservableDetails = createFragmentContainer(
                 key_type
                 public_key
                 fingerprint_sha256
-                fingerprint_MD5
+                fingerprint_md5
                 key_length
                 expiration_date
                 comment
