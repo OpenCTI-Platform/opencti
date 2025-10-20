@@ -7,7 +7,7 @@ import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns 
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableProvider } from './DataTableContext';
 import {
-  useDataTableComputeLink as defaultComputeLink,
+  useDataTableComputeLink,
   useDataCellHelpers,
   useDataTableFormatter,
   useDataTableLocalStorage,
@@ -39,7 +39,7 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'createButton'
 | 'disableToolBar'
 | 'removeSelectAll'
-| 'useComputeLink'
+| 'getComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
 | 'data'
@@ -56,7 +56,7 @@ const DataTableComponent = ({
   data,
   redirectionModeEnabled = false,
   useLineData,
-  useComputeLink,
+  getComputeLink,
   settingsMessagesBannerHeight,
   filtersComponent,
   hideHeaders,
@@ -74,6 +74,7 @@ const DataTableComponent = ({
   onLineClick,
   emptyStateMessage,
 }: DataTableComponentProps) => {
+  const defaultComputeLink = useDataTableComputeLink();
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
 
@@ -203,7 +204,7 @@ const DataTableComponent = ({
         data,
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
-        useComputeLink: useComputeLink ?? defaultComputeLink,
+        getComputeLink: getComputeLink ?? defaultComputeLink,
         useDataTableColumnsLocalStorage: columnsLocalStorage,
         useDataTablePaginationLocalStorage: paginationLocalStorage,
         onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),

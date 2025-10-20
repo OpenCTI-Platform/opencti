@@ -6,10 +6,10 @@ import React from 'react';
 import { useTheme } from '@mui/styles';
 import { ListItemButton } from '@mui/material';
 import ItemIcon from '../ItemIcon';
-import { computeLink } from '../../utils/Entity';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { getMainRepresentative } from '../../utils/defaultRepresentatives';
+import useComputeLink from '../../utils/hooks/useComputeLink';
 
 interface WidgetDistributionListProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,6 +27,7 @@ const WidgetDistributionList = ({
 }: WidgetDistributionListProps) => {
   const theme = useTheme<Theme>();
   const { n } = useFormatter();
+  const computeLink = useComputeLink();
 
   return (
     <div

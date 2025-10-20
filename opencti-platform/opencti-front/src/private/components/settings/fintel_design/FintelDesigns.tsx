@@ -179,7 +179,7 @@ const FintelDesigns = () => {
               storageKey={LOCAL_STORAGE_KEY}
               initialValues={initialValues}
               toolbarFilters={contextFilters}
-              useComputeLink={getRedirectionLink}
+              getComputeLink={getRedirectionLink}
               lineFragment={fintelDesignsLineFragment}
               disableLineSelection
               preloadedPaginationProps={preloadedPaginationProps}
