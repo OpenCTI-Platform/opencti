@@ -227,8 +227,11 @@ describe('widgetUtils', () => {
       expect(isDataSelectionNumberValid('wordcloud', createDataSelection(50))).toBe(true);
     });
 
+    it('should return true for list widget with number <= 500', () => {
+      expect(isDataSelectionNumberValid('list', createDataSelection(500))).toBe(true);
+    });
+
     it('should return false for restricted widgets with number > 100', () => {
-      expect(isDataSelectionNumberValid('list', createDataSelection(101))).toBe(false);
       expect(isDataSelectionNumberValid('distribution-list', createDataSelection(150))).toBe(false);
       expect(isDataSelectionNumberValid('donut', createDataSelection(200))).toBe(false);
       expect(isDataSelectionNumberValid('horizontal-bar', createDataSelection(101))).toBe(false);
@@ -252,7 +255,7 @@ describe('widgetUtils', () => {
     it('should validate all data selections in array', () => {
       const mixedDataSelection: WidgetDataSelection[] = [
         { number: 50, perspective: 'entities', filters: null },
-        { number: 101, perspective: 'relationships', filters: null },
+        { number: 501, perspective: 'relationships', filters: null },
       ];
       expect(isDataSelectionNumberValid('list', mixedDataSelection)).toBe(false);
 

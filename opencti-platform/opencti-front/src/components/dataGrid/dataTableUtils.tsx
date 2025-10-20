@@ -1524,4 +1524,50 @@ const defaultColumns: DataTableProps['dataColumns'] = {
   },
 };
 
+type MetricConf = {
+  attribute: string
+  name: string
+};
+
+export type MetricsDefinition = {
+  readonly entity_type: string
+  readonly metrics: readonly MetricConf[] | null | undefined
+};
+
+export type Metric = {
+  readonly name: string
+  readonly value: string
+};
+
+export const buildMetricsColumns = (
+  entityType: string | undefined,
+  metricsDefinition: readonly MetricsDefinition[],
+): DataTableProps['dataColumns'] => {
+  if (!entityType || !metricsDefinition) return {};
+  const metricsForEntity = metricsDefinition.find((m) => m.entity_type === entityType.toLowerCase());
+  if (!metricsForEntity?.metrics) return {};
+
+  const metricsColumns: DataTableProps['dataColumns'] = {};
+
+  for (const metricDefinition of metricsForEntity.metrics) {
+    metricsColumns[metricDefinition.attribute] = {
+      id: metricDefinition.attribute,
+      label: metricDefinition.name,
+      percentWidth: 12,
+      isSortable: false,
+      render: (data) => {
+        if (Array.isArray(data.metrics)) {
+          const metricFound = data.metrics.find((m: Metric) => m.name === metricDefinition.attribute);
+          if (metricFound) {
+            return defaultRender(metricFound.value);
+          }
+        }
+        return defaultRender('-');
+      },
+    };
+  }
+
+  return metricsColumns;
+};
+
 export const defaultColumnsMap = new Map<string, Partial<DataTableColumn>>(Object.entries(defaultColumns));

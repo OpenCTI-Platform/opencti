@@ -1,5 +1,5 @@
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { BasicStoreEntityFeed } from '../types/store.d';
+import type { BasicStoreBase, BasicStoreEntityFeed } from '../types/store.d';
 import type { BasicStoreEntityChannel } from '../modules/channel/channel-types';
 import type { GraphqlCatalog } from '../modules/catalog/catalog-types';
 import type { BasicStoreEntityLanguage } from '../modules/language/language-types';
@@ -118,6 +118,7 @@ export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixD
   lang?: Maybe<Scalars['String']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -460,6 +461,7 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   mime_type?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -699,6 +701,7 @@ export type AttackPattern = BasicObject & StixCoreObject & StixDomainObject & St
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -1144,6 +1147,7 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   number?: Maybe<Scalars['Int']['output']>;
@@ -1470,6 +1474,7 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -1653,6 +1658,7 @@ export type BankAccountAddInput = {
 export type BasicObject = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
 };
@@ -1663,6 +1669,7 @@ export type BasicRelationship = {
   entity_type: Scalars['String']['output'];
   fromRole?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
@@ -1716,6 +1723,7 @@ export type Campaign = BasicObject & StixCoreObject & StixDomainObject & StixObj
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -2038,6 +2046,7 @@ export type Capability = BasicObject & InternalObject & {
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -2087,6 +2096,7 @@ export type Case = {
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -2346,6 +2356,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -2659,6 +2670,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -2972,6 +2984,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -3258,6 +3271,7 @@ export type CaseTemplate = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -3312,6 +3326,7 @@ export type Catalog = BasicObject & InternalObject & {
   description: Scalars['String']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
@@ -3366,6 +3381,7 @@ export type Channel = BasicObject & StixCoreObject & StixDomainObject & StixObje
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -3639,6 +3655,7 @@ export type City = BasicObject & Location & StixCoreObject & StixDomainObject & 
   lang?: Maybe<Scalars['String']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -3963,6 +3980,7 @@ export type Connector = BasicObject & InternalObject & {
   manager_current_status?: Maybe<Scalars['String']['output']>;
   manager_health_metrics?: Maybe<ConnectorHealthMetrics>;
   manager_requested_status?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   only_contextual?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -4045,6 +4063,7 @@ export type ConnectorManager = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   last_sync_execution?: Maybe<Scalars['DateTime']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   public_key: Scalars['String']['output'];
@@ -4103,6 +4122,7 @@ export type Container = {
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -4405,6 +4425,7 @@ export type Country = BasicObject & Location & StixCoreObject & StixDomainObject
   lang?: Maybe<Scalars['String']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -4680,6 +4701,7 @@ export type CourseOfAction = BasicObject & StixCoreObject & StixDomainObject & S
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -4982,6 +5004,7 @@ export type Credential = BasicObject & StixCoreObject & StixCyberObservable & St
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -5184,6 +5207,7 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -5382,6 +5406,7 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -5566,6 +5591,7 @@ export type CsvMapper = BasicObject & InternalObject & {
   errors?: Maybe<Scalars['String']['output']>;
   has_header: Scalars['Boolean']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   representations: Array<CsvMapperRepresentation>;
@@ -5736,6 +5762,7 @@ export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & St
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -5987,6 +6014,7 @@ export type DataSource = BasicObject & StixCoreObject & StixDomainObject & StixO
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -6252,6 +6280,7 @@ export type DecayRule = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   order: Scalars['Int']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -6332,6 +6361,7 @@ export type DeleteOperation = BasicObject & InternalObject & {
   main_entity_id: Scalars['String']['output'];
   main_entity_name: Scalars['String']['output'];
   main_entity_type: Scalars['String']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
@@ -6410,6 +6440,7 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   mtime?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -6619,6 +6650,7 @@ export type DisseminationList = BasicObject & InternalObject & {
   emails: Array<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -6690,6 +6722,7 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -6905,6 +6938,7 @@ export type DraftWorkspace = BasicObject & InternalObject & {
   entity_id?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   objectsCount: DraftObjectsCount;
   parent_types: Array<Scalars['String']['output']>;
@@ -7031,6 +7065,7 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -7235,6 +7270,7 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   is_multipart?: Maybe<Scalars['Boolean']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
   message_id?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -7443,6 +7479,7 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -7628,6 +7665,7 @@ export type EmailTemplate = BasicObject & InternalObject & {
   email_object: Scalars['String']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   sender_email: Scalars['String']['output'];
@@ -7672,6 +7710,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   fintelTemplates?: Maybe<FintelTemplateConnection>;
   id: Scalars['ID']['output'];
   mandatoryAttributes: Array<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   overview_layout_customization?: Maybe<Array<OverviewWidgetCustomization>>;
   parent_types: Array<Scalars['String']['output']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']['output']>;
@@ -7736,6 +7775,7 @@ export type Event = BasicObject & StixCoreObject & StixDomainObject & StixObject
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -7978,6 +8018,7 @@ export type ExclusionList = BasicObject & InternalObject & {
   exclusion_list_values_count?: Maybe<Scalars['Int']['output']>;
   file_id: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
@@ -8053,6 +8094,7 @@ export type ExternalReference = BasicObject & StixMetaObject & StixObject & {
   importFiles: FileConnection;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles: FileConnection;
@@ -8305,6 +8347,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -8712,6 +8755,7 @@ export type FintelDesign = BasicObject & InternalObject & {
   gradiantFromColor?: Maybe<Scalars['String']['output']>;
   gradiantToColor?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
@@ -8752,6 +8796,7 @@ export type FintelTemplate = BasicObject & InternalObject & {
   fintel_template_widgets: Array<FintelTemplateWidget>;
   id: Scalars['ID']['output'];
   instance_filters?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   settings_types: Array<Scalars['String']['output']>;
@@ -8807,6 +8852,7 @@ export type Form = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   form_schema: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   spec_version: Scalars['String']['output'];
@@ -8890,6 +8936,7 @@ export type Group = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   max_shareable_marking: Array<MarkingDefinition>;
   members?: Maybe<UserConnection>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   no_creators?: Maybe<Scalars['Boolean']['output']>;
   not_shareable_marking_types: Array<Scalars['String']['output']>;
@@ -9009,6 +9056,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -9321,6 +9369,7 @@ export type HashedObservable = {
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -9524,6 +9573,7 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -9723,6 +9773,7 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -9924,6 +9975,7 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -10137,6 +10189,7 @@ export type Identity = {
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -10424,6 +10477,7 @@ export type Incident = BasicObject & StixCoreObject & StixDomainObject & StixObj
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -10759,6 +10813,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -11063,6 +11118,7 @@ export type Individual = BasicObject & Identity & StixCoreObject & StixDomainObj
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -11372,6 +11428,7 @@ export type Infrastructure = BasicObject & StixCoreObject & StixDomainObject & S
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -11661,6 +11718,7 @@ export type IngestionCsv = BasicObject & InternalObject & {
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   markings?: Maybe<Array<Scalars['String']['output']>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11743,6 +11801,7 @@ export type IngestionJson = BasicObject & InternalObject & {
   jsonMapper: JsonMapper;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
   markings?: Maybe<Array<Scalars['String']['output']>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   pagination_with_sub_page?: Maybe<Scalars['Boolean']['output']>;
   pagination_with_sub_page_attribute_path?: Maybe<Scalars['String']['output']>;
@@ -11823,6 +11882,7 @@ export type IngestionRss = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11881,6 +11941,7 @@ export type IngestionTaxii = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
   last_execution_date?: Maybe<Scalars['DateTime']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11915,6 +11976,7 @@ export type IngestionTaxiiCollection = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   ingestion_running?: Maybe<Scalars['Boolean']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -11985,6 +12047,7 @@ export type InternalRelationship = BasicRelationship & {
   from?: Maybe<InternalObject>;
   fromRole?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
@@ -12033,6 +12096,7 @@ export type IntrusionSet = BasicObject & StixCoreObject & StixDomainObject & Sti
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -12332,6 +12396,7 @@ export type JsonMapper = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   errors?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   representations: Array<JsonMapperRepresentation>;
@@ -12425,6 +12490,7 @@ export type KillChainPhase = BasicObject & StixMetaObject & StixObject & {
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
   kill_chain_name: Scalars['String']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   phase_name: Scalars['String']['output'];
@@ -12515,6 +12581,7 @@ export type Label = BasicObject & StixMetaObject & StixObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -12603,6 +12670,7 @@ export type Language = BasicObject & StixCoreObject & StixDomainObject & StixObj
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -12877,6 +12945,7 @@ export type Location = {
   lang?: Maybe<Scalars['String']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -13204,6 +13273,7 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -13415,6 +13485,7 @@ export type Malware = BasicObject & StixCoreObject & StixDomainObject & StixObje
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   malware_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -13671,6 +13742,7 @@ export type MalwareAnalysis = BasicObject & StixCoreObject & StixDomainObject & 
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   modules?: Maybe<Array<Scalars['String']['output']>>;
   notes?: Maybe<NoteConnection>;
@@ -13982,6 +14054,7 @@ export type ManagedConnector = BasicObject & InternalObject & {
   manager_current_status?: Maybe<Scalars['String']['output']>;
   manager_health_metrics?: Maybe<ConnectorHealthMetrics>;
   manager_requested_status: Scalars['String']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   standard_id: Scalars['String']['output'];
@@ -13996,6 +14069,7 @@ export type ManagerConfiguration = BasicObject & InternalObject & {
   manager_id: Scalars['String']['output'];
   manager_running?: Maybe<Scalars['Boolean']['output']>;
   manager_setting?: Maybe<Scalars['JSON']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
 };
@@ -14048,6 +14122,7 @@ export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -14173,6 +14248,7 @@ export type MeUser = BasicObject & InternalObject & {
   language?: Maybe<Scalars['String']['output']>;
   lastname?: Maybe<Scalars['String']['output']>;
   max_shareable_marking?: Maybe<Array<MarkingDefinition>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   monochrome_labels?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
   no_creators?: Maybe<Scalars['Boolean']['output']>;
@@ -14233,6 +14309,7 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   media_category?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -14470,6 +14547,25 @@ export type MessagesStats = {
   __typename?: 'MessagesStats';
   ack?: Maybe<Scalars['String']['output']>;
   ack_details?: Maybe<AckDetails>;
+};
+
+export type Metric = {
+  __typename?: 'Metric';
+  name: Scalars['ID']['output'];
+  value: Scalars['Float']['output'];
+};
+
+export type MetricAttributes = {
+  __typename?: 'MetricAttributes';
+  attribute: Scalars['String']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+};
+
+export type MetricDefinition = {
+  __typename?: 'MetricDefinition';
+  entity_type: Scalars['String']['output'];
+  metrics?: Maybe<Array<MetricAttributes>>;
 };
 
 export type MetricsByMimeType = {
@@ -14716,6 +14812,7 @@ export type Mutation = {
   markingDefinitionEdit?: Maybe<MarkingDefinitionEditMutations>;
   meEdit?: Maybe<MeUser>;
   meTokenRenew?: Maybe<MeUser>;
+  metricPatch?: Maybe<BasicObject>;
   narrativeAdd?: Maybe<Narrative>;
   narrativeContextClean?: Maybe<Narrative>;
   narrativeContextPatch?: Maybe<Narrative>;
@@ -16151,6 +16248,12 @@ export type MutationMeEditArgs = {
 };
 
 
+export type MutationMetricPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: PatchMetricInput;
+};
+
+
 export type MutationNarrativeAddArgs = {
   input: NarrativeAddInput;
 };
@@ -17379,6 +17482,7 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -17589,6 +17693,7 @@ export type Narrative = BasicObject & StixCoreObject & StixDomainObject & StixOb
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   narrative_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -17845,6 +17950,7 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   is_active?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -18071,6 +18177,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   likelihood?: Maybe<Scalars['Int']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   note_types?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   notes?: Maybe<NoteConnection>;
@@ -18398,6 +18505,7 @@ export type Notification = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_read: Scalars['Boolean']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   notification_content: Array<NotificationContent>;
   notification_type: Scalars['String']['output'];
@@ -18452,6 +18560,7 @@ export type Notifier = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notifier_configuration: Scalars['String']['output'];
@@ -18560,6 +18669,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_observed: Scalars['DateTime']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -18899,6 +19009,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -19263,6 +19374,7 @@ export type Organization = BasicObject & Identity & StixCoreObject & StixDomainO
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
   members?: Maybe<UserConnection>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -19567,6 +19679,11 @@ export type ParticipantEdge = {
   node: Participant;
 };
 
+export type PatchMetricInput = {
+  name: Scalars['String']['input'];
+  value: Scalars['Float']['input'];
+};
+
 export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'PaymentCard';
   card_number?: Maybe<Scalars['String']['output']>;
@@ -19591,6 +19708,7 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -19791,6 +19909,7 @@ export type Persona = BasicObject & StixCoreObject & StixCyberObservable & StixO
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -19990,6 +20109,7 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -20178,6 +20298,7 @@ export type Pir = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   lastEventId: Scalars['String']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   pirContainers?: Maybe<ContainerConnection>;
@@ -20288,6 +20409,7 @@ export type PirRelationship = BasicRelationship & {
   fromRole?: Maybe<Scalars['String']['output']>;
   fromType: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pir_explanation?: Maybe<Array<PirExplanation>>;
   pir_score?: Maybe<Scalars['Int']['output']>;
@@ -20433,6 +20555,7 @@ export type Playbook = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   last_executions?: Maybe<Array<PlayBookExecution>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   playbook_definition?: Maybe<Scalars['String']['output']>;
@@ -20529,6 +20652,7 @@ export type Position = BasicObject & Location & StixCoreObject & StixDomainObjec
   lang?: Maybe<Scalars['String']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -20831,6 +20955,7 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   is_hidden?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -21059,6 +21184,7 @@ export type PublicDashboard = BasicObject & InternalObject & {
   enabled: Scalars['Boolean']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   owner?: Maybe<Creator>;
   parent_types: Array<Scalars['String']['output']>;
@@ -24577,6 +24703,7 @@ export type Region = BasicObject & Location & StixCoreObject & StixDomainObject 
   lang?: Maybe<Scalars['String']['output']>;
   latitude?: Maybe<Scalars['Float']['output']>;
   longitude?: Maybe<Scalars['Float']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -24895,6 +25022,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -25364,6 +25492,7 @@ export type Role = BasicObject & InternalObject & {
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -25475,6 +25604,7 @@ export type SavedFilter = BasicObject & InternalObject & {
   entity_type: Scalars['String']['output'];
   filters: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   scope: Scalars['String']['output'];
@@ -25549,6 +25679,7 @@ export type Sector = BasicObject & Identity & StixCoreObject & StixDomainObject 
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -25839,6 +25970,7 @@ export type SecurityPlatform = BasicObject & Identity & StixCoreObject & StixDom
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -26091,6 +26223,8 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   filigran_chatbot_ai_url?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   messages_administration?: Maybe<Array<SettingsMessage>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  metrics_definition?: Maybe<Array<MetricDefinition>>;
   otp_mandatory?: Maybe<Scalars['Boolean']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   password_policy_max_length?: Maybe<Scalars['Int']['output']>;
@@ -26263,6 +26397,7 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   languages?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -26565,6 +26700,7 @@ export type StixCoreObject = {
   importFiles?: Maybe<FileConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -26945,6 +27081,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   is_inferred: Scalars['Boolean']['output'];
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<Array<Label>>;
@@ -27228,6 +27365,7 @@ export type StixCyberObservable = {
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -27523,6 +27661,7 @@ export type StixDomainObject = {
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -27912,6 +28051,7 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   magic_number_hex?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   mime_type?: Maybe<Scalars['String']['output']>;
   mtime?: Maybe<Scalars['DateTime']['output']>;
   name?: Maybe<Scalars['String']['output']>;
@@ -28125,6 +28265,7 @@ export type StixMetaObject = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -28163,6 +28304,7 @@ export type StixObject = {
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   representative: Representative;
@@ -28245,6 +28387,7 @@ export type StixRefRelationship = BasicRelationship & StixRelationship & {
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
@@ -28382,6 +28525,7 @@ export type StixRelationship = {
   fromRole?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -28500,6 +28644,7 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   id: Scalars['ID']['output'];
   is_inferred: Scalars['Boolean']['output'];
   last_seen?: Maybe<Scalars['DateTime']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
   objectLabel?: Maybe<Array<Label>>;
@@ -28931,6 +29076,7 @@ export type SupportPackage = BasicObject & InternalObject & {
   creators?: Maybe<Array<Creator>>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   nodes_count: Scalars['Int']['output'];
   package_status: PackageStatus;
@@ -29062,6 +29208,7 @@ export type System = BasicObject & Identity & StixCoreObject & StixDomainObject 
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -29360,6 +29507,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -29609,6 +29757,7 @@ export type TaskTemplate = BasicObject & InternalObject & {
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   parent_types: Array<Maybe<Scalars['String']['output']>>;
@@ -29737,6 +29886,7 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -29968,6 +30118,7 @@ export type ThreatActor = {
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -30195,6 +30346,7 @@ export type ThreatActorGroup = BasicObject & StixCoreObject & StixDomainObject &
   lang?: Maybe<Scalars['String']['output']>;
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -30497,6 +30649,7 @@ export type ThreatActorIndividual = BasicObject & StixCoreObject & StixDomainObj
   last_seen?: Maybe<Scalars['DateTime']['output']>;
   locations?: Maybe<LocationConnection>;
   marital_status?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -30806,6 +30959,7 @@ export type Tool = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   jobs?: Maybe<Array<Maybe<Work>>>;
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -31087,6 +31241,7 @@ export type TrackingNumber = BasicObject & StixCoreObject & StixCyberObservable 
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -31281,6 +31436,7 @@ export type Trigger = BasicObject & InternalObject & {
   id: Scalars['ID']['output'];
   instance_trigger?: Maybe<Scalars['Boolean']['output']>;
   isDirectAdministrator?: Maybe<Scalars['Boolean']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notifiers?: Maybe<Array<Notifier>>;
@@ -31418,6 +31574,7 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -31618,6 +31775,7 @@ export type User = BasicObject & InternalObject & {
   individual_id?: Maybe<Scalars['String']['output']>;
   language?: Maybe<Scalars['String']['output']>;
   lastname?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   monochrome_labels?: Maybe<Scalars['Boolean']['output']>;
   name: Scalars['String']['output'];
   no_creators?: Maybe<Scalars['Boolean']['output']>;
@@ -31703,6 +31861,7 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   is_privileged?: Maybe<Scalars['Boolean']['output']>;
   is_service_account?: Maybe<Scalars['Boolean']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -31937,6 +32096,7 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -32243,6 +32403,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   id: Scalars['ID']['output'];
   is_hidden?: Maybe<Scalars['Boolean']['output']>;
   is_inferred: Scalars['Boolean']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   order?: Maybe<Scalars['Int']['output']>;
@@ -32393,6 +32554,7 @@ export type Vulnerability = BasicObject & StixCoreObject & StixDomainObject & St
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified?: Maybe<Scalars['DateTime']['output']>;
   name: Scalars['String']['output'];
   notes?: Maybe<NoteConnection>;
@@ -32831,6 +32993,7 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   modified_time?: Maybe<Scalars['DateTime']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -33034,6 +33197,7 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   indicators?: Maybe<IndicatorConnection>;
   is_inferred: Scalars['Boolean']['output'];
   jobs?: Maybe<Array<Maybe<Work>>>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -33322,6 +33486,7 @@ export type Workspace = BasicObject & InternalObject & {
   investigated_entities_ids?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   isShared?: Maybe<Scalars['Boolean']['output']>;
   manifest?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   objects?: Maybe<StixObjectOrStixRelationshipRefConnection>;
   owner?: Maybe<Creator>;
@@ -33421,6 +33586,7 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   issuer_alternative_name?: Maybe<Scalars['String']['output']>;
   jobs?: Maybe<Array<Maybe<Work>>>;
   key_usage?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name_constraints?: Maybe<Scalars['String']['output']>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
@@ -33820,7 +33986,7 @@ export type ResolversTypes = ResolversObject<{
   BackgroundTasksOrdering: BackgroundTasksOrdering;
   BankAccount: ResolverTypeWrapper<Omit<BankAccount, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   BankAccountAddInput: BankAccountAddInput;
-  BasicObject: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['BasicObject']>;
+  BasicObject: ResolverTypeWrapper<BasicStoreBase>;
   BasicRelationship: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['BasicRelationship']>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   CGUStatus: CguStatus;
@@ -34296,6 +34462,9 @@ export type ResolversTypes = ResolversObject<{
   MemberGroupRestriction: ResolverTypeWrapper<MemberGroupRestriction>;
   MemberType: MemberType;
   MessagesStats: ResolverTypeWrapper<MessagesStats>;
+  Metric: ResolverTypeWrapper<Metric>;
+  MetricAttributes: ResolverTypeWrapper<MetricAttributes>;
+  MetricDefinition: ResolverTypeWrapper<MetricDefinition>;
   MetricsByMimeType: ResolverTypeWrapper<MetricsByMimeType>;
   Module: ResolverTypeWrapper<Module>;
   MultiDistribution: ResolverTypeWrapper<Omit<MultiDistribution, 'data'> & { data?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>> }>;
@@ -34366,6 +34535,7 @@ export type ResolversTypes = ResolversObject<{
   Participant: ResolverTypeWrapper<Participant>;
   ParticipantConnection: ResolverTypeWrapper<ParticipantConnection>;
   ParticipantEdge: ResolverTypeWrapper<ParticipantEdge>;
+  PatchMetricInput: PatchMetricInput;
   PaymentCard: ResolverTypeWrapper<Omit<PaymentCard, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   PaymentCardAddInput: PaymentCardAddInput;
   Persona: ResolverTypeWrapper<Omit<Persona, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -34822,7 +34992,7 @@ export type ResolversParentTypes = ResolversObject<{
   BackgroundTaskError: BackgroundTaskError;
   BankAccount: Omit<BankAccount, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   BankAccountAddInput: BankAccountAddInput;
-  BasicObject: ResolversInterfaceTypes<ResolversParentTypes>['BasicObject'];
+  BasicObject: BasicStoreBase;
   BasicRelationship: ResolversInterfaceTypes<ResolversParentTypes>['BasicRelationship'];
   Boolean: Scalars['Boolean']['output'];
   CSVFeedAddInputFromImport: CsvFeedAddInputFromImport;
@@ -35225,6 +35395,9 @@ export type ResolversParentTypes = ResolversObject<{
   MemberEdge: Omit<MemberEdge, 'node'> & { node: ResolversParentTypes['Member'] };
   MemberGroupRestriction: MemberGroupRestriction;
   MessagesStats: MessagesStats;
+  Metric: Metric;
+  MetricAttributes: MetricAttributes;
+  MetricDefinition: MetricDefinition;
   MetricsByMimeType: MetricsByMimeType;
   Module: Module;
   MultiDistribution: Omit<MultiDistribution, 'data'> & { data?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>> };
@@ -35286,6 +35459,7 @@ export type ResolversParentTypes = ResolversObject<{
   Participant: Participant;
   ParticipantConnection: ParticipantConnection;
   ParticipantEdge: ParticipantEdge;
+  PatchMetricInput: PatchMetricInput;
   PaymentCard: Omit<PaymentCard, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   PaymentCardAddInput: PaymentCardAddInput;
   Persona: Omit<Persona, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -35684,6 +35858,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AdministrativeAreaNotesArgs>>;
@@ -35831,6 +36006,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<ArtifactIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ArtifactJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   mime_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ArtifactNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -35910,6 +36086,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AttackPatternJobsArgs>>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AttackPatternNotesArgs>>;
@@ -36080,6 +36257,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<AutonomousSystemIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<AutonomousSystemJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<AutonomousSystemNotesArgs>>;
   number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -36181,6 +36359,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<BankAccountIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<BankAccountJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<BankAccountNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -36213,6 +36392,7 @@ export type BasicObjectResolvers<ContextType = any, ParentType extends Resolvers
   __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'DataComponent' | 'DataSource' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SavedFilter' | 'Sector' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
@@ -36224,6 +36404,7 @@ export type BasicRelationshipResolvers<ContextType = any, ParentType extends Res
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -36270,6 +36451,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CampaignJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CampaignNotesArgs>>;
@@ -36334,6 +36516,7 @@ export type CapabilityResolvers<ContextType = any, ParentType extends ResolversP
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -36385,6 +36568,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CaseNotesArgs>>;
@@ -36463,6 +36647,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseIncidentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CaseIncidentNotesArgs>>;
@@ -36547,6 +36732,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseRfiJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CaseRfiNotesArgs>>;
@@ -36631,6 +36817,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseRftJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CaseRftNotesArgs>>;
@@ -36688,6 +36875,7 @@ export type CaseTemplateResolvers<ContextType = any, ParentType extends Resolver
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -36713,6 +36901,7 @@ export type CatalogResolvers<ContextType = any, ParentType extends ResolversPare
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -36756,6 +36945,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ChannelJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ChannelNotesArgs>>;
@@ -36834,6 +37024,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CityNotesArgs>>;
@@ -36955,6 +37146,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_health_metrics?: Resolver<Maybe<ResolversTypes['ConnectorHealthMetrics']>, ParentType, ContextType>;
   manager_requested_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   only_contextual?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -37018,6 +37210,7 @@ export type ConnectorManagerResolvers<ContextType = any, ParentType extends Reso
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   last_sync_execution?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   public_key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -37067,6 +37260,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ContainerNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -37162,6 +37356,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CountryNotesArgs>>;
@@ -37245,6 +37440,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CourseOfActionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CourseOfActionNotesArgs>>;
@@ -37344,6 +37540,7 @@ export type CredentialResolvers<ContextType = any, ParentType extends ResolversP
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CredentialIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CredentialJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CredentialNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -37392,6 +37589,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptocurrencyWalletJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -37440,6 +37638,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<CryptographicKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CryptographicKeyJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<CryptographicKeyNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -37474,6 +37673,7 @@ export type CsvMapperResolvers<ContextType = any, ParentType extends ResolversPa
   errors?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   has_header?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   representations?: Resolver<Array<ResolversTypes['CsvMapperRepresentation']>, ParentType, ContextType>;
@@ -37589,6 +37789,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DataComponentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DataComponentNotesArgs>>;
@@ -37661,6 +37862,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DataSourceJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DataSourceNotesArgs>>;
@@ -37749,6 +37951,7 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -37806,6 +38009,7 @@ export type DeleteOperationResolvers<ContextType = any, ParentType extends Resol
   main_entity_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   main_entity_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   main_entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -37863,6 +38067,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DirectoryIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DirectoryJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   mtime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DirectoryNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -37918,6 +38123,7 @@ export type DisseminationListResolvers<ContextType = any, ParentType extends Res
   emails?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -37969,6 +38175,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<DomainNameIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<DomainNameJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<DomainNameNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -38021,6 +38228,7 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objectsCount?: Resolver<ResolversTypes['DraftObjectsCount'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38101,6 +38309,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailAddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailAddrJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailAddrNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -38154,6 +38363,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   is_multipart?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMessageJobsArgs>>;
   message_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailMessageNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -38206,6 +38416,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EmailMimePartTypeJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -38239,6 +38450,7 @@ export type EmailTemplateResolvers<ContextType = any, ParentType extends Resolve
   email_object?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   sender_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38270,6 +38482,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   fintelTemplates?: Resolver<Maybe<ResolversTypes['FintelTemplateConnection']>, ParentType, ContextType, Partial<EntitySettingFintelTemplatesArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   mandatoryAttributes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   overview_layout_customization?: Resolver<Maybe<Array<ResolversTypes['OverviewWidgetCustomization']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -38320,6 +38533,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<EventJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<EventNotesArgs>>;
@@ -38378,6 +38592,7 @@ export type ExclusionListResolvers<ContextType = any, ParentType extends Resolve
   exclusion_list_values_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   file_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38426,6 +38641,7 @@ export type ExternalReferenceResolvers<ContextType = any, ParentType extends Res
   importFiles?: Resolver<ResolversTypes['FileConnection'], ParentType, ContextType, Partial<ExternalReferenceImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ExternalReferenceJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<ResolversTypes['FileConnection'], ParentType, ContextType, Partial<ExternalReferencePendingFilesArgs>>;
@@ -38538,6 +38754,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<FeedbackJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<FeedbackNotesArgs>>;
@@ -38676,6 +38893,7 @@ export type FintelDesignResolvers<ContextType = any, ParentType extends Resolver
   gradiantFromColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   gradiantToColor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38701,6 +38919,7 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
   fintel_template_widgets?: Resolver<Array<ResolversTypes['FintelTemplateWidget']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   instance_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   settings_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38736,6 +38955,7 @@ export type FormResolvers<ContextType = any, ParentType extends ResolversParentT
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   form_schema?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38793,6 +39013,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   max_shareable_marking?: Resolver<Array<ResolversTypes['MarkingDefinition']>, ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<GroupMembersArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   no_creators?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   not_shareable_marking_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38859,6 +39080,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<GroupingJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<GroupingNotesArgs>>;
@@ -38935,6 +39157,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HashedObservableIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HashedObservableJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HashedObservableNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -38980,6 +39203,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<HostnameIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HostnameJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HostnameNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -39029,6 +39253,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv4AddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv4AddrJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv4AddrNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -39078,6 +39303,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<IPv6AddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IPv6AddrJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IPv6AddrNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -39133,6 +39359,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IdentityJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IdentityNotesArgs>>;
@@ -39215,6 +39442,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IncidentJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IncidentNotesArgs>>;
@@ -39333,6 +39561,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IndicatorJobsArgs>>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IndicatorNotesArgs>>;
@@ -39425,6 +39654,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<IndividualJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IndividualNotesArgs>>;
@@ -39528,6 +39758,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<InfrastructureNotesArgs>>;
@@ -39599,6 +39830,7 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -39644,6 +39876,7 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
   jsonMapper?: Resolver<ResolversTypes['JsonMapper'], ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   markings?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pagination_with_sub_page?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   pagination_with_sub_page_attribute_path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39694,6 +39927,7 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -39731,6 +39965,7 @@ export type IngestionTaxiiResolvers<ContextType = any, ParentType extends Resolv
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_execution_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -39751,6 +39986,7 @@ export type IngestionTaxiiCollectionResolvers<ContextType = any, ParentType exte
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   ingestion_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -39798,6 +40034,7 @@ export type InternalRelationshipResolvers<ContextType = any, ParentType extends 
   from?: Resolver<Maybe<ResolversTypes['InternalObject']>, ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -39841,6 +40078,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<IntrusionSetNotesArgs>>;
@@ -39934,6 +40172,7 @@ export type JsonMapperResolvers<ContextType = any, ParentType extends ResolversP
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   errors?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   representations?: Resolver<Array<ResolversTypes['JsonMapperRepresentation']>, ParentType, ContextType>;
@@ -40012,6 +40251,7 @@ export type KillChainPhaseResolvers<ContextType = any, ParentType extends Resolv
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   kill_chain_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   phase_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -40058,6 +40298,7 @@ export type LabelResolvers<ContextType = any, ParentType extends ResolversParent
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -40115,6 +40356,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<LanguageJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<LanguageNotesArgs>>;
@@ -40207,6 +40449,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<LocationNotesArgs>>;
@@ -40320,6 +40563,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MacAddrIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MacAddrJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MacAddrNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -40381,6 +40625,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   malware_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MalwareNotesArgs>>;
@@ -40446,6 +40691,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MalwareAnalysisJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   modules?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MalwareAnalysisNotesArgs>>;
@@ -40536,6 +40782,7 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   manager_current_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   manager_health_metrics?: Resolver<Maybe<ResolversTypes['ConnectorHealthMetrics']>, ParentType, ContextType>;
   manager_requested_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -40550,6 +40797,7 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
   manager_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   manager_running?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   manager_setting?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -40593,6 +40841,7 @@ export type MarkingDefinitionResolvers<ContextType = any, ParentType extends Res
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -40683,6 +40932,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   max_shareable_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   monochrome_labels?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   no_creators?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -40732,6 +40982,7 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MediaContentJobsArgs>>;
   media_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MediaContentNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -40803,6 +41054,25 @@ export type MemberGroupRestrictionResolvers<ContextType = any, ParentType extend
 export type MessagesStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesStats'] = ResolversParentTypes['MessagesStats']> = ResolversObject<{
   ack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ack_details?: Resolver<Maybe<ResolversTypes['AckDetails']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MetricResolvers<ContextType = any, ParentType extends ResolversParentTypes['Metric'] = ResolversParentTypes['Metric']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MetricAttributesResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricAttributes'] = ResolversParentTypes['MetricAttributes']> = ResolversObject<{
+  attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MetricDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricDefinition'] = ResolversParentTypes['MetricDefinition']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<ResolversTypes['MetricAttributes']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -41049,6 +41319,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
   meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
   meTokenRenew?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
+  metricPatch?: Resolver<Maybe<ResolversTypes['BasicObject']>, ParentType, ContextType, RequireFields<MutationMetricPatchArgs, 'id' | 'input'>>;
   narrativeAdd?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeAddArgs, 'input'>>;
   narrativeContextClean?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextCleanArgs, 'id'>>;
   narrativeContextPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextPatchArgs, 'id' | 'input'>>;
@@ -41275,6 +41546,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<MutexIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<MutexJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<MutexNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -41335,6 +41607,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NarrativeJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   narrative_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -41410,6 +41683,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   is_active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NetworkTrafficJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NetworkTrafficNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -41475,6 +41749,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<NoteJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   likelihood?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   note_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<NoteNotesArgs>>;
@@ -41539,6 +41814,7 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_read?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notification_content?: Resolver<Array<ResolversTypes['NotificationContent']>, ParentType, ContextType>;
   notification_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41587,6 +41863,7 @@ export type NotifierResolvers<ContextType = any, ParentType extends ResolversPar
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notifier_configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -41674,6 +41951,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ObservedDataJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_observed?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ObservedDataNotesArgs>>;
@@ -41772,6 +42050,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<OpinionJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OpinionNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -41871,6 +42150,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<OrganizationJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<OrganizationMembersArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<OrganizationNotesArgs>>;
@@ -42001,6 +42281,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<PaymentCardIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PaymentCardJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PaymentCardNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -42048,6 +42329,7 @@ export type PersonaResolvers<ContextType = any, ParentType extends ResolversPare
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<PersonaIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PersonaJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PersonaNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -42097,6 +42379,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<PhoneNumberIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<PhoneNumberJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PhoneNumberNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -42135,6 +42418,7 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pirContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<PirPirContainersArgs>>;
@@ -42195,6 +42479,7 @@ export type PirRelationshipResolvers<ContextType = any, ParentType extends Resol
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pir_explanation?: Resolver<Maybe<Array<ResolversTypes['PirExplanation']>>, ParentType, ContextType>;
   pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -42300,6 +42585,7 @@ export type PlaybookResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   last_executions?: Resolver<Maybe<Array<ResolversTypes['PlayBookExecution']>>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_definition?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42372,6 +42658,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<PositionNotesArgs>>;
@@ -42463,6 +42750,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   is_hidden?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ProcessJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ProcessNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -42520,6 +42808,7 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -43072,6 +43361,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   latitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   longitude?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<RegionNotesArgs>>;
@@ -43171,6 +43461,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ReportJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ReportNotesArgs>>;
@@ -43327,6 +43618,7 @@ export type RoleResolvers<ContextType = any, ParentType extends ResolversParentT
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -43404,6 +43696,7 @@ export type SavedFilterResolvers<ContextType = any, ParentType extends Resolvers
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   scope?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -43461,6 +43754,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SectorJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SectorNotesArgs>>;
@@ -43549,6 +43843,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SecurityPlatformJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SecurityPlatformNotesArgs>>;
@@ -43617,6 +43912,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   filigran_chatbot_ai_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   messages_administration?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -43746,6 +44043,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SoftwareJobsArgs>>;
   languages?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SoftwareNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -43855,6 +44153,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<StixCoreObjectImportFilesArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixCoreObjectJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCoreObjectNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -43938,6 +44237,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipNotesArgs>>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -44014,6 +44314,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<StixCyberObservableIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixCyberObservableJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCyberObservableNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -44091,6 +44392,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixDomainObjectJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixDomainObjectNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -44181,6 +44483,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<StixFileJobsArgs>>;
   magic_number_hex?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   mime_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   mtime?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -44240,6 +44543,7 @@ export type StixMetaObjectResolvers<ContextType = any, ParentType extends Resolv
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44269,6 +44573,7 @@ export type StixObjectResolvers<ContextType = any, ParentType extends ResolversP
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -44341,6 +44646,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixRefRelationshipGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixRefRelationshipNotesArgs>>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
@@ -44395,6 +44701,7 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -44470,6 +44777,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipNotesArgs>>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -44622,6 +44930,7 @@ export type SupportPackageResolvers<ContextType = any, ParentType extends Resolv
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   nodes_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   package_status?: Resolver<ResolversTypes['PackageStatus'], ParentType, ContextType>;
@@ -44704,6 +45013,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SystemJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SystemNotesArgs>>;
@@ -44796,6 +45106,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TaskJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<TaskNotesArgs>>;
@@ -44849,6 +45160,7 @@ export type TaskTemplateResolvers<ContextType = any, ParentType extends Resolver
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -44917,6 +45229,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<TextIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TextJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<TextNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -45001,6 +45314,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorNotesArgs>>;
@@ -45082,6 +45396,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorGroupNotesArgs>>;
@@ -45183,6 +45498,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   locations?: Resolver<Maybe<ResolversTypes['LocationConnection']>, ParentType, ContextType>;
   marital_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualNotesArgs>>;
@@ -45268,6 +45584,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ToolJobsArgs>>;
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<ToolNotesArgs>>;
@@ -45345,6 +45662,7 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<TrackingNumberIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<TrackingNumberJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<TrackingNumberNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -45385,6 +45703,7 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   instance_trigger?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   isDirectAdministrator?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notifiers?: Resolver<Maybe<Array<ResolversTypes['Notifier']>>, ParentType, ContextType>;
@@ -45450,6 +45769,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UrlIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UrlJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UrlNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -45500,6 +45820,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   monochrome_labels?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   no_creators?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -45559,6 +45880,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   is_privileged?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_service_account?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UserAccountJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UserAccountNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -45607,6 +45929,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<UserAgentIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<UserAgentJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<UserAgentNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -45691,6 +46014,7 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_hidden?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -45756,6 +46080,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<VulnerabilityJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<VulnerabilityNotesArgs>>;
@@ -45941,6 +46266,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryKeyJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   modified_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -45992,6 +46318,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   indicators?: Resolver<Maybe<ResolversTypes['IndicatorConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeIndicatorsArgs>>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<WindowsRegistryValueTypeJobsArgs>>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -46090,6 +46417,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   investigated_entities_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   isShared?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   manifest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   objects?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefConnection']>, ParentType, ContextType, Partial<WorkspaceObjectsArgs>>;
   owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
@@ -46147,6 +46475,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   issuer_alternative_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<X509CertificateJobsArgs>>;
   key_usage?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name_constraints?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<X509CertificateNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -46540,6 +46869,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MemberEdge?: MemberEdgeResolvers<ContextType>;
   MemberGroupRestriction?: MemberGroupRestrictionResolvers<ContextType>;
   MessagesStats?: MessagesStatsResolvers<ContextType>;
+  Metric?: MetricResolvers<ContextType>;
+  MetricAttributes?: MetricAttributesResolvers<ContextType>;
+  MetricDefinition?: MetricDefinitionResolvers<ContextType>;
   MetricsByMimeType?: MetricsByMimeTypeResolvers<ContextType>;
   Module?: ModuleResolvers<ContextType>;
   MultiDistribution?: MultiDistributionResolvers<ContextType>;

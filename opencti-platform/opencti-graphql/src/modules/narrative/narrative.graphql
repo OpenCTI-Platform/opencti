@@ -3,6 +3,7 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
     standard_id: String!
     entity_type: String!
     parent_types: [String]!
+    metrics:[Metric]
     # StixObject
     representative: Representative!
     x_opencti_stix_ids: [StixId]

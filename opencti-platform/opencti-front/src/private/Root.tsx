@@ -133,6 +133,13 @@ const rootSettingsFragment = graphql`
     }
     xtm_hub_token
     xtm_hub_registration_status
+    metrics_definition {
+      entity_type
+      metrics {
+        attribute
+        name
+      }
+    }
   }
 `;
 

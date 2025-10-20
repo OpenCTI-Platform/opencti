@@ -34,6 +34,7 @@ type Pir implements InternalObject & BasicObject {
     entity_type: String!
     standard_id: String!
     parent_types: [String!]!
+    metrics:[Metric]
     created_at: DateTime!
     updated_at: DateTime!
     refreshed_at: DateTime
@@ -65,6 +66,7 @@ type PirRelationship implements BasicRelationship {
     standard_id: String!
     entity_type: String!
     parent_types: [String]!
+  metrics:[Metric]
     fromRole: String
     toRole: String
     created_at: DateTime!

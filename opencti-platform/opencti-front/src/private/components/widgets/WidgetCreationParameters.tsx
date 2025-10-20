@@ -27,12 +27,14 @@ import { useFormatter } from '../../../components/i18n';
 import { findFiltersFromKeys, getEntityTypeTwoFirstLevelsFilterValues, SELF_ID, SELF_ID_VALUE } from '../../../utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters } from '../../../utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline } from '../../../utils/widget/widgetUtils';
+import { getCurrentAvailableParameters, getCurrentCategory, getCurrentIsRelationships, isWidgetListOrTimeline, getMaxResultCount } from '../../../utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
 import useAuth from '../../../utils/hooks/useAuth';
 
 const WidgetCreationParameters = () => {
+  const { metricsDefinition } = useAttributes();
+
   const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
@@ -176,6 +178,8 @@ const WidgetCreationParameters = () => {
     varNameError = t_i18n('Only letters, numbers and special chars _ and - are allowed');
   }
 
+  const maxResultCount = getMaxResultCount(type);
+
   return (
     <div style={{ marginTop: 20 }}>
       <TextField
@@ -257,7 +261,8 @@ const WidgetCreationParameters = () => {
           .fill(0)
           .map((_, i) => {
             const currentInstanceId = dataSelection[i].instance_id;
-            const isNumberError = (dataSelection[i].number ?? 10) > 100;
+            const isNumberError = (dataSelection[i].number ?? 10) > maxResultCount;
+
             return (
               <div key={i}>
                 {type === 'attribute' && (
@@ -317,7 +322,7 @@ const WidgetCreationParameters = () => {
                     fullWidth={true}
                     type="number"
                     error={isNumberError}
-                    helperText={t_i18n('The number of results should be lower than 100')}
+                    helperText={`${t_i18n('The number of results should be lower than')} ${maxResultCount}`}
                     value={dataSelection[i].number ?? 10}
                     onChange={(event) => handleChangeDataValidationParameter(
                       i,
@@ -808,10 +813,11 @@ const WidgetCreationParameters = () => {
               const entityType = getEntityTypeFromFilters(filters);
 
               const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, context);
+
               return (
                 <WidgetColumnsCustomizationInput
                   key={index}
-                  availableColumns={getWidgetColumns(perspective, entityType || undefined)}
+                  availableColumns={getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined)}
                   defaultColumns={defaultWidgetColumnsByType}
                   value={[...(columns ?? defaultWidgetColumnsByType)]}
                   onChange={(newColumns) => setColumns(index, newColumns)}

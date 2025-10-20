@@ -221,6 +221,7 @@ import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-type
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { asyncFilter, asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { isMetricsName } from '../modules/metrics/metrics-utils';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2816,6 +2817,18 @@ const adaptFilterToPirFilterKeys = async (context, user, filterKey, filter) => {
   return { newFilter, newFilterGroup: undefined };
 };
 
+const adaptFilterForMetricsFilterKeys = async (filter) => {
+  const newFilter = {
+    key: ['metrics'],
+    mode: 'and',
+    nested: [
+      { key: 'name', values: [filter.key], operator: 'eq' },
+      { key: 'value', values: filter.values, operator: filter.operator, mode: filter.mode },
+    ]
+  };
+  return { newFilter, newFilterGroup: undefined };
+};
+
 const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) => {
   const { key, operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -3251,6 +3264,11 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         } else {
           finalFilters.push(filter); // nothing to modify
         }
+      }
+
+      if (isMetricsName(filterKey)) {
+        const { newFilter } = await adaptFilterForMetricsFilterKeys(filter);
+        finalFilters.push(newFilter);
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
