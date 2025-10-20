@@ -15,8 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { useTheme } from '@mui/material/styles';
 import React, { useState } from 'react';
-import type { Theme } from '../../../../components/Theme';
-import { itemColor } from '../../../../utils/Colors';
+import type { Theme } from '../../../../../components/Theme';
+import { itemColor } from '../../../../../utils/Colors';
+import { useFormatter } from '../../../../../components/i18n';
 
 interface PirThreatMapLegendProps {
   entityTypes: string[]
@@ -25,6 +26,7 @@ interface PirThreatMapLegendProps {
 
 const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const [disabledTypes, setDisabledTypes] = useState<string[]>([]);
 
   const toggleType = (type: string) => {
@@ -63,7 +65,7 @@ const PirThreatMapLegend = ({ entityTypes, onFilter }: PirThreatMapLegendProps) 
               background: itemColor(type),
             }}
           />
-          <span>{type}</span>
+          <span>{t_i18n(`entity_${type}`)}</span>
         </div>
       ))}
     </div>

@@ -36,6 +36,7 @@ type Pir implements InternalObject & BasicObject {
     parent_types: [String!]!
     created_at: DateTime!
     updated_at: DateTime!
+    refreshed_at: DateTime
     creators: [Creator!]
     # Pir
     name: String!
@@ -68,6 +69,7 @@ type PirRelationship implements BasicRelationship {
     toRole: String
     created_at: DateTime!
     updated_at: DateTime!
+    refreshed_at: DateTime
     fromId: String!
     toId: String!
     fromType: String!

@@ -491,6 +491,17 @@ export const updatedAt: AttributeDefinition = {
   upsert: false,
   isFilterable: true,
 };
+export const refreshedAt: AttributeDefinition = {
+  name: 'refreshed_at',
+  label: 'Freshness date',
+  type: 'date',
+  mandatoryType: 'internal',
+  update: false,
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: true,
+};
 
 export const revoked: AttributeDefinition = {
   name: 'revoked',
