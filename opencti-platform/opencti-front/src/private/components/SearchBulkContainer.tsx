@@ -17,6 +17,7 @@ import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithout
 import { resolveLink } from '../../utils/Entity';
 import { typesWithNoAnalysesTab } from '../../utils/hooks/useAttributes';
 import { DataTableProps } from '../../components/dataGrid/dataTableTypes';
+import useDebounceCallback from '../../utils/hooks/useDebounceCallback';
 
 const SearchBulkContainer = () => {
   const { t_i18n, n } = useFormatter();
@@ -28,28 +29,33 @@ const SearchBulkContainer = () => {
 
   const [textFieldValue, setTextFieldValue] = useState('');
   const [currentTab, setCurrentTab] = useState(0);
+  const [values, setValues] = useState<string[]>([]);
   const [numberOfUnknownEntities, setNumberOfUnknownEntities] = useState(0);
+
+  const setValuesAfterDebounce = useDebounceCallback(setValues, 500); // set values with a 500ms debounce
 
   const handleChangeTab = (value: number) => {
     setCurrentTab(value);
   };
-  const values = textFieldValue
-    .split('\n')
-    .filter((o) => o.length > 1)
-    .map((val) => val.trim()) ?? [];
+  const bulkTextToValues = (text: string) => {
+    return text
+      .split('\n')
+      .filter((o) => o.length > 1)
+      .map((val) => val.trim()) ?? [];
+  };
 
   const handleChangeTextField = (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setTextFieldValue(
-      value
-        .split('\n')
-        .map((o) => o
-          .split(',')
-          .map((p) => p.split(';'))
-          .flat())
-        .flat()
-        .join('\n'),
-    );
+    const text = value
+      .split('\n')
+      .map((o) => o
+        .split(',')
+        .map((p) => p.split(';'))
+        .flat())
+      .flat()
+      .join('\n');
+    setTextFieldValue(text);
+    setValuesAfterDebounce(bulkTextToValues(text));
   };
 
   const dataColumns: DataTableProps['dataColumns'] = {
