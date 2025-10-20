@@ -1260,6 +1260,7 @@
   "Duplicate the dashboard": "Дублировать дашборд",
   "Dynamic filter": "Динамический фильтр",
   "Dynamic from the main entity triggering the playbook": "Динамика от основной сущности, запускающей игровой блокнот",
+  "Dynamic from the objects in the bundle of the playbook": "Динамические из объектов в пакете игровой книги",
   "Dynamic source filters": "Динамические фильтры источников",
   "Dynamic target filters": "Динамические целевые фильтры",
   "Each line must contain a valid email address": "Каждая строка должна содержать действительный адрес электронной почты",

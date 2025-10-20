@@ -1260,6 +1260,7 @@
   "Duplicate the dashboard": "Dupliquer le tableau de bord",
   "Dynamic filter": "Filtre dynamique",
   "Dynamic from the main entity triggering the playbook": "Dynamique de l'entité principale déclenchant le playbook",
+  "Dynamic from the objects in the bundle of the playbook": "Dynamique à partir des objets dans le bundle du playbook",
   "Dynamic source filters": "Filtres de source dynamique",
   "Dynamic target filters": "Filtres dynamiques cibles",
   "Each line must contain a valid email address": "Chaque ligne doit contenir une adresse électronique valide",
