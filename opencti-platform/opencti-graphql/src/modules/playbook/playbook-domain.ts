@@ -33,7 +33,7 @@ import {
 } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
-import { PLAYBOOK_COMPONENTS, PLAYBOOK_INTERNAL_DATA_CRON, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
+import { PLAYBOOK_COMPONENTS, PLAYBOOK_INTERNAL_DATA_CRON_ID, PLAYBOOK_SHARING_COMPONENT_ID, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -102,10 +102,10 @@ export const availableComponents = async (context: AuthContext) => {
 
 export const getPlaybookDefinition = async (context: AuthContext, playbook: BasicStoreEntityPlaybook) => {
   await checkEnterpriseEdition(context);
-  if (playbook.playbook_definition && playbook.playbook_definition.includes('PLAYBOOK_SHARING_COMPONENT')) {
+  if (playbook.playbook_definition && playbook.playbook_definition.includes(PLAYBOOK_SHARING_COMPONENT_ID)) {
     // parse playbook definition in case there is a sharing with organization component, in order to parse organizations to get their label
     const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
-    const sharingComponent = definition.nodes.find((n) => n.component_id === 'PLAYBOOK_SHARING_COMPONENT');
+    const sharingComponent = definition.nodes.find((n) => n.component_id === PLAYBOOK_SHARING_COMPONENT_ID);
     if (sharingComponent && sharingComponent.configuration) {
       const sharingConfiguration = JSON.parse(sharingComponent.configuration) as SharingConfiguration;
       const organizationsIds = sharingConfiguration.organizations.filter((o) => typeof o === 'string');
@@ -146,7 +146,7 @@ const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   const config = JSON.parse(input.configuration);
   if (config.filters) {
     const filterGroup = JSON.parse(config.filters) as FilterGroup;
-    if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
+    if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON_ID) {
       const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds, { noFiltersConvert: true });
       stringifiedFilters = JSON.stringify(convertedFilters);
     } else { // our stix matching is currently limited, we need to validate the input filters
