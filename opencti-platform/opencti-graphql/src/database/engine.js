@@ -1739,8 +1739,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     mapWithAllIds = false,
     type = null,
     relCount = false,
-    orderBy = null,
-    orderMode = 'asc',
   } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
@@ -1807,9 +1805,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       body.script_fields = {
         script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
       };
-    }
-    if (isNotEmptyField(orderBy)) {
-      body.sort = [{ [orderBy]: orderMode }];
     }
     const _source = { excludes: [] };
     if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
