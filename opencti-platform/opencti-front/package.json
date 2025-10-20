@@ -152,7 +152,7 @@
     "babel-plugin-relay": "20.1.1",
     "chokidar": "4.0.3",
     "compression": "1.8.1",
-    "cross-env": "7.0.3",
+    "cross-env": "10.1.0",
     "esbuild": "0.25.11",
     "eslint": "8.57.1",
     "eslint-config-airbnb-base": "15.0.0",

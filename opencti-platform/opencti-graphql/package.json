@@ -192,7 +192,7 @@
     "@typescript-eslint/parser": "7.3.1",
     "@vitest/coverage-v8": "3.2.4",
     "apollo-server-errors": "3.3.1",
-    "cross-env": "7.0.3",
+    "cross-env": "10.1.0",
     "esbuild": "0.25.11",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
