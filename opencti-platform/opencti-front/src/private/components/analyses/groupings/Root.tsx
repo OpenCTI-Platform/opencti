@@ -14,6 +14,7 @@ import Security from 'src/utils/Security';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import GroupingDeletion from '@components/analyses/groupings/GroupingDeletion';
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
+import AIInsights from '@components/common/ai/AIInsights';
 import { QueryRenderer } from '../../../../relay/environment';
 import Grouping from './Grouping';
 import GroupingKnowledge from './GroupingKnowledge';
@@ -55,6 +56,13 @@ const groupingQuery = graphql`
       entity_type
       name
       currentUserAccessRight
+      securityCoverage {
+        id
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
+      }
       ...Grouping_grouping
       ...GroupingDetails_grouping
       ...GroupingKnowledge_grouping
@@ -101,7 +109,7 @@ const RootGrouping = () => {
           if (props) {
             if (props.grouping) {
               const { grouping } = props;
-              const isOverview = location.pathname === `/dashboard/analyses/groupings/${grouping.id}`;
+              const isKnowledgeOrContent = location.pathname.includes('knowledge') || location.pathname.includes('content');
               const paddingRight = getPaddingRight(location.pathname, grouping.id, '/dashboard/analyses/groupings', false);
               const currentAccessRight = useGetCurrentUserAccessRight(grouping.currentUserAccessRight);
               return (
@@ -180,8 +188,11 @@ const RootGrouping = () => {
                         label={t_i18n('Data')}
                       />
                     </Tabs>
-                    {isOverview && (
-                      <StixCoreObjectSecurityCoverage id={grouping.id} coverage={null} />
+                    {!isKnowledgeOrContent && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                        <AIInsights id={report.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+                        <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
+                      </div>
                     )}
                   </Box>
                   <Routes>

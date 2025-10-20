@@ -3229,6 +3229,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 input CampaignAddInput {
@@ -4621,6 +4622,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 input IntrusionSetAddInput {
@@ -5948,6 +5950,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 input IncidentAddInput {
@@ -10273,6 +10276,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 enum GroupingsOrdering {
@@ -11397,6 +11401,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
   name: String!
   description: String
   content: String
@@ -12307,6 +12312,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 enum ThreatActorsIndividualOrdering {
