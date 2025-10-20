@@ -165,7 +165,7 @@
     "express": "4.21.2",
     "fs-extra": "11.3.2",
     "http-proxy-middleware": "3.0.5",
-    "i18n-auto-translation": "2.2.1",
+    "i18n-auto-translation": "2.2.3",
     "jsdom": "26.1.0",
     "license-checker-rseidelsohn": "4.4.2",
     "monocart-reporter": "2.9.21",
