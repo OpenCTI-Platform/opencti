@@ -158,7 +158,7 @@
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "18.0.0",
     "eslint-config-react-app": "7.0.1",
-    "eslint-plugin-custom-rules": "link:packages/eslint-plugin-custom-rules",
+    "eslint-plugin-custom-rules": "workspace:*",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "1.4.0",
     "eslint-plugin-react": "7.37.5",
@@ -179,19 +179,17 @@
   },
   "packageManager": "yarn@4.10.3+sha512.c38cafb5c7bb273f3926d04e55e1d8c9dfa7d9c3ea1f36a4868fa028b9e5f72298f0b7f401ad5eb921749eb012eb1c3bb74bf7503df3ee43fd600d14a018266f",
   "engines": {
-    "node": ">=20.*"
+    "node": ">=20.0.0"
   },
   "resolutions": {
-    "cookie": "1.0.2",
-    "cross-spawn": "7.0.6",
-    "eslint-plugin-custom-rules": "0.0.1",
-    "json5": "2.2.3",
-    "glob-parent": "6.0.2",
-    "webpack": "5.101.3",
-    "d3-color": "3.1.0",
     "@types/react": "19.1.8",
     "@types/relay-runtime": "19.0.2",
-    "react": "19.1.0"
+    "cookie": "1.0.2",
+    "d3-color": "3.1.0",
+    "glob-parent": "6.0.2",
+    "json5": "2.2.3",
+    "react": "19.1.0",
+    "webpack": "5.101.3"
   },
   "dependenciesMeta": {
     "canvas": {

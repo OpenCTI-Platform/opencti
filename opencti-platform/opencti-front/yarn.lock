@@ -8890,7 +8890,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-spawn@npm:7.0.6":
+"cross-spawn@npm:^7.0.0, cross-spawn@npm:^7.0.1, cross-spawn@npm:^7.0.2, cross-spawn@npm:^7.0.6":
   version: 7.0.6
   resolution: "cross-spawn@npm:7.0.6"
   dependencies:
@@ -10593,7 +10593,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-custom-rules@npm:0.0.1, eslint-plugin-custom-rules@workspace:packages/eslint-plugin-custom-rules":
+"eslint-plugin-custom-rules@workspace:*, eslint-plugin-custom-rules@workspace:packages/eslint-plugin-custom-rules":
   version: 0.0.0-use.local
   resolution: "eslint-plugin-custom-rules@workspace:packages/eslint-plugin-custom-rules"
   dependencies:
@@ -15458,7 +15458,7 @@ __metadata:
     eslint-config-airbnb-base: "npm:15.0.0"
     eslint-config-airbnb-typescript: "npm:18.0.0"
     eslint-config-react-app: "npm:7.0.1"
-    eslint-plugin-custom-rules: "link:packages/eslint-plugin-custom-rules"
+    eslint-plugin-custom-rules: "workspace:*"
     eslint-plugin-import: "npm:2.32.0"
     eslint-plugin-import-newlines: "npm:1.4.0"
     eslint-plugin-react: "npm:7.37.5"

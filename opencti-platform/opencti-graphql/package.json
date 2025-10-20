@@ -42,7 +42,7 @@
   },
   "packageManager": "yarn@4.10.3+sha512.c38cafb5c7bb273f3926d04e55e1d8c9dfa7d9c3ea1f36a4868fa028b9e5f72298f0b7f401ad5eb921749eb012eb1c3bb74bf7503df3ee43fd600d14a018266f",
   "engines": {
-    "node": ">= 17.*"
+    "node": ">= 20.0.0"
   },
   "dependencies": {
     "@apollo/server": "4.11.0",
@@ -209,22 +209,20 @@
   },
   "resolutions": {
     "axios": "1.12.0",
-    "chokidar": "4.0.3",
-    "cross-spawn": "7.0.6",
     "body-parser": "2.2.0",
+    "chokidar": "4.0.3",
     "cookie": "1.0.2",
     "cross-fetch": "4.1.0",
     "jose": "5.10.0",
-    "source-map": "0.7.6",
     "json5": "2.2.3",
     "lodash": "4.17.21",
+    "path-to-regexp": "0.1.12",
+    "@datadog/pprof": "patch:@datadog/pprof@5.8.2#./patch/@datadog-pprof-5.4.1.patch",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
+    "graphql": "patch:graphql@16.11.0#./patch/graphql-16.8.1.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.9.1#./patch/node-calls-python-1.9.1.patch",
-    "graphql": "patch:graphql@16.11.0#./patch/graphql-16.8.1.patch",
-    "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch",
-    "@datadog/pprof": "patch:@datadog/pprof@5.8.2#./patch/@datadog-pprof-5.4.1.patch",
-    "path-to-regexp": "0.1.12"
+    "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch"
   },
   "dependenciesMeta": {
     "es5-ext": {
