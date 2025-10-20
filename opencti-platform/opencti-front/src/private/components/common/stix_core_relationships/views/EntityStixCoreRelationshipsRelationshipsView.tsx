@@ -14,7 +14,7 @@ import { computeTargetStixCyberObservableTypes, computeTargetStixDomainObjectTyp
 import { PaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import { DataColumns, PaginationOptions } from '../../../../../components/list_lines';
 import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../../utils/filters/filtersUtils';
-import { FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
+import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
 interface EntityStixCoreRelationshipsRelationshipsViewProps {
   entityId: string
@@ -122,28 +122,54 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
 
   // Filters due to screen context
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
-  const predefinedFilters = [{ key: 'relationship_type', values: relationshipTypes }];
+  let contextFilters: FilterGroup;
+  const predefinedReversedFilters = [
+    { key: 'relationship_type', values: relationshipTypes },
+    { key: 'toId', values: [entityId] },
+    { key: 'fromTypes', values: stixCoreObjectTypes },
+  ];
+  const predefinedClassicFilters = [
+    { key: 'relationship_type', values: relationshipTypes },
+    { key: 'fromId', values: [entityId] },
+    { key: 'toTypes', values: stixCoreObjectTypes },
+  ];
   if (allDirections) {
-    predefinedFilters.push({ key: 'fromOrToId', values: [entityId] });
-    predefinedFilters.push({ key: 'elementWithTargetTypes', values: stixCoreObjectTypes });
-  } else if (isRelationReversed) {
-    predefinedFilters.push({ key: 'toId', values: [entityId] });
-    if (role) predefinedFilters.push({ key: 'toRole', values: [role] });
-    predefinedFilters.push({ key: 'fromTypes', values: stixCoreObjectTypes });
+    const predefinedFilters = {
+      mode: 'or',
+      filters: [],
+      filterGroups: [
+        { mode: 'and', filters: predefinedClassicFilters, filterGroups: [] },
+        { mode: 'and', filters: predefinedReversedFilters, filterGroups: [] },
+      ],
+    };
+    contextFilters = userFilters && isFilterGroupNotEmpty(userFilters)
+      ? {
+        mode: 'and',
+        filters: [],
+        filterGroups: [predefinedFilters, userFilters],
+      }
+      : predefinedFilters;
   } else {
-    predefinedFilters.push({ key: 'fromId', values: [entityId] });
-    if (role) predefinedFilters.push({ key: 'fromRole', values: [role] });
-    predefinedFilters.push({ key: 'toTypes', values: stixCoreObjectTypes });
+    let predefinedFilters: Filter[];
+    if (isRelationReversed) {
+      predefinedFilters = predefinedReversedFilters;
+      if (role) predefinedFilters.push({ key: 'toRole', values: [role] });
+    } else {
+      predefinedFilters = predefinedClassicFilters;
+      if (role) predefinedFilters.push({ key: 'fromRole', values: [role] });
+    }
+    contextFilters = {
+      mode: 'and',
+      filters: predefinedFilters,
+      filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
+    };
   }
-  const contextFilters: FilterGroup = {
-    mode: 'and',
-    filters: predefinedFilters,
-    filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
-  };
 
   const paginationOptions = {
     search: searchTerm,
-    orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable) ? sortBy : 'relationship_type',
+    orderBy: (sortBy && (sortBy in dataColumns) && dataColumns[sortBy].isSortable)
+      ? sortBy
+      : 'relationship_type',
     orderMode: orderAsc ? 'asc' : 'desc',
     filters: contextFilters,
   };
