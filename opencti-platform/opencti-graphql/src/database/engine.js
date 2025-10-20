@@ -2817,7 +2817,6 @@ const adaptFilterToPirFilterKeys = async (context, user, filterKey, filter) => {
   return { newFilter, newFilterGroup: undefined };
 };
 
-// FIXME to take metrics name from config
 const adaptFilterForMetricsFilterKeys = async (filter) => {
   const newFilter = {
     key: ['metrics'],
