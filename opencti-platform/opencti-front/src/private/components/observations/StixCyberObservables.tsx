@@ -15,7 +15,7 @@ import {
 import useAuth from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -38,7 +38,10 @@ const StixCyberObservables: FunctionComponent = () => {
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const initialValues = {
-    filters: emptyFilterGroup,
+    filters: {
+      ...emptyFilterGroup,
+      filters: useGetDefaultFilterObject(['entity_type', 'sightedBy'], ['Stix-Cyber-Observable']),
+    },
     searchTerm: '',
     sortBy: 'created_at',
     orderAsc: false,
