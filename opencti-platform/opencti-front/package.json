@@ -189,7 +189,7 @@
     "glob-parent": "6.0.2",
     "json5": "2.2.3",
     "react": "19.1.0",
-    "webpack": "5.101.3"
+    "webpack": "5.102.1"
   },
   "dependenciesMeta": {
     "canvas": {
