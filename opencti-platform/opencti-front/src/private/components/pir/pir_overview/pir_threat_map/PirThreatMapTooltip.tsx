@@ -20,8 +20,8 @@ import { Box } from '@mui/material';
 import type { Theme } from '../../../../../components/Theme';
 import { PirThreatMapMarker } from './pirThreatMapUtils';
 import { itemColor } from '../../../../../utils/Colors';
-import { computeLink } from '../../../../../utils/Entity';
 import { useFormatter } from '../../../../../components/i18n';
+import useComputeLink from '../../../../../utils/hooks/useComputeLink';
 
 interface PirThreatMapTooltipProps {
   data?: PirThreatMapMarker[]
@@ -38,6 +38,7 @@ const PirThreatMapTooltip = ({
 }: PirThreatMapTooltipProps) => {
   const { fsd } = useFormatter();
   const theme = useTheme<Theme>();
+  const computeLink = useComputeLink();
 
   if (!data) return null;
 
