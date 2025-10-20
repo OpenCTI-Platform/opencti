@@ -67,7 +67,13 @@ const CoverageInformationField: FunctionComponent<CoverageInformationFieldProps>
                     required={true}
                     onChange={(__, value) => {
                       const updatedValues = [...values];
-                      updatedValues[index] = { ...values[index], coverage_name: value.toString() };
+                      updatedValues[index] = {
+                        ...values[index],
+                        coverage_name: value.toString(),
+                        coverage_score: typeof values[index].coverage_score === 'string'
+                          ? parseInt(values[index].coverage_score, 10) || 0
+                          : values[index].coverage_score || 0,
+                      };
                       arrayHelpers.replace(index, updatedValues[index]);
                       handleUpdate(updatedValues);
                     }}
@@ -82,6 +88,12 @@ const CoverageInformationField: FunctionComponent<CoverageInformationFieldProps>
                     type="number"
                     fullWidth
                     required
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const updatedValues = [...values];
+                      updatedValues[index] = { ...values[index], coverage_score: parseInt(e.target.value, 10) || 0 };
+                      arrayHelpers.replace(index, updatedValues[index]);
+                      handleUpdate(updatedValues);
+                    }}
                     slotProps={{
                       input: {
                         inputProps: {
@@ -115,8 +127,8 @@ const CoverageInformationField: FunctionComponent<CoverageInformationFieldProps>
               aria-label="Add"
               id="addCoverageInfo"
               onClick={() => {
-                const updatedValues = [...values, { coverage_name: '', coverage_score: '' }];
-                arrayHelpers.push({ coverage_name: '', coverage_score: '' });
+                const updatedValues = [...values, { coverage_name: '', coverage_score: 0 }];
+                arrayHelpers.push({ coverage_name: '', coverage_score: 0 });
                 handleUpdate(updatedValues);
               }}
               style={{ marginTop: 20 }}
