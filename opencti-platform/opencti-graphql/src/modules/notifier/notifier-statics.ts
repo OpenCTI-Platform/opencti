@@ -173,7 +173,7 @@ export const STATIC_NOTIFIERS: Array<BasicStoreEntityNotifier> = [
   // @ts-ignore
   {
     id: STATIC_NOTIFIER_EMAIL,
-    standard_id: `notifier--${STATIC_NOTIFIER_UI}`,
+    standard_id: `notifier--${STATIC_NOTIFIER_EMAIL}`,
     entity_type: ENTITY_TYPE_NOTIFIER,
     parent_types: [ABSTRACT_BASIC_OBJECT, ABSTRACT_INTERNAL_OBJECT],
     internal_id: STATIC_NOTIFIER_EMAIL,
