@@ -1,18 +1,18 @@
+import React, { useState } from 'react';
 import { Box, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { Clear } from '@mui/icons-material';
-import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
-import React, { useState } from 'react';
+import { useTheme } from '@mui/material/styles';
 import { graphql } from 'react-relay';
-import { commitMutation } from '../../../../../relay/environment';
-import { useFormatter } from '../../../../../components/i18n';
+import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import {
   FilteredAttackPattern,
   FilteredSubAttackPattern,
   getBoxStyles,
   MinimalAttackPattern,
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
-import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
+import { commitMutation } from '../../../../../relay/environment';
+import { useFormatter } from '../../../../../components/i18n';
 import { hexToRGB } from '../../../../../utils/Colors';
 import SecurityCoverageInformation from '../../../analyses/security_coverages/SecurityCoverageInformation';
 
@@ -24,7 +24,6 @@ interface AttackPatternsMatrixColumnsElementProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number; }>>;
   entityId?: string;
-  relationshipId?: string;
 }
 
 const removeMutation = graphql`
@@ -49,7 +48,6 @@ const AttackPatternsMatrixColumnsElement = ({
   isCoverage = false,
   coverageMap,
   entityId,
-  relationshipId,
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -65,13 +63,26 @@ const AttackPatternsMatrixColumnsElement = ({
         toId: attackPattern.attack_pattern_id,
         relationship_type: 'has-covered',
       },
-      updater: undefined,
+      updater: (store: any) => {
+        // Remove the relationship from the store
+        const payload = store.getRootField('stixCoreRelationshipDelete');
+        if (!payload) return;
+
+        // Get the deleted relationship ID
+        const deletedId = payload.getValue('id');
+        if (!deletedId) return;
+
+        // Delete the record from the store
+        store.delete(deletedId);
+      },
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
-      onCompleted: undefined,
+      onCompleted: () => {
+        setDisplayDelete(false);
+      },
       onError: undefined,
+      setSubmitting: undefined,
     });
-    setDisplayDelete(false);
   };
 
   // Get coverage information if in coverage mode
@@ -135,6 +146,7 @@ const AttackPatternsMatrixColumnsElement = ({
         alignItems: 'center',
         whiteSpace: 'normal',
         width: '100%',
+        position: 'relative',
       }}
     >
       <Typography variant="body2" fontSize={10}>
@@ -142,22 +154,28 @@ const AttackPatternsMatrixColumnsElement = ({
       </Typography>
 
       {isCoverage && attackPattern.isCovered && (
-        <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <SecurityCoverageInformation
-            coverage_information={coverage || null}
-            variant="matrix"
-          />
+        <>
+          <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <SecurityCoverageInformation
+              coverage_information={coverage || null}
+              variant="matrix"
+            />
+          </Box>
           {entityId && (
             <>
               <IconButton
                 size="small"
                 onClick={(e) => {
                   e.stopPropagation();
+                  e.preventDefault();
                   setDisplayDelete(true);
                 }}
                 sx={{
+                  position: 'absolute',
+                  top: 2,
+                  right: 2,
                   padding: '2px',
-                  '& .MuiSvgIcon-root': { fontSize: 14 },
+                  '& .MuiSvgIcon-root': { fontSize: 12 },
                 }}
               >
                 <Clear />
@@ -187,7 +205,7 @@ const AttackPatternsMatrixColumnsElement = ({
               </Dialog>
             </>
           )}
-        </Box>
+        </>
       )}
 
       {!isSecurityPlatform && attackPatternIdsToOverlap?.length !== undefined && attackPattern.isCovered && !isCoverage && (

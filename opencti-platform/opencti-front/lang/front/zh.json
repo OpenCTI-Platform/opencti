@@ -1191,6 +1191,7 @@
   "Do you want to enable this rule?": "是否要启用该规则？",
   "Do you want to kill all the sessions of this user?": "是否要终止此用户的所有会话？",
   "Do you want to kill this session?": "是否要终止此会话？",
+  "Do you want to remove the coverage for this attack pattern?": "您想取消对这种攻击模式的保护吗？",
   "Do you want to remove the entity from this container?": "是否要从此容器中移除该实体？",
   "Do you want to remove the entity from this grouping?": "您想从该分组中删除该实体吗？",
   "Do you want to remove the entity from this report?": "是否要从此报告中移除该实体？",

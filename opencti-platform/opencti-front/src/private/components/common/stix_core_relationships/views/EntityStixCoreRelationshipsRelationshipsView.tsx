@@ -282,6 +282,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
                 selectAll={selectAll}
+                isCoverage={isCoverage}
               />
             ) : (
               <EntityStixCoreRelationshipsLinesFrom
@@ -295,6 +296,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
                 selectAll={selectAll}
+                isCoverage={isCoverage}
               />
             ))
           }
