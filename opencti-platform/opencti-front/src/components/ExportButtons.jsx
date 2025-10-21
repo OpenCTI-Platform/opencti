@@ -32,7 +32,6 @@ const DELAY = 1000;
 
 const wait = async (delay = DELAY) => {
   await new Promise((resolve) => {
-    // let some delay to display the loading state
     setTimeout(resolve, delay);
   });
 };
