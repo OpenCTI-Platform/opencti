@@ -942,7 +942,13 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
   const executions = await keysFromList(`playbook_executions_${playbookId}`, 5 * 60) as ExecutionEnvelop[];
   return executions.map((e) => {
     const steps = Object.entries(e).filter(([k, _]) => k.startsWith('step_')).map(([k, v]) => {
-      const bundle_or_patch = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
+      const fullData = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
+
+      const MAX_LENGTH = 10000;
+      const bundle_or_patch = fullData.length > MAX_LENGTH
+        ? `${fullData.substring(0, MAX_LENGTH)}\n\n... (displaying ${MAX_LENGTH} on ${fullData.length - MAX_LENGTH} chars)`
+        : fullData;
+
       // beware, step key is the same for every execution, and we need to avoid id collision in Relay
       const id = `${e.playbook_execution_id}-${k.split('step_')[1]}`;
       return ({ id, bundle_or_patch, ...v });
