@@ -1,32 +1,34 @@
-import React, { Suspense, useMemo } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
-import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from 'react-relay';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import Box from '@mui/material/Box';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import useQueryLoading from 'src/utils/hooks/useQueryLoading';
-import useForceUpdate from '@components/common/bulk/useForceUpdate';
-import AIInsights from '@components/common/ai/AIInsights';
-import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import IntrusionSet from './IntrusionSet';
-import IntrusionSetKnowledge from './IntrusionSetKnowledge';
-import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import FileManager from '../../common/files/FileManager';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
-import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
-import { useFormatter } from '../../../../components/i18n';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
-import { RootIntrusionSetQuery } from './__generated__/RootIntrusionSetQuery.graphql';
-import { RootIntrusionSetSubscription } from './__generated__/RootIntrusionSetSubscription.graphql';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import IntrusionSetEdition from './IntrusionSetEdition';
-import IntrusionSetDeletion from './IntrusionSetDeletion';
+import React, { Suspense, useMemo } from "react";
+import { Link, Navigate, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { graphql, PreloadedQuery, usePreloadedQuery, useSubscription } from "react-relay";
+import { GraphQLSubscriptionConfig } from "relay-runtime";
+import Box from "@mui/material/Box";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import useQueryLoading from "src/utils/hooks/useQueryLoading";
+import useForceUpdate from "@components/common/bulk/useForceUpdate";
+import AIInsights from "@components/common/ai/AIInsights";
+import StixCoreObjectContentRoot from "../../common/stix_core_objects/StixCoreObjectContentRoot";
+import IntrusionSet from "./IntrusionSet";
+import IntrusionSetKnowledge from "./IntrusionSetKnowledge";
+import StixDomainObjectHeader from "../../common/stix_domain_objects/StixDomainObjectHeader";
+import FileManager from "../../common/files/FileManager";
+import Loader, { LoaderVariant } from "../../../../components/Loader";
+import StixCoreObjectHistory from "../../common/stix_core_objects/StixCoreObjectHistory";
+import StixCoreObjectOrStixCoreRelationshipContainers
+  from "../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers";
+import ErrorNotFound from "../../../../components/ErrorNotFound";
+import StixCoreObjectKnowledgeBar from "../../common/stix_core_objects/StixCoreObjectKnowledgeBar";
+import { useFormatter } from "../../../../components/i18n";
+import Breadcrumbs from "../../../../components/Breadcrumbs";
+import { getCurrentTab, getPaddingRight } from "../../../../utils/utils";
+import { RootIntrusionSetQuery } from "./__generated__/RootIntrusionSetQuery.graphql";
+import { RootIntrusionSetSubscription } from "./__generated__/RootIntrusionSetSubscription.graphql";
+import Security from "../../../../utils/Security";
+import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from "../../../../utils/hooks/useGranted";
+import IntrusionSetEdition from "./IntrusionSetEdition";
+import IntrusionSetDeletion from "./IntrusionSetDeletion";
+import StixCoreObjectSecurityCoverage from "@components/common/stix_core_objects/StixCoreObjectSecurityCoverage";
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -60,6 +62,13 @@ const intrusionSetQuery = graphql`
         id
       }
       x_opencti_graph_data
+      securityCoverage {
+        id
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
+      }
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...IntrusionSet_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
@@ -211,7 +220,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={intrusionSet.id} />
-                  { /* <StixCoreObjectSimulationResultContainer id={intrusionSet.id} type="threat" /> */ }
+                <StixCoreObjectSecurityCoverage id={intrusionSet.id} coverage={intrusionSet.securityCoverage} />
               </div>
               )}
             </Box>
