@@ -99,6 +99,17 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
         key = key.length > 0 ? `${key}__${entityType}_md5` : `${entityType}_md5`;
         value = value.length > 0 ? `${value}__${observable.hashes.MD5}` : observable.hashes.MD5;
       }
+    } else if (entityType === 'SSH-Key') {
+      key = '';
+      value = '';
+      if (observable.fingerprint_sha256) {
+        key = `${entityType}_sha256`;
+        value = observable.fingerprint_sha256;
+      }
+      if (observable.fingerprint_md5) {
+        key = key.length > 0 ? `${key}__${entityType}_md5` : `${entityType}_md5`;
+        value = value.length > 0 ? `${value}__${observable.fingerprint_md5}` : observable.fingerprint_md5;
+      }
     } else if (observable.name) {
       key = `${entityType}_name`;
     }
