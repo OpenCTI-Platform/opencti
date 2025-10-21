@@ -14286,6 +14286,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
@@ -14293,6 +14294,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   created_at: DateTime!
   updated_at: DateTime!
   draftVersion: DraftVersion
+  refreshed_at: DateTime
   x_opencti_inferences: [Inference]
   createdBy: Identity
   numberOfConnectedElement: Int!
