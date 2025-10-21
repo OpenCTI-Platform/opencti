@@ -3,6 +3,7 @@ import { Box, Typography, IconButton, Dialog, DialogTitle, DialogContent, Dialog
 import { Clear } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { graphql } from 'react-relay';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import {
   FilteredAttackPattern,
@@ -64,7 +65,7 @@ const AttackPatternsMatrixColumnsElement = ({
         toId: attackPattern.attack_pattern_id,
         relationship_type: 'has-covered',
       },
-      updater: (store) => deleteNodeFromEdge(
+      updater: (store: RecordSourceSelectorProxy) => deleteNodeFromEdge(
         store,
         'attackPatterns',
         entityId,
@@ -74,9 +75,13 @@ const AttackPatternsMatrixColumnsElement = ({
           toTypes: ['Attack-Pattern'],
         },
       ),
+      optimisticUpdater: undefined,
+      optimisticResponse: undefined,
       onCompleted: () => {
         setDisplayDelete(false);
       },
+      onError: undefined,
+      setSubmitting: undefined,
     });
   };
 
