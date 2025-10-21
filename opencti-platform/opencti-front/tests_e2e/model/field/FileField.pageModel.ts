@@ -14,12 +14,7 @@ export default class FileFieldPageModel {
   }
 
   async uploadContentFile(filePath: string) {
-    const fileChooserPromise = this.page.waitForEvent('filechooser');
-    await this.inputLocator.click();
-    await this.parentLocator.click();
-    await this.parentLocator.getByRole('button', { name: 'Select your file', exact: true }).click();
-    const fileChooser = await fileChooserPromise;
-    return fileChooser.setFiles(filePath);
+    await this.parentLocator.locator('input[type="file"]').setInputFiles(filePath);
   }
 
   getByText(input: string) {

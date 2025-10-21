@@ -129,7 +129,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "10.1.0",
-    "@playwright/test": "1.51.1",
+    "@playwright/test": "1.56.1",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
