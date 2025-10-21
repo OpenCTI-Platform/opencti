@@ -115,7 +115,7 @@ export const meterManager = new MeterManager(meterProvider);
 // Register metrics
 meterManager.registerMetrics();
 
-export const telemetry = (context: AuthContext, user: AuthUser, spanName: string, attrs: object, fn: any) => {
+export const telemetry = async (context: AuthContext, user: AuthUser, spanName: string, attrs: object, fn: any) => {
   // if tracing disabled or context is not correctly configured.
   if (!ENABLED_TRACING || !context) {
     return fn();
@@ -130,13 +130,15 @@ export const telemetry = (context: AuthContext, user: AuthUser, spanName: string
       ...attrs
     },
     kind: 2 }, ctx);
-  return fn().then((data: any) => {
+
+  try {
+    const data = await fn();
     tracingSpan.setStatus({ code: 1 });
     tracingSpan.end();
     return data;
-  }).catch((err: Error) => {
+  } catch (err) {
     tracingSpan.setStatus({ code: 2 });
     tracingSpan.end();
     throw err;
-  });
+  }
 };
