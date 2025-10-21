@@ -11,7 +11,7 @@ import { LinkOff } from '@mui/icons-material';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Box, ListItemButton } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { type Theme } from '../../../../components/Theme.d';
+import type { Theme } from '../../../../components/Theme';
 import { commitMutation } from '../../../../relay/environment';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
@@ -87,10 +87,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Vulnerabilities')}
         </Typography>
-        <AddVulnerabilities
-          securityCoverage={securityCoverage}
-          securityCoverageVulnerabilities={securityCoverage.vulnerabilities?.edges || []}
-        />
+        <AddVulnerabilities securityCoverage={securityCoverage} />
       </div>
       <div className="clearfix" />
       <List style={{ marginTop: -10 }}>

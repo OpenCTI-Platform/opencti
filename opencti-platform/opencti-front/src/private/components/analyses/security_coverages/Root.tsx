@@ -11,6 +11,7 @@ import StixCoreObjectHistory from '@components/common/stix_core_objects/StixCore
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootMalwareSubscription } from '@components/arsenal/malwares/__generated__/RootMalwareSubscription.graphql';
 import AIInsights from '@components/common/ai/AIInsights';
+import SecurityCoverageKnowledge from '@components/analyses/security_coverages/SecurityCoverageKnowledge';
 import SecurityCoverage from './SecurityCoverage';
 import { RootSecurityCoverageQuery } from './__generated__/RootSecurityCoverageQuery.graphql';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -50,6 +51,7 @@ const securityCoverageQuery = graphql`
         id
       }
       ...SecurityCoverage_securityCoverage
+      ...SecurityCoverageKnowledge_securityCoverage
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -160,6 +162,16 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
               path="/"
               element={
                 <SecurityCoverage data={securityCoverage} />
+              }
+            />
+            <Route
+              path="/knowledge/*"
+              element={
+                <div>
+                  <SecurityCoverageKnowledge
+                    securityCoverageData={securityCoverage}
+                  />
+                </div>
               }
             />
             <Route

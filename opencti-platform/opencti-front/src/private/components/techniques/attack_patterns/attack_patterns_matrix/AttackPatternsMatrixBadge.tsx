@@ -7,10 +7,11 @@ import type { Theme } from '../../../../../components/Theme';
 interface AttackPatternsMatrixBadgeProps {
   attackPattern: FilteredAttackPattern;
   color: string;
+  textColor?: string;
   children: React.ReactNode;
 }
 
-const AttackPatternsMatrixBadge = ({ attackPattern, color, children }: AttackPatternsMatrixBadgeProps) => {
+const AttackPatternsMatrixBadge = ({ attackPattern, color, textColor, children }: AttackPatternsMatrixBadgeProps) => {
   const theme = useTheme<Theme>();
   const attackPatternsCount = (attackPattern.isCovered ? 1 : 0)
     + (attackPattern.subAttackPatterns?.filter((sub: FilteredSubAttackPattern) => sub.isCovered).length || 0);
@@ -28,7 +29,7 @@ const AttackPatternsMatrixBadge = ({ attackPattern, color, children }: AttackPat
       sx={{
         '& .MuiBadge-badge': {
           backgroundColor: color,
-          color: theme.palette.common.black,
+          color: textColor || theme.palette.common.black,
           height: '14px',
           minWidth: '14px',
           fontSize: '10px',

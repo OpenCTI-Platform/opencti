@@ -50,6 +50,7 @@ type StixCoreRelationshipEditionContainerProps = {
   noStoreUpdate: boolean;
   handleDelete?: () => void;
   handleClose: () => void;
+  isCoverage?: boolean;
 };
 
 type StixCoreRelationshipEditionProps = {
@@ -57,6 +58,7 @@ type StixCoreRelationshipEditionProps = {
   noStoreUpdate: boolean;
   handleDelete?: () => void;
   handleClose: () => void;
+  isCoverage?: boolean;
 };
 
 const StixCoreRelationshipEdition = ({
@@ -64,6 +66,7 @@ const StixCoreRelationshipEdition = ({
   handleClose,
   handleDelete,
   noStoreUpdate,
+  isCoverage = false,
 }: StixCoreRelationshipEditionProps) => {
   const queryRef = useQueryLoading<StixCoreRelationshipEditionOverviewQuery>(stixCoreRelationshipEditionOverviewQuery, {
     id: stixCoreRelationshipId,
@@ -76,6 +79,7 @@ const StixCoreRelationshipEdition = ({
         handleClose={handleClose}
         handleDelete={handleDelete}
         noStoreUpdate={noStoreUpdate}
+        isCoverage={isCoverage}
       />
     </React.Suspense>
   ) : (
@@ -92,6 +96,7 @@ const StixCoreRelationshipEditionContainer = (props: StixCoreRelationshipEdition
     handleClose,
     handleDelete,
     noStoreUpdate,
+    isCoverage = false,
   } = props;
 
   return (
@@ -109,6 +114,7 @@ const StixCoreRelationshipEditionContainer = (props: StixCoreRelationshipEdition
           handleDelete={handleDelete}
           noStoreUpdate={noStoreUpdate}
           handleClose={handleClose}
+          isCoverage={isCoverage}
         />
       )}
     </Drawer>
