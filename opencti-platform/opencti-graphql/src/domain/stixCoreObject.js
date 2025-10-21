@@ -352,7 +352,7 @@ export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObject
 export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
-    throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
+    throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.', { stixCoreObjectId });
   }
   await deleteElementById(context, user, stixCoreObjectId, stixCoreObject.entity_type);
   return stixCoreObjectId;
@@ -361,7 +361,7 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
 export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT, { includeDeletedInDraft: true });
   if (!stixCoreObject) {
-    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.');
+    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Object cannot be found.', { stixCoreObjectId });
   }
   // TODO currently not locked, but might need to be
   await elRemoveElementFromDraft(context, user, stixCoreObject);
@@ -372,7 +372,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
   const element = await storeLoadByIdWithRefs(context, user, enrichedId);
   if (!element) {
-    throw FunctionalError('Cannot enrich the object, element cannot be found.');
+    throw FunctionalError('Cannot enrich the object, element cannot be found.', { stixCoreObjectId });
   }
   // If we are in a draft, specify it in work message and send draft_id in message
   const draftContext = getDraftContext(context, user);

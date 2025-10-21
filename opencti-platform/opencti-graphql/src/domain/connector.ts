@@ -456,11 +456,11 @@ export const connectorTriggerUpdate = async (context: AuthContext, user: AuthUse
     throw FunctionalError('Cant find element to update', { id: connectorId, type: ENTITY_TYPE_CONNECTOR });
   }
   if (!['INTERNAL_ENRICHMENT', 'INTERNAL_IMPORT_FILE'].includes(conn.connector_type)) {
-    throw FunctionalError('Update is only possible on internal enrichment or import file connectors types');
+    throw FunctionalError('Update is only possible on internal enrichment or import file connectors types', { connectorId });
   }
   const supportedInputKeys = ['connector_trigger_filters'];
   if (input.some((item) => !supportedInputKeys.includes(item.key))) {
-    throw FunctionalError(`Update is only possible on these input keys: ${supportedInputKeys.join(', ')}`);
+    throw FunctionalError(`Update is only possible on these input keys: ${supportedInputKeys.join(', ')}`, { connectorId });
   }
   const filtersItem: EditInput | undefined = input.find((item: EditInput) => item.key === 'connector_trigger_filters');
   if (filtersItem && filtersItem.value.length > 0) {

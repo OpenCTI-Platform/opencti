@@ -174,7 +174,7 @@ export const groupEditField = async (context, user, groupId, input) => {
 export const groupAddRelation = async (context, user, groupId, input) => {
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
-    throw FunctionalError('Cannot add the relation, Group cannot be found.');
+    throw FunctionalError('Cannot add the relation, Group cannot be found.', { groupId });
   }
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
@@ -213,10 +213,10 @@ export const groupAddRelation = async (context, user, groupId, input) => {
 export const groupDeleteRelation = async (context, user, groupId, fromId, toId, relationshipType) => {
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
-    throw FunctionalError('Cannot delete the relation, Group cannot be found.');
+    throw FunctionalError('Cannot delete the relation, Group cannot be found.', { groupId });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${input.relationship_type}.`);
   }
   let target;
   if (fromId) {

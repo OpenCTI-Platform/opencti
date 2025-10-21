@@ -209,7 +209,7 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId) 
   // If we are in a draft, we need to also search for deleted elements
   const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
   if (!stixDomainObject) {
-    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.');
+    throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.', { stixObjectId });
   }
   await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);

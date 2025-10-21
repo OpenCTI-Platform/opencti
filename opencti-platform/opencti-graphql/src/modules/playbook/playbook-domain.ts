@@ -503,7 +503,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
     );
   }
   if (parsedData.type !== 'playbook') {
-    throw FunctionalError('Invalid import type, must be playbook');
+    throw FunctionalError('Invalid import type, must be playbook', { type: parsedData.type });
   }
   const config = parsedData.configuration;
   const importData = {

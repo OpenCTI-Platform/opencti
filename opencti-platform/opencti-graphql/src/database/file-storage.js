@@ -401,10 +401,10 @@ export const loadedFilesListing = async (context, user, directory, opts = {}) =>
   const { recursive = false, callback = null, dontThrow = false } = opts;
   const files = [];
   if (isNotEmptyField(directory) && directory.startsWith('/')) {
-    throw FunctionalError('File listing directory must not start with a /');
+    throw FunctionalError('File listing directory must not start with a /', { directory });
   }
   if (isNotEmptyField(directory) && !directory.endsWith('/')) {
-    throw FunctionalError('File listing directory must end with a /');
+    throw FunctionalError('File listing directory must end with a /', { directory });
   }
   const requestParams = {
     Bucket: bucketName,
@@ -524,7 +524,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
       return { upload: currentFile, untouched: true };
     }
     if (errorOnExisting) {
-      throw FunctionalError('A file already exists with this name');
+      throw FunctionalError('A file already exists with this name', { truncatedFileName });
     }
   }
 

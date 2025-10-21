@@ -110,7 +110,7 @@ export const stixCoreRelationshipDelete = async (context, user, stixCoreRelation
 
 export const stixCoreRelationshipDeleteByFromAndTo = async (context, user, fromId, toId, relationshipType) => {
   if (!isStixCoreRelationship(relationshipType)) {
-    throw FunctionalError('Only stix-core-relationship can be deleted through this method.');
+    throw FunctionalError('Only stix-core-relationship can be deleted through this method, not ${relationshipType}.');
   }
   await deleteRelationsByFromAndTo(context, user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
   return true;
@@ -119,7 +119,7 @@ export const stixCoreRelationshipDeleteByFromAndTo = async (context, user, fromI
 export const stixCoreRelationshipEditField = async (context, user, stixCoreRelationshipId, input, opts = {}) => {
   const stixCoreRelationship = await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
-    throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
+    throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.', { id: stixCoreRelationshipId });
   }
   const { element } = await updateAttribute(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, opts);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
@@ -154,7 +154,7 @@ export const stixCoreRelationshipEditContext = async (context, user, stixCoreRel
 export const stixCoreRelationshipRemoveFromDraft = async (context, user, stixCoreObjectId) => {
   const stixCoreRelationship = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_RELATIONSHIP, { includeDeletedInDraft: true });
   if (!stixCoreRelationship) {
-    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Relationship cannot be found.');
+    throw FunctionalError('Cannot remove the object from draft, Stix-Core-Relationship cannot be found.', { id: stixCoreObjectId });
   }
   // TODO currently not locked, but might need to be
   await elRemoveElementFromDraft(context, user, stixCoreRelationship);

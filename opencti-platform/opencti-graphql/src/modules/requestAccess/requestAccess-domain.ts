@@ -188,7 +188,7 @@ export const computeAuthorizedMembersForRequestAccess = async (context: AuthCont
   }
 
   if (!rfiEntitySettings.request_access_workflow?.approval_admin || rfiEntitySettings.request_access_workflow?.approval_admin.length === 0) {
-    throw FunctionalError('Request access cannot be created because not approval admin is configured.');
+    throw FunctionalError('Request access cannot be created because no approval admin is configured.');
   }
 
   const approvalAdmins: string[] = rfiEntitySettings.request_access_workflow?.approval_admin;

@@ -30,7 +30,7 @@ export const getPirWithAccessCheck = async (context: AuthContext, user: AuthUser
   // check capabilities
   const hasCapa = isUserHasCapabilities(user, [PIRAPI]);
   if (!hasCapa) {
-    throw FunctionalError('Unauthorized Pir access');
+    throw FunctionalError('Unauthorized Pir access', { user.id });
   }
   // check user has access to the PIR (authorized members)
   if (!pirId) {

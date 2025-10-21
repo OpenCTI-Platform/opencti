@@ -130,10 +130,10 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
         // only hint the first 3 ones
         let name = targetsFromTrash.slice(0, 3).map((t) => extractRepresentative(t).main).join(',');
         if (targetsFromTrash.length > 3) name = `${name}, ... and ${targetsFromTrash.length - 3} more`;
-        throw FunctionalError(`Cannot restore: a relationship targets deleted elements [${name}], restore them before retrying`);
+        throw FunctionalError(`Cannot restore: a relationship targets deleted elements [${name}], restore them before retrying`, { deleteOperationId: deleteOperation.id });
       }
       // in this last case, the DeleteOperation is actually irrecoverable
-      throw FunctionalError('Cannot restore: a target element of a relationship has been permanently deleted and cannot be recovered');
+      throw FunctionalError('Cannot restore: a target element of a relationship has been permanently deleted and cannot be recovered', { deleteOperationId: deleteOperation.id });
     }
   }
 
@@ -142,7 +142,7 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
   if (isStixObject(mainElementType)) {
     const existingEntities = await getExistingEntities(context, user, mainElementToRestoreInput, mainElementType);
     if (existingEntities.length > 0) {
-      throw FunctionalError('Cannot restore entity, duplicate existing entity detected');
+      throw FunctionalError('Cannot restore entity, duplicate existing entity detected', { deleteOperationId: deleteOperation.id });
     }
   } else if (isStixRelationship(mainElementType) || isStixSightingRelationship(mainElementType)) {
     const from = { internal_id: mainElementToRestoreInput.fromId };
@@ -150,7 +150,7 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
     const relationshipInput = { ...mainElementToRestoreInput, from, to };
     const existingRelations = await getExistingRelations(context, user, relationshipInput);
     if (existingRelations.length > 0) {
-      throw FunctionalError('Cannot restore relation, duplicate existing relation detected');
+      throw FunctionalError('Cannot restore relation, duplicate existing relation detected', { deleteOperationId: deleteOperation.id }, { deleteOperationId: deleteOperation.id });
     }
   }
 
