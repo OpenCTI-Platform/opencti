@@ -27,6 +27,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import CampaignEdition from './CampaignEdition';
 import CampaignDeletion from './CampaignDeletion';
+import StixCoreObjectSecurityCoverage from "@components/common/stix_core_objects/StixCoreObjectSecurityCoverage";
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -56,6 +57,13 @@ const campaignQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      securityCoverage {
+        id
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
+      }
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Campaign_campaign
       ...CampaignKnowledge_campaign
@@ -205,7 +213,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={campaign.id}/>
-                  { /* <StixCoreObjectSimulationResultContainer id={campaign.id} type="threat"/> */}
+                <StixCoreObjectSecurityCoverage id={campaign.id} coverage={campaign.securityCoverage} />
               </div>
               )}
             </Box>
