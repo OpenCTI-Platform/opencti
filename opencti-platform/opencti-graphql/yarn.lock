@@ -11770,7 +11770,7 @@ __metadata:
     passport-ldapauth: "npm:3.0.1"
     passport-local: "npm:1.0.0"
     python-shell: "npm:5.0.0"
-    ramda: "npm:0.31.3"
+    ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:7.3.0"
     semver: "npm:7.7.2"
     set-interval-async: "npm:3.0.3"
@@ -12456,10 +12456,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ramda@npm:0.31.3":
-  version: 0.31.3
-  resolution: "ramda@npm:0.31.3"
-  checksum: 10c0/a4328521e990df2a8fed7b73b2ca1d6bd611e3af0e512dd23142b5f4e5124778d75573cad7742479007dacb8b0204c386b21a0542e0a35aee5097bb27f48bff1
+"ramda@npm:0.32.0":
+  version: 0.32.0
+  resolution: "ramda@npm:0.32.0"
+  checksum: 10c0/6ad24338813cbf91932f7f160e33af9159a540580a43386b974365a8c98b8aa63e2a9d98affa9b2ac4b6628ff34705ddf9ced8f2987c04e3562f58f202c41cf9
   languageName: node
   linkType: hard
 
