@@ -4597,13 +4597,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bcryptjs@npm:2.4.6":
-  version: 2.4.6
-  resolution: "@types/bcryptjs@npm:2.4.6"
-  checksum: 10c0/1182663f0c081c5c58760019459cd309335e9b5fc6552780b0fd21b6c5f25661a844709e46218796f4bdbebe6736e11cfc5af0729bc2cdb0160943650aceb3da
-  languageName: node
-  linkType: hard
-
 "@types/bluebird@npm:3.5.42":
   version: 3.5.42
   resolution: "@types/bluebird@npm:3.5.42"
@@ -6072,7 +6065,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bcryptjs@npm:2.4.3, bcryptjs@npm:^2.4.0":
+"bcryptjs@npm:3.0.2":
+  version: 3.0.2
+  resolution: "bcryptjs@npm:3.0.2"
+  bin:
+    bcrypt: bin/bcrypt
+  checksum: 10c0/a0923cac99f83e913f8f4e4f42df6a27c6593b24d509900331d1280c4050b1544e602a0ac67b43f7bb5c969991c3ed77fd72f19b7dc873be8ee794da3d925c7e
+  languageName: node
+  linkType: hard
+
+"bcryptjs@npm:^2.4.0":
   version: 2.4.3
   resolution: "bcryptjs@npm:2.4.3"
   checksum: 10c0/b969467087ed7a01ff905a1c6a0c45014ec586248a448ea08370c8ed8bb314bda16a870ca23e0961d7d23bdce1a04c76fa70a9d680be814fa9ac7d8fc61870a3
@@ -11670,7 +11672,6 @@ __metadata:
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@sesamecare-oss/redlock": "npm:1.4.0"
     "@types/archiver": "npm:6.0.3"
-    "@types/bcryptjs": "npm:2.4.6"
     "@types/bluebird": "npm:3.5.42"
     "@types/content-type": "npm:1.1.9"
     "@types/ejs": "npm:3.1.5"
@@ -11698,7 +11699,7 @@ __metadata:
     async-lock: "npm:1.4.1"
     axios: "npm:1.12.0"
     axios-cookiejar-support: "npm:6.0.2"
-    bcryptjs: "npm:2.4.3"
+    bcryptjs: "npm:3.0.2"
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.2.0"
     canonicalize: "npm:2.1.0"
