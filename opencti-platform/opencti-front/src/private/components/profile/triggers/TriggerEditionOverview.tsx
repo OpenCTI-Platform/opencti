@@ -3,10 +3,11 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { Box } from '@mui/material';
+import { instanceTriggerDescription } from '@components/profile/triggers/TriggerLiveCreation';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,7 +17,14 @@ import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  getDefaultFilterObject,
+  serializeFilterGroupForBackend,
+  stixFilters,
+  useFilterDefinition,
+} from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import Filters from '../../common/lists/Filters';
@@ -26,6 +34,7 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import TriggersField from './TriggersField';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -88,6 +97,17 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
+  const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
+  const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
+    { value: 'create', label: t_i18n('Creation') },
+    { value: 'update', label: t_i18n('Modification') },
+    { value: 'delete', label: t_i18n('Deletion') },
+  ];
+  const defaultInstanceTriggerFilters = {
+    ...emptyFilterGroup,
+    filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
+  };
+  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
 
   useEffect(() => {
     commitFieldPatch({
@@ -245,6 +265,21 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         });
       })
       .catch(() => false);
+  };
+  const onChangeInstanceTrigger = (
+    setFieldValue: (
+      key: string,
+      value: { value: string; label: string }[],
+    ) => void,
+  ) => {
+    const newInstanceTriggerValue = !instance_trigger;
+    setFieldValue(
+      'event_types',
+      newInstanceTriggerValue ? instanceEventTypesOptions : eventTypesOptions,
+    );
+    helpers.handleClearAllFilters();
+    instanceTriggerFiltersHelpers.handleClearAllFilters();
+    setInstanceTrigger(newInstanceTriggerValue);
   };
   const currentTime = trigger.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
@@ -411,6 +446,15 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
             )
             }
           />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="instance_trigger"
+            label={t_i18n('Subscription to specific object(s)')}
+            tooltip={instanceTriggerDescription}
+            containerstyle={{ marginTop: 20 }}
+            onChange={() => onChangeInstanceTrigger(setFieldValue)}
+          />
           {trigger.trigger_type === 'live' && (
             <span>
               <Box sx={{
@@ -420,13 +464,12 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               }}
               >
                 {(!trigger.instance_trigger
-                && (
-                  <Filters
-                    availableFilterKeys={stixFilters}
-                    helpers={helpers}
-                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
-                  />
-                ))}
+              && <Filters
+                availableFilterKeys={stixFilters}
+                helpers={helpers}
+                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+                 />
+            )}
               </Box>
 
               {trigger.instance_trigger
