@@ -407,7 +407,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               {isCoverage && (
                 <CoverageInformationField
                   name="coverage"
-                  values={stixCoreRelationship.coverage || []}
+                  values={[...(stixCoreRelationship.coverage || [])]}
                   containerStyle={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                 />

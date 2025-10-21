@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { Clear } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import { graphql, RecordSourceSelectorProxy } from 'react-relay';
+import { graphql } from 'react-relay';
 import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import {
   FilteredAttackPattern,
@@ -14,6 +14,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { commitMutation } from '../../../../../relay/environment';
 import { useFormatter } from '../../../../../components/i18n';
 import { hexToRGB } from '../../../../../utils/Colors';
+import { deleteNodeFromEdge } from '../../../../../utils/store';
 import SecurityCoverageInformation from '../../../analyses/security_coverages/SecurityCoverageInformation';
 
 interface AttackPatternsMatrixColumnsElementProps {
@@ -63,25 +64,19 @@ const AttackPatternsMatrixColumnsElement = ({
         toId: attackPattern.attack_pattern_id,
         relationship_type: 'has-covered',
       },
-      updater: (store: RecordSourceSelectorProxy) => {
-        // Remove the relationship from the store
-        const payload = store.getRootField('stixCoreRelationshipDelete');
-        if (!payload) return;
-
-        // Get the deleted relationship ID
-        const deletedId = payload.getValue('id');
-        if (!deletedId) return;
-
-        // Delete the record from the store
-        store.delete(deletedId);
-      },
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
+      updater: (store) => deleteNodeFromEdge(
+        store,
+        'attackPatterns',
+        entityId,
+        attackPattern.attack_pattern_id,
+        {
+          relationship_type: 'has-covered',
+          toTypes: ['Attack-Pattern'],
+        },
+      ),
       onCompleted: () => {
         setDisplayDelete(false);
       },
-      onError: undefined,
-      setSubmitting: undefined,
     });
   };
 
