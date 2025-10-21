@@ -8,6 +8,7 @@ import { redisPlaybookUpdate } from '../../database/redis';
 import { logApp } from '../../config/conf';
 import { UnsupportedError } from '../../config/errors';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
+import type { StreamDataEvent } from '../../types/event';
 
 // Only way to force the step_literal checking
 // Don't try to understand, just trust
@@ -63,6 +64,7 @@ type ExecutorFn = {
   nextStep: PlaybookExecutionStep<object>,
   previousStepBundle: StixBundle | null
   bundle: StixBundle
+  event?:StreamDataEvent,
   externalCallback?: {
     externalStartDate: Date
   }
@@ -78,6 +80,7 @@ export const playbookExecutor = async ({
   nextStep,
   previousStepBundle,
   bundle,
+  event,
   externalCallback
 } : ExecutorFn) => {
   const isExternalCallback = externalCallback !== undefined;
@@ -88,6 +91,7 @@ export const playbookExecutor = async ({
     const baseBundle = structuredClone(isExternalCallback ? previousStepBundle : bundle);
     try {
       execution = await nextStep.component.executor({
+        event,
         eventId,
         executionId,
         dataInstanceId,
@@ -156,6 +160,7 @@ export const playbookExecutor = async ({
         const fromConnector = PLAYBOOK_COMPONENTS[fromInstance.component_id];
         const nextConnector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
         await playbookExecutor({
+          event,
           eventId,
           executionId,
           playbookId,
@@ -176,6 +181,7 @@ export const playbookExecutor = async ({
     // Execution will be continued through an external API call
     try {
       await nextStep.component.notify({
+        event,
         eventId,
         executionId,
         dataInstanceId,

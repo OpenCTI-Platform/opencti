@@ -1,3 +1,7 @@
+import { RELATION_IN_PIR } from '../../schema/internalRelationship';
+import { isStixRelation } from '../../schema/stixRelationship';
+import type { StreamDataEvent } from '../../types/event';
+
 interface EventConfig {
   create?: boolean
   update?: boolean
@@ -17,4 +21,9 @@ export const isValidEventType = (eventType: string, configuration: EventConfig) 
   if (eventType === 'delete' && deletion === true) validEventType = true;
 
   return validEventType;
+};
+
+export const isEventInPir = (streamEvent : StreamDataEvent) => {
+  const { data, scope } = streamEvent;
+  return scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR;
 };
