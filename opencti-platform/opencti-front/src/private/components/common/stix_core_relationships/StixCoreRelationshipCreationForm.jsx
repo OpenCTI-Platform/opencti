@@ -174,7 +174,7 @@ const StixCoreRelationshipCreationForm = ({
       externalReferences: [],
       objectMarking: defaultMarkingDefinitions ?? [],
       createdBy: defaultCreatedBy ?? '',
-      ...(isCoverage && { coverage: [] }),
+      ...(isCoverage && { coverage_information: [] }),
     },
   );
 
@@ -325,8 +325,8 @@ const StixCoreRelationshipCreationForm = ({
             />
             {isCoverage && (
               <CoverageInformationField
-                name="coverage"
-                values={values.coverage || []}
+                name="coverage_information"
+                values={values.coverage_information || []}
                 containerStyle={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
               />

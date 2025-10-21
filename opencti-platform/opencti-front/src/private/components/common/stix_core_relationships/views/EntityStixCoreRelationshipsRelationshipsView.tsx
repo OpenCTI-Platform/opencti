@@ -33,6 +33,7 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   paddingRightButtonAdd?: number
   role?: string,
   handleChangeView?: (viewMode: string) => void
+  allowCreation?: boolean
   isCoverage?: boolean
 }
 
@@ -53,6 +54,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   enableEntitiesView = true,
   paddingRightButtonAdd = null,
   handleChangeView,
+  allowCreation = true,
   isCoverage = false,
 }) => {
   const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
@@ -75,7 +77,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       width: '30%',
       isSortable: false,
     },
-    coverage: {
+    coverage_information: {
       label: 'Coverage',
       width: '15%',
       isSortable: false,
@@ -314,7 +316,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         type={'stix-core-relationship'}
       />
 
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {allowCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
           allowedRelationshipTypes={relationshipTypes}
@@ -329,7 +331,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
           currentView={finalView}
           isCoverage={isCoverage}
         />
-      </Security>
+      </Security>}
     </>
   );
 };

@@ -76,7 +76,7 @@ const StixCoreRelationshipEditionOverviewFragment = graphql`
     description
     relationship_type
     is_inferred
-    coverage {
+    coverage_information {
       coverage_name
       coverage_score
     }
@@ -306,7 +306,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     createdBy: convertCreatedBy(stixCoreRelationship) as FieldOption,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
-    ...(isCoverage ? { coverage: stixCoreRelationship.coverage || [] } : {}),
+    ...(isCoverage ? { coverage: stixCoreRelationship.coverage_information || [] } : {}),
   };
   return (
     <>
@@ -407,7 +407,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               {isCoverage && (
                 <CoverageInformationField
                   name="coverage"
-                  values={[...(stixCoreRelationship.coverage || [])]}
+                  values={[...(stixCoreRelationship.coverage_information || [])]}
                   containerStyle={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                 />

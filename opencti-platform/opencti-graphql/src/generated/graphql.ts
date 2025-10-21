@@ -27295,7 +27295,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   confidence?: Maybe<Scalars['Int']['output']>;
   containers?: Maybe<ContainerConnection>;
   containersNumber?: Maybe<Number>;
-  coverage?: Maybe<Array<CoverageResult>>;
+  coverage_information?: Maybe<Array<CoverageResult>>;
   created?: Maybe<Scalars['DateTime']['output']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime']['output'];
@@ -27407,7 +27407,7 @@ export type StixCoreRelationshipStixCoreRelationshipsArgs = {
 export type StixCoreRelationshipAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
-  coverage?: InputMaybe<Array<SecurityCoverageExpectation>>;
+  coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -44532,7 +44532,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipContainersArgs>>;
   containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
-  coverage?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
+  coverage_information?: Resolver<Maybe<Array<ResolversTypes['CoverageResult']>>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

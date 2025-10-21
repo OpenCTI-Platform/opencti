@@ -40,7 +40,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
         <FieldOrEmpty source={securityCoverage.securityPlatforms?.edges || []}>
           {(securityCoverage.securityPlatforms?.edges || []).map((securityPlatformEdge) => {
             const securityPlatform = securityPlatformEdge.node.to;
-            const coverage = securityPlatformEdge.node.coverage || [];
+            const coverage = securityPlatformEdge.node.coverage_information || [];
             return (
               <ListItem
                 key={securityPlatformEdge.node.id}
@@ -102,7 +102,7 @@ const SecurityCoverageSecurityPlatforms = createFragmentContainer(
           edges {
             node {
               id
-              coverage {
+              coverage_information {
                 coverage_name
                 coverage_score
               }

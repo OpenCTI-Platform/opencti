@@ -8317,7 +8317,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   cases(first: Int): CaseConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
-  coverage: [CoverageResult!]
+  coverage_information: [CoverageResult!]
   creators: [Creator!]
   toStix: String
   editContext: [EditUserContext!]
@@ -8351,7 +8351,7 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
-  coverage: [SecurityCoverageExpectation!]
+  coverage_information: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
 }
