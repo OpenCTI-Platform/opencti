@@ -61,6 +61,13 @@ const caseIncidentQuery = graphql`
         entity_type
       }
       name
+      securityCoverage {
+        id
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
+      }
       ...CaseUtils_case
       ...IncidentKnowledge_case
       ...FileImportViewer_entity
@@ -182,7 +189,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         {!isKnowledgeOrContent && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
             <AIInsights id={caseData.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
-            <StixCoreObjectSecurityCoverage id={caseData.id} coverate={null}/>
+            <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
           </div>
         )}
       </Box>

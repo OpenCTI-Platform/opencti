@@ -224,8 +224,7 @@ const RootThreatActorIndividualComponent = ({
               </Tabs>
               {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={threatActorIndividual.id}/>
-                  { /* <StixCoreObjectSimulationResultContainer id={threatActorIndividual.id} type="threat"/> */ }
+                <AIInsights id={threatActorIndividual.id} />
               </div>
               )}
             </Box>

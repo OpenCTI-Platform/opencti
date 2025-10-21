@@ -210,8 +210,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               </Tabs>
               {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={threatActorGroup.id}/>
-                  { /* <StixCoreObjectSimulationResultContainer id={threatActorGroup.id} type="threat"/> */ }
+                <AIInsights id={threatActorGroup.id} />
               </div>
               )}
             </Box>

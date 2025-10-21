@@ -12,7 +12,6 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
-import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -27,7 +26,7 @@ import { RootCaseRftCaseQuery } from './__generated__/RootCaseRftCaseQuery.graph
 import { useFormatter } from '../../../../components/i18n';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { getCurrentTab, getPaddingRight } from '../../../../utils/utils';
 import CaseRftEdition from './CaseRftEdition';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
@@ -178,10 +177,9 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
           />
         </Tabs>
         {!isKnowledgeOrContent && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-          <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
-          <StixCoreObjectSecurityCoverage id={caseData.id} coverage={null}/>
-        </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
+          </div>
         )}
       </Box>
       <Routes>
