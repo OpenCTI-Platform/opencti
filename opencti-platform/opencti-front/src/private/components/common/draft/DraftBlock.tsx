@@ -1,7 +1,7 @@
 import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { getDraftModeColor } from './DraftChip';
 import type { Theme } from '../../../../components/Theme';
 import { hexToRGB } from '../../../../utils/Colors';

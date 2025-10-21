@@ -1,7 +1,7 @@
 import Drawer from '@components/common/drawer/Drawer';
 import React from 'react';
 import { FormikConfig } from 'formik/dist/types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import useFintelTemplateAdd from '@components/settings/sub_types/fintel_templates/useFintelTemplateAdd';
 import useFintelTemplateEdit from './useFintelTemplateEdit';
 import FintelTemplateForm, { FintelTemplateFormInputKeys, FintelTemplateFormInputs } from './FintelTemplateForm';

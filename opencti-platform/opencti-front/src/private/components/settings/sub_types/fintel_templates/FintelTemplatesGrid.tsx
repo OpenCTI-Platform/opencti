@@ -9,7 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import { graphql, useFragment } from 'react-relay';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import VisuallyHiddenInput from '@components/common/VisuallyHiddenInput';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import FintelTemplatesLines, { TemplateType } from './FintelTemplatesLines';
 import { FintelTemplatesGrid_templates$key } from './__generated__/FintelTemplatesGrid_templates.graphql';
 import FintelTemplateFormDrawer from './FintelTemplateFormDrawer';

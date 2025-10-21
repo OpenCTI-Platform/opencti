@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import IconButton from '@mui/material/IconButton';

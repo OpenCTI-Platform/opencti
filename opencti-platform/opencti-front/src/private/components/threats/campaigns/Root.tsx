@@ -1,5 +1,5 @@
 import React, { Suspense, useMemo } from 'react';
-import { Route, Routes, Link, Navigate, useParams, useLocation } from 'react-router-dom';
+import { Route, Routes, Link, Navigate, useParams, useLocation } from 'react-router';
 import { graphql, PreloadedQuery, useSubscription, usePreloadedQuery } from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';

@@ -5,7 +5,7 @@ import { AssociatedEntityOption } from '@components/common/form/AssociatedEntity
 import ImportFilesUploader from '@components/common/files/import_files/ImportFilesUploader';
 import ImportFilesOptions from '@components/common/files/import_files/ImportFilesOptions';
 import { graphql, UseMutationConfig, usePreloadedQuery } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import ImportFilesStepper from '@components/common/files/import_files/ImportFilesStepper';
 import ImportFilesUploadProgress from '@components/common/files/import_files/ImportFilesUploadProgress';
 import ImportFilesToggleMode from '@components/common/files/import_files/ImportFilesToggleMode';

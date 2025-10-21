@@ -26,7 +26,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import DialogTitle from '@mui/material/DialogTitle';
 import ToggleButton from '@mui/material/ToggleButton';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import fileDownload from 'js-file-download';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { playbookMutationFieldPatch } from './PlaybookEditionForm';

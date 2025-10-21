@@ -8,7 +8,7 @@ import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { compose } from 'ramda';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
 import * as R from 'ramda';
 import { AutoFix } from 'mdi-material-ui';

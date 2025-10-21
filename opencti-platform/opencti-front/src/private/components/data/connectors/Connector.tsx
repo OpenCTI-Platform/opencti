@@ -10,7 +10,7 @@ import { interval } from 'rxjs';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import { useTheme } from '@mui/styles';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';

@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { EmailTemplateQuery } from '@components/settings/email_template/__generated__/EmailTemplateQuery.graphql';
 import { EmailTemplateProvider } from '@components/settings/email_template/EmailTemplateContext';
 import EmailTemplateHeader from '@components/settings/email_template/EmailTemplateHeader';

@@ -1,13 +1,16 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import React, { lazy, Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
+import React, { Suspense } from 'react';
 import { CookiesProvider } from 'react-cookie';
 import { APP_BASE_PATH } from './relay/environment';
 import { RedirectManager } from './components/RedirectManager';
 import AuthBoundaryComponent from './private/components/AuthBoundary';
 import Loader from './components/Loader';
+import PublicRoot from './public/PublicRoot';
+import PrivateRoot from './private/Root';
 
-const PublicRoot = lazy(() => import('./public/PublicRoot'));
-const PrivateRoot = lazy(() => import('./private/Root'));
+const ToDashboard = () => (
+  <Navigate to="/dashboard" replace={true} />
+);
 
 const App = () => (
   <CookiesProvider>
@@ -19,10 +22,7 @@ const App = () => (
               <Route path="/dashboard/*" Component={PrivateRoot} />
               <Route path="/public/*" Component={PublicRoot} />
               {/* By default, redirect to dashboard */}
-              <Route
-                path="/*"
-                element={<Navigate to="/dashboard" replace={true} />}
-              />
+              <Route path="/*" Component={ToDashboard} />
             </Routes>
           </Suspense>
         </RedirectManager>

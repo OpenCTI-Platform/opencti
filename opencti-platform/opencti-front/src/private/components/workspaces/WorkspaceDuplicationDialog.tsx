@@ -6,7 +6,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import { graphql, useFragment } from 'react-relay';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import {
   WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation,

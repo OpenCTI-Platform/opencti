@@ -1,6 +1,6 @@
 import React, { FunctionComponent, Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery, useQueryLoader } from 'react-relay';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Button from '@mui/material/Button';
 import DraftBlock from '@components/common/draft/DraftBlock';
 import DialogContent from '@mui/material/DialogContent';

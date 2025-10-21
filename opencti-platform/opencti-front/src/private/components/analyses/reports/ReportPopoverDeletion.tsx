@@ -10,7 +10,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import React, { FunctionComponent, useState } from 'react';
 import { useTheme } from '@mui/styles';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import DialogContentText from '@mui/material/DialogContentText';
 import { ReportPopoverDeletionQuery$data } from '@components/analyses/reports/__generated__/ReportPopoverDeletionQuery.graphql';
 import DialogTitle from '@mui/material/DialogTitle';

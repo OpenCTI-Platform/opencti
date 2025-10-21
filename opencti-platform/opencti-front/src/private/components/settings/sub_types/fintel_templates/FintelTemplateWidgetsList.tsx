@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { List, Alert, Button, Typography } from '@mui/material';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router';
 import FintelTemplateWidgetDefault from './FintelTemplateWidgetDefault';
 import FintelTemplateWidgetAttribute from './FintelTemplateWidgetAttribute';
 import { useFormatter } from '../../../../../components/i18n';

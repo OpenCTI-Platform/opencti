@@ -7,7 +7,7 @@ import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Tooltip from '@mui/material/Tooltip';
 import { ListItemButton } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
