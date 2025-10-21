@@ -16,6 +16,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   created_at: DateTime!
   updated_at: DateTime!
   draftVersion: DraftVersion
+  refreshed_at: DateTime
   # inferences
   x_opencti_inferences: [Inference]
   # StixCoreObject
