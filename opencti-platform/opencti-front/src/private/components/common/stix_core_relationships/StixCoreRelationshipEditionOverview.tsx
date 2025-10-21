@@ -306,7 +306,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     createdBy: convertCreatedBy(stixCoreRelationship) as FieldOption,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
-    ...(isCoverage ? { coverage: (stixCoreRelationship as any).coverage || [] } : {}),
+    ...(isCoverage ? { coverage: stixCoreRelationship.coverage || [] } : {}),
   };
   return (
     <>
@@ -407,7 +407,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               {isCoverage && (
                 <CoverageInformationField
                   name="coverage"
-                  values={(stixCoreRelationship as any).coverage || []}
+                  values={stixCoreRelationship.coverage || []}
                   containerStyle={fieldSpacingContainerStyle}
                   setFieldValue={setFieldValue}
                 />

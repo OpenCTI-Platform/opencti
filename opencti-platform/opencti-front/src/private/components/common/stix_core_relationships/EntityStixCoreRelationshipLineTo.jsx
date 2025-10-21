@@ -167,7 +167,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                 {dataColumns.coverage && (
                   <div
                     className={classes.bodyItem}
-                    style={{ 
+                    style={{
                       width: dataColumns.coverage.width,
                       display: 'flex',
                       alignItems: 'center',
