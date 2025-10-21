@@ -31,12 +31,12 @@ interface SecurityCoverage {
   coverage_information: ReadonlyArray<{
     readonly coverage_name: string;
     readonly coverage_score: number;
-  }> | null;
+  }> | null | undefined;
 }
 
 interface StixCoreObjectSecurityCoverageProps {
   id: string; // ID of the STIX Core Object
-  coverage?: SecurityCoverage | null;
+  coverage?: SecurityCoverage | null | undefined;
   onCoverageCreated?: (coverageId: string) => void;
 }
 
