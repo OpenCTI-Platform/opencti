@@ -5,14 +5,13 @@ import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components'
 import type { BasicStoreEntityPlaybook, ComponentDefinition, NodeDefinition } from '../../modules/playbook/playbook-types';
 import type { PirStreamConfiguration } from '../../modules/playbook/playbookComponents/playbook-data-stream-pir-component';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
-import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { isStixRelation } from '../../schema/stixRelationship';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle } from '../../types/stix-2-1-common';
 import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { isValidEventType } from './playbookManagerUtils';
+import { isEventInPir, isValidEventType } from './playbookManagerUtils';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { playbookExecutor } from './playbookExecutor';
 
@@ -35,10 +34,10 @@ export const listenPirEvents = async (
   instance: NodeDefinition,
   playbook:BasicStoreEntityPlaybook
 ) => {
-  const { id: eventId, data: { data, type, scope } } = streamEvent;
+  const { id: eventId, data: { data, type } } = streamEvent;
   const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
 
-  if (scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR) {
+  if (isEventInPir(streamEvent.data) && isStixRelation(data)) {
     const connector = PLAYBOOK_COMPONENTS[instance.component_id];
     const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
 
@@ -82,6 +81,7 @@ export const listenPirEvents = async (
           // Data
           previousStepBundle: null,
           bundle,
+          event: streamEvent.data
         });
       }
     }

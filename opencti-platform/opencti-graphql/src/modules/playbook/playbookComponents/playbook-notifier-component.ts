@@ -13,6 +13,7 @@ import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/redis';
 import { isEmptyField } from '../../../database/utils';
 import type { AuthUser } from '../../../types/user';
+import { isEventInPir } from '../../../manager/playbookManager/playbookManagerUtils';
 
 /**
  * Returns the list of all users authorized based on given authorized members array.
@@ -75,7 +76,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
     const schemaElement = { properties: { notifiers: { items: { oneOf: elements } } } };
     return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA, schemaElement);
   },
-  executor: async ({ playbookId, playbookNode, bundle }) => {
+  executor: async ({ playbookId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
@@ -83,32 +84,39 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
     const notificationsCall = [];
-    for (let index = 0; index < targetUsers.length; index += 1) {
-      const targetUser = targetUsers[index];
-      const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
-      const userContext = { ...context, user_inside_platform_organization };
-      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
+    const isPirEvent = event && isEventInPir(event);
+    // TODO Remove in next chunk
+    if (!event || (event && !isPirEvent) || (isPirEvent && event.type !== 'update')) {
+      for (let index = 0; index < targetUsers.length; index += 1) {
+        const targetUser = targetUsers[index];
+        const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
+        const userContext = { ...context, user_inside_platform_organization };
+        const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
 
-      const notificationEvent: DigestEvent = {
-        version: EVENT_NOTIFICATION_VERSION,
-        playbook_source: playbook.name,
-        notification_id: playbookNode.id,
-        target: convertToNotificationUser(targetUser, notifiers),
-        type: 'digest',
-        data: stixElements.map((stixObject) => {
-          const createMessage = generateCreateMessage({
-            ...stixObject,
-            entity_type: convertStixToInternalTypes(stixObject.type)
-          });
-          return {
-            notification_id: playbookNode.id,
-            instance: stixObject,
-            type: 'create', // TODO Improve that with type event follow up
-            message: createMessage === '-' ? playbookNode.name : createMessage,
-          };
-        })
-      };
-      notificationsCall.push(storeNotificationEvent(context, notificationEvent));
+        const notificationEvent: DigestEvent = {
+          version: EVENT_NOTIFICATION_VERSION,
+          playbook_source: playbook.name,
+          notification_id: playbookNode.id,
+          target: convertToNotificationUser(targetUser, notifiers),
+          type: 'digest',
+          data: stixElements.map((stixObject) => {
+            let message = generateCreateMessage({
+              ...stixObject,
+              entity_type: convertStixToInternalTypes(stixObject.type)
+            });
+            if (isPirEvent) {
+              message = event.message;
+            }
+            return {
+              notification_id: playbookNode.id,
+              instance: stixObject,
+              type: event?.type ?? 'create', // TODO Improve that with type event follow up
+              message: message === '-' ? playbookNode.name : message,
+            };
+          })
+        };
+        notificationsCall.push(storeNotificationEvent(context, notificationEvent));
+      }
     }
     if (notificationsCall.length > 0) {
       await Promise.all(notificationsCall);
