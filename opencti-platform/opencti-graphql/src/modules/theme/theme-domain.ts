@@ -4,7 +4,7 @@ import { BUS_TOPICS, logApp } from '../../config/conf';
 import { updateAttribute } from '../../database/middleware';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
-import type { EditInput, QueryThemesArgs, ThemeAddInput } from '../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator, type QueryThemesArgs, type ThemeAddInput } from '../../generated/graphql';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_THEME } from '../../schema/internalObject';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -24,7 +24,12 @@ export const findThemePaginated = async (context: AuthContext, user: AuthUser, a
 };
 
 const checkExistingTheme = async (context: AuthContext, user: AuthUser, themeName: string) => {
-  const themes = await findThemePaginated(context, user, {});
+  const filters = {
+    mode: FilterMode.And,
+    filters: [{ key: ['name'], values: [themeName], operator: FilterOperator.Eq }],
+    filterGroups: []
+  };
+  const themes = await findThemePaginated(context, user, { filters });
   return themes.edges.findIndex((edge) => edge.node.name === themeName) > -1;
 };
 
