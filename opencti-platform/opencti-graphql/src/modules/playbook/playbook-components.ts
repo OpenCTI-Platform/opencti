@@ -553,7 +553,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         (container as StixReport).extensions[STIX_EXT_OCTI].content = (baseData as StixReport).extensions[STIX_EXT_OCTI].content;
       }
       if ((baseData as StixCaseIncident).content) {
-        (container as StixReport).extensions[STIX_EXT_OCTI].content = (baseData as StixReport).extensions[STIX_EXT_OCTI].content;
+        (container as StixCaseIncident).content = (baseData as StixCaseIncident).content;
       }
       if (baseData.object_marking_refs) {
         container.object_marking_refs = baseData.object_marking_refs;
