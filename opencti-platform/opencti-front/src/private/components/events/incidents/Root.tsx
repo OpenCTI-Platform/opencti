@@ -30,6 +30,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
 import IncidentEdition from './IncidentEdition';
 import IncidentDeletion from './IncidentDeletion';
+import AIInsights from "@components/common/ai/AIInsights";
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
@@ -59,6 +60,13 @@ const incidentQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      securityCoverage {
+        id
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
+      }
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Incident_incident
       ...IncidentKnowledge_incident
@@ -206,7 +214,10 @@ const RootIncidentComponent = ({ queryRef }) => {
                 />
               </Tabs>
               {isOverview && (
-                <StixCoreObjectSecurityCoverage id={incident.id} coverage={null} />
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={incident.id}/>
+                  <StixCoreObjectSecurityCoverage id={incident.id} coverage={incident.securityCoverage} />
+                </div>
               )}
             </Box>
             <Routes>
