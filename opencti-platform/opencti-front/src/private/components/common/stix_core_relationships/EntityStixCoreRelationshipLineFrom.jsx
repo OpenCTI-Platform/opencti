@@ -22,6 +22,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import { DraftChip, getDraftModeColor } from '../draft/DraftChip';
+import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
 
 const styles = (theme) => ({
   item: {
@@ -71,6 +72,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
       selectedElements,
       onToggleShiftEntity,
       index,
+      isCoverage,
     } = this.props;
     const restricted = node.to === null;
     const link = `${entityLink}/relations/${node.id}`;
@@ -89,6 +91,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={restricted}
+            isCoverage={isCoverage}
           />
         )}
       >
@@ -121,25 +124,29 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
           <ListItemText
             primary={
               <div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
-                >
-                  <ItemEntityType
-                    entityType={node.relationship_type}
-                  />
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.entity_type.width }}
-                >
-                  <ItemEntityType
-                    entityType={node.to?.entity_type}
-                    isRestricted={!node.to}
-                    size='large'
-                    showIcon
-                  />
-                </div>
+                {dataColumns.relationship_type && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.relationship_type.width }}
+                  >
+                    <ItemEntityType
+                      entityType={node.relationship_type}
+                    />
+                  </div>
+                )}
+                {dataColumns.entity_type && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.entity_type.width }}
+                  >
+                    <ItemEntityType
+                      entityType={node.to?.entity_type}
+                      isRestricted={!node.to}
+                      size='large'
+                      showIcon
+                    />
+                  </div>
+                )}
                 <div
                   className={classes.bodyItem}
                   style={{
@@ -151,6 +158,30 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                   {!restricted ? getMainRepresentative(node.to) : t('Restricted')}
                   {node.to?.draftVersion && (<DraftChip/>)}
                 </div>
+                {dataColumns.x_mitre_id && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.x_mitre_id.width }}
+                  >
+                    {node.to?.x_mitre_id ?? '-'}
+                  </div>
+                )}
+                {dataColumns.coverage && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ 
+                      width: dataColumns.coverage.width,
+                      display: 'flex',
+                      alignItems: 'center',
+                      overflow: 'visible',
+                    }}
+                  >
+                    <SecurityCoverageInformation
+                      coverage_information={node.coverage || null}
+                      variant="header"
+                    />
+                  </div>
+                )}
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.createdBy.width }}
@@ -175,28 +206,34 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                 >
                   {fsd(node.stop_time)}
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.created_at.width }}
-                >
-                  {fsd(node.created_at)}
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.confidence.width }}
-                >
-                  <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.objectMarking.width }}
-                >
-                  <ItemMarkings
-                    variant="inList"
-                    markingDefinitions={node.objectMarking ?? []}
-                    limit={1}
-                  />
-                </div>
+                {dataColumns.created_at && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.created_at.width }}
+                  >
+                    {fsd(node.created_at)}
+                  </div>
+                )}
+                {dataColumns.confidence && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.confidence.width }}
+                  >
+                    <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
+                  </div>
+                )}
+                {dataColumns.objectMarking && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.objectMarking.width }}
+                  >
+                    <ItemMarkings
+                      variant="inList"
+                      markingDefinitions={node.objectMarking ?? []}
+                      limit={1}
+                    />
+                  </div>
+                )}
               </div>
           }
           />
@@ -635,7 +672,7 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
                 style={{
                   width: dataColumns.name
                     ? dataColumns.name.width
-                    : dataColumns.observable_value.width,
+                    : dataColumns.observable_value?.width,
                 }}
               >
                 <Skeleton
@@ -645,6 +682,32 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
                   height="100%"
                 />
               </div>
+              {dataColumns.x_mitre_id && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.x_mitre_id.width }}
+                >
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width="90%"
+                    height="100%"
+                  />
+                </div>
+              )}
+              {dataColumns.coverage && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.coverage.width }}
+                >
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width="90%"
+                    height="100%"
+                  />
+                </div>
+              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
@@ -689,39 +752,45 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
                   height="100%"
                 />
               </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.created_at.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.confidence.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.objectMarking.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width={100}
-                  height="100%"
-                />
-              </div>
+              {dataColumns.created_at && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.created_at.width }}
+                >
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width={140}
+                    height="100%"
+                  />
+                </div>
+              )}
+              {dataColumns.confidence && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.confidence.width }}
+                >
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width={100}
+                    height="100%"
+                  />
+                </div>
+              )}
+              {dataColumns.objectMarking && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.objectMarking.width }}
+                >
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width={100}
+                    height="100%"
+                  />
+                </div>
+              )}
             </div>
           }
         />

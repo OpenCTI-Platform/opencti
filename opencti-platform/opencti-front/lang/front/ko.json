@@ -1191,6 +1191,7 @@
   "Do you want to enable this rule?": "이 규칙을 활성화하시겠습니까?",
   "Do you want to kill all the sessions of this user?": "이 사용자의 모든 세션을 종료하시겠습니까?",
   "Do you want to kill this session?": "이 세션을 종료하시겠습니까?",
+  "Do you want to remove the coverage for this attack pattern?": "이 공격 패턴에 대한 적용 범위를 제거하시겠습니까?",
   "Do you want to remove the entity from this container?": "이 컨테이너에서 엔터티를 제거하시겠습니까?",
   "Do you want to remove the entity from this grouping?": "이 그룹화에서 엔터티를 제거하시겠습니까?",
   "Do you want to remove the entity from this report?": "이 보고서에서 엔터티를 제거하시겠습니까?",
