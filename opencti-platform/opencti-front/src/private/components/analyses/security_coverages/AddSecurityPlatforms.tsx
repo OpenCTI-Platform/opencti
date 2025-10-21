@@ -1,31 +1,18 @@
 import React, { FunctionComponent, useState } from 'react';
+import {
+  SecurityCoverageSecurityPlatforms_securityCoverage$data,
+} from '@components/analyses/security_coverages/__generated__/SecurityCoverageSecurityPlatforms_securityCoverage.graphql';
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 interface AddSecurityPlatformsProps {
-  securityCoverage: {
-    id: string;
-  };
-  _securityCoverageSecurityPlatforms?: ReadonlyArray<{
-    readonly node: {
-      readonly id: string;
-    };
-  }> | Array<{
-    node: {
-      id: string;
-    };
-  }>;
+  securityCoverage: SecurityCoverageSecurityPlatforms_securityCoverage$data;
 }
 
-const AddSecurityPlatforms: FunctionComponent<AddSecurityPlatformsProps> = ({
-  securityCoverage,
-  _securityCoverageSecurityPlatforms,
-}) => {
+const AddSecurityPlatforms: FunctionComponent<AddSecurityPlatformsProps> = ({ securityCoverage }) => {
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
-
   const handleOnCreate = () => {
     setTargetEntities([]);
   };
-
   const paginationOptions = {
     count: 25,
     orderBy: 'created_at',
@@ -36,7 +23,6 @@ const AddSecurityPlatforms: FunctionComponent<AddSecurityPlatformsProps> = ({
       filterGroups: [],
     },
   };
-
   return (
     <StixCoreRelationshipCreationFromEntity
       entityId={securityCoverage.id}

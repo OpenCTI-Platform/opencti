@@ -26508,10 +26508,8 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_map_tile_server_light?: Maybe<Scalars['String']['output']>;
   platform_messages?: Maybe<Array<SettingsMessage>>;
   platform_modules?: Maybe<Array<Module>>;
-  platform_openbas_disable_display?: Maybe<Scalars['Boolean']['output']>;
-  platform_openbas_url?: Maybe<Scalars['String']['output']>;
-  platform_openerm_url?: Maybe<Scalars['String']['output']>;
-  platform_openmtd_url?: Maybe<Scalars['String']['output']>;
+  platform_openaev_url?: Maybe<Scalars['String']['output']>;
+  platform_opengrc_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig;
   platform_providers: Array<Provider>;
@@ -44264,10 +44262,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_map_tile_server_light?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_messages?: Resolver<Maybe<Array<ResolversTypes['SettingsMessage']>>, ParentType, ContextType>;
   platform_modules?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
-  platform_openbas_disable_display?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  platform_openbas_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  platform_openerm_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  platform_openmtd_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_openaev_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_opengrc_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   platform_protected_sensitive_config?: Resolver<ResolversTypes['PlatformProtectedSensitiveConfig'], ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;

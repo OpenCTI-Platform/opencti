@@ -16,6 +16,7 @@ import withTheme from '@mui/styles/withTheme';
 import { ListItemButton } from '@mui/material';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import SecurityCoverageInformation from '../../analyses/security_coverages/SecurityCoverageInformation';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
@@ -68,6 +69,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
       selectedElements,
       onToggleShiftEntity,
       index,
+      isCoverage,
     } = this.props;
     const remoteNode = node.from && node.from.id === entityId ? node.to : node.from;
     const isReversed = node.from && node.from.id === entityId;
@@ -91,6 +93,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={restricted}
+            isCoverage={isCoverage}
           />
         )}
       >
@@ -123,25 +126,29 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
           <ListItemText
             primary={
               <>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
-                >
-                  <ItemEntityType
-                    entityType={node.relationship_type}
-                  />
-                </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.entity_type.width }}
-                >
-                  <ItemEntityType
-                    entityType={remoteNode.entity_type}
-                    isRestricted={restricted}
-                    size='large'
-                    showIcon
-                  />
-                </div>
+                {!isCoverage && (
+                  <>
+                    <div
+                      className={classes.bodyItem}
+                      style={{ width: dataColumns.relationship_type.width }}
+                    >
+                      <ItemEntityType
+                        entityType={node.relationship_type}
+                      />
+                    </div>
+                    <div
+                      className={classes.bodyItem}
+                      style={{ width: dataColumns.entity_type.width }}
+                    >
+                      <ItemEntityType
+                        entityType={remoteNode.entity_type}
+                        isRestricted={restricted}
+                        size='large'
+                        showIcon
+                      />
+                    </div>
+                  </>
+                )}
                 <div
                   className={classes.bodyItem}
                   style={{
@@ -153,6 +160,17 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                   {!restricted ? getMainRepresentative(remoteNode) : t('Restricted')}
                   {remoteNode.draftVersion && (<DraftChip/>)}
                 </div>
+                {isCoverage && dataColumns.coverage && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.coverage.width }}
+                  >
+                    <SecurityCoverageInformation
+                      coverage_information={node.coverage || null}
+                      variant="details"
+                    />
+                  </div>
+                )}
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.createdBy.width }}
@@ -177,12 +195,14 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                 >
                   {fsd(node.stop_time)}
                 </div>
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.created_at.width }}
-                >
-                  {fsd(node.created_at)}
-                </div>
+                {!isCoverage && dataColumns.created_at && (
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.created_at.width }}
+                  >
+                    {fsd(node.created_at)}
+                  </div>
+                )}
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.confidence.width }}
@@ -239,6 +259,10 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
         is_inferred
         created
         created_at
+        coverage {
+          coverage_name
+          coverage_score
+        }
         x_opencti_inferences {
           rule {
             id

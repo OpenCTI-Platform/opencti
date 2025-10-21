@@ -1,31 +1,18 @@
 import React, { FunctionComponent, useState } from 'react';
+import {
+  SecurityCoverageVulnerabilities_securityCoverage$data,
+} from '@components/analyses/security_coverages/__generated__/SecurityCoverageVulnerabilities_securityCoverage.graphql';
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 interface AddVulnerabilitiesProps {
-  securityCoverage: {
-    id: string;
-  };
-  _securityCoverageVulnerabilities?: ReadonlyArray<{
-    readonly node: {
-      readonly id: string;
-    };
-  }> | Array<{
-    node: {
-      id: string;
-    };
-  }>;
+  securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
 }
 
-const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({
-  securityCoverage,
-  _securityCoverageVulnerabilities,
-}) => {
+const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({ securityCoverage }) => {
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
-
   const handleOnCreate = () => {
     setTargetEntities([]);
   };
-
   const paginationOptions = {
     count: 25,
     orderBy: 'created_at',
@@ -36,7 +23,6 @@ const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({
       filterGroups: [],
     },
   };
-
   return (
     <StixCoreRelationshipCreationFromEntity
       entityId={securityCoverage.id}

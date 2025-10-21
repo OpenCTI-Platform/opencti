@@ -24,6 +24,14 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
     .filter((node) => node !== null && node !== undefined)
     .map((node) => node.to)) as unknown as Parameters<typeof AttackPatternsMatrix>[0]['attackPatterns'];
 
+  const attackPatternsCoverageMap = new Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number; }>>();
+  (securityCoverage.attackPatterns?.edges ?? []).forEach((edge) => {
+    const { node } = edge;
+    if (node && node.to?.id) {
+      attackPatternsCoverageMap.set(node.to.id, node.coverage || []);
+    }
+  });
+
   const handleAdd = (entity: TargetEntity) => {
     setTargetEntities([entity]);
   };
@@ -56,6 +64,9 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
         attackPatternIdsToOverlap={[]}
         isModeOnlyActive={false}
         inPaper={true}
+        isCoverage={true}
+        coverageMap={attackPatternsCoverageMap}
+        entityId={securityCoverage.id}
       />
       <StixCoreRelationshipCreationFromEntity
         entityId={securityCoverage.id}
@@ -93,6 +104,10 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
           edges {
             node {
               id
+              coverage {
+                coverage_name
+                coverage_score
+              }
               to {
                 ... on AttackPattern {
                   id

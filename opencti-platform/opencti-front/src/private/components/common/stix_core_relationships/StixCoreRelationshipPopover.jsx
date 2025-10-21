@@ -119,7 +119,7 @@ class StixCoreRelationshipPopover extends Component {
   }
 
   render() {
-    const { classes, t, stixCoreRelationshipId, disabled } = this.props;
+    const { classes, t, stixCoreRelationshipId, disabled, isCoverage } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -150,6 +150,7 @@ class StixCoreRelationshipPopover extends Component {
             open={this.state.displayUpdate}
             handleClose={this.handleCloseUpdate.bind(this)}
             noStoreUpdate={true}
+            isCoverage={isCoverage}
           />
         )}
         <Dialog

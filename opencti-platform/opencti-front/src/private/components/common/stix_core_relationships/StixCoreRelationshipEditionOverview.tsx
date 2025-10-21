@@ -17,6 +17,7 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import CommitMessage from '../form/CommitMessage';
+import CoverageInformationField from '../form/CoverageInformationField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
@@ -75,6 +76,10 @@ const StixCoreRelationshipEditionOverviewFragment = graphql`
     description
     relationship_type
     is_inferred
+    coverage {
+      coverage_name
+      coverage_score
+    }
     status {
       id
       order
@@ -188,6 +193,7 @@ export interface StixCoreRelationshipEditionOverviewProps {
   queryRef: PreloadedQuery<StixCoreRelationshipEditionOverviewQuery>;
   stixCoreRelationship: StixCoreRelationshipEditionOverview_stixCoreRelationship$data;
   noStoreUpdate: boolean;
+  isCoverage?: boolean;
 }
 
 interface StixCoreRelationshipAddInput {
@@ -205,7 +211,7 @@ interface StixCoreRelationshipAddInput {
 
 const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
 Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
-> = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate }) => {
+> = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate, isCoverage = false }) => {
   const stixCoreRelationshipType = 'stix-core-relationship';
 
   const { t_i18n } = useFormatter();
@@ -300,6 +306,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     createdBy: convertCreatedBy(stixCoreRelationship) as FieldOption,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
+    ...(isCoverage ? { coverage: (stixCoreRelationship as any).coverage || [] } : {}),
   };
   return (
     <>
@@ -397,6 +404,14 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                   />
                 }
               />
+              {isCoverage && (
+                <CoverageInformationField
+                  name="coverage"
+                  values={(stixCoreRelationship as any).coverage || []}
+                  containerStyle={fieldSpacingContainerStyle}
+                  setFieldValue={setFieldValue}
+                />
+              )}
               <KillChainPhasesField
                 name="killChainPhases"
                 style={fieldSpacingContainerStyle}

@@ -156,7 +156,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
   const { t_i18n } = useFormatter();
   const {
     bannerSettings: { bannerHeightNumber },
-    settings: { platform_openbas_url: openBASUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl, xtm_hub_registration_status: xtmhubStatus },
+    settings: { platform_openaev_url: openAEVUrl, platform_enterprise_edition: ee, platform_xtmhub_url: xtmhubUrl, xtm_hub_registration_status: xtmhubStatus },
   } = useAuth();
   const draftContext = useDraftContext();
   const hasKnowledgeAccess = useGranted([KNOWLEDGE]);
@@ -395,9 +395,9 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                     </Tooltip>
                   </Grid>
                   <Grid item xs={6}>
-                    <Tooltip title={isNotEmptyField(openBASUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
-                      <a className={classes.xtmItem} href={isNotEmptyField(openBASUrl) ? openBASUrl : 'https://filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
-                        <Badge variant="dot" color={isNotEmptyField(openBASUrl) ? 'success' : 'warning'}>
+                    <Tooltip title={isNotEmptyField(openAEVUrl) ? t_i18n('Platform connected') : t_i18n('Get OpenAEV now')}>
+                      <a className={classes.xtmItem} href={isNotEmptyField(openAEVUrl) ? openAEVUrl : 'https://filigran.io'} target="_blank" rel="noreferrer" onClick={handleCloseXtm}>
+                        <Badge variant="dot" color={isNotEmptyField(openAEVUrl) ? 'success' : 'warning'}>
                           <img style={{ width: 40 }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />
                         </Badge>
                         <div className={classes.product}>OpenAEV</div>

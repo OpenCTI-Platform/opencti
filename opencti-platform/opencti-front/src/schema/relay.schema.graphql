@@ -1574,10 +1574,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_theme_light_logo_login: String
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
-  platform_openbas_url: String
-  platform_openbas_disable_display: Boolean
-  platform_openerm_url: String
-  platform_openmtd_url: String
+  platform_openaev_url: String
+  platform_opengrc_url: String
   platform_xtmhub_url: String
   platform_login_message: String
   platform_consent_message: String
