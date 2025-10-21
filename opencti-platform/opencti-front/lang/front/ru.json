@@ -1191,6 +1191,7 @@
   "Do you want to enable this rule?": "Хотите ли вы включить это правило?",
   "Do you want to kill all the sessions of this user?": "Вы хотите уничтожить все сеансы этого пользователя?",
   "Do you want to kill this session?": "Вы хотите закрыть эту сессию?",
+  "Do you want to remove the coverage for this attack pattern?": "Хотите ли вы удалить покрытие для этой модели атаки?",
   "Do you want to remove the entity from this container?": "Хотите ли вы удалить сущность из этого контейнера?",
   "Do you want to remove the entity from this grouping?": "Хотите ли вы удалить объект из этой группировки?",
   "Do you want to remove the entity from this report?": "Вы хотите удалить объект из этого отчета?",

@@ -1191,6 +1191,7 @@
   "Do you want to enable this rule?": "このルールを有効にしますか？",
   "Do you want to kill all the sessions of this user?": "このユーザーのセッションをすべて削除しますか？",
   "Do you want to kill this session?": "このセッションを削除しますか？",
+  "Do you want to remove the coverage for this attack pattern?": "この攻撃パターンのカバレージを外しますか？",
   "Do you want to remove the entity from this container?": "このコンテナからエンティティを削除しますか？",
   "Do you want to remove the entity from this grouping?": "このグループからエンティティを削除しますか？",
   "Do you want to remove the entity from this report?": "レポートからこのエンティティを削除しますか？",

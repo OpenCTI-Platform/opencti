@@ -1191,6 +1191,7 @@
   "Do you want to enable this rule?": "Souhaitez-vous activer cette règle ?",
   "Do you want to kill all the sessions of this user?": "Souhaitez-vous supprimer toutes les sessions de cet utilisateur ?",
   "Do you want to kill this session?": "Souhaitez-vous supprimer cette session ?",
+  "Do you want to remove the coverage for this attack pattern?": "Souhaitez-vous supprimer la couverture de ce schéma d'attaque ?",
   "Do you want to remove the entity from this container?": "Souhaitez-vous supprimer cette entité de ce conteneur ?",
   "Do you want to remove the entity from this grouping?": "Souhaitez-vous retirer cette entité de ce groupement ?",
   "Do you want to remove the entity from this report?": "Souhaitez-vous retirer cette entité de ce rapport ?",
