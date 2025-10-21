@@ -37,7 +37,7 @@ class ListenHandler:
                 },
                 timeout=300,
             )
-            if response.status_code != 202:
+            if response.status_code != 200 and response.status_code != 202:
                 raise RequestException(response.status_code, response.text)
 
             return "ack"

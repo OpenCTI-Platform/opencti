@@ -2468,8 +2468,19 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 
-const triggerEntityUpdateAutoEnrichment = async (context, user, element, loaders) => {
+const generateEnrichmentLoaders = (context, user, element) => {
+  return {
+    loadById: () => stixLoadByIdStringify(context, user, element.internal_id),
+    bundleById: () => stixBundleByIdStringify(context, user, element.entity_type, element.internal_id),
+  };
+};
+const triggerCreateEntityAutoEnrichment = async (context, user, element) => {
+  const loaders = generateEnrichmentLoaders(context, user, element);
+  await createEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
+};
+const triggerEntityUpdateAutoEnrichment = async (context, user, element) => {
   // If element really updated, try to enrich if needed
+  const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
 
@@ -3467,14 +3478,10 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   // volumes of objects relationships must be controlled
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
-  const loaders = {
-    loadById: () => stixLoadByIdStringify(context, user, data.element.internal_id),
-    bundleById: () => stixBundleByIdStringify(context, user, data.element.entity_type, data.element.internal_id),
-  };
   if (data.isCreation && !opts.noEnrichment) {
-    await createEntityAutoEnrichment(context, user, data.element, type, loaders);
+    await triggerCreateEntityAutoEnrichment(context, user, data.element);
   } else if (!opts.noEnrichment) { // upsert
-    await triggerEntityUpdateAutoEnrichment(context, user, data.element, loaders);
+    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;
 };
