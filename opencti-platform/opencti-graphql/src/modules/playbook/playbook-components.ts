@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { type PlaybookComponent } from './playbook-types';
@@ -55,7 +54,7 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, fullEntitiesList, fullRelationsList } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
@@ -530,7 +529,6 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       }
       const standardId = generateStandardId(container_type, containerData);
       const storeContainer = {
-        internal_id: uuidv4(),
         standard_id: standardId,
         entity_type: container_type,
         parent_types: getParentTypes(container_type),
@@ -977,27 +975,61 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           .map(({ action, path, multiple, attributeType }) => {
             if (multiple) {
               const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
-              const actionValues = action.value.map((o) => {
+              const actionPatchValues = action.value.map((o) => {
                 // If value is an id, must be converted to standard_id has we work on stix bundle
                 if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
                 // Else, just return the value
                 return convertValue(attributeType, o.patch_value);
               });
+              const actionValues = action.value.map((o) => {
+                // If value is an id, must be converted to standard_id has we work on stix bundle
+                if (cacheIds.has(o.value)) return (cacheIds.get(o.value) as BasicStoreCommon).standard_id;
+                // Else, just return the value
+                return convertValue(attributeType, o.value);
+              });
               if (action.op === EditOperation.Add) {
-                return { op: EditOperation.Replace, path, value: R.uniq([...currentValues, ...actionValues]) };
+                return {
+                  op: action.op,
+                  attribute: action.attribute,
+                  value: R.uniq([...currentValues, ...actionValues]),
+                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues }
+                };
               }
               if (action.op === EditOperation.Replace) {
-                return { op: EditOperation.Replace, path, value: actionValues };
+                return {
+                  op: action.op,
+                  attribute: action.attribute,
+                  value: actionValues,
+                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues }
+                };
               }
               if (action.op === EditOperation.Remove) {
-                return { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionValues.includes(c)) };
+                return {
+                  op: action.op,
+                  attribute: action.attribute,
+                  value: actionValues,
+                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionPatchValues.includes(c)) }
+                };
               }
             }
-            const currentValue = R.head(action.value)?.patch_value;
-            return { op: action.op, path, value: convertValue(attributeType, currentValue) };
+            const currentPatchValue = R.head(action.value)?.patch_value;
+            const currentValue = R.head(action.value)?.value;
+            return {
+              op: action.op,
+              attribute: action.attribute,
+              value: currentValue,
+              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentPatchValue) }
+            };
           });
         // Enlist operations to execute
-        patchOperations.push(...elementOperations);
+        if (elementOperations.length > 0) {
+          const operationObject = elementOperations.map((op) => {
+            return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
+          });
+          element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+          element.extensions[STIX_EXT_OCTI].opencti_field_patch = operationObject;
+          patchOperations.push(...elementOperations.map((e) => e.patchOperation));
+        }
       }
     }
     // Apply operations if needed
