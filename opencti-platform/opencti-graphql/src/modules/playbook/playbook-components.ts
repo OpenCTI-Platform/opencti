@@ -537,7 +537,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         parent_types: getParentTypes(container_type),
         ...containerData
       } as StoreCommon;
-      const container = convertStoreToStix(storeContainer) as StixContainer;
+      const container = convertStoreToStix(storeContainer) as StixReport | StixCaseIncident;
       // add all objects in the container if requested in the playbook config
       if (all) {
         container.object_refs = bundle.objects.map((o: StixObject) => o.id);
@@ -545,7 +545,16 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         container.object_refs = [baseData.id];
       }
       // Specific remapping of some attributes, waiting for a complete binding solution in the UI
-      // Following attributes are the same as the base instance: markings, labels, created_by, assignees, participants
+      // Following attributes are the same as the base instance: description, content, markings, labels, created_by, assignees, participants
+      if ((baseData as StixReport).description) {
+        container.description = (baseData as StixReport).description;
+      }
+      if ((baseData as StixReport).extensions[STIX_EXT_OCTI].content) {
+        (container as StixReport).extensions[STIX_EXT_OCTI].content = (baseData as StixReport).extensions[STIX_EXT_OCTI].content;
+      }
+      if ((baseData as StixCaseIncident).content) {
+        (container as StixReport).extensions[STIX_EXT_OCTI].content = (baseData as StixReport).extensions[STIX_EXT_OCTI].content;
+      }
       if (baseData.object_marking_refs) {
         container.object_marking_refs = baseData.object_marking_refs;
       }
@@ -566,7 +575,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
       }
       if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
-        const tasks = await addTaskFromCaseTemplates(caseTemplates, container);
+        const tasks = await addTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
         bundle.objects.push(...tasks);
       }
       bundle.objects.push(container);
