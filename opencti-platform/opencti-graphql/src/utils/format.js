@@ -239,7 +239,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_PERSONA:
       return stixCyberObservable.persona_name || 'Unknown';
     case ENTITY_SSH_KEY:
-      return stixCyberObservable.fingerprint_md5 || stixCyberObservable.fingerprint_sha256 || stixCyberObservable.key_type || 'Unknown';
+      return stixCyberObservable.fingerprint_sha256 || stixCyberObservable.fingerprint_md5 || stixCyberObservable.key_type || 'Unknown';
     default:
       return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
   }
