@@ -106,6 +106,5 @@ type Mutation {
     draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace @auth(for: [KNOWLEDGE])
     draftWorkspaceValidate(id: ID!): Work @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
     draftWorkspaceDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
-    draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-    draftWorkspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+    draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }

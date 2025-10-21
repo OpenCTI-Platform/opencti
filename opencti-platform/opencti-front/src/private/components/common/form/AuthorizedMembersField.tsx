@@ -55,6 +55,7 @@ interface AuthorizedMembersFieldProps
   isCanUseEnable?: boolean;
   customInfoMessage?: string;
   style?: CSSProperties;
+  isDraftEntity?: boolean;
 }
 
 // Type of data for internal form, not exposed to others.
@@ -95,12 +96,14 @@ const AuthorizedMembersField = ({
   isCanUseEnable = false,
   customInfoMessage,
   style,
+  isDraftEntity,
 }: AuthorizedMembersFieldProps) => {
   const { t_i18n } = useFormatter();
   const { setFieldValue } = form;
   const { name, value } = field;
   const { me } = useAuth();
   const draftContext = useDraftContext();
+  const isDisabledInDraft = !!draftContext && !isDraftEntity; // Disable if in draft mode and not the draft entity itself
   const { isFeatureEnable } = useHelper();
   const featureFlagAccessRestriction = isFeatureEnable('ACCESS_RESTRICTION_CAN_USE');
 
@@ -356,7 +359,7 @@ const AuthorizedMembersField = ({
             {(!hideInfo && !!accessInfoMessage) && (
               <Alert severity="info">{accessInfoMessage}</Alert>
             )}
-            {!!draftContext && (
+            {isDisabledInDraft && (
               <Alert style={{ marginTop: 15 }} severity="warning">
                 {t_i18n('Not available in draft')}
               </Alert>
@@ -372,7 +375,7 @@ const AuthorizedMembersField = ({
                 type="checkbox"
                 name="applyAccesses"
                 label={t_i18n('Activate access restriction')}
-                disabled={!!draftContext}
+                disabled={isDisabledInDraft}
                 onChange={(_: string, val: string) => {
                   changeApplyAccesses(val === 'true', resetForm, setField);
                 }}

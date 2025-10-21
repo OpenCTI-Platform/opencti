@@ -9789,8 +9789,7 @@ type Mutation {
   draftWorkspaceAdd(input: DraftWorkspaceAddInput!): DraftWorkspace
   draftWorkspaceValidate(id: ID!): Work
   draftWorkspaceDelete(id: ID!): ID
-  draftWorkspaceFieldPatch(id: ID!, input: [EditInput!]!): DraftWorkspace
-  draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]!): DraftWorkspace
+  draftWorkspaceEditAuthorizedMembers(id: ID!, input: [MemberAccessInput!]): DraftWorkspace
   fintelTemplateAdd(input: FintelTemplateAddInput!): FintelTemplate
   fintelTemplateDelete(id: ID!): ID
   fintelTemplateFieldPatch(id: ID!, input: [EditInput!]!): FintelTemplate

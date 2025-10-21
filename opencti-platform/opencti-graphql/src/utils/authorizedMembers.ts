@@ -149,8 +149,12 @@ export const editAuthorizedMembers = async (
     busTopicKey?: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
   },
 ) => {
-  if (getDraftContext(context, user)) throw UnsupportedError('Cannot edit authorized members in draft');
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
+
+  // Allow authorized members edition only on draft type but not for other entity types in draft
+  const draftId = getDraftContext(context, user);
+  if (draftId && draftId !== entityId) throw UnsupportedError('Cannot edit authorized members in draft');
+
   let restricted_members: { id: string, access_right: string, groups_restriction_ids: string[] | null | undefined }[] | null = null;
 
   if (input) {

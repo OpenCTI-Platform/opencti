@@ -346,6 +346,8 @@
   "Authentication type": "验证类型",
   "Author": "作者",
   "Author (organization)": "作者（组织）",
+  "Authorized members": "授权成员",
+  "Authorized members successfully updated": "授权成员成功更新",
   "Authorized_members": "访问限制",
   "auto": "自动",
   "Auto collapse submenus in left navigation": "自动折叠左侧导航中的子菜单",
