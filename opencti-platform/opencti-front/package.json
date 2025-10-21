@@ -88,7 +88,7 @@
     "pdfmake": "0.2.20",
     "prop-types": "15.8.1",
     "qrcode": "1.5.4",
-    "ramda": "0.31.3",
+    "ramda": "0.32.0",
     "react": "19.2.0",
     "react-apexcharts": "1.7.0",
     "react-color": "2.19.3",
