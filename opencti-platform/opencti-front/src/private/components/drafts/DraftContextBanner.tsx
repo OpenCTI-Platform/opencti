@@ -24,8 +24,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import Transition from '../../../components/Transition';
 import { TEN_SECONDS } from '../../../utils/Time';
 import ErrorNotFound from '../../../components/ErrorNotFound';
-import { authorizedMembersToOptions } from '../../../utils/authorizedMembers';
-import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import { useGetCurrentUserAccessRight, authorizedMembersToOptions } from '../../../utils/authorizedMembers';
 
 const interval$ = interval(TEN_SECONDS * 3);
 

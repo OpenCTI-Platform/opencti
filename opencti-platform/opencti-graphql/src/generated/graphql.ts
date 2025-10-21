@@ -15597,18 +15597,6 @@ export type MutationDraftWorkspaceDeleteArgs = {
 
 export type MutationDraftWorkspaceEditAuthorizedMembersArgs = {
   id: Scalars['ID']['input'];
-  input: Array<MemberAccessInput>;
-};
-
-
-export type MutationDraftWorkspaceFieldPatchArgs = {
-  id: Scalars['ID']['input'];
-  input: Array<EditInput>;
-};
-
-
-export type MutationDraftWorkspaceEditAuthorizedMembersArgs = {
-  id: Scalars['ID']['input'];
   input?: InputMaybe<Array<MemberAccessInput>>;
 };
 
