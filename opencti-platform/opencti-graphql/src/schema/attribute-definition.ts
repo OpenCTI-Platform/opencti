@@ -287,6 +287,22 @@ export const authorizedAuthorities: AttributeDefinition = {
   isFilterable: false,
 };
 
+export const metrics: AttributeDefinition = {
+  name: 'metrics',
+  label: 'Entity metrics',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  isFilterable: false,
+  mappings: [
+    { name: 'name', label: 'Metric name', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+    { name: 'value', label: 'Metric value', type: 'numeric', precision: 'float', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+  ]
+};
+
 // -- ENTITY TYPE --
 
 export const parentTypes: AttributeDefinition = {
@@ -483,6 +499,17 @@ export const createdAt: AttributeDefinition = {
 export const updatedAt: AttributeDefinition = {
   name: 'updated_at',
   label: 'Modification date',
+  type: 'date',
+  mandatoryType: 'internal',
+  update: false,
+  editDefault: false,
+  multiple: false,
+  upsert: false,
+  isFilterable: true,
+};
+export const refreshedAt: AttributeDefinition = {
+  name: 'refreshed_at',
+  label: 'Freshness date',
   type: 'date',
   mandatoryType: 'internal',
   update: false,

@@ -7,6 +7,7 @@ import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCat
 import { IngestionConnector } from '@components/data/IngestionCatalog';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import { getConnectorMetadata } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
@@ -26,52 +27,79 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
   const connectorMetadata = getConnectorMetadata(connector.container_type, t_i18n);
 
   return (
-    <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: theme.spacing(2) }}>
-        <div style={{ display: 'flex', gap: 20 }}>
-          <img style={{ height: 70, width: 70, objectFit: 'cover', borderRadius: 4 }} src={connector.logo} alt={connector.title} />
-          <div>
-            <div style={{ display: 'flex', gap: 20 }}>
-              <Typography variant="h1" style={{ fontSize: 30, textTransform: 'uppercase' }}>{connector.title}</Typography>
-              {
-                connector.verified && (
-                  <ItemBoolean
-                    status={true}
-                    label={
-                      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-                        <VerifiedOutlined color="success" fontSize="small" />
-                        {t_i18n('Verified')}
-                      </div>
-                    }
-                  />
-                )
-              }
-            </div>
-            <div style={{ display: 'flex' }}>
-              <IngestionCatalogChip
-                isInlist
-                label={connectorMetadata.label}
-                color={connectorMetadata.color}
-              />
-              {connector.use_cases.map((useCase: string) => <IngestionCatalogChip key={useCase} label={useCase} isInlist />)}
-            </div>
-          </div>
-        </div>
+    <Stack
+      direction="row"
+      justifyContent="space-between"
+    >
+      <Stack direction="row" gap={2}>
+        <img
+          src={connector.logo}
+          alt={connector.title}
+          style={{
+            height: 96,
+            width: 96,
+            objectFit: 'cover',
+            borderRadius: 4,
+          }}
+        />
 
-        <div>
-          <Security needs={[INGESTION_SETINGESTIONS]}>
+        <Stack gap={1}>
+          <Stack direction="row" gap={2} alignItems="center">
+            <Typography
+              variant="h1"
+              sx={{
+                fontWeight: 800,
+                fontSize: 30,
+                opacity: 0.9,
+                marginBottom: 0,
+                textTransform: 'uppercase',
+              }}
+            >
+              {connector.title}
+            </Typography>
             {
-              isEnterpriseEdition ? (
-                <Button variant="contained" onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
-              ) : (
-                <EnterpriseEditionButton title="Deploy" />
+              connector.verified && (
+                <ItemBoolean
+                  status
+                  label={
+                    <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
+                      <VerifiedOutlined color="success" fontSize="small" />
+                      {t_i18n('Verified')}
+                    </Stack>
+                  }
+                />
               )
             }
-          </Security>
-        </div>
+          </Stack>
 
+          <Stack direction="row">
+            <IngestionCatalogChip
+              isInlist
+              label={connectorMetadata.label}
+              color={connectorMetadata.color}
+            />
+
+            {
+              connector.use_cases.map((useCase: string) => (
+                <IngestionCatalogChip key={useCase} label={useCase} isInlist color="primary" />
+              ))
+            }
+          </Stack>
+        </Stack>
+      </Stack>
+
+      <div>
+        <Security needs={[INGESTION_SETINGESTIONS]}>
+          {
+            isEnterpriseEdition ? (
+              <Button variant="contained" onClick={onClickDeploy} style={{ marginLeft: theme.spacing(1) }}>{t_i18n('Deploy')}</Button>
+            ) : (
+              <EnterpriseEditionButton title="Deploy" />
+            )
+          }
+        </Security>
       </div>
-    </>
+    </Stack>
   );
 };
 

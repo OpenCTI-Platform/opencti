@@ -19,7 +19,7 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import ItemIcon from '../../../../components/ItemIcon';
 import PageContainer from '../../../../components/PageContainer';
-import AlertInfo from '../../../../components/AlertInfo';
+import Alert from '../../../../components/Alert';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
@@ -45,7 +45,7 @@ const fintelDesignsQuery = graphql`
 `;
 
 export const fintelDesignsFragment = graphql`
-  fragment FintelDesignsLines_data on Query 
+  fragment FintelDesignsLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
@@ -169,7 +169,7 @@ const FintelDesigns = () => {
           <EnterpriseEdition feature="Fintel design" />
         ) : (
           <>
-            <AlertInfo
+            <Alert
               content={t_i18n('If no design configuration is detected, the default settings will be applied.')}
             />
             {queryRef && (
@@ -179,7 +179,7 @@ const FintelDesigns = () => {
               storageKey={LOCAL_STORAGE_KEY}
               initialValues={initialValues}
               toolbarFilters={contextFilters}
-              useComputeLink={getRedirectionLink}
+              getComputeLink={getRedirectionLink}
               lineFragment={fintelDesignsLineFragment}
               disableLineSelection
               preloadedPaginationProps={preloadedPaginationProps}

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState, KeyboardEvent } from 'react';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { buildDate } from '../../../../utils/Time';
+import { buildDate, dateFiltersValueForDisplay } from '../../../../utils/Time';
 
 interface FilterDateProps {
   defaultHandleAddFilter: (
@@ -26,7 +26,7 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
   filterLabel,
   filterValue,
 }) => {
-  const [dateState, setDateState] = useState<Date | null>(filterValue ? new Date(filterValue) : null);
+  const [dateState, setDateState] = useState<Date | null>(filterValue ? new Date(dateFiltersValueForDisplay(filterValue, operator)) : null);
 
   const findFilterFromKey = (filters: {
     key: string,

@@ -20,12 +20,14 @@ const ignoredAttributes = [
   'created_at',
   'x_opencti_score',
   'updated_at',
+  'refreshed_at',
   'observable_value',
   'indicators',
   'importFiles',
   'startup_info',
   'creator_id',
   'opinions_metrics',
+  'metrics',
 ];
 
 const workbenchAttributes = [
@@ -73,6 +75,7 @@ const ignoredAttributesInDashboards = [
   'created_at',
   'modified',
   'updated_at',
+  'refreshed_at',
   'internal_id',
   'standard_id',
   'published',
@@ -213,10 +216,15 @@ export const aliasedTypes = [
 
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
-  const { sdos, scos } = useAuth().schema;
+  const { settings, schema } = useAuth();
+
+  const { metrics_definition } = settings;
+
+  const { sdos, scos } = schema;
   const stixDomainObjectTypes = sdos.map((sdo) => sdo.id);
   const stixCyberObservableTypes = scos.map((sco) => sco.id);
   const stixCoreObjectTypes = stixDomainObjectTypes.concat(stixCyberObservableTypes);
+
   return {
     ignoredAttributes,
     workbenchAttributes,
@@ -237,6 +245,7 @@ const useAttributes = () => {
     containerTypes,
     typesWithFintelTemplates,
     aliasedTypes,
+    metricsDefinition: metrics_definition,
   };
 };
 

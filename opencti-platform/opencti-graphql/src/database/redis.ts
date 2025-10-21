@@ -911,6 +911,11 @@ export const redisUpdateActionExpectation = async (user: AuthUser, workId: strin
   });
   return workId;
 };
+export const redisInitializeWork = async (workId: string) => {
+  await redisTx(getClientBase(), async (tx) => {
+    await updateObjectRaw(tx, workId, { is_initialized: true });
+  });
+};
 // endregion
 
 // region cluster handling

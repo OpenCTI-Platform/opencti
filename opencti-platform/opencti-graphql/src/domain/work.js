@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { elDeleteInstances, elIndex, elLoadById, elPaginate, elRawDeleteByQuery, elUpdate, ES_MINIMUM_FIXED_PAGINATION } from '../database/engine';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField, READ_INDEX_HISTORY } from '../database/utils';
-import { isWorkCompleted, redisDeleteWorks, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
+import { isWorkCompleted, redisDeleteWorks, redisGetWork, redisInitializeWork, redisUpdateActionExpectation, redisUpdateWorkFigures } from '../database/redis';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { buildRefRelationKey, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
@@ -33,13 +33,18 @@ export const workToExportFile = (work) => {
   };
 };
 
-const loadWorkById = async (context, user, workId) => {
+export const loadWorkById = async (context, user, workId) => {
   const action = await elLoadById(context, user, workId, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
   return action ? R.assoc('id', workId, action) : action;
 };
 
 export const findById = (context, user, workId) => {
   return loadWorkById(context, user, workId);
+};
+
+export const isWorkAlive = async (_context, _user, workId) => {
+  const redisWork = await redisGetWork(workId);
+  return redisWork?.is_initialized === 'true';
 };
 
 export const findWorkPaginated = (context, user, args = {}) => {
@@ -229,7 +234,12 @@ export const createWork = async (context, user, connector, friendlyName, sourceI
     work.draft_context = draftContext;
   }
   await elIndex(INDEX_HISTORY, work);
-  return loadWorkById(context, user, workId);
+  const createdWork = await loadWorkById(context, user, workId);
+  // If work was created, initialize work on redis
+  if (createdWork) {
+    await redisInitializeWork(createdWork.id);
+  }
+  return createdWork;
 };
 
 const updateWorkTaskToComplete = async (context, user, work) => {
@@ -251,6 +261,12 @@ const updateWorkTaskToComplete = async (context, user, work) => {
 export const reportExpectation = async (context, user, workId, errorData) => {
   const timestamp = now();
   const { isComplete, total } = await redisUpdateWorkFigures(workId);
+  // Ensure that work hasn't been deleted in the meantime
+  const workAlive = await isWorkAlive(context, user, workId);
+  if (!workAlive) {
+    await redisDeleteWorks(workId);
+    return workId;
+  }
   if (isComplete || errorData) {
     const params = { now: timestamp };
     let sourceScript = '';
@@ -300,7 +316,13 @@ export const updateExpectationsNumber = async (context, user, workId, expectatio
   let source = 'ctx._source.updated_at = params.updated_at;';
   source += 'ctx._source["import_expected_number"] = ctx._source["import_expected_number"] + params.import_expected_number;';
   await elUpdate(currentWork._index, workId, { script: { source, lang: 'painless', params } });
-  return redisUpdateActionExpectation(user, workId, expectations);
+  await redisUpdateActionExpectation(user, workId, expectations);
+  // Ensure that work hasn't been deleted in the meantime in case of race condition
+  const workAlive = await isWorkAlive(context, user, workId);
+  if (!workAlive) {
+    await redisDeleteWorks(workId);
+  }
+  return workId;
 };
 
 /**

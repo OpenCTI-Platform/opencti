@@ -22,7 +22,7 @@ import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import type { SseEvent, StreamDataEvent } from '../types/event';
 import type { StixBundle } from '../types/stix-2-1-common';
 import { streamEventId, utcDate } from '../utils/format';
@@ -40,7 +40,7 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
 import { elPaginate } from '../database/engine';
-import { stixLoadById } from '../database/middleware';
+import { stixLoadByFilters, stixLoadById } from '../database/middleware';
 import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-utils';
 import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookExecution';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
@@ -451,29 +451,25 @@ const initPlaybookManager = () => {
               conversionOpts = { ...conversionOpts, after: fromDate };
             }
             const queryOptions = await convertFiltersToQueryOptions(convertedFilters, conversionOpts);
-            const opts = { ...queryOptions, first: PLAYBOOK_CRON_MAX_SIZE };
-            const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts);
-            const elements = result.edges;
-            logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} on ${elements.length} elements`);
-            for (let index = 0; index < elements.length; index += 1) {
-              const { node } = elements[index];
-              const data = await stixLoadById(context, RETENTION_MANAGER_USER, node.internal_id);
-              if (data) {
+            if (cronConfiguration.includeAll) {
+              const opts = { ...queryOptions, };
+              const results = await stixLoadByFilters(context, AUTOMATION_MANAGER_USER, null, opts);
+              if (results && results.length > 0) {
                 try {
-                  const eventId = streamEventId(null, index);
+                  const eventId = streamEventId(null);
                   const nextStep = { component: connector, instance };
                   const bundle: StixBundle = {
                     id: uuidv4(),
                     spec_version: STIX_SPEC_VERSION,
                     type: 'bundle',
-                    objects: [data]
+                    objects: results
                   };
                   await playbookExecutor({
                     eventId,
                     // Basic
                     executionId: uuidv4(),
                     playbookId: playbook.id,
-                    dataInstanceId: data.id,
+                    dataInstanceId: results[0].id,
                     definition: def,
                     // Steps
                     previousStep: null,
@@ -483,7 +479,44 @@ const initPlaybookManager = () => {
                     bundle,
                   });
                 } catch (e) {
-                  logApp.error('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: node.id, manager: 'PLAYBOOK_MANAGER' });
+                  logApp.error('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: results[0].id, manager: 'PLAYBOOK_MANAGER' });
+                }
+              }
+            } else {
+              const opts = { ...queryOptions, first: PLAYBOOK_CRON_MAX_SIZE };
+              const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts);
+              const elements = result.edges;
+              logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} on ${elements.length} elements`);
+              for (let index = 0; index < elements.length; index += 1) {
+                const { node } = elements[index];
+                const data = await stixLoadById(context, RETENTION_MANAGER_USER, node.internal_id);
+                if (data) {
+                  try {
+                    const eventId = streamEventId(null, index);
+                    const nextStep = { component: connector, instance };
+                    const bundle: StixBundle = {
+                      id: uuidv4(),
+                      spec_version: STIX_SPEC_VERSION,
+                      type: 'bundle',
+                      objects: [data]
+                    };
+                    await playbookExecutor({
+                      eventId,
+                      // Basic
+                      executionId: uuidv4(),
+                      playbookId: playbook.id,
+                      dataInstanceId: data.id,
+                      definition: def,
+                      // Steps
+                      previousStep: null,
+                      nextStep,
+                      // Data
+                      previousStepBundle: null,
+                      bundle,
+                    });
+                  } catch (e) {
+                    logApp.error('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: node.id, manager: 'PLAYBOOK_MANAGER' });
+                  }
                 }
               }
             }

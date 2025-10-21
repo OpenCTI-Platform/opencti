@@ -2,12 +2,12 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import * as R from 'ramda';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
-import { defaultColumnsMap } from '../dataTableUtils';
+import { buildMetricsColumns, defaultColumnsMap } from '../dataTableUtils';
 import { DataTableColumn, DataTableProps, DataTableVariant, LocalStorageColumns } from '../dataTableTypes';
 import DataTableHeaders from './DataTableHeaders';
 import { DataTableProvider } from './DataTableContext';
 import {
-  useDataTableComputeLink as defaultComputeLink,
+  useDataTableComputeLink,
   useDataCellHelpers,
   useDataTableFormatter,
   useDataTableLocalStorage,
@@ -17,6 +17,7 @@ import {
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
+import useAttributes from '../../../utils/hooks/useAttributes';
 
 type DataTableComponentProps = Pick<DataTableProps,
 | 'dataColumns'
@@ -39,12 +40,13 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'createButton'
 | 'disableToolBar'
 | 'removeSelectAll'
-| 'useComputeLink'
+| 'getComputeLink'
 | 'selectOnLineClick'
 | 'onLineClick'
 | 'data'
 | 'emptyStateMessage'
-| 'disableLineSelection'>;
+| 'disableLineSelection'
+| 'pageSize'>;
 
 const DataTableComponent = ({
   dataColumns,
@@ -56,7 +58,7 @@ const DataTableComponent = ({
   data,
   redirectionModeEnabled = false,
   useLineData,
-  useComputeLink,
+  getComputeLink,
   settingsMessagesBannerHeight,
   filtersComponent,
   hideHeaders,
@@ -73,18 +75,47 @@ const DataTableComponent = ({
   selectOnLineClick,
   onLineClick,
   emptyStateMessage,
+  pageSize,
 }: DataTableComponentProps) => {
+  const { metricsDefinition } = useAttributes();
+
+  const defaultComputeLink = useDataTableComputeLink();
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
 
   const paginationLocalStorage = useDataTablePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
   const {
-    viewStorage: { pageSize },
+    viewStorage: { pageSize: viewStoragePageSize },
     helpers,
   } = paginationLocalStorage;
 
+  const getMetricsColumns = () => {
+    if (!data || !metricsDefinition || !Array.isArray(data)) return {};
+
+    const entityTypes: string[] = [];
+    for (const item of data) {
+      if (item.entity_type) {
+        if (!entityTypes.includes(item.entity_type)) {
+          entityTypes.push(item.entity_type);
+        }
+      }
+    }
+
+    const allMetrics: Record<string, DataTableColumn> = {};
+    for (const entityType of entityTypes) {
+      const metricsForType = buildMetricsColumns(entityType, metricsDefinition);
+      Object.assign(allMetrics, metricsForType);
+    }
+
+    return allMetrics;
+  };
+
+  const metricsColumns = getMetricsColumns();
+
   const buildColumns = (withLocalStorage = true) => {
-    const dataColumnsKeys = Object.keys(dataColumns);
+    const allDataColumns = { ...dataColumns, ...metricsColumns };
+
+    const dataColumnsKeys = Object.keys(allDataColumns);
     const localStorageColumnsKeys = Object.keys(localStorageColumns)
       .filter((key) => key !== 'select' && key !== 'navigate' && key !== 'icon');
 
@@ -95,6 +126,11 @@ const DataTableComponent = ({
     // Only use localStorage if order matches and we are allowed to
     const useLocalStorage = isOrderSame && withLocalStorage;
 
+    const extendedColumnsMap = new Map(defaultColumnsMap);
+    Object.entries(metricsColumns).forEach(([key, value]) => {
+      extendedColumnsMap.set(key, value);
+    });
+
     return [
       // Checkbox if necessary
       ...(!disableLineSelection ? [{ id: 'select', visible: true } as DataTableColumn] : []),
@@ -103,9 +139,9 @@ const DataTableComponent = ({
       // Our real columns
       ...Object.entries(dataColumns).map(([key, column], index) => {
         const currentColumn = localStorageColumns?.[key];
-        const percentWidth = column.percentWidth ?? defaultColumnsMap.get(key)?.percentWidth;
+        const percentWidth = column.percentWidth ?? extendedColumnsMap.get(key)?.percentWidth;
 
-        return R.mergeDeepRight(defaultColumnsMap.get(key) as DataTableColumn, {
+        return R.mergeDeepRight(extendedColumnsMap.get(key) as DataTableColumn, {
           ...column,
           // Override column config with what we have in local storage
           order: useLocalStorage && currentColumn?.index ? currentColumn?.index : index,
@@ -149,7 +185,17 @@ const DataTableComponent = ({
   // QUERY PART
   const [page, setPage] = useState<number>(1);
   const defaultPageSize = variant === DataTableVariant.default ? 25 : 100;
-  const currentPageSize = pageSize ? Number.parseInt(pageSize, 10) : defaultPageSize;
+
+  let currentPageSize = 0;
+
+  if (pageSize) {
+    currentPageSize = Number.parseInt(pageSize, 10);
+  } else if (viewStoragePageSize) {
+    currentPageSize = Number.parseInt(viewStoragePageSize, 10);
+  } else {
+    currentPageSize = defaultPageSize;
+  }
+
   const pageStart = useMemo(() => {
     return page ? (page - 1) * currentPageSize : 0;
   }, [page, currentPageSize]);
@@ -203,7 +249,7 @@ const DataTableComponent = ({
         data,
         useDataCellHelpers: useDataCellHelpers(helpers, variant),
         useDataTableToggle: useDataTableToggle(storageKey),
-        useComputeLink: useComputeLink ?? defaultComputeLink,
+        getComputeLink: getComputeLink ?? defaultComputeLink,
         useDataTableColumnsLocalStorage: columnsLocalStorage,
         useDataTablePaginationLocalStorage: paginationLocalStorage,
         onAddFilter: (id) => helpers.handleAddFilterWithEmptyValue(getDefaultFilterObject(id)),

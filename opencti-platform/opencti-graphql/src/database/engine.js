@@ -221,6 +221,7 @@ import { RELATION_SAMPLE } from '../modules/malwareAnalysis/malwareAnalysis-type
 import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { asyncFilter, asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { isMetricsName } from '../modules/metrics/metrics-utils';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -2816,6 +2817,18 @@ const adaptFilterToPirFilterKeys = async (context, user, filterKey, filter) => {
   return { newFilter, newFilterGroup: undefined };
 };
 
+const adaptFilterForMetricsFilterKeys = async (filter) => {
+  const newFilter = {
+    key: ['metrics'],
+    mode: 'and',
+    nested: [
+      { key: 'name', values: [filter.key], operator: 'eq' },
+      { key: 'value', values: filter.values, operator: filter.operator, mode: filter.mode },
+    ]
+  };
+  return { newFilter, newFilterGroup: undefined };
+};
+
 const adaptFilterToComputedReliabilityFilterKey = async (context, user, filter) => {
   const { key, operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
@@ -3251,6 +3264,11 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         } else {
           finalFilters.push(filter); // nothing to modify
         }
+      }
+
+      if (isMetricsName(filterKey)) {
+        const { newFilter } = await adaptFilterForMetricsFilterKeys(filter);
+        finalFilters.push(newFilter);
       }
     } else if (arrayKeys.some((filterKey) => isObjectAttribute(filterKey)) && !arrayKeys.some((filterKey) => filterKey === 'connections')) {
       if (arrayKeys.length > 1) {
@@ -4205,6 +4223,10 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
               source += 'ctx._source[\'modified\'] = params.updated_at;';
             }
           }
+          // freshness of an entity
+          if (isUpdatedAtObject(sideType)) {
+            source += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
+          }
           // Remove the pir information concerning the Pir in case of in-pir rel deletion
           if (relationType === RELATION_IN_PIR && entityPirInformation) {
             source += `
@@ -4213,9 +4235,6 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
               }
             `;
           }
-          // if (isStixRelationship(relationType)) {
-          //   source += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
-          // }
           const script = { source, params: { rel_key, cleanupIds, updated_at: now() } };
           updates.push([
             { update: { _index: fromIndex, _id: elId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
@@ -4810,8 +4829,10 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         } else {
           script += `ctx._source['${field}'].addAll(params['${field}']);`;
         }
-        const fromSide = R.find((e) => e.side === 'from', t.elements);
+        const fromSide = t.elements.find((e) => e.side === 'from');
+        const toSide = t.elements.find((e) => e.side === 'to');
         if (fromSide && isStixRefRelationship(t.relation)) {
+          // updated_at and modified only updated for ref relationships
           if (isUpdatedAtObject(fromSide.type)) {
             script += 'ctx._source[\'updated_at\'] = params.updated_at;';
           }
@@ -4819,9 +4840,10 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
             script += 'ctx._source[\'modified\'] = params.updated_at;';
           }
         }
-        // if (isStixRelationship(t.relation)) {
-        //   script += '; ctx._source[\'refreshed_at\'] = params.updated_at';
-        // }
+        // freshness of an entity updated for any relationship
+        if ((fromSide && isUpdatedAtObject(fromSide.type)) || (toSide && isUpdatedAtObject(toSide.type))) {
+          script += 'ctx._source[\'refreshed_at\'] = params.updated_at;';
+        }
         // Add Pir information for in-pir relationships
         if (t.relation === RELATION_IN_PIR) {
           // remove pir_information concerning the pir and add the new pir_information

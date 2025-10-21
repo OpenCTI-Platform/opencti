@@ -1,6 +1,7 @@
 import { INPUT_LABELS } from '../../schema/general';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
+import { isMetricsName } from '../../modules/metrics/metrics-utils';
 
 // Resolved-Filters
 // These require special handling when comparing to a stix object as they need to be resolved before comparison
@@ -133,7 +134,8 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
 export const isComplexConversionFilterKey = (filterKey: string) => {
   return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey)
     || filterKey.startsWith(PIR_SCORE_FILTER_PREFIX)
-    || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX);
+    || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
+    || isMetricsName(filterKey);
 };
 
 // list of the special filtering keys

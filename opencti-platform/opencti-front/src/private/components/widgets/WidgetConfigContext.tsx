@@ -3,11 +3,12 @@ import { FintelTemplateWidget } from '@components/settings/sub_types/fintel_temp
 import type { Widget, WidgetContext, WidgetDataSelection, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
+import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 
 export interface WidgetConfigType {
   fintelVariableName: string | null;
   widget: {
-    type: string;
+    type: WidgetVisualizationTypes | '';
     perspective: WidgetPerspective | null;
     dataSelection: WidgetDataSelection[];
     parameters: WidgetParameters;
@@ -17,27 +18,32 @@ export interface WidgetConfigType {
 interface WidgetConfigContextProps {
   context: WidgetContext;
   disabledSteps: number[];
-  fintelWidgets?: FintelTemplateWidget[]
-  fintelEntityType?: string
-  fintelEditorValue?: string
+  fintelWidgets?: FintelTemplateWidget[];
+  fintelEntityType?: string;
+  fintelEditorValue?: string;
   step: number;
   setStep: Dispatch<React.SetStateAction<number>>;
   config: WidgetConfigType;
   setConfigWidget: (widget: WidgetConfigType['widget']) => void;
-  setConfigVariableName: (variableName: WidgetConfigType['fintelVariableName']) => void;
+  setConfigVariableName: (
+    variableName: WidgetConfigType['fintelVariableName'],
+  ) => void;
   setDataSelection: (dataSelection: WidgetDataSelection[]) => void;
-  setDataSelectionWithIndex: (selection: WidgetDataSelection, index: number) => void;
+  setDataSelectionWithIndex: (
+    selection: WidgetDataSelection,
+    index: number,
+  ) => void;
 }
 
 const WidgetConfigContext = createContext<WidgetConfigContextProps | undefined>(undefined);
 
 interface WidgetConfigProviderProps {
-  children: ReactNode
-  context: WidgetContext
-  disabledSteps: number[]
-  fintelWidgets: FintelTemplateWidget[] | undefined
-  fintelEntityType: string | undefined
-  fintelEditorValue: string | undefined
+  children: ReactNode;
+  context: WidgetContext;
+  disabledSteps: number[];
+  fintelWidgets: FintelTemplateWidget[] | undefined;
+  fintelEntityType: string | undefined;
+  fintelEditorValue: string | undefined;
   initialWidget: Widget | undefined;
   initialVariableName: string | undefined;
   open: boolean;
@@ -56,7 +62,7 @@ const buildConfig = (
   return {
     fintelVariableName: varName ?? null,
     widget: {
-      type,
+      type: type as WidgetVisualizationTypes | '',
       perspective: w?.perspective ?? null,
       parameters: w?.parameters ?? {},
       dataSelection: w?.dataSelection ?? [{

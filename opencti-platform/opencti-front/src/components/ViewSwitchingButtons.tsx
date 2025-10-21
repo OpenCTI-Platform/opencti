@@ -4,8 +4,8 @@ import Tooltip from '@mui/material/Tooltip';
 import { LibraryBooksOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import { FormatListGroup, Group, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import { ToggleButtonGroup } from '@mui/material';
-import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import FiligranIcon from '@components/common/FiligranIcon';
+import { ListViewIcon, SublistViewIcon } from 'filigran-icon';
 import { useFormatter } from './i18n';
 
 interface ViewSwitchingButtonsProps {
@@ -93,7 +93,6 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         <ToggleButton
           value="subEntityLines"
           aria-label="subEntityLines"
-          style={{ height: 36 }}
         >
           <FiligranIcon icon={SublistViewIcon} color="secondary" size="small" />
         </ToggleButton>

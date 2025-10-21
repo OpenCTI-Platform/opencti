@@ -210,6 +210,7 @@ export const connectorConfig = (id, listen_callback_uri = undefined) => ({
   listen_routing: listenRouting(id),
   listen_exchange: CONNECTOR_EXCHANGE,
   listen_callback_uri,
+  dead_letter_routing: listenRouting(CONNECTOR_QUEUE_BUNDLES_TOO_LARGE.id),
 });
 
 export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
@@ -264,10 +265,11 @@ const CONNECTOR_QUEUE_PLAYBOOK = { id: 'playbook', name: 'Internal playbook mana
 const CONNECTOR_QUEUE_SYNC = { id: 'sync', name: 'Internal sync manager', type: 'internal', scope: 'sync' };
 /** @deprecated [>=6.3 & <6.6]. Remove and add migration to remove the queues. */
 const DEPRECATED_INTERNAL_QUEUES = [CONNECTOR_QUEUE_PLAYBOOK, CONNECTOR_QUEUE_SYNC];
+const CONNECTOR_QUEUE_BUNDLES_TOO_LARGE = { id: 'too-large-bundle', name: 'Bundle too large for ingestion', type: 'internal', scope: 'dead letter' };
 // endregion
 export const getInternalQueues = () => {
   const backgroundTaskConnectorQueues = getInternalBackgroundTaskQueues();
-  return [...DEPRECATED_INTERNAL_QUEUES, ...backgroundTaskConnectorQueues];
+  return [CONNECTOR_QUEUE_BUNDLES_TOO_LARGE, ...DEPRECATED_INTERNAL_QUEUES, ...backgroundTaskConnectorQueues];
 };
 
 export const initializeInternalQueues = async () => {

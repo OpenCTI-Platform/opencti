@@ -1,0 +1,13 @@
+type Metric {
+    name: ID!
+    value: Float!
+}
+
+input PatchMetricInput {
+    name: String!
+    value: Float!
+}
+
+type Mutation {
+  metricPatch(id: ID!, input: PatchMetricInput!): BasicObject @auth(for: [KNOWLEDGE_KNUPDATE])
+}

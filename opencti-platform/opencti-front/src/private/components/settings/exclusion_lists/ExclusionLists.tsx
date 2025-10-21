@@ -11,7 +11,7 @@ import { ExclusionListsStatusQuery } from './__generated__/ExclusionListsStatusQ
 import ExclusionListCreation from './ExclusionListCreation';
 import CustomizationMenu from '../CustomizationMenu';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
-import AlertInfo from '../../../../components/AlertInfo';
+import Alert from '../../../../components/Alert';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemEntityType from '../../../../components/ItemEntityType';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -226,7 +226,7 @@ const ExclusionLists = () => {
           elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Exclusion Lists'), current: true }]}
         />
         <ExclusionListsStatus refetch={refetchStatus} queryRef={queryRefStatus} loadQuery={loadQueryStatus} />
-        <AlertInfo
+        <Alert
           content={t_i18n('Exclusion lists can be used to prevent the import of indicators considered benign and legitimate. Exclusion lists only apply to indicators with a STIX pattern.')}
         />
         {queryRef && (

@@ -368,6 +368,14 @@ const UserEditionOverview = createFragmentContainer(
             }
           }
         }
+        objectOrganization(first: $organizationsCount, orderBy: $organizationsOrderBy, orderMode: $organizationsOrderMode) {
+          edges {
+            node {
+              id  
+              name
+            }
+          }
+        }
         groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
           edges {
             node {

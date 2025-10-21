@@ -3,7 +3,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { ENTITY_TYPE_DELETE_OPERATION, type StixDeleteOperation, type StoreEntityDeleteOperation } from './deleteOperation-types';
 import convertDeleteOperationToStix from './deleteOperation-converter';
-import { confidence, createdAt, creators, updatedAt } from '../../schema/attribute-definition';
+import { confidence, createdAt, creators, refreshedAt, updatedAt } from '../../schema/attribute-definition';
 import { objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 
 const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, StixDeleteOperation> = {
@@ -20,6 +20,7 @@ const DELETE_OPERATION_DEFINITION: ModuleDefinition<StoreEntityDeleteOperation, 
   },
   attributes: [
     { ...updatedAt, isFilterable: false },
+    { ...refreshedAt, isFilterable: false },
     { ...creators, label: 'Deleted by' },
     { ...createdAt, label: 'Deletion date' },
     confidence,

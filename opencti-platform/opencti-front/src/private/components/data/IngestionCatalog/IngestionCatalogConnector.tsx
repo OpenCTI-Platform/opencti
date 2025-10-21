@@ -74,13 +74,14 @@ const IngestionCatalogConnectorComponent = ({
       <Stack gap={2}>
         <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
 
-        <IngestionCatalogConnectorHeader
-          connector={connector}
-          isEnterpriseEdition={isEnterpriseEdition}
-          onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasRegisteredManagers, deploymentCount)}
-        />
-
-        <IngestionCatalogConnectorOverview connector={connector} />
+        <Stack gap={4}>
+          <IngestionCatalogConnectorHeader
+            connector={connector}
+            isEnterpriseEdition={isEnterpriseEdition}
+            onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasRegisteredManagers, deploymentCount)}
+          />
+          <IngestionCatalogConnectorOverview connector={connector} />
+        </Stack>
       </Stack>
     </>
   );

@@ -37,6 +37,11 @@ interface StixFileExtension {
   data?: string | undefined;
 }
 
+interface StixMetric {
+  name: string
+  value: float
+}
+
 interface StixOpenctiExtension {
   extension_type : 'property-extension' | 'new-sdo' | 'new-sro'
   id: v4 | undefined
@@ -59,6 +64,7 @@ interface StixOpenctiExtension {
   created_by_ref_id: string
   converter_csv?: string | undefined
   opencti_operation?: string
+  metrics: Array<StixMetric>
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {

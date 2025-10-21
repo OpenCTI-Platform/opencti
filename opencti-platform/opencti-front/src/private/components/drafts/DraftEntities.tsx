@@ -13,7 +13,7 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../..
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import { computeLink } from '../../../utils/Entity';
+import useComputeLink from '../../../utils/hooks/useComputeLink';
 
 const draftEntitiesLineFragment = graphql`
     fragment DraftEntities_node on StixCoreObject {
@@ -128,6 +128,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
   excludedEntitiesType,
   isReadOnly,
 }) => {
+  const computeLink = useComputeLink();
   const { draftId } = useParams() as { draftId: string };
   const [open, setOpen] = useState(false);
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
@@ -280,7 +281,7 @@ const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
           initialValues={initialValues}
           toolbarFilters={toolbarFilters}
           preloadedPaginationProps={preloadedPaginationProps}
-          useComputeLink={getRedirectionLink}
+          getComputeLink={getRedirectionLink}
           lineFragment={draftEntitiesLineFragment}
           entityTypes={[entitiesType]}
           removeFromDraftEnabled

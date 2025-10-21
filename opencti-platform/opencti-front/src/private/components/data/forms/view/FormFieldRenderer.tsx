@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Field } from 'formik';
+import { Field, FieldInputProps, FormikProps } from 'formik';
 import Chip from '@mui/material/Chip';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
-import { CloudUpload } from '@mui/icons-material';
+import { CloudUploadOutlined } from '@mui/icons-material';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
@@ -98,7 +98,20 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
   const { t_i18n } = useFormatter();
 
   const fieldName = fieldPrefix ? `${fieldPrefix}.${field.name}` : field.name;
-  const fieldValue = values[field.name] || '';
+  // Get the nested value for prefixed fields
+  const getNestedValue = (obj: Record<string, unknown>, path: string): unknown => {
+    const keys = path.split('.');
+    let current: unknown = obj;
+    for (const key of keys) {
+      if (current && typeof current === 'object' && key in current) {
+        current = (current as Record<string, unknown>)[key];
+      } else {
+        return undefined;
+      }
+    }
+    return current;
+  };
+  const fieldValue = fieldPrefix ? getNestedValue(values, fieldName) : (values[field.name] || '');
   const displayLabel = field.label || field.attributeMapping.attributeName;
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,28 +207,40 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
 
       case 'checkbox':
         return (
-          <FormControlLabel
-            control={
-              <Field
-                component={Checkbox}
-                type="checkbox"
-                name={fieldName}
+          <Field name={fieldName}>
+            {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    {...formikField}
+                    checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
+                    onChange={(e) => {
+                      form.setFieldValue(fieldName, e.target.checked);
+                    }}
+                  />
+                }
+                label={displayLabel}
+                style={fieldSpacingContainerStyle}
               />
-          }
-            label={displayLabel}
-            style={fieldSpacingContainerStyle}
-          />
+            )}
+          </Field>
         );
 
       case 'toggle':
         return (
-          <Field
-            component={SwitchField}
-            name={fieldName}
-            label={displayLabel}
-            containerstyle={fieldSpacingContainerStyle}
-            helpertext={field.description}
-          />
+          <Field name={fieldName}>
+            {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
+              <SwitchField
+                label={displayLabel}
+                checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
+                onChange={(value: boolean) => {
+                  form.setFieldValue(fieldName, value);
+                }}
+                containerstyle={fieldSpacingContainerStyle}
+                helpertext={field.description}
+              />
+            )}
+          </Field>
         );
 
       case 'select':
@@ -390,23 +415,23 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
               />
               <label htmlFor={`file-upload-${fieldName}`}>
                 <IconButton color="primary" component="span">
-                  <CloudUpload />
+                  <CloudUploadOutlined />
                 </IconButton>
               </label>
               <span>{t_i18n('Upload files')}</span>
             </div>
-            {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 && (
-            <div className={classes.fileList}>
-              {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
-                <Chip
-                  key={index}
-                  label={file.name}
-                  onDelete={() => handleFileRemove(index)}
-                  className={classes.fileChip}
-                />
-              ))}
-            </div>
-            )}
+            {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 ? (
+              <div className={classes.fileList}>
+                {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
+                  <Chip
+                    key={index}
+                    label={file.name}
+                    onDelete={() => handleFileRemove(index)}
+                    className={classes.fileChip}
+                  />
+                ))}
+              </div>
+            ) : null}
             {field.description && (
             <FormHelperText>{field.description}</FormHelperText>
             )}

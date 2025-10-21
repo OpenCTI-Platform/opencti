@@ -1,6 +1,6 @@
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
 import { schemaAttributesDefinition } from '../../../schema/schema-attributes';
-import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, standardId, updatedAt } from '../../../schema/attribute-definition';
+import { type AttributeDefinition, createdAt, creators, entityType, id, internalId, refreshedAt, standardId, updatedAt } from '../../../schema/attribute-definition';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../schema/stixMetaObject';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../../schema/general';
 import { UPLOAD_STATUS_VALUES } from './document-domain';
@@ -10,9 +10,10 @@ const attributes: Array<AttributeDefinition> = [
   internalId,
   standardId,
   entityType,
-  { ...creators, isFilterable: false } as AttributeDefinition,
-  { ...updatedAt, isFilterable: false } as AttributeDefinition,
-  { ...createdAt, isFilterable: false } as AttributeDefinition,
+  { ...creators, isFilterable: false },
+  { ...updatedAt, isFilterable: false },
+  { ...refreshedAt, isFilterable: false },
+  { ...createdAt, isFilterable: false },
   { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   { name: 'size', label: 'Size', type: 'numeric', precision: 'long', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   { name: 'information', label: 'Information', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },

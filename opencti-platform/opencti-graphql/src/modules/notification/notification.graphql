@@ -54,10 +54,12 @@ type Trigger implements InternalObject & BasicObject {
     standard_id: String!
     entity_type: String!
     parent_types: [String]!
+    metrics:[Metric]
     created: DateTime
     modified: DateTime
     created_at: DateTime
     updated_at: DateTime
+    refreshed_at: DateTime
     name: String!
     description: String
     trigger_type: TriggerType! # live or digest
@@ -135,11 +137,13 @@ type Notification implements InternalObject & BasicObject {
     name: String!
     notification_type: String!
     parent_types: [String]!
+  metrics:[Metric]
     notification_content: [NotificationContent!]!
     is_read: Boolean!
     user_id: String
     created_at: DateTime
     updated_at: DateTime
+    refreshed_at: DateTime
 }
 type NotificationConnection {
     pageInfo: PageInfo!

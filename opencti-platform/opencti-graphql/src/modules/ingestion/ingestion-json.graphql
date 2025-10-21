@@ -19,8 +19,10 @@ type IngestionJson implements InternalObject & BasicObject {
     connector_id: String!
     standard_id: String!
     parent_types: [String]!
+    metrics:[Metric]
     created_at: DateTime
     updated_at: DateTime
+    refreshed_at: DateTime
     name: String!
     description: String
     scheduling_period: String

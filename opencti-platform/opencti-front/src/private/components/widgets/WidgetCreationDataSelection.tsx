@@ -11,8 +11,9 @@ import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import type { WidgetPerspective } from '../../../utils/widget/widget';
-import { getCurrentCategory, getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
+import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
+import Alert from '../../../components/Alert';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   step_entity: {
@@ -85,6 +86,8 @@ const WidgetCreationDataSelection = () => {
     ]);
   };
 
+  const showRelationCountWarning = type && isWidgetUsingRelationsAggregation(type);
+
   return (
     <div style={{ marginTop: 20 }}>
       {Array(dataSelection.length)
@@ -119,18 +122,19 @@ const WidgetCreationDataSelection = () => {
                   value={dataSelection[i].label}
                   onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
                 />
-                {perspective === 'relationships'
-                  && <Tooltip
+                {perspective === 'relationships' && (
+                  <Tooltip
                     title={t_i18n(
                       'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
                     )}
-                     >
+                  >
                     <InformationOutline
                       fontSize="small"
                       color="primary"
                       style={{ marginRight: 5, marginTop: 20 }}
                     />
-                  </Tooltip>}
+                  </Tooltip>
+                )}
               </div>
               <WidgetFilters
                 dataSelection={dataSelection[i]}
@@ -230,6 +234,17 @@ const WidgetCreationDataSelection = () => {
           {t_i18n('Validate')}
         </Button>
       </div>
+      {showRelationCountWarning && (
+        <Alert
+          content={t_i18n(
+            'The amount of results can differ based on the data/relationships, as each occurrence of an inferred relation is counted for this widget.',
+          )}
+          severity="warning"
+          style={{
+            marginTop: 20,
+          }}
+        />
+      )}
     </div>
   );
 };

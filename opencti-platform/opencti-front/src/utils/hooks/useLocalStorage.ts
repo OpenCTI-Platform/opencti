@@ -300,7 +300,7 @@ export const usePaginationLocalStorage = <U>(
       const newValue = (value === '') ? {
         ...viewStorage,
         searchTerm: value,
-        sortBy: storedSortBy,
+        sortBy: storedSortBy === '_score' ? undefined : storedSortBy,
         orderAsc: storedOrderAsc,
       } : {
         ...viewStorage,

@@ -13,6 +13,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics:[Metric]
   # StixObject
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -20,6 +21,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   # inferences
   x_opencti_inferences: [Inference]

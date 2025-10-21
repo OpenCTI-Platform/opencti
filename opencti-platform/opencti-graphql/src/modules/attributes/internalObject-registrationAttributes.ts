@@ -1,5 +1,17 @@
 import * as R from 'ramda';
-import { type AttributeDefinition, authorizedMembers, createdAt, creators, draftChange, draftContext, errors, id, lastEventId, updatedAt } from '../../schema/attribute-definition';
+import {
+  type AttributeDefinition,
+  authorizedMembers,
+  createdAt,
+  creators,
+  draftChange,
+  draftContext,
+  errors,
+  id,
+  lastEventId,
+  refreshedAt,
+  updatedAt
+} from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import {
   ENTITY_TYPE_ACTIVITY,
@@ -145,6 +157,7 @@ const HistoryDefinition: AttributeDefinition[] = [
   },
   { ...creators, isFilterable: false },
   { ...updatedAt, isFilterable: false },
+  { ...refreshedAt, isFilterable: false },
   { ...createdAt, isFilterable: false },
 ];
 

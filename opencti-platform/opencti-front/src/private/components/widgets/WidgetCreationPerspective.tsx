@@ -9,7 +9,7 @@ import React from 'react';
 import { v4 as uuid } from 'uuid';
 import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import { useFormatter } from '../../../components/i18n';
-import { indexedVisualizationTypes } from '../../../utils/widget/widgetUtils';
+import { indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
@@ -55,13 +55,13 @@ const WidgetCreationPerspective = () => {
   };
 
   const getCurrentIsEntities = () => {
-    return indexedVisualizationTypes[type]?.isEntities ?? false;
+    return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isEntities ?? false;
   };
   const getCurrentIsAudits = () => {
-    return (context !== 'fintelTemplate' && indexedVisualizationTypes[type]?.isAudits) ?? false;
+    return (context !== 'fintelTemplate' && indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isAudits) ?? false;
   };
   const getCurrentIsRelationships = () => {
-    return indexedVisualizationTypes[type]?.isRelationships ?? false;
+    return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;
   };
 
   let xs = 12;

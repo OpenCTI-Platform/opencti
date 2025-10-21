@@ -470,23 +470,27 @@ type AiActivity {
   result: String
   trend: String
   updated_at: DateTime
+  refreshed_at: DateTime
 }
 
 type AiSummary {
   result: String
   topics: [String]
   updated_at: DateTime
+  refreshed_at: DateTime
 }
 
 type AiForecast {
   result: String
   confidence: Int
   updated_at: DateTime
+  refreshed_at: DateTime
 }
 
 type AiHistory {
   result: String
   updated_at: DateTime
+  refreshed_at: DateTime
 }
 
 type LogsWorkerConfig {
@@ -1344,6 +1348,7 @@ interface BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
 }
 
 interface InternalObject {
@@ -1389,6 +1394,7 @@ type SettingsMessage {
   activated: Boolean!
   dismissible: Boolean!
   updated_at: DateTime!
+  refreshed_at: DateTime
   color: String
   recipients: [Member!]
 }
@@ -1520,11 +1526,23 @@ type PublicSettings implements ThemeSettings & IntlSettings {
   playground_enabled: Boolean!
 }
 
+type MetricAttributes {
+  attribute: String!
+  name: String!
+  description: String
+}
+
+type MetricDefinition {
+  entity_type: String!
+  metrics: [MetricAttributes!]
+}
+
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
+  metrics: [Metric]
   platform_enterprise_edition: PlatformEE!
   platform_organization: Organization
   platform_title: String
@@ -1579,6 +1597,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   activity_listeners: [Member!]
   otp_mandatory: Boolean
   password_policy_min_length: Int
@@ -1593,6 +1612,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   analytics_google_analytics_v4: String
   playground_enabled: Boolean!
   request_access_enabled: Boolean!
+  metrics_definition: [MetricDefinition!]
   editContext: [EditUserContext!]
   xtm_hub_token: String
   xtm_hub_registration_user_id: String
@@ -1646,6 +1666,7 @@ type Group implements InternalObject & BasicObject {
   entity_type: String!
   auto_integration_assignation: [String]!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   default_assignation: Boolean
   no_creators: Boolean
@@ -1656,6 +1677,7 @@ type Group implements InternalObject & BasicObject {
   members(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, search: String): UserConnection
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): RoleConnection
   allowed_marking: [MarkingDefinition!]
   default_marking: [DefaultMarking!]
@@ -1838,6 +1860,7 @@ type User implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   user_email: String!
   api_token: String!
   personal_notifiers: [Notifier!]
@@ -1865,6 +1888,7 @@ type User implements BasicObject & InternalObject {
   objectAssignedOrganization(first: Int, orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   sessions: [SessionDetail]
   default_time_field: String
   account_status: String!
@@ -1883,6 +1907,7 @@ type MeUser implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
+  metrics: [Metric]
   user_email: String!
   name: String!
   description: String
@@ -2011,10 +2036,12 @@ type Role implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   description: String
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   capabilities: [Capability]
   editContext: [EditUserContext!]
   can_manage_sensitive_config: Boolean
@@ -2042,11 +2069,13 @@ type Capability implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   description: String
   attribute_order: Int
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   editContext: [EditUserContext!]
 }
 
@@ -2228,6 +2257,7 @@ type ConnectorConfig {
   push: String!
   push_routing: String!
   push_exchange: String!
+  dead_letter_routing: String!
 }
 
 type ConnectorMetadata {
@@ -2276,6 +2306,7 @@ type Connector implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   title: String!
   active: Boolean
@@ -2295,6 +2326,7 @@ type Connector implements BasicObject & InternalObject {
   connector_queue_details: ConnectorQueueDetails!
   connector_info: ConnectorInfo
   updated_at: DateTime
+  refreshed_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
   works(status: String): [Work]
@@ -2318,6 +2350,7 @@ type ManagedConnector implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   connector_user_id: ID
   connector_user: User
@@ -2345,6 +2378,7 @@ type ConnectorManager implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   public_key: String!
   last_sync_execution: DateTime
@@ -2419,12 +2453,14 @@ interface StixObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   creators: [Creator!]
   x_opencti_inferences: [Inference]
@@ -2455,11 +2491,13 @@ interface StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   created: DateTime
   modified: DateTime
@@ -2492,12 +2530,14 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
@@ -2560,12 +2600,14 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
@@ -2616,12 +2658,14 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
@@ -2685,12 +2729,14 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
@@ -2766,12 +2812,14 @@ interface StixCoreObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2808,6 +2856,7 @@ enum StixDomainObjectsOrdering {
   modified
   created_at
   updated_at
+  refreshed_at
   published
   valid_from
   valid_until
@@ -2863,12 +2912,14 @@ interface StixDomainObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -2963,12 +3014,14 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -3111,12 +3164,14 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -3223,12 +3278,14 @@ interface Container {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -3297,12 +3354,14 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -3437,12 +3496,14 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -3548,12 +3609,14 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -3681,12 +3744,14 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -3803,12 +3868,14 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -3915,12 +3982,14 @@ interface Identity {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4018,12 +4087,14 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -4133,12 +4204,14 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -4243,12 +4316,14 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -4362,12 +4437,14 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -4474,12 +4551,14 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -4591,12 +4670,14 @@ interface Location {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -4695,12 +4776,14 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -4808,12 +4891,14 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -4916,12 +5001,14 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5022,12 +5109,14 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5137,12 +5226,14 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5261,12 +5352,14 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5339,12 +5432,14 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5463,12 +5558,14 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5574,12 +5671,14 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5780,12 +5879,14 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5895,12 +5996,14 @@ interface StixCyberObservable {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -5939,12 +6042,14 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -5994,12 +6099,14 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6053,12 +6160,14 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6104,12 +6213,14 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6157,12 +6268,14 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6220,12 +6333,14 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6298,12 +6413,14 @@ interface HashedObservable {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   createdBy: Identity
   numberOfConnectedElement: Int!
@@ -6343,12 +6460,14 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6406,12 +6525,14 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6478,12 +6599,14 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6583,12 +6706,14 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6637,12 +6762,14 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6689,12 +6816,14 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6740,12 +6869,14 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6791,12 +6922,14 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6865,12 +6998,14 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -6958,12 +7093,14 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7032,12 +7169,14 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7083,12 +7222,14 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7161,12 +7302,14 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7216,12 +7359,14 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7271,12 +7416,14 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7322,12 +7469,14 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7373,12 +7522,14 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7424,12 +7575,14 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7475,12 +7628,14 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7526,12 +7681,14 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7581,12 +7738,14 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7632,12 +7791,14 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7683,12 +7844,14 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7734,12 +7897,14 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7791,12 +7956,14 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7851,12 +8018,14 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -7904,10 +8073,12 @@ interface BasicRelationship {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   creators: [Creator!]
 }
 
@@ -7916,10 +8087,12 @@ type InternalRelationship implements BasicRelationship {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   from: InternalObject
   to: InternalObject
   creators: [Creator!]
@@ -8014,10 +8187,12 @@ interface StixRelationship {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
@@ -8090,10 +8265,12 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
@@ -8197,10 +8374,12 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
@@ -8298,10 +8477,12 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
@@ -8414,6 +8595,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   work(id: ID!): Work
+  isWorkAlive(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
   runtimeAttributes(first: Int, search: String, orderMode: OrderingMode, attributeName: String!): AttributeConnection
   schemaAttributeNames(elementType: [String]!): AttributeConnection
@@ -9653,6 +9835,7 @@ type Mutation {
   formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
   formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
+  metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -9660,12 +9843,14 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -9766,6 +9951,7 @@ type Catalog implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   name: String!
   description: String!
   contracts: [String!]!
@@ -9796,12 +9982,14 @@ type Language implements BasicObject & StixCoreObject & StixDomainObject & StixO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -9895,12 +10083,14 @@ type Event implements BasicObject & StixCoreObject & StixDomainObject & StixObje
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -10005,12 +10195,14 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -10126,12 +10318,14 @@ type Narrative implements BasicObject & StixCoreObject & StixDomainObject & Stix
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -10289,10 +10483,12 @@ type Trigger implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   created: DateTime
   modified: DateTime
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
   name: String!
   description: String
   trigger_type: TriggerType!
@@ -10377,11 +10573,13 @@ type Notification implements InternalObject & BasicObject {
   name: String!
   notification_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   notification_content: [NotificationContent!]!
   is_read: Boolean!
   user_id: String
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
 }
 
 type NotificationConnection {
@@ -10399,12 +10597,14 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -10503,12 +10703,14 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -10672,6 +10874,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   creators: [Creator!]
   x_opencti_stix_ids: [StixId]
@@ -10679,6 +10882,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   created: DateTime
@@ -10731,12 +10935,14 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -10839,12 +11045,14 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -10947,6 +11155,7 @@ type TaskTemplate implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   created: DateTime
   modified: DateTime
   name: String!
@@ -10985,12 +11194,14 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -11075,6 +11286,7 @@ type CaseTemplate implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   created: DateTime
   modified: DateTime
   name: String!
@@ -11112,12 +11324,14 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -11247,12 +11461,14 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -11379,12 +11595,14 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -11508,12 +11726,14 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -11663,6 +11883,7 @@ type EntitySetting implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   target_type: String!
   platform_entity_files_ref: Boolean
   platform_hidden_type: Boolean
@@ -11675,6 +11896,7 @@ type EntitySetting implements InternalObject & BasicObject {
   availableSettings: [String!]!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   overview_layout_customization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
@@ -11700,6 +11922,7 @@ type Workspace implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   type: String
   name: String!
   description: String
@@ -11708,6 +11931,7 @@ type Workspace implements InternalObject & BasicObject {
   manifest: String
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
   editContext: [EditUserContext!]
   investigated_entities_ids: [String]
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
@@ -11775,12 +11999,14 @@ type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject 
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   x_opencti_inferences: [Inference]
   draftVersion: DraftVersion
   createdBy: Identity
@@ -11904,6 +12130,7 @@ type ManagerConfiguration implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   manager_id: String!
   manager_running: Boolean
   last_run_start_date: DateTime
@@ -11937,6 +12164,7 @@ type Notifier implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   created: DateTime
   modified: DateTime
   name: String!
@@ -11988,12 +12216,14 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -12154,6 +12384,7 @@ type Playbook implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   name: String!
   description: String
   playbook_running: Boolean
@@ -12230,8 +12461,10 @@ type IngestionRss implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
   name: String!
   description: String
   scheduling_period: String
@@ -12297,8 +12530,10 @@ type IngestionTaxii implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
   name: String!
   description: String
   uri: String!
@@ -12358,8 +12593,10 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
   name: String!
   ingestion_running: Boolean
   confidence_to_score: Boolean
@@ -12400,8 +12637,10 @@ type IngestionCsv implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String]!
+  metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
   name: String!
   description: String
   scheduling_period: String
@@ -12504,8 +12743,10 @@ type IngestionJson implements InternalObject & BasicObject {
   connector_id: String!
   standard_id: String!
   parent_types: [String]!
+  metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
+  refreshed_at: DateTime
   name: String!
   description: String
   scheduling_period: String
@@ -12619,6 +12860,7 @@ type IndicatorEdge {
 
 type DecayHistory {
   updated_at: DateTime!
+  refreshed_at: DateTime
   score: Int!
 }
 
@@ -12650,12 +12892,14 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -12762,8 +13006,10 @@ type DecayRule implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   name: String!
   description: String
   order: Int!
@@ -12816,12 +13062,14 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -13026,6 +13274,7 @@ type CsvMapper implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   name: String!
   has_header: Boolean!
   separator: String!
@@ -13224,6 +13473,7 @@ type JsonMapper implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   name: String!
   variables: [JsonMapperVariable!]
   representations: [JsonMapperRepresentation!]!
@@ -13254,6 +13504,7 @@ type PublicDashboard implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   name: String!
   owner: Creator
   description: String
@@ -13402,6 +13653,7 @@ type DeleteOperation implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   objectMarking: [MarkingDefinition!]
   confidence: Int
   created_at: DateTime
@@ -13436,6 +13688,7 @@ type SupportPackage implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   created_at: DateTime!
   package_status: PackageStatus!
   package_url: String
@@ -13484,6 +13737,7 @@ type ExclusionList implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   created_at: DateTime!
   enabled: Boolean!
   exclusion_list_entity_types: [String!]!
@@ -13533,6 +13787,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   name: String!
   created_at: DateTime!
   creators: [Creator!]
@@ -13589,6 +13844,7 @@ type FintelTemplate implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   settings_types: [String!]!
   description: String
@@ -13636,8 +13892,10 @@ type DisseminationList implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   name: String!
   emails: [String!]!
   description: String
@@ -13679,6 +13937,7 @@ type SavedFilter implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   filters: String!
   scope: String!
@@ -13783,8 +14042,10 @@ type Pir implements InternalObject & BasicObject {
   entity_type: String!
   standard_id: String!
   parent_types: [String!]!
+  metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   creators: [Creator!]
   name: String!
   pir_type: PirType!
@@ -13804,10 +14065,12 @@ type PirRelationship implements BasicRelationship {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   fromRole: String
   toRole: String
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   fromId: String!
   toId: String!
   fromType: String!
@@ -13909,6 +14172,7 @@ type FintelDesign implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   description: String
   file_id: String
@@ -13948,12 +14212,14 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
+  refreshed_at: DateTime
   draftVersion: DraftVersion
   x_opencti_inferences: [Inference]
   createdBy: Identity
@@ -14073,6 +14339,7 @@ type EmailTemplate implements InternalObject & BasicObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
+  metrics: [Metric]
   name: String!
   description: String
   email_object: String!
@@ -14111,6 +14378,7 @@ type Form implements BasicObject & InternalObject {
   standard_id: String!
   entity_type: String!
   parent_types: [String!]!
+  metrics: [Metric]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -14160,4 +14428,14 @@ type FormSubmissionResponse {
 
 type CheckXTMHubConnectivityResponse {
   status: XTMHubRegistrationStatus
+}
+
+type Metric {
+  name: ID!
+  value: Float!
+}
+
+input PatchMetricInput {
+  name: String!
+  value: Float!
 }

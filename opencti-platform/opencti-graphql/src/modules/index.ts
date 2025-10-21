@@ -144,4 +144,5 @@ import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';
 import './xtm/hub/xtm-hub-graphql';
+import './metrics/metrics-graphql';
 // endregion

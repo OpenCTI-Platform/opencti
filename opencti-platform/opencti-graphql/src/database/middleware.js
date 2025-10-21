@@ -820,9 +820,12 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
             }
           });
         } else if (isListing) {
-          R.uniq(id).forEach((i) => {
+          id.forEach((i) => {
             const listingElement = { id: i, destKey, multiple: true };
             if (fetchingIdsMap.has(i)) {
+              if (fetchingIdsMap.get(i).includes((e) => e.destKey === destKey)) {
+                return;
+              }
               fetchingIdsMap.get(i).push(listingElement);
             } else {
               fetchingIdsMap.set(i, [listingElement]);
@@ -1980,6 +1983,11 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
     && !impactedInputs.find((i) => i.key === 'modified')) {
     const modifiedAtInput = { key: 'modified', value: [today] };
     impactedInputs.push(modifiedAtInput);
+  }
+  if (impactedInputs.length > 0 && isUpdatedAtObject(instance.entity_type)
+    && !impactedInputs.find((i) => i.key === 'refreshed_at')) {
+    const refreshedAtInput = { key: 'refreshed_at', value: [today] };
+    impactedInputs.push(refreshedAtInput);
   }
   return {
     updatedInputs, // Sourced inputs for event stream

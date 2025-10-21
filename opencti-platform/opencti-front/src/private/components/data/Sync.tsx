@@ -1,5 +1,5 @@
 import React from 'react';
-import Alert from '@mui/material/Alert';
+import MuiAlert from '@mui/material/Alert';
 import { useTheme } from '@mui/styles';
 import { Theme } from 'src/components/Theme';
 import { SyncLinesPaginationQuery$data, SyncLinesPaginationQuery$variables } from '@components/data/sync/__generated__/SyncLinesPaginationQuery.graphql';
@@ -12,7 +12,7 @@ import useAuth from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
 import IngestionMenu from './IngestionMenu';
-import AlertInfo from '../../../components/AlertInfo';
+import Alert from '../../../components/Alert';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import Security from '../../../utils/Security';
 import { INGESTION_SETINGESTIONS } from '../../../utils/hooks/useGranted';
@@ -79,9 +79,9 @@ const Sync = () => {
         padding: '0 200px 50px 0',
       }}
       >
-        <Alert severity="info">
+        <MuiAlert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
-        </Alert>
+        </MuiAlert>
         <IngestionMenu />
       </div>
     );
@@ -94,7 +94,7 @@ const Sync = () => {
         <Breadcrumbs
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
         />
-        <AlertInfo content={
+        <Alert content={
           <>
             {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
             <a

@@ -155,7 +155,7 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual(reportInternalId);
   });
-  it('should report stix objects sor stix relationships accurate', async () => {
+  it('should report stix objects or stix relationships accurate', async () => {
     const report = await elLoadById(testContext, ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     datasetReportInternalId = report.internal_id;
     const REPORT_STIX_DOMAIN_ENTITIES = gql`

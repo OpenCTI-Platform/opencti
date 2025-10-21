@@ -56,6 +56,7 @@ import { type EditOperation, type PageInfo, StatusScope } from '../generated/gra
 import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-2-1-sco';
 import { RELATION_MEMBER_OF, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { AuthorizedMember } from '../utils/access';
+import type { Metric } from '../modules/metrics/metrics';
 
 interface Representative {
   main: string
@@ -83,6 +84,7 @@ interface StoreFile {
   inCarousel?: boolean;
   file_markings?: string[];
   [INPUT_MARKINGS]?: Array<StoreMarkingDefinition>;
+  data?: string;
 }
 
 interface StoreFileWithRefs extends StoreFile {
@@ -110,6 +112,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   spec_version: string;
   created_at: Date;
   updated_at: Date;
+  refreshed_at?: Date;
   x_opencti_files?: Array<StoreFile>;
   x_opencti_aliases?: Array<string>;
   x_opencti_stix_ids?: Array<StixId>;
@@ -121,6 +124,7 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   // representative
   representative: Representative
   restricted_members?: Array<AuthorizedMember>;
+  metrics?: Array<Metric>;
 }
 
 interface StoreMarkingDefinition extends BasicStoreEntity {

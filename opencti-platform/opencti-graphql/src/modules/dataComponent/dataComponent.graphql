@@ -4,6 +4,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     standard_id: String!
     entity_type: String!
     parent_types: [String]!
+    metrics:[Metric]
     # Stix Object
     representative: Representative!
     x_opencti_stix_ids: [StixId]
@@ -11,6 +12,7 @@ type DataComponent implements BasicObject & StixObject & StixCoreObject & StixDo
     spec_version: String!
     created_at: DateTime!
     updated_at: DateTime!
+    refreshed_at: DateTime
     draftVersion: DraftVersion
     # inferences
     x_opencti_inferences: [Inference]
