@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Box, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
 import { Clear } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
-import { graphql } from 'react-relay';
+import { graphql, RecordSourceSelectorProxy } from 'react-relay';
 import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import {
   FilteredAttackPattern,
@@ -63,7 +63,7 @@ const AttackPatternsMatrixColumnsElement = ({
         toId: attackPattern.attack_pattern_id,
         relationship_type: 'has-covered',
       },
-      updater: (store: any) => {
+      updater: (store: RecordSourceSelectorProxy) => {
         // Remove the relationship from the store
         const payload = store.getRootField('stixCoreRelationshipDelete');
         if (!payload) return;

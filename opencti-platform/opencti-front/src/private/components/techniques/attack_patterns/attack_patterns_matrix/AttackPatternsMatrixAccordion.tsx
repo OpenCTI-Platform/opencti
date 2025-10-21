@@ -55,7 +55,7 @@ const AccordionAttackPattern = ({
     }
 
     // Check if parent or any sub-technique is covered
-    const hasAnyCoveredSubTechniques = attackPattern.subAttackPatterns?.some((sub: any) => sub.isCovered);
+    const hasAnyCoveredSubTechniques = attackPattern.subAttackPatterns?.some((sub) => sub.isCovered);
 
     if (!attackPattern.isCovered && !hasAnyCoveredSubTechniques) {
       // Neither parent nor sub-techniques are covered - use default styles
@@ -66,8 +66,8 @@ const AccordionAttackPattern = ({
     // Calculate coverage including sub-techniques
     const parentCoverage = attackPattern.isCovered ? coverage : null;
     const subCoverages = attackPattern.subAttackPatterns
-      ?.filter((sub: any) => sub.isCovered)
-      ?.map((sub: any) => coverageMap?.get(sub.attack_pattern_id))
+      ?.filter((sub) => sub.isCovered)
+      ?.map((sub) => coverageMap?.get(sub.attack_pattern_id))
       .filter(Boolean)
       .flat() || [];
 
@@ -87,7 +87,7 @@ const AccordionAttackPattern = ({
     }
 
     // Get the average coverage score from all coverages (parent + sub-techniques)
-    const avgScore = allCoverages.reduce((sum: number, c: any) => sum + (c.coverage_score || 0), 0) / allCoverages.length;
+    const avgScore = allCoverages.reduce((sum, c) => sum + (c.coverage_score || 0), 0) / allCoverages.length;
 
     // Calculate color based on score (0-100)
     // Green to red gradient
