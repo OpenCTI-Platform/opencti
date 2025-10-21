@@ -6,48 +6,48 @@ import { InformationOutline } from 'mdi-material-ui';
 import WidgetFilters from '@components/widgets/WidgetFilters';
 import Button from '@mui/material/Button';
 import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
+import { v4 as uuidv4 } from 'uuid';
+import { Box, Stack } from '@mui/material';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
-import type { Theme } from '../../../components/Theme';
 import type { WidgetPerspective } from '../../../utils/widget/widget';
 import { getCurrentCategory, getCurrentDataSelectionLimit, isWidgetUsingRelationsAggregation } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
 import Alert from '../../../components/Alert';
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  step_entity: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.secondary.main}`,
-    borderRadius: 4,
-  },
-  step_relationship: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.primary.main}`,
-    borderRadius: 4,
-  },
-  step_audit: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.secondary.main}`,
-    borderRadius: 4,
-  },
-}));
+type StepContainerProps = {
+  perspective?: WidgetPerspective | null;
+  children: React.ReactNode;
+};
+
+const StepContainer = ({ perspective, children }: StepContainerProps) => {
+  let borderColorKey: 'primary' | 'secondary' = 'secondary';
+
+  if (perspective === 'relationships') {
+    borderColorKey = 'primary';
+  } else if (perspective === 'audits') {
+    borderColorKey = 'secondary';
+  }
+
+  return (
+    <Box
+      sx={{
+        position: 'relative',
+        width: '100%',
+        mb: 2,
+        p: 2,
+        verticalAlign: 'middle',
+        border: (theme) => `1px solid ${theme.palette[borderColorKey].main}`,
+        borderRadius: 1,
+      }}
+    >
+      {children}
+    </Box>
+  );
+};
 
 const WidgetCreationDataSelection = () => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
   const { config, setStep, setDataSelection, setDataSelectionWithIndex } = useWidgetConfigContext();
   const { type, dataSelection, perspective } = config.widget;
 
@@ -75,6 +75,7 @@ const WidgetCreationDataSelection = () => {
     setDataSelection([
       ...dataSelection,
       {
+        selectionId: uuidv4(),
         label: '',
         attribute: 'entity_type',
         date_attribute: 'created_at',
@@ -90,17 +91,13 @@ const WidgetCreationDataSelection = () => {
 
   return (
     <div style={{ marginTop: 20 }}>
-      {Array(dataSelection.length)
-        .fill(0)
-        .map((_, i) => {
-          let className = classes.step_entity;
-          if (dataSelection[i].perspective === 'relationships') {
-            className = classes.step_relationship;
-          } else if (dataSelection[i].perspective === 'audits') {
-            className = classes.step_audit;
-          }
+      {
+        dataSelection.map((item, i) => {
           return (
-            <div key={i} className={className}>
+            <StepContainer
+              key={item.selectionId}
+              perspective={item.perspective}
+            >
               <IconButton
                 disabled={dataSelection.length === 1}
                 aria-label="Delete"
@@ -114,7 +111,8 @@ const WidgetCreationDataSelection = () => {
               >
                 <CancelOutlined fontSize="small" />
               </IconButton>
-              <div style={{ display: 'flex', width: '100%' }}>
+
+              <Stack direction="row" sx={{ width: '100%' }}>
                 <TextField
                   style={{ flex: 1 }}
                   label={`${t_i18n('Label')} (${dataSelection[i].perspective})`}
@@ -122,29 +120,34 @@ const WidgetCreationDataSelection = () => {
                   value={dataSelection[i].label}
                   onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
                 />
-                {perspective === 'relationships' && (
-                  <Tooltip
-                    title={t_i18n(
-                      'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
-                    )}
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ marginRight: 5, marginTop: 20 }}
-                    />
-                  </Tooltip>
-                )}
-              </div>
+                {
+                  perspective === 'relationships' && (
+                    <Tooltip
+                      title={t_i18n(
+                        'The relationships taken into account are: stix core relationships, sightings and \'contains\' relationships',
+                      )}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ marginRight: 5, marginTop: 20 }}
+                      />
+                    </Tooltip>
+                  )
+                }
+              </Stack>
+
               <WidgetFilters
                 dataSelection={dataSelection[i]}
                 setDataSelection={(data) => setDataSelectionWithIndex(data, i)}
                 perspective={dataSelection[i].perspective ?? perspective}
                 type={type}
               />
-            </div>
+            </StepContainer>
           );
-        })}
+        })
+      }
+
       {perspective === 'entities' && (
         <div style={{ display: 'flex' }}>
           <Button
@@ -163,8 +166,9 @@ const WidgetCreationDataSelection = () => {
           </Button>
         </div>
       )}
+
       {perspective === 'relationships' && (
-        <div style={{ display: 'flex' }}>
+        <Stack direction="row">
           <Button
             variant="contained"
             disabled={getCurrentDataSelectionLimit(type) === dataSelection.length}
@@ -193,10 +197,11 @@ const WidgetCreationDataSelection = () => {
           >
             <AddOutlined fontSize="small" /> {t_i18n('Entities')}
           </Button>
-        </div>
+        </Stack>
       )}
+
       {perspective === 'audits' && (
-        <div style={{ display: 'flex' }}>
+        <Stack direction="row">
           <Button
             variant="contained"
             disabled={
@@ -214,13 +219,10 @@ const WidgetCreationDataSelection = () => {
           >
             <AddOutlined fontSize="small" />
           </Button>
-        </div>
+        </Stack>
       )}
-      <div style={{
-        marginTop: 20,
-        textAlign: 'center',
-      }}
-      >
+
+      <div style={{ marginTop: 20, textAlign: 'center' }}>
         <Button
           disabled={!isDataSelectionFiltersValid()}
           variant="contained"
@@ -234,6 +236,7 @@ const WidgetCreationDataSelection = () => {
           {t_i18n('Validate')}
         </Button>
       </div>
+
       {showRelationCountWarning && (
         <Alert
           content={t_i18n(
