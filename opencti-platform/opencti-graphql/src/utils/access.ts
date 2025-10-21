@@ -560,6 +560,10 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [HUB_REGISTRATION_MANAGER_USER.id]: HUB_REGISTRATION_MANAGER_USER
 };
 
+export const isInternalUser = (user: AuthUser): boolean => {
+  return INTERNAL_USERS[user.id] !== undefined;
+};
+
 export const isBypassUser = (user: AuthUser): boolean => {
   return R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
 };

@@ -1,6 +1,10 @@
-import type { StreamConfiguration } from '../../modules/playbook/playbook-components';
+interface EventConfig {
+  create?: boolean
+  update?: boolean
+  delete?: boolean
+}
 
-export const isValidEventType = (eventType: string, configuration: StreamConfiguration) => {
+export const isValidEventType = (eventType: string, configuration: EventConfig) => {
   const {
     update,
     create,

@@ -41,11 +41,7 @@ import { elPaginate } from '../../database/engine';
 import { stixLoadByFilters, stixLoadById } from '../../database/middleware';
 import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-utils';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
-import { RELATION_IN_PIR } from '../../schema/internalRelationship';
-import { isStixRelation } from '../../schema/stixRelationship';
-import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
-import type { PirStreamConfiguration } from '../../modules/playbook/playbookComponents/playbook-data-stream-pir-component';
-import { isEventMatchesPir } from './listenPirEventsUtils';
+import { listenPirEvents } from './listenPirEventsUtils';
 import { isValidEventType } from './playbookManagerUtils';
 import { playbookExecutor } from './playbookExecutor';
 
@@ -118,54 +114,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
               }
             }
             if (instance && instance.component_id === 'PLAYBOOK_DATA_STREAM_PIR') {
-              if (scope === 'internal' && isStixRelation(data) && data.relationship_type === RELATION_IN_PIR) {
-                const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-                const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
-
-                const {
-                  filters: sourceFilters,
-                  inPirFilters
-                } = configuration;
-
-                const isMatchPir = await isEventMatchesPir(
-                  context,
-                  inPirFilters,
-                  data
-                );
-
-                const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
-
-                const isValidEvent = isValidEventType(type, configuration);
-
-                // 02. Execute the component
-                if (isValidEvent && isMatchPir) {
-                  const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
-                  const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersOnSource);
-                  if (isEntityMatch) {
-                    const nextStep = { component: connector, instance };
-                    const bundle: StixBundle = {
-                      id: uuidv4(),
-                      spec_version: STIX_SPEC_VERSION,
-                      type: 'bundle',
-                      objects: [entity]
-                    };
-                    await playbookExecutor({
-                      eventId,
-                      // Basic
-                      executionId: uuidv4(),
-                      playbookId: playbook.id,
-                      dataInstanceId: data.id,
-                      definition: def,
-                      // Steps
-                      previousStep: null,
-                      nextStep,
-                      // Data
-                      previousStepBundle: null,
-                      bundle,
-                    });
-                  }
-                }
-              }
+              await listenPirEvents(context, streamEvent, instance, playbook);
             }
           }
         }
