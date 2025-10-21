@@ -6,6 +6,9 @@ import Paper from '@mui/material/Paper';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import SearchInput from '../../../../components/SearchInput';
@@ -15,9 +18,11 @@ import StixCoreObjectExternalReferences from '../external_references/StixCoreObj
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
+import SecurityCoverageAttackPatternsLines from './SecurityCoverageAttackPatternsLines';
 import { SecurityCoverage_securityCoverage$key } from './__generated__/SecurityCoverage_securityCoverage.graphql';
 import { SecurityCoverageKillChainsQuery } from './__generated__/SecurityCoverageKillChainsQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -110,6 +115,7 @@ const securityCoverageFragment = graphql`
     }
     ...SecurityCoverageDetails_securityCoverage
     ...SecurityCoverageAttackPatternsMatrix_securityCoverage
+    ...SecurityCoverageAttackPatternsLines_securityCoverage
   }
 `;
 
@@ -117,12 +123,13 @@ interface SecurityCoverageProps {
   data: SecurityCoverage_securityCoverage$key;
 }
 
-const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) => {
+const SecurityCoverageComponent: FunctionComponent<SecurityCoverageProps> = ({ data }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const securityCoverage = useFragment(securityCoverageFragment, data);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
+  const [viewMode, setViewMode] = useState<'matrix' | 'lines'>('matrix');
 
   // Fetch all available kill chains from attack patterns
   const killChainsData = useLazyLoadQuery<SecurityCoverageKillChainsQuery>(
@@ -178,12 +185,66 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
         </Grid>
       </Grid>
       <div style={{ marginTop: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15 }}>
-          <Typography variant="h4" style={{ flex: 1 }}>
-            {t_i18n('Attack patterns coverage')}
-          </Typography>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 15, justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h4" style={{ whiteSpace: 'nowrap', marginRight: 10 }}>
+              {t_i18n('Attack patterns coverage')}
+            </Typography>
+            <StixCoreRelationshipCreationFromEntity
+              entityId={securityCoverage.id}
+              targetEntities={[]}
+              allowedRelationshipTypes={['has-covered']}
+              targetStixDomainObjectTypes={['Attack-Pattern']}
+              paginationOptions={{
+                count: 25,
+                orderBy: 'created_at',
+                orderMode: 'asc',
+                filters: {
+                  mode: 'and',
+                  filters: [],
+                  filterGroups: [],
+                },
+              }}
+              paddingRight={220}
+              onCreate={() => {}}
+              isCoverage={true}
+              openExports={false}
+              variant="inLine"
+            />
+          </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            {showKillChainSelector && (
+            <ToggleButtonGroup
+              size="small"
+              value={viewMode}
+              exclusive
+              onChange={(event, value) => value && setViewMode(value)}
+              aria-label="view mode"
+              style={{ height: 30 }}
+              sx={{
+                '& .MuiToggleButton-root': {
+                  padding: '5px 10px',
+                  '&.Mui-selected': {
+                    backgroundColor: 'primary.main',
+                    color: 'primary.contrastText',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                  },
+                  '&:not(.Mui-selected)': {
+                    backgroundColor: 'background.paper',
+                    color: 'text.primary',
+                  },
+                },
+              }}
+            >
+              <ToggleButton value="matrix" aria-label="matrix view">
+                <ViewModuleOutlined fontSize="small" />
+              </ToggleButton>
+              <ToggleButton value="lines" aria-label="lines view">
+                <ViewListOutlined fontSize="small" />
+              </ToggleButton>
+            </ToggleButtonGroup>
+            {showKillChainSelector && viewMode === 'matrix' && (
               <FormControl size="small" style={{ width: 194, height: 30 }}>
                 <Select
                   value={selectedKillChain}
@@ -219,11 +280,17 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
           }}
           className="paper-for-grid"
         >
-          <SecurityCoverageAttackPatternsMatrix
-            securityCoverage={securityCoverage}
-            searchTerm={searchTerm}
-            selectedKillChain={selectedKillChain}
-          />
+          {viewMode === 'matrix' ? (
+            <SecurityCoverageAttackPatternsMatrix
+              securityCoverage={securityCoverage}
+              searchTerm={searchTerm}
+              selectedKillChain={selectedKillChain}
+            />
+          ) : (
+            <SecurityCoverageAttackPatternsLines
+              securityCoverage={securityCoverage}
+            />
+          )}
         </Paper>
       </div>
       <Grid
@@ -245,4 +312,4 @@ const SecurityCoverage: FunctionComponent<SecurityCoverageProps> = ({ data }) =>
   );
 };
 
-export default SecurityCoverage;
+export default SecurityCoverageComponent;

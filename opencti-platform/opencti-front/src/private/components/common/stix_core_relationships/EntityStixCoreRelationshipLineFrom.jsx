@@ -604,28 +604,32 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.relationship_type.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.entity_type.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
+              {dataColumns.relationship_type && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.relationship_type.width }}
+                >
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width="90%"
+                    height="100%"
+                  />
+                </div>
+              )}
+              {dataColumns.entity_type && (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.entity_type.width }}
+                >
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width="90%"
+                    height="100%"
+                  />
+                </div>
+              )}
               <div
                 className={classes.bodyItem}
                 style={{

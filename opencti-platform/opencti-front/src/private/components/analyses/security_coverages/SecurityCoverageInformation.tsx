@@ -56,7 +56,7 @@ interface SecurityCoverageInformationProps {
     readonly coverage_name: string;
     readonly coverage_score: number;
   }> | null | undefined;
-  variant?: 'header' | 'details';
+  variant?: 'header' | 'details' | 'matrix';
 }
 
 const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformationProps> = ({ coverage_information, variant = 'header' }) => {
@@ -88,15 +88,19 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
     return { series, options };
   };
 
-  // Original variant for header
-  if (variant === 'header') {
+  // Original variant for header or matrix (compact)
+  if (variant === 'header' || variant === 'matrix') {
+    const size = variant === 'matrix' ? 28 : 40;
+    const chartSize = variant === 'matrix' ? 38 : 50;
+    const iconSize = variant === 'matrix' ? 12 : 18;
+    const iconPosition = variant === 'matrix' ? 13 : 16;
     if (isEmptyField(coverage_information)) {
       const { options, series } = genOpts(null);
-      return <div className={classes.chartContainer} style={{ width: 40, height: 40 }}>
+      return <div className={classes.chartContainer} style={{ width: size, height: size }}>
         <div className={classes.chart}>
-          <Chart options={options} series={series} type="donut" width={50} height={50}/>
+          <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize}/>
           <Tooltip title={'Empty coverage'} placement="bottom">
-            <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 18, height: 18 }} style={{ top: 16, left: 16, fontSize: 18 }}>
+            <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
               <span style={{ color: '#ffffff' }}>E</span>
             </Avatar>
           </Tooltip>
@@ -107,11 +111,11 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
       <div style={{ display: 'flex' }}>
         {(coverage_information ?? []).map((coverageResult) => {
           const { options, series } = genOpts(coverageResult.coverage_score);
-          return <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: 40, height: 40, padding: 4 }}>
+          return <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
             <div className={classes.chart}>
-              <Chart options={options} series={series} type="donut" width={50} height={50}/>
+              <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize}/>
               <Tooltip title={`${t_i18n(coverageResult.coverage_name)}`} placement="bottom">
-                <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 18, height: 18 }} style={{ top: 16, left: 16, fontSize: 18 }}>
+                <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
                   <span style={{ color: '#ffffff' }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
                 </Avatar>
               </Tooltip>

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Box, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
 import { AddCircleOutlineOutlined, InfoOutlined } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router-dom';
 import { AttackPatternsMatrixProps, attackPatternsMatrixQuery } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
@@ -149,7 +150,11 @@ const AttackPatternsMatrixColumns = ({
   selectedKillChain,
   isModeOnlyActive,
   inPaper,
+  isCoverage = false,
+  coverageMap,
+  entityId,
 }: AttackPatternsMatrixColumnsProps) => {
+  const theme = useTheme<Theme>();
   const [anchorEl, setAnchorEl] = useState<EventTarget & Element | null>(null);
   const [selectedAttackPattern, setSelectedAttackPattern] = useState<MinimalAttackPattern | null>(null);
   const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
@@ -259,18 +264,59 @@ const AttackPatternsMatrixColumns = ({
                   {col.attackPatterns?.map((ap) => {
                     return (
                       ap.subAttackPatterns?.length ? (
-                        <AttackPatternsMatrixBadge
-                          key={ap.attack_pattern_id}
-                          attackPattern={ap}
-                          color={isSecurityPlatform ? COLORS.BADGE_SECURITY_POSTURE : COLORS.BADGE}
-                        >
-                          <AccordionAttackPattern
-                            attackPattern={ap}
-                            handleOpen={handleOpen}
-                            attackPatternIdsToOverlap={attackPatternIdsToOverlap}
-                            isSecurityPlatform={isSecurityPlatform}
-                          />
-                        </AttackPatternsMatrixBadge>
+                        (() => {
+                          // Calculate badge color based on coverage
+                          let badgeColor = isSecurityPlatform ? COLORS.BADGE_SECURITY_POSTURE : COLORS.BADGE;
+                          let badgeTextColor = theme.palette.common.black || '#000000';
+
+                          if (isCoverage && coverageMap) {
+                            // Check if parent or any sub-technique is covered
+                            const hasAnyCoveredSubTechniques = ap.subAttackPatterns?.some((sub: any) => sub.isCovered);
+
+                            if (ap.isCovered || hasAnyCoveredSubTechniques) {
+                              const parentCoverage = ap.isCovered ? coverageMap.get(ap.attack_pattern_id) : null;
+                              const subCoverages = ap.subAttackPatterns
+                                ?.filter((sub: any) => sub.isCovered)
+                                ?.map((sub: any) => coverageMap.get(sub.attack_pattern_id))
+                                .filter(Boolean)
+                                .flat() || [];
+
+                              const allCoverages = [...(parentCoverage || []), ...subCoverages];
+
+                              if (allCoverages.length > 0) {
+                                const avgScore = allCoverages.reduce((sum: number, c: any) => sum + (c.coverage_score || 0), 0) / allCoverages.length;
+                                // Green to red gradient for badge
+                                const red = Math.round(255 * (1 - avgScore / 100));
+                                const green = Math.round(255 * (avgScore / 100));
+                                badgeColor = `rgb(${red}, ${green}, 0)`;
+                                badgeTextColor = theme.palette.common.white || '#ffffff';
+                              } else {
+                                // No coverage data but covered - use blue
+                                badgeColor = theme.palette.primary.main || '#1976d2';
+                                badgeTextColor = theme.palette.common.white || '#ffffff';
+                              }
+                            }
+                          }
+
+                          return (
+                            <AttackPatternsMatrixBadge
+                              key={ap.attack_pattern_id}
+                              attackPattern={ap}
+                              color={badgeColor}
+                              textColor={badgeTextColor}
+                            >
+                              <AccordionAttackPattern
+                                attackPattern={ap}
+                                handleOpen={handleOpen}
+                                attackPatternIdsToOverlap={attackPatternIdsToOverlap}
+                                isSecurityPlatform={isSecurityPlatform}
+                                isCoverage={isCoverage}
+                                coverageMap={coverageMap}
+                                entityId={entityId}
+                              />
+                            </AttackPatternsMatrixBadge>
+                          );
+                        })()
                       ) : (
                         <AttackPatternsMatrixColumnsElement
                           key={ap.attack_pattern_id}
@@ -278,6 +324,9 @@ const AttackPatternsMatrixColumns = ({
                           handleOpen={handleOpen}
                           attackPatternIdsToOverlap={attackPatternIdsToOverlap}
                           isSecurityPlatform={isSecurityPlatform}
+                          isCoverage={isCoverage}
+                          coverageMap={coverageMap}
+                          entityId={entityId}
                         />
                       )
                     );
