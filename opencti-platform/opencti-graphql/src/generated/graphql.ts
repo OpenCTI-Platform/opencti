@@ -25627,6 +25627,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   jobs?: Maybe<Array<Maybe<Work>>>;
   key_length?: Maybe<Scalars['String']['output']>;
   key_type?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   notes?: Maybe<NoteConnection>;
   numberOfConnectedElement: Scalars['Int']['output'];
   objectLabel?: Maybe<Array<Label>>;
@@ -25639,6 +25640,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   parent_types: Array<Maybe<Scalars['String']['output']>>;
   pendingFiles?: Maybe<FileConnection>;
   public_key?: Maybe<Scalars['String']['output']>;
+  refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   reports?: Maybe<ReportConnection>;
   representative: Representative;
   spec_version: Scalars['String']['output'];
@@ -43934,6 +43936,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<SshKeyJobsArgs>>;
   key_length?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   key_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<SshKeyNotesArgs>>;
   numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
@@ -43946,6 +43949,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyPendingFilesArgs>>;
   public_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<SshKeyReportsArgs>>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
