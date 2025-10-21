@@ -14,7 +14,7 @@ import {
   SETTINGS_SETLABELS,
   SYSTEM_USER
 } from '../utils/access';
-import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_MERGE, KNOWLEDGE_UPDATE } from '../schema/general';
+import { isKnowledge, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -100,7 +100,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     const askForDeletionRelatedAction = actions.filter((a) => isDeleteRestrictedAction(a)).length > 0;
     if (askForDeletionRelatedAction) {
       // 2.2. If deletion related action available, the user should have the capability KNOWLEDGE_DELETE
-      const isDeletionRelatedActionAuthorized = isUserHasCapability(user, KNOWLEDGE_DELETE);
+      const isDeletionRelatedActionAuthorized = isUserHasCapability(user, 'KNOWLEDGE_KNUPDATE_KNDELETE');
       if (!isDeletionRelatedActionAuthorized) {
         throw ForbiddenAccess();
       }
@@ -108,7 +108,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
     // 2.3. If merge action, the user should have the capability KNOWLEDGE_MERGE
     const askForMergeAction = actions.filter((a) => a.type === ACTION_TYPE_MERGE).length > 0;
     if (askForMergeAction) {
-      const isMergeActionAuthorized = isUserHasCapability(user, KNOWLEDGE_MERGE);
+      const isMergeActionAuthorized = isUserHasCapability(user, 'KNOWLEDGE_KNUPDATE_KNMERGE');
       if (!isMergeActionAuthorized) {
         throw ForbiddenAccess();
       }
