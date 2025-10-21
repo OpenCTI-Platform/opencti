@@ -3103,6 +3103,7 @@
   "relationship_granted": "shared with",
   "relationship_granted-to": "granted to",
   "relationship_has": "has",
+  "relationship_has-covered": "has covered",
   "relationship_host-vm": "host VM",
   "relationship_hosts": "hosts",
   "relationship_image": "image",

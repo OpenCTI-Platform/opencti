@@ -488,7 +488,7 @@ interface StixCoreRelationshipCreationFromEntityForm {
   killChainPhases: FieldOption[];
   objectMarking: FieldOption[];
   externalReferences: FieldOption[];
-  coverage?: Array<{ coverage_name: string; coverage_score: number }>;
+  coverage_information?: Array<{ coverage_name: string; coverage_score: number }>;
 }
 
 export interface TargetEntity {
@@ -562,9 +562,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [openCreateEntity, setOpenCreateEntity] = useState(false);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
   const [step, setStep] = useState(targetEntitiesProps.length === 0 ? 0 : 1);
-  const [targetEntities, setTargetEntities] = useState(
-    targetEntitiesProps,
-  );
+  const [targetEntities, setTargetEntities] = useState(targetEntitiesProps);
   useEffect(() => {
     if (!R.equals(targetEntitiesProps, targetEntities) && targetEntitiesProps.length > targetEntities.length) {
       setTargetEntities(targetEntitiesProps);
@@ -682,11 +680,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
         R.assoc('createdBy', values.createdBy?.value),
         R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-        R.assoc(
-          'externalReferences',
-          R.pluck('value', values.externalReferences),
-        ),
-        isCoverage && values.coverage ? R.assoc('coverage', values.coverage.map((c) => ({
+        R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
+        isCoverage && values.coverage_information ? R.assoc('coverage_information', values.coverage_information.map((c) => ({
           coverage_name: c.coverage_name,
           coverage_score: typeof c.coverage_score === 'string' ? parseInt(c.coverage_score, 10) : c.coverage_score,
         }))) : R.identity,
@@ -782,7 +777,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>;
 
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
-
   const renderSelectEntity = (entity_type: string, name = '') => {
     return (
       <div

@@ -164,11 +164,11 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                     {node.from?.x_mitre_id ?? '-'}
                   </div>
                 )}
-                {dataColumns.coverage && (
+                {dataColumns.coverage_information && (
                   <div
                     className={classes.bodyItem}
                     style={{
-                      width: dataColumns.coverage.width,
+                      width: dataColumns.coverage_information.width,
                       display: 'flex',
                       alignItems: 'center',
                       height: 'auto',
@@ -176,7 +176,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                     }}
                   >
                     <SecurityCoverageInformation
-                      coverage_information={node.coverage || null}
+                      coverage_information={node.coverage_information || null}
                       variant="header"
                     />
                   </div>
@@ -271,6 +271,10 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
         description
         is_inferred
         created
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
         created_at
         x_opencti_inferences {
           rule {
@@ -702,10 +706,10 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
                   />
                 </div>
               )}
-              {dataColumns.coverage && (
+              {dataColumns.coverage_information && (
                 <div
                   className={classes.bodyItem}
-                  style={{ width: dataColumns.coverage.width }}
+                  style={{ width: dataColumns.coverage_information.width }}
                 >
                   <Skeleton
                     animation="wave"

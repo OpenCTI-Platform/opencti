@@ -304,7 +304,6 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     },
   },
   coverage_information: {
-    id: 'coverage_information',
     label: 'Coverage',
     percentWidth: 12,
     isSortable: false,

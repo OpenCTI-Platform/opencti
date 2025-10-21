@@ -12,23 +12,12 @@ import {
 } from './securityCoverage-types';
 import convertSecurityCoverageToStix from './securityCoverage-converter';
 import { createdBy, objectLabel, objectMarking, objectOrganization, } from '../../schema/stixRefRelationship';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CAMPAIGN,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_INCIDENT,
-  ENTITY_TYPE_INTRUSION_SET,
-  ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_VULNERABILITY
-} from '../../schema/stixDomainObject';
-import { securityCoverageStixBundle } from './securityCoverage-domain';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_VULNERABILITY } from '../../schema/stixDomainObject';
+import { COVERED_ENTITIES_TYPE, securityCoverageStixBundle } from './securityCoverage-domain';
 import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
 import { REL_NEW } from '../../database/stix';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import type { StoreEntity } from '../../types/store';
-import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 
 const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage, StixSecurityCoverage> = {
   type: {
@@ -87,16 +76,7 @@ const SECURITY_COVERAGE_DEFINITION: ModuleDefinition<StoreEntitySecurityCoverage
         return fromType === ENTITY_TYPE_SECURITY_COVERAGE && this.toTypes.includes(toType);
       },
       isFilterable: true,
-      toTypes: [
-        ENTITY_TYPE_THREAT_ACTOR_GROUP,
-        ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL,
-        ENTITY_TYPE_INTRUSION_SET,
-        ENTITY_TYPE_CAMPAIGN,
-        ENTITY_TYPE_INCIDENT,
-        ENTITY_TYPE_CONTAINER_REPORT,
-        ENTITY_TYPE_CONTAINER_GROUPING,
-        ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
-      ],
+      toTypes: COVERED_ENTITIES_TYPE,
     },
     objectLabel,
     objectMarking,

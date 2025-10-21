@@ -28,7 +28,7 @@ const SecurityCoverageAttackPatternsMatrixComponent: FunctionComponent<SecurityC
   (securityCoverage.attackPatterns?.edges ?? []).forEach((edge) => {
     const { node } = edge;
     if (node && node.to?.id) {
-      attackPatternsCoverageMap.set(node.to.id, node.coverage || []);
+      attackPatternsCoverageMap.set(node.to.id, node.coverage_information || []);
     }
   });
 
@@ -104,7 +104,7 @@ const SecurityCoverageAttackPatternsMatrix = createRefetchContainer(
           edges {
             node {
               id
-              coverage {
+              coverage_information {
                 coverage_name
                 coverage_score
               }

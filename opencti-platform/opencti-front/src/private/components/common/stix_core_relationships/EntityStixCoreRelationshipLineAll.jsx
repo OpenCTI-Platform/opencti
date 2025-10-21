@@ -160,11 +160,11 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                   {!restricted ? getMainRepresentative(remoteNode) : t('Restricted')}
                   {remoteNode.draftVersion && (<DraftChip/>)}
                 </div>
-                {isCoverage && dataColumns.coverage && (
+                {isCoverage && dataColumns.coverage_information && (
                   <div
                     className={classes.bodyItem}
                     style={{
-                      width: dataColumns.coverage.width,
+                      width: dataColumns.coverage_information.width,
                       display: 'flex',
                       alignItems: 'center',
                       height: 'auto',
@@ -172,7 +172,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                     }}
                   >
                     <SecurityCoverageInformation
-                      coverage_information={node.coverage || null}
+                      coverage_information={node.coverage_information || null}
                       variant="header"
                     />
                   </div>
@@ -265,7 +265,7 @@ const EntityStixCoreRelationshipLineAllFragment = createFragmentContainer(
         is_inferred
         created
         created_at
-        coverage {
+        coverage_information {
           coverage_name
           coverage_score
         }
@@ -659,10 +659,10 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
                   />
                 </div>
               )}
-              {dataColumns.coverage && (
+              {dataColumns.coverage_information && (
                 <div
                   className={classes.bodyItem}
-                  style={{ width: dataColumns.coverage.width }}
+                  style={{ width: dataColumns.coverage_information.width }}
                 >
                   <Skeleton
                     animation="wave"
