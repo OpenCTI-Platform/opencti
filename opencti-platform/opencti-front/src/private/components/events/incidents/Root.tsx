@@ -13,6 +13,7 @@ import StixCoreObjectContentRoot from '@components/common/stix_core_objects/Stix
 import Security from 'src/utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from 'src/utils/hooks/useGranted';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import AIInsights from '@components/common/ai/AIInsights';
 import Incident from './Incident';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -30,7 +31,6 @@ import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { getCurrentTab } from '../../../../utils/utils';
 import IncidentEdition from './IncidentEdition';
 import IncidentDeletion from './IncidentDeletion';
-import AIInsights from "@components/common/ai/AIInsights";
 
 const subscription = graphql`
   subscription RootIncidentSubscription($id: ID!) {
