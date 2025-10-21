@@ -182,8 +182,6 @@
     "node": ">=20.0.0"
   },
   "resolutions": {
-    "@types/react": "19.2.2",
-    "@types/relay-runtime": "19.0.3",
     "cookie": "1.0.2",
     "d3-color": "3.1.0",
     "glob-parent": "6.0.2",
