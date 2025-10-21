@@ -40,7 +40,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
         <FieldOrEmpty source={securityCoverage.vulnerabilities?.edges}>
           {securityCoverage.vulnerabilities?.edges?.map((vulnerabilityEdge) => {
             const vulnerability = vulnerabilityEdge.node.to;
-            const coverage = vulnerabilityEdge.node.coverage || [];
+            const coverage = vulnerabilityEdge.node.coverage_information || [];
             return (
               <ListItem
                 key={vulnerabilityEdge.node.id}
@@ -102,7 +102,7 @@ const SecurityCoverageVulnerabilities = createFragmentContainer(
           edges {
             node {
               id
-              coverage {
+              coverage_information {
                 coverage_name
                 coverage_score
               }

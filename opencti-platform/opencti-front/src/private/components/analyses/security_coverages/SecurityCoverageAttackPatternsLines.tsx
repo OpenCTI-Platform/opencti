@@ -60,6 +60,7 @@ const SecurityCoverageAttackPatternsLinesComponent: FunctionComponent<SecurityCo
       allDirections={false}
       isRelationReversed={false}
       isCoverage={true}
+      allowCreation={false}
       enableEntitiesView={false}
     />
   );

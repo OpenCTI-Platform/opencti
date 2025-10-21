@@ -13053,7 +13053,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     filters: FilterGroup
   ): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
-  coverage: [CoverageResult!]
+  coverage_information: [CoverageResult!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -13090,7 +13090,7 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
-  coverage: [SecurityCoverageExpectation!]
+  coverage_information: [SecurityCoverageExpectation!]
   # Technical
   clientMutationId: String
   update: Boolean

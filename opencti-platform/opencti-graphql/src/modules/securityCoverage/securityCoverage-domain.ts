@@ -7,11 +7,22 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { createEntity, deleteElementById, storeLoadByIdsWithRefs, storeLoadByIdWithRefs } from '../../database/middleware';
 import type { SecurityCoverageAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity, StoreRelation } from '../../types/store';
-import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
 import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
+
+export const COVERED_ENTITIES_TYPE = [
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_CONTAINER_GROUPING,
+  ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+];
 
 // region CRUD
 export const findSecurityCoverageById = (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
@@ -71,8 +82,7 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
 };
 
 export const objectCovered = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
-  const entityTypes = [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_THREAT_ACTOR_GROUP];
-  return loadEntityThroughRelationsPaginated<T>(context, user, SecurityCoverageId, RELATION_COVERED, entityTypes, false);
+  return loadEntityThroughRelationsPaginated<T>(context, user, SecurityCoverageId, RELATION_COVERED, COVERED_ENTITIES_TYPE, false);
 };
 
 export const securityCoverageDelete = async (context: AuthContext, user: AuthUser, SecurityCoverageId: string) => {
