@@ -341,7 +341,7 @@ export const buildFiltersAndOptionsForWidgets = (
     };
   }
   if (isKnowledgeRelationshipWidget) {
-    filters = addFilter(filters, 'entity_type', ['Stix-Core-Relationship', 'contains']);
+    filters = addFilter(filters, 'entity_type', ['Stix-Core-Relationship', 'objects']);
   }
   return {
     filters,
