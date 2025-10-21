@@ -30090,6 +30090,7 @@ export type Theme = BasicObject & InternalObject & {
   built_in?: Maybe<Scalars['Boolean']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
   name: Scalars['String']['output'];
   parent_types: Array<Scalars['String']['output']>;
   standard_id: Scalars['String']['output'];
@@ -45301,6 +45302,7 @@ export type ThemeResolvers<ContextType = any, ParentType extends ResolversParent
   built_in?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

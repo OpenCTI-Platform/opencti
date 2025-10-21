@@ -17,6 +17,7 @@ type Theme implements InternalObject & BasicObject {
   theme_text_color: String!
   toConfigurationExport: String!
   built_in: Boolean
+  metrics:[Metric]
 }
 
 # Relay connections

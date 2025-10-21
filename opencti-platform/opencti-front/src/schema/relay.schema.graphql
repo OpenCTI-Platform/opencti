@@ -1459,71 +1459,9 @@ type PublicProvider {
   provider: String!
 }
 
-interface ThemeSettings {
-  platform_title: String
-  platform_favicon: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
-}
-
 interface IntlSettings {
   platform_language: String
   platform_translations: String
-}
-
-type PublicSettings implements ThemeSettings & IntlSettings {
-  id: ID!
-  platform_title: String
-  platform_favicon: String
-  platform_login_message: String
-  platform_consent_message: String
-  platform_consent_confirm_text: String
-  platform_banner_text: String
-  platform_banner_level: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
-  platform_whitemark: Boolean
-  platform_language: String
-  platform_translations: String
-  platform_providers: [PublicProvider!]!
-  platform_enterprise_edition_license_validated: Boolean!
-  playground_enabled: Boolean!
 }
 
 type MetricAttributes {
@@ -1537,7 +1475,33 @@ type MetricDefinition {
   metrics: [MetricAttributes!]
 }
 
-type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
+interface ThemeSettings {
+  platform_title: String
+  platform_favicon: String
+  platform_theme: Theme
+}
+
+type PublicSettings implements IntlSettings & ThemeSettings {
+  id: ID!
+  platform_title: String
+  platform_favicon: String
+  platform_login_message: String
+  platform_consent_message: String
+  platform_consent_confirm_text: String
+  platform_banner_text: String
+  platform_banner_level: String
+  platform_theme: Theme
+  platform_map_tile_server_dark: String
+  platform_map_tile_server_light: String
+  platform_whitemark: Boolean
+  platform_language: String
+  platform_translations: String
+  platform_providers: [PublicProvider!]!
+  platform_enterprise_edition_license_validated: Boolean!
+  playground_enabled: Boolean!
+}
+
+type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSettings {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -1554,25 +1518,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
   platform_language: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
+  platform_theme: Theme
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_openbas_url: String
@@ -13582,7 +13528,8 @@ type Theme implements InternalObject & BasicObject {
   theme_logo_login: String
   theme_text_color: String!
   toConfigurationExport: String!
-  system_default: Boolean
+  built_in: Boolean
+  metrics: [Metric]
 }
 
 type ThemeConnection {
