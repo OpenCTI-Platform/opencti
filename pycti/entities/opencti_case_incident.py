@@ -707,6 +707,7 @@ class CaseIncident:
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", None)
+        content = kwargs.get("content", None)
         severity = kwargs.get("severity", None)
         priority = kwargs.get("priority", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
@@ -749,6 +750,7 @@ class CaseIncident:
                         "modified": modified,
                         "name": name,
                         "description": description,
+                        "content": content,
                         "severity": severity,
                         "priority": priority,
                         "x_opencti_stix_ids": x_opencti_stix_ids,
@@ -884,6 +886,12 @@ class CaseIncident:
                 stix_object["x_opencti_workflow_id"] = (
                     self.opencti.get_attribute_in_extension("workflow_id", stix_object)
                 )
+            if "x_opencti_content" not in stix_object or "content" not in stix_object:
+                stix_object["content"] = self.opencti.get_attribute_in_extension(
+                    "content", stix_object
+                )
+            if "x_opencti_content" in stix_object:
+                stix_object["content"] = stix_object["x_opencti_content"]
             if "x_opencti_assignee_ids" not in stix_object:
                 stix_object["x_opencti_assignee_ids"] = (
                     self.opencti.get_attribute_in_extension("assignee_ids", stix_object)
@@ -924,6 +932,11 @@ class CaseIncident:
                 description=(
                     self.opencti.stix2.convert_markdown(stix_object["description"])
                     if "description" in stix_object
+                    else None
+                ),
+                content=(
+                    self.opencti.stix2.convert_markdown(stix_object["content"])
+                    if "content" in stix_object
                     else None
                 ),
                 severity=stix_object["severity"] if "severity" in stix_object else None,
