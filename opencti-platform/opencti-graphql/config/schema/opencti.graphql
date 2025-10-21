@@ -2698,6 +2698,11 @@ type Representative {
   secondary: String
 }
 
+enum UnknownStixCoreObjectsOrdering {
+  _score
+  value
+}
+
 enum StixCoreObjectsOrdering {
   name
   entity_type
@@ -13619,6 +13624,12 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  unknownStixCoreObjects(
+    filters: FilterGroup
+    values: [String!]!
+    orderBy: UnknownStixCoreObjectsOrdering
+    ordreMode: FilterGroup
+  ): [String!]! @auth(for: [KNOWLEDGE])
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(
     authorId: String

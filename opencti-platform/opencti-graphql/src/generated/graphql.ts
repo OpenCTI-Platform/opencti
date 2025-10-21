@@ -21659,6 +21659,7 @@ export type Query = {
   triggersActivity?: Maybe<TriggerConnection>;
   triggersKnowledge?: Maybe<TriggerConnection>;
   triggersKnowledgeCount?: Maybe<Scalars['Int']['output']>;
+  unknownStixCoreObjects: Array<Scalars['String']['output']>;
   user?: Maybe<User>;
   userAlreadyExists?: Maybe<Scalars['Boolean']['output']>;
   users?: Maybe<UserConnection>;
@@ -24512,6 +24513,14 @@ export type QueryTriggersKnowledgeCountArgs = {
   filters?: InputMaybe<FilterGroup>;
   includeAuthorities?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryUnknownStixCoreObjectsArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  orderBy?: InputMaybe<UnknownStixCoreObjectsOrdering>;
+  ordreMode?: InputMaybe<FilterGroup>;
+  values: Array<Scalars['String']['input']>;
 };
 
 
@@ -31562,6 +31571,11 @@ export enum UnitSystem {
   Auto = 'auto'
 }
 
+export enum UnknownStixCoreObjectsOrdering {
+  Score = '_score',
+  Value = 'value'
+}
+
 export type UpdateConnectorManagerStatusInput = {
   id: Scalars['ID']['input'];
 };
@@ -34877,6 +34891,7 @@ export type ResolversTypes = ResolversObject<{
   TriggersOrdering: TriggersOrdering;
   TypeAttribute: ResolverTypeWrapper<TypeAttribute>;
   UnitSystem: UnitSystem;
+  UnknownStixCoreObjectsOrdering: UnknownStixCoreObjectsOrdering;
   UpdateConnectorManagerStatusInput: UpdateConnectorManagerStatusInput;
   Upload: ResolverTypeWrapper<Scalars['Upload']['output']>;
   Url: ResolverTypeWrapper<Omit<Url, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
@@ -43265,6 +43280,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   triggersActivity?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersActivityArgs>>;
   triggersKnowledge?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeArgs>>;
   triggersKnowledgeCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryTriggersKnowledgeCountArgs>>;
+  unknownStixCoreObjects?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryUnknownStixCoreObjectsArgs, 'values'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserArgs, 'id'>>;
   userAlreadyExists?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryUserAlreadyExistsArgs, 'name'>>;
   users?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType, Partial<QueryUsersArgs>>;

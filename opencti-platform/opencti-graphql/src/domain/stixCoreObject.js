@@ -66,7 +66,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefRelations, stixObjectOrRelationshipDeleteRefRelation } from './stixObjectOrStixRelationship';
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
-import { extractEntityRepresentativeName } from '../database/entity-representative';
+import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
@@ -151,6 +151,31 @@ export const globalSearchPaginated = async (context, user, args) => {
   const context_data = { input: args, search: args.search };
   await publishUserAction({ user, event_type: 'command', event_scope: 'search', event_access: 'extended', context_data });
   return findStixCoreObjectPaginated(context, user, args);
+};
+
+export const findUnknownStixCoreObjects = async (context, user, args) => {
+  const { values, filters, orderBy, orderMode } = args;
+  const knownScos = await globalSearchPaginated(context, user, { filters });
+  const knownNodes = knownScos.edges.map((n) => n.node) ?? [];
+
+  const isStixObjectMatchWithSearchValue = (stixObject, value) => {
+    const representativeMatch = value.toLowerCase() === extractRepresentative(stixObject).main.toLowerCase();
+    if (!representativeMatch) {
+      // try to find in hashes
+      if (stixObject.hashes) {
+        const hashMatch = stixObject.hashes.some((h) => h?.hash === value);
+        if (hashMatch) return hashMatch;
+      }
+    }
+    return representativeMatch;
+  };
+
+  const unknownValues = values.filter((value) => {
+    const resolvedScos = knownNodes.filter((o) => isStixObjectMatchWithSearchValue(o, value)) ?? [];
+    return resolvedScos.length === 0;
+  });
+  // return unknownValues.sort((a, b) => a.localCompare(b));
+  return unknownValues;
 };
 
 export const findStixCoreObjectRestrictedPaginated = async (context, user, args) => {
