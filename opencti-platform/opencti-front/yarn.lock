@@ -122,16 +122,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@asamuzakjp/dom-selector@npm:^6.5.4":
-  version: 6.7.0
-  resolution: "@asamuzakjp/dom-selector@npm:6.7.0"
+"@asamuzakjp/dom-selector@npm:^6.7.2":
+  version: 6.7.2
+  resolution: "@asamuzakjp/dom-selector@npm:6.7.2"
   dependencies:
     "@asamuzakjp/nwsapi": "npm:^2.3.9"
     bidi-js: "npm:^1.0.3"
     css-tree: "npm:^3.1.0"
     is-potential-custom-element-name: "npm:^1.0.1"
     lru-cache: "npm:^11.2.2"
-  checksum: 10c0/e327d29e15d5273721cfb58b074fc1ae5da7864fb8a4c06948f4e1e0ffeebfd2e99f6dea82493977d836f6ae44de2394d24b9d3b0e40d35ec092055ef30a65e9
+  checksum: 10c0/b0cb6a5540dc70c9ace3fa91bdd84cf12be7817451d8522d8aaa19f806edc52f500647055ac2b806a93213b9756cd8cae9958fac8dcffbaecaef5dadabf1674f
   languageName: node
   linkType: hard
 
@@ -9005,7 +9005,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cssstyle@npm:^5.3.0":
+"cssstyle@npm:^5.3.1":
   version: 5.3.1
   resolution: "cssstyle@npm:5.3.1"
   dependencies:
@@ -9540,10 +9540,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"decimal.js@npm:^10.5.0":
-  version: 10.5.0
-  resolution: "decimal.js@npm:10.5.0"
-  checksum: 10c0/785c35279df32762143914668df35948920b6c1c259b933e0519a69b7003fc0a5ed2a766b1e1dda02574450c566b21738a45f15e274b47c2ac02072c0d1f3ac3
+"decimal.js@npm:^10.6.0":
+  version: 10.6.0
+  resolution: "decimal.js@npm:10.6.0"
+  checksum: 10c0/07d69fbcc54167a340d2d97de95f546f9ff1f69d2b45a02fd7a5292412df3cd9eb7e23065e532a318f5474a2e1bccf8392fdf0443ef467f97f3bf8cb0477e5aa
   languageName: node
   linkType: hard
 
@@ -13442,19 +13442,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsdom@npm:27.0.0":
-  version: 27.0.0
-  resolution: "jsdom@npm:27.0.0"
+"jsdom@npm:27.0.1":
+  version: 27.0.1
+  resolution: "jsdom@npm:27.0.1"
   dependencies:
-    "@asamuzakjp/dom-selector": "npm:^6.5.4"
-    cssstyle: "npm:^5.3.0"
+    "@asamuzakjp/dom-selector": "npm:^6.7.2"
+    cssstyle: "npm:^5.3.1"
     data-urls: "npm:^6.0.0"
-    decimal.js: "npm:^10.5.0"
+    decimal.js: "npm:^10.6.0"
     html-encoding-sniffer: "npm:^4.0.0"
     http-proxy-agent: "npm:^7.0.2"
     https-proxy-agent: "npm:^7.0.6"
     is-potential-custom-element-name: "npm:^1.0.1"
-    parse5: "npm:^7.3.0"
+    parse5: "npm:^8.0.0"
     rrweb-cssom: "npm:^0.8.0"
     saxes: "npm:^6.0.0"
     symbol-tree: "npm:^3.2.4"
@@ -13463,15 +13463,15 @@ __metadata:
     webidl-conversions: "npm:^8.0.0"
     whatwg-encoding: "npm:^3.1.1"
     whatwg-mimetype: "npm:^4.0.0"
-    whatwg-url: "npm:^15.0.0"
-    ws: "npm:^8.18.2"
+    whatwg-url: "npm:^15.1.0"
+    ws: "npm:^8.18.3"
     xml-name-validator: "npm:^5.0.0"
   peerDependencies:
     canvas: ^3.0.0
   peerDependenciesMeta:
     canvas:
       optional: true
-  checksum: 10c0/cc977bd0f48f92b275166b3e64622d83c2073dc309b790ed806246365985743295a7735bc8519a186ccffd42d1f2c16a0fa52a4ea79d2b329a948756db64ade1
+  checksum: 10c0/563ff3ebfd9a3dc66082cdf2427198b647993753b4c37b2d0064b5b47cf7be5154c62df10eb8122254f7b89c73ecb6fc870fa038e22ab9975b23079ee62e050e
   languageName: node
   linkType: hard
 
@@ -15584,7 +15584,7 @@ __metadata:
     is-svg: "npm:6.1.0"
     js-base64: "npm:3.7.8"
     js-file-download: "npm:0.4.12"
-    jsdom: "npm:27.0.0"
+    jsdom: "npm:27.0.1"
     json5: "npm:2.2.3"
     leaflet: "npm:1.9.4"
     license-checker-rseidelsohn: "npm:4.4.2"
@@ -15822,12 +15822,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"parse5@npm:^7.3.0":
-  version: 7.3.0
-  resolution: "parse5@npm:7.3.0"
+"parse5@npm:^8.0.0":
+  version: 8.0.0
+  resolution: "parse5@npm:8.0.0"
   dependencies:
     entities: "npm:^6.0.0"
-  checksum: 10c0/7fd2e4e247e85241d6f2a464d0085eed599a26d7b0a5233790c49f53473232eb85350e8133344d9b3fd58b89339e7ad7270fe1f89d28abe50674ec97b87f80b5
+  checksum: 10c0/8279892dcd77b2f2229707f60eb039e303adf0288812b2a8fd5acf506a4d432da833c6c5d07a6554bef722c2367a81ef4a1f7e9336564379a7dba3e798bf16b3
   languageName: node
   linkType: hard
 
@@ -19835,7 +19835,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"whatwg-url@npm:^15.0.0":
+"whatwg-url@npm:^15.0.0, whatwg-url@npm:^15.1.0":
   version: 15.1.0
   resolution: "whatwg-url@npm:15.1.0"
   dependencies:
@@ -20090,7 +20090,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:^8.18.2":
+"ws@npm:^8.18.3":
   version: 8.18.3
   resolution: "ws@npm:8.18.3"
   peerDependencies:

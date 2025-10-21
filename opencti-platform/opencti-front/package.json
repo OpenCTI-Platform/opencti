@@ -166,7 +166,7 @@
     "fs-extra": "11.3.2",
     "http-proxy-middleware": "3.0.5",
     "i18n-auto-translation": "2.2.3",
-    "jsdom": "27.0.0",
+    "jsdom": "27.0.1",
     "license-checker-rseidelsohn": "4.4.2",
     "monocart-reporter": "2.9.23",
     "relay-compiler": "20.1.1",
