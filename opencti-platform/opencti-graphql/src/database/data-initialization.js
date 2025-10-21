@@ -13,14 +13,7 @@ import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
-import {
-  KNOWLEDGE_COLLABORATION,
-  KNOWLEDGE_DELETE,
-  KNOWLEDGE_FRONTEND_EXPORT,
-  KNOWLEDGE_MANAGE_AUTH_MEMBERS,
-  KNOWLEDGE_MERGE,
-  KNOWLEDGE_UPDATE
-} from '../schema/general';
+import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_MERGE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
