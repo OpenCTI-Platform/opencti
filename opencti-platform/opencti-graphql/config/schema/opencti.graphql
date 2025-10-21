@@ -15103,7 +15103,7 @@ type Mutation {
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
   ######## STIX OBJECT
-  stixEdit(id: ID!): StixEditMutations @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  stixEdit(id: ID!): StixEditMutations @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE])
 
   ######## STIX OBJECT ENTITIES
 

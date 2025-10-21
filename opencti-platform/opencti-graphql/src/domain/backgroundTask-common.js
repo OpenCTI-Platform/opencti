@@ -14,7 +14,7 @@ import {
   SETTINGS_SETLABELS,
   SYSTEM_USER
 } from '../utils/access';
-import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_UPDATE } from '../schema/general';
+import { isKnowledge, KNOWLEDGE_DELETE, KNOWLEDGE_MERGE, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
@@ -105,7 +105,15 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess();
       }
     }
-    // 2.3. Check the targeted entities are of type Knowledge
+    // 2.3. If merge action, the user should have the capability KNOWLEDGE_MERGE
+    const askForMergeAction = actions.filter((a) => a.type === ACTION_TYPE_MERGE).length > 0;
+    if (askForMergeAction) {
+      const isMergeActionAuthorized = isUserHasCapability(user, KNOWLEDGE_MERGE);
+      if (!isMergeActionAuthorized) {
+        throw ForbiddenAccess();
+      }
+    }
+    // 2.4. Check the targeted entities are of type Knowledge
     if (taskType === TASK_TYPE_QUERY) {
       const acceptedInternalTypes = entityTypeFiltersValues.every((type) => type === ENTITY_TYPE_DELETE_OPERATION || type === ENTITY_TYPE_DRAFT_WORKSPACE);
       const parentTypes = entityTypeFiltersValues.map((n) => getParentTypes(n));
