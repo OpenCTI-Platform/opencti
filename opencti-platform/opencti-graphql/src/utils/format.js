@@ -218,7 +218,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_MUTEX:
       return stixCyberObservable.name || 'Unknown';
     case ENTITY_NETWORK_TRAFFIC:
-      return stixCyberObservable.dst_port || 'Unknown';
+      return stixCyberObservable.dst_port || stixCyberObservable.src_port || 'Unknown';
     case ENTITY_PROCESS:
       return stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown';
     case ENTITY_SOFTWARE:
