@@ -6,6 +6,7 @@ export const STIX_TYPE_RELATION = 'relationship';
 export const STIX_TYPE_SIGHTING = 'sighting';
 
 export const KNOWLEDGE_DELETE = 'KNDELETE';
+export const KNOWLEDGE_MERGE = 'KNMERGE';
 export const KNOWLEDGE_MANAGE_AUTH_MEMBERS = 'KNMANAGEAUTHMEMBERS';
 export const KNOWLEDGE_UPDATE = 'KNUPDATE';
 export const KNOWLEDGE_FRONTEND_EXPORT = 'KNFRONTENDEXPORT';

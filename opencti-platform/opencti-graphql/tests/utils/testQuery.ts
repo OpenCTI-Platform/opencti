@@ -118,6 +118,7 @@ export const ROLE_EDITOR: Role = {
   description: 'Knowledge/exploration edit/delete',
   capabilities: [
     'KNOWLEDGE_KNUPDATE_KNDELETE',
+    'KNOWLEDGE_KNUPDATE_KNMERGE',
     'EXPLORE_EXUPDATE_EXDELETE',
     'EXPLORE_EXUPDATE_PUBLISH',
     'TAXIIAPI_SETCOLLECTIONS',
@@ -130,7 +131,7 @@ export const ROLE_SECURITY: Role = {
   id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration/settings and edit/delete' }),
   name: 'Access knowledge/exploration/settings and edit/delete',
   description: 'Knowledge/exploration/settings edit/delete',
-  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'INVESTIGATION_INUPDATE_INDELETE', 'SETTINGS_SETACCESSES', 'SETTINGS_SECURITYACTIVITY']
+  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'KNOWLEDGE_KNUPDATE_KNMERGE', 'EXPLORE_EXUPDATE_EXDELETE', 'INVESTIGATION_INUPDATE_INDELETE', 'SETTINGS_SETACCESSES', 'SETTINGS_SECURITYACTIVITY']
 };
 TESTING_ROLES.push(ROLE_SECURITY);
 
@@ -141,6 +142,7 @@ export const ROLE_TEST_CONNECTOR: Role = {
   description: 'Access knowledge CRUD + connector, bypass ref, set marking, set labels',
   capabilities: [
     'KNOWLEDGE_KNUPDATE_KNDELETE',
+    'KNOWLEDGE_KNUPDATE_KNMERGE',
     'KNOWLEDGE_KNUPLOAD',
     'KNOWLEDGE_KNASKIMPORT',
     'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
@@ -162,6 +164,7 @@ export const ROLE_DISINFORMATION_ANALYST: Role = {
   capabilities: [
     'KNOWLEDGE_KNPARTICIPATE',
     'KNOWLEDGE_KNUPDATE_KNDELETE',
+    'KNOWLEDGE_KNUPDATE_KNMERGE',
     'KNOWLEDGE_KNUPLOAD',
     'KNOWLEDGE_KNASKIMPORT',
     'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
@@ -706,7 +709,7 @@ export const buildStandardUser = (
     user_email: 'user@opencti.io',
     roles: [DEFAULT_ROLE],
     groups: [],
-    capabilities: capabilities ?? [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }],
+    capabilities: capabilities ?? [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }],
     allowed_marking: allowedMarkings as StoreMarkingDefinition[],
     default_marking: [],
     max_shareable_marking: [],

@@ -43,6 +43,7 @@ enum Capabilities {
   KNOWLEDGE_KNUPDATE
   KNOWLEDGE_KNPARTICIPATE
   KNOWLEDGE_KNUPDATE_KNDELETE
+  KNOWLEDGE_KNUPDATE_KNMERGE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS
   KNOWLEDGE_KNUPLOAD
@@ -14632,7 +14633,7 @@ type SynchronizerEditMutations {
 ######## STIX OBJECT
 type StixEditMutations {
   delete(forceDelete: Boolean): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  merge(stixObjectsIds: [String]!): StixObject @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  merge(stixObjectsIds: [String]!): StixObject @auth(for: [KNOWLEDGE_KNUPDATE_KNMERGE])
 }
 
 ######## STIX OBJECT ENTITIES

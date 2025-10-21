@@ -2012,6 +2012,7 @@ export enum Capabilities {
   KnowledgeKnupdate = 'KNOWLEDGE_KNUPDATE',
   KnowledgeKnupdateKndelete = 'KNOWLEDGE_KNUPDATE_KNDELETE',
   KnowledgeKnupdateKnmanageauthmembers = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
+  KnowledgeKnupdateKnmerge = 'KNOWLEDGE_KNUPDATE_KNMERGE',
   KnowledgeKnupdateKnorgarestrict = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
   KnowledgeKnupload = 'KNOWLEDGE_KNUPLOAD',
   Modules = 'MODULES',

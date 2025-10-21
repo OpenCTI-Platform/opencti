@@ -49,6 +49,7 @@ describe('Background task validity check (checkActionValidity)', () => {
   const userUpdate = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE' }]);
   const userEditor = buildStandardUser([], [], [
     { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' },
+    { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' },
     { name: 'KNOWLEDGE_KNASKIMPORT' },
     { name: 'EXPLORE_EXUPDATE_EXDELETE' },
     { name: 'EXPLORE_EXUPDATE_PUBLISH' },
