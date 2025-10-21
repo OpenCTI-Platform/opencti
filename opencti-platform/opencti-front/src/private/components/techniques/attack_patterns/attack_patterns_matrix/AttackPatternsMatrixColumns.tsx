@@ -271,20 +271,20 @@ const AttackPatternsMatrixColumns = ({
 
                           if (isCoverage && coverageMap) {
                             // Check if parent or any sub-technique is covered
-                            const hasAnyCoveredSubTechniques = ap.subAttackPatterns?.some((sub: any) => sub.isCovered);
+                            const hasAnyCoveredSubTechniques = ap.subAttackPatterns?.some((sub) => sub.isCovered);
 
                             if (ap.isCovered || hasAnyCoveredSubTechniques) {
                               const parentCoverage = ap.isCovered ? coverageMap.get(ap.attack_pattern_id) : null;
                               const subCoverages = ap.subAttackPatterns
-                                ?.filter((sub: any) => sub.isCovered)
-                                ?.map((sub: any) => coverageMap.get(sub.attack_pattern_id))
+                                ?.filter((sub) => sub.isCovered)
+                                ?.map((sub) => coverageMap.get(sub.attack_pattern_id))
                                 .filter(Boolean)
                                 .flat() || [];
 
                               const allCoverages = [...(parentCoverage || []), ...subCoverages];
 
                               if (allCoverages.length > 0) {
-                                const avgScore = allCoverages.reduce((sum: number, c: any) => sum + (c.coverage_score || 0), 0) / allCoverages.length;
+                                const avgScore = allCoverages.reduce((sum, c) => sum + (c.coverage_score || 0), 0) / allCoverages.length;
                                 // Green to red gradient for badge
                                 const red = Math.round(255 * (1 - avgScore / 100));
                                 const green = Math.round(255 * (avgScore / 100));
