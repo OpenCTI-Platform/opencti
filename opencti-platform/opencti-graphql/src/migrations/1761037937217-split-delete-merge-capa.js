@@ -3,9 +3,10 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { elLoadById, elReplace } from '../database/engine';
 import { addCapability } from '../domain/grant';
 import { fullEntitiesList } from '../database/middleware-loader';
-import { ENTITY_TYPE_ROLE } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { roleCapabilities } from '../domain/user';
 import { createRelation } from '../database/middleware';
+import { generateStandardId } from '../schema/identifier';
 
 const message = '[MIGRATION] Split "Delete / Merge knowledge" capability in two separated capabilities';
 
@@ -13,7 +14,8 @@ export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');
   // Rename Delete knowledge capability
-  const deleteCapability = await elLoadById(context, SYSTEM_USER, 'capability--be60f4fc-8d91-59f6-925a-1b211a06d086');
+  const deleteCapaStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' });
+  const deleteCapability = await elLoadById(context, SYSTEM_USER, deleteCapaStandardId);
   if (deleteCapability) {
     const deleteCapabilityPatch = { description: 'Delete knowledge' };
     await elReplace(deleteCapability._index, deleteCapability.internal_id, { doc: deleteCapabilityPatch });
