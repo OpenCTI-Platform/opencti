@@ -11239,9 +11239,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-calls-python@patch:node-calls-python@1.11.1#./patch/node-calls-python-1.9.1.patch::locator=opencti-graphql%40workspace%3A.":
+"node-calls-python@patch:node-calls-python@1.11.1#./patch/node-calls-python.patch::locator=opencti-graphql%40workspace%3A.":
   version: 1.11.1
-  resolution: "node-calls-python@patch:node-calls-python@npm%3A1.11.1#./patch/node-calls-python-1.9.1.patch::version=1.11.1&hash=13bcc5&locator=opencti-graphql%40workspace%3A."
+  resolution: "node-calls-python@patch:node-calls-python@npm%3A1.11.1#./patch/node-calls-python.patch::version=1.11.1&hash=13bcc5&locator=opencti-graphql%40workspace%3A."
   dependencies:
     chokidar: "npm:^3.6.0"
     node-gyp: "npm:latest"

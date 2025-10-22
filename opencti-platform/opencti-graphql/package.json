@@ -220,7 +220,7 @@
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "graphql": "patch:graphql@16.11.0#./patch/graphql-16.8.1.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
-    "node-calls-python": "patch:node-calls-python@1.11.1#./patch/node-calls-python-1.9.1.patch",
+    "node-calls-python": "patch:node-calls-python@1.11.1#./patch/node-calls-python.patch",
     "openid-client": "patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch"
   },
   "dependenciesMeta": {
