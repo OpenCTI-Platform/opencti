@@ -4781,14 +4781,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:5.0.1":
-  version: 5.0.1
-  resolution: "@types/express@npm:5.0.1"
+"@types/express@npm:5.0.3":
+  version: 5.0.3
+  resolution: "@types/express@npm:5.0.3"
   dependencies:
     "@types/body-parser": "npm:*"
     "@types/express-serve-static-core": "npm:^5.0.0"
     "@types/serve-static": "npm:*"
-  checksum: 10c0/e1385028c7251360ce916aab0e304187b613ca18cb9aa3fa90794a337e5b2e0c76330d467f41d3b3e936ce5336c4f3e63e323dc01192cf20f9686905daa6d00a
+  checksum: 10c0/f0fbc8daa7f40070b103cf4d020ff1dd08503477d866d1134b87c0390bba71d5d7949cb8b4e719a81ccba89294d8e1573414e6dcbb5bb1d097a7b820928ebdef
   languageName: node
   linkType: hard
 
@@ -11684,7 +11684,7 @@ __metadata:
     "@types/bluebird": "npm:3.5.42"
     "@types/content-type": "npm:1.1.9"
     "@types/ejs": "npm:3.1.5"
-    "@types/express": "npm:5.0.1"
+    "@types/express": "npm:5.0.3"
     "@types/graphql-upload": "npm:17.0.0"
     "@types/luxon": "npm:3.7.1"
     "@types/mime-types": "npm:3.0.1"
