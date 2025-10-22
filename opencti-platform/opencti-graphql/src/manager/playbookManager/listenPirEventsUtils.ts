@@ -3,7 +3,7 @@ import { stixLoadById } from '../../database/middleware';
 import { FilterMode } from '../../generated/graphql';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, NodeDefinition } from '../../modules/playbook/playbook-types';
-import type { PirStreamConfiguration } from '../../modules/playbook/playbookComponents/playbook-data-stream-pir-component';
+import type { PirStreamConfiguration } from '../../modules/playbook/components/data-stream-pir-component';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { isStixRelation } from '../../schema/stixRelationship';
 import type { SseEvent, StreamDataEvent } from '../../types/event';

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { isEmptyField } from '../../database/utils';
-import { AUTOMATION_MANAGER_USER, executionContext, INTERNAL_USERS } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, executionContext, isInternalUser } from '../../utils/access';
 import { getEntitiesListFromCache } from '../../database/cache';
 import type { AuthUser } from '../../types/user';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -15,12 +15,25 @@ export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle)
   return baseData;
 };
 
-export const convertMembersToUsers = async (members: { value: string }[], baseData: StixObject, bundle: StixBundle) => {
-  if (isEmptyField(members)) {
-    return [];
-  }
-  const context = executionContext('playbook_components');
-  const platformUsers = await getEntitiesListFromCache<AuthUser>(context, AUTOMATION_MANAGER_USER, ENTITY_TYPE_USER);
+/**
+ * Returns the list of all users authorized based on given members array.
+ *
+ * @param members Array of members.
+ * @param baseData Data from event.
+ * @param bundle Stix bundle transiting through playbook components.
+ * @returns List of users.
+ */
+export const convertMembersToUsers = async (
+  members: { value: string }[],
+  baseData: StixObject,
+  bundle: StixBundle
+) => {
+  if (isEmptyField(members)) return [];
+  const platformUsers = await getEntitiesListFromCache<AuthUser>(
+    executionContext('playbook_components'),
+    AUTOMATION_MANAGER_USER,
+    ENTITY_TYPE_USER
+  );
 
   const membersIds: string[] = [];
   members?.forEach((m) => {
@@ -44,12 +57,12 @@ export const convertMembersToUsers = async (members: { value: string }[], baseDa
     }
   });
 
-  const usersFromGroups = platformUsers.filter((user) => user.groups.map((g) => g.internal_id)
-    .some((id: string) => membersIds.includes(id)));
-  const usersFromOrganizations = platformUsers.filter((user) => user.organizations.map((g) => g.internal_id)
-    .some((id: string) => membersIds.includes(id)));
-  const usersFromIds = platformUsers.filter((user) => membersIds.includes(user.id));
-  const withoutInternalUsers = [...usersFromOrganizations, ...usersFromGroups, ...usersFromIds]
-    .filter((u) => INTERNAL_USERS[u.id] === undefined);
-  return R.uniqBy(R.prop('id'), withoutInternalUsers);
+  const users = platformUsers.filter((user) => {
+    if (isInternalUser(user)) return false;
+    const isDirectlyAuthorized = membersIds.includes(user.id);
+    const isAuthorizedByGroup = user.groups.some((g) => membersIds.includes(g.internal_id));
+    const isAuthorizedByOrganization = user.organizations.some((o) => membersIds.includes(o.internal_id));
+    return isDirectlyAuthorized || isAuthorizedByGroup || isAuthorizedByOrganization;
+  });
+  return R.uniqBy(R.prop('id'), users);
 };

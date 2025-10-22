@@ -89,9 +89,9 @@ import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-te
 import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { removeOrganizationRestriction } from '../../domain/stix';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
-import { PLAYBOOK_DATA_STREAM_PIR } from './playbookComponents/playbook-data-stream-pir-component';
-import { PLAYBOOK_NOTIFIER_COMPONENT } from './playbookComponents/playbook-notifier-component';
+import { extractBundleBaseElement } from './playbook-utils';
+import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
+import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
