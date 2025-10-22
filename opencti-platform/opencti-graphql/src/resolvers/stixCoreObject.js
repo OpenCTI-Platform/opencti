@@ -44,7 +44,8 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationshipsPaginated, findUnknownStixCoreObjects
+  stixCoreRelationshipsPaginated,
+  findUnknownStixCoreObjects,
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
