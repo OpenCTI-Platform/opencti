@@ -28,6 +28,7 @@ const securityCoverageFragment = graphql`
     coverage_last_result
     coverage_valid_from
     coverage_valid_to
+    auto_enrichment_disable
     coverage_information {
       coverage_name
       coverage_score

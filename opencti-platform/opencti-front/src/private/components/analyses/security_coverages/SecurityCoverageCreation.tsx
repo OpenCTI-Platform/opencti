@@ -25,13 +25,14 @@ import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import CoverageInformationField from '../../common/form/CoverageInformationField';
+import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformationField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -91,14 +92,15 @@ interface ConnectorsQueryProps {
 }
 
 const securityCoverageMutation = graphql`
-  mutation SecurityCoverageCreationMutation($input: SecurityCoverageAddInput!, $noEnrichment: Boolean) {
-    securityCoverageAdd(input: $input, noEnrichment: $noEnrichment) {
+  mutation SecurityCoverageCreationMutation($input: SecurityCoverageAddInput!) {
+    securityCoverageAdd(input: $input) {
       id
       standard_id
       name
       description
       entity_type
       parent_types
+      auto_enrichment_disable
       coverage_information {
         coverage_name
         coverage_score
@@ -225,6 +227,7 @@ export interface SecurityCoverageFormProps {
 interface SecurityCoverageFormValues {
   name: string;
   description: string;
+  auto_enrichment_disable: boolean;
   confidence: number | undefined;
   createdBy?: FieldOption;
   objectMarking: { value: string }[];
@@ -396,9 +399,9 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
           coverage_name: info.coverage_name,
           coverage_score: Number(info.coverage_score),
         })),
-      } : {
-        periodicity: values.periodicity,
-      }),
+      } : {}),
+      periodicity: values.periodicity,
+      auto_enrichment_disable: values.auto_enrichment_disable,
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
@@ -408,7 +411,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     commitMutation({
       variables: {
         input: finalValues,
-        noEnrichment: mode === 'manual',
       },
       updater: (store) => {
         if (updater) {
@@ -438,6 +440,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       confidence: defaultConfidence,
+      auto_enrichment_disable: mode === 'manual',
       objectLabel: [],
       coverage_information: [],
       periodicity: 'P1D',
@@ -674,35 +677,38 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
               rows={4}
               style={fieldSpacingContainerStyle}
             />
+            <ConfidenceField
+              containerStyle={fieldSpacingContainerStyle}
+              entityType="Security-Coverage"
+            />
+            <PeriodicityField
+              name="periodicity"
+              label={t_i18n('Coverage validity period')}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              disabled={true}
+              name="auto_enrichment_disable"
+              label={t_i18n('Force manual coverage (prevent enrichment connectors from running)')}
+              containerstyle={fieldSpacingContainerStyle}
+            />
             {mode === 'manual' && (
               <>
-                <ConfidenceField
-                  containerStyle={fieldSpacingContainerStyle}
-                  entityType="Security-Coverage"
-                />
-                <CoverageInformationField
+                <CoverageInformationFieldAdd
                   name="coverage_information"
                   values={values.coverage_information}
                   setFieldValue={setFieldValue}
                 />
-                <CreatedByField
-                  name="createdBy"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
               </>
             )}
-
-            {mode === 'automated' && (
-              <PeriodicityField
-                name="periodicity"
-                label={t_i18n('Coverage update periodicity')}
-                style={fieldSpacingContainerStyle}
-                setFieldValue={setFieldValue}
-                helperText={t_i18n('How often the enrichment connector should run')}
-              />
-            )}
-
+            <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
             <ObjectLabelField
               name="objectLabel"
               style={fieldSpacingContainerStyle}
@@ -767,7 +773,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         initialValues={initialValues}
         validationSchema={securityCoverageValidation(t_i18n, mode === 'automated')}
         onSubmit={onSubmit}
-        onReset={handleClose}
       >
         {({ values, isSubmitting, setFieldValue, resetForm, submitForm }) => (
           <Form>

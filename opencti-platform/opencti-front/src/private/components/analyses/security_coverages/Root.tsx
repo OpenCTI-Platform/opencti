@@ -189,7 +189,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                   id={securityCoverageId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
-                  entity={securityCoverageId}
+                  entity={securityCoverage}
                 />
                }
             />

@@ -8,6 +8,7 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import { CoverageInformationFieldEdit } from '@components/common/form/CoverageInformationField';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -17,7 +18,6 @@ import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import CommitMessage from '../form/CommitMessage';
-import CoverageInformationField from '../form/CoverageInformationField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
@@ -405,11 +405,12 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 }
               />
               {isCoverage && (
-                <CoverageInformationField
+                <CoverageInformationFieldEdit
+                  id={stixCoreRelationship.id}
                   name="coverage"
+                  mode={'relation'}
                   values={[...(stixCoreRelationship.coverage_information || [])]}
                   containerStyle={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
                 />
               )}
               <KillChainPhasesField

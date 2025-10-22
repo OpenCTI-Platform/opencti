@@ -114,7 +114,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
           return <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
             <div className={classes.chart}>
               <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize}/>
-              <Tooltip title={`${t_i18n(coverageResult.coverage_name)}`} placement="bottom">
+              <Tooltip title={coverageResult.coverage_name} placement="bottom">
                 <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
                   <span style={{ color: '#ffffff' }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
                 </Avatar>
@@ -166,7 +166,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
             <div className={classes.chartContainer}>
               <div className={classes.chart}>
                 <Chart options={options} series={series} type="donut" width={70} height={70}/>
-                <Tooltip title={`${t_i18n(coverageResult.coverage_name)}`} placement="top">
+                <Tooltip title={coverageResult.coverage_name} placement="top">
                   <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }}>
                     <span style={{ color: '#ffffff', fontSize: 18 }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
                   </Avatar>
@@ -177,7 +177,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
               {coverageResult.coverage_score}%
             </div>
             <div className={classes.coverageName}>
-              {t_i18n(coverageResult.coverage_name)}
+              {coverageResult.coverage_name}
             </div>
           </div>
         );

@@ -8,6 +8,7 @@ interface PeriodicityFieldProps {
   label?: string;
   style?: React.CSSProperties;
   helperText?: string;
+  handleOnChange?: (value: string | null) => void;
   setFieldValue?: (field: string, value: unknown, shouldValidate?: boolean) => void;
 }
 
@@ -40,6 +41,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
   label,
   style,
   helperText,
+  handleOnChange,
   setFieldValue,
 }) => {
   const { t_i18n } = useFormatter();
@@ -66,6 +68,9 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                 durationString = `PT${value}${unit}`;
               }
               setFieldValue(name, durationString);
+              if (handleOnChange) {
+                handleOnChange(durationString);
+              }
             }
           }, [value, unit]);
 

@@ -2426,6 +2426,15 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           pir_ids
         }
       );
+      // region Security coverage hook
+      // TODO Implements a more generic approach to notify enrichment
+      // If entity is currently covered
+      const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
+      if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
+        const securityCoverage = await internalLoadById(context, user, data.updatedInstance[RELATION_COVERED]);
+        await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
+      }
+      // endregion
       return { element: updatedInstance, event, isCreation: false };
     }
     // Return updated element after waiting for it.
@@ -3466,9 +3475,9 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   // volumes of objects relationships must be controlled
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
-  if (data.isCreation && !opts.noEnrichment) {
+  if (data.isCreationt) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
-  } else if (!opts.noEnrichment) { // upsert
+  } else { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;

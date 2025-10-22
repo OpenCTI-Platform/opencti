@@ -146,6 +146,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
   periodicity: String
+  auto_enrichment_disable: Boolean
   objectCovered: StixDomainObject
   toStixBundle: String
 }
@@ -206,6 +207,7 @@ input SecurityCoverageAddInput {
   externalReferences: [String]
   update: Boolean
   # coverage specific
+  auto_enrichment_disable: Boolean!
   periodicity: String
   coverage_last_result: DateTime
   coverage_valid_from: DateTime
@@ -214,7 +216,7 @@ input SecurityCoverageAddInput {
 }
 
 type Mutation {
-  securityCoverageAdd(input: SecurityCoverageAddInput!, noEnrichment: Boolean): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
+  securityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   securityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])
   securityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage @auth(for: [KNOWLEDGE_KNUPDATE])

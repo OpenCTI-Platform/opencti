@@ -16726,7 +16726,6 @@ export type MutationSectorEditArgs = {
 
 export type MutationSecurityCoverageAddArgs = {
   input: SecurityCoverageAddInput;
-  noEnrichment?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -25940,6 +25939,7 @@ export enum SectorsOrdering {
 
 export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'SecurityCoverage';
+  auto_enrichment_disable?: Maybe<Scalars['Boolean']['output']>;
   avatar?: Maybe<OpenCtiFile>;
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']['output']>;
@@ -26155,6 +26155,7 @@ export type SecurityCoverageStixCoreRelationshipsDistributionArgs = {
 };
 
 export type SecurityCoverageAddInput = {
+  auto_enrichment_disable: Scalars['Boolean']['input'];
   confidence?: InputMaybe<Scalars['Int']['input']>;
   coverage_information?: InputMaybe<Array<SecurityCoverageExpectation>>;
   coverage_last_result?: InputMaybe<Scalars['DateTime']['input']>;
@@ -44058,6 +44059,7 @@ export type SectorEditMutationsResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type SecurityCoverageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityCoverage'] = ResolversParentTypes['SecurityCoverage']> = ResolversObject<{
+  auto_enrichment_disable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<SecurityCoverageCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
