@@ -1,12 +1,12 @@
 const esbuild = require('esbuild');
 const {default: graphqlLoaderPlugin} = require('@luckycatfactory/esbuild-graphql-loader');
-const nativeNodePlugin = require("../plugin/native.node.plugin");
+const nativeNodePlugin = require('../plugin/native.node.plugin');
 
 esbuild.build({
     logLevel: 'info',
     plugins: [graphqlLoaderPlugin(), nativeNodePlugin()],
     entryPoints: ['script/script-generate-schema.js'],
-    entryNames: "[name]",
+    entryNames: '[name]',
     bundle: true,
     loader: {'.js': 'jsx'},
     platform: 'node',
@@ -17,4 +17,7 @@ esbuild.build({
     sourceRoot: 'src',
     sourcesContent: false,
     outdir: 'build',
+    external: [
+      'apollo-server-errors', // required by graphql-constraint-directive in dead code when using Apollo 4+
+    ],
 });
