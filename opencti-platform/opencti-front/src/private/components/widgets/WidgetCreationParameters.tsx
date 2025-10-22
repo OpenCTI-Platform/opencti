@@ -387,7 +387,7 @@ const WidgetCreationParameters = () => {
                         labelId="relative"
                         size="small"
                         fullWidth={true}
-                        value={dataSelection[i].sort_mode ?? 'asc'}
+                        value={dataSelection[i].sort_mode ?? 'desc'}
                         onChange={(event) => handleChangeDataValidationParameter(i, 'sort_mode', event.target.value)}
                       >
                         <MenuItem value="asc">
