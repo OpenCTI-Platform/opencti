@@ -5,6 +5,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { loadEntity } from '../../../src/database/middleware';
 import { setPlatformId } from '../../../src/database/data-initialization';
+import { entitiesCounter } from '../../utils/entityCountHelper';
 
 describe('Data initialization test', () => {
   it('should have a specific platform_id from config file', async () => {
@@ -29,7 +30,7 @@ describe('Data initialization test', () => {
 
   it('should create all capabilities', async () => {
     const capabilities = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
-    expect(capabilities.length).toEqual(49);
+    expect(capabilities.length).toEqual(entitiesCounter.capability);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'BYPASS',

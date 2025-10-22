@@ -39,6 +39,7 @@ import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/sch
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
 import { mapCountPerEntityType, mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
+import { entitiesCounter } from '../../utils/entityCountHelper';
 
 const elWhiteUser = async () => {
   const opts = { types: ['Marking-Definition'], connectionFormat: false };
@@ -410,11 +411,11 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(49);
+    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.capability);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(44);
+    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.entitySetting);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
@@ -559,11 +560,11 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(49);
+    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.capability);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(44);
+    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.entitySetting);
     expect(entityTypeMap.get('External-Reference')).toBe(7);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
@@ -693,10 +694,10 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('Capability')).toBe(49);
+    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.capability);
     expect(entityTypeMap.get('Credential')).toBe(1);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(44);
+    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.entitySetting);
     expect(entityTypeMap.get('StixFile')).toBe(1);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
     expect(entityTypeMap.get('ManagerConfiguration')).toBe(1);

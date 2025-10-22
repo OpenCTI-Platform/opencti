@@ -10,6 +10,7 @@ import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { pageEntitiesConnection } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
 import { QUERY_REQUEST_ACCESS_SETTINGS } from './requestAccess-test';
+import { entitiesCounter } from '../../utils/entityCountHelper';
 
 const LIST_QUERY = gql`
   query subTypes($type: String) {
@@ -118,7 +119,7 @@ describe('SubType resolver standard behavior', () => {
   });
   it('should list default subTypes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
-    expect(queryResult.data?.subTypes.edges.length).toEqual(44);
+    expect(queryResult.data?.subTypes.edges.length).toEqual(entitiesCounter.entitySetting);
     expect(isSorted(queryResult.data?.subTypes.edges.map((edge: BasicStoreEntityEdge<any>) => edge.node.id))).toEqual(true);
   });
   it('should retrieve mandatory attribute for an entity', async () => {
@@ -146,7 +147,7 @@ describe('SubType resolver for RFI and request access use case', () => {
   it('should statuses list only global workflow statuses (and not request-access one)', async () => {
     const queryResult = await queryAsAdminWithSuccess({ query: SUB_TYPE_FIND_BY_ID_QUERY, variables: { id: ENTITY_TYPE_CONTAINER_CASE_RFI } });
     const workflowStatuses = queryResult.data?.subType.statuses;
-    // From data-initalization we do expect some status
+    // From data-initialization we do expect some status
     expect(workflowStatuses.some((status: any) => status.template.name === 'DECLINED')).toBeFalsy();
     expect(workflowStatuses.some((status: any) => status.template.name === 'APPROVED')).toBeFalsy();
   });
