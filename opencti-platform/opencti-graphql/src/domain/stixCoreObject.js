@@ -163,7 +163,7 @@ export const findUnknownStixCoreObjects = async (context, user, args) => {
     if (!representativeMatch) {
       // try to find in hashes
       if (stixObject.hashes) {
-        const hashMatch = stixObject.hashes.some((h) => h?.hash === value);
+        const hashMatch = Object.values(stixObject.hashes).filter((h) => !!h).some((h) => h === value);
         if (hashMatch) return hashMatch;
       }
     }
