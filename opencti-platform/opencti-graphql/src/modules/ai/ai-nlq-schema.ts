@@ -198,3 +198,5 @@ export const OutputSchema = z.object({
     .describe('The list of filters applied to refine the OpenCTI query.'),
   mode: modeKeysWithDescriptsions,
 });
+
+export type Output = z.infer<typeof OutputSchema>;
