@@ -17,7 +17,7 @@ const EditEntityControlledDial = ({
 }: ButtonOwnProps & CommonProps & DrawerControlledDialProps) => {
   const { t_i18n } = useFormatter();
   const buttonLabel = t_i18n('Update');
-  // Remove create button in Draft context without the minimal right access "canEdit"
+  // Remove Update button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit;
