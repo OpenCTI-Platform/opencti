@@ -1,44 +1,18 @@
 import type { JSONSchemaType } from 'ajv';
 import * as R from 'ramda';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from '../playbook-types';
-import { executionContext, isInternalUser, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
+import { executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
 import { usableNotifiers } from '../../notifier/notifier-domain';
 import { storeLoadById } from '../../../database/middleware-loader';
-import { getEntitiesListFromCache, getEntityFromCache } from '../../../database/cache';
+import { getEntityFromCache } from '../../../database/cache';
 import type { BasicStoreSettings } from '../../../types/settings';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../../schema/internalObject';
+import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../../manager/notificationManager';
 import { generateCreateMessage } from '../../../database/generate-message';
 import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/redis';
-import { isEmptyField } from '../../../database/utils';
-import type { AuthUser } from '../../../types/user';
 import { isEventInPir } from '../../../manager/playbookManager/playbookManagerUtils';
-
-/**
- * Returns the list of all users authorized based on given authorized members array.
- *
- * @param authorized_members Array of authorized members.
- * @returns List of users.
- */
-const convertAuthorizedMembersToUsers = async (authorized_members: { value: string }[]): Promise<AuthUser[]> => {
-  if (isEmptyField(authorized_members)) return [];
-  const authorizedMembersIds = authorized_members.map((member) => member.value) ?? [];
-  const platformUsers = await getEntitiesListFromCache<AuthUser>(
-    executionContext('playbook_components'),
-    SYSTEM_USER,
-    ENTITY_TYPE_USER
-  );
-
-  const authorizedUsers = platformUsers.filter((user) => {
-    if (isInternalUser(user)) return false;
-    const isDirectlyAuthorized = authorizedMembersIds.includes(user.id);
-    const isAuthorizedByGroup = user.groups.some((g) => authorizedMembersIds.includes(g.internal_id));
-    const isAuthorizedByOrganization = user.organizations.some((o) => authorizedMembersIds.includes(o.internal_id));
-    return isDirectlyAuthorized || isAuthorizedByGroup || isAuthorizedByOrganization;
-  });
-  return R.uniqBy(R.prop('id'), authorizedUsers);
-};
+import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
 
 export interface NotifierConfiguration {
   notifiers: string[]
@@ -76,16 +50,21 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
     const schemaElement = { properties: { notifiers: { items: { oneOf: elements } } } };
     return R.mergeDeepRight<JSONSchemaType<NotifierConfiguration>, any>(PLAYBOOK_NOTIFIER_COMPONENT_SCHEMA, schemaElement);
   },
-  executor: async ({ playbookId, playbookNode, bundle, event }) => {
+  executor: async ({ dataInstanceId, playbookId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
-    const targetUsers = await convertAuthorizedMembersToUsers(authorized_members as { value: string }[]);
+    const baseData = extractBundleBaseElement(dataInstanceId, bundle);
+    const targetUsers = await convertMembersToUsers(
+      authorized_members as { value: string }[],
+      baseData,
+      bundle
+    );
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
     const notificationsCall = [];
     const isPirEvent = event && isEventInPir(event);
-    // TODO Remove in next chunk
+    // TODO Remove this check on update in next chunk
     if (!event || (event && !isPirEvent) || (isPirEvent && event.type !== 'update')) {
       for (let index = 0; index < targetUsers.length; index += 1) {
         const targetUser = targetUsers[index];
