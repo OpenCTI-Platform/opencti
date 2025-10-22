@@ -22,7 +22,7 @@ const EditEntityControlledDial = ({
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit;
 
-  return canDisplayButton && (
+  return canDisplayButton ? (
     <Button
       onClick={onOpen}
       color={color}
@@ -34,6 +34,8 @@ const EditEntityControlledDial = ({
     >
       {buttonLabel}
     </Button>
+  ) : (
+    <></>
   );
 };
 

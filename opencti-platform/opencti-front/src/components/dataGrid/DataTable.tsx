@@ -116,7 +116,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
 > & {
   taskScope?: string
   globalSearch?: string;
-  displayEditButtons: boolean
+  displayEditButtons?: boolean
 };
 
 const DataTableInternalToolbar = ({

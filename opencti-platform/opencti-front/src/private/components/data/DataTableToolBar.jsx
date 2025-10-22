@@ -2537,6 +2537,7 @@ class DataTableToolBar extends Component {
                               disabled={
                                 numberOfSelectedElements === 0
                                 || this.state.processing
+                                || selectedElementsList.find((element) => element.currentUserAccessRight === 'view')
                               }
                               onClick={this.handleLaunchDelete.bind(this)}
                               color={warning ? 'warning' : 'primary'}

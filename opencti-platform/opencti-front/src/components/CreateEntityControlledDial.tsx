@@ -35,7 +35,7 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
   const currentAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
   const canDisplayButton = !draftContext || currentAccessRight.canEdit;
 
-  return canDisplayButton && (
+  return canDisplayButton ? (
     <Button
       onClick={onOpen}
       color={color}
@@ -48,6 +48,8 @@ const CreateEntityControlledDial: FunctionComponent<CreateEntityControlledDialPr
     >
       {buttonValue}
     </Button>
+  ) : (
+    <></>
   );
 };
 
