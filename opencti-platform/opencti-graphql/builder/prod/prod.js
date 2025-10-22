@@ -1,8 +1,8 @@
 const esbuild = require('esbuild');
 const {default: importGlobPlugin} = require('esbuild-plugin-import-glob');
 const {default: graphqlLoaderPlugin} = require('@luckycatfactory/esbuild-graphql-loader');
-const nativeNodePlugin = require("../plugin/native.node.plugin");
-const {copy} = require("esbuild-plugin-copy");
+const nativeNodePlugin = require('../plugin/native.node.plugin');
+const {copy} = require('esbuild-plugin-copy');
 
 esbuild.build({
     logLevel: 'info',
@@ -29,7 +29,7 @@ esbuild.build({
         'src/lock/child-lock.manager.ts',
         'script/script-clean-relations.js'
     ],
-    entryNames: "[name]",
+    entryNames: '[name]',
     bundle: true,
     loader: {'.js': 'jsx'},
     platform: 'node',
@@ -40,4 +40,7 @@ esbuild.build({
     keepNames: false,
     sourcemap: true,
     outdir: 'build',
+    external: [
+      'apollo-server-errors', // required by graphql-constraint-directive in dead code when using Apollo 4+
+    ],
 });
