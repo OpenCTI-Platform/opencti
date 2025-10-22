@@ -40,20 +40,10 @@ export const listenPirEvents = async (
   if (isEventInPir(streamEvent.data) && isStixRelation(data)) {
     const connector = PLAYBOOK_COMPONENTS[instance.component_id];
     const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
-
-    const {
-      filters: sourceFilters,
-      inPirFilters
-    } = configuration;
-
-    const isMatchPir = await isEventMatchesPir(
-      context,
-      inPirFilters,
-      data
-    );
-
+    const { filters: sourceFilters, inPirFilters } = configuration;
     const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
 
+    const isMatchPir = await isEventMatchesPir(context, inPirFilters, data);
     const isValidEvent = isValidEventType(type, configuration);
 
     // 02. Execute the component
@@ -73,7 +63,7 @@ export const listenPirEvents = async (
           // Basic
           executionId: uuidv4(),
           playbookId: playbook.id,
-          dataInstanceId: data.id,
+          dataInstanceId: entity.id,
           definition: def,
           // Steps
           previousStep: null,
