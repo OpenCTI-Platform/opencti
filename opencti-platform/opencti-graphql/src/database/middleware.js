@@ -2864,23 +2864,25 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
           const currentDataSet = new Set(currentData);
           const isCurrentWithData = isNotEmptyField(currentData);
           const fullPatchInputData = patchInputData ?? [];
+          const fullPatchInputDataSet = new Set(fullPatchInputData.map((i) => i.internal_id));
           // Specific case for organization restriction, has EE must be activated.
           // If not supported, upsert of organization is not applied
           const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
           const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
+          const inputToCurrentDiff = fullPatchInputData.filter((target) => !currentDataSet.has(target.internal_id));
+          const currentToInputDiff = currentData.filter((current) => !fullPatchInputDataSet.has(current));
           // If expected data is different from current data
-          const dataDiff = fullPatchInputData.filter((target) => !currentDataSet.has(target.internal_id));
-          if (allowedOperation && dataDiff.length > 0) {
+          if (allowedOperation && (inputToCurrentDiff.length + currentToInputDiff.length) > 0) {
             // In full synchro, just replace everything
             if (isUpsertSynchro) {
               inputs.push({ key: inputField, value: fullPatchInputData, operation: UPDATE_OPERATION_REPLACE });
-            } else if ((isCurrentWithData && isInputWithData && isConfidenceMatch)
+            } else if ((isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0 && isConfidenceMatch)
                 || (isInputWithData && !isCurrentWithData)
             ) {
               // If data is provided, different from existing data, and of higher confidence
               // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
               // --> apply an add operation
-              inputs.push({ key: inputField, value: dataDiff, operation: UPDATE_OPERATION_ADD });
+              inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
             }
           }
         } else { // not multiple
