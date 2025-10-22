@@ -1750,7 +1750,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const computedIndices = getIndicesToQuery(context, user, queryIndices);
   const hits = [];
   // Leave room in split size compared to max pagination to minimize data loss risk in case of duplicated ids in database
-  const splitSize = Math.max(ES_MAX_PAGINATION - 100, ES_DEFAULT_PAGINATION);
+  const splitSize = Math.max(ES_MAX_PAGINATION / 2, ES_DEFAULT_PAGINATION);
   const groupIds = R.splitEvery(splitSize, processIds);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
@@ -1826,7 +1826,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     });
     const elements = data.hits.hits;
     if (elements.length > workingIds.length) {
-      logApp.warn('Search query returned more elements than expected', { ids: workingIds });
+      logApp.info('Search query returned more elements than expected', { ids: workingIds });
+      if (elements.length >= ES_MAX_PAGINATION) {
+        throw DatabaseError('Ids loading returned more elements than paging allowed for, some elements could not be loaded', { ids: workingIds });
+      }
     }
     if (elements.length > 0) {
       const convertedHits = await elConvertHits(elements);
