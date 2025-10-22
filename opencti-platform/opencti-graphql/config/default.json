@@ -291,7 +291,8 @@
     "lock_key": "playbook_manager_lock",
     "lock_cron_key": "playbook_cron_manager_lock",
     "interval": 60000,
-    "cron_max_size": 500
+    "cron_max_size": 500,
+    "log_max_size": 10000
   },
   "hub_registration_manager": {
     "enabled": true,

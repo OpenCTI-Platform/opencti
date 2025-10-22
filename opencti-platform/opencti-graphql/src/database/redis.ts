@@ -40,6 +40,7 @@ import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { asyncMap } from '../utils/data-processing';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { PLAYBOOK_LOG_MAX_SIZE } from '../manager/playbookManager';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -944,9 +945,8 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
     const steps = Object.entries(e).filter(([k, _]) => k.startsWith('step_')).map(([k, v]) => {
       const fullData = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
 
-      const MAX_LENGTH = 10000;
-      const bundle_or_patch = fullData.length > MAX_LENGTH
-        ? `${fullData.substring(0, MAX_LENGTH)}\n\n... (displaying ${MAX_LENGTH} on ${fullData.length - MAX_LENGTH} chars)`
+      const bundle_or_patch = fullData.length > PLAYBOOK_LOG_MAX_SIZE
+        ? `${fullData.substring(0, PLAYBOOK_LOG_MAX_SIZE)}\n\n... (displaying ${PLAYBOOK_LOG_MAX_SIZE} on ${fullData.length - PLAYBOOK_LOG_MAX_SIZE} chars)`
         : fullData;
 
       // beware, step key is the same for every execution, and we need to avoid id collision in Relay

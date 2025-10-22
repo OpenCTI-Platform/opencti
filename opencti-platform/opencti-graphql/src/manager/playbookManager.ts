@@ -45,6 +45,7 @@ import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-util
 import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookExecution';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
 
+export const PLAYBOOK_LOG_MAX_SIZE = conf.get('playbook_manager:log_max_size') || 10000;
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
 const PLAYBOOK_CRON_MAX_SIZE = conf.get('playbook_manager:cron_max_size') || 500;
