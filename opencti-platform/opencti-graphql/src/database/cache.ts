@@ -7,13 +7,12 @@ import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
-import { ENTITY_TYPE_RESOLVED_COVERAGE_TARGET, ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
-import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir modifications
@@ -22,7 +21,6 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_CONNECTOR]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PIR]: [ENTITY_TYPE_RESOLVED_FILTERS],
-  [ENTITY_TYPE_SECURITY_COVERAGE]: [ENTITY_TYPE_RESOLVED_COVERAGE_TARGET],
 };
 
 const cache: any = {};
@@ -148,7 +146,7 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
 export const getEntitiesListFromCache = async <T extends BasicStoreIdentifier | StixObject>(
   context: AuthContext, user: AuthUser, type: string
 ): Promise<Array<T>> => {
-  if (type === ENTITY_TYPE_RESOLVED_FILTERS || type === ENTITY_TYPE_RESOLVED_COVERAGE_TARGET) {
+  if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     const map = await getEntitiesFromCache(context, user, type) as Map<string, T>;
     const result: T[] = [];
     // eslint-disable-next-line no-restricted-syntax
@@ -165,7 +163,7 @@ export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | S
   context: AuthContext, user: AuthUser, type: string
 ): Promise<Map<string | StixId, T>> => {
   // Filters is already a map
-  if (type === ENTITY_TYPE_RESOLVED_FILTERS || type === ENTITY_TYPE_RESOLVED_COVERAGE_TARGET) {
+  if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
     return await getEntitiesFromCache(context, user, type) as Map<string, T>; // map of <standard_id, instance>
   }
   const data = await getEntitiesFromCache(context, user, type) as BasicStoreIdentifier[];

@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { getBaseUrl, logApp, TOPIC_PREFIX } from '../config/conf';
 import { addCacheForEntity, refreshCacheForEntity, removeCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext, AuthUser } from '../types/user';
-import { ENTITY_TYPE_RESOLVED_COVERAGE_TARGET, ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
 import { FilterMode, OrderingMode } from '../generated/graphql';
 import { extractFilterGroupValuesToResolveForCache } from '../utils/filtering/filtering-resolution';
@@ -31,7 +31,6 @@ import type { StixObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type {
   BasicStoreCommon,
-  BasicStoreEntity,
   BasicStoreRelation,
   BasicStreamEntity,
   BasicTriggerEntity,
@@ -55,8 +54,6 @@ import { emptyFilterGroup } from '../utils/filtering/filtering-utils';
 import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { fromB64 } from '../utils/base64';
-import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
-import { elConvertHitsToMap } from '../database/engine';
 
 const ADDS_TOPIC = `${TOPIC_PREFIX}*ADDED_TOPIC`;
 const EDITS_TOPIC = `${TOPIC_PREFIX}*EDIT_TOPIC`;
@@ -311,38 +308,6 @@ const platformPirs = (context: AuthContext) => {
   };
   return { values: null, fn: reloadPirs, refresh: refreshPirs };
 };
-const platformSecurityCoverageTargets = (context: AuthContext) => {
-  const reloadSecurityCoverages = async () => {
-    const coveragesByTarget = new Map();
-    const SecurityCoveragesEntities = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_SECURITY_COVERAGE]);
-    const secEntitiesMap = await elConvertHitsToMap(SecurityCoveragesEntities) as Record<string, BasicStoreEntity>;
-    if (SecurityCoveragesEntities.length > 0) {
-      const callback = async (relations: StoreRelation[]) => {
-        for (let index = 0; index < relations.length; index += 1) {
-          const relation = relations[index];
-          const targetId = relation.toId;
-          const coverageId = relation.fromId;
-          const resolvedAssessment = secEntitiesMap[coverageId];
-          if (coveragesByTarget.has(targetId)) {
-            const SecurityCoverages = coveragesByTarget.get(targetId);
-            if (!SecurityCoverages.includes(resolvedAssessment)) {
-              SecurityCoverages.push(resolvedAssessment);
-            }
-            coveragesByTarget.set(targetId, SecurityCoverages);
-          } else {
-            coveragesByTarget.set(targetId, [resolvedAssessment]);
-          }
-        }
-      };
-      await fullRelationsList(context, SYSTEM_USER, RELATION_COVERED, { callback });
-    }
-    return coveragesByTarget;
-  };
-  const removeSecurityCoverage = async (values: BasicStoreCommon[], instance: BasicStoreCommon) => {
-    return (values ?? []).filter((user) => user.internal_id !== instance.internal_id);
-  };
-  return { values: null, fn: reloadSecurityCoverages, remove: removeSecurityCoverage };
-};
 
 type SubEvent = { instance: StoreEntity | StoreRelation };
 
@@ -369,7 +334,6 @@ const initCacheManager = () => {
     writeCacheForEntity(ENTITY_TYPE_PUBLIC_DASHBOARD, platformPublicDashboards(context));
     writeCacheForEntity(ENTITY_TYPE_DRAFT_WORKSPACE, platformDraftWorkspaces(context));
     writeCacheForEntity(ENTITY_TYPE_PIR, platformPirs(context));
-    writeCacheForEntity(ENTITY_TYPE_RESOLVED_COVERAGE_TARGET, platformSecurityCoverageTargets(context));
   };
   return {
     init: () => initCacheContent(), // Use for testing
