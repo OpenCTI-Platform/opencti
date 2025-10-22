@@ -255,7 +255,7 @@ export const observableValue = (stixCyberObservable: Record<string, never>) => {
     case 'Mutex'.toLowerCase():
       return stixCyberObservable.name || 'Unknown';
     case 'Network-Traffic'.toLowerCase():
-      return stixCyberObservable.dst_port || 'Unknown';
+      return stixCyberObservable.src_port || stixCyberObservable.dst_port || 'Unknown';
     case 'Process'.toLowerCase():
       return (
         stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown'

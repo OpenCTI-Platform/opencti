@@ -44,6 +44,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
 export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
+const PLAYBOOK_LOG_MAX_SIZE = conf.get('playbook_manager:log_max_size') || 10000;
 
 export const EVENT_CURRENT_VERSION = '4';
 
@@ -942,7 +943,12 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
   const executions = await keysFromList(`playbook_executions_${playbookId}`, 5 * 60) as ExecutionEnvelop[];
   return executions.map((e) => {
     const steps = Object.entries(e).filter(([k, _]) => k.startsWith('step_')).map(([k, v]) => {
-      const bundle_or_patch = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
+      const fullData = v.bundle ? JSON.stringify([v.bundle], null, 2) : JSON.stringify(v.patch, null, 2);
+
+      const bundle_or_patch = fullData.length > PLAYBOOK_LOG_MAX_SIZE
+        ? `${fullData.substring(0, PLAYBOOK_LOG_MAX_SIZE)}\n\n... (displaying ${PLAYBOOK_LOG_MAX_SIZE} on ${fullData.length - PLAYBOOK_LOG_MAX_SIZE} chars)`
+        : fullData;
+
       // beware, step key is the same for every execution, and we need to avoid id collision in Relay
       const id = `${e.playbook_execution_id}-${k.split('step_')[1]}`;
       return ({ id, bundle_or_patch, ...v });

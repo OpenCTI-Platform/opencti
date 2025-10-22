@@ -1,5 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import { StixCoreObjectsTimelineQuery$data } from './__generated__/StixCoreObjectsTimelineQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { buildFiltersAndOptionsForWidgets } from '../../../../utils/filters/filtersUtils';
@@ -8,6 +9,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTimeline from '../../../../components/dashboard/WidgetTimeline';
 import { resolveLink } from '../../../../utils/Entity';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import type { WidgetDataSelection, WidgetParameters } from '../../../../utils/widget/widget';
 
 const stixCoreObjectsTimelineQuery = graphql`
   query StixCoreObjectsTimelineQuery(
@@ -53,6 +55,15 @@ const stixCoreObjectsTimelineQuery = graphql`
   }
 `;
 
+interface StixCoreObjectsTimelineProps {
+  variant: string,
+  height?: number,
+  startDate: string | null,
+  endDate: string | null,
+  dataSelection: WidgetDataSelection[],
+  parameters?: WidgetParameters,
+}
+
 const StixCoreObjectsTimeline = ({
   variant,
   height,
@@ -60,7 +71,7 @@ const StixCoreObjectsTimeline = ({
   endDate,
   dataSelection,
   parameters = {},
-}) => {
+}: StixCoreObjectsTimelineProps) => {
   const { t_i18n } = useFormatter();
   const renderContent = () => {
     const selection = dataSelection[0];
@@ -76,10 +87,10 @@ const StixCoreObjectsTimeline = ({
           types: dataSelectionTypes,
           first: selection.number ?? 10,
           orderBy: dateAttribute,
-          orderMode: 'desc',
+          orderMode: selection.sort_mode ?? 'desc',
           filters,
         }}
-        render={({ props }) => {
+        render={({ props }: { props: StixCoreObjectsTimelineQuery$data }) => {
           if (
             props
             && props.stixCoreObjects
