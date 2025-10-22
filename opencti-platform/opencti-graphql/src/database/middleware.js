@@ -133,14 +133,14 @@ import {
   isUpdatedAtObject,
   noReferenceAttributes
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
+  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_RESOLVED_COVERAGE_TARGET,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
   isStixDomainObjectShareableContainer,
@@ -239,6 +239,7 @@ import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
 import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
+import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -3164,15 +3165,17 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
-    // region Hardcoded hook to notify security Coverage
-    if (isStixCoreRelationship(relationshipType)) {
-      const targetCoverageMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_COVERAGE_TARGET);
-      if (targetCoverageMap.has(fromId)) {
-        const securityCoverages = targetCoverageMap.get(fromId);
-        for (let index = 0; index < securityCoverages.length; index += 1) {
-          const securityCoverage = securityCoverages[index];
-          await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
-        }
+    // region Security coverage hook
+    // TODO Implements a more generic approach to notify enrichment
+    // If relation is created from/to an element currently covered
+    // (from) Element[covered] <- use -> Attack pattern (to)
+    // (from) Element[covered] <- targets -> Vulnerability (to)
+    if (dataRel.element.from[RELATION_COVERED]) {
+      const isVuln = relationshipType === RELATION_TARGETS && dataRel.element.to.entity_type === ENTITY_TYPE_VULNERABILITY;
+      const isAttackPattern = relationshipType === RELATION_USES && dataRel.element.to.entity_type === ENTITY_TYPE_ATTACK_PATTERN;
+      if (isVuln || isAttackPattern) {
+        const securityCoverage = await internalLoadById(context, user, dataRel.element.from[RELATION_COVERED]);
+        await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
       }
     }
     // endregion

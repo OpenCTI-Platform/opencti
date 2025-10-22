@@ -9,9 +9,16 @@ import type { SecurityCoverageAddInput } from '../../generated/graphql';
 import type { BasicStoreEntity, StoreRelation } from '../../types/store';
 import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import { STIX_SPEC_VERSION } from '../../database/stix';
-import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
+import { RELATION_TARGETS, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { stixRefsExtractor } from '../../schema/stixEmbeddedRelationship';
-import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INCIDENT,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_VULNERABILITY
+} from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
@@ -68,7 +75,11 @@ export const securityCoverageStixBundle = async (context: AuthContext, user: Aut
       targetIds.add(relation.toId);
     }
   };
-  await fullRelationsList(context, user, STIX_CORE_RELATIONSHIPS, { fromId: objectCovered.id, callback: relationsCallback });
+  await fullRelationsList(context, user, [RELATION_TARGETS, RELATION_USES], {
+    fromId: objectCovered.id,
+    toTypes: [ENTITY_TYPE_VULNERABILITY, ENTITY_TYPE_ATTACK_PATTERN],
+    callback: relationsCallback
+  });
   if (targetIds.size > 0) {
     const targets = await storeLoadByIdsWithRefs(context, user, Array.from(targetIds));
     for (let index = 0; index < targets.length; index += 1) {
