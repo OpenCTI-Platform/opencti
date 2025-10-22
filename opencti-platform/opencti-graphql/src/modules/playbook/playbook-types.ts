@@ -67,7 +67,7 @@ export interface ExecutorParameters<T extends object> {
   playbookNode: NodeInstance<T>
   previousStepBundle: StixBundle | null
   bundle: StixBundle
-  event?: StreamDataEvent // TODO pass event to all playbook components
+  event?: StreamDataEvent
 }
 
 export interface PlaybookComponent<T extends object> {
