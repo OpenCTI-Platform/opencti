@@ -184,11 +184,7 @@ export type TesterFunction = (data: any, filter: Filter) => boolean;
  * @param testerByFilterKeyMap function that gives a function to test a filter, according to the filter key
  *                               see unit tests for an example.
  */
-export const testFilterGroup = (
-  data: any,
-  filterGroup: FilterGroup,
-  testerByFilterKeyMap: Record<string, TesterFunction>,
-) : boolean => {
+export const testFilterGroup = (data: any, filterGroup: FilterGroup, testerByFilterKeyMap: Record<string, TesterFunction>) : boolean => {
   if (!isFilterGroupNotEmpty(filterGroup)) return true; // no filters -> stix always match
   if (filterGroup.mode === 'and') {
     const results: boolean[] = [];
