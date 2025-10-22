@@ -15,8 +15,8 @@ import { isEventInPir, isValidEventType } from './playbookManagerUtils';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { playbookExecutor } from './playbookExecutor';
 
-export const isEventMatchesPir = async (context: AuthContext, pirList: { value: string }[], eventData: unknown) => {
-  const filtersOnInPirRel = pirList ? {
+export const buildPirFilters = (pirList?: { value: string }[]) => {
+  return pirList ? {
     filterGroups: [],
     mode: FilterMode.And,
     filters: [{
@@ -24,7 +24,10 @@ export const isEventMatchesPir = async (context: AuthContext, pirList: { value: 
       values: pirList.map((n) => n.value),
     }],
   } : null;
+};
 
+export const isEventMatchesPir = async (context: AuthContext, eventData: unknown, pirList?: { value: string }[]) => {
+  const filtersOnInPirRel = buildPirFilters(pirList);
   return !filtersOnInPirRel || await isStixMatchFilterGroup(context, SYSTEM_USER, eventData, filtersOnInPirRel);
 };
 
@@ -40,16 +43,27 @@ export const listenPirEvents = async (
   if (isEventInPir(streamEvent.data) && isStixRelation(data)) {
     const connector = PLAYBOOK_COMPONENTS[instance.component_id];
     const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
-    const { filters: sourceFilters, inPirFilters } = configuration;
+
+    const {
+      filters: sourceFilters,
+      inPirFilters
+    } = configuration;
+
+    const isMatchPir = await isEventMatchesPir(
+      context,
+      data,
+      inPirFilters,
+    );
+
     const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
 
-    const isMatchPir = await isEventMatchesPir(context, inPirFilters, data);
     const isValidEvent = isValidEventType(type, configuration);
 
     // 02. Execute the component
     if (isValidEvent && isMatchPir) {
       const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
       const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersOnSource);
+
       if (isEntityMatch) {
         const nextStep = { component: connector, instance };
         const bundle: StixBundle = {
