@@ -90,8 +90,8 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
 import { extractBundleBaseElement } from './playbook-utils';
-import { PLAYBOOK_DATA_STREAM_PIR } from './playbookComponents/playbook-data-stream-pir-component';
-import { PLAYBOOK_NOTIFIER_COMPONENT } from './playbookComponents/playbook-notifier-component';
+import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
+import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
 
 // region built in playbook components
 interface LoggerConfiguration {
