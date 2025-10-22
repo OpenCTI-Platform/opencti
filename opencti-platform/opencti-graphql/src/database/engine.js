@@ -1826,9 +1826,20 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     });
     const elements = data.hits.hits;
     if (elements.length > workingIds.length) {
-      logApp.info('Search query returned more elements than expected', { ids: workingIds });
+      const duplicatedIds = [];
+      for (let i = 0; i < workingIds.length; i += 1) {
+        const workingId = workingIds[i];
+        const associatedElement = elements.filter((e) => e[internalId.name] === workingId
+            || e[standardId.name] === workingId
+            || e[xOpenctiStixIds.name]?.includes(workingId)
+            || e[iAliasedIds.name]?.includes(workingId));
+        if (associatedElement.length > 1) {
+          duplicatedIds.push(workingId);
+        }
+      }
+      logApp.info('Search query returned more elements than expected', { resultCount: elements.length, queryCount: workingIds.length, duplicatedIds });
       if (elements.length >= ES_MAX_PAGINATION) {
-        throw DatabaseError('Ids loading returned more elements than paging allowed for, some elements could not be loaded', { ids: workingIds });
+        throw DatabaseError('Ids loading returned more elements than paging allowed for, some elements could not be loaded', { resultCount: elements.length, queryCount: workingIds.length, duplicatedIds });
       }
     }
     if (elements.length > 0) {
