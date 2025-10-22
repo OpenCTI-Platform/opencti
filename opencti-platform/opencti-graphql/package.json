@@ -1,7 +1,7 @@
 {
   "name": "opencti-graphql",
   "version": "6.8.8",
-  "main": "src/back.js",
+  "private": true,
   "scripts": {
     "check-ts": "tsc --noEmit",
     "install:python": "pip3 install -r src/python/requirements.txt",
@@ -203,7 +203,6 @@
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-import-newlines": "1.4.0",
     "graphql-tag": "2.12.6",
-    "marked": "16.4.1",
     "typescript": "5.9.3",
     "vitest": "3.2.4"
   },
