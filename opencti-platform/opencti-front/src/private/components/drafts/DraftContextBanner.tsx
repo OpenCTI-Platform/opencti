@@ -26,7 +26,6 @@ import { truncate } from '../../../utils/String';
 import { TEN_SECONDS } from '../../../utils/Time';
 import { useGetCurrentUserAccessRight, authorizedMembersToOptions } from '../../../utils/authorizedMembers';
 
-
 const interval$ = interval(TEN_SECONDS * 3);
 
 const draftContextBannerFragment = graphql`
