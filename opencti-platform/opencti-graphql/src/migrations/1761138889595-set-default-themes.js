@@ -5,14 +5,30 @@ import { addTheme } from '../modules/theme/theme-domain';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
-import { elUpdateByQueryForMigration } from '../database/engine';
+import { elRawDeleteByQuery, elRawUpdateByQuery, elUpdateByQueryForMigration } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { DatabaseError } from '../config/errors';
 
 const message = '[MIGRATION] Creating default themes and replacing platform_theme with Theme ID';
 
 export const up = async (next) => {
   logMigration.info(`${message} > started`);
   const context = executionContext('migration');
+
+  await elRawDeleteByQuery({
+    index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
+    wait_for_completion: true,
+    body: {
+      query: {
+        term: {
+          'entity_type.keyword': 'Theme'
+        }
+      },
+    },
+  }).catch((err) => {
+    throw DatabaseError('Error delete previous themes', { cause: err });
+  });
 
   const settings = await getEntityFromCache(
     context,
@@ -77,7 +93,7 @@ export const up = async (next) => {
   logMigration.info(`${message} > Changing platform_theme from "${settings.platform_theme}" to ${themeId}`);
   const updateQuery = {
     query: {
-      match: {
+      term: {
         'entity_type.keyword': 'Settings'
       }
     },
@@ -87,11 +103,14 @@ export const up = async (next) => {
     }
   };
 
-  await elUpdateByQueryForMigration(
-    message,
-    [READ_INDEX_INTERNAL_OBJECTS],
-    updateQuery,
-  );
+  await elRawUpdateByQuery({
+    index: READ_INDEX_INTERNAL_OBJECTS,
+    refresh: true,
+    wait_for_completion: true,
+    body: updateQuery,
+  }).catch((err) => {
+    throw DatabaseError('Error updating the default theme in settings', { cause: err });
+  });
 
   logMigration.info(`${message} > done`);
   next();
