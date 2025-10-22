@@ -65,7 +65,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   securityCoverage,
 }) => {
   const classes = useStyles();
-  const { t_i18n, fd } = useFormatter();
+  const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
 
   return (
@@ -99,7 +99,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Last result')}
             </Typography>
-            {data.coverage_last_result ? fd(data.coverage_last_result) : '-'}
+            {data.coverage_last_result ? fndt(data.coverage_last_result) : '-'}
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -131,13 +131,13 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Valid from')}
             </Typography>
-            {data.coverage_valid_from ? fd(data.coverage_valid_from) : '-'}
+            {data.coverage_valid_from ? fndt(data.coverage_valid_from) : '-'}
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Valid until')}
             </Typography>
-            {data.coverage_valid_to ? fd(data.coverage_valid_to) : '-'}
+            {data.coverage_valid_to ? fndt(data.coverage_valid_to) : '-'}
           </Grid>
           <Grid item xs={12}>
             <SecurityCoverageSecurityPlatforms securityCoverage={data} />

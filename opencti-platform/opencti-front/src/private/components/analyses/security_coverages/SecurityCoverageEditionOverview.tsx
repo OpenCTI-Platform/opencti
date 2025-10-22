@@ -17,7 +17,9 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 import { useDynamicSchemaEditionValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import CoverageInformationField from '../../common/form/CoverageInformationField';
+import { CoverageInformationFieldEdit } from '../../common/form/CoverageInformationField';
+import SwitchField from '../../../../components/fields/SwitchField';
+import PeriodicityField from '../../../../components/fields/PeriodicityField';
 
 const SECURITY_COVERAGE_TYPE = 'Security-Coverage';
 
@@ -86,6 +88,8 @@ const securityCoverageEditionOverviewFragment = graphql`
     name
     description
     confidence
+    periodicity
+    auto_enrichment_disable
     coverage_information {
       coverage_name
       coverage_score
@@ -128,8 +132,10 @@ interface SecurityCoverageEditionOverviewProps {
 interface SecurityCoverageEditionFormValues {
   name: string;
   description: string | null;
+  periodicity: string | null;
+  auto_enrichment_disable: boolean;
   confidence: number | null;
-  coverage_information: { coverage_name: string; coverage_score: number | string }[];
+  coverage_information: { coverage_name: string; coverage_score: number }[];
   createdBy: FieldOption | null;
   objectMarking: FieldOption[];
 }
@@ -158,10 +164,11 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
   };
   const { mandatoryAttributes } = useIsMandatoryAttribute(SECURITY_COVERAGE_TYPE);
 
-  const basicShape = yupShapeConditionalRequired({
+  const baseShape = {
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
+    auto_enrichment_disable: Yup.boolean(),
     coverage_information: Yup.array().of(
       Yup.object().shape({
         coverage_name: Yup.string().required(t_i18n('This field is required')),
@@ -171,9 +178,11 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
           .max(100, t_i18n('Score must be at most 100')),
       }),
     ).nullable(),
+    periodicity: Yup.string().nullable(),
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
-  }, mandatoryAttributes);
+  };
+  const basicShape = yupShapeConditionalRequired(baseShape, mandatoryAttributes);
 
   const securityValidator = useDynamicSchemaEditionValidation(mandatoryAttributes, basicShape);
   const editor = useFormEditor(
@@ -190,6 +199,8 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
     const inputValues = Object.entries({
       name: values.name,
       description: values.description,
+      periodicity: values.periodicity,
+      auto_enrichment_disable: values.auto_enrichment_disable,
       confidence: parseInt(String(values.confidence), 10),
       coverage_information: values.coverage_information?.map((info) => ({
         coverage_name: info.coverage_name,
@@ -228,6 +239,8 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
   const initialValues: SecurityCoverageEditionFormValues = {
     name: securityCoverageData.name,
     description: securityCoverageData.description ?? null,
+    periodicity: securityCoverageData.periodicity ?? null,
+    auto_enrichment_disable: securityCoverageData.auto_enrichment_disable ?? false,
     confidence: securityCoverageData.confidence ?? null,
     coverage_information: (securityCoverageData.coverage_information ?? []).map((item) => ({
       coverage_name: item.coverage_name,
@@ -285,21 +298,27 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             editContext={context}
             variant="edit"
           />
-          <CoverageInformationField
+          <PeriodicityField
+            name="periodicity"
+            label={t_i18n('Coverage validity period')}
+            style={fieldSpacingContainerStyle}
+            handleOnChange={(duration) => handleSubmitField('periodicity', duration)}
+            setFieldValue={setFieldValue}
+          />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            onChange={handleSubmitField}
+            name="auto_enrichment_disable"
+            label={t_i18n('Force manual coverage (prevent enrichment connectors from running)')}
+            containerstyle={fieldSpacingContainerStyle}
+          />
+          {values.auto_enrichment_disable && <CoverageInformationFieldEdit
+            id={securityCoverageData.id}
+            mode={'entity'}
             name="coverage_information"
             values={values.coverage_information}
-            setFieldValue={(fieldName, fieldValue) => {
-              setFieldValue(fieldName, fieldValue);
-              // Automatically save coverage_information changes
-              if (fieldName === 'coverage_information') {
-                const coverageInfoToSubmit = (fieldValue as { coverage_name: string; coverage_score: number | string }[])?.map((info) => ({
-                  coverage_name: info.coverage_name,
-                  coverage_score: Number(info.coverage_score),
-                }));
-                handleSubmitField('coverage_information', coverageInfoToSubmit);
-              }
-            }}
-          />
+                                             />}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}
