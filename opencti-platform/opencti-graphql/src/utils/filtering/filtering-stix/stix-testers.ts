@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../../types/stix-2-1-extensions';
 import { generateInternalType, getParentTypes } from '../../../schema/schemaUtils';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
+import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../../../schema/general';
 import { stixRefsExtractor } from '../../../schema/stixEmbeddedRelationship';
 import type { TesterFunction } from '../boolean-logic-engine';
 import { testBooleanFilter, testNumericFilter, testStringFilter, toValidArray } from '../boolean-logic-engine';
@@ -44,7 +44,7 @@ import {
   SEVERITY_FILTER,
   TYPE_FILTER,
   WORKFLOW_FILTER,
-  PATTERN_TYPE_FILTER,
+  PATTERN_TYPE_FILTER
 } from '../filtering-constants';
 import type { Filter } from '../../../generated/graphql';
 import { STIX_RESOLUTION_MAP_PATHS } from '../filtering-resolution';
@@ -332,7 +332,7 @@ export const testRelationFrom = (stix: any, filter: Filter) => {
  * - depending on stix type (relation or sighting), we might search in target_ref or where_sighted_refs (plurals!)
  */
 export const testRelationTo = (stix: any, filter: Filter) => {
-  if (stix.type === STIX_TYPE_RELATION || stix.type === ABSTRACT_INTERNAL_RELATIONSHIP) {
+  if (stix.type === STIX_TYPE_RELATION) {
     const stixValues: string[] = toValidArray(stix.target_ref);
     return testStringFilter(filter, stixValues);
   }
