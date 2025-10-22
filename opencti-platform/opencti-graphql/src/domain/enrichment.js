@@ -58,6 +58,9 @@ export const updateEntityAutoEnrichment = async (context, user, element, scope, 
   if (!isStixObject(element.entity_type)) {
     return null; // we only enrich stix core objects
   }
+  if (element.auto_enrichment_disable) {
+    return null;
+  }
   // Get the list of compatible connectors
   const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope, { mode: 'update' });
   return publishEventToConnectors(context, user, element, targetConnectors, stixLoaders);
@@ -66,6 +69,9 @@ export const updateEntityAutoEnrichment = async (context, user, element, scope, 
 export const createEntityAutoEnrichment = async (context, user, element, scope, stixLoaders) => {
   if (!isStixObject(element.entity_type)) {
     return null; // we only enrich stix core objects
+  }
+  if (element.auto_enrichment_disable) {
+    return null;
   }
   // Get the list of compatible connectors
   const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope, { mode: 'creation' });

@@ -23,7 +23,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { minutesBefore, now } from '../../../../utils/Time';
-import CoverageInformationField from '../form/CoverageInformationField';
+import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -324,7 +324,7 @@ const StixCoreRelationshipCreationForm = ({
               style={fieldSpacingContainerStyle}
             />
             {isCoverage && (
-              <CoverageInformationField
+              <CoverageInformationFieldAdd
                 name="coverage_information"
                 values={values.coverage_information || []}
                 containerStyle={fieldSpacingContainerStyle}
