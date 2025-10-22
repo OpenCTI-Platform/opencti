@@ -309,7 +309,7 @@ export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined | null,
   opts: { removeTypeAll?: boolean, startDate?: string | null, endDate?: string | null, dateAttribute?: string, isKnowledgeRelationshipWidget?: boolean } = {},
 ) => {
-  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
+  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at', isKnowledgeRelationshipWidget = false } = opts;
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
