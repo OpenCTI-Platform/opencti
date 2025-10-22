@@ -128,7 +128,7 @@
     "jwt-decode": "4.0.0",
     "license-checker-rseidelsohn": "4.4.2",
     "lru-cache": "11.2.2",
-    "luxon": "3.7.1",
+    "luxon": "3.7.2",
     "marked": "16.4.1",
     "migrate": "2.1.0",
     "mime-types": "3.0.1",
