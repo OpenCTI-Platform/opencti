@@ -67,4 +67,6 @@ interface AuthContext {
   user_otp_validated?: boolean
   user_with_session?: boolean
   req?: Express.Request
+  sharedData: Record<string, any>
+  getUser?: () => AuthUser | undefined
 }

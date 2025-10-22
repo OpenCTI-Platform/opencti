@@ -77,9 +77,23 @@ describe('Testing user delete on cascade [issue/3720]', () => {
     // ***********************************
     // GIVEN a user
     // AND an admin ADMIN_USER having rights to create/delete users
-    const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'integration-test', otp_mandatory: false, user_inside_platform_organization: false };
+    const adminContext: AuthContext = {
+      user: ADMIN_USER,
+      tracing: undefined,
+      source: 'integration-test',
+      otp_mandatory: false,
+      user_inside_platform_organization: false,
+      sharedData: {},
+    };
     const userToDeletedAuth = await createUserForTest(adminContext, ADMIN_USER, 'iwillbegonesoon') as AuthUser;
-    const userToDeleteContext: AuthContext = { user: userToDeletedAuth, tracing: undefined, source: 'integration-test', otp_mandatory: false, user_inside_platform_organization: false };
+    const userToDeleteContext: AuthContext = {
+      user: userToDeletedAuth,
+      tracing: undefined,
+      source: 'integration-test',
+      otp_mandatory: false,
+      user_inside_platform_organization: false,
+      sharedData: {},
+    };
 
     // AND user having a Trigger
     const newTrigger = await createTriggerForUser(userToDeleteContext, userToDeletedAuth);

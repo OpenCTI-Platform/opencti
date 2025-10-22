@@ -13,6 +13,7 @@ const adminContext: AuthContext = {
   source: 'supportPackageListener-test',
   otp_mandatory: false,
   user_inside_platform_organization: false,
+  sharedData: {},
 };
 describe('SupportPackage listener standard behavior', () => {
   it('should support package event update node status', async () => {
