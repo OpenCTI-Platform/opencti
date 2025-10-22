@@ -214,6 +214,8 @@ export const aliasedTypes = [
   'Vocabulary',
 ];
 
+export const typesWithNoAnalysesTab = ['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'];
+
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
   const { settings, schema } = useAuth();
