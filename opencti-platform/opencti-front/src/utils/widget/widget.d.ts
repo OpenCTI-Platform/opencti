@@ -12,7 +12,6 @@ interface WidgetColumn {
 }
 
 export interface WidgetDataSelection {
-  selectionId?: string
   label?: string | null
   number?: number | null
   attribute?: string | null

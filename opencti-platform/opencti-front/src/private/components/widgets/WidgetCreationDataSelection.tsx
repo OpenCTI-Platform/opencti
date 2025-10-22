@@ -5,7 +5,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import WidgetFilters from '@components/widgets/WidgetFilters';
 import Button from '@mui/material/Button';
-import React from 'react';
+import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Box, Stack } from '@mui/material';
 import { emptyFilterGroup } from '../../../utils/filters/filtersUtils';
@@ -51,6 +51,8 @@ const WidgetCreationDataSelection = () => {
   const { config, setStep, setDataSelection, setDataSelectionWithIndex } = useWidgetConfigContext();
   const { type, dataSelection, perspective } = config.widget;
 
+  const [itemIds, setItemIds] = useState<string[]>(() => dataSelection.map(() => uuidv4()));
+
   const isDataSelectionFiltersValid = () => {
     return dataSelection.length > 0;
   };
@@ -58,7 +60,12 @@ const WidgetCreationDataSelection = () => {
   const handleRemoveDataSelection = (i: number) => {
     const newDataSelection = Array.from(dataSelection);
     newDataSelection.splice(i, 1);
+
+    const newItemIds = Array.from(itemIds);
+    newItemIds.splice(i, 1);
+
     setDataSelection(newDataSelection);
+    setItemIds(newItemIds);
   };
 
   const handleChangeDataValidationLabel = (i: number, value: string) => {
@@ -75,7 +82,6 @@ const WidgetCreationDataSelection = () => {
     setDataSelection([
       ...dataSelection,
       {
-        selectionId: uuidv4(),
         label: '',
         attribute: 'entity_type',
         date_attribute: 'created_at',
@@ -85,6 +91,9 @@ const WidgetCreationDataSelection = () => {
         dynamicTo: emptyFilterGroup,
       },
     ]);
+
+    const newId = uuidv4();
+    setItemIds([...itemIds, newId]);
   };
 
   const showRelationCountWarning = type && isWidgetUsingRelationsAggregation(type);
@@ -95,7 +104,7 @@ const WidgetCreationDataSelection = () => {
         dataSelection.map((item, i) => {
           return (
             <StepContainer
-              key={item.selectionId}
+              key={itemIds[i]}
               perspective={item.perspective}
             >
               <IconButton
