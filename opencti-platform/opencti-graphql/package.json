@@ -215,7 +215,7 @@
     "jose": "5.10.0",
     "json5": "2.2.3",
     "lodash": "4.17.21",
-    "path-to-regexp": "0.1.12",
+    "path-to-regexp": "0.2.5",
     "@datadog/pprof": "patch:@datadog/pprof@5.11.1#./patch/@datadog-pprof.patch",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "graphql": "patch:graphql@16.11.0#./patch/graphql-16.8.1.patch",
