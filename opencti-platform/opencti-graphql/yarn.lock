@@ -5499,10 +5499,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ae-cvss-calculator@npm:1.0.8":
-  version: 1.0.8
-  resolution: "ae-cvss-calculator@npm:1.0.8"
-  checksum: 10c0/7d00b028643715aee0ee80ef7bef16b0dff957651deb2fba29f965567208bf4a127adfe95e1fefd9b7bf7b53b887e159cc49be9aa51bfa861fe66963b41d4675
+"ae-cvss-calculator@npm:1.0.9":
+  version: 1.0.9
+  resolution: "ae-cvss-calculator@npm:1.0.9"
+  checksum: 10c0/b1c5cab432e92f3fa89c933cbe29412453047726f5ff5abf4f2e299d57220637260da9742d3b6103ba708f772ba2a4a3b9730e86a8263f4f2ae99e37d9aacae5
   languageName: node
   linkType: hard
 
@@ -11698,7 +11698,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:7.18.0"
     "@typescript-eslint/parser": "npm:7.18.0"
     "@vitest/coverage-v8": "npm:3.2.4"
-    ae-cvss-calculator: "npm:1.0.8"
+    ae-cvss-calculator: "npm:1.0.9"
     ajv: "npm:8.17.1"
     ajv-formats: "npm:3.0.1"
     amqplib: "npm:0.10.9"
