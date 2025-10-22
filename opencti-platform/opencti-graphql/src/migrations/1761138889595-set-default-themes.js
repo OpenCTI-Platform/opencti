@@ -5,7 +5,7 @@ import { addTheme } from '../modules/theme/theme-domain';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 
-import { elRawDeleteByQuery, elRawUpdateByQuery, elUpdateByQueryForMigration } from '../database/engine';
+import { elRawDeleteByQuery, elRawUpdateByQuery } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { DatabaseError } from '../config/errors';
 
