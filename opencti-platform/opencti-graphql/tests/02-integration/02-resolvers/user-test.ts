@@ -950,7 +950,7 @@ describe('User has no settings capability and is organization admin query behavi
     const editorUserQueryResult = await adminQuery({ query: READ_QUERY, variables: { id: userEditorId } });
     expect(editorUserQueryResult).not.toBeNull();
     expect(editorUserQueryResult.data.user).not.toBeNull();
-    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(7);
+    expect(editorUserQueryResult.data.user.capabilities.length).toEqual(8);
     const { capabilities } = editorUserQueryResult.data.user;
     expect(capabilities.some((capa: Capability) => capa.name === VIRTUAL_ORGANIZATION_ADMIN)).toEqual(true);
   });
