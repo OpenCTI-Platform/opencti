@@ -13628,7 +13628,7 @@ type Query {
     filters: FilterGroup
     values: [String!]!
     orderBy: UnknownStixCoreObjectsOrdering
-    ordreMode: FilterGroup
+    orderMode: OrderingMode
   ): [String!]! @auth(for: [KNOWLEDGE])
   stixCoreObjectsExportFiles(first: Int, exportContext: ExportContext!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(

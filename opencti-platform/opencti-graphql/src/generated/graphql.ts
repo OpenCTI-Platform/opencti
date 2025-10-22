@@ -24519,7 +24519,7 @@ export type QueryTriggersKnowledgeCountArgs = {
 export type QueryUnknownStixCoreObjectsArgs = {
   filters?: InputMaybe<FilterGroup>;
   orderBy?: InputMaybe<UnknownStixCoreObjectsOrdering>;
-  ordreMode?: InputMaybe<FilterGroup>;
+  orderMode?: InputMaybe<OrderingMode>;
   values: Array<Scalars['String']['input']>;
 };
 
