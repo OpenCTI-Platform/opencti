@@ -174,7 +174,10 @@ export const findUnknownStixCoreObjects = async (context, user, args) => {
     const resolvedScos = knownNodes.filter((o) => isStixObjectMatchWithSearchValue(o, value)) ?? [];
     return resolvedScos.length === 0;
   });
-  // return unknownValues.sort((a, b) => a.localCompare(b));
+  if (orderBy && orderBy === 'value') {
+    const orderFactor = orderMode === 'desc' ? -1 : 1;
+    return unknownValues.sort((a, b) => orderFactor * a.localeCompare(b));
+  }
   return unknownValues;
 };
 

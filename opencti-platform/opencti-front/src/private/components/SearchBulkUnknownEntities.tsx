@@ -48,10 +48,11 @@ const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDis
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: {
       percentWidth: 15,
+      isSortable: true,
     },
     value: {
       percentWidth: 85,
-      isSortable: false,
+      isSortable: true,
     },
   };
   return (

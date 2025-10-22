@@ -31572,7 +31572,7 @@ export enum UnitSystem {
 }
 
 export enum UnknownStixCoreObjectsOrdering {
-  Score = '_score',
+  EntityType = 'entity_type',
   Value = 'value'
 }
 

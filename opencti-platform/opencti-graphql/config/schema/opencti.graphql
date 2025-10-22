@@ -2699,8 +2699,8 @@ type Representative {
 }
 
 enum UnknownStixCoreObjectsOrdering {
-  _score
   value
+  entity_type
 }
 
 enum StixCoreObjectsOrdering {
