@@ -3,7 +3,8 @@ import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
 import { compareUnsorted } from 'js-deep-equals';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+// eslint-disable-next-line import/no-unresolved
+import { ATTR_DB_NAME, ATTR_DB_OPERATION } from '@opentelemetry/semantic-conventions/incubating';
 import * as jsonpatch from 'fast-json-patch';
 import nconf from 'nconf';
 import {
@@ -977,8 +978,8 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     return inputResolved;
   };
   return telemetry(context, user, `INPUTS RESOLVE ${type}`, {
-    [SEMATTRS_DB_NAME]: 'middleware',
-    [SEMATTRS_DB_OPERATION]: 'resolver',
+    [ATTR_DB_NAME]: 'middleware',
+    [ATTR_DB_OPERATION]: 'resolver',
   }, inputResolveRefsFn);
 };
 const isRelationTargetGrants = (elementGrants, relation, type) => {
