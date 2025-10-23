@@ -13583,6 +13583,7 @@ type Query {
 
   ######## STIX CORE OBJECT ENTITIES
 
+  stixCoreObjectCleanInconsistency(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis @auth(for: [KNOWLEDGE])

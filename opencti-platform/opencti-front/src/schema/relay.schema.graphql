@@ -8630,6 +8630,7 @@ type Query {
   externalReferences(first: Int, after: ID, orderBy: ExternalReferencesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): ExternalReferenceConnection
   killChainPhase(id: String!): KillChainPhase
   killChainPhases(first: Int, after: ID, orderBy: KillChainPhasesOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): KillChainPhaseConnection
+  stixCoreObjectCleanInconsistency(id: String!): String
   stixCoreObjectRaw(id: String!): String
   stixCoreObject(id: String!): StixCoreObject
   stixCoreObjectAnalysis(id: ID!, contentSource: String!, contentType: AnalysisContentType!): Analysis

@@ -21562,6 +21562,7 @@ export type Query = {
   stixCoreObjectAskAiActivity?: Maybe<AiActivity>;
   stixCoreObjectAskAiForecast?: Maybe<AiForecast>;
   stixCoreObjectAskAiHistory?: Maybe<AiHistory>;
+  stixCoreObjectCleanInconsistency?: Maybe<Scalars['String']['output']>;
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']['output']>;
   stixCoreObjects?: Maybe<StixCoreObjectConnection>;
@@ -23597,6 +23598,11 @@ export type QueryStixCoreObjectAskAiHistoryArgs = {
   forceRefresh?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['ID']['input'];
   language?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryStixCoreObjectCleanInconsistencyArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -43165,6 +43171,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectAskAiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAskAiActivityArgs, 'id'>>;
   stixCoreObjectAskAiForecast?: Resolver<Maybe<ResolversTypes['AiForecast']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAskAiForecastArgs, 'id'>>;
   stixCoreObjectAskAiHistory?: Resolver<Maybe<ResolversTypes['AiHistory']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAskAiHistoryArgs, 'id'>>;
+  stixCoreObjectCleanInconsistency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectCleanInconsistencyArgs, 'id'>>;
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;
   stixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsArgs>>;
