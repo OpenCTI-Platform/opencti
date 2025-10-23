@@ -1,5 +1,5 @@
 import Typography from '@mui/material/Typography';
-import StixCoreRelationshipCreationFromEntity from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { ViewListOutlined, ViewModuleOutlined } from '@mui/icons-material';
@@ -9,18 +9,53 @@ import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import React, { useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import StixCoreRelationshipPopover from '@components/common/stix_core_relationships/StixCoreRelationshipPopover';
+import { Box, ListItemButton } from '@mui/material';
+import { Link } from 'react-router-dom';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
+import { useTheme } from '@mui/styles';
 import { SecurityCoverageAttackPatternsKillChainPhasesFragment$key } from './__generated__/SecurityCoverageAttackPatternsKillChainPhasesFragment.graphql';
 import { SecurityCoverageAttackPatternsFragment$key } from './__generated__/SecurityCoverageAttackPatternsFragment.graphql';
 import SecurityCoverageAttackPatternsMatrix from './SecurityCoverageAttackPatternsMatrix';
-import SecurityCoverageAttackPatternsLines from './SecurityCoverageAttackPatternsLines';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
+import FieldOrEmpty from '../../../../components/FieldOrEmpty';
+import ItemIcon from '../../../../components/ItemIcon';
+import type { Theme } from '../../../../components/Theme';
 
 const securityCoverageAttackPatternsFragment = graphql`
   fragment SecurityCoverageAttackPatternsFragment on SecurityCoverage {
     id
+    attPatterns: stixCoreRelationships(
+        orderBy: created_at
+        orderMode: asc
+        relationship_type: "has-covered"
+        toTypes: ["Attack-Pattern"]
+        first: 25
+    ) @connection(key: "Pagination_attPatterns") {
+        edges {
+            node {
+                id
+                coverage_information {
+                    coverage_name
+                    coverage_score
+                }
+                to {
+                    ... on AttackPattern {
+                        id
+                        parent_types
+                        name
+                        description
+                    }
+                }
+            }
+        }
+    }
     ...SecurityCoverageAttackPatternsMatrix_securityCoverage
-    ...SecurityCoverageAttackPatternsLines_securityCoverage
   }
 `;
 
@@ -51,7 +86,17 @@ const SecurityCoverageAttackPatterns = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'matrix' | 'lines'>('matrix');
   const [selectedKillChain, setSelectedKillChain] = useState('mitre-attack');
-
+  const theme = useTheme<Theme>();
+  const paginationOptions = {
+    orderBy: 'created_at',
+    orderMode: 'asc',
+    relationship_type: 'has-covered',
+    toTypes: ['Attack-Pattern'],
+  };
+  const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
+  const handleOnCreate = () => {
+    setTargetEntities([]);
+  };
   const securityCoverage = useFragment(securityCoverageAttackPatternsFragment, data);
   const killChainsData = useFragment(securityCoverageKillChainPhasesFragment, dataKillChains);
 
@@ -91,24 +136,16 @@ const SecurityCoverageAttackPatterns = ({
           </Typography>
           <StixCoreRelationshipCreationFromEntity
             entityId={securityCoverage.id}
-            targetEntities={[]}
+            objectId={securityCoverage.id}
+            connectionKey={'Pagination_attPatterns'}
+            targetEntities={targetEntities}
+            currentView={'relationships'}
             allowedRelationshipTypes={['has-covered']}
             targetStixDomainObjectTypes={['Attack-Pattern']}
-            paginationOptions={{
-              count: 25,
-              orderBy: 'created_at',
-              orderMode: 'asc',
-              filters: {
-                mode: 'and',
-                filters: [],
-                filterGroups: [],
-              },
-            }}
+            paginationOptions={paginationOptions}
             paddingRight={220}
-            onCreate={() => {
-            }}
+            onCreate={handleOnCreate}
             isCoverage={true}
-            openExports={false}
             variant="inLine"
           />
         </div>
@@ -187,9 +224,57 @@ const SecurityCoverageAttackPatterns = ({
             selectedKillChain={selectedKillChain}
           />
         ) : (
-          <SecurityCoverageAttackPatternsLines
-            securityCoverage={securityCoverage}
-          />
+          <>
+            <div className="clearfix" />
+            <List style={{ marginTop: -10 }}>
+              <FieldOrEmpty source={securityCoverage.attPatterns?.edges || []}>
+                {(securityCoverage.attPatterns?.edges || []).map((attackPatternEdge) => {
+                  const attackPattern = attackPatternEdge.node.to;
+                  const coverage = attackPatternEdge.node.coverage_information || [];
+                  return (
+                    <ListItem
+                      key={attackPatternEdge.node.id}
+                      dense={true}
+                      divider={true}
+                      disablePadding={true}
+                      secondaryAction={
+                        <StixCoreRelationshipPopover
+                          objectId={securityCoverage.id}
+                          connectionKey={'Pagination_attPatterns'}
+                          stixCoreRelationshipId={attackPatternEdge.node.id}
+                          paginationOptions={paginationOptions}
+                          isCoverage={true}
+                        />
+                                  }
+                    >
+                      <ListItemButton
+                        component={Link}
+                        to={`/dashboard/analyses/security_coverages/${securityCoverage?.id}/relations/${attackPatternEdge.node.id}`}
+                        style={{ width: '100%' }}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon color={theme.palette.primary.main} type="attack-pattern" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                              <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
+                              <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
+                                <SecurityCoverageInformation
+                                  coverage_information={coverage}
+                                  variant="header"
+                                />
+                              </Box>
+                            </Box>
+                                          }
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
+              </FieldOrEmpty>
+            </List>
+          </>
         )}
       </Paper>
     </div>

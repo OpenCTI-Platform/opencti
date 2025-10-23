@@ -462,6 +462,7 @@ const stixCoreRelationshipCreationFromEntityToMutation = graphql`
 
 interface StixCoreRelationshipCreationFromEntityProps {
   entityId: string;
+  objectId?: string;
   allowedRelationshipTypes?: string[];
   isRelationReversed?: boolean;
   targetStixDomainObjectTypes?: string[];
@@ -505,6 +506,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     paginationOptions,
     isRelationReversed,
     connectionKey,
+    objectId,
     allowedRelationshipTypes,
     defaultStartTime,
     defaultStopTime,
@@ -637,7 +639,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               connKey,
               paginationOptions,
               'stixCoreRelationshipAdd',
-              null,
+              objectId,
               null,
               null,
               isRelationReversed ? 'from' : 'to',
@@ -650,6 +652,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               connKey,
               paginationOptions,
               'stixCoreRelationshipAdd',
+              objectId,
             );
           }
         },
