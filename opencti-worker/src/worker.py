@@ -217,7 +217,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
     # Start the main loop
     def start(self) -> None:
         push_execution_pool = ThreadPoolExecutor(max_workers=self.opencti_pool_size)
-        realtime_push_execution_pool = ThreadPoolExecutor(max_workers=self.opencti_realtime_pool_size)
+        realtime_push_execution_pool = ThreadPoolExecutor(
+            max_workers=self.opencti_realtime_pool_size
+        )
         listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
 
         while not self.exit_event.is_set():
