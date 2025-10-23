@@ -2160,7 +2160,6 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
-  auto_update: Boolean
   enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
@@ -14346,6 +14345,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   coverage_valid_from: DateTime
   coverage_valid_to: DateTime
   coverage_information: [CoverageResult!]
+  external_uri: String
   periodicity: String
   auto_enrichment_disable: Boolean
   objectCovered: StixDomainObject
@@ -14387,6 +14387,7 @@ input SecurityCoverageAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   x_opencti_workflow_id: String
+  external_uri: String
   externalReferences: [String]
   update: Boolean
   auto_enrichment_disable: Boolean!
