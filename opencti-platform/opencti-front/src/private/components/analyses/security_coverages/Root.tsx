@@ -217,11 +217,11 @@ const Root = () => {
   });
   return (
     <>
-      {queryRef && (
-        <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+      <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
+        {queryRef && (
           <RootSecurityCoverage queryRef={queryRef} securityCoverageId={securityCoverageId} />
-        </Suspense>
-      )}
+        )}
+      </Suspense>
     </>
   );
 };
