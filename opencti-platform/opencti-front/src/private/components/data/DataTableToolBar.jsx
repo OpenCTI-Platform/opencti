@@ -98,7 +98,7 @@ import {
   getEntityTypeTwoFirstLevelsFilterValues,
   getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter,
   removeIdAndIncorrectKeysFromFilterGroupObject,
-  serializeFilterGroupForBackend
+  serializeFilterGroupForBackend,
 } from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import EETooltip from '../common/entreprise_edition/EETooltip';
