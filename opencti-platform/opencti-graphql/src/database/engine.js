@@ -1728,12 +1728,12 @@ const REL_COUNT_SCRIPT_FIELD = {
 };
 
 const findElementsDuplicateIds = (elements) => {
-  const duplicatedIds = [];
+  const duplicatedIds = new Set();
   const elementIds = new Set();
   const checkCurrentIds = (id) => {
     if (!id) return;
-    if (elementIds.has(id) && !duplicatedIds.includes(id)) {
-      duplicatedIds.push(id);
+    if (elementIds.has(id) && !duplicatedIds.has(id)) {
+      duplicatedIds.add(id);
     } else {
       elementIds.add(id);
     }
@@ -1746,7 +1746,7 @@ const findElementsDuplicateIds = (elements) => {
     otherStixIds?.map((id) => checkCurrentIds(id));
     aliasIds?.map((id) => checkCurrentIds(id));
   }
-  return duplicatedIds;
+  return Array.from(duplicatedIds);
 };
 
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
