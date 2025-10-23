@@ -7,85 +7,35 @@ import useQueryLoading from '../../utils/hooks/useQueryLoading';
 import { useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import Loader from '../../components/Loader';
-import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import type { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 
 const LOCAL_STORAGE_KEY = 'searchBulk_unknownEntities';
 
 const searchBulkUnknownEntitiesQuery = graphql`
   query SearchBulkUnknownEntitiesQuery(
-    $count: Int!
-    $cursor: ID
-    $types: [String]
     $filters: FilterGroup
-    $search: String
-    $orderBy: StixCoreObjectsOrdering
+    $values: [String!]!
+    $orderBy: UnknownStixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {
-    globalSearch(
-      first: $count
-      after: $cursor
-      types: $types,
-      search: $search,
+    unknownStixCoreObjects(
       filters: $filters
+      values: $values
       orderBy: $orderBy
       orderMode: $orderMode
     )
-    @connection(key: "Pagination_globalSearch") {
-      edges {
-        node {
-          id
-          entity_type
-          ... on StixObject {
-            representative {
-              main
-            }
-          }
-          ... on HashedObservable {
-            hashes {
-              algorithm
-              hash
-            }
-          }
-        }
-      }
-    }
   }
 `;
 
 interface SearchBulkUnknownEntitiesContentProps {
-  values: string[],
   queryRef: PreloadedQuery<SearchBulkUnknownEntitiesQuery>,
   setNumberOfEntities: (n: number) => void,
   isDisplayed: boolean,
 }
 
-const SearchBulkUnknownEntitiesContent = ({ values, queryRef, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesContentProps) => {
-  const matchStixObjectWithSearchValue = (
-    stixObject: {
-      representative?: { main: string },
-      hashes?: readonly ({ readonly algorithm: string, readonly hash?: string | null } | null | undefined)[] | null,
-    },
-    value: string,
-  ) => {
-    const representativeMatch = value.toLowerCase() === getMainRepresentative(stixObject).toLowerCase();
-    if (!representativeMatch) {
-      // try to find in hashes
-      if (stixObject.hashes) {
-        const hashMatch = stixObject.hashes.some((h) => h?.hash === value);
-        if (hashMatch) return hashMatch;
-      }
-      // other cases ?
-    }
-    return representativeMatch;
-  };
-
+const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesContentProps) => {
   const data = usePreloadedQuery(searchBulkUnknownEntitiesQuery, queryRef);
-  const nodes = data.globalSearch?.edges.map((n) => n.node) ?? [];
-  const unknownValues = values.filter((value) => {
-    const resolvedStixCoreObjects = nodes.filter((o) => matchStixObjectWithSearchValue(o, value)) ?? [];
-    return resolvedStixCoreObjects.length === 0;
-  });
+  const unknownValues = data.unknownStixCoreObjects;
   useEffect(() => {
     setNumberOfEntities(unknownValues.length ?? 0);
   }, [unknownValues.length]);
@@ -98,10 +48,11 @@ const SearchBulkUnknownEntitiesContent = ({ values, queryRef, setNumberOfEntitie
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: {
       percentWidth: 15,
+      isSortable: true,
     },
     value: {
       percentWidth: 85,
-      isSortable: false,
+      isSortable: true,
     },
   };
   return (
@@ -149,7 +100,7 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }:
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: queryFilters,
-    count: 5000,
+    values,
   } as SearchBulkUnknownEntitiesQuery$variables;
 
   const queryRef = useQueryLoading<SearchBulkUnknownEntitiesQuery>(searchBulkUnknownEntitiesQuery, queryPaginationOptions);
@@ -158,7 +109,6 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }:
     <>
       {queryRef && <React.Suspense fallback={<Loader />}>
         <SearchBulkUnknownEntitiesContent
-          values={values}
           queryRef={queryRef}
           setNumberOfEntities={setNumberOfEntities}
           isDisplayed={isDisplayed}

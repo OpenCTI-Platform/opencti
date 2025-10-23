@@ -131,7 +131,7 @@ interface SearchBulkProps {
 const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
   const buildSearchBulkFilters = (values: string[], filters: FilterGroup) => {
     return values.length > 0
-      ? addFilter(filters, allEntitiesKeyList as unknown as string, values) // TODO INVALID TYPE
+      ? addFilter(filters, allEntitiesKeyList as unknown as string, values)
       : filters;
   };
 
@@ -155,8 +155,7 @@ const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: queryFilters,
-    count: 5000,
-  } as SearchBulkQuery$variables;
+  } as unknown as SearchBulkQuery$variables;
 
   const queryRef = useQueryLoading<SearchBulkQuery>(searchBulkQuery, queryPaginationOptions);
 
