@@ -190,9 +190,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     ? settings.platform_consent_confirm_text
     : t_i18n('I have read and comply with the above statement');
   const loginMessage = settings.platform_login_message;
-  const loginLogo = theme.palette.mode === 'dark'
-    ? settings.platform_theme_dark_logo_login
-    : settings.platform_theme_light_logo_login;
+  const loginLogo = settings.platform_theme?.theme_logo_login;
   const providers = settings.platform_providers;
   const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
   const authSSOs = providers.filter((p) => p.type === 'SSO');

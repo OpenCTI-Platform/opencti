@@ -42,6 +42,7 @@ export interface UserContextType {
   schema: SchemaType | undefined;
   isXTMHubAccessible: boolean | null | undefined;
   about: RootPrivateQuery$data['about'] | undefined;
+  themes: RootPrivateQuery$data['themes'] | undefined;
 }
 
 const defaultContext = {
@@ -53,6 +54,7 @@ const defaultContext = {
   schema: undefined,
   isXTMHubAccessible: undefined,
   about: undefined,
+  themes: undefined,
 };
 export const UserContext = React.createContext<UserContextType>(defaultContext);
 
@@ -66,11 +68,12 @@ const useAuth = () => {
     schema,
     isXTMHubAccessible,
     about,
+    themes,
   } = useContext(UserContext);
-  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about) {
+  if (!me || !settings || !bannerSettings || !entitySettings || !platformModuleHelpers || !schema || !about || !themes) {
     throw new Error('Invalid user context !');
   }
-  return { me, settings, bannerSettings, entitySettings, platformModuleHelpers, schema, isXTMHubAccessible, about };
+  return { me, settings, bannerSettings, entitySettings, platformModuleHelpers, schema, isXTMHubAccessible, about, themes };
 };
 
 export default useAuth;

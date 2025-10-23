@@ -1459,71 +1459,9 @@ type PublicProvider {
   provider: String!
 }
 
-interface ThemeSettings {
-  platform_title: String
-  platform_favicon: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
-}
-
 interface IntlSettings {
   platform_language: String
   platform_translations: String
-}
-
-type PublicSettings implements ThemeSettings & IntlSettings {
-  id: ID!
-  platform_title: String
-  platform_favicon: String
-  platform_login_message: String
-  platform_consent_message: String
-  platform_consent_confirm_text: String
-  platform_banner_text: String
-  platform_banner_level: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
-  platform_map_tile_server_dark: String
-  platform_map_tile_server_light: String
-  platform_whitemark: Boolean
-  platform_language: String
-  platform_translations: String
-  platform_providers: [PublicProvider!]!
-  platform_enterprise_edition_license_validated: Boolean!
-  playground_enabled: Boolean!
 }
 
 type MetricAttributes {
@@ -1537,7 +1475,33 @@ type MetricDefinition {
   metrics: [MetricAttributes!]
 }
 
-type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
+interface ThemeSettings {
+  platform_title: String
+  platform_favicon: String
+  platform_theme: Theme
+}
+
+type PublicSettings implements IntlSettings & ThemeSettings {
+  id: ID!
+  platform_title: String
+  platform_favicon: String
+  platform_login_message: String
+  platform_consent_message: String
+  platform_consent_confirm_text: String
+  platform_banner_text: String
+  platform_banner_level: String
+  platform_theme: Theme
+  platform_map_tile_server_dark: String
+  platform_map_tile_server_light: String
+  platform_whitemark: Boolean
+  platform_language: String
+  platform_translations: String
+  platform_providers: [PublicProvider!]!
+  platform_enterprise_edition_license_validated: Boolean!
+  playground_enabled: Boolean!
+}
+
+type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSettings {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -1554,25 +1518,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_providers: [Provider!]!
   platform_user_statuses: [UserStatus!]!
   platform_language: String
-  platform_theme: String
-  platform_theme_dark_background: String
-  platform_theme_dark_paper: String
-  platform_theme_dark_nav: String
-  platform_theme_dark_primary: String
-  platform_theme_dark_secondary: String
-  platform_theme_dark_accent: String
-  platform_theme_dark_logo: String
-  platform_theme_dark_logo_collapsed: String
-  platform_theme_dark_logo_login: String
-  platform_theme_light_background: String
-  platform_theme_light_paper: String
-  platform_theme_light_nav: String
-  platform_theme_light_primary: String
-  platform_theme_light_secondary: String
-  platform_theme_light_accent: String
-  platform_theme_light_logo: String
-  platform_theme_light_logo_collapsed: String
-  platform_theme_light_logo_login: String
+  platform_theme: Theme
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_openbas_url: String
@@ -8142,11 +8088,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme
 
 union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -8886,6 +8832,8 @@ type Query {
   publicBookmarks(uriKey: String!, widgetId: String!): StixDomainObjectConnection
   publicStixCoreObjects(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixCoreObjectConnection
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
+  theme(id: ID!): Theme
+  themes(first: Int, after: ID, orderBy: ThemeOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThemeConnection
   obasStixCoreObjectSimulationsResult(id: ID!): StixObjectSimulationsResult
   obasScenarioElementsDistribution(id: ID!, type: ScenarioType, filters: FilterGroup): [Distribution]
   deleteOperation(id: String!): DeleteOperation
@@ -9758,6 +9706,10 @@ type Mutation {
   publicDashboardAdd(input: PublicDashboardAddInput!): PublicDashboard
   publicDashboardDelete(id: ID!): ID
   publicDashboardFieldPatch(id: ID!, input: [EditInput!]!): PublicDashboard
+  themeAdd(input: ThemeAddInput!): Theme
+  themeDelete(id: ID!): ID
+  themeFieldPatch(id: ID!, input: [EditInput!]!): Theme
+  themeImport(file: Upload!): Theme
   aiContainerGenerateReport(id: ID!, containerId: String!, paragraphs: Int, tone: Tone, format: Format, language: String): String
   aiThreatGenerateReport(id: ID!, threatId: String!, paragraphs: Int, tone: Tone, format: Format): String
   aiVictimGenerateReport(id: ID!, victimId: String!, paragraphs: Int, tone: Tone, format: Format): String
@@ -13557,6 +13509,59 @@ input PublicDashboardAddInput {
   dashboard_id: String!
   allowed_markings_ids: [String!]
   enabled: Boolean!
+}
+
+type Theme implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  name: String!
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
+  theme_text_color: String!
+  toConfigurationExport: String!
+  built_in: Boolean
+  metrics: [Metric]
+}
+
+type ThemeConnection {
+  pageInfo: PageInfo!
+  edges: [ThemeEdge!]!
+}
+
+type ThemeEdge {
+  cursor: String!
+  node: Theme!
+}
+
+enum ThemeOrdering {
+  name
+  created_at
+  _score
+}
+
+input ThemeAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  theme_background: String!
+  theme_paper: String!
+  theme_nav: String!
+  theme_primary: String!
+  theme_secondary: String!
+  theme_accent: String!
+  theme_logo: String
+  theme_logo_collapsed: String
+  theme_logo_login: String
+  theme_text_color: String!
+  built_in: Boolean
 }
 
 enum Tone {

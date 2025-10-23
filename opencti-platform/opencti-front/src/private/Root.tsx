@@ -20,6 +20,7 @@ import { RootSettings$data, RootSettings$key } from './__generated__/RootSetting
 import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> element
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
+import useActiveTheme from '../utils/hooks/useActiveTheme';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -53,7 +54,6 @@ const rootSettingsFragment = graphql`
     platform_openmtd_url
     platform_xtmhub_url
     xtm_hub_registration_status
-    platform_theme
     platform_whitemark
     platform_organization {
       id
@@ -85,6 +85,22 @@ const rootSettingsFragment = graphql`
       license_platform
       license_platform_match
       license_type
+    }
+    platform_theme {
+      name
+      theme_logo
+      theme_logo_login
+      theme_logo_collapsed
+      theme_text_color
+      id
+      built_in
+      theme_nav
+      theme_primary
+      theme_secondary
+      theme_text_color
+      theme_accent
+      theme_background
+      theme_paper
     }
     ...AppThemeProvider_settings
     ...AppIntlProvider_settings
@@ -334,6 +350,24 @@ const rootPrivateQuery = graphql`
         }
       }
     }
+    themes(orderBy: created_at, orderMode: desc) {
+      edges {
+        node {
+          id
+          name
+          theme_background
+          theme_accent
+          theme_paper
+          theme_nav
+          theme_primary
+          theme_secondary
+          theme_text_color
+          theme_logo
+          theme_logo_collapsed
+          theme_logo_login
+        }
+      }
+    }
   }
 `;
 
@@ -376,9 +410,16 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
     schemaRelationsRefTypesMapping,
     filterKeysSchema,
     about,
+    themes,
   } = queryData;
   const settings = useFragment<RootSettings$key>(rootSettingsFragment, settingsFragment);
   const me = useFragment<RootMe_data$key>(meUserFragment, meFragment);
+
+  const { activeTheme } = useActiveTheme({
+    userThemeId: me?.theme,
+    platformTheme: settings.platform_theme,
+    allThemes: themes,
+  });
 
   const subConfig = useMemo(
     () => ({
@@ -409,6 +450,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
 
   const { isReachable } = useNetworkCheck(`${settings?.platform_xtmhub_url}/health`);
   useBaseHrefAbsolute();
+
   return (
     <UserContext.Provider
       value={{
@@ -420,10 +462,14 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
         schema,
         isXTMHubAccessible: isReachable,
         about,
+        themes,
       }}
     >
       <StyledEngineProvider injectFirst={true}>
-        <ConnectedThemeProvider settings={settings}>
+        <ConnectedThemeProvider
+          settings={settings}
+          activeTheme={activeTheme}
+        >
           <ConnectedIntlProvider settings={settings}>
             <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
               <Index settings={settings} />

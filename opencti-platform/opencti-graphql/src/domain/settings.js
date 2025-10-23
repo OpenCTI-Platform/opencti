@@ -20,6 +20,7 @@ import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTI
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
+import { findById as findThemeById } from '../modules/theme/theme-domain';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -105,6 +106,8 @@ export const getSettings = async (context) => {
   const clusterInfo = await getClusterInformation();
   const eeInfo = getEnterpriseEditionInfoFromPem(platformSettings.internal_id, platformSettings.enterprise_license);
 
+  const platformTheme = await findThemeById(context, SYSTEM_USER, platformSettings.platform_theme);
+
   return {
     ...platformSettings,
     platform_url: getBaseUrl(context.req),
@@ -126,6 +129,7 @@ export const getSettings = async (context) => {
     platform_ai_type: `${getAIEndpointType()} ${nconf.get('ai:type')}`,
     platform_ai_model: nconf.get('ai:model'),
     platform_ai_has_token: !!isNotEmptyField(nconf.get('ai:token')),
+    platform_theme: platformTheme,
     platform_trash_enabled: nconf.get('app:trash:enabled') ?? true,
     platform_translations: nconf.get('app:translations') ?? '{}',
     filigran_chatbot_ai_url: XTM_ONE_CHATBOT_URL,
