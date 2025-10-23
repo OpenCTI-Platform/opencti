@@ -20,6 +20,7 @@ import { RootSettings$data, RootSettings$key } from './__generated__/RootSetting
 import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> element
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
+import { ComputeLinkProvider } from '../utils/hooks/useComputeLink';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -413,9 +414,11 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
-              <Index settings={settings} />
-            </AnalyticsProvider>
+            <ComputeLinkProvider>
+              <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
+                <Index settings={settings} />
+              </AnalyticsProvider>
+            </ComputeLinkProvider>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>

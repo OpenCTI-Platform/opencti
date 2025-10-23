@@ -19,7 +19,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { StixCyberObservableNestedEntitiesTable_node$data } from './__generated__/StixCyberObservableNestedEntitiesTable_node.graphql';
 import { useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import stopEvent from '../../../../utils/domEvent';
-import useComputeLink, { ComputeLinkNode } from '../../../../utils/hooks/useComputeLink';
+import { useComputeLink, ComputeLinkNode } from '../../../../utils/hooks/useComputeLink';
 
 const LOCAL_STORAGE_KEY = 'StixCyberObservableNestedEntitiesTable';
 
