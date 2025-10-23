@@ -125,7 +125,7 @@ const execNativePythonSync = (script, ...args) => {
   throw UnknownError('[BRIDGE] execNativePython error', result);
 };
 const execNativePython = async (context, user, script, ...args) => {
-  const execNativePythonFn = () => {
+  const execNativePythonFn = async () => {
     const result = py.callSync(script.py, script.fn, ...args);
     if (result.status === 'success') {
       return result.data;
