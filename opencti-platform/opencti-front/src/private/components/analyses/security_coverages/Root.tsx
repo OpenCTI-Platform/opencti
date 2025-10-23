@@ -12,6 +12,7 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { RootMalwareSubscription } from '@components/arsenal/malwares/__generated__/RootMalwareSubscription.graphql';
 import AIInsights from '@components/common/ai/AIInsights';
 import SecurityCoverageKnowledge from '@components/analyses/security_coverages/SecurityCoverageKnowledge';
+import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
 import SecurityCoverage from './SecurityCoverage';
 import { RootSecurityCoverageQuery } from './__generated__/RootSecurityCoverageQuery.graphql';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -200,6 +201,14 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
                   stixCoreObjectId={securityCoverageId}
                 />
                }
+            />
+            <Route
+              path="/relations/:relationId"
+              element={
+                <StixCoreRelationship
+                  entityId={securityCoverageId}
+                />
+                  }
             />
           </Routes>
         </div>

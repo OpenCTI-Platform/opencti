@@ -189,6 +189,7 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
   const baseShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
+    external_uri: Yup.string().nullable(),
   };
 
   if (isAutomated) {
@@ -227,6 +228,7 @@ export interface SecurityCoverageFormProps {
 interface SecurityCoverageFormValues {
   name: string;
   description: string;
+  external_uri: string;
   auto_enrichment_disable: boolean;
   confidence: number | undefined;
   createdBy?: FieldOption;
@@ -401,6 +403,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         })),
       } : {}),
       periodicity: values.periodicity,
+      external_uri: values.external_uri,
       auto_enrichment_disable: values.auto_enrichment_disable,
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),
@@ -437,6 +440,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
     {
       name: defaultName,
       description: '',
+      external_uri: '',
       createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       confidence: defaultConfidence,
@@ -701,6 +705,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                   name="coverage_information"
                   values={values.coverage_information}
                   setFieldValue={setFieldValue}
+                />
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="external_uri"
+                  label={t_i18n('Source external link')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
                 />
               </>
             )}
