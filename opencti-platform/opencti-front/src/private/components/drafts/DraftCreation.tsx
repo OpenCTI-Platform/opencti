@@ -108,12 +108,13 @@ const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onR
     >
       {({ submitForm, handleReset, isSubmitting }) => (
         <Form>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} data-testid="draft-creation-form">
             <Field
               component={TextField}
               name="name"
               label={t_i18n('Name')}
               fullWidth
+              data-testid="draft-creation-form-name-input"
             />
             <Field
               name="authorizedMembers"

@@ -21388,6 +21388,7 @@ export type Query = {
   draftWorkspaceRelationships?: Maybe<StixRelationshipConnection>;
   draftWorkspaceSightingRelationships?: Maybe<StixSightingRelationshipConnection>;
   draftWorkspaces?: Maybe<DraftWorkspaceConnection>;
+  draftWorkspacesRestricted?: Maybe<DraftWorkspaceConnection>;
   elasticSearchMetrics?: Maybe<ElasticSearchMetrics>;
   emailTemplate?: Maybe<EmailTemplate>;
   emailTemplates?: Maybe<EmailTemplateConnection>;
@@ -22233,6 +22234,16 @@ export type QueryDraftWorkspaceSightingRelationshipsArgs = {
 
 
 export type QueryDraftWorkspacesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<DraftWorkspacesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDraftWorkspacesRestrictedArgs = {
   after?: InputMaybe<Scalars['ID']['input']>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -43041,6 +43052,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   draftWorkspaceRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceRelationshipsArgs, 'draftId'>>;
   draftWorkspaceSightingRelationships?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipConnection']>, ParentType, ContextType, RequireFields<QueryDraftWorkspaceSightingRelationshipsArgs, 'draftId'>>;
   draftWorkspaces?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesArgs>>;
+  draftWorkspacesRestricted?: Resolver<Maybe<ResolversTypes['DraftWorkspaceConnection']>, ParentType, ContextType, Partial<QueryDraftWorkspacesRestrictedArgs>>;
   elasticSearchMetrics?: Resolver<Maybe<ResolversTypes['ElasticSearchMetrics']>, ParentType, ContextType>;
   emailTemplate?: Resolver<Maybe<ResolversTypes['EmailTemplate']>, ParentType, ContextType, RequireFields<QueryEmailTemplateArgs, 'id'>>;
   emailTemplates?: Resolver<Maybe<ResolversTypes['EmailTemplateConnection']>, ParentType, ContextType, Partial<QueryEmailTemplatesArgs>>;

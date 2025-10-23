@@ -1,30 +1,24 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { graphql } from 'react-relay';
-import ManagementMenu from '@components/data/ManagementMenu';
-import {
-  ManagementDefinitionsLinesPaginationQuery,
-  ManagementDefinitionsLinesPaginationQuery$variables,
-} from '@components/data/__generated__/ManagementDefinitionsLinesPaginationQuery.graphql';
-import { ManagementDefinitionsLines_data$data } from '@components/data/__generated__/ManagementDefinitionsLines_data.graphql';
-import EnterpriseEdition from '../common/entreprise_edition/EnterpriseEdition';
-import Breadcrumbs from '../../../components/Breadcrumbs';
-import Alert from '../../../components/Alert';
-import { useFormatter } from '../../../components/i18n';
-import useHelper from '../../../utils/hooks/useHelper';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import DataTable from '../../../components/dataGrid/DataTable';
-import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import useAuth from '../../../utils/hooks/useAuth';
-import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../utils/filters/filtersUtils';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import PageContainer from '../../../components/PageContainer';
+import AlertInfo from '../../../../components/Alert';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { useFormatter } from '../../../../components/i18n';
+import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject } from '../../../../utils/filters/filtersUtils';
+import useAuth from '../../../../utils/hooks/useAuth';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import EnterpriseEdition from '../../common/entreprise_edition/EnterpriseEdition';
+import { RestrictedEntitiesLinesPaginationQuery, RestrictedEntitiesLinesPaginationQuery$variables } from './__generated__/RestrictedEntitiesLinesPaginationQuery.graphql';
+import { RestrictedEntitiesLines_data$data } from './__generated__/RestrictedEntitiesLines_data.graphql';
 
 const LOCAL_STORAGE_KEY = 'restrictedEntities';
 
 export const managementDefinitionsLinesPaginationQuery = graphql`
-  query ManagementDefinitionsLinesPaginationQuery(
+  query RestrictedEntitiesLinesPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
@@ -32,7 +26,7 @@ export const managementDefinitionsLinesPaginationQuery = graphql`
     $orderMode: OrderingMode
     $filters: FilterGroup
   ) {
-    ...ManagementDefinitionsLines_data
+    ...RestrictedEntitiesLines_data
     @arguments(
       search: $search
       count: $count
@@ -45,7 +39,7 @@ export const managementDefinitionsLinesPaginationQuery = graphql`
 `;
 
 const managementDefinitionLineFragment = graphql`
-  fragment ManagementDefinitionsLine_node on StixCoreObject{
+  fragment RestrictedEntitiesLine_node on StixCoreObject{
     id
     entity_type
     created_at
@@ -86,7 +80,7 @@ const managementDefinitionLineFragment = graphql`
 `;
 
 const managementDefinitionsLinesFragment = graphql`
-  fragment ManagementDefinitionsLines_data on Query
+  fragment RestrictedEntitiesLines_data on Query
   @argumentDefinitions(
     types: { type: "[String]" }
     search: { type: "String" }
@@ -99,7 +93,7 @@ const managementDefinitionsLinesFragment = graphql`
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "FilterGroup" }
   )
-  @refetchable(queryName: "ManagementDefinitionsLinesRefetchQuery") {
+  @refetchable(queryName: "RestrictedEntitiesLinesRefetchQuery") {
     stixCoreObjectsRestricted(
       types: $types
       search: $search
@@ -114,7 +108,7 @@ const managementDefinitionsLinesFragment = graphql`
         node {
           id
           entity_type
-          ...ManagementDefinitionsLine_node
+          ...RestrictedEntitiesLine_node
         }
       }
       pageInfo {
@@ -126,20 +120,17 @@ const managementDefinitionsLinesFragment = graphql`
   }
 `;
 
-const Management = () => {
+const RestrictedEntities = () => {
   const [ref, setRef] = useState<HTMLDivElement | undefined>(undefined);
   const { t_i18n } = useFormatter();
 
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Restriction | Data'));
+  setTitle(t_i18n('Restricted Entities | Restriction | Data'));
 
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable();
-
-  const { isFeatureEnable } = useHelper();
-  const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
 
   const isEnterpriseEdition = useEnterpriseEdition();
 
@@ -161,7 +152,7 @@ const Management = () => {
     viewStorage: { filters },
     paginationOptions,
     helpers,
-  } = usePaginationLocalStorage<ManagementDefinitionsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  } = usePaginationLocalStorage<RestrictedEntitiesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
 
   const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Domain-Object', filters);
   const toolbarFilters = addFilter(contextFilters, 'authorized_members.id', [], 'not_nil');
@@ -213,51 +204,42 @@ const Management = () => {
     queryRef,
     nodePath: ['stixCoreObjectsRestricted', 'pageInfo', 'globalCount'],
     setNumberOfElements: helpers.handleSetNumberOfElements,
-  } as UsePreloadedPaginationFragment<ManagementDefinitionsLinesPaginationQuery>;
+  } as UsePreloadedPaginationFragment<RestrictedEntitiesLinesPaginationQuery>;
 
   return isEnterpriseEdition ? (
-    <div data-testid="data-management-page" style={{ height: '100%' }}>
-      {isRightMenuManagementEnable && (
-        <ManagementMenu />
+    <>
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Restriction') },
+          { label: t_i18n('Restricted entities'), current: true },
+        ]}
+        noMargin
+      />
+      <AlertInfo
+        content={t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+      />
+      {queryRef && (
+        <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
+          <DataTable
+            rootRef={ref}
+            dataColumns={dataColumns}
+            resolvePath={(data: RestrictedEntitiesLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            lineFragment={managementDefinitionLineFragment}
+            preloadedPaginationProps={preloadedPaginationProps}
+            toolbarFilters={toolbarFilters}
+            entityTypes={['Stix-Core-Object']}
+            searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
+            removeAuthMembersEnabled={true}
+          />
+        </div>
       )}
-      <PageContainer
-        withGap
-        withRightMenu={isRightMenuManagementEnable}
-        style={{ height: '100%' }}
-      >
-        <Breadcrumbs
-          elements={[
-            { label: t_i18n('Data') },
-            { label: t_i18n('Restriction') },
-            { label: t_i18n('Restricted entities'), current: true },
-          ]}
-          noMargin
-        />
-        <Alert
-          content={t_i18n('This list displays all the entities that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
-        />
-        {queryRef && (
-          <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
-            <DataTable
-              rootRef={ref}
-              dataColumns={dataColumns}
-              resolvePath={(data: ManagementDefinitionsLines_data$data) => data.stixCoreObjectsRestricted?.edges?.map((e) => e?.node)}
-              storageKey={LOCAL_STORAGE_KEY}
-              initialValues={initialValues}
-              lineFragment={managementDefinitionLineFragment}
-              preloadedPaginationProps={preloadedPaginationProps}
-              toolbarFilters={toolbarFilters}
-              entityTypes={['Stix-Core-Object']}
-              searchContextFinal={{ entityTypes: ['Stix-Core-Object'] }}
-              removeAuthMembersEnabled={true}
-            />
-          </div>
-        )}
-      </PageContainer>
-    </div>
+    </>
   ) : (
     <EnterpriseEdition feature={t_i18n('Authorized_members')} />
   );
 };
 
-export default Management;
+export default RestrictedEntities;
