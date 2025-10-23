@@ -39,7 +39,7 @@ export const verifyDenormalizedRefs = async (context: AuthContext, user: AuthUse
       bool: {
         filter: [{
           term: {
-            [internalId.name]: internal_id
+            [`${internalId.name}.keyword`]: internal_id
           }
         }]
       }
@@ -55,7 +55,11 @@ export const verifyDenormalizedRefs = async (context: AuthContext, user: AuthUse
     throw DatabaseError('Find direct ids fail', { cause: err, query });
   });
 
-  const refDuplicatesKeys = checkForRefsDuplicates(rawDocument);
+  if (rawDocument.hits?.hits?.length === 0) {
+    return;
+  }
+  const elementDocument = rawDocument.hits.hits[0];
+  const refDuplicatesKeys = checkForRefsDuplicates(elementDocument);
 
   let source = '';
   if (refDuplicatesKeys) {
