@@ -9,10 +9,10 @@ import StixCoreObjectContentRoot from '@components/common/stix_core_objects/Stix
 import FileManager from '@components/common/files/FileManager';
 import StixCoreObjectHistory from '@components/common/stix_core_objects/StixCoreObjectHistory';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import { RootMalwareSubscription } from '@components/arsenal/malwares/__generated__/RootMalwareSubscription.graphql';
 import AIInsights from '@components/common/ai/AIInsights';
 import SecurityCoverageKnowledge from '@components/analyses/security_coverages/SecurityCoverageKnowledge';
 import StixCoreRelationship from '@components/common/stix_core_relationships/StixCoreRelationship';
+import { RootSecurityCoverageSubscription } from '@components/analyses/security_coverages/__generated__/RootSecurityCoverageSubscription.graphql';
 import SecurityCoverage from './SecurityCoverage';
 import { RootSecurityCoverageQuery } from './__generated__/RootSecurityCoverageQuery.graphql';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -75,13 +75,13 @@ type RootSecurityCoverageProps = {
 };
 
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootMalwareSubscription>>(() => ({
+  const subConfig = useMemo<GraphQLSubscriptionConfig<RootSecurityCoverageSubscription>>(() => ({
     subscription,
     variables: { id: securityCoverageId },
   }), [securityCoverageId]);
   const location = useLocation();
   const { t_i18n } = useFormatter();
-  useSubscription<RootMalwareSubscription>(subConfig);
+  useSubscription<RootSecurityCoverageSubscription>(subConfig);
   const {
     securityCoverage,
     connectorsForExport,

@@ -207,6 +207,10 @@ interface StixCoreRelationshipAddInput {
   objectMarking: FieldOption[];
   message?: string;
   references?: FieldOption[];
+  coverage_information?: readonly {
+    readonly coverage_name: string;
+    readonly coverage_score: number;
+  }[] | undefined;
 }
 
 const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
@@ -306,7 +310,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     createdBy: convertCreatedBy(stixCoreRelationship) as FieldOption,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
-    ...(isCoverage ? { coverage: stixCoreRelationship.coverage_information || [] } : {}),
+    ...(isCoverage ? { coverage_information: stixCoreRelationship.coverage_information || [] } : {}),
   };
   return (
     <>
@@ -407,9 +411,9 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
               {isCoverage && (
                 <CoverageInformationFieldEdit
                   id={stixCoreRelationship.id}
-                  name="coverage"
+                  name="coverage_information"
                   mode={'relation'}
-                  values={[...(stixCoreRelationship.coverage_information || [])]}
+                  values={values.coverage_information ?? []}
                   containerStyle={fieldSpacingContainerStyle}
                 />
               )}

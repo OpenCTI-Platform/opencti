@@ -6,27 +6,21 @@ import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../comm
 
 interface AddVulnerabilitiesProps {
   securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
+  paginationOptions: Record<string, unknown>;
 }
 
-const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({ securityCoverage }) => {
+const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({ securityCoverage, paginationOptions }) => {
   const [targetEntities, setTargetEntities] = useState<TargetEntity[]>([]);
   const handleOnCreate = () => {
     setTargetEntities([]);
   };
-  const paginationOptions = {
-    count: 25,
-    orderBy: 'created_at',
-    orderMode: 'asc',
-    filters: {
-      mode: 'and',
-      filters: [],
-      filterGroups: [],
-    },
-  };
   return (
     <StixCoreRelationshipCreationFromEntity
       entityId={securityCoverage.id}
+      objectId={securityCoverage.id}
+      connectionKey={'Pagination_vulnerabilities'}
       targetEntities={targetEntities}
+      currentView={'relationships'}
       allowedRelationshipTypes={['has-covered']}
       targetStixDomainObjectTypes={['Vulnerability']}
       paginationOptions={paginationOptions}

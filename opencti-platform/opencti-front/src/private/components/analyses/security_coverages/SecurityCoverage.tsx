@@ -151,7 +151,7 @@ const SecurityCoverageComponent = ({
 };
 
 interface SecurityCoverageProps {
-  data: SecurityCoverage_securityCoverage$key
+  data: SecurityCoverage_securityCoverage$key,
 }
 
 const SecurityCoverage = ({ data }: SecurityCoverageProps) => {
