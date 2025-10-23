@@ -2143,7 +2143,7 @@ const buildFieldForQuery = (field) => {
     ? field
     : `${field}.keyword`;
 };
-const buildLocalMustFilter = async (validFilter) => {
+export const buildLocalMustFilter = (validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
   const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
@@ -2517,14 +2517,14 @@ const buildLocalMustFilter = async (validFilter) => {
   throw UnsupportedError('Invalid filter configuration', validFilter);
 };
 
-const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
+const buildSubQueryForFilterGroup = (context, user, inputFilters) => {
   const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
   const localMustFilters = [];
   // Handle filterGroups
   for (let index = 0; index < filterGroups.length; index += 1) {
     const group = filterGroups[index];
     if (isFilterGroupNotEmpty(group)) {
-      const subQuery = await buildSubQueryForFilterGroup(context, user, group);
+      const subQuery = buildSubQueryForFilterGroup(context, user, group);
       if (subQuery) { // can be null
         localMustFilters.push(subQuery);
       }
@@ -2535,7 +2535,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
     const filter = filters[index];
     const isValidFilter = filter?.values || filter?.nested?.length > 0;
     if (isValidFilter) {
-      const localMustFilter = await buildLocalMustFilter(filter);
+      const localMustFilter = buildLocalMustFilter(filter);
       localMustFilters.push(localMustFilter);
     }
   }
@@ -2621,7 +2621,7 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   return { newFilter, newFilterGroup };
 };
 
-const adaptFilterToIdsFilterKey = (filter) => {
+export const adaptFilterToIdsFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== IDS_FILTER || arrayKeys.length > 1) {
@@ -3329,7 +3329,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
     const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
-    const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, finalFilters);
+    const filtersSubQuery = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
     }
