@@ -2158,6 +2158,7 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
+  auto_update: Boolean
   enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean

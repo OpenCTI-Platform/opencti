@@ -24963,6 +24963,7 @@ export enum RegionsOrdering {
 
 export type RegisterConnectorInput = {
   auto?: InputMaybe<Scalars['Boolean']['input']>;
+  auto_update?: InputMaybe<Scalars['Boolean']['input']>;
   enrichment_resolution?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
   listen_callback_uri?: InputMaybe<Scalars['String']['input']>;
