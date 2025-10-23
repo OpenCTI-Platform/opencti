@@ -166,10 +166,10 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
         <Typography variant="h4" sx={{ margin: 0 }}>{t_i18n('Themes')}</Typography>
 
         <Box>
-          <Tooltip title={t_i18n('Add')}>
+          <Tooltip title={t_i18n('Create a custom theme')}>
             <IconButton
               color="primary"
-              aria-label={t_i18n('Add')}
+              aria-label={t_i18n('Create a custom theme')}
               onClick={handleOpenCreation}
               size="small"
               data-testid="create-theme-btn"
