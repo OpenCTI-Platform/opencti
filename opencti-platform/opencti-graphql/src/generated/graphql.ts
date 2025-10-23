@@ -26889,6 +26889,7 @@ export type StixCoreObjectEditMutations = {
   askAnalysis?: Maybe<Work>;
   askEnrichment?: Maybe<Work>;
   askEnrichments?: Maybe<Array<Work>>;
+  cleanInconsistency?: Maybe<Scalars['Boolean']['output']>;
   clearAccessRestriction?: Maybe<StixCoreObject>;
   delete?: Maybe<Scalars['ID']['output']>;
   exportAsk?: Maybe<Array<File>>;
@@ -44202,6 +44203,7 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
   askAnalysis?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskAnalysisArgs, 'contentSource' | 'contentType'>>;
   askEnrichment?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentArgs, 'connectorId'>>;
   askEnrichments?: Resolver<Maybe<Array<ResolversTypes['Work']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentsArgs, 'connectorIds'>>;
+  cleanInconsistency?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   clearAccessRestriction?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'input'>>;
