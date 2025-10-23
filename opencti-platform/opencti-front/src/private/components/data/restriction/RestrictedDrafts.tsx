@@ -1,5 +1,4 @@
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import EnterpriseEdition from '@components/common/entreprise_edition/EnterpriseEdition';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
@@ -16,7 +15,6 @@ import { hexToRGB } from '../../../../utils/Colors';
 import { computeValidationProgress } from '../../../../utils/draft/draftUtils';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -121,7 +119,6 @@ const RestrictedDrafts = () => {
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
   const validatedDraftColor = theme.palette.success.main;
-  const isEnterpriseEdition = useEnterpriseEdition();
 
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Restricted Drafts | Restriction | Data'));
@@ -207,7 +204,7 @@ const RestrictedDrafts = () => {
     },
   };
 
-  return isEnterpriseEdition ? (
+  return (
     <>
       <Breadcrumbs
         elements={[
@@ -236,8 +233,6 @@ const RestrictedDrafts = () => {
         </div>
       )}
     </>
-  ) : (
-    <EnterpriseEdition feature={t_i18n('Authorized_members')} />
   );
 };
 

@@ -1,28 +1,25 @@
-import React from 'react';
-import { Route, Routes } from 'react-router-dom';
-import RestrictedEntities from './RestrictedEntities';
-import RestrictedDrafts from './RestrictedDrafts';
-import useHelper from '../../../../utils/hooks/useHelper';
-import RestrictionMenu from './RestrictionMenu';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import PageContainer from '../../../../components/PageContainer';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import RestrictedDrafts from './RestrictedDrafts';
+import RestrictedEntities from './RestrictedEntities';
+import RestrictionMenu from './RestrictionMenu';
 
 const RestrictionRoot = () => {
-  const { isFeatureEnable } = useHelper();
-  const isRightMenuManagementEnable = isFeatureEnable('DATA_MANAGEMENT_RIGHT_MENU');
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   return (
     <div data-testid="data-management-page" style={{ height: '100%' }}>
-      {isRightMenuManagementEnable && (
-        <RestrictionMenu />
-      )}
+      <RestrictionMenu />
       <PageContainer
         withGap
-        withRightMenu={isRightMenuManagementEnable}
+        withRightMenu
         style={{ height: '100%' }}
       >
         <Routes>
-          <Route path="/restricted" element={<RestrictedEntities />} />
           <Route path="/drafts" element={<RestrictedDrafts />} />
+          {isEnterpriseEdition && <Route path="/restricted" element={<RestrictedEntities />} />}
+          <Route index element={<Navigate to={isEnterpriseEdition ? '/dashboard/data/restriction/restricted' : '/dashboard/data/restriction/drafts'} replace={true} />} />
         </Routes>
       </PageContainer>
     </div>

@@ -1,12 +1,14 @@
-import React from 'react';
 import NavToolbarMenu, { MenuEntry } from '@components/common/menus/NavToolbarMenu';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 const RestrictionMenu = () => {
+  const isEnterpriseEdition = useEnterpriseEdition();
+
   const entries: MenuEntry[] = [
-    {
+    ...(isEnterpriseEdition ? [{
       path: '/dashboard/data/restriction/restricted',
       label: 'Restricted entities',
-    },
+    }] : []),
     {
       path: '/dashboard/data/restriction/drafts',
       label: 'Restricted drafts',
