@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_DELETE, checkActionValidity, TASK_TYPE_QUERY } from '../../../src/domain/backgroundTask-common';
+import { ACTION_TYPE_ADD, ACTION_TYPE_REPLACE, ACTION_TYPE_DELETE, checkActionValidity, TASK_TYPE_QUERY, ACTION_TYPE_MERGE } from '../../../src/domain/backgroundTask-common';
 import { buildStandardUser, testContext } from '../../utils/testQuery';
 import { ENTITY_TYPE_VOCABULARY } from '../../../src/modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_WORKSPACE } from '../../../src/modules/workspace/workspace-types';
@@ -47,8 +47,12 @@ const filterWorkspaceType = (type: 'dashboard' | 'investigation') => {
 describe('Background task validity check (checkActionValidity)', () => {
   const userParticipate = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNPARTICIPATE' }]);
   const userUpdate = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE' }]);
+  const userDelete = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }]);
+  const userMerge = buildStandardUser([], [], [{ name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }]);
+
   const userEditor = buildStandardUser([], [], [
     { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' },
+    { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' },
     { name: 'KNOWLEDGE_KNASKIMPORT' },
     { name: 'EXPLORE_EXUPDATE_EXDELETE' },
     { name: 'EXPLORE_EXUPDATE_PUBLISH' },
@@ -127,17 +131,29 @@ describe('Background task validity check (checkActionValidity)', () => {
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
+      await expect(checkActionValidity(testContext, userUpdate, input, scope, type)).resolves.toEqual(undefined);
     });
 
     it('should throw an error if deletion actions and no capa KNOWLEDGE_DELETE', async () => {
-      const user = userUpdate;
       const type = TASK_TYPE_QUERY;
       const input = {
         actions: [{ type: ACTION_TYPE_DELETE }]
       };
       await expect(async () => {
-        await checkActionValidity(testContext, user, input, scope, type);
+        await checkActionValidity(testContext, userUpdate, input, scope, type);
       }).rejects.toThrowError('You are not allowed to do this.');
+      await expect(checkActionValidity(testContext, userDelete, input, scope, type)).resolves.toEqual(undefined);
+    });
+
+    it('should throw an error if merge actions and no capa KNOWLEDGE_MERGE', async () => {
+      const type = TASK_TYPE_QUERY;
+      const input = {
+        actions: [{ type: ACTION_TYPE_MERGE }]
+      };
+      await expect(async () => {
+        await checkActionValidity(testContext, userUpdate, input, scope, type);
+      }).rejects.toThrowError('You are not allowed to do this.');
+      await expect(checkActionValidity(testContext, userMerge, input, scope, type)).resolves.toEqual(undefined);
     });
 
     it('should throw an error if task QUERY and targeting vocabularies', async () => {

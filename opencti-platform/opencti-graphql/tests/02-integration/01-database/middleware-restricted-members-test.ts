@@ -36,25 +36,25 @@ describe('Middleware test coverage on restricted_members configuration', () => {
     userPlatformOrgGreenGroup = getFakeAuthUser('userPlatformOrgGreenGroup');
     userPlatformOrgGreenGroup.groups = [greenGroup];
     userPlatformOrgGreenGroup.roles = [DEFAULT_ROLE];
-    userPlatformOrgGreenGroup.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }];
+    userPlatformOrgGreenGroup.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }];
     userPlatformOrgGreenGroup.organizations = [platformOrganizationEntity];
 
     userPlatformOrgAmberGroup = getFakeAuthUser('userPlatformOrgAmberGroup');
     userPlatformOrgAmberGroup.groups = [amberGroup];
     userPlatformOrgAmberGroup.roles = [DEFAULT_ROLE];
-    userPlatformOrgAmberGroup.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }];
+    userPlatformOrgAmberGroup.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }];
     userPlatformOrgAmberGroup.organizations = [platformOrganizationEntity];
 
     userTestOrgGreenGroup = getFakeAuthUser('userTestOrgGreenGroup');
     userTestOrgGreenGroup.groups = [greenGroup];
     userTestOrgGreenGroup.roles = [DEFAULT_ROLE];
-    userTestOrgGreenGroup.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }];
+    userTestOrgGreenGroup.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }];
     userTestOrgGreenGroup.organizations = [testOrganizationEntity];
 
     userTestOrgAmberGroup = getFakeAuthUser('userTestOrgAmberGroup');
     userTestOrgAmberGroup.groups = [amberGroup];
     userTestOrgAmberGroup.roles = [DEFAULT_ROLE];
-    userTestOrgAmberGroup.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }];
+    userTestOrgAmberGroup.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }];
     userTestOrgAmberGroup.organizations = [testOrganizationEntity];
   });
 

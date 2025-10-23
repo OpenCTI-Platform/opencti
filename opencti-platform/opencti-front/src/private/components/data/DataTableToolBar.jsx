@@ -85,6 +85,7 @@ import {
   INVESTIGATION_INUPDATE_INDELETE,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
+  KNOWLEDGE_KNUPDATE_KNMERGE,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
   SETTINGS_SETACCESSES,
 } from '../../../utils/hooks/useGranted';
@@ -2425,7 +2426,7 @@ class DataTableToolBar extends Component {
                       </Tooltip>
                     )}
                   </Security>
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNMERGE]}>
                     {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
                       <Tooltip title={t('Merge')}>
                         <span>
