@@ -42,8 +42,8 @@ running_ingestion_units_gauge = meter.create_gauge(
 )
 
 
-def is_internal_connector(connector_type: str) -> bool:
-    return connector_type == "INTERNAL_INGESTION" or connector_type == "internal"
+def is_priority_connector(connector_priority_group: str) -> bool:
+    return connector_priority_group == "REALTIME"
 
 
 @dataclass(unsafe_hash=True)
@@ -83,9 +83,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             default=5,
         )
-        self.opencti_internal_pool_size = get_config_variable(
-            "OPENCTI_INTERNAL_EXECUTION_POOL_SIZE",
-            ["opencti", "internal_execution_pool_size"],
+        self.opencti_realtime_pool_size = get_config_variable(
+            "OPENCTI_REALTIME_EXECUTION_POOL_SIZE",
+            ["opencti", "realtime_execution_pool_size"],
             config,
             True,
             default=5,
@@ -217,7 +217,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
     # Start the main loop
     def start(self) -> None:
         push_execution_pool = ThreadPoolExecutor(max_workers=self.opencti_pool_size)
-        internal_push_execution_pool = ThreadPoolExecutor(max_workers=self.opencti_internal_pool_size)
+        realtime_push_execution_pool = ThreadPoolExecutor(max_workers=self.opencti_realtime_pool_size)
         listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
 
         while not self.exit_event.is_set():
@@ -263,8 +263,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.objects_max_refs,
                         )
                         execution_pool = push_execution_pool
-                        if is_internal_connector(connector["connector_type"]):
-                            execution_pool = internal_push_execution_pool
+                        if is_priority_connector(connector["connector_priority_group"]):
+                            execution_pool = realtime_push_execution_pool
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",

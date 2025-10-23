@@ -1,35 +1,49 @@
-import { v4 as uuidv4 } from 'uuid';
+import {v4 as uuidv4} from 'uuid';
 import Ajv from 'ajv';
-import type { FileHandle } from 'fs/promises';
-import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import type { BasicStoreEntityForm, FormFieldDefinition, FormSchemaDefinition, StoreEntityForm } from './form-types';
-import { ENTITY_TYPE_FORM, FormSchemaDefinitionSchema } from './form-types';
-import type { AuthContext, AuthUser } from '../../types/user';
-import { FunctionalError } from '../../config/errors';
-import { connectorIdFromIngestId, registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
-import { publishUserAction } from '../../listener/UserActionListener';
-import { generateStandardId } from '../../schema/identifier';
-import { logApp } from '../../config/conf';
-import { pushToWorkerForConnector } from '../../database/rabbitmq';
-import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
-import { now, nowTime } from '../../utils/format';
-import { SYSTEM_USER } from '../../utils/access';
-import { convertStoreToStix } from '../../database/stix-2-1-converter';
-import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
-import type { BasicStoreEntity, StoreEntity } from '../../types/store';
-import type { StixId } from '../../types/stix-2-1-common';
-import { isEmptyField, isNotEmptyField } from '../../database/utils';
-import { ENTITY_TYPE_MALWARE, isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
-import type { StixRelation } from '../../types/stix-2-1-sro';
-import type { StixContainer } from '../../types/stix-2-1-sdo';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
-import { detectObservableType } from '../../utils/observable';
-import { createStixPattern } from '../../python/pythonBridge';
+import type {FileHandle} from 'fs/promises';
+import {createEntity, deleteElementById, patchAttribute, updateAttribute} from '../../database/middleware';
+import {
+  fullEntitiesList,
+  internalLoadById,
+  pageEntitiesConnection,
+  storeLoadById
+} from '../../database/middleware-loader';
+import type {BasicStoreEntityForm, FormFieldDefinition, FormSchemaDefinition, StoreEntityForm} from './form-types';
+import {ENTITY_TYPE_FORM, FormSchemaDefinitionSchema} from './form-types';
+import type {AuthContext, AuthUser} from '../../types/user';
+import {FunctionalError} from '../../config/errors';
+import {
+  connectorIdFromIngestId,
+  registerConnectorForIngestion,
+  unregisterConnectorForIngestion
+} from '../../domain/connector';
+import {publishUserAction} from '../../listener/UserActionListener';
+import {generateStandardId} from '../../schema/identifier';
+import {logApp} from '../../config/conf';
+import {pushToWorkerForConnector} from '../../database/rabbitmq';
+import {createWork, updateExpectationsNumber} from '../../domain/work';
+import {ConnectorPriorityGroup, ConnectorType, FilterMode, type FormSubmissionInput} from '../../generated/graphql';
+import {now, nowTime} from '../../utils/format';
+import {SYSTEM_USER} from '../../utils/access';
+import {convertStoreToStix} from '../../database/stix-2-1-converter';
+import {addDraftWorkspace} from '../draftWorkspace/draftWorkspace-domain';
+import type {BasicStoreEntity, StoreEntity} from '../../types/store';
+import type {StixId} from '../../types/stix-2-1-common';
+import {isEmptyField, isNotEmptyField} from '../../database/utils';
+import {ENTITY_TYPE_MALWARE, isStixDomainObject, isStixDomainObjectContainer} from '../../schema/stixDomainObject';
+import type {StixRelation} from '../../types/stix-2-1-sro';
+import type {StixContainer} from '../../types/stix-2-1-sdo';
+import {ENTITY_TYPE_CONTAINER_GROUPING} from '../grouping/grouping-types';
+import {detectObservableType} from '../../utils/observable';
+import {createStixPattern} from '../../python/pythonBridge';
 import pjson from '../../../package.json';
-import { extractContentFrom } from '../../utils/fileToContent';
-import { addFormIntakeCreatedCount, addFormIntakeDeletedCount, addFormIntakeSubmittedCount, addFormIntakeUpdatedCount } from '../../manager/telemetryManager';
+import {extractContentFrom} from '../../utils/fileToContent';
+import {
+  addFormIntakeCreatedCount,
+  addFormIntakeDeletedCount,
+  addFormIntakeSubmittedCount,
+  addFormIntakeUpdatedCount
+} from '../../manager/telemetryManager';
 
 const ajv = new Ajv();
 const validateSchema = ajv.compile(FormSchemaDefinitionSchema);
@@ -90,7 +104,8 @@ export const addForm = async (
       type: 'FORM',
       name: element.name,
       is_running: element.active ?? false,
-      connector_user_id: user.id
+      connector_user_id: user.id,
+      connector_priority_group: ConnectorPriorityGroup.Realtime,
     });
 
     await publishUserAction({

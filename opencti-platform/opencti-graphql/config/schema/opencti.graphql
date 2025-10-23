@@ -2204,6 +2204,11 @@ type ManagerContractExcerpt {
   slug: String!
 }
 
+enum ConnectorPriorityGroup {
+  REALTIME
+  DEFAULT
+}
+
 type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -2229,6 +2234,7 @@ type Connector implements BasicObject & InternalObject {
   connector_user: User
   connector_queue_details: ConnectorQueueDetails!
   connector_info: ConnectorInfo
+  connector_priority_group: ConnectorPriorityGroup!
   updated_at: DateTime
   refreshed_at: DateTime
   created_at: DateTime

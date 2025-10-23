@@ -2,6 +2,7 @@ import type { Connector, ConnectorConfig } from '../../connector/internalConnect
 import { CONNECTOR_INTERNAL_INGESTION } from '../../schema/general';
 import { logApp } from '../../config/conf';
 import { registerConnectorQueues } from '../../database/rabbitmq';
+import { ConnectorPriorityGroup } from '../../generated/graphql';
 
 export const DRAFT_VALIDATION_CONNECTOR_ID = 'c194e700-afb6-4c4e-ad1b-d4a00590e735';
 
@@ -12,6 +13,7 @@ export const DRAFT_VALIDATION_CONNECTOR: Connector = {
   auto: false,
   connector_scope: 'draft',
   connector_type: CONNECTOR_INTERNAL_INGESTION,
+  connector_priority_group: ConnectorPriorityGroup.Realtime,
   name: '[DRAFT] Draft validation',
   built_in: true,
 };
