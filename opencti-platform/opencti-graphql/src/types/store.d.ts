@@ -1,4 +1,4 @@
-import type { SortResults } from '@elastic/elasticsearch/lib/api/types';
+import type { SortResults } from '@elastic/elasticsearch';
 import {
   INPUT_BCC,
   INPUT_BELONGS_TO,
