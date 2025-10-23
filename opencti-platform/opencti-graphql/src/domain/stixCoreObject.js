@@ -99,7 +99,7 @@ import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draf
 import { askJobImport } from './connector';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
-import {verifyDenormalizedRefs} from "../database/inconsistencyCleaner";
+import { cleanAllEntityInconsistencies } from '../database/inconsistencyCleaner';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -170,7 +170,7 @@ export const findStixCoreObjectRestrictedPaginated = async (context, user, args)
 };
 
 export const cleanInconsistency = async (context, user, stixCoreObjectId) => {
-  return verifyDenormalizedRefs(context, user, stixCoreObjectId);
+  return cleanAllEntityInconsistencies(context, user, stixCoreObjectId);
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {

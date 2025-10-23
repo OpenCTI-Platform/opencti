@@ -1,7 +1,7 @@
 import type { AuthContext, AuthUser } from '../types/user';
 import { isBypassUser } from '../utils/access';
 import { internalId } from '../schema/attribute-definition';
-import { elRawSearch, ES_MAX_PAGINATION } from './engine';
+import { elRawSearch, elRawUpdateByQuery, ES_MAX_PAGINATION } from './engine';
 import { READ_DATA_INDICES_WITHOUT_INFERRED } from './utils';
 import { DatabaseError } from '../config/errors';
 import { REL_INDEX_PREFIX } from '../schema/general';
@@ -30,54 +30,63 @@ const checkForRefsDuplicates = (entityDocument: any): string[] => {
   return refsWithDuplicates;
 };
 
-export const verifyDenormalizedRefs = async (context: AuthContext, user: AuthUser, internal_id: string) => {
+export enum InconsistencyOperation {
+  REF_DUPLICATE_CLEAN = 'ref_duplicate_clean',
+  REF_MISSING_REPAIR = 'ref_missing_repair',
+}
+const allOperations = [InconsistencyOperation.REF_DUPLICATE_CLEAN, InconsistencyOperation.REF_MISSING_REPAIR];
+export const cleanAllEntityInconsistencies = async (context: AuthContext, user: AuthUser, internal_id: string, operationsToApply: InconsistencyOperation[] = allOperations) => {
   if (!isBypassUser(user)) {
     return;
   }
-  const body = {
-    query: {
-      bool: {
-        filter: [{
-          term: {
-            [`${internalId.name}.keyword`]: internal_id
-          }
-        }]
-      }
-    },
-  };
   const query = {
+    bool: {
+      filter: [{
+        term: {
+          [`${internalId.name}.keyword`]: internal_id
+        }
+      }]
+    }
+  };
+  const rawSearchQuery = {
     index: READ_DATA_INDICES_WITHOUT_INFERRED,
     size: ES_MAX_PAGINATION,
     track_total_hits: false,
-    body,
+    body: { query },
   };
-  const rawDocument = await elRawSearch(context, user, 'None', query).catch((err: any) => {
-    throw DatabaseError('Find direct ids fail', { cause: err, query });
+  const rawDocument = await elRawSearch(context, user, 'None', rawSearchQuery).catch((err: any) => {
+    throw DatabaseError('Find direct ids fail', { cause: err, rawSearchQuery });
   });
 
   if (rawDocument.hits?.hits?.length === 0) {
     return;
   }
   const elementDocument = rawDocument.hits.hits[0];
-  const refDuplicatesKeys = checkForRefsDuplicates(elementDocument);
-
   let source = '';
-  if (refDuplicatesKeys) {
-    source += `
-          int totalElements = 0;
-          for (String fieldName : params['_source'].keySet()) {
-            if (fieldName.startsWith('rel_')) {
-              def fieldValue = params['_source'].get(fieldName);
-              if (fieldValue != null) {
-                if (fieldValue instanceof List) {
-                  totalElements += ((List) fieldValue).size();
-                } else {
-                  totalElements++;
-                }
-              }
-            }
+  let shouldUpdate = false;
+  const params: { duplicatedKeys?: string[] } = {};
+  if (operationsToApply.includes(InconsistencyOperation.REF_DUPLICATE_CLEAN)) {
+    const refDuplicatesKeys = checkForRefsDuplicates(elementDocument);
+    if (refDuplicatesKeys) {
+      params.duplicatedKeys = refDuplicatesKeys;
+      source += `
+          for (String keyName : params['duplicatedKeys']) {
+            ctx._source[keyName]=ctx._source[keyName].stream().distinct().sorted().collect(Collectors.toList())
           }
-          return totalElements;
         `;
+      shouldUpdate = true;
+    }
+  }
+
+  if (shouldUpdate) {
+    await elRawUpdateByQuery({
+      index: READ_DATA_INDICES_WITHOUT_INFERRED,
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: { source, params },
+        query,
+      },
+    });
   }
 };

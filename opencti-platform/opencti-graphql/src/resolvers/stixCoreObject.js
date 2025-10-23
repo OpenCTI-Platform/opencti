@@ -44,7 +44,8 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationshipsPaginated, cleanInconsistency
+  stixCoreRelationshipsPaginated,
+  cleanInconsistency
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -63,7 +64,6 @@ import { loadThroughDenormalized } from './stix';
 const stixCoreObjectResolvers = {
   Query: {
     globalSearch: (_, args, context) => globalSearchPaginated(context, context.user, args),
-    stixCoreObjectCleanInconsistency: (_, { id }, context) => cleanInconsistency(context, context.user, id),
     stixCoreObject: (_, { id }, context) => findById(context, context.user, id),
     stixCoreObjectRaw: (_, { id }, context) => stixLoadByIdStringify(context, context.user, id),
     stixCoreObjects: (_, args, context) => findStixCoreObjectPaginated(context, context.user, args),
@@ -181,6 +181,7 @@ const stixCoreObjectResolvers = {
       exportAsk: ({ input }) => stixCoreObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
       removeFromDraft: () => stixCoreObjectRemoveFromDraft(context, context.user, id),
+      cleanInconsistency: () => cleanInconsistency(context, context.user, id),
     }),
     stixCoreObjectsExportAsk: (_, { input }, context) => stixCoreObjectsExportAsk(context, context.user, input),
     stixCoreObjectsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {
