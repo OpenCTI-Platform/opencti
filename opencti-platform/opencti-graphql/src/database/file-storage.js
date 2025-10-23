@@ -150,7 +150,7 @@ export const deleteFile = async (context, user, id) => {
   // Delete associated works
   await deleteWorkForFile(context, user, id);
   // Delete index file
-  await deleteDocumentIndex(context, user, up);
+  await deleteDocumentIndex(context, user, id);
   // delete in index if file has been indexed
   const isFileIndexModuleActivated = await isModuleActivated('FILE_INDEX_MANAGER');
   if (isFileIndexModuleActivated && isAttachmentProcessorEnabled()) {
