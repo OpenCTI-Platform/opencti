@@ -410,6 +410,7 @@ class DataTableToolBar extends Component {
       participants: [],
       killChainPhases: [],
       groups: [],
+      displayEditButtons: true,
     };
   }
 
@@ -2139,6 +2140,7 @@ class DataTableToolBar extends Component {
       warning,
       warningMessage,
       taskScope,
+      displayEditButtons,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
 
@@ -2273,333 +2275,336 @@ class DataTableToolBar extends Component {
                     <ClearOutlined fontSize="small" />
                   </IconButton>
                 </div>
-                <div>
-                  {markAsReadEnabled && (
-                    <>
-                      <Tooltip title={t('Mark as read')}>
-                        <span>
-                          <IconButton
-                            aria-label={t('Mark as read')}
-                            disabled={numberOfSelectedElements === 0 || this.state.processing}
-                            onClick={this.handleLaunchRead.bind(this, true)}
-                            color="success"
-                            size="small"
-                          >
-                            <CheckCircleOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title={t('Mark as unread')}>
-                        <span>
-                          <IconButton
-                            aria-label={t('Mark as unread')}
-                            disabled={numberOfSelectedElements === 0 || this.state.processing}
-                            onClick={this.handleLaunchRead.bind(this, false)}
-                            color="warning"
-                            size="small"
-                          >
-                            <UnpublishedOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </>
-                  )}
-                  {removeAuthMembersEnabled && (
-                    <Security needs={[BYPASS]}>
-                      <Tooltip title={t('Remove access restriction')}>
-                        <IconButton
-                          color="primary"
-                          aria-label="input"
-                          onClick={this.handleLaunchRemoveAuthMembers.bind(this)}
-                          size="small"
-                          disabled={
-                            numberOfSelectedElements === 0
-                            || this.state.processing
-                          }
-                        >
-                          <LockOpenOutlined fontSize="small" color={'primary'} />
-                        </IconButton>
-                      </Tooltip>
-                    </Security>
-                  )}
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    {!typesAreNotUpdatable && !removeAuthMembersEnabled && (
-                      <Tooltip title={t('Update')}>
-                        <span>
-                          <IconButton
-                            aria-label="update"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                            onClick={this.handleOpenUpdate.bind(this)}
-                            color="primary"
-                            size="small"
-                          >
-                            <BrushOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
+                {displayEditButtons && (
+                  <div>
+                    {markAsReadEnabled && (
+                      <>
+                        <Tooltip title={t('Mark as read')}>
+                          <span>
+                            <IconButton
+                              aria-label={t('Mark as read')}
+                              disabled={numberOfSelectedElements === 0 || this.state.processing}
+                              onClick={this.handleLaunchRead.bind(this, true)}
+                              color="success"
+                              size="small"
+                            >
+                              <CheckCircleOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title={t('Mark as unread')}>
+                          <span>
+                            <IconButton
+                              aria-label={t('Mark as unread')}
+                              disabled={numberOfSelectedElements === 0 || this.state.processing}
+                              onClick={this.handleLaunchRead.bind(this, false)}
+                              color="warning"
+                              size="small"
+                            >
+                              <UnpublishedOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </>
                     )}
-                    {isUserDatatable && isEnterpriseEdition && (
-                      <UserEmailSend
-                        isOpen={this.state.displaySendEmail}
-                        onClose={this.handleCloseSendEmail.bind(this)}
-                        onSubmit={this.handleSubmitEmailTemplate.bind(this)}
-                      />
-                    )}
-                    {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
-                    <UserContext.Consumer>
-                      {({ platformModuleHelpers }) => {
-                        const label = platformModuleHelpers.isRuleEngineEnable()
-                          ? 'Rule rescan'
-                          : 'Rule rescan (engine is disabled)';
-                        const buttonDisable = typesAreNotScannable
-                          || !platformModuleHelpers.isRuleEngineEnable()
-                          || numberOfSelectedElements === 0
-                          || this.state.processing;
-                        return typesAreNotScannable ? undefined : (
-                          <Tooltip title={t(label)}>
-                            <span>
-                              <IconButton
-                                aria-label="update"
-                                disabled={buttonDisable}
-                                onClick={this.handleOpenRescan.bind(this)}
-                                color="primary"
-                                size="small"
-                              >
-                                <AutoFixHighOutlined fontSize="small" />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
-                        );
-                      }}
-                    </UserContext.Consumer>
-                    )}
-                    {this.props.handleCopy && (
-                      <Tooltip title={titleCopy}>
-                        <span>
-                          <IconButton
-                            aria-label="copy"
-                            disabled={
-                              numberOfSelectedElements
-                              > maxNumberOfObservablesToCopy
-                            }
-                            onClick={this.props.handleCopy}
-                            color="primary"
-                            size="small"
-                          >
-                            <ContentCopyOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    )}
-                    {!enrichDisable && !removeAuthMembersEnabled && !isUserDatatable && (
-                      <Tooltip title={t('Enrichment')}>
-                        <span>
-                          <IconButton
-                            aria-label="enrichment"
-                            disabled={this.state.processing}
-                            onClick={this.handleOpenEnrichment.bind(this, stixCyberObservableSubTypes, stixDomainObjectSubTypes)}
-                            color="primary"
-                            size="small"
-                          >
-                            <CloudRefreshOutline fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    )}
-                    {promoteEnabled && (
-                      <Tooltip title={t('Indicators/observables generation')}>
-                        <span>
-                          <IconButton
-                            aria-label="promote"
-                            disabled={this.state.processing}
-                            onClick={this.handleOpenPromote.bind(this)}
-                            color="primary"
-                            size="small"
-                          >
-                            <TransformOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    )}
-                  </Security>
-                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                    {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
-                      <Tooltip title={t('Merge')}>
-                        <span>
-                          <IconButton
-                            aria-label="merge"
-                            disabled={
-                              typesAreDifferent
-                              || numberOfSelectedElements < 2
-                              || numberOfSelectedElements > 4
-                              || preventMerge
-                              || selectAll
-                              || this.state.processing
-                            }
-                            onClick={this.handleOpenMerge.bind(this)}
-                            color="primary"
-                            size="small"
-                          >
-                            <MergeOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    )}
-                  </Security>
-                  {!typesAreNotAddableInContainer && !removeAuthMembersEnabled && !isUserDatatable && (
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <Tooltip title={t('Add in container')}>
-                        <span>
-                          <IconButton
-                            aria-label="input"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                            onClick={this.handleOpenAddInContainer.bind(this)}
-                            color="primary"
-                            size="small"
-                          >
-                            <MoveToInboxOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Security>
-                  )}
-                  {container && (
-                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <Tooltip title={t('Remove from the container')}>
-                        <span>
-                          <IconButton
-                            aria-label="remove"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                            onClick={this.handleLaunchRemove.bind(this)}
-                            color="primary"
-                            size="small"
-                          >
-                            <LinkOffOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Security>
-                  )}
-                  {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
-                    <>
-                      <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                        <EETooltip title={t('Share with organizations')}>
+                    {removeAuthMembersEnabled && (
+                      <Security needs={[BYPASS]}>
+                        <Tooltip title={t('Remove access restriction')}>
                           <IconButton
                             color="primary"
                             aria-label="input"
-                            onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
+                            onClick={this.handleLaunchRemoveAuthMembers.bind(this)}
                             size="small"
                             disabled={
                               numberOfSelectedElements === 0
                               || this.state.processing
                             }
                           >
-                            <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                            <LockOpenOutlined fontSize="small" color={'primary'} />
                           </IconButton>
-                        </EETooltip>
+                        </Tooltip>
                       </Security>
-                      <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
-                        <EETooltip title={t('Unshare with organizations')}>
-                          <IconButton
-                            color="primary"
-                            aria-label="input"
-                            onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
-                            size="small"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                          >
-                            <BankMinus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
-                          </IconButton>
-                        </EETooltip>
-                      </Security>
-                    </>
-                  )}
-                  {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
-                    <Security needs={[deleteCapability]}>
-                      <Tooltip title={warningMessage || t('Delete')}>
-                        <span>
-                          <IconButton
-                            aria-label="delete"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                            onClick={this.handleLaunchDelete.bind(this)}
-                            color={warning ? 'warning' : 'primary'}
-                            size="small"
-                          >
-                            <DeleteOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Security>
-                  )}
-                  {removeFromDraftEnabled && (
+                    )}
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                      <Tooltip title={t('Remove from draft')}>
-                        <IconButton
-                          color="primary"
-                          aria-label="input"
-                          onClick={this.handleLaunchRemoveFromDraft.bind(this)}
-                          size="small"
-                          disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                          }
-                        >
-                          <DeleteSweepOutlined fontSize="small" color={'primary'} />
-                        </IconButton>
-                      </Tooltip>
+                      {!typesAreNotUpdatable && !removeAuthMembersEnabled && (
+                        <Tooltip title={t('Update')}>
+                          <span>
+                            <IconButton
+                              aria-label="update"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
+                              onClick={this.handleOpenUpdate.bind(this)}
+                              color="primary"
+                              size="small"
+                            >
+                              <BrushOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
+                      {isUserDatatable && isEnterpriseEdition && (
+                        <UserEmailSend
+                          isOpen={this.state.displaySendEmail}
+                          onClose={this.handleCloseSendEmail.bind(this)}
+                          onSubmit={this.handleSubmitEmailTemplate.bind(this)}
+                        />
+                      )}
+                      {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
+                        <UserContext.Consumer>
+                          {({ platformModuleHelpers }) => {
+                            const label = platformModuleHelpers.isRuleEngineEnable()
+                              ? 'Rule rescan'
+                              : 'Rule rescan (engine is disabled)';
+                            const buttonDisable = typesAreNotScannable
+                              || !platformModuleHelpers.isRuleEngineEnable()
+                              || numberOfSelectedElements === 0
+                              || this.state.processing;
+                            return typesAreNotScannable ? undefined : (
+                              <Tooltip title={t(label)}>
+                                <span>
+                                  <IconButton
+                                    aria-label="update"
+                                    disabled={buttonDisable}
+                                    onClick={this.handleOpenRescan.bind(this)}
+                                    color="primary"
+                                    size="small"
+                                  >
+                                    <AutoFixHighOutlined fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                            );
+                          }}
+                        </UserContext.Consumer>
+                      )}
+                      {this.props.handleCopy && (
+                        <Tooltip title={titleCopy}>
+                          <span>
+                            <IconButton
+                              aria-label="copy"
+                              disabled={
+                                numberOfSelectedElements
+                                > maxNumberOfObservablesToCopy
+                              }
+                              onClick={this.props.handleCopy}
+                              color="primary"
+                              size="small"
+                            >
+                              <ContentCopyOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
+                      {!enrichDisable && !removeAuthMembersEnabled && !isUserDatatable && (
+                        <Tooltip title={t('Enrichment')}>
+                          <span>
+                            <IconButton
+                              aria-label="enrichment"
+                              disabled={this.state.processing}
+                              onClick={this.handleOpenEnrichment.bind(this, stixCyberObservableSubTypes, stixDomainObjectSubTypes)}
+                              color="primary"
+                              size="small"
+                            >
+                              <CloudRefreshOutline fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
+                      {promoteEnabled && (
+                        <Tooltip title={t('Indicators/observables generation')}>
+                          <span>
+                            <IconButton
+                              aria-label="promote"
+                              disabled={this.state.processing}
+                              onClick={this.handleOpenPromote.bind(this)}
+                              color="primary"
+                              size="small"
+                            >
+                              <TransformOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
                     </Security>
-                  )}
-                  {deleteOperationEnabled && (
                     <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-                      <Tooltip title={warningMessage || t('Restore')}>
-                        <span>
-                          <IconButton
-                            aria-label="restore"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                            onClick={this.handleLaunchRestore.bind(this)}
-                            color={warning ? 'warning' : 'primary'}
-                            size="small"
-                          >
-                            <RestoreOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title={warningMessage || t('Confirm delete')}>
-                        <span>
-                          <IconButton
-                            aria-label="completeDelete"
-                            disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
-                            }
-                            onClick={this.handleLaunchCompleteDelete.bind(this)}
-                            color={warning ? 'warning' : 'primary'}
-                            size="small"
-                          >
-                            <DeleteOutlined fontSize="small" />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
+                      {enableMerge && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
+                        <Tooltip title={t('Merge')}>
+                          <span>
+                            <IconButton
+                              aria-label="merge"
+                              disabled={
+                                typesAreDifferent
+                                || numberOfSelectedElements < 2
+                                || numberOfSelectedElements > 4
+                                || preventMerge
+                                || selectAll
+                                || this.state.processing
+                              }
+                              onClick={this.handleOpenMerge.bind(this)}
+                              color="primary"
+                              size="small"
+                            >
+                              <MergeOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
                     </Security>
-                  )}
-                </div>
+                    {!typesAreNotAddableInContainer && !removeAuthMembersEnabled && !isUserDatatable && (
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <Tooltip title={t('Add in container')}>
+                          <span>
+                            <IconButton
+                              aria-label="input"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
+                              onClick={this.handleOpenAddInContainer.bind(this)}
+                              color="primary"
+                              size="small"
+                            >
+                              <MoveToInboxOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Security>
+                    )}
+                    {container && (
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <Tooltip title={t('Remove from the container')}>
+                          <span>
+                            <IconButton
+                              aria-label="remove"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
+                              onClick={this.handleLaunchRemove.bind(this)}
+                              color="primary"
+                              size="small"
+                            >
+                              <LinkOffOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Security>
+                    )}
+                    {!deleteOperationEnabled && isShareableType && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
+                      <>
+                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                          <EETooltip title={t('Share with organizations')}>
+                            <IconButton
+                              color="primary"
+                              aria-label="input"
+                              onClick={isEnterpriseEdition ? this.handleOpenShare.bind(this) : null}
+                              size="small"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
+                            >
+                              <BankPlus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                            </IconButton>
+                          </EETooltip>
+                        </Security>
+                        <Security needs={[KNOWLEDGE_KNUPDATE_KNORGARESTRICT]}>
+                          <EETooltip title={t('Unshare with organizations')}>
+                            <IconButton
+                              color="primary"
+                              aria-label="input"
+                              onClick={isEnterpriseEdition ? this.handleOpenUnshare.bind(this) : null}
+                              size="small"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
+                            >
+                              <BankMinus fontSize="small" color={isEnterpriseEdition ? 'primary' : 'disabled'} />
+                            </IconButton>
+                          </EETooltip>
+                        </Security>
+                      </>
+                    )}
+                    {deleteDisable !== true && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isUserDatatable && (
+                      <Security needs={[deleteCapability]}>
+                        <Tooltip title={warningMessage || t('Delete')}>
+                          <span>
+                            <IconButton
+                              aria-label="delete"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                                || selectedElementsList.find((element) => element.currentUserAccessRight === 'view')
+                              }
+                              onClick={this.handleLaunchDelete.bind(this)}
+                              color={warning ? 'warning' : 'primary'}
+                              size="small"
+                            >
+                              <DeleteOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Security>
+                    )}
+                    {removeFromDraftEnabled && (
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <Tooltip title={t('Remove from draft')}>
+                          <IconButton
+                            color="primary"
+                            aria-label="input"
+                            onClick={this.handleLaunchRemoveFromDraft.bind(this)}
+                            size="small"
+                            disabled={
+                              numberOfSelectedElements === 0
+                              || this.state.processing
+                            }
+                          >
+                            <DeleteSweepOutlined fontSize="small" color={'primary'} />
+                          </IconButton>
+                        </Tooltip>
+                      </Security>
+                    )}
+                    {deleteOperationEnabled && (
+                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                        <Tooltip title={warningMessage || t('Restore')}>
+                          <span>
+                            <IconButton
+                              aria-label="restore"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
+                              onClick={this.handleLaunchRestore.bind(this)}
+                              color={warning ? 'warning' : 'primary'}
+                              size="small"
+                            >
+                              <RestoreOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title={warningMessage || t('Confirm delete')}>
+                          <span>
+                            <IconButton
+                              aria-label="completeDelete"
+                              disabled={
+                              numberOfSelectedElements === 0
+                              || this.state.processing
+                            }
+                              onClick={this.handleLaunchCompleteDelete.bind(this)}
+                              color={warning ? 'warning' : 'primary'}
+                              size="small"
+                            >
+                              <DeleteOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Security>
+                    )}
+                  </div>
+                )}
               </Toolbar>
               <Dialog
                 slotProps={{ paper: { elevation: 1 } }}
@@ -2630,7 +2635,7 @@ class DataTableToolBar extends Component {
                   {numberOfSelectedElements > 1000 && (
                     <Alert severity="warning">
                       {t(
-                        "You're targeting more than 1000 entities with this background task, be sure of what you're doing!",
+                        'You\'re targeting more than 1000 entities with this background task, be sure of what you\'re doing!',
                       )}
                     </Alert>
                   )}
@@ -2898,10 +2903,10 @@ class DataTableToolBar extends Component {
                         secondaryAction={
                           <Radio
                             checked={
-                                      keptEntityId
-                                        ? keptEntityId === element.id
-                                        : R.head(selectedElementsList).id === element.id
-                                  }
+                              keptEntityId
+                                ? keptEntityId === element.id
+                                : R.head(selectedElementsList).id === element.id
+                            }
                             onChange={this.handleChangeKeptEntityId.bind(
                               this,
                               element.id,
@@ -2910,7 +2915,7 @@ class DataTableToolBar extends Component {
                             name="keptEntityID"
                             inputProps={{ 'aria-label': 'keptEntityID' }}
                           />
-                          }
+                        }
                       >
                         <ListItemIcon>
                           <ItemIcon type={element.entity_type} />

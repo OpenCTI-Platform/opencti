@@ -41,6 +41,7 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -459,7 +460,11 @@ const ContainerHeader = (props) => {
   const [openSharing, setOpenSharing] = useState(false);
   const [openAccessRestriction, setOpenAccessRestriction] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+
+  const draftContext = useDraftContext();
+  const currentDraftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+
+  const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && (!draftContext || currentDraftAccessRight.canEdit);
 
   const handleCloseEnrollPlaybook = () => {
     setOpenEnrollPlaybook(false);
