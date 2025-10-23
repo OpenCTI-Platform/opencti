@@ -94,7 +94,12 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import {
+  getEntityTypeTwoFirstLevelsFilterValues,
+  getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+  serializeFilterGroupForBackend
+} from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
@@ -495,11 +500,14 @@ class DataTableToolBar extends Component {
   handleOpenEnrichment(stixCyberObservableSubTypes, stixDomainObjectSubTypes) {
     // Get enrich type
     let enrichType;
-    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
-    if (this.props.selectAll) {
-      enrichType = this.props.type ?? R.head(entityTypeFilterValues);
+    const { filters, isMultiKeysFilter, selectedElements, selectAll, type } = this.props;
+    const entityTypeFilterValues = isMultiKeysFilter
+      ? getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter(filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes)
+      : getEntityTypeTwoFirstLevelsFilterValues(filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
+    if (selectAll) {
+      enrichType = type ?? R.head(entityTypeFilterValues);
     } else {
-      const selectedElementsList = Object.values(this.props.selectedElements || {});
+      const selectedElementsList = Object.values(selectedElements || {});
       const selectedTypes = R.uniq(selectedElementsList
         .map((o) => o.entity_type)
         .filter((entity_type) => entity_type !== undefined));
@@ -828,11 +836,12 @@ class DataTableToolBar extends Component {
       container,
       taskScope,
       t,
+      isMultiKeysFilter,
     } = this.props;
     const scope = taskScope ?? 'KNOWLEDGE';
     if (numberOfSelectedElements === 0) return;
     const jsonFilters = serializeFilterGroupForBackend(
-      removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
+      isMultiKeysFilter ? filters : removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
     const finalActions = taskScope === 'USER'
@@ -2095,8 +2104,11 @@ class DataTableToolBar extends Component {
   }
 
   getSelectedTypes(observableTypes, domainObjectTypes) {
-    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, observableTypes, domainObjectTypes);
-    const selectedElementsList = Object.values(this.props.selectedElements || {});
+    const { selectedElements, filters, isMultiKeysFilter } = this.props;
+    const entityTypeFilterValues = isMultiKeysFilter
+      ? getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter(filters, observableTypes, domainObjectTypes)
+      : getEntityTypeTwoFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    const selectedElementsList = Object.values(selectedElements || {});
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
       .filter((entity_type) => entity_type !== undefined));
     return { entityTypeFilterValues, selectedElementsList, selectedTypes };
@@ -2141,6 +2153,7 @@ class DataTableToolBar extends Component {
       warningMessage,
       taskScope,
       displayEditButtons,
+      isMultiKeysFilter,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
 
@@ -2692,7 +2705,7 @@ class DataTableToolBar extends Component {
                                     )}
                                   </span>
                                 )}
-                                <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
+                                <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} isMultiKeysFilter={isMultiKeysFilter} />
                               </div>
                             ) : (
                               <span>

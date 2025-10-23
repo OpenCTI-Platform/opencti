@@ -8,7 +8,7 @@ import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
-import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
+import { Filter, FilterGroup, FilterGroupWithArrayKeys, FilterValue, FilterWithArrayKeys, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -204,6 +204,23 @@ export const findFiltersFromKeys = (
   return result;
 };
 
+export const findFiltersFromKeys_multiKeysFilter = (
+  filters: FilterWithArrayKeys[],
+  keys: string[],
+  operator = 'eq',
+): FilterWithArrayKeys[] => {
+  const result = [];
+  for (const filter of filters) {
+    const filterKeys = Array.isArray(filter.key) ? filter.key : [filter.key];
+    if (filterKeys.every((k) => keys.includes(k))) {
+      if (!filter.operator || filter.operator === operator) {
+        result.push(filter);
+      }
+    }
+  }
+  return result;
+};
+
 export const findFilterIndexFromKey = (
   filters: Filter[],
   key: string,
@@ -237,6 +254,12 @@ export const addFilter = (
     operator,
     mode,
   };
+  if (filters && filters.mode === 'and') {
+    return {
+      ...filters,
+      filters: [...filters.filters, filterFromParameters],
+    };
+  }
   return {
     mode: 'and',
     filters: [filterFromParameters],
@@ -283,6 +306,48 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
       .flat();
     if (subFiltersSeparatedWithAnd.length > 0) {
       const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
+        .map(({ values }) => values)
+        .flat();
+      if (secondLevelValues.length > 0) {
+        if (filters.mode === 'and') {
+          // if all second values are observables sub types : remove observable from firstLevelValue
+          if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
+            firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
+          }
+          if (secondLevelValues.every((type) => domainObjectTypes?.includes(type))) {
+            firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Domain-Object');
+          }
+        }
+        return [...firstLevelValues, ...secondLevelValues];
+      }
+    }
+    if (filters.mode === 'or') {
+      return [];
+    }
+  }
+  return firstLevelValues;
+};
+
+// same as getEntityTypeTwoFirstLevelsFilterValues
+// for FilterGroup with array as key (BulkSearch context)
+export const getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter = (
+  filters?: FilterGroupWithArrayKeys,
+  observableTypes?: string[],
+  domainObjectTypes?: string [],
+): string[] => {
+  if (!filters) {
+    return [];
+  }
+  let firstLevelValues = findFiltersFromKeys_multiKeysFilter(filters.filters, ['entity_type'], 'eq') // TODO
+    .map(({ values }) => values)
+    .flat();
+  if (filters.filterGroups.length > 0) {
+    const subFiltersSeparatedWithAnd = filters.filterGroups
+      .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
+      .map((fg) => fg.filters)
+      .flat();
+    if (subFiltersSeparatedWithAnd.length > 0) {
+      const secondLevelValues = findFiltersFromKeys_multiKeysFilter(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
         .map(({ values }) => values)
         .flat();
       if (secondLevelValues.length > 0) {
