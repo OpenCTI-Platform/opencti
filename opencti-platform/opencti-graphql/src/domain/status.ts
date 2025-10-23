@@ -1,4 +1,5 @@
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+// eslint-disable-next-line import/no-unresolved
+import { ATTR_DB_NAME, ATTR_DB_OPERATION } from '@opentelemetry/semantic-conventions/incubating';
 import * as R from 'ramda';
 import { ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE } from '../schema/internalObject';
 import { createEntity, deleteElementById, internalDeleteElementById, updateAttribute } from '../database/middleware';
@@ -68,8 +69,8 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
     return findStatusPaginated(context, user, args);
   };
   return telemetry(context, user, 'QUERY type statuses', {
-    [SEMATTRS_DB_NAME]: 'statuses_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [ATTR_DB_NAME]: 'statuses_domain',
+    [ATTR_DB_OPERATION]: 'read',
   }, getTypeStatusesFn);
 };
 
@@ -91,8 +92,8 @@ export const batchRequestAccessStatusesByType = async (context: AuthContext, use
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
-    [SEMATTRS_DB_NAME]: 'statuses_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [ATTR_DB_NAME]: 'statuses_domain',
+    [ATTR_DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
 };
 
@@ -112,8 +113,8 @@ export const batchGlobalStatusesByType = async (context: AuthContext, user: Auth
     return types.map((type) => statusesGrouped[type] || []);
   };
   return telemetry(context, user, 'BATCH type statuses', {
-    [SEMATTRS_DB_NAME]: 'statuses_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [ATTR_DB_NAME]: 'statuses_domain',
+    [ATTR_DB_OPERATION]: 'read',
   }, batchStatusesByTypeFn);
 };
 export const createStatusTemplate = async (context: AuthContext, user: AuthUser, input: StatusTemplateAddInput) => {

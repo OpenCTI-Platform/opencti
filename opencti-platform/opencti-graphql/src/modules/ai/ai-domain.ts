@@ -13,8 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { callWithTimeout } from '@opentelemetry/sdk-metrics/build/esnext/utils';
-import { TimeoutError } from '@opentelemetry/sdk-metrics';
 import nconf from 'nconf';
 import { logApp } from '../../config/conf';
 import { FunctionalError, UnknownError } from '../../config/errors';
@@ -51,6 +49,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-
 import { paginatedForPathWithEnrichment } from '../internal/document/document-domain';
 import type { BasicStoreEntityDocument } from '../internal/document/document-types';
 import { NLQPromptTemplate } from './ai-nlq-utils';
+import { callWithTimeout, TimeoutError } from '../../utils/promiseUtils';
 
 const SYSTEM_PROMPT = 'You are an assistant helping cyber threat intelligence analysts to generate text about cyber threat intelligence information or from a cyber threat intelligence knowledge graph based on the STIX 2.1 model.';
 
