@@ -9945,6 +9945,7 @@ type StixCoreObjectEditMutations {
   exportAsk(input: ExportAskInput!): [File!]
   exportPush(file: Upload!): Boolean
   removeFromDraft: ID
+  cleanInconsistency: Boolean
 }
 
 input StixDomainObjectFileEditInput {
