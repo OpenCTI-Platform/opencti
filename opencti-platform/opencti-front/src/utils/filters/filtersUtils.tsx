@@ -343,9 +343,7 @@ export const buildFiltersAndOptionsForWidgets = (
   if (isKnowledgeRelationshipWidget) {
     filters = addFilter(filters, 'entity_type', ['Stix-Core-Relationship', 'object']);
   }
-  return {
-    filters,
-  };
+  return { filters };
 };
 
 export const useBuildFiltersForTemplateWidgets = () => {
