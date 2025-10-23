@@ -121,6 +121,9 @@ steps:
     image: plugins/codecov
     failure: ignore
     settings:
+      flags:
+        - opencti
+        - opencti-graphql
       token:
         from_secret: codecov_token
       paths:
@@ -144,7 +147,7 @@ steps:
       - yarn build
       - yarn check-ts
       - yarn lint
-      - NODE_OPTIONS=--max_old_space_size=8192 yarn test
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
     depends_on:
         - generate-licenses
 
@@ -169,6 +172,19 @@ steps:
       - npx playwright install --with-deps chromium
       - yarn build
       - yarn test:e2e
+    depends_on:
+      - frontend-tests
+
+  - name: frontend-coverage
+    image: plugins/codecov
+    settings:
+      flags:
+        - opencti
+        - opencti-front
+      token:
+        from_secret: codecov_token
+      paths:
+        - opencti-platform/opencti-front/coverage/unit
     depends_on:
       - frontend-tests
 
