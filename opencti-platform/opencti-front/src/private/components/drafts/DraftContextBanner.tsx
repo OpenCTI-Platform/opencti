@@ -130,7 +130,6 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
     entity_id,
     creators,
     authorizedMembers,
-    currentUserAccessRight,
   } = useFragment<DraftContextBanner_data$key>(draftContextBannerFragment, draftWorkspace);
   const currentlyProcessing = processingCount > 0;
   const handleExitDraft = () => {
@@ -189,7 +188,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
     <div style={{ padding: '0 12px', flex: 1 }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
         <div style={{ padding: '0 12px' }}>
-          {currentUserAccessRight === 'admin' && (
+          {currentAccessRight.canManage && (
             <Tooltip title={t_i18n('Authorized members')}>
               <IconButton
                 onClick={() => {
