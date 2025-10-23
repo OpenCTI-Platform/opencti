@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine';
+import { adaptFilterToIdsFilterKey, buildLocalMustFilter, elGenerateFullTextSearchShould, specialElasticCharsEscape } from '../../../src/database/engine';
 import { isNotEmptyField } from '../../../src/database/utils';
 
 const parse = (search) => {
@@ -73,4 +73,19 @@ it('should search parsing correctly generated', () => {
   parsed = parse('"identity--21985175-7f18-589d-a078-ad14116a0efc"');
   expect(parsed.queriesString).toBe('');
   expect(parsed.matchesString).toBe('identity--21985175-7f18-589d-a078-ad14116a0efc');
+});
+
+it('should buildLocalMustFilter build query from ids filter with terms', () => {
+  const { newFilter } = adaptFilterToIdsFilterKey({ key: 'ids', values: ['ID1', 'ID2', 'ID3'] });
+  const query = buildLocalMustFilter(newFilter);
+  const expectedQuery = {
+    bool: {
+      should: [
+        { terms: { 'internal_id.keyword': ['ID1', 'ID2', 'ID3'] } },
+        { terms: { 'standard_id.keyword': ['ID1', 'ID2', 'ID3'] } },
+        { terms: { 'x_opencti_stix_ids.keyword': ['ID1', 'ID2', 'ID3'] } },
+        { terms: { 'i_aliases_ids.keyword': ['ID1', 'ID2', 'ID3'] } }],
+      minimum_should_match: 1 }
+  };
+  expect(query).toEqual(expectedQuery);
 });
