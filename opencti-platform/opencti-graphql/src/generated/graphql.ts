@@ -24963,7 +24963,6 @@ export enum RegionsOrdering {
 
 export type RegisterConnectorInput = {
   auto?: InputMaybe<Scalars['Boolean']['input']>;
-  auto_update?: InputMaybe<Scalars['Boolean']['input']>;
   enrichment_resolution?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
   listen_callback_uri?: InputMaybe<Scalars['String']['input']>;
@@ -25961,6 +25960,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   entity_type: Scalars['String']['output'];
   exportFiles?: Maybe<FileConnection>;
   externalReferences?: Maybe<ExternalReferenceConnection>;
+  external_uri?: Maybe<Scalars['String']['output']>;
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID']['output'];
   identity_class: Scalars['String']['output'];
@@ -26165,6 +26165,7 @@ export type SecurityCoverageAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  external_uri?: InputMaybe<Scalars['String']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;
   name: Scalars['String']['input'];
   objectCovered: Scalars['String']['input'];
@@ -44081,6 +44082,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoverageExportFilesArgs>>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<SecurityCoverageExternalReferencesArgs>>;
+  external_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<SecurityCoverageGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   identity_class?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

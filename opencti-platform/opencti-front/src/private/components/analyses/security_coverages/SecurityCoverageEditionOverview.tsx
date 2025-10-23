@@ -88,6 +88,7 @@ const securityCoverageEditionOverviewFragment = graphql`
     name
     description
     confidence
+    external_uri
     periodicity
     auto_enrichment_disable
     coverage_information {
@@ -133,6 +134,7 @@ interface SecurityCoverageEditionFormValues {
   name: string;
   description: string | null;
   periodicity: string | null;
+  external_uri: string | null;
   auto_enrichment_disable: boolean;
   confidence: number | null;
   coverage_information: { coverage_name: string; coverage_score: number }[];
@@ -150,11 +152,6 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
     securityCoverageEditionOverviewFragment,
     securityCoverage,
   );
-
-  // const [commitRelationAdd] = useApiMutation(securityCoverageMutationRelationAdd);
-  // const [commitRelationDelete] = useApiMutation(securityCoverageMutationRelationDelete);
-  // const [commitFieldPatch] = useApiMutation(securityCoverageMutationFieldPatch);
-  // const [commitEditionFocus] = useApiMutation(securityCoverageEditionOverviewFocus);
 
   const queries = {
     fieldPatch: securityCoverageMutationFieldPatch,
@@ -179,6 +176,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       }),
     ).nullable(),
     periodicity: Yup.string().nullable(),
+    external_uri: Yup.string().nullable(),
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
   };
@@ -200,6 +198,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       name: values.name,
       description: values.description,
       periodicity: values.periodicity,
+      external_uri: values.external_uri,
       auto_enrichment_disable: values.auto_enrichment_disable,
       confidence: parseInt(String(values.confidence), 10),
       coverage_information: values.coverage_information?.map((info) => ({
@@ -239,6 +238,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
   const initialValues: SecurityCoverageEditionFormValues = {
     name: securityCoverageData.name,
     description: securityCoverageData.description ?? null,
+    external_uri: securityCoverageData.external_uri ?? null,
     periodicity: securityCoverageData.periodicity ?? null,
     auto_enrichment_disable: securityCoverageData.auto_enrichment_disable ?? false,
     confidence: securityCoverageData.confidence ?? null,
@@ -313,12 +313,23 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             label={t_i18n('Force manual coverage (prevent enrichment connectors from running)')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          {values.auto_enrichment_disable && <CoverageInformationFieldEdit
-            id={securityCoverageData.id}
-            mode={'entity'}
-            name="coverage_information"
-            values={values.coverage_information}
-                                             />}
+          {values.auto_enrichment_disable && <>
+            <CoverageInformationFieldEdit
+              id={securityCoverageData.id}
+              mode={'entity'}
+              name="coverage_information"
+              values={values.coverage_information}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="external_uri"
+              onSubmit={handleSubmitField}
+              label={t_i18n('Source external link')}
+              fullWidth={true}
+              style={fieldSpacingContainerStyle}
+            />
+          </>}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}

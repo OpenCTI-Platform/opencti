@@ -12,6 +12,8 @@ import ListItemButton from '@mui/material/ListItemButton';
 import { Theme } from '@mui/material/styles/createTheme';
 import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import { Link } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -19,6 +21,10 @@ import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 import { SecurityCoverageDetails_securityCoverage$key } from './__generated__/SecurityCoverageDetails_securityCoverage.graphql';
 import SecurityCoverageSecurityPlatforms from './SecurityCoverageSecurityPlatforms';
 import SecurityCoverageVulnerabilities from './SecurityCoverageVulnerabilities';
+import { isNotEmptyField } from '../../../../utils/utils';
+import { fileUri } from '../../../../relay/environment';
+import obasDark from '../../../../static/images/xtm/obas_dark.png';
+import obasLight from '../../../../static/images/xtm/obas_light.png';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -38,6 +44,7 @@ const securityCoverageDetailsFragment = graphql`
     id
     name
     description
+    external_uri
     coverage_last_result
     coverage_valid_from
     coverage_valid_to
@@ -65,6 +72,7 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   securityCoverage,
 }) => {
   const classes = useStyles();
+  const theme = useTheme<Theme>();
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
 
@@ -91,6 +99,14 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Coverage information')}
             </Typography>
+            {isNotEmptyField(data.external_uri)
+                && <Button color="primary"
+                  startIcon={<img style={{ width: 20 }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />}
+                  variant="outlined" onClick={() => window.open(data.external_uri ?? '', '_blank')}
+                   >
+                    {t_i18n('Exposure validation')}
+                </Button>
+            }
             <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
               <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
             </Paper>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, TextField, MenuItem, InputLabel } from '@mui/material';
 import { Field, FieldProps } from 'formik';
 import { useFormatter } from '../i18n';
+import { isEmptyField } from '../../utils/utils';
 
 interface PeriodicityFieldProps {
   name: string;
@@ -14,8 +15,8 @@ interface PeriodicityFieldProps {
 
 // Parse ISO 8601 duration string to extract value and unit
 const parseDuration = (duration: string): { value: number; unit: string } => {
-  if (!duration || typeof duration !== 'string') {
-    return { value: 1, unit: 'D' };
+  if (isEmptyField(duration) || typeof duration !== 'string') {
+    return { value: 0, unit: 'D' };
   }
 
   // Match patterns like P1D, PT1H, P1W
@@ -59,13 +60,15 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
             if (setFieldValue) {
               // Generate ISO 8601 duration string
               // For weeks, use P format (e.g., P1W), for days use P format (e.g., P1D), for others use PT format (e.g., PT1H)
-              let durationString;
-              if (unit === 'W') {
-                durationString = `P${value}W`;
-              } else if (unit === 'D') {
-                durationString = `P${value}D`;
-              } else {
-                durationString = `PT${value}${unit}`;
+              let durationString = null;
+              if (value > 0) {
+                if (unit === 'W') {
+                  durationString = `P${value}W`;
+                } else if (unit === 'D') {
+                  durationString = `P${value}D`;
+                } else {
+                  durationString = `PT${value}${unit}`;
+                }
               }
               setFieldValue(name, durationString);
               if (handleOnChange) {
@@ -76,7 +79,7 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
 
           const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = parseInt(event.target.value, 10);
-            if (!Number.isNaN(newValue) && newValue > 0) {
+            if (!Number.isNaN(newValue) && newValue >= 0) {
               setValue(newValue);
             }
           };
@@ -96,8 +99,8 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                   variant="standard"
                   value={value}
                   onChange={handleValueChange}
-                  inputProps={{ min: 1 }}
-                  style={{ flex: 2 }}
+                  inputProps={{ min: 0 }}
+                  style={{ flex: 1 }}
                   fullWidth
                 />
                 <TextField
@@ -117,10 +120,9 @@ const PeriodicityField: React.FC<PeriodicityFieldProps> = ({
                     },
                   }}
                 >
-                  <MenuItem value="M">{t_i18n('Minutes')}</MenuItem>
-                  <MenuItem value="H">{t_i18n('Hours')}</MenuItem>
                   <MenuItem value="D">{t_i18n('Days')}</MenuItem>
                   <MenuItem value="W">{t_i18n('Weeks')}</MenuItem>
+                  <MenuItem value="M">{t_i18n('Months')}</MenuItem>
                 </TextField>
               </Box>
               {helperText && (
