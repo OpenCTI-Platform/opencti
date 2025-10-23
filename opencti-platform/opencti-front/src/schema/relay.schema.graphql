@@ -1540,7 +1540,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   platform_enterprise_edition: PlatformEE!
   platform_organization: Organization
@@ -1905,7 +1905,7 @@ type MeUser implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   user_email: String!
   name: String!
@@ -9947,7 +9947,7 @@ type Catalog implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   name: String!
   description: String!
@@ -11879,7 +11879,7 @@ type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   target_type: String!
   platform_entity_files_ref: Boolean
@@ -11918,7 +11918,7 @@ type Workspace implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   type: String
   name: String!
@@ -12126,7 +12126,7 @@ type ManagerConfiguration implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   manager_id: String!
   manager_running: Boolean
@@ -12168,7 +12168,7 @@ type Notifier implements InternalObject & BasicObject {
   description: String
   notifier_connector: NotifierConnector!
   notifier_connector_id: String!
-  notifier_configuration: String!
+  notifier_configuration: String
   authorized_members: [MemberAccess!]
 }
 
@@ -12380,7 +12380,7 @@ type Playbook implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   name: String!
   description: String
@@ -12457,7 +12457,7 @@ type IngestionRss implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
@@ -12526,7 +12526,7 @@ type IngestionTaxii implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
@@ -12589,7 +12589,7 @@ type IngestionTaxiiCollection implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   created_at: DateTime
   updated_at: DateTime
@@ -13270,7 +13270,7 @@ type CsvMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   name: String!
   has_header: Boolean!
@@ -13469,7 +13469,7 @@ type JsonMapper implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   name: String!
   variables: [JsonMapperVariable!]
@@ -13500,7 +13500,7 @@ type PublicDashboard implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   name: String!
   owner: Creator
@@ -13649,7 +13649,7 @@ type DeleteOperation implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   objectMarking: [MarkingDefinition!]
   confidence: Int
@@ -13783,7 +13783,7 @@ type DraftWorkspace implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   name: String!
   created_at: DateTime!
@@ -14035,7 +14035,7 @@ type Pir implements InternalObject & BasicObject {
   id: ID!
   entity_type: String!
   standard_id: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   created_at: DateTime!
   updated_at: DateTime!
@@ -14371,7 +14371,7 @@ type Form implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String!]!
+  parent_types: [String]!
   metrics: [Metric]
   spec_version: String!
   created_at: DateTime!
