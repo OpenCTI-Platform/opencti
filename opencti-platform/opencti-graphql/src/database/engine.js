@@ -1732,7 +1732,7 @@ const findElementsDuplicateIds = (elements) => {
   const elementIds = new Set();
   const checkCurrentIds = (id) => {
     if (!id) return;
-    if (elementIds.has(id)) {
+    if (elementIds.has(id) && !duplicatedIds.includes(id)) {
       duplicatedIds.push(id);
     } else {
       elementIds.add(id);
