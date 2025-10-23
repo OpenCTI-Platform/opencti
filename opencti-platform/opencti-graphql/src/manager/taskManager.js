@@ -49,7 +49,6 @@ import {
   TASK_TYPE_RULE
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
@@ -118,15 +117,12 @@ export const taskQuery = async (context, user, task, callback) => {
 };
 
 export const taskList = async (context, user, task, callback) => {
-  const { task_position, task_ids, scope, task_order_mode } = task;
+  const { task_position, task_ids } = task;
   // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = task_ids.slice(startIndex);
   const options = {
-    orderMode: task_order_mode || 'desc',
-    // processing elements in descending order makes possible restoring from trash elements with dependencies
-    orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
     baseData: true,
     includeDeletedInDraft: true,
   };
