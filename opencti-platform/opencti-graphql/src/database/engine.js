@@ -1727,6 +1727,28 @@ const REL_COUNT_SCRIPT_FIELD = {
   }
 };
 
+const findElementsDuplicateIds = (elements) => {
+  const duplicatedIds = [];
+  const elementIds = new Set();
+  const checkCurrentIds = (id) => {
+    if (!id) return;
+    if (elementIds.has(id)) {
+      duplicatedIds.push(id);
+    } else {
+      elementIds.add(id);
+    }
+  };
+  for (let i = 0; i < elements.length; i += 1) {
+    const element = elements[i];
+    const { [internalId.name]: internal_id, [standardId.name]: standard_id, [xOpenctiStixIds.name]: otherStixIds, [iAliasedIds.name]: aliasIds } = element;
+    checkCurrentIds(internal_id);
+    checkCurrentIds(standard_id);
+    otherStixIds?.map((id) => checkCurrentIds(id));
+    aliasIds?.map((id) => checkCurrentIds(id));
+  }
+  return duplicatedIds;
+};
+
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
@@ -1826,17 +1848,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     });
     const elements = data.hits.hits;
     if (elements.length > workingIds.length) {
-      const duplicatedIds = [];
-      for (let i = 0; i < workingIds.length; i += 1) {
-        const workingId = workingIds[i];
-        const associatedElement = elements.filter((e) => e[internalId.name] === workingId
-            || e[standardId.name] === workingId
-            || e[xOpenctiStixIds.name]?.includes(workingId)
-            || e[iAliasedIds.name]?.includes(workingId));
-        if (associatedElement.length > 1) {
-          duplicatedIds.push(workingId);
-        }
-      }
+      const duplicatedIds = findElementsDuplicateIds(elements);
       logApp.info('Search query returned more elements than expected', { resultCount: elements.length, queryCount: workingIds.length, duplicatedIds });
       if (elements.length >= ES_MAX_PAGINATION) {
         throw DatabaseError('Ids loading returned more elements than paging allowed for, some elements could not be loaded', { resultCount: elements.length, queryCount: workingIds.length, duplicatedIds });
