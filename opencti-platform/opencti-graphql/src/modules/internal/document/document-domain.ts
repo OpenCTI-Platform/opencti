@@ -75,14 +75,14 @@ export const indexFileToDocument = async (context: AuthContext, file: any) => {
 };
 
 export const deleteDocumentIndex = async (context: AuthContext, user: AuthUser, id: string) => {
-  const internalFile = await storeLoadById(context, user, id, ENTITY_TYPE_INTERNAL_FILE);
+  const internalFile = await storeLoadById(context, user, id, ENTITY_TYPE_INTERNAL_FILE, { noThrow: true });
   if (internalFile) {
     await elDeleteInstances([internalFile]);
   }
 };
 
-export const findById: DomainFindById<BasicStoreEntityDocument> = (context: AuthContext, user: AuthUser, fileId: string) => {
-  return storeLoadById<BasicStoreEntityDocument>(context, user, fileId, ENTITY_TYPE_INTERNAL_FILE);
+export const findById: DomainFindById<BasicStoreEntityDocument> = (context: AuthContext, user: AuthUser, fileId: string, opts: { noThrow?: boolean } = {}) => {
+  return storeLoadById<BasicStoreEntityDocument>(context, user, fileId, ENTITY_TYPE_INTERNAL_FILE, opts);
 };
 
 interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
