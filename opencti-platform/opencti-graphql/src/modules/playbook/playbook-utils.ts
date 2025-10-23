@@ -35,6 +35,12 @@ export const convertMembersToUsers = async (
     ENTITY_TYPE_USER
   );
 
+  const toLog = platformUsers.map((u) => ({
+    name: u.name,
+    id: u.id
+  }));
+  console.log(JSON.stringify(toLog, null, 2));
+
   const membersIds: string[] = [];
   members?.forEach((m) => {
     if (m.value === 'AUTHOR') {
