@@ -26,14 +26,19 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-
+  const paginationOptions = {
+    orderBy: 'created_at',
+    orderMode: 'asc',
+    relationship_type: 'has-covered',
+    toTypes: ['SecurityPlatform'],
+  };
   return (
     <div style={{ marginTop: 20 }}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Security Platforms')}
         </Typography>
-        <AddSecurityPlatforms securityCoverage={securityCoverage} />
+        <AddSecurityPlatforms securityCoverage={securityCoverage} paginationOptions={paginationOptions} />
       </div>
       <div className="clearfix" />
       <List style={{ marginTop: -10 }}>
@@ -49,7 +54,10 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                 disablePadding={true}
                 secondaryAction={
                   <StixCoreRelationshipPopover
+                    objectId={securityCoverage.id}
+                    connectionKey={'Pagination_securityPlatforms'}
                     stixCoreRelationshipId={securityPlatformEdge.node.id}
+                    paginationOptions={paginationOptions}
                     isCoverage={true}
                   />
                 }
@@ -95,9 +103,11 @@ const SecurityCoverageSecurityPlatforms = createFragmentContainer(
         parent_types
         entity_type
         securityPlatforms: stixCoreRelationships(
+          orderBy: created_at
+          orderMode: asc
           relationship_type: "has-covered"
           toTypes: ["SecurityPlatform"]
-          first: 200
+          first: 25
         ) @connection(key: "Pagination_securityPlatforms") {
           edges {
             node {

@@ -26,14 +26,19 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
-
+  const paginationOptions = {
+    orderBy: 'created_at',
+    orderMode: 'asc',
+    relationship_type: 'has-covered',
+    toTypes: ['Vulnerability'],
+  };
   return (
     <div style={{ marginTop: 20 }}>
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Vulnerabilities')}
         </Typography>
-        <AddVulnerabilities securityCoverage={securityCoverage} />
+        <AddVulnerabilities securityCoverage={securityCoverage} paginationOptions={paginationOptions} />
       </div>
       <div className="clearfix" />
       <List style={{ marginTop: -10 }}>
@@ -49,7 +54,10 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                 disablePadding={true}
                 secondaryAction={
                   <StixCoreRelationshipPopover
+                    objectId={securityCoverage.id}
+                    connectionKey={'Pagination_vulnerabilities'}
                     stixCoreRelationshipId={vulnerabilityEdge.node.id}
+                    paginationOptions={paginationOptions}
                     isCoverage={true}
                   />
                 }
@@ -96,8 +104,10 @@ const SecurityCoverageVulnerabilities = createFragmentContainer(
         entity_type
         vulnerabilities: stixCoreRelationships(
           relationship_type: "has-covered"
+          orderBy: created_at
+          orderMode: asc
           toTypes: ["Vulnerability"]
-          first: 200
+          first: 25
         ) @connection(key: "Pagination_vulnerabilities") {
           edges {
             node {
