@@ -836,9 +836,9 @@ describe('Elasticsearch pagination', () => {
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
     const internalRelationships = groupByIndices[`${ES_INDEX_PREFIX}_internal_relationships-000001`].map((m) => m.node);
     const internalRelationshipsByType = R.groupBy((m) => m.entity_type, internalRelationships);
-    expect(internalRelationshipsByType['accesses-to'].length).toEqual(28);
+    expect(internalRelationshipsByType['accesses-to'].length).toEqual(relationsCounter['accesses-to']);
     expect(internalRelationshipsByType['has-capability'].length).toEqual(relationsCounter['has-capability']);
-    expect(internalRelationshipsByType['has-role'].length).toEqual(9);
+    expect(internalRelationshipsByType['has-role'].length).toEqual(relationsCounter['has-role']);
     expect(internalRelationshipsByType['member-of'].length).toEqual(13);
     expect(internalRelationshipsByType['participate-to'].length).toEqual(4);
 
@@ -860,7 +860,7 @@ describe('Elasticsearch pagination', () => {
     expect(stixMetaRelationshipsByType['external-reference'].length).toEqual(7);
     expect(stixMetaRelationshipsByType['kill-chain-phase'].length).toEqual(3);
     expect(stixMetaRelationshipsByType['object-label'].length).toEqual(30);
-    expect(stixMetaRelationshipsByType['object-marking'].length).toEqual(28);
+    expect(stixMetaRelationshipsByType['object-marking'].length).toEqual(relationsCounter['object-marking']);
     expect(stixMetaRelationshipsByType['operating-system'].length).toEqual(1);
     expect(stixMetaRelationshipsByType.object.length).toEqual(38);
     expect(groupByIndices[`${ES_INDEX_PREFIX}_stix_meta_relationships-000001`].length).toEqual(129);
@@ -873,7 +873,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['object-label'].length).toEqual(30);
     expect(metaByEntityType['created-by'].length).toEqual(22);
     expect(metaByEntityType['external-reference'].length).toEqual(7);
-    expect(metaByEntityType['object-marking'].length).toEqual(28);
+    expect(metaByEntityType['object-marking'].length).toEqual(relationsCounter['object-marking']);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
     expect(metaByEntityType['operating-system'].length).toEqual(1);
 
@@ -886,9 +886,9 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     const entityTypeMap = mapCountPerEntityType(data);
     expect(entityTypeMap.get('has-capability')).toBe(relationsCounter['has-capability']);
-    expect(entityTypeMap.get('accesses-to')).toBe(28);
+    expect(entityTypeMap.get('accesses-to')).toBe(relationsCounter['accesses-to']);
     expect(entityTypeMap.get('member-of')).toBe(13);
-    expect(entityTypeMap.get('has-role')).toBe(9);
+    expect(entityTypeMap.get('has-role')).toBe(relationsCounter['has-role']);
     expect(entityTypeMap.get('participate-to')).toBe(4);
     expect(entityTypeMap.get('uses')).toBe(3);
     expect(entityTypeMap.get('part-of')).toBe(6);
@@ -900,7 +900,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('attributed-to')).toBe(2);
     expect(entityTypeMap.get('created-by')).toBe(22);
     expect(entityTypeMap.get('object')).toBe(38);
-    expect(entityTypeMap.get('object-marking')).toBe(28);
+    expect(entityTypeMap.get('object-marking')).toBe(relationsCounter['object-marking']);
     expect(entityTypeMap.get('object-label')).toBe(30);
     expect(entityTypeMap.get('kill-chain-phase')).toBe(3);
     expect(entityTypeMap.get('external-reference')).toBe(7);

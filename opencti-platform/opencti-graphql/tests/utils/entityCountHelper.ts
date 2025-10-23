@@ -8,4 +8,7 @@ entitiesCounter.externalReference = 7;
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 
 export const relationsCounter: Record<string, number> = {};
+relationsCounter['accesses-to'] = 28;
 relationsCounter['has-capability'] = 63;
+relationsCounter['has-role'] = 9;
+relationsCounter['object-marking'] = 28;
