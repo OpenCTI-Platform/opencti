@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import React from 'react';
+import { allEntitiesKeyList } from '@components/common/bulk/utils/querySearchEntityByText';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
@@ -48,7 +49,7 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
+const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'].concat(allEntitiesKeyList);
 
 const pirScoreFilterDefinition = (pirId: string) => ({
   filterKey: `pir_score.${pirId}`,
@@ -828,9 +829,10 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   return uniqueArray(filterKeysMap.keys() ?? []);
 };
 
-const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
+const isFilterKeyAvailable = (key: string | string[], availableFilterKeys: string[]) => {
   const completedAvailableFilterKeys = availableFilterKeys.concat(NOT_CLEANABLE_FILTER_KEYS);
-  return completedAvailableFilterKeys.includes(key) || key.startsWith('pir_score') || key.startsWith('last_pir_score_date');
+  const keys = Array.isArray(key) ? key : [key];
+  return keys.every((k) => completedAvailableFilterKeys.includes(k) || k.startsWith('pir_score') || k.startsWith('last_pir_score_date'));
 };
 
 export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
@@ -862,7 +864,10 @@ export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): Fil
 const notCleanableFilterKeys = ['ids', 'entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id'];
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
-export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGroup | null | undefined, availableFilterKeys: string[]): FilterGroup | undefined => {
+export const removeIdAndIncorrectKeysFromFilterGroupObject = <T extends FilterGroup | FilterGroupWithArrayKeys>(
+  filters: T | null | undefined,
+  availableFilterKeys: string[],
+): T | undefined => {
   if (!filters) {
     return undefined;
   }
@@ -885,13 +890,17 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
         }
         return newFilter;
       }),
-    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys)) as FilterGroup[],
-  };
+    filterGroups: (filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys))
+      .filter((fg) => !!fg) ?? []) as T['filterGroups'],
+  } as T;
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = <T extends FilterGroup | FilterGroupWithArrayKeys>(
+  filters?: T | null,
+  entityTypes = ['Stix-Core-Object'],
+): T | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
-  return removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys);
+  return removeIdAndIncorrectKeysFromFilterGroupObject<T>(filters, availableFilterKeys);
 };
 
 export const useBuildEntityTypeBasedFilterContext = (

@@ -11,7 +11,7 @@ export type FilterGroup = {
 export type FilterGroupWithArrayKeys = {
   mode: string;
   filters: FilterWithArrayKeys[];
-  filterGroups: FilterGroup[];
+  filterGroups: FilterGroupWithArrayKeys[];
 };
 
 // TODO: import from graphql generated types
