@@ -30,6 +30,7 @@ esbuild.build({
         'script/script-clean-relations.js',
         'script/script-insert-dataset.js',
         'script/script-wait-for-api.js',
+        'src/utils/ejsWorker.ts'
     ],
     entryNames: "[name]",
     bundle: true,

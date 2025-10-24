@@ -4,7 +4,7 @@
   "compilerOptions": {
     "target": "es6",
     "module": "es6",
-    "lib": ["es2021"],
+    "lib": ["es2022"],
     "strict": true,
     "allowJs": true,
     "noImplicitAny": true,
@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,
