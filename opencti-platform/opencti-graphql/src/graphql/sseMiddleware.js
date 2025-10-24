@@ -42,7 +42,7 @@ import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { generateCreateMessage } from '../database/generate-message';
-import { asyncFilter, asyncMap, uniqAsyncMap } from '../utils/data-processing';
+import { asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
@@ -200,22 +200,37 @@ const createSseMiddleware = () => {
     }
     return paramData;
   };
+
   const resolveMissingReferences = async (context, user, missingRefs, cache) => {
     const refsToResolve = missingRefs.filter((m) => !cache.has(m));
-    const missingElements = [];
-    if (refsToResolve.length > 0) {
-      const resolvedStoreElements = await storeLoadByIdsWithRefs(context, user, refsToResolve);
-      missingElements.push(...resolvedStoreElements);
-      const resolvedMissingIds = await asyncMap(missingElements, (elem) => extractIdsFromStoreObject(elem), undefined, { flat: true });
-      const allRefs = await uniqAsyncMap(resolvedStoreElements, (r) => stixRefsExtractor(convertStoreToStix(r)), undefined, { flat: true });
-      const parentRefs = await asyncFilter(allRefs, (parentId) => !resolvedMissingIds.includes(parentId));
-      if (parentRefs.length > 0) {
-        const newMissing = await resolveMissingReferences(context, user, parentRefs, cache);
-        missingElements.unshift(...newMissing);
-      }
+    if (refsToResolve.length === 0) {
+      return [];
     }
-    return missingElements;
+
+    const missingElements = await storeLoadByIdsWithRefs(context, user, refsToResolve);
+    if (missingElements.length === 0) {
+      return [];
+    }
+
+    const allRefs = await uniqAsyncMap(missingElements, (r) => stixRefsExtractor(convertStoreToStix(r)), undefined, { flat: true });
+    if (allRefs.length === 0) {
+      return missingElements;
+    }
+
+    const resolvedMissingIds = new Set(await asyncMap(missingElements, (elem) => extractIdsFromStoreObject(elem), undefined, { flat: true }));
+    const parentRefs = allRefs.filter((parentId) => !resolvedMissingIds.has(parentId));
+    if (parentRefs.length === 0) {
+      return missingElements;
+    }
+
+    const newMissing = await resolveMissingReferences(context, user, parentRefs, cache);
+    if (newMissing.length === 0) {
+      return missingElements;
+    }
+
+    return newMissing.concat(missingElements);
   };
+
   const initBroadcasting = async (req, res, client, processor) => {
     const broadcasterInfo = processor ? await processor.info() : {};
     req.on('close', () => {
