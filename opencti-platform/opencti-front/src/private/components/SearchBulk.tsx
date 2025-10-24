@@ -181,7 +181,6 @@ const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
           exportContext={{ entity_type: 'Stix-Core-Object' }}
           lineFragment={searchBulkLineFragment}
           hideSearch
-          isMultiKeysFilter
         />
       )}
     </>

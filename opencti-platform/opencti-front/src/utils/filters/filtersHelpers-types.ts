@@ -17,7 +17,7 @@ export type FilterGroupWithArrayKeys = {
 // TODO: import from graphql generated types
 export type Filter = {
   id?: string;
-  key: string; // key is a string in front, except in Bulk Search (array of keys, specify isMultiKeysFilter to true in DataTable to handle this)
+  key: string; // key is a string in front, except in Bulk Search (array of keys)
   values: FilterValue[];
   operator?: string;
   mode?: string;

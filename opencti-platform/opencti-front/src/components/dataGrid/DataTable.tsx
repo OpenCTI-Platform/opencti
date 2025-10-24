@@ -196,7 +196,6 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'removeSelectAll'
 | 'selectOnLineClick'
 | 'createButton'
-| 'isMultiKeysFilter'
 | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,

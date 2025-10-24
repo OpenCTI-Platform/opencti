@@ -273,7 +273,6 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
 // exemple: Observable AND (Domain-Name) --> [Domain-Name]
 // exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
 // exemple: Stix-Domain-Object AND (Malware OR (Country AND City)) --> [Stix-Domain-Object, Malware]
-// is isMultiKeysFilter, T is of type FilterGroupWithArrayKeys (only the case in BulkSearch context)
 export const getEntityTypeTwoFirstLevelsFilterValues = <T extends FilterGroup | FilterGroupWithArrayKeys>(
   filters?: T,
   observableTypes?: string[],
@@ -320,16 +319,6 @@ export const getEntityTypeTwoFirstLevelsFilterValues = <T extends FilterGroup | 
     }
   }
   return firstLevelValues;
-};
-
-// same as getEntityTypeTwoFirstLevelsFilterValues
-// for FilterGroup with array as key (BulkSearch context)
-export const getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter = (
-  filters?: FilterGroupWithArrayKeys,
-  observableTypes?: string[],
-  domainObjectTypes?: string[],
-): string[] => {
-  return getEntityTypeTwoFirstLevelsFilterValues<FilterGroupWithArrayKeys>(filters, observableTypes, domainObjectTypes);
 };
 
 // construct filters and options for widgets

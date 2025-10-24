@@ -10,12 +10,10 @@ import { FilterGroup } from '../utils/filters/filtersHelpers-types';
 interface TasksFilterValueContainerProps {
   filters: FilterGroup,
   entityTypes?: string[],
-  isMultiKeysFilter?: boolean,
 }
 const TasksFilterValueContainer = ({
   filters,
   entityTypes,
-  isMultiKeysFilter, // TODO
 }: TasksFilterValueContainerProps) => {
   const cleanUpFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, entityTypes) as FilterGroup;
   const queryRef = useQueryLoading<FilterValuesContentQuery>(

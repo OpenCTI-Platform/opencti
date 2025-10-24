@@ -150,7 +150,6 @@ export interface DataTableProps {
   message?: string
   isLocalStorageEnabled?: boolean
   emptyStateMessage?: string
-  isMultiKeysFilter?: boolean
 }
 
 export interface DataTableBodyProps {

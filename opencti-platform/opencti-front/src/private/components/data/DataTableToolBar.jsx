@@ -96,7 +96,6 @@ import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainOb
 import ItemMarkings from '../../../components/ItemMarkings';
 import {
   getEntityTypeTwoFirstLevelsFilterValues,
-  getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter,
   removeIdAndIncorrectKeysFromFilterGroupObject,
   serializeFilterGroupForBackend,
 } from '../../../utils/filters/filtersUtils';
@@ -500,10 +499,8 @@ class DataTableToolBar extends Component {
   handleOpenEnrichment(stixCyberObservableSubTypes, stixDomainObjectSubTypes) {
     // Get enrich type
     let enrichType;
-    const { filters, isMultiKeysFilter, selectedElements, selectAll, type } = this.props;
-    const entityTypeFilterValues = isMultiKeysFilter
-      ? getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter(filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes)
-      : getEntityTypeTwoFirstLevelsFilterValues(filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
+    const { filters, selectedElements, selectAll, type } = this.props;
+    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
     if (selectAll) {
       enrichType = type ?? R.head(entityTypeFilterValues);
     } else {
@@ -836,12 +833,11 @@ class DataTableToolBar extends Component {
       container,
       taskScope,
       t,
-      isMultiKeysFilter,
     } = this.props;
     const scope = taskScope ?? 'KNOWLEDGE';
     if (numberOfSelectedElements === 0) return;
     const jsonFilters = serializeFilterGroupForBackend(
-      isMultiKeysFilter ? filters : removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
+      removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys),
     );
 
     const finalActions = taskScope === 'USER'
@@ -2104,10 +2100,8 @@ class DataTableToolBar extends Component {
   }
 
   getSelectedTypes(observableTypes, domainObjectTypes) {
-    const { selectedElements, filters, isMultiKeysFilter } = this.props;
-    const entityTypeFilterValues = isMultiKeysFilter
-      ? getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter(filters, observableTypes, domainObjectTypes)
-      : getEntityTypeTwoFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    const { selectedElements, filters } = this.props;
+    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
     const selectedElementsList = Object.values(selectedElements || {});
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
       .filter((entity_type) => entity_type !== undefined));
@@ -2153,7 +2147,6 @@ class DataTableToolBar extends Component {
       warningMessage,
       taskScope,
       displayEditButtons,
-      isMultiKeysFilter,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
 
@@ -2705,7 +2698,7 @@ class DataTableToolBar extends Component {
                                     )}
                                   </span>
                                 )}
-                                <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} isMultiKeysFilter={isMultiKeysFilter} />
+                                <TasksFilterValueContainer filters={filters} entityTypes={entityTypes} />
                               </div>
                             ) : (
                               <span>
