@@ -221,5 +221,6 @@ export class TelemetryMeterManager {
     this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
     this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');
+    this.registerGauge('user_login_count', 'Number of user that logs-in into application', 'userLoginCount');
   }
 }
