@@ -64,6 +64,7 @@ class OpenCTIApiConnector:
                     connector_user {
                       api_token
                     }
+                    connector_priority_group
                     config {
                         connection {
                             host
