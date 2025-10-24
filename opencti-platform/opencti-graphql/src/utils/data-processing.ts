@@ -55,3 +55,35 @@ export const uniqAsyncMap = async <T, Z>(elements: T[], transform: (value: T) =>
   }
   return Array.from(transformedSet);
 };
+
+export function largeArrayPush<T>(dst: T[], src: T[]): void {
+  const start = dst.length;
+  // grow array once
+  // eslint-disable-next-line no-param-reassign
+  dst.length += src.length;
+  for (let i = 0; i < src.length; i += 1) {
+    // eslint-disable-next-line no-param-reassign
+    dst[start + i] = src[i];
+  }
+}
+
+export const largeArrayUnshift = <T>(dst: T[], src: T[]) => {
+  const m = src.length;
+  const n = dst.length;
+
+  // Grow once
+  // eslint-disable-next-line no-param-reassign
+  dst.length = n + m;
+
+  // Shift right existing elements (right-to-left to avoid overwrite)
+  for (let i = n - 1; i >= 0; i -= 1) {
+    // eslint-disable-next-line no-param-reassign
+    dst[i + m] = dst[i];
+  }
+
+  // Copy src into the newly freed prefix
+  for (let j = 0; j < m; j += 1) {
+    // eslint-disable-next-line no-param-reassign
+    dst[j] = src[j];
+  }
+};
