@@ -147,7 +147,7 @@ const RelatedContainersDetailsTable: React.FC<RelatedContainersDetailsTableProps
 
   const dataColumns = {
     entity_type: { percentWidth: 15 },
-    name: { percentWidth: 25 },
+    name: { percentWidth: 25, isSortable: false },
     creator: { percentWidth: 15 },
     created_at: { percentWidth: 15 },
     objectLabel: { percentWidth: 15 },
