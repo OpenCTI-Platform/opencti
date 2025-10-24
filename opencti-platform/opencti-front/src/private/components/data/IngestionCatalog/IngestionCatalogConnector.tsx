@@ -1,23 +1,27 @@
-import { useParams } from 'react-router-dom';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import React, { Suspense } from 'react';
+import { IngestionConnector } from '@components/data/IngestionCatalog';
+import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
 import IngestionCatalogConnectorHeader from '@components/data/IngestionCatalog/IngestionCatalogConnectorHeader';
 import IngestionCatalogConnectorOverview from '@components/data/IngestionCatalog/IngestionCatalogConnectorOverview';
 import { IngestionCatalogConnectorQuery } from '@components/data/IngestionCatalog/__generated__/IngestionCatalogConnectorQuery.graphql';
-import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
-import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
-import { Stack } from '@mui/material';
-import IngestionCatalogConnectorCreation from '@components/data/IngestionCatalog/IngestionCatalogConnectorCreation';
-import { IngestionConnector } from '@components/data/IngestionCatalog';
-import createDeploymentCountMap from '@components/data/IngestionCatalog/utils/createDeploymentCountMap';
 import useConnectorDeployDialog from '@components/data/IngestionCatalog/hooks/useConnectorDeployDialog';
+import createDeploymentCountMap from '@components/data/IngestionCatalog/utils/createDeploymentCountMap';
+import ConnectorDeploymentBanner from '@components/data/connectors/ConnectorDeploymentBanner';
+import { ConnectorManagerStatusProvider, useConnectorManagerStatus } from '@components/data/connectors/ConnectorManagerStatusContext';
+import { Stack } from '@mui/material';
+import React, { Suspense, useEffect } from 'react';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { useParams, useSearchParams } from 'react-router-dom';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+
+const SEARCH_PARAMS = {
+  OPEN_CONFIG: 'openConfig',
+} as const;
 
 const ingestionCatalogConnectorQuery = graphql`
   query IngestionCatalogConnectorQuery($slug: String!) {
@@ -34,11 +38,13 @@ const ingestionCatalogConnectorQuery = graphql`
 interface IngestionCatalogConnectorComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>;
   onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean, deploymentCount: number) => void;
+  openConfig?: boolean;
 }
 
 const IngestionCatalogConnectorComponent = ({
   queryRef,
   onClickDeploy,
+  openConfig,
 }: IngestionCatalogConnectorComponentProps) => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const { t_i18n } = useFormatter();
@@ -52,13 +58,19 @@ const IngestionCatalogConnectorComponent = ({
   );
 
   setTitle(t_i18n('Connector catalog | Ingestion | Data'));
+  const connector = contract ? JSON.parse(contract.contract) : null;
+  const deploymentCounts = createDeploymentCountMap(connectors);
+  const deploymentCount = connector
+    ? (deploymentCounts.get(connector.container_image) ?? 0)
+    : 0;
+
+  useEffect(() => {
+    if (openConfig && contract && connector) {
+      onClickDeploy(connector, contract.catalog_id, hasRegisteredManagers, deploymentCount);
+    }
+  }, [openConfig, contract]);
 
   if (!contract) return <ErrorNotFound />;
-
-  const connector = JSON.parse(contract.contract);
-
-  const deploymentCounts = createDeploymentCountMap(connectors);
-  const deploymentCount = deploymentCounts.get(connector.container_image) ?? 0;
 
   return (
     <>
@@ -90,6 +102,9 @@ const IngestionCatalogConnectorComponent = ({
 const IngestionCatalogConnector = () => {
   const { connectorSlug } = useParams();
 
+  const [searchParams] = useSearchParams();
+  const shouldAutoOpen = searchParams.get(SEARCH_PARAMS.OPEN_CONFIG) === 'true';
+
   const queryRef = useQueryLoading<IngestionCatalogConnectorQuery>(
     ingestionCatalogConnectorQuery,
     { slug: connectorSlug ?? '' },
@@ -104,6 +119,7 @@ const IngestionCatalogConnector = () => {
           <IngestionCatalogConnectorComponent
             queryRef={queryRef}
             onClickDeploy={handleOpenDeployDialog}
+            openConfig={shouldAutoOpen}
           />
         </ConnectorManagerStatusProvider>
       )}
