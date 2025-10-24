@@ -8494,7 +8494,33 @@ input StixRefRelationshipsAddInput {
   toIds: [StixRef!]!
 }
 
+type ProxyConfiguration {
+  http_proxy: ProxyUrlConfig
+  https_proxy: HttpsProxyConfig
+  no_proxy: [String!]!
+  exclusion_patterns: ExclusionPatterns!
+}
+
+type ProxyUrlConfig {
+  url: String!
+  enabled: Boolean!
+}
+
+type HttpsProxyConfig {
+  url: String!
+  ca_certificates: [String!]!
+  reject_unauthorized: Boolean!
+  enabled: Boolean!
+}
+
+type ExclusionPatterns {
+  hostnames: [String!]!
+  ip_ranges: [String!]!
+  wildcards: [String!]!
+}
+
 type Query {
+  connectorProxyConfiguration: ProxyConfiguration
   stix(id: String!): String
   enrichmentConnectors(type: String!): [Connector]
   about: AppInfo

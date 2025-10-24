@@ -8064,6 +8064,13 @@ export enum ExclusionListOrdering {
   Name = 'name'
 }
 
+export type ExclusionPatterns = {
+  __typename?: 'ExclusionPatterns';
+  hostnames: Array<Scalars['String']['output']>;
+  ip_ranges: Array<Scalars['String']['output']>;
+  wildcards: Array<Scalars['String']['output']>;
+};
+
 export type ExportAskInput = {
   contentMaxMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   exportType: Scalars['String']['input'];
@@ -9756,6 +9763,14 @@ export type HostnameStixCoreRelationshipsDistributionArgs = {
 export type HostnameAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type HttpsProxyConfig = {
+  __typename?: 'HttpsProxyConfig';
+  ca_certificates: Array<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
+  reject_unauthorized: Scalars['Boolean']['output'];
+  url: Scalars['String']['output'];
 };
 
 export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -21210,6 +21225,20 @@ export type Provider = {
   type?: Maybe<Scalars['String']['output']>;
 };
 
+export type ProxyConfiguration = {
+  __typename?: 'ProxyConfiguration';
+  exclusion_patterns: ExclusionPatterns;
+  http_proxy?: Maybe<ProxyUrlConfig>;
+  https_proxy?: Maybe<HttpsProxyConfig>;
+  no_proxy: Array<Scalars['String']['output']>;
+};
+
+export type ProxyUrlConfig = {
+  __typename?: 'ProxyUrlConfig';
+  enabled: Scalars['Boolean']['output'];
+  url: Scalars['String']['output'];
+};
+
 export type PublicDashboard = BasicObject & InternalObject & {
   __typename?: 'PublicDashboard';
   allowed_markings?: Maybe<Array<MarkingDefinitionShort>>;
@@ -21346,6 +21375,7 @@ export type Query = {
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
   connectorManagers: Array<ConnectorManager>;
+  connectorProxyConfiguration?: Maybe<ProxyConfiguration>;
   connectors: Array<Connector>;
   connectorsForAnalysis?: Maybe<Array<Maybe<Connector>>>;
   connectorsForExport?: Maybe<Array<Maybe<Connector>>>;
@@ -34278,6 +34308,7 @@ export type ResolversTypes = ResolversObject<{
   ExclusionListEdge: ResolverTypeWrapper<Omit<ExclusionListEdge, 'node'> & { node: ResolversTypes['ExclusionList'] }>;
   ExclusionListFileAddInput: ExclusionListFileAddInput;
   ExclusionListOrdering: ExclusionListOrdering;
+  ExclusionPatterns: ResolverTypeWrapper<ExclusionPatterns>;
   ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
   ExtendedContract: ResolverTypeWrapper<ExtendedContract>;
@@ -34355,6 +34386,7 @@ export type ResolversTypes = ResolversObject<{
   HealthConnectorStatusInput: HealthConnectorStatusInput;
   Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   HostnameAddInput: HostnameAddInput;
+  HttpsProxyConfig: ResolverTypeWrapper<HttpsProxyConfig>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   IPv4Addr: ResolverTypeWrapper<Omit<IPv4Addr, 'cases' | 'connectors' | 'containers' | 'countries' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, countries?: Maybe<ResolversTypes['CountryConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   IPv4AddrAddInput: IPv4AddrAddInput;
@@ -34663,6 +34695,8 @@ export type ResolversTypes = ResolversObject<{
   Process: ResolverTypeWrapper<Omit<Process, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversTypes['StixFileConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ProcessAddInput: ProcessAddInput;
   Provider: ResolverTypeWrapper<Provider>;
+  ProxyConfiguration: ResolverTypeWrapper<ProxyConfiguration>;
+  ProxyUrlConfig: ResolverTypeWrapper<ProxyUrlConfig>;
   PublicDashboard: ResolverTypeWrapper<BasicStoreEntityPublicDashboard>;
   PublicDashboardAddInput: PublicDashboardAddInput;
   PublicDashboardConnection: ResolverTypeWrapper<Omit<PublicDashboardConnection, 'edges'> & { edges: Array<ResolversTypes['PublicDashboardEdge']> }>;
@@ -35255,6 +35289,7 @@ export type ResolversParentTypes = ResolversObject<{
   ExclusionListConnection: Omit<ExclusionListConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['ExclusionListEdge']>> };
   ExclusionListEdge: Omit<ExclusionListEdge, 'node'> & { node: ResolversParentTypes['ExclusionList'] };
   ExclusionListFileAddInput: ExclusionListFileAddInput;
+  ExclusionPatterns: ExclusionPatterns;
   ExportAskInput: ExportAskInput;
   ExportContext: ExportContext;
   ExtendedContract: ExtendedContract;
@@ -35320,6 +35355,7 @@ export type ResolversParentTypes = ResolversObject<{
   HealthConnectorStatusInput: HealthConnectorStatusInput;
   Hostname: Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   HostnameAddInput: HostnameAddInput;
+  HttpsProxyConfig: HttpsProxyConfig;
   ID: Scalars['ID']['output'];
   IPv4Addr: Omit<IPv4Addr, 'cases' | 'connectors' | 'containers' | 'countries' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, countries?: Maybe<ResolversParentTypes['CountryConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   IPv4AddrAddInput: IPv4AddrAddInput;
@@ -35586,6 +35622,8 @@ export type ResolversParentTypes = ResolversObject<{
   Process: Omit<Process, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversParentTypes['StixFileConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ProcessAddInput: ProcessAddInput;
   Provider: Provider;
+  ProxyConfiguration: ProxyConfiguration;
+  ProxyUrlConfig: ProxyUrlConfig;
   PublicDashboard: BasicStoreEntityPublicDashboard;
   PublicDashboardAddInput: PublicDashboardAddInput;
   PublicDashboardConnection: Omit<PublicDashboardConnection, 'edges'> & { edges: Array<ResolversParentTypes['PublicDashboardEdge']> };
@@ -38701,6 +38739,13 @@ export type ExclusionListEdgeResolvers<ContextType = any, ParentType extends Res
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ExclusionPatternsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionPatterns'] = ResolversParentTypes['ExclusionPatterns']> = ResolversObject<{
+  hostnames?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  ip_ranges?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  wildcards?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type ExtendedContractResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendedContract'] = ResolversParentTypes['ExtendedContract']> = ResolversObject<{
   catalog_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   contract?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -39313,6 +39358,14 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type HttpsProxyConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['HttpsProxyConfig'] = ResolversParentTypes['HttpsProxyConfig']> = ResolversObject<{
+  ca_certificates?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  reject_unauthorized?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -42885,6 +42938,20 @@ export type ProviderResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ProxyConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProxyConfiguration'] = ResolversParentTypes['ProxyConfiguration']> = ResolversObject<{
+  exclusion_patterns?: Resolver<ResolversTypes['ExclusionPatterns'], ParentType, ContextType>;
+  http_proxy?: Resolver<Maybe<ResolversTypes['ProxyUrlConfig']>, ParentType, ContextType>;
+  https_proxy?: Resolver<Maybe<ResolversTypes['HttpsProxyConfig']>, ParentType, ContextType>;
+  no_proxy?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProxyUrlConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProxyUrlConfig'] = ResolversParentTypes['ProxyUrlConfig']> = ResolversObject<{
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  url?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type PublicDashboardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDashboard'] = ResolversParentTypes['PublicDashboard']> = ResolversObject<{
   allowed_markings?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinitionShort']>>, ParentType, ContextType>;
   allowed_markings_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -43000,6 +43067,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
   connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
+  connectorProxyConfiguration?: Resolver<Maybe<ResolversTypes['ProxyConfiguration']>, ParentType, ContextType>;
   connectors?: Resolver<Array<ResolversTypes['Connector']>, ParentType, ContextType>;
   connectorsForAnalysis?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   connectorsForExport?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
@@ -46779,6 +46847,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ExclusionListCacheStatus?: ExclusionListCacheStatusResolvers<ContextType>;
   ExclusionListConnection?: ExclusionListConnectionResolvers<ContextType>;
   ExclusionListEdge?: ExclusionListEdgeResolvers<ContextType>;
+  ExclusionPatterns?: ExclusionPatternsResolvers<ContextType>;
   ExtendedContract?: ExtendedContractResolvers<ContextType>;
   ExternalReference?: ExternalReferenceResolvers<ContextType>;
   ExternalReferenceConnection?: ExternalReferenceConnectionResolvers<ContextType>;
@@ -46823,6 +46892,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Hash?: HashResolvers<ContextType>;
   HashedObservable?: HashedObservableResolvers<ContextType>;
   Hostname?: HostnameResolvers<ContextType>;
+  HttpsProxyConfig?: HttpsProxyConfigResolvers<ContextType>;
   IPv4Addr?: IPv4AddrResolvers<ContextType>;
   IPv6Addr?: IPv6AddrResolvers<ContextType>;
   Identity?: IdentityResolvers<ContextType>;
@@ -47026,6 +47096,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   PositionEditMutations?: PositionEditMutationsResolvers<ContextType>;
   Process?: ProcessResolvers<ContextType>;
   Provider?: ProviderResolvers<ContextType>;
+  ProxyConfiguration?: ProxyConfigurationResolvers<ContextType>;
+  ProxyUrlConfig?: ProxyUrlConfigResolvers<ContextType>;
   PublicDashboard?: PublicDashboardResolvers<ContextType>;
   PublicDashboardConnection?: PublicDashboardConnectionResolvers<ContextType>;
   PublicDashboardEdge?: PublicDashboardEdgeResolvers<ContextType>;

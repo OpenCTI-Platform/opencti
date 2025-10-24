@@ -56,6 +56,7 @@ import indicatorResolvers from '../modules/indicator/indicator-resolver';
 import incidentResolvers from '../resolvers/incident';
 import { authDirectiveBuilder } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
+import connectorProxyResolvers from '../resolvers/connector-proxy';
 import fileResolvers from '../resolvers/file';
 import indexedFileResolvers from '../resolvers/indexedFile';
 import globalTypeDefs from '../../config/schema/opencti.graphql';
@@ -200,6 +201,7 @@ const schemaResolvers = [
   groupResolvers,
   userResolvers,
   connectorResolvers,
+  connectorProxyResolvers,
   // STIX OBJECT ENTITIES
   basicObjectResolvers,
   // STIX META OBJECT ENTITIES
