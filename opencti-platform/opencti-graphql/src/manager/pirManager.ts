@@ -181,7 +181,7 @@ const pirManagerHandler = async () => {
       );
       // Update pir last event id.
       if (lastEventId !== pir.lastEventId) {
-        await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }]);
+        await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }], { auditLogEnabled: false });
       }
     }, { concurrency: PIR_MANAGER_MAX_CONCURRENCY });
   } finally {

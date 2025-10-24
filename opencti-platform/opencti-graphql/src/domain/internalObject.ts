@@ -29,20 +29,30 @@ export const createInternalObject = async <T extends StoreEntity>(context: AuthC
   return notify(notifyTopic, element, user);
 };
 
-export const editInternalObject = async <T extends StoreEntity>(context: AuthContext, user: AuthUser, id: string, entityType: string, input: EditInput[]): Promise<T> => {
+export const editInternalObject = async <T extends StoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  entityType: string,
+  input: EditInput[],
+  opts: { auditLogEnabled?: boolean } = {}
+): Promise<T> => {
   const internalObject = await storeLoadById(context, user, id, entityType);
   if (!internalObject) {
     throw FunctionalError(`${entityType} ${id} cant be found`);
   }
   const { element } = await updateAttribute(context, user, id, entityType, input);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${input.map((i) => i.key).join(', ')}\` for ${humanReadableFormatEntityType(entityType)} \`${element.name}\``,
-    context_data: { id, entity_type: entityType, input }
-  });
+  const { auditLogEnabled = true } = opts;
+  if (auditLogEnabled) {
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'administration',
+      message: `updates \`${input.map((i) => i.key).join(', ')}\` for ${humanReadableFormatEntityType(entityType)} \`${element.name}\``,
+      context_data: { id, entity_type: entityType, input }
+    });
+  }
   const notifyTopic = getBusTopicForEntityType(entityType)?.EDIT_TOPIC ?? BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC;
   return notify(notifyTopic, element, user);
 };
