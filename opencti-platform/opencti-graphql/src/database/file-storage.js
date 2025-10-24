@@ -314,7 +314,7 @@ export const loadFile = async (context, user, fileS3Path, opts = {}) => {
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
     // 02. Check if the referenced document is accessible
-    const document = await documentFindById(context, user, fileS3Path);
+    const document = await documentFindById(context, user, fileS3Path, { ignoreDuplicates: true });
     if (!document) {
       throw FunctionalError('File not found or restricted', { filename: fileS3Path });
     }
