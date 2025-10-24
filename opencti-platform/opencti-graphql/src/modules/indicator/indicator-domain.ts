@@ -21,7 +21,7 @@ import {
 import { elCount } from '../../database/engine';
 import { isEmptyField, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { cleanupIndicatorPattern, extractObservablesFromIndicatorPattern, extractValidObservablesFromIndicatorPattern } from '../../utils/syntax';
-import { computeValidPeriod } from './indicator-utils';
+import { computeValidPeriod, hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE, isDecayEnabled } from './indicator-utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR, type StoreEntityIndicator } from './indicator-types';
@@ -46,18 +46,17 @@ import {
   computeTimeFromExpectedScore,
   dayToMs,
   type DecayChartData,
+  type DecayHistoryChart,
   type DecayHistory,
   type DecayLiveDetails,
   findDecayRuleForIndicator
 } from '../decayRule/decayRule-domain';
-import { isModuleActivated } from '../../database/cluster-module';
 import { stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
 
-export const INDICATOR_DEFAULT_SCORE: number = 50;
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
 
@@ -90,7 +89,7 @@ export const computeLiveScore = (indicator: BasicStoreEntityIndicator) => {
  */
 export const computeLivePoints = (indicator: BasicStoreEntityIndicator) => {
   if (indicator.decay_applied_rule && indicator.decay_applied_rule.decay_points && indicator.decay_base_score_date) {
-    const result: DecayHistory[] = [];
+    const result: DecayHistoryChart[] = [];
     const nextKeyPoints = [...indicator.decay_applied_rule.decay_points, indicator.decay_applied_rule.decay_revoke_score];
     for (let i = 0; i < nextKeyPoints.length; i += 1) {
       const scorePoint = nextKeyPoints[i];
@@ -272,7 +271,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   checkScore(indicatorBaseScore);
 
-  const isDecayActivated = await isModuleActivated('INDICATOR_DECAY_MANAGER');
+  const isDecayActivated: boolean = await isDecayEnabled();
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
@@ -301,6 +300,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     decayHistory.push({
       updated_at: validFrom.toDate(),
       score: indicatorBaseScore,
+      updated_by: user.id,
     });
     const revokeDate = computeDecayPointReactionDate(indicatorBaseScore, decayRule, validFrom, decayRule.decay_revoke_score);
     finalIndicatorToCreate = {
@@ -365,15 +365,16 @@ export const computeIndicatorDecayHistory = (currentHistory: DecayHistory[], new
  * Return keys for 'decay_history', 'decay_next_reaction_date', 'valid_until'
  * @param fromScore
  * @param indicatorBeforeUpdate
+ * @param userId
  */
-export const restartDecayComputationOnEdit = (fromScore: number, indicatorBeforeUpdate: BasicStoreEntityIndicator): EditInput[] => {
+export const restartDecayComputationOnEdit = (fromScore: number, indicatorBeforeUpdate: BasicStoreEntityIndicator, userId: string): EditInput[] => {
   const indicatorDecayRule = indicatorBeforeUpdate.decay_applied_rule;
   const nowDate = new Date();
   const inputToAdd: EditInput[] = [];
   const updateDate = utcDate();
   inputToAdd.push({ key: 'decay_base_score', value: [fromScore] });
   inputToAdd.push({ key: 'decay_base_score_date', value: [updateDate.toISOString()] });
-  const newDecayHistoryPoint = { updated_at: nowDate, score: fromScore };
+  const newDecayHistoryPoint = { updated_at: nowDate, score: fromScore, updated_by: userId };
   const decayHistory = computeIndicatorDecayHistory([...(indicatorBeforeUpdate.decay_history ?? [])], newDecayHistoryPoint);
   inputToAdd.push({ key: 'decay_history', value: decayHistory });
   const nextScoreReactionDate = computeNextScoreReactionDate(fromScore, fromScore, indicatorDecayRule, updateDate);
@@ -460,9 +461,12 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     // Only if there is no valid until in input too
     if (scoreEditInput && !scoreEditInput.value.includes(baseScore) && !validUntilEditInput) {
       const newScore = scoreEditInput.value[0];
-      const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
-      finalInput.push(...allChanges);
-      finalInput.push({ key: X_SCORE, value: [newScore] });
+      // First check if the same update by the same source exists
+      if (!hasSameSourceAlreadyUpdateThisScore(user.id, newScore, indicatorBeforeUpdate.decay_history)) {
+        const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
+        finalInput.push(...allChanges);
+        finalInput.push({ key: X_SCORE, value: [newScore] });
+      }
     } else {
       // score has not been changed, but maybe decay need to be computed again anyway
       if (hasRevokedChangedToTrue) {
@@ -470,16 +474,16 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
         finalInput.push({ key: X_DETECTION, value: [false] });
         finalInput.push({ key: VALID_UNTIL, value: [nowDate.toISOString()] });
 
-        const newDecayHistoryPoint = { updated_at: nowDate, score: revokeScore };
+        const newDecayHistoryPoint = { updated_at: nowDate, score: revokeScore, updated_by: user.id };
         const decayHistory = computeIndicatorDecayHistory([...(indicatorBeforeUpdate.decay_history ?? [])], newDecayHistoryPoint);
         finalInput.push({ key: 'decay_history', value: decayHistory });
       }
 
       if (hasRevokedChangedToFalse) {
-        logApp.debug('ANGIE - revoked moved to false');
+        logApp.debug('Indicator revoked moved to false', { id: indicatorBeforeUpdate.id });
         // Restart decay as if the score has been put to decay_base_score manually.
         const newScore = indicatorBeforeUpdate.decay_base_score;
-        const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate);
+        const allChanges = restartDecayComputationOnEdit(newScore, indicatorBeforeUpdate, user.id);
         finalInput.push(...allChanges);
         finalInput.push({ key: X_SCORE, value: [newScore] });
       }
@@ -505,19 +509,18 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
     finalInput.push(validUntilEditInput);
   }
 
-  if (scoreEditInput && !finalInput.find((e) => e.key === X_SCORE)) {
-    finalInput.push(scoreEditInput);
-  }
-
   if (revokedEditInput && !finalInput.find((e) => e.key === REVOKED)) {
-    logApp.info('revokedEditInput:', revokedEditInput);
     finalInput.push(revokedEditInput);
   }
-
-  logApp.info('Indicator full computed changes:', finalInput);
+  logApp.debug('Indicator full computed changes:', { finalInput });
 
   // END Decay and {Score, Valid until, Revoke} computation
-  return stixDomainObjectEditField(context, user, id, finalInput, opts);
+  if (finalInput.length > 0) {
+    return stixDomainObjectEditField(context, user, id, finalInput, opts);
+  }
+
+  // If no changes because of some above rules, return the unchanged indicator
+  return indicatorBeforeUpdate;
 };
 
 export interface IndicatorPatch {
@@ -528,7 +531,7 @@ export interface IndicatorPatch {
   x_opencti_detection?: boolean,
 }
 
-export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator) => {
+export const computeIndicatorDecayPatch = (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
   let patch: IndicatorPatch | undefined;
   const model = indicator.decay_applied_rule;
   if (!model || !model.decay_points) {
@@ -536,7 +539,7 @@ export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator)
   }
   const newStableScore = model.decay_points.find((p) => (p || indicator.x_opencti_score) < indicator.x_opencti_score) || model.decay_revoke_score;
   if (newStableScore) {
-    const newDecayHistoryPoint = { updated_at: new Date(), score: newStableScore };
+    const newDecayHistoryPoint: DecayHistory = { updated_at: new Date(), score: newStableScore, updated_by: user.id };
     const decayHistory = computeIndicatorDecayHistory([...(indicator.decay_history ?? [])], newDecayHistoryPoint);
     patch = {
       x_opencti_score: newStableScore,
@@ -566,7 +569,7 @@ export const computeIndicatorDecayPatch = (indicator: BasicStoreEntityIndicator)
  */
 export const updateIndicatorDecayScore = async (context: AuthContext, user: AuthUser, indicator: BasicStoreEntityIndicator) => {
   // update x_opencti_score
-  const patch = computeIndicatorDecayPatch(indicator);
+  const patch = computeIndicatorDecayPatch(context, user, indicator);
   if (!patch) {
     return null;
   }
