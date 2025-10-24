@@ -114,7 +114,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
           return <div key={coverageResult.coverage_name} className={classes.chartContainer} style={{ width: size, height: size, padding: variant === 'matrix' ? 2 : 4 }}>
             <div className={classes.chart}>
               <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize}/>
-              <Tooltip title={coverageResult.coverage_name} placement="bottom">
+              <Tooltip title={`${coverageResult.coverage_name} ${coverageResult.coverage_score}/100`} placement="bottom">
                 <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
                   <span style={{ color: '#ffffff' }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
                 </Avatar>
