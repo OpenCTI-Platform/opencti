@@ -19,7 +19,7 @@ on:
 
 jobs:
   worker:
-    name: worker
+    name: build-worker
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -48,38 +48,10 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
   platform:
-    name: platform
+    name: build-platform
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: jirutka/setup-alpine@v1
-        with:
-          branch: v3.20
-          packages: >
-            nodejs npm git tini gcc g++ make musl-dev cargo python3 py3-pip python3-dev postfix postfix-pcre
-
-      - name: Setup Node.js & python
-        run: |
-          npm install -g node-gyp corepack
-          python -V
-        shell: alpine.sh --root {0}
-
-      - name: Build into Alpine
-        run: |
-          python3 -m venv .venv
-          source .venv/bin/activate
-          cd opencti-platform/opencti-front
-          yarn install
-          yarn build
-          cd ../opencti-graphql
-          yarn install
-          yarn build
-        shell: alpine.sh {0}
-
-      - run: mkdir -p opencti/{dependencies,src/python}
-      - run: cp -a ./opencti-platform/opencti-graphql/{config,build,static,public} opencti/
-      - run: cp ./opencti-platform/opencti-graphql/src/python/requirements.txt opencti/dependencies/
-      - run: cp -a ./opencti-platform/opencti-graphql/src/python/runtime opencti/src/python/
 
       - name: Docker meta
         id: meta
@@ -100,8 +72,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: opencti-platform/Dockerfile_ga
+          context: opencti-platform
+          file: opencti-platform/Dockerfile_featurebranch
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -123,14 +95,16 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
       - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=67; else ID=66; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
 
+      - name: Install AWX cli
+        run: pip install awxkit
+
       - name: Deploy feature environment via AWX
         run: |
-          awx --conf.host https://awx.filigran.io \
+          awx --conf.host ${{ secrets.AWX_URL }} \
             --conf.username ${{ secrets.AWX_USER }} \
             --conf.password ${{ secrets.AWX_PASSWORD }} \
             -f human job_templates launch 'Deploy OpenCTI feature branch for testing' \
             --inventory eu-west-staging \
-            --extra_vars "{\"env\":\"Development\",\"xtmhub_version\":\"${{ inputs.pr_number }}\",\"xtmhub_node_env\":\"${{ env.NODE_ENV }}\"}"
             --extra_vars "{\"octi_version\":\"${{steps.meta.outputs.version}}\",\"octi_config\":\"${{ inputs.octi_config }}\",\"redis_cluster\":\"${{ inputs.redis_cluster }}\"}"
 
       - name: Forge URL to match playbook limitations
