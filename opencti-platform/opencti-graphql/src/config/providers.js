@@ -155,6 +155,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         return login(username, password)
           .then((info) => {
             logApp.info('[LOCAL] Successfully logged', { username });
+            addUserLoginCount();
             return done(null, info);
           })
           .catch((err) => {
@@ -173,6 +174,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const ldapOptions = { server: tlsConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
         logApp.info('[LDAP] Successfully logged', { user });
+        addUserLoginCount();
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
         const firstname = user[mappedConfig.firstname_attribute] || '';
@@ -232,6 +234,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const samlOptions = { ...mappedConfig };
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
         logApp.info('[SAML] Successfully logged', { profile });
+        addUserLoginCount();
         const { nameID, nameIDFormat } = profile;
         const samlAttributes = profile.attributes ? profile.attributes : profile;
         const roleAttributes = mappedConfig.roles_management?.role_attributes || ['roles'];
@@ -323,6 +326,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const debugCallback = (message, meta) => logApp.info(message, meta);
           const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
             logApp.info('[OPENID] Successfully logged', { userinfo });
+            addUserLoginCount();
             const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
             logApp.info('[OPENID] Groups management configuration', { groupsManagement: mappedConfig.groups_management });
             // region groups mapping
@@ -417,6 +421,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         (_, __, ___, profile, done) => {
           const data = profile._json;
           logApp.info('[FACEBOOK] Successfully logged', { profile: data });
+          addUserLoginCount();
           const { email } = data;
           providerLoginHandler({ email, name: data.first_name }, done);
         }
@@ -431,6 +436,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const googleOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
       const googleStrategy = new GoogleStrategy(googleOptions, (_, __, ___, profile, done) => {
         logApp.info('[GOOGLE] Successfully logged', { profile });
+        addUserLoginCount();
         const email = R.head(profile.emails).value;
         const name = profile.displayName;
         let authorized = true;
@@ -454,6 +460,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const githubOptions = { passReqToCallback: true, ...mappedConfig, scope };
       const githubStrategy = new GithubStrategy(githubOptions, async (_, token, __, profile, done) => {
         logApp.info('[GITHUB] Successfully logged', { profile });
+        addUserLoginCount();
         let authorized = true;
         if (organizations.length > 0) {
           const github = new GitHub({ token });
@@ -507,6 +514,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const debugCallback = (message, meta) => logApp.info(message, meta);
         const auth0Strategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
           logApp.info('[AUTH0] Successfully logged', { userinfo });
+          addUserLoginCount();
           const { email, name } = userinfo;
           providerLoginHandler({ email, name }, done);
         });
@@ -575,6 +583,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           autoCreateGroup: mappedConfig.auto_create_group ?? false,
         };
         const provider_metadata = { headers_audit: mappedConfig.headers_audit };
+        addUserLoginCount();
         return new Promise((resolve) => {
           providerLoginHandler({ email, name, firstname, provider_metadata, lastname }, (err, user) => {
             resolve(user);
@@ -603,6 +612,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       }
       return login(username, password)
         .then((info) => {
+          addUserLoginCount();
           return done(null, info);
         })
         .catch((err) => {

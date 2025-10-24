@@ -13,8 +13,11 @@ export class TelemetryMeterManager {
   // Cluster number of instances
   instancesCount = 0;
 
-  // Number of users in the platform
+  // Number of users in the platform (except service account)
   usersCount = 0;
+
+  // Number of users in the platform
+  serviceAccountCount = 0;
 
   // Number of active connectors
   activeConnectorsCount = 0;
@@ -69,6 +72,9 @@ export class TelemetryMeterManager {
   // Number of connectors deployed
   connectorDeployedCount = 0;
 
+  // +1 when a user that login into application, does not count token authentication
+  userLoginCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -87,6 +93,10 @@ export class TelemetryMeterManager {
 
   setUsersCount(n: number) {
     this.usersCount = n;
+  }
+
+  setServiceAccountsCount(n: number) {
+    this.serviceAccountCount = n;
   }
 
   setActiveConnectorsCount(n: number) {
@@ -169,6 +179,10 @@ export class TelemetryMeterManager {
     this.connectorDeployedCount = n;
   }
 
+  setUserLoginCount(n: number) {
+    this.userLoginCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -184,6 +198,7 @@ export class TelemetryMeterManager {
     // This kind of gauge count be synchronous, waiting for opentelemetry-js 3668
     // https://github.com/open-telemetry/opentelemetry-js/issues/3668
     this.registerGauge('total_users_count', 'number of users', 'usersCount');
+    this.registerGauge('total_service_account_count', 'number of service account', 'serviceAccountCount');
     this.registerGauge('total_instances_count', 'cluster number of instances', 'instancesCount');
     this.registerGauge('active_connectors_count', 'number of active connectors', 'activeConnectorsCount');
     this.registerGauge('is_enterprise_edition', 'enterprise Edition is activated', 'isEEActivated', { unit: 'boolean' });
