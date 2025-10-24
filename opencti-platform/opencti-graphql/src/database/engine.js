@@ -1852,7 +1852,7 @@ export const elLoadById = async (context, user, id, opts = {}) => {
   const hits = await elFindByIds(context, user, id, { ...opts, withoutRels: false });
   //* v8 ignore if */
   if (hits.length > 1) {
-    if (opts.noThrow) {
+    if (opts.ignoreDuplicates) {
       logApp.warn('Id loading expect only one response', { id, hits: hits.length });
     } else {
       throw DatabaseError('Id loading expect only one response', { id, hits: hits.length });

@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
 import { generateFileIndexId } from '../../../schema/identifier';
 import { ENTITY_TYPE_INTERNAL_FILE } from '../../../schema/internalObject';
-import { elAggregationCount, elCount, elDeleteInstances, elIndex } from '../../../database/engine';
+import { elAggregationCount, elCount, elDeleteInstances, elFindByIds, elIndex } from '../../../database/engine';
 import { INDEX_DRAFT_OBJECTS, INDEX_INTERNAL_OBJECTS, isEmptyField, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { type EntityOptions, type FilterGroupWithNested, internalLoadById, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
@@ -75,13 +75,13 @@ export const indexFileToDocument = async (context: AuthContext, file: any) => {
 };
 
 export const deleteDocumentIndex = async (context: AuthContext, user: AuthUser, id: string) => {
-  const internalFile = await storeLoadById(context, user, id, ENTITY_TYPE_INTERNAL_FILE, { noThrow: true });
-  if (internalFile) {
-    await elDeleteInstances([internalFile]);
+  const internalFile = await elFindByIds(context, user, [id], { type: ENTITY_TYPE_INTERNAL_FILE }) as BasicStoreEntityDocument[];
+  if (internalFile.length > 0) {
+    await elDeleteInstances(internalFile);
   }
 };
 
-export const findById: DomainFindById<BasicStoreEntityDocument> = (context: AuthContext, user: AuthUser, fileId: string, opts: { noThrow?: boolean } = {}) => {
+export const findById: DomainFindById<BasicStoreEntityDocument> = (context: AuthContext, user: AuthUser, fileId: string, opts: { ignoreDuplicates?: boolean } = {}) => {
   return storeLoadById<BasicStoreEntityDocument>(context, user, fileId, ENTITY_TYPE_INTERNAL_FILE, opts);
 };
 
