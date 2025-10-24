@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 import validator from 'validator';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, isStixCyberObservable } from './stixCyberObservable';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_SSH_KEY, isStixCyberObservable } from './stixCyberObservable';
 import {
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
   isStixDomainObject,
@@ -102,6 +102,8 @@ export const generateInternalType = (entity) => {
     case 'stixfile':
     case 'file':
       return ENTITY_HASHED_OBSERVABLE_STIX_FILE;
+    case 'ssh-key':
+      return ENTITY_SSH_KEY;
     default:
       return pascalize(entity.type);
   }
@@ -183,6 +185,8 @@ export const convertStixToInternalTypes = (type) => {
       return [ENTITY_IPV6_ADDR, ...getParentTypes(ENTITY_IPV6_ADDR)];
     case 'file':
       return [ENTITY_HASHED_OBSERVABLE_STIX_FILE, ...getParentTypes(ENTITY_HASHED_OBSERVABLE_STIX_FILE)];
+    case 'ssh-key':
+      return [ENTITY_SSH_KEY, ...getParentTypes(ENTITY_SSH_KEY)];
     default:
       return pascalize(type);
   }

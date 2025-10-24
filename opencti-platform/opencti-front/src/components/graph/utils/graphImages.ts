@@ -350,6 +350,10 @@ const GRAPH_IMAGES: GraphImages = {
     rawImg: StixCyberObservable,
     img: generateHtmlImageElement(StixCyberObservable),
   },
+  'SSH-Key': {
+    rawImg: StixCyberObservable,
+    img: generateHtmlImageElement(StixCyberObservable),
+  },
   Text: {
     rawImg: StixCyberObservable,
     img: generateHtmlImageElement(StixCyberObservable),

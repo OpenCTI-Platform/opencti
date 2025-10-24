@@ -138,6 +138,7 @@ const stixCyberObservableMutation = graphql`
     $TrackingNumber: TrackingNumberAddInput
     $Credential: CredentialAddInput
     $Persona: PersonaAddInput
+    $SSHKey: SSHKeyAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -180,6 +181,7 @@ const stixCyberObservableMutation = graphql`
       TrackingNumber: $TrackingNumber
       Credential: $Credential
       Persona: $Persona
+      SSHKey: $SSHKey
     ) {
       id
       draftVersion {
@@ -668,6 +670,10 @@ const StixCyberObservableCreation = ({
               } else if (status.type === 'Windows-Registry-Key') {
                 extraFieldsToValidate = {
                   attribute_key: Yup.mixed().required(t_i18n('This field is required')),
+                };
+              } else if (status.type === 'SSH-Key') {
+                extraFieldsToValidate = {
+                  fingerprint_sha256: Yup.mixed().required(t_i18n('This field is required')),
                 };
               } else {
                 initialValues[attribute.value] = '';

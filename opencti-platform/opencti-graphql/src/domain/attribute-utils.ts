@@ -21,7 +21,7 @@ import {
   standardId,
   updatedAt,
   xOpenctiStixIds,
-  xOpenctiType
+  xOpenctiType,
 } from '../schema/attribute-definition';
 
 export const INTERNAL_ATTRIBUTES = [
@@ -50,6 +50,8 @@ export const INTERNAL_ATTRIBUTES = [
   lang.name,
   revoked.name,
   aliases.name,
+  'refreshed_at',
+  'metrics',
   'fromType',
   'toType',
   'i_inference_weight',
@@ -124,7 +126,7 @@ export const INTERNAL_ATTRIBUTES = [
   'decay_history',
   'decay_applied_rule',
   // Opinions
-  'opinions_metrics'
+  'opinions_metrics',
 ];
 
 export const INTERNAL_REFS = [
