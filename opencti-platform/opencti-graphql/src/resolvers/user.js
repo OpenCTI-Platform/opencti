@@ -59,7 +59,7 @@ import { publishUserAction } from '../listener/UserActionListener';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
 import { findById as findWorskpaceById } from '../modules/workspace/workspace-domain';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { executionContext, filterMembersWithUsersOrgs, REDACTED_USER } from '../utils/access';
+import { executionContext, REDACTED_USER } from '../utils/access';
 import { getNotifiers } from '../modules/notifier/notifier-domain';
 
 const userResolvers = {
@@ -70,13 +70,7 @@ const userResolvers = {
     users: (_, args, context) => findUserPaginated(context, context.user, args),
     role: (_, { id }, context) => findRoleById(context, context.user, id),
     roles: (_, args, context) => findRoles(context, context.user, args),
-    creators: async (_, args, context) => { // all
-      const creators = await findCreators(context, context.user, args);
-      if (!creators) {
-        return [];
-      }
-      return filterMembersWithUsersOrgs(context, context.user, creators);
-    },
+    creators: (_, args, context) => findCreators(context, context.user, args),
     assignees: (_, args, context) => findAssignees(context, context.user, args),
     participants: (_, args, context) => findParticipants(context, context.user, args),
     members: (_, args, context) => findMembersPaginated(context, context.user, args),
