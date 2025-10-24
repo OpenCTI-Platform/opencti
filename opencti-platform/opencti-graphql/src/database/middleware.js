@@ -3475,7 +3475,7 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   // volumes of objects relationships must be controlled
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
-  if (data.isCreationt) {
+  if (data.isCreation) {
     await triggerCreateEntityAutoEnrichment(context, user, data.element);
   } else { // upsert
     await triggerEntityUpdateAutoEnrichment(context, user, data.element);
