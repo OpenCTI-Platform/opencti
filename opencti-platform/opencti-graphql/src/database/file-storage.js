@@ -378,15 +378,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     creator_id: creatorId,
     entity_id: entity?.internal_id,
   };
-  const s3Upload = new Upload({
-    client: s3Client,
-    params: {
-      Bucket: bucketName,
-      Key: key,
-      Body: readStream
-    }
-  });
-  await s3Upload.done();
+  await rawUpload(key, readStream);
   const fileSize = await getFileSize(user, key);
 
   // Register in elastic
