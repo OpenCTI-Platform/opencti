@@ -11,7 +11,7 @@ import {
 } from './filtersUtils';
 import { createMockUserContext, testRenderHook } from '../tests/test-render';
 import filterKeysSchema from '../tests/FilterUtilsConstants';
-import { FilterGroup } from './filtersHelpers-types';
+import { FilterGroup, FilterGroupWithArrayKeys } from './filtersHelpers-types';
 
 describe('Filters utils', () => {
   describe('useBuildFilterKeysMapFromEntityType', () => {
@@ -459,6 +459,30 @@ describe('Filters utils', () => {
       expect(result3).toEqual(['Stix-Cyber-Observable', 'File']);
     });
   });
+
+  it('should return all the types if filters with several keys (Bulk Search context)', () => {
+    // filters: (Entity OR File) AND Malware
+    // result: Malware
+    const filters: FilterGroupWithArrayKeys = {
+      mode: 'and',
+      filters: [
+        { key: ['name', 'value'], operator: 'eq', values: ['Value1', 'Value2'] },
+        { key: 'entity_type', operator: 'eq', values: ['Stix-Core-Object'] },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [
+            { key: 'objectLabel', values: [], operator: 'nil' },
+            { key: 'entity_type', values: ['Report', 'Malware'] },
+          ],
+          filterGroups: [],
+        },
+      ],
+    };
+    const result = getEntityTypeTwoFirstLevelsFilterValues(filters, ['File'], ['Malware', 'Report', 'Country', 'City']);
+    expect(result).toEqual(['Report', 'Malware']);
+  });
 });
 
 describe('Function findFilterFromKey: should return the filters of the specified keys among a filters list', () => {
@@ -497,6 +521,17 @@ describe('Function findFilterFromKey: should return the filters of the specified
     ];
     const result = findFiltersFromKeys(filtersList, ['value', 'test', 'created_at']);
     expect(result).toEqual([{ key: 'value', values: ['value1'], operator: 'eq' },
+      { key: 'created_at', values: ['XX', 'YY'], mode: 'or' }]);
+  });
+  it('findFilterFromKey for filters with several keys', () => {
+    const filtersList = [
+      { key: ['value', 'name'], values: ['value1'], operator: 'eq' },
+      { key: 'created_at', values: ['XX', 'YY'], mode: 'or' },
+      { key: 'created_at', values: ['ZZ'], operator: 'not_eq' },
+      { key: 'name', values: ['name1', 'name2'], operator: 'eq' },
+    ];
+    const result = findFiltersFromKeys(filtersList, ['value', 'test', 'created_at']);
+    expect(result).toEqual([{ key: ['value', 'name'], values: ['value1'], operator: 'eq' },
       { key: 'created_at', values: ['XX', 'YY'], mode: 'or' }]);
   });
 });

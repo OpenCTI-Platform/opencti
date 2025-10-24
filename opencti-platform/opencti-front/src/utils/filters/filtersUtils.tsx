@@ -188,31 +188,15 @@ export const findFilterFromKey = (
   return null;
 };
 
-export const findFiltersFromKeys = (
-  filters: Filter[],
+export const findFiltersFromKeys = <T extends Filter | FilterWithArrayKeys>(
+  filters: T[],
   keys: string[],
   operator = 'eq',
-): Filter[] => {
-  const result = [];
-  for (const filter of filters) {
-    if (keys.includes(filter.key)) {
-      if (!filter.operator || filter.operator === operator) {
-        result.push(filter);
-      }
-    }
-  }
-  return result;
-};
-
-export const findFiltersFromKeys_multiKeysFilter = (
-  filters: FilterWithArrayKeys[],
-  keys: string[],
-  operator = 'eq',
-): FilterWithArrayKeys[] => {
-  const result = [];
+): T[] => {
+  const result: T[] = [];
   for (const filter of filters) {
     const filterKeys = Array.isArray(filter.key) ? filter.key : [filter.key];
-    if (filterKeys.every((k) => keys.includes(k))) {
+    if (filterKeys.some((k) => keys.includes(k))) {
       if (!filter.operator || filter.operator === operator) {
         result.push(filter);
       }
@@ -288,15 +272,19 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
 // exemple: Observable AND (Domain-Name) --> [Domain-Name]
 // exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
 // exemple: Stix-Domain-Object AND (Malware OR (Country AND City)) --> [Stix-Domain-Object, Malware]
-export const getEntityTypeTwoFirstLevelsFilterValues = (
-  filters?: FilterGroup,
+// is isMultiKeysFilter, T is of type FilterGroupWithArrayKeys (only the case in BulkSearch context)
+export const getEntityTypeTwoFirstLevelsFilterValues = <T extends FilterGroup | FilterGroupWithArrayKeys>(
+  filters?: T,
   observableTypes?: string[],
-  domainObjectTypes?: string [],
+  domainObjectTypes?: string[],
 ): string[] => {
+  const findEntityTypeFilters = (f: Filter[] | FilterWithArrayKeys[]) => {
+    return findFiltersFromKeys(f, ['entity_type'], 'eq');
+  };
   if (!filters) {
     return [];
   }
-  let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type'], 'eq')
+  let firstLevelValues = findEntityTypeFilters(filters.filters)
     .map(({ values }) => values)
     .flat();
   if (filters.filterGroups.length > 0) {
@@ -305,7 +293,7 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
       .map((fg) => fg.filters)
       .flat();
     if (subFiltersSeparatedWithAnd.length > 0) {
-      const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
+      const secondLevelValues = findEntityTypeFilters(subFiltersSeparatedWithAnd)
         .map(({ values }) => values)
         .flat();
       if (secondLevelValues.length > 0) {
@@ -314,8 +302,13 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
           if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
             firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
           }
+          // if all second values are stix domain object sub types : remove domain object type from firstLevelValue
           if (secondLevelValues.every((type) => domainObjectTypes?.includes(type))) {
             firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Domain-Object');
+          }
+          // if all second values are stix core objects sub types : remove stix core object from firstLevelValue
+          if (secondLevelValues.every((type) => observableTypes?.includes(type) || domainObjectTypes?.includes(type))) {
+            firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Core-Object');
           }
         }
         return [...firstLevelValues, ...secondLevelValues];
@@ -333,41 +326,9 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
 export const getEntityTypeTwoFirstLevelsFilterValues_multiKeysFilter = (
   filters?: FilterGroupWithArrayKeys,
   observableTypes?: string[],
-  domainObjectTypes?: string [],
+  domainObjectTypes?: string[],
 ): string[] => {
-  if (!filters) {
-    return [];
-  }
-  let firstLevelValues = findFiltersFromKeys_multiKeysFilter(filters.filters, ['entity_type'], 'eq') // TODO
-    .map(({ values }) => values)
-    .flat();
-  if (filters.filterGroups.length > 0) {
-    const subFiltersSeparatedWithAnd = filters.filterGroups
-      .filter((fg) => fg.mode === 'and' || (fg.mode === 'or' && fg.filters.length === 1))
-      .map((fg) => fg.filters)
-      .flat();
-    if (subFiltersSeparatedWithAnd.length > 0) {
-      const secondLevelValues = findFiltersFromKeys_multiKeysFilter(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
-        .map(({ values }) => values)
-        .flat();
-      if (secondLevelValues.length > 0) {
-        if (filters.mode === 'and') {
-          // if all second values are observables sub types : remove observable from firstLevelValue
-          if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
-            firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
-          }
-          if (secondLevelValues.every((type) => domainObjectTypes?.includes(type))) {
-            firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Domain-Object');
-          }
-        }
-        return [...firstLevelValues, ...secondLevelValues];
-      }
-    }
-    if (filters.mode === 'or') {
-      return [];
-    }
-  }
-  return firstLevelValues;
+  return getEntityTypeTwoFirstLevelsFilterValues<FilterGroupWithArrayKeys>(filters, observableTypes, domainObjectTypes);
 };
 
 // construct filters and options for widgets
