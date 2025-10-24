@@ -14358,8 +14358,11 @@ enum SecurityCoverageOrdering {
   confidence
   created
   created_at
+  creator
   modified
   updated_at
+  objectMarking
+  coverage_last_result
   _score
 }
 
