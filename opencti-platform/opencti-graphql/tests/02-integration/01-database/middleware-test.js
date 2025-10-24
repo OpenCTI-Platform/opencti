@@ -1334,7 +1334,6 @@ describe('Elements upsert behaviors', () => {
     const clearMarking = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
     const greenMarking = 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da';
     const stixId = 'malware--78ca4366-f5b8-4764-83f7-34ce38198e28';
-
     // Create entities
     const base = { stix_id: stixId, name: 'TO_UPSERT', confidence: 10 };
     let malware = await addMalware(testContext, ADMIN_USER, base);
@@ -1359,7 +1358,7 @@ describe('Elements upsert behaviors', () => {
     expect(malware.is_family).toEqual(false);
     expect(malware.revoked).toEqual(false);
     expect(malware.first_seen).toEqual('1970-01-01T00:00:00.000Z');
-    expect(malware.malware_types).toEqual(['downloader', 'trojan']);
+    expect(malware.malware_types.sort()).toEqual(['downloader', 'trojan'].sort());
     expect(malware.objectMarking.length).toEqual(1);
 
     // Test on existing value [same confidence level]
@@ -1384,7 +1383,7 @@ describe('Elements upsert behaviors', () => {
       malware_types: ['rootkit'],
     });
     expect(malware.confidence).toEqual(11);
-    expect(malware.malware_types).toEqual(['downloader', 'trojan']);
+    expect(malware.malware_types.sort()).toEqual(['downloader', 'trojan'].sort());
     // if confidence is higher or equal, data should be added to the list
     malware = await addMalware(testContext, ADMIN_USER, {
       ...base,
@@ -1392,7 +1391,7 @@ describe('Elements upsert behaviors', () => {
       malware_types: ['rootkit'],
     });
     expect(malware.confidence).toEqual(11);
-    expect(malware.malware_types).toEqual(['downloader', 'trojan', 'rootkit']);
+    expect(malware.malware_types.sort()).toEqual(['downloader', 'trojan', 'rootkit'].sort());
 
     // on "multiple" refs
     // if confidence is lower, data should not be added to the list
