@@ -99,14 +99,23 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Coverage information')}
             </Typography>
-            {isNotEmptyField(data.external_uri)
-                && <Button color="primary"
-                  startIcon={<img style={{ width: 20 }} src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)} alt="OBAS" />}
-                  variant="outlined" onClick={() => window.open(data.external_uri ?? '', '_blank')}
-                   >
-                    {t_i18n('Exposure validation')}
-                </Button>
-            }
+            {isNotEmptyField(data.external_uri) && (
+              <Button
+                color="primary"
+                startIcon={
+                  <img
+                    style={{ width: 20 }}
+                    src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
+                    alt="OBAS"
+                  />
+                }
+                variant="outlined"
+                onClick={() => window.open(data.external_uri ?? '', '_blank')}
+                title={data.external_uri}
+              >
+                {t_i18n('Exposure validation')}
+              </Button>
+            )}
             <Paper variant="outlined" style={{ padding: 20, marginTop: 10 }}>
               <SecurityCoverageInformation coverage_information={data.coverage_information ?? []} variant="details" />
             </Paper>
