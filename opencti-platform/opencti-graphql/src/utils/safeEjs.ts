@@ -25,6 +25,8 @@ export type SafeOptions = {
   yieldMethod?: (() => Promise<void>) | undefined,
 };
 
+export type SafeRenderOptions = Options & SafeOptions;
+
 export const safeReservedPrefix = '____safe____';
 export const safeName = (name: 'statement' | 'property' | 'Object') => `${safeReservedPrefix}${name}`;
 
@@ -346,7 +348,7 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
   return fragments.join('');
 };
 
-export const safeRender = (template: string, data: Data, options: Options & SafeOptions = {}) => {
+export const safeRender = (template: string, data: Data, options: SafeRenderOptions = {}) => {
   const { delimiter = '%', openDelimiter = '<', closeDelimiter = '>', async = false } = options;
   const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
   const safeTemplate = transformTemplate(template, code, Object.keys(data ?? {}));
