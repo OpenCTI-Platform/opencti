@@ -26202,10 +26202,13 @@ export type SecurityCoverageExpectation = {
 export enum SecurityCoverageOrdering {
   Score = '_score',
   Confidence = 'confidence',
+  CoverageLastResult = 'coverage_last_result',
   Created = 'created',
   CreatedAt = 'created_at',
+  Creator = 'creator',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
   UpdatedAt = 'updated_at'
 }
 
