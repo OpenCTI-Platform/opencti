@@ -120,7 +120,7 @@ const StixRelationshipsPolarArea = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
+      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
     }
     const finalField = selection.attribute || field || 'entity_type';
     const variables = {

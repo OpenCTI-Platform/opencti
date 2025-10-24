@@ -368,11 +368,11 @@ const StixRelationshipsMultiHorizontalBars = ({
     if (dataSelection) {
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
-      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters);
+      filtersAndOptions = buildFiltersAndOptionsForWidgets(selection.filters, { isKnowledgeRelationshipWidget: true });
       if (dataSelection.length > 1) {
         // eslint-disable-next-line prefer-destructuring
         subSelection = dataSelection[1];
-        subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters);
+        subDistributionFiltersAndOptions = buildFiltersAndOptionsForWidgets(subSelection.filters, { isKnowledgeRelationshipWidget: true });
         if (subSelection.perspective === 'entities') {
           subDistributionTypes = ['Stix-Core-Object'];
         }
