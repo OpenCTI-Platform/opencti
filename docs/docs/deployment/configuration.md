@@ -47,6 +47,8 @@ Here are the configuration keys, for both containers (environment variables) and
 | app:admin:password           | APP__ADMIN__PASSWORD            | ChangeMe              | Default password of the admin user                                                                                                           |
 | app:admin:token              | APP__ADMIN__TOKEN               | ChangeMe              | Default token (must be a valid UUIDv4)                                                                                                       |
 | app:health_access_key        | APP__HEALTH_ACCESS_KEY          | ChangeMe              | Access key for the `/health` endpoint. Must be changed - will not respond to default value. Access with `/health?health_access_key=ChangeMe` |
+| app:auth_payload_body_size   | APP__AUTH_PAYLOAD_BODY_SIZE          |                       | Maximum payload body size for SSO/SAML. Controls the Express body-parser `limit` setting (defaults to 100kb). See https://expressjs.com/en/resources/middleware/body-parser.html                                                                                          |
+
 
 #### Network and security
 
