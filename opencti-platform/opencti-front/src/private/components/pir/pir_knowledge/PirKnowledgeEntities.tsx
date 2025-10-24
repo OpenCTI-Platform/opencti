@@ -34,7 +34,7 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { LocalStorage } from '../../../../utils/hooks/useLocalStorageModel';
 import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
 import { useFormatter } from '../../../../components/i18n';
-import useComputeLink from '../../../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../../../utils/hooks/useComputeLink';
 
 const sourceFlaggedFragment = graphql`
   fragment PirKnowledgeEntities_SourceFlaggedFragment on StixDomainObject

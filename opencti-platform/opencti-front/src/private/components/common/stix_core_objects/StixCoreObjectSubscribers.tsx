@@ -19,7 +19,7 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import ItemIcon from '../../../../components/ItemIcon';
 import Drawer from '../drawer/Drawer';
 import type { Theme } from '../../../../components/Theme';
-import useComputeLink from '../../../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../../../utils/hooks/useComputeLink';
 
 interface ContainerHeaderSharedProps {
   triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data

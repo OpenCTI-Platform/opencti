@@ -14,6 +14,7 @@ import PublicDashboard from './components/PublicDashboard';
 import PublicSettingsProvider from './PublicSettingsProvider';
 import Message from '../components/Message';
 import Playground from './components/Playground';
+import { ComputeLinkProvider } from '../utils/hooks/useComputeLink';
 
 const queryRef = loadQuery<LoginRootPublicQuery>(
   environment,
@@ -32,13 +33,15 @@ const PublicRoot = () => {
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <CssBaseline />
-            <Message />
-            <Routes>
-              <Route path="/" element={boundaryWrapper(PublicDataSharing)} />
-              <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
-              {isPlaygroundEnabled && <Route path="/graphql/" element={boundaryWrapper(Playground)}/>}
-            </Routes>
+            <ComputeLinkProvider>
+              <CssBaseline />
+              <Message />
+              <Routes>
+                <Route path="/" element={boundaryWrapper(PublicDataSharing)} />
+                <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
+                {isPlaygroundEnabled && <Route path="/graphql/" element={boundaryWrapper(Playground)}/>}
+              </Routes>
+            </ComputeLinkProvider>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>
