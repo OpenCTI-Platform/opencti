@@ -220,7 +220,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
             if (!isProgress && !(metaData?.errors && metaData?.errors.length > 0)) {
-              window.location.pathname = getFileUri(id);
+              window.open(getFileUri(id), '_blank', 'noopener');
             }
           }}
           createButton={<UploadImport variant="contained"/>}
