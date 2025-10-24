@@ -1,20 +1,5 @@
 FROM node:22-alpine AS base
 
-
-FROM base AS graphql-deps-builder
-
-WORKDIR /opt/opencti-build/opencti-graphql
-COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./
-COPY opencti-graphql/patch ./patch
-RUN set -ex; \
-    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre \
-    && rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED \
-    && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
-    && npm install -g node-gyp \
-    && npm install -g corepack \
-    && yarn install --immutable && yarn cache clean --all
-
-
 FROM base AS graphql-builder
 
 # Get graphql dependencies for layer cache optimization
@@ -27,7 +12,9 @@ RUN set -ex; \
     && rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED \
     && npm install -g node-gyp \
     && npm install -g corepack \
-    && yarn install
+    && yarn install  --immutable && yarn cache clean --all
+
+# Build graphql
 COPY opencti-graphql /opt/opencti-build/opencti-graphql
 WORKDIR /opt/opencti-build/opencti-graphql
 RUN yarn build:prod && yarn cache clean --all
@@ -53,7 +40,8 @@ WORKDIR /opt/opencti
 COPY opencti-graphql/src/python/requirements.txt ./src/python/requirements.txt
 RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt
 RUN apk del git gcc musl-dev
-COPY --from=graphql-deps-builder /opt/opencti-build/opencti-graphql/node_modules ./node_modules
+
+COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/node_modules ./node_modules
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/build ./build
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/static ./static
 COPY --from=graphql-builder /opt/opencti-build/opencti-graphql/public ./public
