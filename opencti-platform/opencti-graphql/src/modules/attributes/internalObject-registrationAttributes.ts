@@ -44,7 +44,7 @@ import { EVENT_ACCESS_VALUES, EVENT_SCOPE_VALUES, EVENT_STATUS_VALUES, EVENT_TYP
 import { RETENTION_SCOPE_VALUES, RETENTION_UNIT_VALUES } from '../../manager/retentionManager';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { computeAccountStatusChoices } from '../../config/conf';
-import {CONNECTOR_PRIORITY_GROUP_VALUES} from "../../database/repository";
+import { CONNECTOR_PRIORITY_GROUP_VALUES } from '../../database/repository';
 
 const HistoryDefinition: AttributeDefinition[] = [
   { name: 'event_type', label: 'Event type', type: 'string', format: 'enum', values: EVENT_TYPE_VALUES, editDefault: false, mandatoryType: 'internal', multiple: false, upsert: false, isFilterable: true },
