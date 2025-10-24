@@ -27,6 +27,7 @@ export const DataTableDisplayFilters = ({
   availableRelationFilterTypes,
   availableEntityTypes,
   entityTypes,
+  searchContext,
 }: DataTableDisplayFiltersProps) => {
   const {
     useDataTablePaginationLocalStorage: {
@@ -49,6 +50,7 @@ export const DataTableDisplayFilters = ({
         entityTypes={entityTypes}
         hasSavedFilters={!!savedFilters}
         redirection
+        searchContext={searchContext}
       />
     </div>
   );

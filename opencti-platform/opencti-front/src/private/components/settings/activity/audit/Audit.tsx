@@ -104,7 +104,6 @@ const Audit = () => {
     [SETTINGS_SECURITYACTIVITY, KNOWLEDGE],
     true,
   );
-  const knowledgeCapability = useGranted([KNOWLEDGE], true);
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Events | Activity | Settings'));
@@ -252,7 +251,7 @@ const Audit = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         handleExportCsv={handleExportCsv}
-        entityTypes={knowledgeCapability ? ['History'] : ['Activity']}
+        entityTypes={types}
       >
         {queryRef && (
           <React.Suspense
