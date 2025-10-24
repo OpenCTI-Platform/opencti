@@ -29,7 +29,7 @@ RUN set -ex; \
 FROM base AS app
 
 COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
-RUN apk add --no-cache tini python3 python3-dev postfix postfix-pcre; \
+RUN apk add --no-cache tini python3 python3-dev postfix postfix-pcre
 RUN set -ex; \
     apk add --no-cache --virtual build-dep git gcc musl-dev g++ make cargo; \
     rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED; \
