@@ -189,7 +189,7 @@ const securityCoverageValidation = (t: (value: string) => string, isAutomated: b
   const baseShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
-    external_uri: Yup.string().nullable(),
+    external_uri: Yup.string().url().nullable(),
   };
 
   if (isAutomated) {
