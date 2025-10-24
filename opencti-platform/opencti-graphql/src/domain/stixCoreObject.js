@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { uniq } from 'ramda';
 import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
 import {
   fullEntitiesList,
@@ -154,7 +155,11 @@ export const globalSearchPaginated = async (context, user, args) => {
 };
 
 export const findUnknownStixCoreObjects = async (context, user, args) => {
-  const { values, filters, orderBy, orderMode } = args;
+  const { values: inputValues, filters, orderBy, orderMode } = args;
+  if (inputValues.length === 0) {
+    return [];
+  }
+  const values = uniq(inputValues);
   const knownScos = await globalSearchPaginated(context, user, { filters, first: 5000 });
   const knownNodes = knownScos.edges.map((n) => n.node) ?? [];
 

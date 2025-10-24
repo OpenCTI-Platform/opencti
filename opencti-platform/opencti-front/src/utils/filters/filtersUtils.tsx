@@ -2,13 +2,14 @@ import * as R from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import React from 'react';
+import { allEntitiesKeyList } from '@components/common/bulk/utils/querySearchEntityByText';
 import { useFormatter } from '../../components/i18n';
 import type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 import useAuth, { FilterDefinition } from '../hooks/useAuth';
 import { capitalizeFirstLetter, displayEntityTypeForTranslation, isValidDate } from '../String';
 import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
-import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
+import { Filter, FilterGroup, FilterGroupWithArrayKeys, FilterValue, FilterWithArrayKeys, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -48,7 +49,7 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
+const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'].concat(allEntitiesKeyList);
 
 const pirScoreFilterDefinition = (pirId: string) => ({
   filterKey: `pir_score.${pirId}`,
@@ -188,14 +189,15 @@ export const findFilterFromKey = (
   return null;
 };
 
-export const findFiltersFromKeys = (
-  filters: Filter[],
+export const findFiltersFromKeys = <T extends Filter | FilterWithArrayKeys>(
+  filters: T[],
   keys: string[],
   operator = 'eq',
-): Filter[] => {
-  const result = [];
+): T[] => {
+  const result: T[] = [];
   for (const filter of filters) {
-    if (keys.includes(filter.key)) {
+    const filterKeys = Array.isArray(filter.key) ? filter.key : [filter.key];
+    if (filterKeys.some((k) => keys.includes(k))) {
       if (!filter.operator || filter.operator === operator) {
         result.push(filter);
       }
@@ -237,6 +239,12 @@ export const addFilter = (
     operator,
     mode,
   };
+  if (filters && filters.mode === 'and') {
+    return {
+      ...filters,
+      filters: [...filters.filters, filterFromParameters],
+    };
+  }
   return {
     mode: 'and',
     filters: [filterFromParameters],
@@ -265,15 +273,18 @@ export const removeEntityTypeAllFromFilterGroup = (inputFilters?: FilterGroup) =
 // exemple: Observable AND (Domain-Name) --> [Domain-Name]
 // exemple: Domain-Name OR Observable --> [Domain-Name, Observable]
 // exemple: Stix-Domain-Object AND (Malware OR (Country AND City)) --> [Stix-Domain-Object, Malware]
-export const getEntityTypeTwoFirstLevelsFilterValues = (
-  filters?: FilterGroup,
+export const getEntityTypeTwoFirstLevelsFilterValues = <T extends FilterGroup | FilterGroupWithArrayKeys>(
+  filters?: T,
   observableTypes?: string[],
-  domainObjectTypes?: string [],
+  domainObjectTypes?: string[],
 ): string[] => {
+  const findEntityTypeFilters = (f: Filter[] | FilterWithArrayKeys[]) => {
+    return findFiltersFromKeys(f, ['entity_type'], 'eq');
+  };
   if (!filters) {
     return [];
   }
-  let firstLevelValues = findFiltersFromKeys(filters.filters, ['entity_type'], 'eq')
+  let firstLevelValues = findEntityTypeFilters(filters.filters)
     .map(({ values }) => values)
     .flat();
   if (filters.filterGroups.length > 0) {
@@ -282,7 +293,7 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
       .map((fg) => fg.filters)
       .flat();
     if (subFiltersSeparatedWithAnd.length > 0) {
-      const secondLevelValues = findFiltersFromKeys(subFiltersSeparatedWithAnd, ['entity_type'], 'eq')
+      const secondLevelValues = findEntityTypeFilters(subFiltersSeparatedWithAnd)
         .map(({ values }) => values)
         .flat();
       if (secondLevelValues.length > 0) {
@@ -291,8 +302,13 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
           if (secondLevelValues.every((type) => observableTypes?.includes(type))) {
             firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Cyber-Observable');
           }
+          // if all second values are stix domain object sub types : remove domain object type from firstLevelValue
           if (secondLevelValues.every((type) => domainObjectTypes?.includes(type))) {
             firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Domain-Object');
+          }
+          // if all second values are stix core objects sub types : remove stix core object from firstLevelValue
+          if (secondLevelValues.every((type) => observableTypes?.includes(type) || domainObjectTypes?.includes(type))) {
+            firstLevelValues = firstLevelValues.filter((type) => type !== 'Stix-Core-Object');
           }
         }
         return [...firstLevelValues, ...secondLevelValues];
@@ -802,9 +818,10 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
   return uniqueArray(filterKeysMap.keys() ?? []);
 };
 
-const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
+const isFilterKeyAvailable = (key: string | string[], availableFilterKeys: string[]) => {
   const completedAvailableFilterKeys = availableFilterKeys.concat(NOT_CLEANABLE_FILTER_KEYS);
-  return completedAvailableFilterKeys.includes(key) || key.startsWith('pir_score') || key.startsWith('last_pir_score_date');
+  const keys = Array.isArray(key) ? key : [key];
+  return keys.every((k) => completedAvailableFilterKeys.includes(k) || k.startsWith('pir_score') || k.startsWith('last_pir_score_date'));
 };
 
 export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
@@ -836,7 +853,10 @@ export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): Fil
 const notCleanableFilterKeys = ['ids', 'entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id'];
 
 // TODO use useRemoveIdAndIncorrectKeysFromFilterGroupObject instead when all the calling files are in pure function
-export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGroup | null | undefined, availableFilterKeys: string[]): FilterGroup | undefined => {
+export const removeIdAndIncorrectKeysFromFilterGroupObject = <T extends FilterGroup | FilterGroupWithArrayKeys>(
+  filters: T | null | undefined,
+  availableFilterKeys: string[],
+): T | undefined => {
   if (!filters) {
     return undefined;
   }
@@ -859,13 +879,17 @@ export const removeIdAndIncorrectKeysFromFilterGroupObject = (filters: FilterGro
         }
         return newFilter;
       }),
-    filterGroups: filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys)) as FilterGroup[],
-  };
+    filterGroups: (filters.filterGroups.map((group) => removeIdAndIncorrectKeysFromFilterGroupObject(group, availableFilterKeys))
+      .filter((fg) => !!fg) ?? []) as T['filterGroups'],
+  } as T;
 };
 
-export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = (filters?: FilterGroup | null, entityTypes = ['Stix-Core-Object']): FilterGroup | undefined => {
+export const useRemoveIdAndIncorrectKeysFromFilterGroupObject = <T extends FilterGroup | FilterGroupWithArrayKeys>(
+  filters?: T | null,
+  entityTypes = ['Stix-Core-Object'],
+): T | undefined => {
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(entityTypes).concat(notCleanableFilterKeys);
-  return removeIdAndIncorrectKeysFromFilterGroupObject(filters, availableFilterKeys);
+  return removeIdAndIncorrectKeysFromFilterGroupObject<T>(filters, availableFilterKeys);
 };
 
 export const useBuildEntityTypeBasedFilterContext = (

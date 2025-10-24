@@ -94,7 +94,11 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analyses/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
-import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFilterGroupObject, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
+import {
+  getEntityTypeTwoFirstLevelsFilterValues,
+  removeIdAndIncorrectKeysFromFilterGroupObject,
+  serializeFilterGroupForBackend,
+} from '../../../utils/filters/filtersUtils';
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
@@ -495,11 +499,12 @@ class DataTableToolBar extends Component {
   handleOpenEnrichment(stixCyberObservableSubTypes, stixDomainObjectSubTypes) {
     // Get enrich type
     let enrichType;
-    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
-    if (this.props.selectAll) {
-      enrichType = this.props.type ?? R.head(entityTypeFilterValues);
+    const { filters, selectedElements, selectAll, type } = this.props;
+    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(filters, stixCyberObservableSubTypes, stixDomainObjectSubTypes);
+    if (selectAll) {
+      enrichType = type ?? R.head(entityTypeFilterValues);
     } else {
-      const selectedElementsList = Object.values(this.props.selectedElements || {});
+      const selectedElementsList = Object.values(selectedElements || {});
       const selectedTypes = R.uniq(selectedElementsList
         .map((o) => o.entity_type)
         .filter((entity_type) => entity_type !== undefined));
@@ -2095,8 +2100,9 @@ class DataTableToolBar extends Component {
   }
 
   getSelectedTypes(observableTypes, domainObjectTypes) {
-    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(this.props.filters, observableTypes, domainObjectTypes);
-    const selectedElementsList = Object.values(this.props.selectedElements || {});
+    const { selectedElements, filters } = this.props;
+    const entityTypeFilterValues = getEntityTypeTwoFirstLevelsFilterValues(filters, observableTypes, domainObjectTypes);
+    const selectedElementsList = Object.values(selectedElements || {});
     const selectedTypes = R.uniq([...selectedElementsList.map((o) => o.entity_type), ...entityTypeFilterValues]
       .filter((entity_type) => entity_type !== undefined));
     return { entityTypeFilterValues, selectedElementsList, selectedTypes };

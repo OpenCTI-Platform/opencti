@@ -130,9 +130,10 @@ interface SearchBulkProps {
 
 const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
   const buildSearchBulkFilters = (values: string[], filters: FilterGroup) => {
-    return values.length > 0
-      ? addFilter(filters, allEntitiesKeyList as unknown as string, values)
-      : filters;
+    if (values.length === 0) {
+      return filters;
+    }
+    return addFilter(filters, allEntitiesKeyList as unknown as string, values);
   };
 
   const initialValues = {
@@ -180,8 +181,6 @@ const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
           exportContext={{ entity_type: 'Stix-Core-Object' }}
           lineFragment={searchBulkLineFragment}
           hideSearch
-          disableToolBar
-          disableLineSelection
         />
       )}
     </>
