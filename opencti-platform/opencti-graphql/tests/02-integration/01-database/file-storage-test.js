@@ -1,6 +1,7 @@
 import { expect, it, describe } from 'vitest';
 import { head } from 'ramda';
-import { deleteFile, downloadFile, getFileName, guessMimeType, loadFile, streamConverter } from '../../../src/database/file-storage';
+import { downloadFile } from '../../../src/database/raw-file-storage';
+import { deleteFile, getFileName, guessMimeType, loadFile, streamConverter } from '../../../src/database/file-storage';
 import { execChildPython } from '../../../src/python/pythonBridge';
 import { ADMIN_USER, testContext, ADMIN_API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
@@ -115,18 +116,18 @@ describe('File storage file listing', () => {
       capabilities: [],
       organizations: [],
     };
-    expect(async () => {
+    await expect(async () => {
       await loadFile(testContext, authUserNoCapa, exportFileId(malware));
     }).rejects.toThrowError('File not found or restricted');
     // no access to global file
-    expect(async () => {
+    await expect(async () => {
       await loadFile(testContext, authUserNoCapa, importFileId);
     }).rejects.toThrowError('File not found or restricted');
     // other tests, fake paths, just to be sure we check the right capa before loading the files
-    expect(async () => {
+    await expect(async () => {
       await loadFile(testContext, authUserNoCapa, 'import/Report/fc21ca91-7cbd-4814-89cd-fe0c9489b91a/report.pdf');
     }).rejects.toThrowError('File not found or restricted');
-    expect(async () => {
+    await expect(async () => {
       await loadFile(testContext, authUserNoCapa, 'fromTemplate/Report/fc21ca91-7cbd-4814-89cd-fe0c9489b91a/reporttemplate.pdf');
     }).rejects.toThrowError('File not found or restricted');
   });

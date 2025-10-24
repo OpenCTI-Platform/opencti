@@ -26,7 +26,7 @@ import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isAttachmentProcessorEnabled, } from '../database/engine';
 import { elIndexFiles, elUpdateFilesWithEntityRestrictions } from '../database/file-search';
-import { getFileContent } from '../database/file-storage';
+import { getFileContent } from '../database/raw-file-storage';
 import type { AuthContext } from '../types/user';
 import { generateFileIndexId } from '../schema/identifier';
 import { TYPE_LOCK_ERROR } from '../config/errors';

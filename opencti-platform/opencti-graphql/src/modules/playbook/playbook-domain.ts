@@ -48,6 +48,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
+import type { BasicStoreObject } from '../../types/store';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -147,7 +148,8 @@ const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   if (config.filters) {
     const filterGroup = JSON.parse(config.filters) as FilterGroup;
     if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds, { noFiltersConvert: true });
+      const findIds = elFindByIds as (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>;
+      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, findIds, { noFiltersConvert: true });
       stringifiedFilters = JSON.stringify(convertedFilters);
     } else { // our stix matching is currently limited, we need to validate the input filters
       validateFilterGroupForStixMatch(filterGroup);

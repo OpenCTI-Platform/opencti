@@ -15,7 +15,8 @@ import {
   queryAsAdmin,
   testContext
 } from './testQuery';
-import { downloadFile, streamConverter } from '../../src/database/file-storage';
+import { downloadFile } from '../../src/database/raw-file-storage';
+import { streamConverter } from '../../src/database/file-storage';
 import conf, { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';

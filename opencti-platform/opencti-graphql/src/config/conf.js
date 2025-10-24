@@ -291,6 +291,9 @@ export const logS3Debug = {
   debug: (message, detail) => {
     logApp._log('info', message, { detail });
   },
+  info: (_message, _detail) => {},
+  warn: (_message, _detail) => {},
+  error: (_message, _detail) => {}
 };
 
 export const logMigration = {

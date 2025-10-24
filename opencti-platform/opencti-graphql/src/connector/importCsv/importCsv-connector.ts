@@ -5,7 +5,7 @@ import conf, { logApp } from '../../config/conf';
 import { executionContext } from '../../utils/access';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { consumeQueue, registerConnectorQueues } from '../../database/rabbitmq';
-import { downloadFile } from '../../database/file-storage';
+import { downloadFile } from '../../database/raw-file-storage';
 import { addDraftContext, reportExpectation, updateExpectationsNumber, updateProcessedTime, updateReceivedTime } from '../../domain/work';
 import { bundleProcess, type CsvBundlerIngestionOpts, generateAndSendBundleProcess } from '../../parser/csv-bundler';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
