@@ -1731,6 +1731,8 @@ const findElementsDuplicateIds = (elements) => {
   return Array.from(duplicatedIds);
 };
 
+const ids_attributes = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
+
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
@@ -1760,7 +1762,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const mustTerms = [];
     const workingIds = groupIds[index];
     const idsTermsPerType = [];
-    const elementTypes = [internalId.name, standardId.name, xOpenctiStixIds.name, iAliasedIds.name];
+    const elementTypes = [...ids_attributes];
     for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
       const elementType = elementTypes[indexType];
       const terms = { [`${elementType}.keyword`]: workingIds };
@@ -2139,7 +2141,7 @@ const buildFieldForQuery = (field) => {
     ? field
     : `${field}.keyword`;
 };
-const buildLocalMustFilter = async (validFilter) => {
+export const buildLocalMustFilter = (validFilter) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
   const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
@@ -2379,7 +2381,7 @@ const buildLocalMustFilter = async (validFilter) => {
     } else {
       // case where we would like to build a terms query
       const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0 && !values.includes('EXISTS')
-        && arrayKeys.every((k) => !k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED)));
+        && arrayKeys.every((k) => (!k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED))) || ids_attributes.includes(k));
       if (isTermsQuery) {
         const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
         for (let i = 0; i < arrayKeys.length; i += 1) {
@@ -2500,14 +2502,14 @@ const buildLocalMustFilter = async (validFilter) => {
   throw UnsupportedError('Invalid filter configuration', validFilter);
 };
 
-const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
+const buildSubQueryForFilterGroup = (context, user, inputFilters) => {
   const { mode = 'and', filters = [], filterGroups = [] } = inputFilters;
   const localMustFilters = [];
   // Handle filterGroups
   for (let index = 0; index < filterGroups.length; index += 1) {
     const group = filterGroups[index];
     if (isFilterGroupNotEmpty(group)) {
-      const subQuery = await buildSubQueryForFilterGroup(context, user, group);
+      const subQuery = buildSubQueryForFilterGroup(context, user, group);
       if (subQuery) { // can be null
         localMustFilters.push(subQuery);
       }
@@ -2518,7 +2520,7 @@ const buildSubQueryForFilterGroup = async (context, user, inputFilters) => {
     const filter = filters[index];
     const isValidFilter = filter?.values || filter?.nested?.length > 0;
     if (isValidFilter) {
-      const localMustFilter = await buildLocalMustFilter(filter);
+      const localMustFilter = buildLocalMustFilter(filter);
       localMustFilters.push(localMustFilter);
     }
   }
@@ -2604,13 +2606,13 @@ const adaptFilterToEntityTypeFilterKey = (filter) => {
   return { newFilter, newFilterGroup };
 };
 
-const adaptFilterToIdsFilterKey = (filter) => {
+export const adaptFilterToIdsFilterKey = (filter) => {
   const { key, mode = 'or', operator = 'eq' } = filter;
   const arrayKeys = Array.isArray(key) ? key : [key];
   if (arrayKeys[0] !== IDS_FILTER || arrayKeys.length > 1) {
     throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
   }
-  if (filter.mode === 'and') {
+  if (mode === 'and') {
     throw UnsupportedError('Unsupported filter: \'And\' operator between values of a filter with key = \'ids\' is not supported');
   }
   // at this point arrayKey === ['ids'], and mode is always 'or'
@@ -2618,48 +2620,21 @@ const adaptFilterToIdsFilterKey = (filter) => {
   // we'll build these new filters or filterGroup, depending on the situation
   let newFilterGroup;
 
-  const idsArray = [ID_INTERNAL, ID_STANDARD, IDS_STIX]; // the keys to handle additionally
+  const idsArray = [...ids_attributes]; // the keys to handle additionally
 
   if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
+    const filters = idsArray.map((idKey) => { return { ...filter, key: idKey }; });
     newFilterGroup = {
       mode: 'and',
-      filters: [
-        {
-          ...filter,
-          key: ID_INTERNAL,
-        },
-        {
-          ...filter,
-          key: ID_STANDARD,
-        },
-        {
-          ...filter,
-          key: IDS_STIX,
-        }
-      ],
+      filters,
       filterGroups: [],
     };
     return { newFilterGroup };
   }
 
   // at this point, operator !== nil and operator !== not_nil
-  let newFilter;
-  if (mode === 'or') {
-    // elastic multi-key is a 'or'
-    newFilter = { ...filter, key: arrayKeys.concat(idsArray) };
-  }
-
-  if (mode === 'and') {
-    // similarly we need to split into filters for each additional source
-    newFilterGroup = {
-      mode: operator === 'eq' ? 'or' : 'and',
-      filters: [
-        { ...filter, key: ['ids'] },
-        [...idsArray.map((k) => ({ ...filter, key: [k] }))],
-      ],
-      filterGroups: [],
-    };
-  }
+  // we replace the key "ids" by the list of ids attribute (internal_id, standard_id, ...)
+  const newFilter = { ...filter, key: idsArray };
 
   // depending on the operator, only one of newFilter and newFilterGroup is defined
   return { newFilter, newFilterGroup };
@@ -3343,7 +3318,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   // Handle filters
   if (isFilterGroupNotEmpty(completeFilters)) {
     const finalFilters = await completeSpecialFilterKeys(context, user, completeFilters);
-    const filtersSubQuery = await buildSubQueryForFilterGroup(context, user, finalFilters);
+    const filtersSubQuery = buildSubQueryForFilterGroup(context, user, finalFilters);
     if (filtersSubQuery) {
       mustFilters.push(filtersSubQuery);
     }
