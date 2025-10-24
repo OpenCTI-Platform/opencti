@@ -517,7 +517,7 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
         await client.call('XADD', REDIS_STREAM_NAME, '*', ...mapJSToStream(eventToPush));
       }
     };
-    telemetry(context, user, 'INSERT STREAM', {
+    await telemetry(context, user, 'INSERT STREAM', {
       [SEMATTRS_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
   }
