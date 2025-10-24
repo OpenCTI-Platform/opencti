@@ -59,7 +59,7 @@
     "@graphql-tools/utils": "10.9.1",
     "@jorgeferrero/stream-to-buffer": "2.0.6",
     "@langchain/core": "0.3.59",
-    "@langchain/mistralai": "0.2.0",
+    "@langchain/mistralai": "1.0.0",
     "@langchain/openai": "0.5.5",
     "@mistralai/mistralai": "1.7.2",
     "@node-saml/passport-saml": "5.1.0",
