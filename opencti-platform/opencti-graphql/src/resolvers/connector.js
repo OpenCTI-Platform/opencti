@@ -65,6 +65,7 @@ import {
 import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
+import { ConnectorPriorityGroup } from '../generated/graphql';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -92,6 +93,7 @@ const connectorResolvers = {
   Connector: {
     works: (cn, args, context) => worksForConnector(context, context.user, cn.id, args),
     connector_queue_details: (cn) => queueDetails(cn.id),
+    connector_priority_group: (cn) => { return cn.connector_priority_group ?? ConnectorPriorityGroup.Default; },
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
     manager_connector_logs: (cn) => redisGetConnectorLogs(cn.id),
     manager_health_metrics: (cn, _, context) => connectorGetHealth(context, context.user, cn.id),
