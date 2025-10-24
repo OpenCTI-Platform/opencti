@@ -1,5 +1,4 @@
 import React, { ReactNode, createContext, useContext } from 'react';
-import { useLocation } from 'react-router-dom';
 import { resolveLink } from '../Entity';
 import useSchema from './useSchema';
 
@@ -64,10 +63,7 @@ const PrivateComputeLinkProvider: React.FC<{ children: ReactNode }> = ({ childre
   );
 };
 
-export const ComputeLinkProvider = ({ children }: { children: ReactNode }) => {
-  const location = useLocation();
-
-  const isPublicRoute = location.pathname.startsWith('/public/');
+export const ComputeLinkProvider = ({ isPublicRoute, children }: { isPublicRoute: boolean, children: ReactNode }) => {
   if (isPublicRoute) {
     return (
       <ComputeLinkContext.Provider value={() => ''}>

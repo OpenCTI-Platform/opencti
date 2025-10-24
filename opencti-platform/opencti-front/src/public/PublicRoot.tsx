@@ -28,12 +28,13 @@ const PublicRoot = () => {
     queryRef,
   );
   const isPlaygroundEnabled = settings.playground_enabled;
+
   return (
     <PublicSettingsProvider settings={settings}>
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <ComputeLinkProvider>
+            <ComputeLinkProvider isPublicRoute={true}>
               <CssBaseline />
               <Message />
               <Routes>
