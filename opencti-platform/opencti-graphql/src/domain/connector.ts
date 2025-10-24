@@ -1,35 +1,17 @@
-import {v5 as uuidv5} from 'uuid';
-import {
-  createEntity,
-  deleteElementById,
-  internalDeleteElementById,
-  patchAttribute,
-  updateAttribute
-} from '../database/middleware';
-import {type GetHttpClient, getHttpClient} from '../utils/http-client';
-import {completeConnector, connector, connectors, connectorsFor} from '../database/repository';
-import {
-  getConnectorQueueDetails,
-  purgeConnectorQueues,
-  registerConnectorQueues,
-  unregisterConnector,
-  unregisterExchanges
-} from '../database/rabbitmq';
-import {
-  ENTITY_TYPE_CONNECTOR,
-  ENTITY_TYPE_CONNECTOR_MANAGER,
-  ENTITY_TYPE_SYNC,
-  ENTITY_TYPE_USER,
-  ENTITY_TYPE_WORK
-} from '../schema/internalObject';
-import {FunctionalError, UnsupportedError, ValidationError} from '../config/errors';
-import {validateFilterGroupForStixMatch} from '../utils/filtering/filtering-stix/stix-filtering';
-import {isFilterGroupNotEmpty} from '../utils/filtering/filtering-utils';
-import {now} from '../utils/format';
-import {elLoadById} from '../database/engine';
-import {isEmptyField, READ_INDEX_HISTORY} from '../database/utils';
-import {ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE} from '../schema/general';
-import {isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER} from '../utils/access';
+import { v5 as uuidv5 } from 'uuid';
+import { createEntity, deleteElementById, internalDeleteElementById, patchAttribute, updateAttribute } from '../database/middleware';
+import { type GetHttpClient, getHttpClient } from '../utils/http-client';
+import { completeConnector, connector, connectors, connectorsFor } from '../database/repository';
+import { getConnectorQueueDetails, purgeConnectorQueues, registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { FunctionalError, UnsupportedError, ValidationError } from '../config/errors';
+import { validateFilterGroupForStixMatch } from '../utils/filtering/filtering-stix/stix-filtering';
+import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { now } from '../utils/format';
+import { elLoadById } from '../database/engine';
+import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
+import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
+import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import {
   type ConnectorHealthMetrics,
   delEditContext,
@@ -40,19 +22,10 @@ import {
   redisSetConnectorLogs,
   setEditContext
 } from '../database/redis';
-import {fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById} from '../database/middleware-loader';
-import {
-  completeContextDataForEntity,
-  publishUserAction,
-  type UserImportActionContextData
-} from '../listener/UserActionListener';
-import type {AuthContext, AuthUser} from '../types/user';
-import type {
-  BasicStoreEntityConnector,
-  BasicStoreEntityConnectorManager,
-  BasicStoreEntitySynchronizer,
-  ConnectorInfo
-} from '../types/connector';
+import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
+import type { AuthContext, AuthUser } from '../types/user';
+import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
 import {
   type AddManagedConnectorInput,
   ConnectorPriorityGroup,
@@ -73,23 +46,19 @@ import {
   type UpdateConnectorManagerStatusInput,
   ValidationMode
 } from '../generated/graphql';
-import {BUS_TOPICS, logApp} from '../config/conf';
-import {deleteWorkForConnector} from './work';
-import {testSync as testSyncUtils} from './connector-utils';
-import {defaultValidationMode, loadFile, uploadJobImport} from '../database/file-storage';
-import {controlUserConfidenceAgainstElement} from '../utils/confidence-level';
-import {extractEntityRepresentativeName} from '../database/entity-representative';
-import type {BasicStoreCommon} from '../types/store';
-import type {Connector} from '../connector/internalConnector';
-import {
-  addConnectorDeployedCount,
-  addWorkbenchDraftConvertionCount,
-  addWorkbenchValidationCount
-} from '../manager/telemetryManager';
-import {computeConnectorTargetContract, getSupportedContractsByImage} from '../modules/catalog/catalog-domain';
-import {getEntitiesMapFromCache} from '../database/cache';
-import {removeAuthenticationCredentials} from '../modules/ingestion/ingestion-common';
-import {createOnTheFlyUser} from '../modules/user/user-domain';
+import { BUS_TOPICS, logApp } from '../config/conf';
+import { deleteWorkForConnector } from './work';
+import { testSync as testSyncUtils } from './connector-utils';
+import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
+import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
+import { extractEntityRepresentativeName } from '../database/entity-representative';
+import type { BasicStoreCommon } from '../types/store';
+import type { Connector } from '../connector/internalConnector';
+import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
+import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
+import { getEntitiesMapFromCache } from '../database/cache';
+import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
+import { createOnTheFlyUser } from '../modules/user/user-domain';
 
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
