@@ -285,7 +285,7 @@ const StixDomainObjectOverview = ({
                       title={t_i18n('Add new assignees')}
                       onClick={handleToggleAddAssignee}
                       style={{ margin: '0 0 -14px 0' }}
-                      size="large"
+
                     >
                       <Add fontSize="small" />
                     </IconButton>
@@ -311,7 +311,6 @@ const StixDomainObjectOverview = ({
                       title={t_i18n('Add new participants')}
                       onClick={handleToggleAddParticipant}
                       style={{ margin: '0 0 -14px 0' }}
-                      size="large"
                     >
                       <Add fontSize="small" />
                     </IconButton>

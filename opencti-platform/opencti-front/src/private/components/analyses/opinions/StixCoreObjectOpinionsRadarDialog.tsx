@@ -175,10 +175,9 @@ StixCoreObjectOpinionsRadarDialogProps
           aria-label="Label"
           onClick={handleOpen}
           style={{
-            float: 'left',
-            margin: '-15px 0 0 -2px',
+
+            margin: '-10px 0 0 5px',
           }}
-          size="large"
         >
           <ThumbsUpDownOutlined fontSize="small" />
         </IconButton>
