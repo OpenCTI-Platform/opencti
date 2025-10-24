@@ -15,7 +15,7 @@ import { getEntityFromCache } from '../database/cache';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { BasicStoreSettings } from '../types/settings';
-import playbookManager from './playbookManager';
+import playbookManager from './playbookManager/playbookManager';
 import { getAllManagersStatuses } from './managerModule';
 import type { ClusterConfig } from '../types/clusterConfig';
 
