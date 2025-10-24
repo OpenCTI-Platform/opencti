@@ -34,6 +34,8 @@ const buildIndexFileBody = (documentId, file, entity = null) => {
   if (entity) {
     documentBody.entity_id = entity.internal_id;
     // index entity markings & organization restrictions
+    documentBody.entity_type = entity.entity_type;
+    documentBody.parent_types = entity.parent_types;
     documentBody[buildRefRelationKey(RELATION_OBJECT_MARKING)] = entity[RELATION_OBJECT_MARKING] ?? [];
     documentBody[buildRefRelationKey(RELATION_GRANTED_TO)] = entity[RELATION_GRANTED_TO] ?? [];
     // index entity authorized_members & authorized_authorities => not yet
