@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildFiltersAndOptionsForWidgets,
   emptyFilterGroup,
   findFiltersFromKeys,
   getEntityTypeTwoFirstLevelsFilterValues,
@@ -616,5 +617,89 @@ describe('isRegardingOfFilterWarning', () => {
     };
     const isWarning9 = isRegardingOfFilterWarning(filter9, ['Software', 'Domain-Name'], filtersRepresentativesMap);
     expect(isWarning9).toEqual(true);
+  });
+});
+
+describe('buildFiltersAndOptionsForWidgets', () => {
+  it('should return filters with start date', () => {
+    const startDate = '2025-10-15T00:00:00+02:00';
+    const inputFilters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Report'] }],
+      filterGroups: [
+        {
+          mode: 'or',
+          filters: [
+            { key: 'objectMarking', values: ['marking1'] },
+            { key: 'entity_type', values: ['Country', 'City'] },
+          ],
+          filterGroups: [],
+        },
+      ],
+    };
+    const expectedFilters = {
+      mode: 'and',
+      filters: [{ key: 'created_at', values: [startDate], operator: 'gt', mode: 'or' }],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [{ key: 'entity_type', values: ['Report'] }],
+          filterGroups: [
+            {
+              mode: 'or',
+              filters: [
+                { key: 'objectMarking', values: ['marking1'] },
+                { key: 'entity_type', values: ['Country', 'City'] },
+              ],
+              filterGroups: [],
+            },
+          ],
+        },
+      ],
+    };
+    const { filters } = buildFiltersAndOptionsForWidgets(inputFilters, { startDate });
+    expect(filters).toStrictEqual(expectedFilters);
+  });
+
+  it('should return filters with start date, end date, and a date attribute', () => {
+    const startDate = '2025-10-15T00:00:00+02:00';
+    const endDate = '2025-10-21T00:00:00+02:00';
+    const dateAttribute = 'modified';
+    const inputFilters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Report'] }],
+      filterGroups: [],
+    };
+    const expectedFilters = {
+      mode: 'and',
+      filters: [
+        { key: dateAttribute, values: [startDate], operator: 'gt', mode: 'or' },
+        { key: dateAttribute, values: [endDate], operator: 'lt', mode: 'or' },
+      ],
+      filterGroups: [
+        {
+          mode: 'and',
+          filters: [{ key: 'entity_type', values: ['Report'] }],
+          filterGroups: [],
+        },
+      ],
+    };
+    const { filters } = buildFiltersAndOptionsForWidgets(inputFilters, { startDate, endDate, dateAttribute });
+    expect(filters).toStrictEqual(expectedFilters);
+  });
+
+  it('should return filters for relationships widgets', () => {
+    const inputFilters = {
+      mode: 'and',
+      filters: [{ key: 'createdBy', values: ['user1'] }],
+      filterGroups: [],
+    };
+    const expectedFilters = {
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Stix-Core-Relationship', 'object'], operator: 'eq', mode: 'or' }],
+      filterGroups: [inputFilters],
+    };
+    const { filters } = buildFiltersAndOptionsForWidgets(inputFilters, { isKnowledgeRelationshipWidget: true });
+    expect(filters).toStrictEqual(expectedFilters);
   });
 });
