@@ -176,7 +176,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
       }),
     ).nullable(),
     periodicity: Yup.string().nullable(),
-    external_uri: Yup.string().nullable(),
+    external_uri: Yup.string().url().nullable(),
     createdBy: Yup.object().nullable(),
     objectMarking: Yup.array().nullable(),
   };
