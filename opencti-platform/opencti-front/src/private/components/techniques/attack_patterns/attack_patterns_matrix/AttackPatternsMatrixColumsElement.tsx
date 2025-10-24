@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button } from '@mui/material';
-import { Clear } from '@mui/icons-material';
+import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { graphql } from 'react-relay';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import AttackPatternsMatrixShouldCoverIcon from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixShouldCoverIcon';
 import {
   FilteredAttackPattern,
@@ -12,10 +9,7 @@ import {
   MinimalAttackPattern,
 } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixColumns';
 import type { Theme } from '../../../../../components/Theme';
-import { commitMutation } from '../../../../../relay/environment';
-import { useFormatter } from '../../../../../components/i18n';
 import { hexToRGB } from '../../../../../utils/Colors';
-import { deleteNodeFromEdge } from '../../../../../utils/store';
 import SecurityCoverageInformation from '../../../analyses/security_coverages/SecurityCoverageInformation';
 
 interface AttackPatternsMatrixColumnsElementProps {
@@ -28,20 +22,6 @@ interface AttackPatternsMatrixColumnsElementProps {
   entityId?: string;
 }
 
-const removeMutation = graphql`
-  mutation AttackPatternsMatrixColumsElementRelationDeleteMutation(
-    $fromId: StixRef!
-    $toId: StixRef!
-    $relationship_type: String!
-  ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
-  }
-`;
-
 const AttackPatternsMatrixColumnsElement = ({
   attackPattern,
   handleOpen,
@@ -49,41 +29,9 @@ const AttackPatternsMatrixColumnsElement = ({
   isSecurityPlatform,
   isCoverage = false,
   coverageMap,
-  entityId,
 }: AttackPatternsMatrixColumnsElementProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
   const [isHovered, setIsHovered] = useState(false);
-  const [displayDelete, setDisplayDelete] = useState(false);
-
-  const handleDelete = () => {
-    if (!entityId || !attackPattern.attack_pattern_id) return;
-    commitMutation({
-      mutation: removeMutation,
-      variables: {
-        fromId: entityId,
-        toId: attackPattern.attack_pattern_id,
-        relationship_type: 'has-covered',
-      },
-      updater: (store: RecordSourceSelectorProxy) => deleteNodeFromEdge(
-        store,
-        'attackPatterns',
-        entityId,
-        attackPattern.attack_pattern_id,
-        {
-          relationship_type: 'has-covered',
-          toTypes: ['Attack-Pattern'],
-        },
-      ),
-      optimisticUpdater: undefined,
-      optimisticResponse: undefined,
-      onCompleted: () => {
-        setDisplayDelete(false);
-      },
-      onError: undefined,
-      setSubmitting: undefined,
-    });
-  };
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
@@ -161,50 +109,6 @@ const AttackPatternsMatrixColumnsElement = ({
               variant="matrix"
             />
           </Box>
-          {entityId && (
-            <>
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setDisplayDelete(true);
-                }}
-                sx={{
-                  position: 'absolute',
-                  top: 2,
-                  right: 2,
-                  padding: '2px',
-                  '& .MuiSvgIcon-root': { fontSize: 12 },
-                }}
-              >
-                <Clear />
-              </IconButton>
-              <Dialog
-                open={displayDelete}
-                onClose={() => setDisplayDelete(false)}
-                PaperProps={{ elevation: 1 }}
-              >
-                <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    {t_i18n('Do you want to remove the coverage for this attack pattern?')}
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setDisplayDelete(false)}>
-                    {t_i18n('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={handleDelete}
-                  >
-                    {t_i18n('Delete')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </>
-          )}
         </>
       )}
 
