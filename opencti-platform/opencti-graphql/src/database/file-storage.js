@@ -29,11 +29,13 @@ import {
 } from '../modules/internal/document/document-domain';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, validateMarking } from '../utils/access';
+import { isUserHasCapability, KNOWLEDGE, KNOWLEDGE_KNASKIMPORT, SETTINGS_SUPPORT, SYSTEM_USER, validateMarking } from '../utils/access';
 import { internalLoadById } from './middleware-loader';
 import { getDraftContext } from '../utils/draftContext';
 import { isModuleActivated } from './cluster-module';
 import { getDraftFilePrefix, isDraftFile } from './draft-utils';
+import { getEntitiesMapFromCache } from './cache';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -495,10 +497,12 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
 // Please consider using file-storage-helper#uploadToStorage() instead.
 export const upload = async (context, user, filePath, fileUpload, opts) => {
   const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false, file_markings = [], importContextEntities = [] } = opts;
+  const markings = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const normalized_file_markings = file_markings?.map((m) => (markings.get(m) ? markings.get(m).internal_id : m)) ?? [];
   // Verify markings
-  for (let index = 0; index < (file_markings ?? []).length; index += 1) {
-    const markingId = file_markings[index];
-    await validateMarking(context, user, markingId);
+  for (let index = 0; index < normalized_file_markings.length; index += 1) {
+    const markingId = normalized_file_markings[index];
+    await validateMarking(context, user, markingId, markings);
   }
   const metadata = { ...meta };
   if (!metadata.version) {
@@ -558,7 +562,7 @@ export const upload = async (context, user, filePath, fileUpload, opts) => {
     information: '',
     lastModified: new Date(),
     lastModifiedSinceMin: sinceNowInMinutes(new Date()),
-    metaData: { ...fullMetadata, messages: [], errors: [], file_markings },
+    metaData: { ...fullMetadata, messages: [], errors: [], file_markings: normalized_file_markings },
     uploadStatus: 'complete',
   };
   await indexFileToDocument(context, file);
