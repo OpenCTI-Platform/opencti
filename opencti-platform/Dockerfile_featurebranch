@@ -29,8 +29,9 @@ RUN set -ex; \
 FROM base AS app
 
 COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
+RUN apk add --no-cache tini g++ make cargo python3 python3-dev postfix postfix-pcre; \
 RUN set -ex; \
-    apk add --no-cache git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre; \
+    apk add --no-cache --virtual build-dep git gcc musl-dev; \
     rm -f /usr/lib/python3.11/EXTERNALLY-MANAGED; \
     rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED; \
     python3 -m ensurepip; \
@@ -38,7 +39,7 @@ RUN set -ex; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
     ln -sf python3 /usr/bin/python; \
     pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt; \
-    apk del git gcc musl-dev; \
+    apk del build-dep; \
     rm -rf /var/cache/apk/*
 
 WORKDIR /opt/opencti
