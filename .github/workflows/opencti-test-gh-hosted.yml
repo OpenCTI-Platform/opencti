@@ -1,0 +1,156 @@
+name: OpenCTI CI GitHub hosted api-test
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - oob/ci-split-test
+
+jobs:
+  build-opencti-platform:
+    name: build-opencti-platform
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: filigran/platform
+          tags: |
+            type=sha,format=short
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: opencti-platform
+          file: opencti-platform/Dockerfile_featurebranch
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  run-opencti-test-stack:
+    needs: build-opencti-platform
+    runs-on: ubuntu-latest
+    steps:
+    - name: Display Runner Information
+      continue-on-error: true
+      run: |
+          set -x
+          echo "Runner Name: $RUNNER_NAME"
+          echo "Runner OS: $RUNNER_OS \t Runner Arch: $RUNNER_ARCH"
+          echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
+          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE} "
+          tree  ${{ github.workspace }}/..
+          echo " pwd $(pwd) " 
+          ls -larth
+          ps aux | sort -nk +4 | tail -5
+          env
+          free -m
+          docker stats --no-stream
+
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Compose for backends and sync instances
+      run: |
+         set -x
+         cd opencti-platform/opencti-ci         
+         export TAG=${{ github.sha }}
+         docker network create runner-docker-network
+         docker compose up -d
+
+    - name: Log backend start
+      continue-on-error: true
+      run: |
+          sleep 20;
+          echo -e "\n\n *********\n ********* logs Minio \n"; sleep 2
+          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep minio | awk '{print $1}')
+          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 2
+          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep elasticsearch | awk '{print $1}')
+          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 2
+          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep rabbit | awk '{print $1}')
+          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 2
+          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep redis | awk '{print $1}')
+          
+          echo -e "\n\n *********\n ********* test backend endpoint \n"; sleep 2
+          set -x
+          docker run --rm --network runner-docker-network curlimages/curl curl http://elasticsearch:9200
+          docker run --rm --network runner-docker-network curlimages/curl curl http://redis:6379
+          docker run --rm --network runner-docker-network curlimages/curl curl http://rabbitmq:5672
+          docker run --rm --network runner-docker-network curlimages/curl curl http://elasticsearch:9200
+
+    - name: Memory, container and process infos
+      continue-on-error: true
+      run: |
+          echo -e "\n *********\n ********* docker ps"
+          docker ps -a
+          echo -e "\n *********\n ********* docker stat"
+          docker stats --no-stream        
+          echo -e "\n *********\n ********* ps"
+            ps aux | sort -nk +4 | tail -10
+          echo -e "\n *********\n ********* free memory"
+          free -m
+        
+
+    - name: Wait for OpenCTI sync instances to start
+      continue-on-error: true
+      run: |
+          set -x
+          echo "$(date)"  
+          cd opencti-platform/opencti-ci
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
+
+
+    - name: Log backend
+      continue-on-error: true
+      run: |
+          echo -e "\n\n *********\n ********* logs Minio \n"; sleep 2
+          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep minio | awk '{print $1}')
+          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 2
+          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep elastic | awk '{print $1}')
+          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 2
+          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep rabbit | awk '{print $1}')
+          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 2
+          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep redis | awk '{print $1}')
+        
+
+    - name: Logs opencti raw start
+      continue-on-error: true
+      run: |
+          echo "$(date)"  
+          docker logs opencti-live-start
+    - name: Logs opencti raw start
+      continue-on-error: true
+      run: |
+          echo "$(date)"  
+          docker logs opencti-live-start
+    - name: Logs opencti direct start
+      continue-on-error: true
+      run: |
+          echo "$(date)"  
+          docker logs opencti-direct-start
+    - name: Logs opencti restore start
+      continue-on-error: true
+      run: |
+          echo "$(date)"  
+          docker logs opencti-restore-start
+
+    - name: Memory, container and process infos
+      continue-on-error: true
+      run: |
+          echo -e "\n *********\n ********* docker ps"
+          docker ps -a
+          echo -e "\n *********\n ********* docker stat"
+          docker stats --no-stream        
+          echo -e "\n *********\n ********* ps"
+          ps aux | sort -nk +4 | tail -10
+          echo -e "\n *********\n ********* free memory"
+          free -m
