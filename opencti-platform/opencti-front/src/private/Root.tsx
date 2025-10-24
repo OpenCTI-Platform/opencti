@@ -414,7 +414,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <ComputeLinkProvider>
+            <ComputeLinkProvider isPublicRoute={false}>
               <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
                 <Index settings={settings} />
               </AnalyticsProvider>
