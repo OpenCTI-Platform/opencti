@@ -44,6 +44,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
 export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
+const PLAYBOOK_LOG_MAX_SIZE = conf.get('playbook_manager:log_max_size') || 10000;
 
 export const EVENT_CURRENT_VERSION = '4';
 
