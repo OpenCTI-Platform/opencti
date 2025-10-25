@@ -30,6 +30,7 @@ class EntityStixCoreRelationshipsLinesAll extends Component {
       selectedElements,
       deSelectedElements,
       selectAll,
+      isCoverage,
     } = this.props;
     return (
       <ListLinesContent
@@ -58,6 +59,7 @@ class EntityStixCoreRelationshipsLinesAll extends Component {
         deSelectedElements={deSelectedElements}
         selectAll={selectAll}
         onToggleEntity={onToggleEntity}
+        isCoverage={isCoverage}
       />
     );
   }

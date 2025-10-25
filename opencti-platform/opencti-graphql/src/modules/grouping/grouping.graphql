@@ -167,6 +167,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     status: Status
     workflowEnabled: Boolean
     pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+    securityCoverage: SecurityCoverage
 }
 
 # Ordering

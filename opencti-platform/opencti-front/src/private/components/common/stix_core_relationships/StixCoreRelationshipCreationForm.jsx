@@ -23,6 +23,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import { minutesBefore, now } from '../../../../utils/Time';
+import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -94,18 +95,37 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export const stixCoreRelationshipBasicShape = (t) => ({
-  relationship_type: Yup.string().required(t('This field is required')),
-  confidence: Yup.number().nullable(),
-  start_time: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-  stop_time: Yup.date()
-    .min(Yup.ref('start_time'), "The end date can't be before start date")
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-  description: Yup.string().nullable(),
-});
+export const stixCoreRelationshipBasicShape = (t, isCoverage = false) => {
+  const baseSchema = {
+    relationship_type: Yup.string().required(t('This field is required')),
+    confidence: Yup.number().nullable(),
+    start_time: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+    stop_time: Yup.date()
+      .min(Yup.ref('start_time'), "The end date can't be before start date")
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+    description: Yup.string().nullable(),
+  };
+
+  if (isCoverage) {
+    return {
+      ...baseSchema,
+      coverage: Yup.array().of(
+        Yup.object().shape({
+          coverage_name: Yup.string().required(t('This field is required')),
+          coverage_score: Yup.number()
+            .required(t('This field is required'))
+            .min(0, t('Score must be at least 0'))
+            .max(100, t('Score must be at most 100')),
+        }),
+      ).nullable(),
+    };
+  }
+
+  return baseSchema;
+};
 
 const STIX_CORE_RELATIONSHIP_TYPE = 'stix-core-relationship';
 
@@ -122,10 +142,11 @@ const StixCoreRelationshipCreationForm = ({
   defaultStopTime,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  isCoverage = false,
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();
-  const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n));
+  const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n, isCoverage));
 
   const fromEntity = fromEntities[0];
   const toEntity = toEntities[0];
@@ -153,6 +174,7 @@ const StixCoreRelationshipCreationForm = ({
       externalReferences: [],
       objectMarking: defaultMarkingDefinitions ?? [],
       createdBy: defaultCreatedBy ?? '',
+      ...(isCoverage && { coverage_information: [] }),
     },
   );
 
@@ -301,6 +323,14 @@ const StixCoreRelationshipCreationForm = ({
               rows="4"
               style={fieldSpacingContainerStyle}
             />
+            {isCoverage && (
+              <CoverageInformationFieldAdd
+                name="coverage_information"
+                values={values.coverage_information || []}
+                containerStyle={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+            )}
             {hasKillChainPhase(values.relationship_type) ? (
               <KillChainPhasesField
                 name="killChainPhases"

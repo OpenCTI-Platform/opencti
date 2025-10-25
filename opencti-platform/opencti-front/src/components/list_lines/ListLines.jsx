@@ -238,7 +238,7 @@ class ListLines extends Component {
             )}
 
             {extraFields}
-            {availableFilterKeys && availableFilterKeys.length > 0 && (
+            {handleAddFilter && handleRemoveFilter && availableFilterKeys && availableFilterKeys.length > 0 && (
               <Filters
                 helpers={helpers}
                 searchContext={searchContextFinal}

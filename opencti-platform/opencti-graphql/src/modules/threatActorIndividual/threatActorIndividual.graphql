@@ -161,6 +161,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 
 enum ThreatActorsIndividualOrdering {

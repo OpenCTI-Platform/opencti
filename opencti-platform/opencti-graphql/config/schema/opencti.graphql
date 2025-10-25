@@ -1484,10 +1484,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_theme_light_logo_login: String
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
-  platform_openbas_url: String
-  platform_openbas_disable_display: Boolean
-  platform_openerm_url: String
-  platform_openmtd_url: String
+  platform_openaev_url: String
+  platform_opengrc_url: String
   platform_xtmhub_url: String
   platform_login_message: String
   platform_consent_message: String
@@ -2069,6 +2067,8 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
@@ -2220,6 +2220,8 @@ type Connector implements BasicObject & InternalObject {
   title: String!
   active: Boolean
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   connector_trigger_filters: String
@@ -2697,7 +2699,6 @@ input KillChainPhaseAddInput {
 }
 
 ######## STIX CORE OBJECT ENTITIES
-
 type Representative {
   main: String!
   secondary: String
@@ -3452,6 +3453,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input CampaignAddInput {
   stix_id: StixId
@@ -4510,6 +4512,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input ReportAddInput {
   stix_id: StixId
@@ -5803,6 +5806,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input IntrusionSetAddInput {
   stix_id: StixId
@@ -7918,6 +7922,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input IncidentAddInput {
   stix_id: StixId
@@ -12631,6 +12636,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Individual
   | Organization
   | SecurityPlatform
+  | SecurityCoverage
   | Sector
   | System
   | Indicator
@@ -13045,6 +13051,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     filters: FilterGroup
   ): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
+  coverage_information: [CoverageResult!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -13052,6 +13059,12 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
 }
+
+input SecurityCoverageExpectation {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
 input StixCoreRelationshipAddInput {
   # StixRelationship
   stix_id: StixId
@@ -13075,6 +13088,8 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  coverage_information: [SecurityCoverageExpectation!]
+  # Technical
   clientMutationId: String
   update: Boolean
 }

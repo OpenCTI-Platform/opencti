@@ -1,5 +1,5 @@
 import type { StixId } from './stix';
-import type { StixRelationshipObject, StixOpenctiExtension, StixDate, StixKillChainPhase } from './stix-2-1-common';
+import type { StixRelationshipObject, StixOpenctiExtension, StixDate, StixKillChainPhase, StixCoverage } from './stix-2-1-common';
 import { STIX_EXT_OCTI } from './stix-2-1-extensions';
 
 // Relationship Specific Properties
@@ -19,6 +19,7 @@ export interface RelationExtension extends StixOpenctiExtension {
   target_ref_granted_refs: Array<string>;
   target_ref_pir_refs: Array<string>;
   kill_chain_phases: Array<StixKillChainPhase>;
+  coverage: Array<StixCoverage>;
   pir_score?: number;
 }
 export interface StixRelation extends StixRelationshipObject {

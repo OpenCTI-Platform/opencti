@@ -109,6 +109,11 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   // C
+  coverage_ov: [
+    { key: 'prevention', description: 'Prevention' },
+    { key: 'detection', description: 'Detection' },
+    { key: 'vulnerabilities', description: 'Vulnerabilities' },
+  ],
   case_severity_ov: [
     { key: 'low', description: 'Low impact', aliases: ['low'], order: 1 },
     { key: 'medium', description: 'Medium impact', aliases: ['medium'], order: 2 },
@@ -1219,12 +1224,14 @@ export const isEntityFieldAnOpenVocabulary = (fieldName: string, entityType: str
 };
 
 export const getVocabularyCategoryForField = (fieldName: string, entityType: string) => {
-  const categories = Object.entries(vocabularyDefinitions)
+  const definitions = Object.entries(vocabularyDefinitions)
     .filter(([, { entity_types }]) => entity_types.includes(entityType))
     .filter(([, { fields }]) => fields.some(({ key }) => key === fieldName))
-    .map(([cat]) => cat);
-  if (categories.length === 1) {
-    return categories.at(0);
+    .map(([cat, def]) => ({ cat, def }));
+  if (definitions.length === 1) {
+    const { def, cat } = definitions[0];
+    const field = def.fields.find(({ key }) => key === fieldName);
+    return { definition: def, category: cat, field };
   }
   throw UnsupportedError('You can\'t have multiple category on the same field for the same entity type', {
     fieldName,

@@ -106,6 +106,47 @@ const stixCoreRelationshipCreationFromEntityListRelationAdd = graphql`
             }
           }
         }
+        ... on SecurityCoverage {
+          id
+          vulnerabilities: stixCoreRelationships(
+            relationship_type: "has-covered"
+            toTypes: ["Vulnerability"]
+            first: 200
+          ) @connection(key: "Pagination_vulnerabilities") {
+            edges {
+              node {
+                id
+                to {
+                  ... on Vulnerability {
+                    id
+                    parent_types
+                    name
+                    description
+                  }
+                }
+              }
+            }
+          }
+          securityPlatforms: stixCoreRelationships(
+            relationship_type: "has-covered"
+            toTypes: ["SecurityPlatform"]
+            first: 200
+          ) @connection(key: "Pagination_securityPlatforms") {
+            edges {
+              node {
+                id
+                to {
+                  ... on SecurityPlatform {
+                    id
+                    parent_types
+                    name
+                    description
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       to {
         ... on AttackPattern {

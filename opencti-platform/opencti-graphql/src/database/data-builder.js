@@ -240,6 +240,7 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
     data.description = input.description ? input.description : '';
+    data.coverage_information = input.coverage_information ? input.coverage_information : [];
     data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     //* v8 ignore if */

@@ -1,4 +1,4 @@
-import { addIntrusionSet, findIntrusionSetPaginated, findById, locationsPaginated } from '../domain/intrusionSet';
+import { addIntrusionSet, findById, findIntrusionSetPaginated, locationsPaginated } from '../domain/intrusionSet';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -7,6 +7,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
 
 const intrusionSetResolvers = {
   Query: {
@@ -15,6 +16,7 @@ const intrusionSetResolvers = {
   },
   IntrusionSet: {
     locations: (intrusionSet, args, context) => locationsPaginated(context, context.user, intrusionSet.id, args),
+    securityCoverage: (intrusionSet, _, context) => findSecurityCoverageByCoveredId(context, context.user, intrusionSet.id),
   },
   Mutation: {
     intrusionSetEdit: (_, { id }, context) => ({

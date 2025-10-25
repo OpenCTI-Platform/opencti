@@ -222,6 +222,7 @@ import { asyncFilter, asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { isMetricsName } from '../modules/metrics/metrics-utils';
 import { doYield } from '../utils/eventloop-utils';
+import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -1572,7 +1573,7 @@ const elDataConverter = (esHit) => {
 };
 // endregion
 
-export const elConvertHitsToMap = async (elements, opts) => {
+export const elConvertHitsToMap = async (elements, opts = {}) => {
   const { mapWithAllIds = false } = opts;
   const convertedHitsMap = {};
   for (let n = 0; n < elements.length; n += 1) {
@@ -1675,6 +1676,7 @@ const REL_DEFAULT_FETCH = [
   `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_GRANTED_TO}${REL_DEFAULT_SUFFIX}`,
   // DEFAULT (LOW VOLUME)
+  `${REL_INDEX_PREFIX}${RELATION_COVERED}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}${REL_DEFAULT_SUFFIX}`,
   `${REL_INDEX_PREFIX}${RELATION_OBJECT_PARTICIPANT}${REL_DEFAULT_SUFFIX}`,
@@ -2194,7 +2196,7 @@ const buildLocalMustFilter = async (validFilter) => {
               [nestedFieldKey]: { gte: nestedValues[0], lte: nestedValues[1] }
             }
           });
-        } else {
+        } else if (isNotEmptyField(nestedValues)) {
           for (let i = 0; i < nestedValues.length; i += 1) {
             const nestedSearchValue = nestedValues[i].toString();
             if (nestedOperator === 'wildcard') {

@@ -246,6 +246,7 @@ interface BasicStoreRelation extends StoreRawRelation {
   toRole: string;
   toType: string;
   toName: string;
+  coverage: Array<{ name: string, score: number }>;
 }
 
 interface StoreRelation extends BasicStoreRelation, StoreCommon {

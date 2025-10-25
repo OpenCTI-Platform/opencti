@@ -8,6 +8,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { Select } from '@mui/material';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/lab/Alert';
+import { SecurityCoverageCreationForm } from '../../analyses/security_coverages/SecurityCoverageCreation';
 import { useFormatter } from '../../../../components/i18n';
 import { MalwareAnalysisCreationForm } from '../../analyses/malware_analyses/MalwareAnalysisCreation';
 import { MalwareCreationForm } from '../../arsenal/malwares/MalwareCreation';
@@ -717,6 +718,19 @@ const StixDomainPanel = ({
       // Malware-Analysis
       return (
         <MalwareAnalysisCreationForm
+          inputValue={inputValue}
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onClose={onClose}
+          updater={creationUpdater}
+        />
+      );
+    }
+    if (type === 'Security-Coverage') {
+      // Security-Coverage
+      return (
+        <SecurityCoverageCreationForm
           inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}

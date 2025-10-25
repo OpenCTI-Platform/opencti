@@ -12,7 +12,7 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
-import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
+import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import { QueryRenderer } from '../../../../relay/environment';
 import Report from './Report';
 import { RootReportSubscription } from './__generated__/RootReportSubscription.graphql';
@@ -57,6 +57,13 @@ const reportQuery = graphql`
       entity_type
       name
       currentUserAccessRight
+      securityCoverage {
+          id
+          coverage_information {
+              coverage_name
+              coverage_score
+          }
+      }
       ...Report_report
       ...ReportDetails_report
       ...ReportKnowledge_report
@@ -183,7 +190,7 @@ const RootReport = () => {
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                         <AIInsights id={report.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
-                        <StixCoreObjectSimulationResultContainer id={report.id} type="container"/>
+                        <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
                       </div>
                     )}
                   </Box>

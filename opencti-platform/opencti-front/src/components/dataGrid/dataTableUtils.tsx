@@ -8,6 +8,7 @@ import { useTheme } from '@mui/styles';
 import { DraftChip } from '@components/common/draft/DraftChip';
 import { HorizontalRule, Security } from '@mui/icons-material';
 import { Pirs_PirFragment$data } from '@components/pir/__generated__/Pirs_PirFragment.graphql';
+import SecurityCoverageInformation from '@components/analyses/security_coverages/SecurityCoverageInformation';
 import ItemCvssScore from '../ItemCvssScore';
 import type { DataTableColumn } from './dataTableTypes';
 import { DataTableProps, DataTableVariant } from './dataTableTypes';
@@ -271,6 +272,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ created_at }, helpers) => defaultRender(helpers.fd(created_at)),
   },
+  coverage_last_result: {
+    id: 'coverage_last_result',
+    label: 'Last result',
+    percentWidth: 12,
+    isSortable: true,
+    render: ({ coverage_last_result }, { fndt }) => fndt(coverage_last_result),
+  },
   createdBy: {
     id: 'createdBy',
     label: 'Author',
@@ -293,6 +301,14 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ creators }) => {
       const value = isNotEmptyField(creators) ? creators.map((c: { name: string }) => c.name).join(', ') : '-';
       return defaultRender(value);
+    },
+  },
+  coverage_information: {
+    label: 'Coverage',
+    percentWidth: 12,
+    isSortable: false,
+    render: ({ coverage_information }) => {
+      return <SecurityCoverageInformation coverage_information={coverage_information} />;
     },
   },
   definition: {

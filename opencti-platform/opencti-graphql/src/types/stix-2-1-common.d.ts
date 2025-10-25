@@ -12,6 +12,11 @@ export type StixKillChainPhase = {
   phase_name: string;
 };
 
+export type StixCoverage = {
+  name: string;
+  score: number;
+};
+
 export type StixBundle = {
   id: string;
   spec_version: string,

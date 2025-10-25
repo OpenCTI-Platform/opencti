@@ -11,6 +11,7 @@ import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
 import { buildRefRelationKey, INPUT_PARTICIPANT } from '../schema/general';
 import { loadThroughDenormalized } from './stix';
 import { filterMembersWithUsersOrgs } from '../utils/access';
+import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
 
 const incidentResolvers = {
   Query: {
@@ -24,8 +25,9 @@ const incidentResolvers = {
     },
   },
   Incident: {
-    objectParticipant: async (container, _, context) => {
-      const participants = await loadThroughDenormalized(context, context.user, container, INPUT_PARTICIPANT, { sortBy: 'user_email' });
+    securityCoverage: (incident, _, context) => findSecurityCoverageByCoveredId(context, context.user, incident.id),
+    objectParticipant: async (incident, _, context) => {
+      const participants = await loadThroughDenormalized(context, context.user, incident, INPUT_PARTICIPANT, { sortBy: 'user_email' });
       if (!participants) {
         return [];
       }
