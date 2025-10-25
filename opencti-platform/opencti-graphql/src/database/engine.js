@@ -149,7 +149,7 @@ import {
 import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { addFilter, checkAndConvertFilters, extractFilterKeys, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   COMPUTED_RELIABILITY_FILTER,
@@ -2383,10 +2383,19 @@ const buildLocalMustFilter = async (validFilter) => {
       const isTermsQuery = (operator === 'eq' || operator === 'not_eq') && values.length > 0 && !values.includes('EXISTS')
         && arrayKeys.every((k) => !k.includes('*') && (k.endsWith(ID_INTERNAL) || k.endsWith(ID_INFERRED)));
       if (isTermsQuery) {
-        const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
-        for (let i = 0; i < arrayKeys.length; i += 1) {
-          targets.push({
-            terms: { [`${arrayKeys[i]}.keyword`]: values }
+        if (operator === 'eq') {
+          for (let i = 0; i < arrayKeys.length; i += 1) {
+            valuesFiltering.push({
+              terms: { [`${arrayKeys[i]}.keyword`]: values }
+            });
+          }
+        } else {
+          valuesFiltering.push({
+            bool: {
+              must_not: arrayKeys.map((k) => ({
+                terms: { [`${k}.keyword`]: values }
+              })),
+            }
           });
         }
       } else {
@@ -2395,7 +2404,11 @@ const buildLocalMustFilter = async (validFilter) => {
             if (arrayKeys.length > 1) {
               throw UnsupportedError('Filter must have only one field', { keys: arrayKeys });
             }
-            valuesFiltering.push({ exists: { field: headKey } });
+            if (operator === 'eq') {
+              valuesFiltering.push({ exists: { field: headKey } });
+            } else {
+              noValuesFiltering.push({ exists: { field: headKey } });
+            }
           } else if (operator === 'eq' || operator === 'not_eq') {
             const targets = operator === 'eq' ? valuesFiltering : noValuesFiltering;
             targets.push({
@@ -3009,7 +3022,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
     const arrayKeys = Array.isArray(key) ? key : [key];
     if (arrayKeys.some((filterKey) => isComplexConversionFilterKey(filterKey))) {
       if (arrayKeys.length > 1) {
-        throw UnsupportedError('A filter with these multiple keys is not supported}', { keys: arrayKeys });
+        throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
       }
       const filterKey = arrayKeys[0];
       if (filterKey === INSTANCE_REGARDING_OF || filterKey === INSTANCE_DYNAMIC_REGARDING_OF) {
@@ -3025,8 +3038,8 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           throw UnsupportedError('Relationship type is needed for dynamic in regards of filtering', { key: filterKey, type: typeParameter });
         }
         // Check operator
-        if (typeParameter && typeParameter.operator && typeParameter.operator !== 'eq') {
-          throw UnsupportedError('regardingOf only support types equality restriction');
+        if (filter.operator && filter.operator !== 'eq' && filter.operator !== 'not_eq') {
+          throw UnsupportedError('regardingOf only support equality restriction');
         }
         // Check for PIR has it required
         if (typeParameter) {
@@ -3056,7 +3069,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
             throw ResourceNotFoundError('Specified ids not found or restricted');
           }
         }
-        const operator = idParameter?.operator ?? 'eq';
+        // const operator = idParameter?.operator ?? 'eq';
         // Check dynamic
         const dynamicFilter = dynamicParameter?.values ?? [];
         if (isNotEmptyField(dynamicFilter)) {
@@ -3080,13 +3093,13 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
             : types.map((t) => buildRefRelationKey(t, '*'));
           keys.forEach((relKey) => {
-            regardingFilters.push({ key: [relKey], operator, values: ['EXISTS'] });
+            regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'] });
           });
         } else {
           const keys = isEmptyField(types)
             ? buildRefRelationKey('*', '*')
             : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
-          regardingFilters.push({ key: keys, operator, values: ids });
+          regardingFilters.push({ key: keys, operator: filter.operator, values: ids });
         }
         finalFilterGroups.push({
           mode: filter.mode ?? FilterMode.Or,
@@ -3776,10 +3789,9 @@ const buildRegardingOfFilter = async (context, user, elements, filters) => {
   // First check if there is an "in regards of" filter
   // If its case we need to ensure elements are filtered according to denormalization rights.
   if (isNotEmptyField(filters)) {
-    const availableKeys = extractFilterKeys(filters);
-    const isRegardingFilter = availableKeys.includes(INSTANCE_REGARDING_OF) || availableKeys.includes(INSTANCE_DYNAMIC_REGARDING_OF);
-    if (isRegardingFilter) {
-      const extractedFilters = extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF]);
+    const extractedFilters = extractFiltersFromGroup(filters, [INSTANCE_REGARDING_OF, INSTANCE_DYNAMIC_REGARDING_OF])
+      .filter((filter) => isEmptyField(filter.operator) || filter.operator === 'eq');
+    if (extractedFilters.length > 0) {
       const targetValidatedIds = new Set();
       const sideIdManualInferred = new Map();
       for (let i = 0; i < extractedFilters.length; i += 1) {
