@@ -7,13 +7,14 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/g
 import type { GroupingAddInput, QueryGroupingsDistributionArgs, QueryGroupingsNumberArgs, QueryGroupingsTimeSeriesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
 import { type EntityOptions, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, type GroupingNumberResult } from './grouping-types';
 import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+
+import { type BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, type GroupingNumberResult } from './grouping-types';
 
 export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, groupingId: string) => {
   return storeLoadById<BasicStoreEntityGrouping>(context, user, groupingId, ENTITY_TYPE_CONTAINER_GROUPING);
