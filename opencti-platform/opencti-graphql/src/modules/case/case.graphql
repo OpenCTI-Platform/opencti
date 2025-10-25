@@ -124,7 +124,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   ): ContainerConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String

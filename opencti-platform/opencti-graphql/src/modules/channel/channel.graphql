@@ -105,7 +105,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     aliases: [String]
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(version: Version): String
     importFiles(
     first: Int
     prefixMimeType: String

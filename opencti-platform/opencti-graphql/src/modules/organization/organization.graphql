@@ -130,7 +130,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   restrict_access: Boolean
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String

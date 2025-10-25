@@ -1,6 +1,7 @@
+import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
-import type * as S from '../types/stix-2-1-common';
 import type * as S2 from '../types/stix-2-0-common';
+import type * as S from '../types/stix-2-1-common';
 import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { objects } from '../schema/stixRefRelationship';
 import { isEmptyField, isInferredIndex } from './utils';
@@ -40,6 +41,10 @@ export const cleanObject = <T>(data: T): T => {
     }
   }
   return obj;
+};
+export const isValidStix = (data: S.StixObject | S2.StixObject): boolean => {
+  // TODO @JRI @SAM
+  return !R.isEmpty(data);
 };
 export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
   const objectRefs = instance[INPUT_OBJECTS] ?? [];
