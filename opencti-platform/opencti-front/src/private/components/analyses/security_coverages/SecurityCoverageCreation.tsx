@@ -29,7 +29,7 @@ import { CoverageInformationFieldAdd } from '../../common/form/CoverageInformati
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { useBuildEntityTypeBasedFilterContext, useGetDefaultFilterObject, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
+import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../../../utils/filters/filtersUtils';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import SecurityCoverageEntityLine from './SecurityCoverageEntityLine';
 import SwitchField from '../../../../components/fields/SwitchField';
@@ -55,11 +55,8 @@ const CARD_HEIGHT = 250;
 // Default entity types for coverage
 const DEFAULT_ENTITY_TYPES = [
   'Report',
+  'Grouping',
   'Case-Incident',
-  'Case-Rfi',
-  'Case-Rft',
-  'Threat-Actor-Group',
-  'Threat-Actor-Individual',
   'Intrusion-Set',
   'Campaign',
   'Incident',
@@ -306,7 +303,21 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   const [orderAsc, setOrderAsc] = useState(false);
   const initialFilters = {
     ...emptyFilterGroup,
-    filters: useGetDefaultFilterObject(['entity_type'], DEFAULT_ENTITY_TYPES),
+    filters: [
+      {
+        key: 'regardingOf',
+        operator: 'not_eq',
+        values: [
+          {
+            key: 'relationship_type',
+            values: [
+              'object-covered',
+            ],
+          },
+        ],
+        mode: 'or',
+      },
+    ],
   };
 
   const [filters, helpers] = useFiltersState(initialFilters);
@@ -647,15 +658,6 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
                 }}
               />
             </ListLines>
-            <div className={classes.buttons} style={{ marginTop: 10, flexShrink: 0 }}>
-              <Button
-                variant="contained"
-                onClick={handleClose}
-                classes={{ root: classes.button }}
-              >
-                {t_i18n('Cancel')}
-              </Button>
-            </div>
           </>
         );
       }

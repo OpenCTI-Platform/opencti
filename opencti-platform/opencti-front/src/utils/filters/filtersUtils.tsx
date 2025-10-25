@@ -700,9 +700,10 @@ export const getDefaultOperatorFilter = (
  */
 export const getAvailableOperatorForFilterSubKey = (filterKey: string, subKey: string): string[] => {
   if (filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf') {
-    if ((subKey === 'id' || subKey === 'dynamic') || subKey === 'relationship_type') {
-      return ['eq'];
+    if (subKey === 'relationship_type') { // As first element of the filter
+      return ['eq', 'not_eq'];
     }
+    return [];
   }
 
   return ['eq', 'not_eq', 'nil', 'not_nil'];
