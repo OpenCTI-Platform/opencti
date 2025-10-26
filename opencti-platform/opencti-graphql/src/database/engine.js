@@ -3069,7 +3069,6 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
             throw ResourceNotFoundError('Specified ids not found or restricted');
           }
         }
-        // const operator = idParameter?.operator ?? 'eq';
         // Check dynamic
         const dynamicFilter = dynamicParameter?.values ?? [];
         if (isNotEmptyField(dynamicFilter)) {
@@ -3102,7 +3101,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           regardingFilters.push({ key: keys, operator: filter.operator, values: ids });
         }
         finalFilterGroups.push({
-          mode: filter.mode ?? FilterMode.Or,
+          mode: FilterMode.And, // type and id are grouped to one filter
           filters: regardingFilters,
           filterGroups: []
         });
