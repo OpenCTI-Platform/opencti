@@ -1,5 +1,5 @@
 export const entitiesCounter: Record<string, number> = {};
-entitiesCounter.capability = 51;
+entitiesCounter.capability = 50;
 entitiesCounter.entitySetting = 44;
 entitiesCounter.label = 13;
 entitiesCounter.statusTemplate = 8;
