@@ -18,26 +18,25 @@ const instanceOfPlaybookListenPIR = {
 } as unknown as BasicStoreCommon;
 
 describe('Cache Manager', () => {
-  describe('extractResolvedFiltersFromInstance', () => {
-    describe('When entity type is ENTITY_TYPE_PLAYBOOK with listen knowledge events and selected entities');
-    it('should return correct filtering ids', async () => {
-      const expectedResult :any[] = ['id2', 'id3', 'id4', 'id5'];
-      const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenKnowledgeWithSelectedEntities);
-      expect(result).toEqual(expectedResult);
-    });
+  describe('Function extractResolvedFiltersFromInstance()', () => {
+    describe('Specific case of playbooks', () => {
+      it('should return correct ids when listen knowledge events and selected entities', async () => {
+        const expectedResult :any[] = ['id2', 'id3', 'id4', 'id5'];
+        const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenKnowledgeWithSelectedEntities);
+        expect(result).toEqual(expectedResult);
+      });
 
-    describe('When entity type is ENTITY_TYPE_PLAYBOOK with listen knowledge events with no selected entities');
-    it('should return correct filtering ids', async () => {
-      const expectedResult :any[] = [];
-      const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenKnowledgeWithNoSelectedEntities);
-      expect(result).toEqual(expectedResult);
-    });
+      it('should return correct ids when listen knowledge events with no selected entities', async () => {
+        const expectedResult :any[] = [];
+        const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenKnowledgeWithNoSelectedEntities);
+        expect(result).toEqual(expectedResult);
+      });
 
-    describe('When entity type is ENTITY_TYPE_PLAYBOOK but listening to PIR events');
-    it('should return correct filtering ids', async () => {
-      const expectedResult :any[] = ['id2'];
-      const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenPIR);
-      expect(result).toEqual(expectedResult);
+      it('should return correct ids listening to PIR events', async () => {
+        const expectedResult :any[] = ['id2'];
+        const result = extractResolvedFiltersFromInstance(instanceOfPlaybookListenPIR);
+        expect(result).toEqual(expectedResult);
+      });
     });
   });
 });
