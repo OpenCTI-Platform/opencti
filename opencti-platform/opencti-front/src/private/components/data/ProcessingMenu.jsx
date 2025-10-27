@@ -9,7 +9,7 @@ import EEMenu from '../common/entreprise_edition/EEMenu';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useSettingsMessagesBannerHeight } from '../settings/settings_messages/SettingsMessagesBanner';
-import useGranted, { CSVMAPPERS, KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import useGranted, { CSVMAPPERS, KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE } from '../../../utils/hooks/useGranted';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -30,7 +30,7 @@ const ProcessingMenu = () => {
   const { t_i18n } = useFormatter();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
-  const isAdministrator = useGranted([SETTINGS_SETACCESSES]);
+  const isAutomationManager = useGranted([AUTOMATION_AUTMANAGE]);
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isMapperUpdater = useGranted([CSVMAPPERS]);
   return (
@@ -45,7 +45,7 @@ const ProcessingMenu = () => {
         style={{ marginTop: bannerHeightNumber + settingsMessagesBannerHeight }}
         sx={{ marginBottom: bannerHeightNumber }}
       >
-        {isAdministrator && (
+        {isAutomationManager && (
           <MenuItem
             component={Link}
             to={'/dashboard/data/processing/automation'}

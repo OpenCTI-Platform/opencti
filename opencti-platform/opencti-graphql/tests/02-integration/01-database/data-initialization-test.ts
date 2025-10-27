@@ -33,6 +33,8 @@ describe('Data initialization test', () => {
     expect(capabilities.length).toEqual(entitiesCounter.capability);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
+      'AUTOMATION',
+      'AUTOMATION_AUTMANAGE',
       'BYPASS',
       'CONNECTORAPI',
       'CSVMAPPERS',

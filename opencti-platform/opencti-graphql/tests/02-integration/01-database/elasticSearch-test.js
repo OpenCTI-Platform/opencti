@@ -599,7 +599,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(551);
+    expect(data.edges.length).toEqual(553);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -736,7 +736,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(entitiesCounter.label);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.externalReference);
-    expect(data.edges.length).toEqual(562);
+    expect(data.edges.length).toEqual(564);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -877,7 +877,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(3);
     expect(metaByEntityType['operating-system'].length).toEqual(1);
 
-    expect(data.edges.length).toEqual(271);
+    expect(data.edges.length).toEqual(272);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
@@ -906,7 +906,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('external-reference')).toBe(7);
     expect(entityTypeMap.get('operating-system')).toBe(1);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(2);
-    expect(data.length).toEqual(271);
+    expect(data.length).toEqual(272);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');

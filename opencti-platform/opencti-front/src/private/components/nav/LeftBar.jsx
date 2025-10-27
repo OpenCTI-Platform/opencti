@@ -81,6 +81,7 @@ import AskArianeButton from '../chatbox/AskArianeButton';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
+  AUTOMATION_AUTMANAGE,
   BYPASS,
   CSVMAPPERS,
   EXPLORE,
@@ -226,7 +227,7 @@ const LeftBar = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
+  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
