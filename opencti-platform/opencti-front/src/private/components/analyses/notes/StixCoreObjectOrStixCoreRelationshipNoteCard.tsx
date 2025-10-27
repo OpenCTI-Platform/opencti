@@ -17,6 +17,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import DialogTitle from '@mui/material/DialogTitle';
+import { Stack } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import NotePopover from './NotePopover';
@@ -38,21 +39,6 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>((theme) => ({
-  card: {
-    width: '100%',
-    height: '100%',
-    marginBottom: 30,
-    borderRadius: 4,
-    padding: 0,
-    position: 'relative',
-  },
-  chipInList: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    width: 120,
-    marginRight: 10,
-  },
   external: {
     position: 'absolute',
     bottom: 0,
@@ -106,18 +92,23 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
   const { t_i18n, nsdt } = useFormatter();
   const classes = useStyles();
   const theme = useTheme<Theme>();
+
   const note = useFragment(
     StixCoreObjectOrStixCoreRelationshipNoteCardFragment,
     data,
   );
+
   const [displayDialog, setDisplayDialog] = useState<boolean>(false);
   const [removing, setRemoving] = useState<boolean>(false);
+
   const handleOpenDialog = () => setDisplayDialog(true);
   const handleCloseDialog = () => {
     setDisplayDialog(false);
     setRemoving(false);
   };
+
   const [commit] = useApiMutation(noteMutationRelationDelete);
+
   const removeNote = () => {
     commit({
       variables: {
@@ -134,23 +125,24 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
       },
     });
   };
+
   const handleRemoval = () => {
     setRemoving(true);
     removeNote();
   };
-  let authorName = null;
-  let authorLink = null;
-  if (note.createdBy) {
-    authorName = note.createdBy.name;
-    authorLink = `${resolveLink(note.createdBy.entity_type)}/${
-      note.createdBy.id
-    }`;
-  }
+
+  const authorName = note.createdBy ? note.createdBy.name : null;
+  const authorLink = note.createdBy ? `${resolveLink(note.createdBy.entity_type)}/${note.createdBy.id}` : null;
+
   return (
-    <Card classes={{ root: classes.card }} variant="outlined">
+    <Card
+      sx={{
+        marginBottom: 2,
+      }}
+      variant="outlined"
+    >
       <CardHeader
         style={{
-          padding: '15px 10px 10px 15px',
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
         action={
@@ -161,62 +153,47 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               handleOpenRemoveExternal={handleOpenDialog}
               size="small"
               paginationOptions={paginationOptions}
-              variant="inLine"
             />
           </CollaborativeSecurity>
         }
         title={
-          <div>
-            <div
-              style={{
-                paddingTop: 2,
-                float: 'left',
-                textTransform: 'none',
-              }}
-            >
-              <strong>
-                {authorLink ? (
-                  <Link to={authorLink}>{authorName}</Link>
-                ) : (
-                  t_i18n('Unknown')
-                )}
-              </strong>{' '}
-              <span style={{ color: theme.palette.text?.secondary }}>
-                {t_i18n('added a note')} {t_i18n('on')} {nsdt(note.created)}
-              </span>
-            </div>
-            <div
-              style={{
-                float: 'left',
-                marginLeft: 20,
-                textTransform: 'none',
-              }}
-            >
-              {(note.note_types ?? [t_i18n('Unknown')]).map((type) => (
-                <Chip
-                  key={type}
-                  classes={{ root: classes.chipInList }}
-                  color="primary"
-                  variant="outlined"
-                  label={t_i18n(type)}
-                />
-              ))}
-            </div>
-            <div
-              style={{
-                float: 'right',
-                textTransform: 'none',
-              }}
-            >
-              <ItemMarkings
-                variant="inList"
-                markingDefinitions={note.objectMarking ?? []}
-                limit={1}
-              />
-            </div>
-          </div>
+          <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ marginTop: 0.5 }}>
+            <Stack direction="row" spacing={1}>
+              <Stack direction="row" spacing={0.5} sx={{ textTransform: 'none' }}>
+                <Typography variant='body2' sx={{ fontWeight: 800 }}>
+                  {authorLink ? <Link to={authorLink}>{authorName}</Link> : t_i18n('Unknown')}
+                </Typography>
+                <Typography variant='body2' sx={{ color: theme.palette.text?.secondary }}>
+                  {t_i18n('added a note')} {t_i18n('on')} {nsdt(note.created)}
+                </Typography>
+              </Stack>
+
+              <Stack direction="row" spacing={1}>
+                {(note.note_types ?? [t_i18n('Unknown')]).map((type) => (
+                  <Chip
+                    key={type}
+                    color="primary"
+                    variant="outlined"
+                    label={t_i18n(type)}
+                    sx={{
+                      fontSize: 12,
+                      height: 20,
+                      width: 120,
+                    }}
+                  />
+                ))}
+              </Stack>
+            </Stack>
+
+            <ItemMarkings
+              variant="inList"
+              markingDefinitions={note.objectMarking ?? []}
+              limit={1}
+            />
+          </Stack>
         }
       />
+
       <CardContent>
         <Grid container={true} spacing={3}>
           <Grid item xs={9}>

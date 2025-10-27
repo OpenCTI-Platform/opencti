@@ -402,7 +402,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   };
 
   return (
-    <div style={{ marginTop }} ref={accordionRef}>
+    <div style={{ marginTop, marginBottom: 20 }} ref={accordionRef}>
       <Header
         data={data}
         id={id}
@@ -426,9 +426,15 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
 
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 0px 0` }}
           expanded={open}
           variant="outlined"
+          sx={{
+            spacing: 1,
+            borderBottomLeftRadius: '4px!important', // override mui theme accordion
+            borderBottomRightRadius: '4px!important',
+            borderRadius: 1,
+            '&:before': { backgroundColor: 'transparent' },
+          }}
         >
           <AccordionSummary
             expandIcon={<ExpandMoreOutlined />}
@@ -451,7 +457,6 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
           </AccordionDetails>
         </Accordion>
       </Security>
-
     </div>
   );
 };
