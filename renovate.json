@@ -18,7 +18,9 @@
   "updateNotScheduled": false,
   "packageRules": [
     {
-      "extends": "monorepo:aws-sdk-js-v3",
+      "extends": [
+        "monorepo:aws-sdk-js-v3"
+      ],
       "description": "Update aws-sdk-js-v3 only once a week (Sunday 01:00)",
       "schedule": "* 1 * * 0"
     },
