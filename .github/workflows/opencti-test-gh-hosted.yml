@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - oob/ci-split-test
+      - oob/ci-migrate-to-gh
 
 jobs:
   build-opencti-platform:
