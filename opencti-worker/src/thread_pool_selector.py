@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 
-from numpy import number
-
 
 @dataclass(unsafe_hash=True)
 class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
