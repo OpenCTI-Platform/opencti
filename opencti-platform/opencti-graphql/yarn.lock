@@ -11770,9 +11770,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"openid-client@patch:openid-client@5.7.1#./patch/openid-client-5.6.5.patch::locator=opencti-graphql%40workspace%3A.":
+"openid-client@patch:openid-client@5.7.1#./patch/openid-client.patch::locator=opencti-graphql%40workspace%3A.":
   version: 5.7.1
-  resolution: "openid-client@patch:openid-client@npm%3A5.7.1#./patch/openid-client-5.6.5.patch::version=5.7.1&hash=dbea69&locator=opencti-graphql%40workspace%3A."
+  resolution: "openid-client@patch:openid-client@npm%3A5.7.1#./patch/openid-client.patch::version=5.7.1&hash=dbea69&locator=opencti-graphql%40workspace%3A."
   dependencies:
     jose: "npm:^4.15.9"
     lru-cache: "npm:^6.0.0"
