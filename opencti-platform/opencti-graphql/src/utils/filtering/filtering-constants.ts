@@ -75,6 +75,7 @@ export const RULE_FILTER = 'rule';
 export const USER_ID_FILTER = 'user_id';
 export const SOURCE_RELIABILITY_FILTER = 'source_reliability';
 export const COMPUTED_RELIABILITY_FILTER = 'computed_reliability';
+export const BULK_SEARCH_KEYWORDS_FILTER = 'bulkSearchKeywords';
 
 // for opinions
 export const OPINIONS_METRICS_MEAN_FILTER = 'opinionsMetricsMean';
@@ -129,6 +130,7 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
   'authorized_members', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'authorized_members.id', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'restricted_members.id', // nested filter on restricted members
+  BULK_SEARCH_KEYWORDS_FILTER, // set of keywords used in bulk search
 ];
 
 export const isComplexConversionFilterKey = (filterKey: string) => {
@@ -204,4 +206,28 @@ export const FILTER_KEYS_WITH_ME_VALUE = [
   CREATOR_FILTER,
   CONTEXT_ENTITY_ID_FILTER,
   MEMBERS_USER_FILTER,
+];
+
+// special filter key
+export const BULK_SEARCH_KEYWORDS_FILTER_KEYS = [
+  'name',
+  'aliases',
+  'x_opencti_aliases',
+  'x_mitre_id',
+  'value',
+  'subject',
+  'attribute_abstract',
+  'x_opencti_additional_names',
+  // observables
+  'iban',
+  'hashes.MD5',
+  'hashes.SHA-1',
+  'hashes.SHA-256',
+  'hashes.SHA-512',
+  'url',
+  'card_number',
+  'account_type',
+  'user_id',
+  'account_login',
+  'path',
 ];

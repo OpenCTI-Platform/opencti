@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { allEntitiesKeyList } from '@components/common/bulk/utils/querySearchEntityByText';
 import { SearchBulkUnknownEntitiesQuery, SearchBulkUnknownEntitiesQuery$variables } from '@components/__generated__/SearchBulkUnknownEntitiesQuery.graphql';
 import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithoutFragment';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
@@ -82,7 +81,7 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }:
       mode: 'and',
       filters: [
         { key: 'entity_type', values: ['Stix-Core-Object'] },
-        { key: allEntitiesKeyList, values },
+        { key: 'bulkSearchKeywords', values },
       ],
       filterGroups: [],
     }
@@ -101,7 +100,7 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }:
     ...paginationOptions,
     filters: queryFilters,
     values,
-  } as SearchBulkUnknownEntitiesQuery$variables;
+  } as unknown as SearchBulkUnknownEntitiesQuery$variables;
 
   const queryRef = useQueryLoading<SearchBulkUnknownEntitiesQuery>(searchBulkUnknownEntitiesQuery, queryPaginationOptions);
 
