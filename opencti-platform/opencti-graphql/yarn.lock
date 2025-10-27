@@ -11775,7 +11775,7 @@ __metadata:
     source-map: "npm:0.7.6"
     tough-cookie: "npm:6.0.0"
     trino-client: "npm:0.2.8"
-    turndown: "npm:7.2.1"
+    turndown: "npm:7.2.2"
     typescript: "npm:5.9.3"
     unzipper: "npm:0.12.3"
     uuid: "npm:11.1.0"
@@ -14059,12 +14059,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turndown@npm:7.2.1":
-  version: 7.2.1
-  resolution: "turndown@npm:7.2.1"
+"turndown@npm:7.2.2":
+  version: 7.2.2
+  resolution: "turndown@npm:7.2.2"
   dependencies:
     "@mixmark-io/domino": "npm:^2.2.0"
-  checksum: 10c0/a2ed7b05624ad20d243fab424a256f029340782ea0c023229813b732a29af8857e313761b5a9e3d224aede1712bd47a382c3d0923712592b8756c698945eccb1
+  checksum: 10c0/ee09f7bd67c468505aad6c3a26b11269ca49ffce07eaa9c212926d068f242b11b4e955b31a58289f26674ff29f91209b29454907551dcaec7da712e524cc78c2
   languageName: node
   linkType: hard
 
