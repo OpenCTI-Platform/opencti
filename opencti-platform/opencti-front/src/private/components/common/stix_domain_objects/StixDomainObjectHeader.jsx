@@ -39,13 +39,13 @@ import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import useGranted, {
+  AUTOMATION,
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
-  SETTINGS_SETACCESSES,
 } from '../../../../utils/hooks/useGranted';
 import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
@@ -744,7 +744,7 @@ const StixDomainObjectHeader = (props) => {
                         title={t_i18n('Enroll in playbook')}
                         setOpen={setEnrollPlaybookOpen}
                         handleCloseMenu={closeMenu}
-                        needs={[KNOWLEDGE_KNENRICHMENT, SETTINGS_SETACCESSES]}
+                        needs={[AUTOMATION]}
                         matchAll
                       />
                     )}

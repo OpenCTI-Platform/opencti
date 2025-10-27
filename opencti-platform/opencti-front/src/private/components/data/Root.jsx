@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import useHelper from '../../../utils/hooks/useHelper';
 import { boundaryWrapper } from '../Error';
 import useGranted, {
+  AUTOMATION_AUTMANAGE,
   BYPASS,
   CSVMAPPERS,
   INGESTION,
@@ -11,7 +12,6 @@ import useGranted, {
   KNOWLEDGE_KNASKIMPORT,
   KNOWLEDGE_KNUPDATE,
   MODULES,
-  SETTINGS_SETACCESSES,
   TAXIIAPI,
 } from '../../../utils/hooks/useGranted';
 import Loader from '../../../components/Loader';
@@ -49,7 +49,7 @@ const Root = () => {
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToIngestion = useGranted([MODULES, INGESTION, INGESTION_SETINGESTIONS]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
+  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, CSVMAPPERS, AUTOMATION_AUTMANAGE]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
 
@@ -69,7 +69,7 @@ const Root = () => {
   }
 
   const isConnectorReader = useGranted([MODULES]);
-
+  const isGrantedToAutomation = useGranted([AUTOMATION_AUTMANAGE]);
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
@@ -184,7 +184,7 @@ const Root = () => {
           path="/processing"
           element={
             <Security
-              needs={[SETTINGS_SETACCESSES]}
+              needs={[KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE]}
               placeholder={(
                 <Security
                   needs={[CSVMAPPERS]}
@@ -194,7 +194,7 @@ const Root = () => {
                 </Security>
               )}
             >
-              <Navigate to="/dashboard/data/processing/automation" />
+              <Navigate to={isGrantedToAutomation ? '/dashboard/data/processing/automation' : '/dashboard/data/processing/tasks'} />
             </Security>
           }
         />
