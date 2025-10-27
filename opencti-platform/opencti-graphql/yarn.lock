@@ -4608,12 +4608,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/archiver@npm:6.0.3":
-  version: 6.0.3
-  resolution: "@types/archiver@npm:6.0.3"
+"@types/archiver@npm:6.0.4":
+  version: 6.0.4
+  resolution: "@types/archiver@npm:6.0.4"
   dependencies:
     "@types/readdir-glob": "npm:*"
-  checksum: 10c0/59c6be3d81da240a35f7e4a70348012ee462a74c56fb37c86add2e11562fae46a8e243dcca29a34ed2dc401239b6f3dd9623584570ca5b07c2aa61ee7822f91f
+  checksum: 10c0/ac971a5a72d55064b0a62ccebff643f220c957f109a68486c48b51c566df3a7fdbf5ddce8eb1bbd644c4c6486f882cf90044f5ebb08ce16dfe0b1cbb491f8c2c
   languageName: node
   linkType: hard
 
@@ -4774,14 +4774,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:5.0.3":
-  version: 5.0.3
-  resolution: "@types/express@npm:5.0.3"
+"@types/express@npm:5.0.4":
+  version: 5.0.4
+  resolution: "@types/express@npm:5.0.4"
   dependencies:
     "@types/body-parser": "npm:*"
     "@types/express-serve-static-core": "npm:^5.0.0"
     "@types/serve-static": "npm:*"
-  checksum: 10c0/f0fbc8daa7f40070b103cf4d020ff1dd08503477d866d1134b87c0390bba71d5d7949cb8b4e719a81ccba89294d8e1573414e6dcbb5bb1d097a7b820928ebdef
+  checksum: 10c0/713f81ff2abc389d6288ba5e0f8edf3cba55b418340e4c248d55894502a136a963b88be1c9a50cbf3c066e3d057dbb1e262c92b9fe446bb51b6648e00bb57b62
   languageName: node
   linkType: hard
 
@@ -11669,11 +11669,11 @@ __metadata:
     "@pyroscope/nodejs": "npm:0.4.5"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@sesamecare-oss/redlock": "npm:1.4.0"
-    "@types/archiver": "npm:6.0.3"
+    "@types/archiver": "npm:6.0.4"
     "@types/bluebird": "npm:3.5.42"
     "@types/content-type": "npm:1.1.9"
     "@types/ejs": "npm:3.1.5"
-    "@types/express": "npm:5.0.3"
+    "@types/express": "npm:5.0.4"
     "@types/graphql-upload": "npm:17.0.0"
     "@types/luxon": "npm:3.7.1"
     "@types/mime-types": "npm:3.0.1"
