@@ -6643,12 +6643,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.18.11":
-  version: 22.18.11
-  resolution: "@types/node@npm:22.18.11"
+"@types/node@npm:22.18.12":
+  version: 22.18.12
+  resolution: "@types/node@npm:22.18.12"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10c0/3802f598608638e13ca350fbe2db0db5dde9a0b6704295fa1b6cec6defe24f9baf6a891eee6eaecd016bcd5ea18edecdaf71679d87079fe468913701adb61387
+  checksum: 10c0/13a4638f2baba3efba2b8bc369dd6f950dccbfca78f318f9c9f2c7adc11fce14fc119723c38567dada2d57a873c092b7356c024924d5974a08f3c1f93dc706c6
   languageName: node
   linkType: hard
 
@@ -15554,7 +15554,7 @@ __metadata:
     "@testing-library/user-event": "npm:14.6.1"
     "@types/d3-scale": "npm:4.0.9"
     "@types/html-to-pdfmake": "npm:2.4.4"
-    "@types/node": "npm:22.18.11"
+    "@types/node": "npm:22.18.12"
     "@types/qrcode": "npm:1.5.5"
     "@types/ramda": "npm:0.31.1"
     "@types/react": "npm:19.2.2"
@@ -15665,7 +15665,7 @@ __metadata:
     typescript: "npm:5.9.3"
     use-analytics: "npm:1.1.0"
     uuid: "npm:11.1.0"
-    vite: "npm:7.1.11"
+    vite: "npm:7.1.12"
     vite-plugin-relay: "npm:2.1.0"
     vite-plugin-static-copy: "npm:3.1.4"
     vitest: "npm:3.2.4"
@@ -19628,9 +19628,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:7.1.11":
-  version: 7.1.11
-  resolution: "vite@npm:7.1.11"
+"vite@npm:7.1.12":
+  version: 7.1.12
+  resolution: "vite@npm:7.1.12"
   dependencies:
     esbuild: "npm:^0.25.0"
     fdir: "npm:^6.5.0"
@@ -19679,7 +19679,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/c4aa7f47b1fb07f734ed6f4f605d73e5acf7ff9754d75b4adbfbdddf0e520413019834620c1f7b4a207bce7e1d20a2636c584db2b1b17f5a3ba2cd23d47e50ab
+  checksum: 10c0/cef4d4b4a84e663e09b858964af36e916892ac8540068df42a05ced637ceeae5e9ef71c72d54f3cfc1f3c254af16634230e221b6e2327c2a66d794bb49203262
   languageName: node
   linkType: hard
 
