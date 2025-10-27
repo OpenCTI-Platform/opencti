@@ -1,5 +1,14 @@
 import * as R from 'ramda';
-import { buildRestrictedEntity, createEntity, createRelationRaw, deleteElementById, distributionEntities, storeLoadByIdWithRefs, timeSeriesEntities } from '../database/middleware';
+import {
+  buildRestrictedEntity,
+  createEntity,
+  createRelationRaw,
+  deleteElementById,
+  distributionEntities,
+  stixBundleByIdStringify,
+  storeLoadByIdWithRefs,
+  timeSeriesEntities
+} from '../database/middleware';
 import {
   fullEntitiesList,
   internalFindByIds,
@@ -100,6 +109,7 @@ import { authorizedMembers } from '../schema/attribute-definition';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
+import { convertStoreToStix } from '../database/stix-2-1-converter';
 
 const AI_INSIGHTS_REFRESH_TIMEOUT = conf.get('ai:insights_refresh_timeout');
 const aiResponseCache = {};
@@ -310,17 +320,20 @@ export const stixCoreObjectRemoveFromDraft = async (context, user, stixCoreObjec
 
 export const askElementEnrichmentForConnectors = async (context, user, enrichedId, connectorIds) => {
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
-  const element = await internalLoadById(context, user, enrichedId);
+  const element = await storeLoadByIdWithRefs(context, user, enrichedId);
   if (!element) {
     throw FunctionalError('Cannot enrich the object, element cannot be found.');
   }
   // If we are in a draft, specify it in work message and send draft_id in message
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
+  const stix_objects = await stixBundleByIdStringify(context, user, element.entity_type, element.internal_id);
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
+  const stix_entity = convertStoreToStix(element);
   const works = [];
   for (let index = 0; index < connectors.length; index += 1) {
     const connector = connectors[index];
+    const stixResolutionMode = connector.enrichment_resolution ?? 'stix_bundle';
     const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
     const message = {
       internal: {
@@ -332,6 +345,8 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
         event_type: CONNECTOR_INTERNAL_ENRICHMENT,
         entity_id: element.standard_id,
         entity_type: element.entity_type,
+        stix_entity,
+        stix_objects: stixResolutionMode === 'stix_bundle' ? stix_objects : null
       },
     };
     await pushToConnector(connector.internal_id, message);
