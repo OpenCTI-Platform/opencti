@@ -86,7 +86,7 @@ describe('Role resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: LIST_CAPABILITIES_QUERY, variables: { first: 50 } });
+    const queryResult = await queryAsAdmin({ query: LIST_CAPABILITIES_QUERY, variables: { first: 500 } });
     expect(queryResult.data.capabilities.edges.length).toEqual(entitiesCounter.capability);
   });
   it('should update role', async () => {
