@@ -194,6 +194,18 @@ jobs:
           docker logs opencti-restore-start
 
 
+    - name: Monitor ressources usage in background
+      run: |
+        # Run docker stats every 60s and save to file
+        while true; do
+          echo "==== $(date) ====" >> docker_stats.log
+          docker stats --no-stream >> docker_stats.log
+          free -m >> docker_stats.log
+          sleep 60
+        done &
+        # Save background PID
+        echo $! > monitor.pid
+
     - name: Start api test
       run: |
         docker run --network runner-docker-network \
@@ -202,6 +214,7 @@ jobs:
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ADMIN__PASSWORD=admin \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=false \
+          -e APP__ENTERPRISE_EDITION_LICENSE= ${{ secrets.EE_LICENSE }} \
           -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
           -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4200/graphql \
           -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4300/graphql \
@@ -229,7 +242,13 @@ jobs:
             yarn lint
             NODE_OPTIONS=--max_old_space_size=8192 yarn test
         '
-        
+
+    - name: Stop docker stats monitor and print logs
+      if: always()
+      run: |
+        kill $(cat monitor.pid) || true
+        echo "==== Docker stats log ===="
+        cat docker_stats.log        
 
     - name: Memory, container and process infos
       continue-on-error: true
