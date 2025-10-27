@@ -3101,7 +3101,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           regardingFilters.push({ key: keys, operator: filter.operator, values: ids });
         }
         finalFilterGroups.push({
-          mode: FilterMode.And, // type and id are grouped to one filter
+          mode: filter.operator === 'eq' ? (filter.mode ?? FilterMode.Or) : FilterMode.And,
           filters: regardingFilters,
           filterGroups: []
         });
