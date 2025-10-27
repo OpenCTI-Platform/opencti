@@ -74,7 +74,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: filigran/platform
+        images: filigran/worker
         tags: |
           type=sha,format=short
     - name: Build and push
