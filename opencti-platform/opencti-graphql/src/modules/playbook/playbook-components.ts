@@ -472,7 +472,7 @@ export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTask
   return task;
 };
 
-export const addTaskFromCaseTemplates = async (
+export const createTaskFromCaseTemplates = async (
   caseTemplates: { label: string, value: string }[],
   container: StixContainer,
 ) => {
@@ -572,7 +572,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
       }
       if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
-        const tasks = await addTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
+        const tasks = await createTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
         bundle.objects.push(...tasks);
       }
       bundle.objects.push(container);
