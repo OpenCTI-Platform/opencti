@@ -109,7 +109,7 @@ services:
     image: filigran/worker:${TAG}
     restart: unless-stopped
     environment:
-      - OPENCTI_URL=http://opencti-direct-start:4300
+      - OPENCTI_URL=http://opencti-direct-start:4100
       - OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159
       - WORKER_LOG_LEVEL=info
     networks:
