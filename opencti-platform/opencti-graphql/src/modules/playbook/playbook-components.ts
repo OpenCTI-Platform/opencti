@@ -961,7 +961,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
-        const { type } = element.extensions[STIX_EXT_OCTI];
+        const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
@@ -1026,8 +1026,10 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           const operationObject = elementOperations.map((op) => {
             return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
           });
-          element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
-          element.extensions[STIX_EXT_OCTI].opencti_field_patch = operationObject;
+          if (id) {
+            element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+            element.extensions[STIX_EXT_OCTI].opencti_field_patch = operationObject;
+          }
           patchOperations.push(...elementOperations.map((e) => e.patchOperation));
         }
       }
