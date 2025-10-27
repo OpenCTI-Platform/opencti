@@ -1,6 +1,7 @@
 import base64
 import datetime
 import json
+import threading
 from dataclasses import dataclass
 from typing import Any, Dict, Union, Literal
 
@@ -29,13 +30,19 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
     objects_max_refs: int
 
     def __post_init__(self) -> None:
-        self.api = OpenCTIApiClient(
-            url=self.opencti_url,
-            token=self.opencti_token,
-            log_level=self.log_level,
-            json_logging=self.json_logging,
-            ssl_verify=self.ssl_verify,
+        self.local_api = threading.local()
+
+    # OpenCTIClient is not thread safe, use a thread local to ensure to work on a dedicated client when creating and sending a request
+    def get_api_client(self) -> OpenCTIApiClient:
+        if not hasattr(self.local_api, "client"):
+            self.local_api.client = OpenCTIApiClient(
+                url=self.opencti_url,
+                token=self.opencti_token,
+                log_level=self.log_level,
+                json_logging=self.json_logging,
+                ssl_verify=self.ssl_verify,
         )
+        return self.local_api.client
 
     def send_bundle_to_specific_queue(
         self,
@@ -76,17 +83,18 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
         imported_items = []
         start_processing = datetime.datetime.now()
         try:
+            api = self.get_api_client()
             # Set the API headers
-            self.api.set_applicant_id_header(data.get("applicant_id"))
-            self.api.set_playbook_id_header(data.get("playbook_id"))
-            self.api.set_event_id(data.get("event_id"))
-            self.api.set_draft_id(data.get("draft_id"))
-            self.api.set_synchronized_upsert_header(data.get("synchronized", False))
-            self.api.set_previous_standard_header(data.get("previous_standard"))
+            api.set_applicant_id_header(data.get("applicant_id"))
+            api.set_playbook_id_header(data.get("playbook_id"))
+            api.set_event_id(data.get("event_id"))
+            api.set_draft_id(data.get("draft_id"))
+            api.set_synchronized_upsert_header(data.get("synchronized", False))
+            api.set_previous_standard_header(data.get("previous_standard"))
             work_id = data.get("work_id")
             # Check if work is still valid
             if work_id is not None:
-                is_work_alive = self.api.work.get_is_work_alive(work_id)
+                is_work_alive = api.work.get_is_work_alive(work_id)
                 # If work no longer exists, bundle can be acked without doing anything
                 if not is_work_alive:
                     return "ack"
@@ -107,7 +115,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                 if len(content["objects"]) == 1 or data.get("no_split", False):
                     update = data.get("update", False)
                     imported_items, too_large_items_bundles = (
-                        self.api.stix2.import_bundle_from_json(
+                        api.stix2.import_bundle_from_json(
                             raw_content, update, types, work_id, self.objects_max_refs
                         )
                     )
@@ -159,7 +167,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             )
                             # Add expectations to the work
                             if work_id is not None:
-                                self.api.work.add_expectations(work_id, expectations)
+                                api.work.add_expectations(work_id, expectations)
                             # For each split bundle, send it to the same queue
                             for bundle in bundles:
                                 self.send_bundle_to_specific_queue(
@@ -179,7 +187,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [content["data"]],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     # Specific knowledge merge
@@ -200,7 +208,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [merge_object],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     # All standard operations
@@ -223,7 +231,7 @@ class PushHandler:  # pylint: disable=too-many-instance-attributes
                             "type": "bundle",
                             "objects": [data_object],
                         }
-                        imported_items = self.api.stix2.import_bundle(
+                        imported_items = api.stix2.import_bundle(
                             bundle, True, types, work_id
                         )
                     case _:

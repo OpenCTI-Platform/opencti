@@ -13,7 +13,7 @@ import { generateStandardId } from '../../schema/identifier';
 import { logApp } from '../../config/conf';
 import { pushToWorkerForConnector } from '../../database/rabbitmq';
 import { createWork, updateExpectationsNumber } from '../../domain/work';
-import { ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
+import { ConnectorPriorityGroup, ConnectorType, FilterMode, type FormSubmissionInput } from '../../generated/graphql';
 import { now, nowTime } from '../../utils/format';
 import { SYSTEM_USER } from '../../utils/access';
 import { convertStoreToStix } from '../../database/stix-2-1-converter';
@@ -90,7 +90,8 @@ export const addForm = async (
       type: 'FORM',
       name: element.name,
       is_running: element.active ?? false,
-      connector_user_id: user.id
+      connector_user_id: user.id,
+      connector_priority_group: ConnectorPriorityGroup.Realtime,
     });
 
     await publishUserAction({

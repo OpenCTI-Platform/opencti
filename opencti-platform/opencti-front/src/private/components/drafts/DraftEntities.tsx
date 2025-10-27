@@ -13,7 +13,7 @@ import { useBuildEntityTypeBasedFilterContext, emptyFilterGroup } from '../../..
 import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import useComputeLink from '../../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../../utils/hooks/useComputeLink';
 
 const draftEntitiesLineFragment = graphql`
     fragment DraftEntities_node on StixCoreObject {

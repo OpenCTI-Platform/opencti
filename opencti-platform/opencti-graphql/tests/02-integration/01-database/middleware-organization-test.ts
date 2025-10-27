@@ -28,13 +28,13 @@ describe('Middleware test coverage on organization sharing verification', () => 
     userInPlatformOrg = getFakeAuthUser('userInPlatformOrgId');
     userInPlatformOrg.groups = [greenGroup];
     userInPlatformOrg.roles = [DEFAULT_ROLE];
-    userInPlatformOrg.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }];
+    userInPlatformOrg.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }];
     userInPlatformOrg.organizations = [platformOrganizationEntity];
 
     userInExternalOrg = getFakeAuthUser('userInExternalOrg');
     userInExternalOrg.groups = [greenGroup];
     userInExternalOrg.roles = [DEFAULT_ROLE];
-    userInExternalOrg.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }];
+    userInExternalOrg.capabilities = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE_KNMERGE' }];
     userInExternalOrg.organizations = [externalOrganizationEntity];
   });
 

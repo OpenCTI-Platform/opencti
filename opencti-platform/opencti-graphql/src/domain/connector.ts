@@ -13,26 +13,28 @@ import { isEmptyField, READ_INDEX_HISTORY } from '../database/utils';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE, OPENCTI_NAMESPACE } from '../schema/general';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import {
+  type ConnectorHealthMetrics,
   delEditContext,
   notify,
-  redisGetWork,
-  redisSetConnectorLogs,
-  setEditContext,
-  redisSetConnectorHealthMetrics,
   redisGetConnectorHealthMetrics,
-  type ConnectorHealthMetrics
+  redisGetWork,
+  redisSetConnectorHealthMetrics,
+  redisSetConnectorLogs,
+  setEditContext
 } from '../database/redis';
-import { internalLoadById, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
+import { fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import { completeContextDataForEntity, publishUserAction, type UserImportActionContextData } from '../listener/UserActionListener';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntityConnector, BasicStoreEntityConnectorManager, BasicStoreEntitySynchronizer, ConnectorInfo } from '../types/connector';
 import {
   type AddManagedConnectorInput,
+  ConnectorPriorityGroup,
   ConnectorType,
   type CurrentConnectorStatusInput,
   type EditContext,
   type EditInput,
   type EditManagedConnectorInput,
+  type HealthConnectorStatusInput,
   IngestionAuthType,
   type LogsConnectorStatusInput,
   type MutationSynchronizerTestArgs,
@@ -42,8 +44,7 @@ import {
   type SynchronizerAddInput,
   type SynchronizerFetchInput,
   type UpdateConnectorManagerStatusInput,
-  type HealthConnectorStatusInput,
-  ValidationMode,
+  ValidationMode
 } from '../generated/graphql';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
@@ -53,7 +54,7 @@ import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon } from '../types/store';
 import type { Connector } from '../connector/internalConnector';
-import { addWorkbenchDraftConvertionCount, addWorkbenchValidationCount, addConnectorDeployedCount } from '../manager/telemetryManager';
+import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
@@ -160,7 +161,8 @@ export const resetStateConnector = async (context: AuthContext, user: AuthUser, 
 interface RegisterOptions {
   built_in?: boolean
   active?: boolean
-  connector_user_id?: string | null
+  connector_user_id?: string | null,
+  connector_priority_group?: ConnectorPriorityGroup,
 }
 
 export const registerConnectorsManager = async (context: AuthContext, user: AuthUser, input: RegisterConnectorsManagerInput) => {
@@ -344,6 +346,7 @@ export const registerConnector = async (
     connector_user_id: opts.connector_user_id ?? user.id,
     connector_state_timestamp: now(),
     built_in: opts.built_in ?? false,
+    connector_priority_group: opts.connector_priority_group ?? ConnectorPriorityGroup.Default,
   };
   if (opts.active !== undefined) {
     connectorToCreate.active = opts.active;
@@ -474,7 +477,8 @@ interface ConnectorIngestionInput {
   type: 'RSS' | 'CSV' | 'TAXII' | 'TAXII-PUSH' | 'JSON' | 'FORM',
   name: string,
   connector_user_id?: string | null,
-  is_running: boolean
+  is_running: boolean,
+  connector_priority_group?: ConnectorPriorityGroup,
 }
 export const connectorIdFromIngestId = (id: string) => uuidv5(id, OPENCTI_NAMESPACE);
 export const registerConnectorForIngestion = async (context: AuthContext, input: ConnectorIngestionInput) => {

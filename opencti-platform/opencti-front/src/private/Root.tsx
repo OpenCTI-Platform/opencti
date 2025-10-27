@@ -21,6 +21,7 @@ import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> elemen
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
 import useActiveTheme from '../utils/hooks/useActiveTheme';
+import { ComputeLinkProvider } from '../utils/hooks/useComputeLink';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -471,9 +472,11 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
           activeTheme={activeTheme}
         >
           <ConnectedIntlProvider settings={settings}>
-            <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
-              <Index settings={settings} />
-            </AnalyticsProvider>
+            <ComputeLinkProvider isPublicRoute={false}>
+              <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
+                <Index settings={settings} />
+              </AnalyticsProvider>
+            </ComputeLinkProvider>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>

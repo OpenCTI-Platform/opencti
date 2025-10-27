@@ -63,6 +63,7 @@ export const TELEMETRY_FORM_INTAKE_CREATED = 'formIntakeCreatedCount';
 export const TELEMETRY_FORM_INTAKE_UPDATED = 'formIntakeUpdatedCount';
 export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
+export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 
 export const addDisseminationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, 1);
@@ -130,6 +131,10 @@ export const addForgotPasswordCount = async () => {
 
 export const addConnectorDeployedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_CONNECTOR_DEPLOYED, 1);
+};
+
+export const addUserLoginCount = () => {
+  redisSetTelemetryAdd(TELEMETRY_USER_LOGIN, 1).catch((reason) => logApp.info('Error add user login in telemetry', { reason }));
 };
 
 // End Region user event counters
@@ -221,7 +226,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
 
     // region Users information
     const users = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_USER) as AuthUser[];
-    manager.setUsersCount(users.length);
+    manager.setUsersCount(users.filter((user) => !user.user_service_account).length);
+    manager.setServiceAccountsCount(users.filter((user) => user.user_service_account === true).length);
     // endregion
 
     // region Connectors information
@@ -283,6 +289,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setForgotPasswordCount(forgotPasswordCountInRedis);
     const connectorDeployedCountInRedis = await redisGetTelemetry(TELEMETRY_CONNECTOR_DEPLOYED);
     manager.setConnectorDeployedCount(connectorDeployedCountInRedis);
+    const userLoginCountInRedis = await redisGetTelemetry(TELEMETRY_USER_LOGIN);
+    manager.setUserLoginCount(userLoginCountInRedis);
     // end region Telemetry user events
 
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');

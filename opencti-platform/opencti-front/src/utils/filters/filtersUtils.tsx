@@ -240,7 +240,7 @@ export const addFilter = (
   return {
     mode: 'and',
     filters: [filterFromParameters],
-    filterGroups: filters ? [filters] : [],
+    filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
   };
 };
 
@@ -308,9 +308,9 @@ export const getEntityTypeTwoFirstLevelsFilterValues = (
 // construct filters and options for widgets
 export const buildFiltersAndOptionsForWidgets = (
   inputFilters: FilterGroup | undefined | null,
-  opts: { removeTypeAll?: boolean, startDate?: string | null, endDate?: string | null, dateAttribute?: string } = {},
+  opts: { removeTypeAll?: boolean, startDate?: string | null, endDate?: string | null, dateAttribute?: string, isKnowledgeRelationshipWidget?: boolean } = {},
 ) => {
-  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at' } = opts;
+  const { removeTypeAll = false, startDate = null, endDate = null, dateAttribute = 'created_at', isKnowledgeRelationshipWidget = false } = opts;
   let filters = inputFilters ?? undefined;
   // remove 'all' in filter with key=entity_type
   if (removeTypeAll) {
@@ -341,9 +341,10 @@ export const buildFiltersAndOptionsForWidgets = (
       filterGroups: filters && isFilterGroupNotEmpty(filters) ? [filters] : [],
     };
   }
-  return {
-    filters,
-  };
+  if (isKnowledgeRelationshipWidget) {
+    filters = addFilter(filters, 'entity_type', ['Stix-Core-Relationship', 'object']);
+  }
+  return { filters };
 };
 
 export const useBuildFiltersForTemplateWidgets = () => {

@@ -214,11 +214,13 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       const previousPatch = event.context.reverse_patch;
       const previousData = jsonpatch.applyPatch<StixReport>(structuredClone(report), previousPatch).newDocument;
       const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(previousData.object_refs ?? [])];
+      const previousRefIdsSet = new Set(previousRefIds);
       const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(report.object_refs ?? [])];
+      const newRefIdsSet = new Set(newRefIds);
       // AddedRefs are ids not includes in previous data
-      const addedRefs: Array<StixId> = await asyncFilter(newRefIds, (newId) => !previousRefIds.includes(newId));
+      const addedRefs: Array<StixId> = await asyncFilter(newRefIds, (newId) => !previousRefIdsSet.has(newId));
       // RemovedRefs are ids not includes in current data
-      const removedRefs: Array<StixId> = await asyncFilter(previousRefIds, (newId) => !newRefIds.includes(newId));
+      const removedRefs: Array<StixId> = await asyncFilter(previousRefIds, (newId) => !newRefIdsSet.has(newId));
       // Apply operations
       // For added identities
       const leftAddedRefs = addedRefs.filter(typeRefFilter);

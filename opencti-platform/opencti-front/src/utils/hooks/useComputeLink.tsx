@@ -1,3 +1,4 @@
+import React, { ReactNode, createContext, useContext } from 'react';
 import { resolveLink } from '../Entity';
 import useSchema from './useSchema';
 
@@ -10,7 +11,7 @@ export type ComputeLinkNode = {
   type?: string;
 };
 
-const useComputeLink = () => {
+const useComputeLinkFn = () => {
   const { isRelationship } = useSchema();
   const computeLink = (node: ComputeLinkNode): string | undefined => {
     let redirectLink;
@@ -41,4 +42,35 @@ const useComputeLink = () => {
   return computeLink;
 };
 
-export default useComputeLink;
+type ComputeLinkFn = ReturnType<typeof useComputeLinkFn>;
+
+const ComputeLinkContext = createContext<ComputeLinkFn | null>(null);
+
+export const useComputeLink = (): ComputeLinkFn => {
+  const computeLink = useContext(ComputeLinkContext);
+  if (!computeLink) {
+    throw new Error('useSafeComputeLink must be used within ComputeLinkProvider');
+  }
+  return computeLink;
+};
+
+const PrivateComputeLinkProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const computeLink = useComputeLinkFn();
+  return (
+    <ComputeLinkContext.Provider value={computeLink as ComputeLinkFn}>
+      {children}
+    </ComputeLinkContext.Provider>
+  );
+};
+
+export const ComputeLinkProvider = ({ isPublicRoute, children }: { isPublicRoute: boolean, children: ReactNode }) => {
+  if (isPublicRoute) {
+    return (
+      <ComputeLinkContext.Provider value={() => ''}>
+        {children}
+      </ComputeLinkContext.Provider>
+    );
+  }
+
+  return <PrivateComputeLinkProvider>{children}</PrivateComputeLinkProvider>;
+};

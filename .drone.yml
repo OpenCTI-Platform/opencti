@@ -4,7 +4,7 @@ name: opencti-tests
 
 steps:
   - name: Runner information
-    image: alpine:3.19
+    image: alpine:3.22
     commands:
     - echo DRONE_STAGE_MACHINE ${DRONE_STAGE_MACHINE}
 
@@ -121,6 +121,9 @@ steps:
     image: plugins/codecov
     failure: ignore
     settings:
+      flags:
+        - opencti
+        - opencti-graphql
       token:
         from_secret: codecov_token
       paths:
@@ -144,7 +147,7 @@ steps:
       - yarn build
       - yarn check-ts
       - yarn lint
-      - NODE_OPTIONS=--max_old_space_size=8192 yarn test
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
     depends_on:
         - generate-licenses
 
@@ -169,6 +172,19 @@ steps:
       - npx playwright install --with-deps chromium
       - yarn build
       - yarn test:e2e
+    depends_on:
+      - frontend-tests
+
+  - name: frontend-coverage
+    image: plugins/codecov
+    settings:
+      flags:
+        - opencti
+        - opencti-front
+      token:
+        from_secret: codecov_token
+      paths:
+        - opencti-platform/opencti-front/coverage/unit
     depends_on:
       - frontend-tests
 
@@ -261,9 +277,9 @@ steps:
 
 services:
   - name: redis
-    image: redis:8.0.4
+    image: redis:8.2.1
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.5
     environment:
       discovery.type: single-node
       xpack.security.enabled: false

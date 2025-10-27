@@ -2015,6 +2015,7 @@ export enum Capabilities {
   KnowledgeKnupdate = 'KNOWLEDGE_KNUPDATE',
   KnowledgeKnupdateKndelete = 'KNOWLEDGE_KNUPDATE_KNDELETE',
   KnowledgeKnupdateKnmanageauthmembers = 'KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS',
+  KnowledgeKnupdateKnmerge = 'KNOWLEDGE_KNUPDATE_KNMERGE',
   KnowledgeKnupdateKnorgarestrict = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
   KnowledgeKnupload = 'KNOWLEDGE_KNUPLOAD',
   Modules = 'MODULES',
@@ -3958,6 +3959,7 @@ export type Connector = BasicObject & InternalObject & {
   config?: Maybe<ConnectorConfig>;
   configurations?: Maybe<Array<ConnectorConfiguration>>;
   connector_info?: Maybe<ConnectorInfo>;
+  connector_priority_group: ConnectorPriorityGroup;
   connector_queue_details: ConnectorQueueDetails;
   connector_schema?: Maybe<Scalars['String']['output']>;
   connector_schema_ui?: Maybe<Scalars['String']['output']>;
@@ -4077,6 +4079,11 @@ export type ConnectorMetadata = {
   __typename?: 'ConnectorMetadata';
   configuration: Scalars['String']['output'];
 };
+
+export enum ConnectorPriorityGroup {
+  Default = 'DEFAULT',
+  Realtime = 'REALTIME'
+}
 
 export type ConnectorQueueDetails = {
   __typename?: 'ConnectorQueueDetails';
@@ -34130,6 +34137,7 @@ export type ResolversTypes = ResolversObject<{
   ConnectorInfoInput: ConnectorInfoInput;
   ConnectorManager: ResolverTypeWrapper<ConnectorManager>;
   ConnectorMetadata: ResolverTypeWrapper<ConnectorMetadata>;
+  ConnectorPriorityGroup: ConnectorPriorityGroup;
   ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
   ConnectorRequestStatus: ConnectorRequestStatus;
   ConnectorType: ConnectorType;
@@ -37202,6 +37210,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   config?: Resolver<Maybe<ResolversTypes['ConnectorConfig']>, ParentType, ContextType>;
   configurations?: Resolver<Maybe<Array<ResolversTypes['ConnectorConfiguration']>>, ParentType, ContextType>;
   connector_info?: Resolver<Maybe<ResolversTypes['ConnectorInfo']>, ParentType, ContextType>;
+  connector_priority_group?: Resolver<ResolversTypes['ConnectorPriorityGroup'], ParentType, ContextType>;
   connector_queue_details?: Resolver<ResolversTypes['ConnectorQueueDetails'], ParentType, ContextType>;
   connector_schema?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_schema_ui?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

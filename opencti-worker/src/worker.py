@@ -42,6 +42,10 @@ running_ingestion_units_gauge = meter.create_gauge(
 )
 
 
+def is_priority_connector(connector_priority_group: str) -> bool:
+    return connector_priority_group == "REALTIME"
+
+
 @dataclass(unsafe_hash=True)
 class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attributes
     consumers: Dict[str, MessageQueueConsumer] = field(default_factory=dict, hash=False)
@@ -75,6 +79,13 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.opencti_pool_size = get_config_variable(
             "OPENCTI_EXECUTION_POOL_SIZE",
             ["opencti", "execution_pool_size"],
+            config,
+            True,
+            default=5,
+        )
+        self.opencti_realtime_pool_size = get_config_variable(
+            "OPENCTI_REALTIME_EXECUTION_POOL_SIZE",
+            ["opencti", "realtime_execution_pool_size"],
             config,
             True,
             default=5,
@@ -146,6 +157,14 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             0,
         )
+        self.worker_queue_concurrency_enabled = get_config_variable(
+            "WORKER_QUEUE_CONCURRENCY_ENABLED",
+            ["worker", "queue_concurrency_enabled"],
+            config,
+            False,
+            False,
+        )
+
         # Telemetry
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
@@ -206,6 +225,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
     # Start the main loop
     def start(self) -> None:
         push_execution_pool = ThreadPoolExecutor(max_workers=self.opencti_pool_size)
+        realtime_push_execution_pool = ThreadPoolExecutor(
+            max_workers=self.opencti_realtime_pool_size
+        )
         listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
 
         while not self.exit_event.is_set():
@@ -250,13 +272,17 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
                         )
+                        execution_pool = push_execution_pool
+                        if is_priority_connector(connector["connector_priority_group"]):
+                            execution_pool = realtime_push_execution_pool
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
                             push_queue,
                             pika_parameters,
-                            push_execution_pool,
+                            execution_pool,
                             push_handler.handle_message,
+                            self.worker_queue_concurrency_enabled,
                         )
 
                     # Listen for webhook message
@@ -281,6 +307,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.build_pika_parameters(connector_config),
                                 listen_execution_pool,
                                 listen_handler.handle_message,
+                                self.worker_queue_concurrency_enabled,
                             )
 
                 # Check if some consumer must be stopped

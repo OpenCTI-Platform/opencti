@@ -14,6 +14,9 @@ import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
+import { ConnectorPriorityGroup } from '../generated/graphql';
+
+export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGroup);
 
 export const completeConnector = (connector) => {
   if (connector) {

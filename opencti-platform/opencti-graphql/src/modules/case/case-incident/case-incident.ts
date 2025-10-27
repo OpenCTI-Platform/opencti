@@ -3,7 +3,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
-import convertCaseIncidentToStix from './case-incident-converter';
+import { convertCaseIncidentToStix_2_1 } from './case-incident-converter';
 import { createdBy, objectAssignee, objectMarking, objectParticipant } from '../../../schema/stixRefRelationship';
 import { authorizedMembers, authorizedMembersActivationDate } from '../../../schema/attribute-definition';
 
@@ -48,7 +48,7 @@ const CASE_INCIDENT_DEFINITION: ModuleDefinition<StoreEntityCaseIncident, StixCa
   representative: (stix: StixCaseIncident) => {
     return stix.name;
   },
-  converter_2_1: convertCaseIncidentToStix
+  converter_2_1: convertCaseIncidentToStix_2_1
 };
 
 registerDefinition(CASE_INCIDENT_DEFINITION);

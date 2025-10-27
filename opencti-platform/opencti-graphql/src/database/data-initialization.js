@@ -13,7 +13,7 @@ import { addAllowedMarkingDefinition } from '../domain/markingDefinition';
 import { addCapability, addGroup, addRole } from '../domain/grant';
 import { GROUP_DEFAULT, groupAddRelation } from '../domain/group';
 import { TAXIIAPI } from '../domain/user';
-import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_DELETE, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_MANAGE_AUTH_MEMBERS, KNOWLEDGE_UPDATE } from '../schema/general';
+import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_FRONTEND_EXPORT, KNOWLEDGE_UPDATE } from '../schema/general';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { loadEntity, updateAttribute } from './middleware';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -47,9 +47,10 @@ const KNOWLEDGE_CAPABILITIES = {
       description: 'Create / Update knowledge',
       attribute_order: 200,
       dependencies: [
-        { name: 'KNORGARESTRICT', attribute_order: 290, description: 'Restrict organization access' },
-        { name: KNOWLEDGE_DELETE, description: 'Delete / Merge knowledge', attribute_order: 300 },
-        { name: KNOWLEDGE_MANAGE_AUTH_MEMBERS, description: 'Manage authorized members', attribute_order: 310 },
+        { name: 'KNORGARESTRICT', description: 'Restrict organization access', attribute_order: 290 },
+        { name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 },
+        { name: 'KNMERGE', description: 'Merge knowledge', attribute_order: 305 },
+        { name: 'KNMANAGEAUTHMEMBERS', description: 'Manage authorized members', attribute_order: 310 },
         { name: 'KNBYPASSREFERENCE', description: 'Bypass enforced reference', attribute_order: 320 },
         { name: 'KNBYPASSFIELDS', description: 'Bypass mandatory fields', attribute_order: 330 },
       ],
@@ -363,6 +364,7 @@ const createBasicRolesAndCapabilities = async (context) => {
     description: 'Connector role that has the recommended capabilities',
     capabilities: [
       'KNOWLEDGE_KNUPDATE_KNDELETE',
+      'KNOWLEDGE_KNUPDATE_KNMERGE',
       'KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS',
       'KNOWLEDGE_KNUPLOAD',
       'KNOWLEDGE_KNASKIMPORT',

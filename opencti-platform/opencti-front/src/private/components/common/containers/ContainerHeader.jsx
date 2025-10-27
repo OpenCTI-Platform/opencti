@@ -42,6 +42,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import PopoverMenu from '../../../../components/PopoverMenu';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { useSettingsMessagesBannerHeight } from '../../settings/settings_messages/SettingsMessagesBanner';
 
 export const containerHeaderObjectsQuery = graphql`
   query ContainerHeaderObjectsQuery($id: String!) {
@@ -492,6 +493,7 @@ const ContainerHeader = (props) => {
   };
 
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
+  const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
   // containerDefault style
   let containerStyle = {
     display: 'flex',
@@ -505,7 +507,7 @@ const ContainerHeader = (props) => {
     containerStyle = {
       position: 'absolute',
       display: 'flex',
-      top: 166 + bannerHeightNumber,
+      top: 166 + bannerHeightNumber + settingsMessagesBannerHeight,
       right: 24,
     };
   }

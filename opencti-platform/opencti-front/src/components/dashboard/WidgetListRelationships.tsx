@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { WidgetColumn } from 'src/utils/widget/widget';
 import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
-import ItemIcon from '../ItemIcon';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
-import useComputeLink from '../../utils/hooks/useComputeLink';
+import ItemIcon from '../ItemIcon';
+import { useComputeLink } from '../../utils/hooks/useComputeLink';
 
 interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,8 +40,9 @@ const WidgetListRelationships = ({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getRedirectionLink = (stixRelationship: any) => {
+    if (publicWidget) return '';
     const remoteNode = stixRelationship.from ?? stixRelationship.to;
-    return !publicWidget && remoteNode ? computeLink(remoteNode) : '';
+    return remoteNode ? computeLink(remoteNode) : '';
   };
 
   return (

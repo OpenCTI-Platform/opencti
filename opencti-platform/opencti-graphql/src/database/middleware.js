@@ -32,7 +32,6 @@ import {
   isInferredIndex,
   isNotEmptyField,
   isObjectPathTargetMultipleAttribute,
-  MAX_EVENT_LOOP_PROCESSING_TIME,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
@@ -237,6 +236,7 @@ import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
+import { doYield } from '../utils/eventloop-utils';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -369,21 +369,14 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
         const [key, values] = entries[index];
         const invalidRelations = [];
         const resolvedElementsWithRelation = [];
-        let startProcessingTime = new Date().getTime();
         for (let valueIndex = 0; valueIndex < values.length; valueIndex += 1) {
+          await doYield();
           const v = values[valueIndex];
           const resolvedElement = toResolvedElements[v.toId];
           if (resolvedElement) {
             resolvedElementsWithRelation.push({ ...resolvedElement, i_relation: v });
           } else {
             invalidRelations.push({ relation_id: v.id, target_id: v.toId });
-          }
-          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-            startProcessingTime = new Date().getTime();
-            await new Promise((resolve) => {
-              setImmediate(resolve);
-            });
           }
         }
         if (invalidRelations.length > 0) {
@@ -440,8 +433,8 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
   }
   const [fromAndToMap, depsElementsMap, fileMarkingsMap] = await Promise.all([fromAndToPromise, depsPromise, fileMarkingsPromise]);
   const loadedElements = [];
-  let startProcessingTime = new Date().getTime();
   for (let i = 0; i < elements.length; i += 1) {
+    await doYield();
     const element = elements[i];
     const files = [];
     if (isNotEmptyField(element.x_opencti_files) && isNotEmptyField(fileMarkingsMap)) {
@@ -481,13 +474,6 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
       }
     } else {
       loadedElements.push(R.mergeRight(element, { ...deps }));
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
     }
   }
   return loadedElements;
@@ -867,7 +853,6 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     const resolutionsMap = new Map();
     const resolvedIds = new Set();
-    let startProcessingTime = new Date().getTime();
     for (let i = 0; i < resolvedElements.length; i += 1) {
       const resolvedElement = resolvedElements[i];
       const instanceIds = getInstanceIds(resolvedElement);
@@ -879,17 +864,11 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
         }
       });
       for (let configIndex = 0; configIndex < matchingConfigs.length; configIndex += 1) {
+        await doYield();
         const c = matchingConfigs[configIndex];
         const data = { ...resolvedElement, i_group: c };
         const dataKey = `${resolvedElement.internal_id}|${c.destKey}`;
         resolutionsMap.set(dataKey, data);
-        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-        if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-          startProcessingTime = new Date().getTime();
-          await new Promise((resolve) => {
-            setImmediate(resolve);
-          });
-        }
       }
     }
     const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, resolutionsMap.values());
@@ -2861,25 +2840,28 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       if (!isOutDatedModification) {
         if (relDef.multiple) {
           const currentData = resolvedElement[relDef.databaseName] ?? [];
+          const currentDataSet = new Set(currentData);
           const isCurrentWithData = isNotEmptyField(currentData);
-          const targetData = (patchInputData ?? []).map((n) => n.internal_id);
+          const fullPatchInputData = patchInputData ?? [];
+          const fullPatchInputDataSet = new Set(fullPatchInputData.map((i) => i.internal_id));
           // Specific case for organization restriction, has EE must be activated.
           // If not supported, upsert of organization is not applied
           const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
           const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
+          const inputToCurrentDiff = fullPatchInputData.filter((target) => !currentDataSet.has(target.internal_id));
+          const currentToInputDiff = currentData.filter((current) => !fullPatchInputDataSet.has(current));
           // If expected data is different from current data
-          if (allowedOperation && R.symmetricDifference(currentData, targetData).length > 0) {
-            const diffTargets = (patchInputData ?? []).filter((target) => !currentData.includes(target.internal_id));
+          if (allowedOperation && (inputToCurrentDiff.length + currentToInputDiff.length) > 0) {
             // In full synchro, just replace everything
             if (isUpsertSynchro) {
-              inputs.push({ key: inputField, value: patchInputData ?? [], operation: UPDATE_OPERATION_REPLACE });
-            } else if ((isCurrentWithData && isInputWithData && diffTargets.length > 0 && isConfidenceMatch)
+              inputs.push({ key: inputField, value: fullPatchInputData, operation: UPDATE_OPERATION_REPLACE });
+            } else if ((isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0 && isConfidenceMatch)
                 || (isInputWithData && !isCurrentWithData)
             ) {
               // If data is provided, different from existing data, and of higher confidence
               // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
               // --> apply an add operation
-              inputs.push({ key: inputField, value: diffTargets, operation: UPDATE_OPERATION_ADD });
+              inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
             }
           }
         } else { // not multiple

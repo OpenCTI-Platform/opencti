@@ -24,7 +24,6 @@ import {
   isEmptyField,
   isInferredIndex,
   isNotEmptyField,
-  MAX_EVENT_LOOP_PROCESSING_TIME,
   offsetToCursor,
   pascalize,
   READ_DATA_INDICES,
@@ -222,6 +221,7 @@ import { getPirWithAccessCheck } from '../modules/pir/pir-checkPirAccess';
 import { asyncFilter, asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { isMetricsName } from '../modules/metrics/metrics-utils';
+import { doYield } from '../utils/eventloop-utils';
 
 const ELK_ENGINE = 'elk';
 const OPENSEARCH_ENGINE = 'opensearch';
@@ -250,7 +250,6 @@ const TOO_MANY_CLAUSES = 'too_many_nested_clauses';
 const DOCUMENT_MISSING_EXCEPTION = 'document_missing_exception';
 export const ES_RETRY_ON_CONFLICT = 30;
 export const BULK_TIMEOUT = '1h';
-const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
 const ES_MAX_MAPPINGS = 3000;
 const MAX_AGGREGATION_SIZE = 100;
 
@@ -508,34 +507,23 @@ export const buildDataRestrictions = async (context, user, opts = {}) => {
       // If user have no marking, he can only access to data with no markings.
       must_not.push({ exists: { field: buildRefRelationKey(RELATION_OBJECT_MARKING) } });
     } else {
+      // Compute all markings that the user doesnt have access to
       const allMarkings = await getEntitiesListFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-      // Markings should be grouped by types for restriction
-      const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
-      const allGroupedMarkings = R.groupBy((m) => m.definition_type, allMarkings);
-      const markingGroups = Object.keys(allGroupedMarkings);
       const mustNotHaveOneOf = [];
-      for (let index = 0; index < markingGroups.length; index += 1) {
-        const markingGroup = markingGroups[index];
-        const markingsForGroup = allGroupedMarkings[markingGroup].map((i) => i.internal_id);
-        const userMarkingsForGroup = (userGroupedMarkings[markingGroup] || []).map((i) => i.internal_id);
-        // Get all markings the user has no access for this group
-        const res = markingsForGroup.filter((m) => !userMarkingsForGroup.includes(m));
-        if (res.length > 0) {
-          mustNotHaveOneOf.push(res);
+      const userMarkingsIds = new Set(user.allowed_marking.map((m) => m.internal_id));
+      for (let index = 0; index < allMarkings.length; index += 1) {
+        const marking = allMarkings[index];
+        const markingId = marking.internal_id;
+        if (!userMarkingsIds.has(markingId)) {
+          mustNotHaveOneOf.push(markingId);
         }
       }
       // If use have marking, he can access to data with no marking && data with according marking
-      const mustNotMarkingTerms = [];
-      for (let i = 0; i < mustNotHaveOneOf.length; i += 1) {
-        const markings = mustNotHaveOneOf[i];
-        const should = markings.map((m) => ({ match: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: m } }));
-        mustNotMarkingTerms.push({
-          bool: {
-            should,
-            minimum_should_match: 1,
-          },
-        });
-      }
+      const mustNotMarkingTerms = [{
+        terms: {
+          [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: mustNotHaveOneOf
+        }
+      }];
       const markingBool = {
         bool: {
           should: [
@@ -1587,8 +1575,8 @@ const elDataConverter = (esHit) => {
 export const elConvertHitsToMap = async (elements, opts) => {
   const { mapWithAllIds = false } = opts;
   const convertedHitsMap = {};
-  let startProcessingTime = new Date().getTime();
   for (let n = 0; n < elements.length; n += 1) {
+    await doYield();
     const element = elements[n];
     convertedHitsMap[element.internal_id] = element;
     if (mapWithAllIds) {
@@ -1599,13 +1587,6 @@ export const elConvertHitsToMap = async (elements, opts) => {
       // Add the stix ids keys
       (element.x_opencti_stix_ids ?? []).forEach((id) => {
         convertedHitsMap[id] = element;
-      });
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
       });
     }
   }
@@ -1728,13 +1709,41 @@ const REL_COUNT_SCRIPT_FIELD = {
   }
 };
 
+const findElementsDuplicateIds = (elements) => {
+  const duplicatedIds = new Set();
+  const elementIds = new Set();
+  const checkCurrentIds = (id) => {
+    if (!id) return;
+    if (elementIds.has(id) && !duplicatedIds.has(id)) {
+      duplicatedIds.add(id);
+    } else {
+      elementIds.add(id);
+    }
+  };
+  for (let i = 0; i < elements.length; i += 1) {
+    const element = elements[i];
+    const { [internalId.name]: internal_id, [standardId.name]: standard_id, [xOpenctiStixIds.name]: otherStixIds, [iAliasedIds.name]: aliasIds } = element;
+    checkCurrentIds(internal_id);
+    checkCurrentIds(standard_id);
+    otherStixIds?.map((id) => checkCurrentIds(id));
+    aliasIds?.map((id) => checkCurrentIds(id));
+  }
+  return Array.from(duplicatedIds);
+};
+
 // elFindByIds is not defined to use ordering or sorting (ordering is forced by creation date)
 // It's a way to load a bunch of ids and use in list or map
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices, baseData = false, baseFields = [] } = opts;
-  const { withoutRels = true, toMap = false, mapWithAllIds = false, type = null } = opts;
-  const { relCount = false } = opts;
-  const { orderBy = 'created_at', orderMode = 'asc' } = opts;
+  const {
+    indices,
+    baseData = false,
+    baseFields = [],
+    withoutRels = true,
+    toMap = false,
+    mapWithAllIds = false,
+    type = null,
+    relCount = false,
+  } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const types = (Array.isArray(type) || isEmptyField(type)) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -1744,7 +1753,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const queryIndices = computeQueryIndices(indices, types);
   const computedIndices = getIndicesToQuery(context, user, queryIndices);
   const hits = [];
-  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, processIds);
+  // Leave room in split size compared to max pagination to minimize data loss risk in case of duplicated ids in database
+  const splitSize = Math.max(ES_MAX_PAGINATION / 2, ES_DEFAULT_PAGINATION);
+  const groupIds = R.splitEvery(splitSize, processIds);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
     const workingIds = groupIds[index];
@@ -1781,7 +1792,6 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     // Handle draft
     const draftMust = buildDraftFilter(context, user, opts);
     const body = {
-      sort: [{ [orderBy]: orderMode }],
       query: {
         bool: {
           // Put everything under filter to prevent score computation
@@ -1800,47 +1810,35 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
         script_field_denormalization_count: REL_COUNT_SCRIPT_FIELD
       };
     }
-    let searchAfter;
-    let hasNextPage = true;
-    while (hasNextPage) {
-      if (searchAfter) {
-        body.search_after = searchAfter;
+    const _source = { excludes: [] };
+    if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
+    if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
+    const query = {
+      index: computedIndices,
+      size: ES_MAX_PAGINATION,
+      track_total_hits: false,
+      _source,
+      body,
+    };
+    if (withoutRels) { // Force denorm rel security
+      query.docvalue_fields = REL_DEFAULT_FETCH;
+    }
+    logApp.debug('[SEARCH] elInternalLoadById', { query });
+    const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
+    const data = await elRawSearch(context, user, searchType, query).catch((err) => {
+      throw DatabaseError('Find direct ids fail', { cause: err, query, searchType });
+    });
+    const elements = data.hits.hits;
+    if (elements.length > workingIds.length) {
+      const duplicatedIds = findElementsDuplicateIds(elements);
+      logApp.info('Search query returned more elements than expected', { resultCount: elements.length, queryCount: workingIds.length, duplicatedIds });
+      if (elements.length >= ES_MAX_PAGINATION) {
+        throw DatabaseError('Ids loading returned more elements than paging allowed for, some elements could not be loaded', { resultCount: elements.length, queryCount: workingIds.length, duplicatedIds });
       }
-      const _source = { excludes: [] };
-      if (withoutRels) _source.excludes.push(`${REL_INDEX_PREFIX}*`);
-      if (baseData) _source.includes = [...BASE_FIELDS, ...baseFields];
-      const query = {
-        index: computedIndices,
-        size: ES_MAX_PAGINATION,
-        track_total_hits: false,
-        _source,
-        body,
-      };
-      if (withoutRels) { // Force denorm rel security
-        query.docvalue_fields = REL_DEFAULT_FETCH;
-      }
-      logApp.debug('[SEARCH] elInternalLoadById', { query });
-      const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
-      const data = await elRawSearch(context, user, searchType, query).catch((err) => {
-        throw DatabaseError('Find direct ids fail', { cause: err, query, searchType });
-      });
-      const elements = data.hits.hits;
-      if (elements.length > workingIds.length) {
-        logApp.warn('Search query returned more elements than expected', { ids: workingIds });
-      }
-      if (elements.length > 0) {
-        const convertedHits = await elConvertHits(elements);
-        hits.push(...convertedHits);
-        if (elements.length < ES_MAX_PAGINATION) {
-          hasNextPage = false;
-        } else {
-          const { sort } = elements[elements.length - 1];
-          searchAfter = sort;
-          hasNextPage = true;
-        }
-      } else {
-        hasNextPage = false;
-      }
+    }
+    if (elements.length > 0) {
+      const convertedHits = await elConvertHits(elements);
+      hits.push(...convertedHits);
     }
   }
   if (toMap) {
@@ -1852,7 +1850,11 @@ export const elLoadById = async (context, user, id, opts = {}) => {
   const hits = await elFindByIds(context, user, id, { ...opts, withoutRels: false });
   //* v8 ignore if */
   if (hits.length > 1) {
-    throw DatabaseError('Id loading expect only one response', { id, hits: hits.length });
+    if (opts.ignoreDuplicates) {
+      logApp.warn('Id loading expect only one response', { id, hits: hits.length });
+    } else {
+      throw DatabaseError('Id loading expect only one response', { id, hits: hits.length });
+    }
   }
   return R.head(hits);
 };
@@ -3832,19 +3834,12 @@ const buildRegardingOfFilter = async (context, user, elements, filters) => {
             sideIdManualInferred.set(sideId, toTypes);
           }
         };
-        let startProcessingTime = new Date().getTime();
         for (let relIndex = 0; relIndex < relationships.length; relIndex += 1) {
+          await doYield();
           const relation = relationships[relIndex];
           const relType = isInferredIndex(relation._index) ? 'inferred' : 'manual';
           addTypeSide(relation.fromId, relType);
           addTypeSide(relation.toId, relType);
-          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-            startProcessingTime = new Date().getTime();
-            await new Promise((resolve) => {
-              setImmediate(resolve);
-            });
-          }
         }
       }
       return (element) => {
@@ -4173,24 +4168,17 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
     const elIdsCache = {};
     const indexCache = {};
     const pirInformationCache = {};
-    let startProcessingTime = new Date().getTime();
     for (let idIndex = 0; idIndex < dataIds.length; idIndex += 1) {
+      await doYield();
       const element = dataIds[idIndex];
       elIdsCache[element.internal_id] = element._id;
       indexCache[element.internal_id] = element._index;
       pirInformationCache[element.internal_id] = element.pir_information;
-      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-        startProcessingTime = new Date().getTime();
-        await new Promise((resolve) => {
-          setImmediate(resolve);
-        });
-      }
     }
     // Split by max operations, create the bulk
     const groupsOfImpacts = R.splitEvery(MAX_BULK_OPERATIONS, impacts);
-    startProcessingTime = new Date().getTime();
     for (let i = 0; i < groupsOfImpacts.length; i += 1) {
+      await doYield();
       const impactsBulk = groupsOfImpacts[i];
       const bodyUpdateRaw = impactsBulk.map(([impactId, elementMeta]) => {
         return Object.entries(elementMeta).map(([typeAndIndex, cleanupIds]) => {
@@ -4247,13 +4235,6 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
       if (bodyUpdate.length > 0) {
         await elBulk({ refresh: forceRefresh, timeout: BULK_TIMEOUT, body: bodyUpdate });
       }
-      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-        startProcessingTime = new Date().getTime();
-        await new Promise((resolve) => {
-          setImmediate(resolve);
-        });
-      }
     }
   }
 };
@@ -4261,8 +4242,8 @@ export const elRemoveRelationConnection = async (context, user, elementsImpact, 
 export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemovedIds, relationsToRemoveMap) => {
   // Update all rel connections that will remain
   const elementsImpact = {};
-  let startProcessingTime = new Date().getTime();
   for (let i = 0; i < cleanupRelations.length; i += 1) {
+    await doYield();
     const relation = cleanupRelations[i];
     const fromWillNotBeRemoved = !relationsToRemoveMap.has(relation.fromId) && !toBeRemovedIds.includes(relation.fromId);
     const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(relation.entity_type, relation.fromType, relation.toType, ROLE_FROM);
@@ -4293,13 +4274,6 @@ export const computeDeleteElementsImpacts = async (cleanupRelations, toBeRemoved
           elementsImpact[relation.toId][cleanKey] = [relation.fromId];
         }
       }
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
     }
   }
   return elementsImpact;
@@ -4519,15 +4493,22 @@ const createDeleteOperationElement = async (context, user, mainElement, deletedE
 export const prepareElementForIndexing = async (element) => {
   const thing = {};
   const keyItems = Object.keys(element);
-  let startProcessingTime = new Date().getTime();
   for (let index = 0; index < keyItems.length; index += 1) {
+    await doYield();
     const key = keyItems[index];
     const value = element[key];
     if (Array.isArray(value)) { // Array of Date, objects, string or number
       const preparedArray = [];
-      let innerProcessingTime = new Date().getTime();
-      let extendLoopSplit = 0;
+      let yieldCount = 0;
       for (let valueIndex = 0; valueIndex < value.length; valueIndex += 1) {
+        if (await doYield()) {
+          // If we extend the preparation 5 times, log a warn
+          // It will help to understand what kind of key have so many elements
+          if (yieldCount === 5) {
+            logApp.warn('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
+          }
+          yieldCount += 1;
+        }
         const valueElement = value[valueIndex];
         if (valueElement) {
           if (isDateAttribute(key)) { // Date is an object but natively supported
@@ -4541,19 +4522,6 @@ export const prepareElementForIndexing = async (element) => {
             // For all other types, no transform (list of boolean is not supported)
             preparedArray.push(valueElement);
           }
-        }
-        // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-        if (new Date().getTime() - innerProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-          // If we extends the preparation 5 times, log a warn
-          // It will help to understand what kind of key have so much elements
-          if (extendLoopSplit === 5) {
-            logApp.warn('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
-          }
-          extendLoopSplit += 1;
-          innerProcessingTime = new Date().getTime();
-          await new Promise((resolve) => {
-            setImmediate(resolve);
-          });
         }
       }
       thing[key] = preparedArray;
@@ -4569,13 +4537,6 @@ export const prepareElementForIndexing = async (element) => {
       thing[key] = value.trim();
     } else { // For all other types (numeric, ...), no transform
       thing[key] = value;
-    }
-    // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-    if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-      startProcessingTime = new Date().getTime();
-      await new Promise((resolve) => {
-        setImmediate(resolve);
-      });
     }
   }
   return thing;

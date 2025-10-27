@@ -4,6 +4,7 @@ import { ADMIN_USER, testContext, queryAsAdmin, TESTING_ROLES } from '../../util
 import { elLoadById } from '../../../src/database/engine';
 import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
 import { generateStandardId } from '../../../src/schema/identifier';
+import { entitiesCounter } from '../../utils/entityCountHelper';
 
 const LIST_QUERY = gql`
   query roles($first: Int, $after: ID, $orderBy: RolesOrdering, $orderMode: OrderingMode, $search: String) {
@@ -86,7 +87,7 @@ describe('Role resolver standard behavior', () => {
       }
     `;
     const queryResult = await queryAsAdmin({ query: LIST_CAPABILITIES_QUERY, variables: { first: 50 } });
-    expect(queryResult.data.capabilities.edges.length).toEqual(50);
+    expect(queryResult.data.capabilities.edges.length).toEqual(entitiesCounter.capability);
   });
   it('should update role', async () => {
     const UPDATE_QUERY = gql`

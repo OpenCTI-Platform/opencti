@@ -240,14 +240,14 @@ export const deletePir = async (context: AuthContext, user: AuthUser, pirId: str
   return deleteInternalObject(context, user, pirId, ENTITY_TYPE_PIR);
 };
 
-export const updatePir = async (context: AuthContext, user: AuthUser, pirId: string, input: EditInput[]) => {
+export const updatePir = async (context: AuthContext, user: AuthUser, pirId: string, input: EditInput[], opts: { auditLogEnabled?: boolean } = {}) => {
   await checkEnterpriseEdition(context);
   const allowedKeys = ['lastEventId', 'name', 'description'];
   const keys = input.map((i) => i.key);
   if (keys.some((k) => !allowedKeys.includes(k))) {
     throw FunctionalError('Error while updating the PIR, invalid or forbidden key.');
   }
-  return editInternalObject<StoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR, input);
+  return editInternalObject<StoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR, input, opts);
 };
 
 /**

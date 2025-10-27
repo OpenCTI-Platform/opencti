@@ -9,7 +9,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { resolveUserByIdFromCache } from '../domain/user';
 import { storeLoadByIdsWithRefs } from '../database/middleware';
 import { now } from '../utils/format';
-import { isEmptyField, MAX_EVENT_LOOP_PROCESSING_TIME, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { isEmptyField, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED } from '../database/utils';
 import { elList } from '../database/engine';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
@@ -49,7 +49,6 @@ import {
   TASK_TYPE_RULE
 } from '../domain/backgroundTask-common';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { BackgroundTaskScope } from '../generated/graphql';
 import { getDraftContext } from '../utils/draftContext';
 import { getBestBackgroundConnectorId, pushToWorkerForConnector } from '../database/rabbitmq';
 import { updateExpectationsNumber, updateProcessedTime } from '../domain/work';
@@ -64,6 +63,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { objects as getContainerObjects } from '../domain/container';
+import { doYield } from '../utils/eventloop-utils';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -118,15 +118,12 @@ export const taskQuery = async (context, user, task, callback) => {
 };
 
 export const taskList = async (context, user, task, callback) => {
-  const { task_position, task_ids, scope, task_order_mode } = task;
+  const { task_position, task_ids } = task;
   // task_position is no longer used, but we still handle it to properly process task that were processing before task migrated to worker
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = task_ids.slice(startIndex);
   const options = {
-    orderMode: task_order_mode || 'desc',
-    // processing elements in descending order makes possible restoring from trash elements with dependencies
-    orderBy: scope === BackgroundTaskScope.Import ? 'lastModified' : 'created_at',
     baseData: true,
     includeDeletedInDraft: true,
   };
@@ -294,18 +291,11 @@ const standardOperationCallback = async (context, user, task, actionType, operat
   return async (elements) => {
     // Build limited stix object to limit memory footprint
     const objects = [];
-    let startProcessingTime = new Date().getTime();
     for (let index = 0; index < elements.length; index += 1) {
+      await doYield();
       const e = elements[index];
       const object = buildBundleElement(e, actionType, operations);
       objects.push(object);
-      // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-      if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-        startProcessingTime = new Date().getTime();
-        await new Promise((resolve) => {
-          setImmediate(resolve);
-        });
-      }
     }
     // Send actions to queue
     await sendResultToQueue(context, user, task, objects);
@@ -496,20 +486,13 @@ const sharingOperationCallback = async (context, user, task, actionType, operati
         const containerObjects = [];
         const sharingElements = await getContainerObjects(context, user, element.internal_id, { all: true });
         const allSharingElements = sharingElements.edges?.map((n) => n.node);
-        let startProcessingTime = new Date().getTime();
         for (let shareIndex = 0; shareIndex < allSharingElements?.length; shareIndex += 1) {
+          await doYield();
           const sharingElement = allSharingElements[shareIndex];
           const sharingElementBundle = buildBundleElement(sharingElement, actionType, operations);
           // We do not want to recursively share elements: we only share elements directly contained in current container
           sharingElementBundle.extensions[STIX_EXT_OCTI].sharing_direct_container = true;
           containerObjects.push(sharingElementBundle);
-          // Prevent event loop locking more than MAX_EVENT_LOOP_PROCESSING_TIME
-          if (new Date().getTime() - startProcessingTime > MAX_EVENT_LOOP_PROCESSING_TIME) {
-            startProcessingTime = new Date().getTime();
-            await new Promise((resolve) => {
-              setImmediate(resolve);
-            });
-          }
         }
         // Add the container at the end
         const container = buildBundleElement(element, actionType, operations);

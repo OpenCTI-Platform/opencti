@@ -123,11 +123,10 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
     });
   };
 
-  const onSubmitAskOtp: FormikConfig<ResetFormValues>['onSubmit'] = async (
+  const onSubmitAskOtp: FormikConfig<ResetFormValues>['onSubmit'] = (
     values,
-    { setSubmitting, resetForm, setErrors },
+    { resetForm, setErrors },
   ) => {
-    setSubmitting(true);
     askSentOtpCommitMutation({
       variables: {
         input: {
@@ -137,22 +136,19 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
       onCompleted: (response) => {
         setTransactionId(response.askSendOtp ?? '');
         setEmail(values.email);
-        setSubmitting(false);
         resetForm();
         setStep(Step.VALIDATE_OTP);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
-        setSubmitting(false);
       },
     });
   };
 
-  const onSubmitValidateOtp: FormikConfig<ValidateOtpFormValues>['onSubmit'] = async (
+  const onSubmitValidateOtp: FormikConfig<ValidateOtpFormValues>['onSubmit'] = (
     values,
-    { setSubmitting, resetForm, setErrors },
+    { resetForm, setErrors },
   ) => {
-    setSubmitting(true);
     verifyOtpCommitMutation({
       variables: {
         input: {
@@ -164,23 +160,20 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         const mfaActivated = response.verifyOtp?.mfa_activated;
         setOtpError(false);
         setOtp(values.otp);
-        setSubmitting(false);
         resetForm();
         setStep(mfaActivated ? Step.MFA : Step.RESET_PASSWORD);
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setOtpError(true);
-        setSubmitting(false);
       },
     });
   };
 
-  const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = async (
+  const onSubmitValidatePassword: FormikConfig<ResetPasswordFormValues>['onSubmit'] = (
     values,
-    { setSubmitting, resetForm, setErrors },
+    { resetForm, setErrors },
   ) => {
-    setSubmitting(true);
     changePasswordCommitMutation({
       variables: {
         input: {
@@ -190,14 +183,12 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         },
       },
       onCompleted: () => {
-        setSubmitting(false);
         resetForm();
         onCancel();
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setChangePasswordError(true);
-        setSubmitting(false);
       },
     });
   };
