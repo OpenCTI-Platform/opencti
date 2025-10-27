@@ -21,6 +21,7 @@ from pycti.connector.opencti_connector_helper import (
 from message_queue_consumer import MessageQueueConsumer
 from listen_handler import ListenHandler
 from push_handler import PushHandler
+from thread_pool_selector import ThreadPoolSelector
 
 # Telemetry variables definition
 meter = metrics.get_meter(__name__)
@@ -81,14 +82,14 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             ["opencti", "execution_pool_size"],
             config,
             True,
-            default=5,
+            default=2,
         )
         self.opencti_realtime_pool_size = get_config_variable(
             "OPENCTI_REALTIME_EXECUTION_POOL_SIZE",
             ["opencti", "realtime_execution_pool_size"],
             config,
             True,
-            default=5,
+            default=3,
         )
         self.listen_pool_size = get_config_variable(
             "WORKER_LISTEN_POOL_SIZE",
@@ -221,12 +222,18 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             max_workers=self.opencti_realtime_pool_size
         )
         listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
+        push_thread_pool_selector = ThreadPoolSelector(
+            self.opencti_pool_size,
+            push_execution_pool,
+            self.opencti_realtime_pool_size,
+            realtime_push_execution_pool,
+        )
 
         while not self.exit_event.is_set():
             try:
                 # Telemetry
                 max_ingestion_units_count.set(self.opencti_pool_size)
-                running_ingestion_units_gauge.set(len(push_execution_pool._threads))
+                running_ingestion_units_gauge.set(len(push_execution_pool._threads) + len(realtime_push_execution_pool._threads))
 
                 # Fetch queue configuration from API
                 queues: List[Any] = []
@@ -264,16 +271,14 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
                         )
-                        execution_pool = push_execution_pool
-                        # TODO to be reactivate until global thread pool size remain the same, so we avoid unexpected platform overloading
-                        # if is_priority_connector(connector["connector_priority_group"]):
-                        #     execution_pool = realtime_push_execution_pool
+                        if is_priority_connector(connector["connector_priority_group"]):
+                            execution_pool = realtime_push_execution_pool
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
                             push_queue,
                             pika_parameters,
-                            execution_pool,
+                            push_thread_pool_selector,
                             push_handler.handle_message,
                         )
 

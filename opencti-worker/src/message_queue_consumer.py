@@ -3,6 +3,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any, Callable, Literal
+from thread_pool_selector import ThreadPoolSelector
 
 import pika
 
@@ -13,7 +14,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     consumer_type: Literal["listen", "push"]
     queue_name: str
     pika_parameters: pika.ConnectionParameters
-    execution_pool: ThreadPoolExecutor
+    execution_pool: ThreadPoolExecutor | ThreadPoolSelector
     handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
     should_stop: bool = field(default=False, init=False)
 
