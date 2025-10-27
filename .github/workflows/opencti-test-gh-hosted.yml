@@ -10,28 +10,55 @@ jobs:
     name: build-opencti-platform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+    - uses: actions/checkout@v5
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: filigran/platform
-          tags: |
-            type=sha,format=short
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: opencti-platform
-          file: opencti-platform/Dockerfile_featurebranch
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: filigran/platform
+        tags: |
+          type=sha,format=short
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        context: opencti-platform
+        file: opencti-platform/Dockerfile_featurebranch
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+  build-opencti-worker:
+    name: build-opencti-worker
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: filigran/worker
+        tags: |
+          type=sha,format=short
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        context: opencti-worker
+        file: opencti-worker/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
 
   run-opencti-test-stack:
     needs: build-opencti-platform
@@ -41,20 +68,21 @@ jobs:
       continue-on-error: true
       run: |
           set -x
-          echo "Runner Name: $RUNNER_NAME"
-          echo "Runner OS: $RUNNER_OS \t Runner Arch: $RUNNER_ARCH"
+          echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
           echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
-          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE} "
-          tree  ${{ github.workspace }}/..
-          echo " pwd $(pwd) " 
-          ls -larth
-          ps aux | sort -nk +4 | tail -5
+          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
+          ls -larth  ${{ github.workspace }}/.. 
           env
           free -m
-          docker stats --no-stream
 
     - name: OpenCTI checkout
       uses: actions/checkout@v4
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Set up Docker Compose for backends and sync instances
       run: |
@@ -92,7 +120,7 @@ jobs:
           echo -e "\n *********\n ********* docker stat"
           docker stats --no-stream        
           echo -e "\n *********\n ********* ps"
-            ps aux | sort -nk +4 | tail -10
+          ps aux | sort -nk +4 | tail -10
           echo -e "\n *********\n ********* free memory"
           free -m
         

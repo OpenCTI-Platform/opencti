@@ -59,8 +59,10 @@ services:
     container_name: opencti-raw-start
     image: filigran/platform:${TAG}
     restart: unless-stopped
-    volumes:
-      - /home/runner/work/opencti/opencti:/home/workspace
+    environment:
+      - BASE_NAME=opencti-raw-start
+    env_file:
+      - octi-ci.env
     networks:
       - runner-docker-network
     ports:
@@ -69,8 +71,10 @@ services:
     container_name: opencti-live-start
     image: filigran/platform:${TAG}
     restart: unless-stopped
-    volumes:
-      - /home/runner/work/opencti/opencti:/home/workspace
+    environment:
+      - BASE_NAME=opencti-live-start
+    env_file:
+      - octi-ci.env
     networks:
       - runner-docker-network
     ports:
@@ -79,8 +83,10 @@ services:
     container_name: opencti-direct-start
     image: filigran/platform:${TAG}
     restart: unless-stopped
-    volumes:
-      - /home/runner/work/opencti/opencti:/home/workspace
+    environment:
+      - BASE_NAME=opencti-direct-start
+    env_file:
+      - octi-ci.env
     networks:
       - runner-docker-network
     ports:
@@ -89,8 +95,10 @@ services:
     container_name: opencti-restore-start
     image: filigran/platform:${TAG}
     restart: unless-stopped
-    volumes:
-      - /home/runner/work/opencti/opencti:/home/workspace
+    environment:
+      - BASE_NAME=opencti-restore-start
+    env_file:
+      - octi-ci.env
     networks:
       - runner-docker-network
     ports:
