@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -25,6 +25,7 @@ import { isNotEmptyField } from '../../../../utils/utils';
 import { fileUri } from '../../../../relay/environment';
 import obasDark from '../../../../static/images/xtm/obas_dark.png';
 import obasLight from '../../../../static/images/xtm/obas_light.png';
+import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -76,6 +77,8 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
   const { t_i18n, fndt } = useFormatter();
   const data = useFragment(securityCoverageDetailsFragment, securityCoverage);
 
+  const [displayExternalLink, setDisplayExternalLink] = useState(false);
+
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -110,8 +113,8 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
                   />
                 }
                 variant="outlined"
-                onClick={() => window.open(data.external_uri ?? '', '_blank')}
-                title={data.external_uri}
+                onClick={() => setDisplayExternalLink(true)}
+                title={data.external_uri} // tooltip on hover
               >
                 {t_i18n('Exposure validation')}
               </Button>
@@ -172,6 +175,14 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
           </Grid>
         </Grid>
       </Paper>
+
+      {isNotEmptyField(data.external_uri) && (
+        <ExternalLinkPopover
+          externalLink={data.external_uri}
+          displayExternalLink={displayExternalLink}
+          setDisplayExternalLink={setDisplayExternalLink}
+        />
+      )}
     </div>
   );
 };
