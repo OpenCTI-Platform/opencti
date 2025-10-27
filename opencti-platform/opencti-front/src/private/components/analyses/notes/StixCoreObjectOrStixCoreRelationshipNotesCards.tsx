@@ -1,20 +1,19 @@
-import React, { FunctionComponent, useRef, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import { FormikConfig } from 'formik/dist/types';
-import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
 import { EditOutlined, ExpandLessOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
-import { Field, Form, Formik } from 'formik';
+import { Field, Formik } from 'formik';
 import Button from '@mui/material/Button';
+import { Stack, Box } from '@mui/material';
 import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
-import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE } from '../../../../utils/hooks/useGranted';
@@ -30,35 +29,16 @@ import {
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
-import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
+import {
+  StixCoreObjectOrStixCoreRelationshipNotesCards_data$data,
+  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key,
+} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 import SliderField from '../../../../components/fields/SliderField';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { convertMarking } from '../../../../utils/edition';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import AddNotesFunctionalComponent from './AddNotesFunctionalComponent';
 import { yupShapeConditionalRequired, useDynamicSchemaCreationValidation, useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  heading: {
-    display: 'flex',
-  },
-  buttons: {
-    margin: `${theme.spacing(2)} 0 ${theme.spacing(0.5)} 0`,
-  },
-  buttonMore: {
-    float: 'left',
-  },
-  buttonAction: {
-    float: 'right',
-    marginLeft: theme.spacing(2),
-  },
-  createButton: {
-    float: 'left',
-    marginTop: -15,
-  },
-}));
 
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
@@ -152,45 +132,53 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
   title: string;
 }
 
-const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipNotesCardsProps
-> = ({
-  id,
-  marginTop,
-  queryRef,
-  paginationOptions,
-  defaultMarkings,
-  title,
-}) => {
-  const { t_i18n } = useFormatter();
-  const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
-  const classes = useStyles();
-  const basicShape = yupShapeConditionalRequired({
-    content: Yup.string().trim().min(2),
-    attribute_abstract: Yup.string().nullable(),
-    confidence: Yup.number(),
-    note_types: Yup.array(),
-    likelihood: Yup.number().min(0).max(100),
-  }, mandatoryAttributes);
-  // created & createdBy must be excluded from the validation, it will be handled directly by the backend
-  const noteValidator = useDynamicSchemaCreationValidation(
-    mandatoryAttributes,
-    basicShape,
-    ['created', 'createdBy'],
+type HeaderProps = {
+  onToggleWrite: () => void
+  id: string
+  data: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data
+} & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'paginationOptions' | 'title'>;
+
+const Header = ({ title, id, data, paginationOptions, onToggleWrite }: HeaderProps) => {
+  return (
+    <Stack direction="row" flex={1}>
+      <Typography variant="h4">{title}</Typography>
+      <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
+        <Stack direction="row" justifyContent="space-between" flex={1}>
+          <IconButton
+            color="primary"
+            onClick={onToggleWrite}
+            sx={{
+              marginTop: '-15px',
+            }}
+            size="large"
+          >
+            <EditOutlined fontSize="small" />
+          </IconButton>
+
+          <AddNotesFunctionalComponent
+            stixCoreObjectOrStixCoreRelationshipId={id}
+            stixCoreObjectOrStixCoreRelationshipNotes={data}
+            paginationOptions={paginationOptions}
+          />
+        </Stack>
+      </Security>
+    </Stack>
   );
-  const data = usePreloadedFragment<
-  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
-  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
-  >({
-    queryDef: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
-    fragmentDef: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,
-    queryRef,
-  });
-  const notes = data?.notes?.edges ?? [];
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const [open, setOpen] = useState<boolean>(false);
+};
+
+type NoteFormProps = {
+  onSubmit: (values: NoteAddInput, formikHelpers: FormikHelpers<NoteAddInput>) => void
+  onToggleWrite: () => void
+  onToggleMore: () => void
+} & Pick<StixCoreObjectOrStixCoreRelationshipNotesCardsProps, 'defaultMarkings'>;
+
+const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: NoteFormProps) => {
+  const { t_i18n } = useFormatter();
 
   const [more, setMore] = useState<boolean>(false);
+
+  const { mandatoryAttributes } = useIsMandatoryAttribute(NOTE_TYPE);
+
   const initialValues = useDefaultValues<NoteAddInput>(NOTE_TYPE, {
     attribute_abstract: '',
     content: '',
@@ -200,24 +188,200 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
     objectMarking: toOptions(defaultMarkings),
     objectLabel: [],
   });
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, 300);
-  };
-  const handleToggleWrite = () => {
-    setOpen((oldValue) => {
-      const newValue = !oldValue;
-      if (newValue) {
-        scrollToBottom();
-      }
-      return newValue;
-    });
-  };
+
+  const basicShape = yupShapeConditionalRequired({
+    content: Yup.string().trim().min(2),
+    attribute_abstract: Yup.string().nullable(),
+    confidence: Yup.number(),
+    note_types: Yup.array(),
+    likelihood: Yup.number().min(0).max(100),
+  }, mandatoryAttributes);
+
+  // created & createdBy must be excluded from the validation, it will be handled directly by the backend
+  const noteValidator = useDynamicSchemaCreationValidation(
+    mandatoryAttributes,
+    basicShape,
+    ['created', 'createdBy'],
+  );
+
   const handleToggleMore = () => {
     setMore(!more);
   };
+
+  useEffect(() => {
+    onToggleMore();
+  }, [more]);
+
+  return (
+    <Formik<NoteAddInput>
+      initialValues={initialValues}
+      validationSchema={noteValidator}
+      onSubmit={onSubmit}
+      onReset={onToggleWrite}
+    >
+      {({
+        submitForm,
+        handleReset,
+        setFieldValue,
+        values,
+        isSubmitting,
+      }) => (
+        <Stack gap={2}>
+          <Box>
+            <Field
+              component={MarkdownField}
+              name="content"
+              label={t_i18n('Content')}
+              required={(mandatoryAttributes.includes('content'))}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              required={(mandatoryAttributes.includes('objectMarking'))}
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+            />
+            {
+              more && (
+                <>
+                  <Field
+                    component={TextField}
+                    name="attribute_abstract"
+                    label={t_i18n('Abstract')}
+                    required={(mandatoryAttributes.includes('attribute_abstract'))}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <OpenVocabField
+                    label={t_i18n('Note types')}
+                    type="note_types_ov"
+                    name="note_types"
+                    required={(mandatoryAttributes.includes('note_types'))}
+                    onChange={(name, value) => setFieldValue(name, value)}
+                    containerStyle={fieldSpacingContainerStyle}
+                    multiple={true}
+                  />
+                  <ConfidenceField
+                    entityType="Note"
+                    containerStyle={fieldSpacingContainerStyle}
+                  />
+                  <Field
+                    component={SliderField}
+                    name="likelihood"
+                    label={t_i18n('Likelihood')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    required={(mandatoryAttributes.includes('objectLabel'))}
+                    style={{ marginTop: 10, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                </>
+              )
+            }
+          </Box>
+
+          <Stack direction="row" justifyContent="space-between">
+            <Button
+              variant="contained"
+              onClick={handleToggleMore}
+              disabled={isSubmitting}
+              size="small"
+              endIcon={
+                more ? <ExpandLessOutlined /> : <ExpandMoreOutlined />
+              }
+            >
+              {more ? t_i18n('Less fields') : t_i18n('More fields')}
+            </Button>
+
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                size="small"
+              >
+                {t_i18n('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                size="small"
+              >
+                {t_i18n('Create')}
+              </Button>
+            </Stack>
+          </Stack>
+        </Stack>
+      )}
+    </Formik>
+  );
+};
+
+const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
+StixCoreObjectOrStixCoreRelationshipNotesCardsProps
+> = ({
+  id,
+  marginTop = 0,
+  queryRef,
+  paginationOptions,
+  defaultMarkings,
+  title,
+}) => {
+  const { t_i18n } = useFormatter();
+
+  const data = usePreloadedFragment<
+  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
+  >({
+    queryDef: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+    fragmentDef: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,
+    queryRef,
+  });
+
+  const notes = data?.notes?.edges ?? [];
+  const accordionRef = useRef<HTMLDivElement>(null);
+
+  const [open, setOpen] = useState<boolean>(false);
+
+  const scrollToBottom = () => {
+    const element = accordionRef.current;
+    if (!element) return;
+
+    setTimeout(() => {
+      const rect = element.getBoundingClientRect();
+      const targetPosition = rect.bottom + window.pageYOffset + marginTop;
+
+      window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth',
+      });
+    }, 300);
+  };
+
+  useEffect(() => {
+    if (accordionRef.current) {
+      scrollToBottom();
+    }
+  }, [open]);
+
+  const handleToggleWrite = () => {
+    setOpen(!open);
+  };
+
+  const handleMore = () => {
+    scrollToBottom();
+  };
+
   const [commit] = useApiMutation(noteCreationUserMutation);
+
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
@@ -236,41 +400,30 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
       },
     });
   };
+
   return (
-    <div style={{ marginTop }}>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-        {title}
-      </Typography>
-      <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-        <>
-          <IconButton
-            color="primary"
-            onClick={handleToggleWrite}
-            classes={{ root: classes.createButton }}
-            size="large"
-          >
-            <EditOutlined fontSize="small" />
-          </IconButton>
-          <AddNotesFunctionalComponent
-            stixCoreObjectOrStixCoreRelationshipId={id}
-            stixCoreObjectOrStixCoreRelationshipNotes={data}
-            paginationOptions={paginationOptions}
-          />
-        </>
-      </Security>
-      <div className="clearfix" />
-      {notes
-        .map(({ node }) => node)
-        .map((note) => {
+    <div style={{ marginTop }} ref={accordionRef}>
+      <Header
+        data={data}
+        id={id}
+        onToggleWrite={handleToggleWrite}
+        paginationOptions={paginationOptions}
+        title={title}
+      />
+
+      {
+        notes.map(({ node }) => {
           return (
             <StixCoreObjectOrStixCoreRelationshipNoteCard
-              key={note.id}
-              data={note}
+              key={node.id}
+              data={node}
               stixCoreObjectOrStixCoreRelationshipId={id}
               paginationOptions={paginationOptions}
             />
           );
-        })}
+        })
+      }
+
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <Accordion
           style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 0px 0` }}
@@ -280,123 +433,25 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
           <AccordionSummary
             expandIcon={<ExpandMoreOutlined />}
             onClick={handleToggleWrite}
+            sx={{ spacing: 1 }}
           >
-            <Typography className={classes.heading}>
+            <Stack direction="row" spacing={1}>
               <RateReviewOutlined />
-              &nbsp;&nbsp;&nbsp;&nbsp;
-              <span style={{ fontWeight: 500 }}>{t_i18n('Write a note')}</span>
-            </Typography>
+              <Typography>{t_i18n('Write a note')}</Typography>
+            </Stack>
           </AccordionSummary>
-          <AccordionDetails style={{ width: '100%' }}>
-            <Formik<NoteAddInput>
-              initialValues={initialValues}
-              validationSchema={noteValidator}
+
+          <AccordionDetails>
+            <NoteForm
+              defaultMarkings={defaultMarkings}
+              onToggleWrite={handleToggleWrite}
+              onToggleMore={handleMore}
               onSubmit={onSubmit}
-              onReset={handleToggleWrite}
-            >
-              {({
-                submitForm,
-                handleReset,
-                setFieldValue,
-                values,
-                isSubmitting,
-              }) => (
-                <Form style={{ width: '100%' }}>
-                  <Field
-                    component={MarkdownField}
-                    name="content"
-                    label={t_i18n('Content')}
-                    required={(mandatoryAttributes.includes('content'))}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    required={(mandatoryAttributes.includes('objectMarking'))}
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                  />
-                  {more && (
-                    <>
-                      <Field
-                        component={TextField}
-                        name="attribute_abstract"
-                        label={t_i18n('Abstract')}
-                        required={(mandatoryAttributes.includes('attribute_abstract'))}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                      />
-                      <OpenVocabField
-                        label={t_i18n('Note types')}
-                        type="note_types_ov"
-                        name="note_types"
-                        required={(mandatoryAttributes.includes('note_types'))}
-                        onChange={(name, value) => setFieldValue(name, value)}
-                        containerStyle={fieldSpacingContainerStyle}
-                        multiple={true}
-                      />
-                      <ConfidenceField
-                        entityType="Note"
-                        containerStyle={fieldSpacingContainerStyle}
-                      />
-                      <Field
-                        component={SliderField}
-                        name="likelihood"
-                        label={t_i18n('Likelihood')}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                      />
-                      <ObjectLabelField
-                        name="objectLabel"
-                        required={(mandatoryAttributes.includes('objectLabel'))}
-                        style={{ marginTop: 10, width: '100%' }}
-                        setFieldValue={setFieldValue}
-                        values={values.objectLabel}
-                      />
-                    </>
-                  )}
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.buttonAction }}
-                      size="small"
-                    >
-                      {t_i18n('Create')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleToggleMore}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.buttonMore }}
-                      size="small"
-                      endIcon={
-                        more ? <ExpandLessOutlined /> : <ExpandMoreOutlined />
-                      }
-                    >
-                      {more ? t_i18n('Less fields') : t_i18n('More fields')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.buttonAction }}
-                      size="small"
-                    >
-                      {t_i18n('Cancel')}
-                    </Button>
-                    <div className="clearfix" />
-                  </div>
-                </Form>
-              )}
-            </Formik>
+            />
           </AccordionDetails>
         </Accordion>
       </Security>
-      <div ref={bottomRef} />
+
     </div>
   );
 };
