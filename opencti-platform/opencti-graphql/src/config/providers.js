@@ -7,7 +7,9 @@ import GithubStrategy from 'passport-github';
 import LocalStrategy from 'passport-local';
 import LdapStrategy from 'passport-ldapauth';
 import { Strategy as SamlStrategy } from '@node-saml/passport-saml';
-import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrategy } from 'openid-client';
+import { discovery as oidcDiscovery } from 'openid-client';
+// eslint-disable-next-line import/no-unresolved
+import { Strategy as OpenIdStrategy } from 'openid-client/passport';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { findById, HEADERS_AUTHENTICATORS, initAdmin, login, loginFromProvider, userDelete } from '../domain/user';
@@ -305,8 +307,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       // All config of openid lib use snake case.
       const openIdClient = config.use_proxy ? getPlatformHttpProxyAgent(config.issuer) : undefined;
       OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
-      enrichWithRemoteCredentials(`providers:${providerIdent}`, config).then((clientConfig) => {
-        OpenIDIssuer.discover(config.issuer).then((issuer) => {
+      try {
+        const clientConfig = await enrichWithRemoteCredentials(`providers:${providerIdent}`, config);
+        try {
+          const issuer = await oidcDiscovery(config.issuer);
           const { Client } = issuer;
           const client = new Client(clientConfig);
           // region scopes generation
@@ -324,7 +328,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const openIdScope = R.uniq(openIdScopes).join(' ');
           const options = { logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true, params: { scope: openIdScope } };
           const debugCallback = (message, meta) => logApp.info(message, meta);
-          const openIDStrategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
+          const openIDStrategy = new OpenIdStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
             logApp.info('[OPENID] Successfully logged', { userinfo });
             addUserLoginCount();
             const isGroupMapping = (isNotEmptyField(mappedConfig.groups_management) && isNotEmptyField(mappedConfig.groups_management?.groups_mapping));
@@ -407,10 +411,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           };
           passport.use(providerRef, openIDStrategy);
           providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
-        }).catch((err) => {
-          logApp.error('[OPENID] Error initializing authentication provider', { cause: err, provider: providerRef });
-        });
-      }).catch((reason) => logApp.error('[OPENID] Error when enrich with remote credentials', { cause: reason }));
+        } catch (e) {
+          logApp.error('[OPENID] Error initializing authentication provider', { cause: e, provider: providerRef });
+        }
+      } catch (e) {
+        logApp.error('[OPENID] Error when enrich with remote credentials', { cause: e });
+      }
     }
     if (strategy === STRATEGY_FACEBOOK) {
       const providerRef = identifier || 'facebook';
@@ -506,13 +512,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       // All config of openid lib use snake case.
       const openIdClient = auth0config.use_proxy ? getPlatformHttpProxyAgent(auth0Issuer) : undefined;
       OpenIDCustom.setHttpOptionsDefaults({ timeout: 0, agent: openIdClient });
-      OpenIDIssuer.discover(auth0Issuer).then((issuer) => {
+      const issuer = await oidcDiscovery(auth0Issuer);
+      try {
         const { Client } = issuer;
         const client = new Client(auth0config);
         const openIdScope = mappedConfig.scope ?? 'openid email profile';
         const options = { ...auth0OpenIDConfiguration, logout_remote: mappedConfig.logout_remote, client, passReqToCallback: true, params: { scope: openIdScope } };
         const debugCallback = (message, meta) => logApp.info(message, meta);
-        const auth0Strategy = new OpenIDStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
+        const auth0Strategy = new OpenIdStrategy(options, debugCallback, (_, tokenset, userinfo, done) => {
           logApp.info('[AUTH0] Successfully logged', { userinfo });
           addUserLoginCount();
           const { email, name } = userinfo;
@@ -535,7 +542,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         };
         passport.use(providerRef, auth0Strategy);
         providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
-      }).catch((reason) => logApp.error('[AUTH0] Error when enrich with remote credentials', { cause: reason }));
+      } catch (e) {
+        logApp.error('[AUTH0] Error when enrich with remote credentials', { cause: e });
+      }
     }
     // CERT Strategies
     if (strategy === STRATEGY_CERT) {
