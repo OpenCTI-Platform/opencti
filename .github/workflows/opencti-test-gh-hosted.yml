@@ -210,7 +210,7 @@ jobs:
       run: |
         docker run --network runner-docker-network \
           --name api-test \
-          -v ${{ github.workspace }}:/home/workspace" \
+          -v ${{ github.workspace }}:/home/workspace \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ADMIN__PASSWORD=admin \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=false \
