@@ -904,36 +904,47 @@ type ParticipantWithOrgIds = Participant & Creator & {
     secondary: string
   }
   [RELATION_PARTICIPATE_TO]?: string[];
+  user_service_account?: boolean;
 };
 
+export enum FilterMembersMode {
+  RESTRICT = 'restrict',
+  EXCLUDE = 'exclude'
+}
 export const filterMembersWithUsersOrgs = async (
   context: AuthContext,
   user: AuthUser,
-  members: ParticipantWithOrgIds[]
+  members: ParticipantWithOrgIds[],
+  filterMode = FilterMembersMode.RESTRICT,
 ): Promise<ParticipantWithOrgIds[]> => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const userInPlatformOrg = isUserInPlatformOrganization(user, settings);
   if (!userInPlatformOrg) {
     const userOrgIds = (user.organizations || []).map((org) => org.id);
-    return members.map((member) => {
-      if (member.id === user.id || INTERNAL_USERS[member.id]) { // TODO add service account after 6.8 release
-        return member;
+    const resultMembers = [];
+    for (let i = 0; i < members.length; i += 1) {
+      const member = members[i];
+      if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
+        resultMembers.push(member);
       }
       const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
       const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
       if (!sameOrg) {
-        return {
-          ...member,
-          name: RESTRICTED_USER.name,
-          user_email: RESTRICTED_USER.user_email,
-          representative: {
-            main: RESTRICTED_USER.name,
-            secondary: RESTRICTED_USER.name
-          }
-        };
+        if (filterMode === FilterMembersMode.RESTRICT) {
+          const restrictedMember = {
+            ...member,
+            name: RESTRICTED_USER.name,
+            user_email: RESTRICTED_USER.user_email,
+            representative: {
+              main: RESTRICTED_USER.name,
+              secondary: RESTRICTED_USER.name
+            }
+          };
+          resultMembers.push(restrictedMember);
+        }
       }
-      return member;
-    });
+    }
+    return resultMembers;
   }
   return members;
 };

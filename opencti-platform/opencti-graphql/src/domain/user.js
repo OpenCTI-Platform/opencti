@@ -53,6 +53,8 @@ import {
   applyOrganizationRestriction,
   BYPASS,
   executionContext,
+  FilterMembersMode,
+  filterMembersWithUsersOrgs,
   INTERNAL_USERS,
   INTERNAL_USERS_WITHOUT_REDACTED,
   isBypassUser,
@@ -236,22 +238,26 @@ export const findUserPaginated = async (context, user, args) => {
 
 export const findCreators = (context, user, args) => {
   const { entityTypes = [] } = args;
-  return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+  const creatorsFilter = async (creators) => { return filterMembersWithUsersOrgs(context, user, creators, FilterMembersMode.EXCLUDE); };
+  return fullEntitiesThoughAggregationConnection(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: creatorsFilter });
 };
 
 export const findAssignees = (context, user, args) => {
   const { entityTypes = [] } = args;
-  return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+  const assigneesFilter = async (assignees) => { return filterMembersWithUsersOrgs(context, user, assignees, FilterMembersMode.EXCLUDE); };
+  return fullEntitiesThoughAggregationConnection(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: assigneesFilter });
 };
 export const findParticipants = (context, user, args) => {
   const { entityTypes = [] } = args;
-  return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+  const participantsFilter = async (participants) => { return filterMembersWithUsersOrgs(context, user, participants, FilterMembersMode.EXCLUDE); };
+  return fullEntitiesThoughAggregationConnection(context, user, PARTICIPANT_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes, postResolveFilter: participantsFilter });
 };
 
-export const findMembersPaginated = (context, user, args) => {
+export const findMembersPaginated = async (context, user, args) => {
   const { entityTypes = null } = args;
   const types = entityTypes || MEMBERS_ENTITY_TYPES;
-  return pageEntitiesConnection(context, user, types, args);
+  const restrictedArgs = await applyOrganizationRestriction(context, user, args);
+  return pageEntitiesConnection(context, user, types, restrictedArgs);
 };
 
 export const findAllMembers = async (context, user, args) => {

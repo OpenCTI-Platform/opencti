@@ -3733,7 +3733,7 @@ export const elAggregationNestedTermsWithFilter = async (context, user, indexNam
 };
 
 export const elAggregationsList = async (context, user, indexName, aggregations, opts = {}) => {
-  const { types = [], resolveToRepresentative = true } = opts;
+  const { types = [], resolveToRepresentative = true, postResolveFilter } = opts;
   const queryAggs = {};
   aggregations.forEach((agg) => {
     queryAggs[agg.name] = {
@@ -3768,7 +3768,10 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b) => b.key))));
   if (resolveToRepresentative) {
     const baseFields = ['internal_id', 'name', 'entity_type']; // Needs to take elements required to fill extractEntityRepresentative function
-    const aggsElements = await elFindByIds(context, user, aggsValues, { baseData: true, baseFields });
+    let aggsElements = await elFindByIds(context, user, aggsValues, { baseData: !postResolveFilter, baseFields }); // If post filter is required, we need to retrieve all fields
+    if (postResolveFilter) {
+      aggsElements = await postResolveFilter(aggsElements);
+    }
     const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: extractEntityRepresentativeName(element) })));
     return aggsMap.map((agg) => {
       const values = data.aggregations[agg].buckets?.map((b) => ({ label: aggsElementsCache[b.key], value: b.key }))?.filter((v) => !!v.label);
