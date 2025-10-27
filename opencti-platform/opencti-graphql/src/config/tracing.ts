@@ -8,7 +8,7 @@ import nodeMetrics from 'opentelemetry-node-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import nconf from 'nconf';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-import type { Gauge } from '@opentelemetry/api/build/src/metrics/Metric';
+import type { Gauge } from '@opentelemetry/api';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENABLED_METRICS, ENABLED_TRACING } from './conf';
 import { isNotEmptyField } from '../database/utils';
