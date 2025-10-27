@@ -115,6 +115,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             enableEnricher={true}
             enableQuickSubscription={true}
             redirectToContent={true}
+            noAliases={true}
           />
           <Box
             sx={{
