@@ -2314,6 +2314,7 @@ class DataTableToolBar extends Component {
                           <IconButton
                             color="primary"
                             aria-label="input"
+                            data-testid="remove-auth-members-button"
                             onClick={this.handleLaunchRemoveAuthMembers.bind(this)}
                             size="small"
                             disabled={

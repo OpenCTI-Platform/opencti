@@ -1,31 +1,28 @@
 import { getDraftModeColor } from '@components/common/draft/DraftChip';
-import DraftWorkspaceDialogCreation from '@components/common/files/draftWorkspace/DraftWorkspaceDialogCreation';
-import ImportMenu from '@components/data/ImportMenu';
-import DraftCreation from '@components/drafts/DraftCreation';
+import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from '@components/drafts/__generated__/DraftsLinesPaginationQuery.graphql';
 import Chip from '@mui/material/Chip';
 import { useTheme } from '@mui/styles';
-import { FunctionComponent } from 'react';
+import { useState } from 'react';
 import { graphql } from 'react-relay';
-import Breadcrumbs from '../../../components/Breadcrumbs';
-import DataTable from '../../../components/dataGrid/DataTable';
-import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
-import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
-import { useFormatter } from '../../../components/i18n';
-import type { Theme } from '../../../components/Theme';
-import { hexToRGB } from '../../../utils/Colors';
-import { computeValidationProgress } from '../../../utils/draft/draftUtils';
-import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
-import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
-import useDraftContext from '../../../utils/hooks/useDraftContext';
-import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloadedPaginationFragment';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import { DraftsLines_data$data } from './__generated__/DraftsLines_data.graphql';
-import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from './__generated__/DraftsLinesPaginationQuery.graphql';
-import DraftPopover from './DraftPopover';
+import Alert from '../../../../components/Alert';
+import Breadcrumbs from '../../../../components/Breadcrumbs';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import { defaultRender } from '../../../../components/dataGrid/dataTableUtils';
+import { useFormatter } from '../../../../components/i18n';
+import type { Theme } from '../../../../components/Theme';
+import { hexToRGB } from '../../../../utils/Colors';
+import { computeValidationProgress } from '../../../../utils/draft/draftUtils';
+import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { RestrictedDrafts_node$data } from './__generated__/RestrictedDrafts_node.graphql';
+import { RestrictedDraftsLines_data$data } from './__generated__/RestrictedDraftsLines_data.graphql';
 
-const DraftLineFragment = graphql`
-    fragment Drafts_node on DraftWorkspace {
+export const RestrictedDraftLineFragment = graphql`
+    fragment RestrictedDrafts_node on DraftWorkspace {
         id
         entity_type
         name
@@ -58,8 +55,9 @@ const DraftLineFragment = graphql`
         }
       }
 `;
-export const draftsLinesQuery = graphql`
-    query DraftsLinesPaginationQuery(
+
+const restrictedDraftsLinesQuery = graphql`
+    query RestrictedDraftsLinesPaginationQuery(
         $search: String
         $count: Int!
         $cursor: ID
@@ -67,7 +65,7 @@ export const draftsLinesQuery = graphql`
         $orderMode: OrderingMode
         $filters: FilterGroup
     ) {
-        ...DraftsLines_data
+        ...RestrictedDraftsLines_data
         @arguments(
             search: $search
             count: $count
@@ -79,8 +77,8 @@ export const draftsLinesQuery = graphql`
     }
 `;
 
-export const draftsLinesFragment = graphql`
-    fragment DraftsLines_data on Query
+const restrictedDraftsLinesFragment = graphql`
+    fragment RestrictedDraftsLines_data on Query
     @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
@@ -89,19 +87,19 @@ export const draftsLinesFragment = graphql`
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "FilterGroup" }
     )
-    @refetchable(queryName: "DraftsLinesRefetchQuery") {
-        draftWorkspaces(
+    @refetchable(queryName: "RestrictedDraftsLinesRefetchQuery") {
+        draftWorkspacesRestricted(
             search: $search
             first: $count
             after: $cursor
             orderBy: $orderBy
             orderMode: $orderMode
             filters: $filters
-        ) @connection(key: "Pagination_draftWorkspaces") {
+        ) @connection(key: "Pagination_draftWorkspacesRestricted") {
             edges {
                 node {
                     id
-                    ...Drafts_node
+                    ...RestrictedDrafts_node
                 }
             }
             pageInfo {
@@ -113,25 +111,17 @@ export const draftsLinesFragment = graphql`
     }
 `;
 
-const LOCAL_STORAGE_KEY = 'draftWorkspaces';
+const LOCAL_STORAGE_KEY = 'draftWorkspacesRestricted';
 
-interface DraftsProps {
-  entityId?: string;
-  openCreate?: boolean;
-  setOpenCreate?: () => void;
-  emptyStateMessage?: string
-}
-
-const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenCreate, emptyStateMessage }) => {
+const RestrictedDrafts = () => {
+  const [ref, setRef] = useState<HTMLDivElement | undefined>(undefined);
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const draftColor = getDraftModeColor(theme);
   const validatedDraftColor = theme.palette.success.main;
-  const draftContext = useDraftContext();
+
   const { setTitle } = useConnectedDocumentModifier();
-  if (!entityId) {
-    setTitle(t_i18n('Drafts'));
-  }
+  setTitle(t_i18n('Restricted Drafts | Restriction | Data'));
 
   const initialValues = {
     filters: emptyFilterGroup,
@@ -150,36 +140,35 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     filters,
   } = viewStorage;
 
-  const filtersForDataTable = addFilter(filters, 'entity_id', [entityId || ''], entityId ? 'eq' : 'nil', 'and');
-  const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filtersForDataTable);
+  const contextFilters = useBuildEntityTypeBasedFilterContext('DraftWorkspace', filters);
   const queryPaginationOptions = {
     ...paginationOptions,
     filters: contextFilters,
   } as unknown as DraftsLinesPaginationQuery$variables;
   const queryRef = useQueryLoading<DraftsLinesPaginationQuery>(
-    draftsLinesQuery,
+    restrictedDraftsLinesQuery,
     queryPaginationOptions,
   );
 
   const preloadedPaginationProps = {
-    linesQuery: draftsLinesQuery,
-    linesFragment: draftsLinesFragment,
+    linesQuery: restrictedDraftsLinesQuery,
+    linesFragment: restrictedDraftsLinesFragment,
     queryRef,
-    nodePath: ['draftWorkspaces', 'pageInfo', 'globalCount'],
+    nodePath: ['draftWorkspacesRestricted', 'pageInfo', 'globalCount'],
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftsLinesPaginationQuery>;
 
   const dataColumns: DataTableProps['dataColumns'] = {
     name: {
-      percentWidth: 50,
+      percentWidth: 30,
       isSortable: true,
     },
     creator: {
-      percentWidth: 15,
+      percentWidth: 20,
       isSortable: true,
     },
     created_at: {
-      percentWidth: 15,
+      percentWidth: 20,
       isSortable: true,
     },
     draft_status: {
@@ -187,7 +176,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
-      render: ({ draft_status }) => (
+      render: ({ draft_status }: RestrictedDrafts_node$data) => (
         <Chip
           variant="outlined"
           label={draft_status}
@@ -209,59 +198,42 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
     draft_validation_progress: {
       id: 'draft_validation_progress',
       label: 'Validation progress',
-      percentWidth: 10,
+      percentWidth: 20,
       isSortable: false,
-      render: ({ validationWork }) => defaultRender(computeValidationProgress(validationWork)),
+      render: ({ validationWork }: RestrictedDrafts_node$data) => defaultRender(computeValidationProgress<RestrictedDrafts_node$data['validationWork']>(validationWork)),
     },
   };
 
   return (
-    <span data-testid="draft-page">
-      {!entityId && (
-        <>
-          <Breadcrumbs
-            elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
-          />
-          <ImportMenu />
-        </>
-      )}
+    <>
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Data') },
+          { label: t_i18n('Restriction') },
+          { label: t_i18n('Restricted drafts'), current: true },
+        ]}
+        noMargin
+      />
+      <Alert
+        content={t_i18n('This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.')}
+      />
       {queryRef && (
-        <>
+        <div style={{ overflow: 'hidden', flex: 1 }} ref={(r) => setRef(r ?? undefined)}>
           <DataTable
+            rootRef={ref}
             dataColumns={dataColumns}
-            resolvePath={(data: DraftsLines_data$data) => (data.draftWorkspaces?.edges ?? []).map((n) => n?.node)}
+            resolvePath={(data: RestrictedDraftsLines_data$data) => (data.draftWorkspacesRestricted?.edges ?? []).map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
             toolbarFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
-            lineFragment={DraftLineFragment}
-            hideSearch={!!entityId}
-            hideFilters={!!entityId}
-            hideHeaders={!!entityId}
-            disableLineSelection={!!entityId}
-            emptyStateMessage={emptyStateMessage}
-            createButton={!draftContext && <DraftCreation paginationOptions={queryPaginationOptions} />}
-            actions={(row) => (
-              <DraftPopover
-                draftId={row.id}
-                draftLocked={row.draft_status !== 'open'}
-                paginationOptions={queryPaginationOptions}
-                currentUserAccessRight={row.currentUserAccessRight}
-              />
-            )}
+            lineFragment={RestrictedDraftLineFragment}
+            removeAuthMembersEnabled
           />
-          {openCreate && (
-            <DraftWorkspaceDialogCreation
-              paginationOptions={queryPaginationOptions}
-              handleCloseCreate={setOpenCreate}
-              entityId={entityId}
-              openCreate={openCreate}
-            />
-          )}
-        </>
+        </div>
       )}
-    </span>
+    </>
   );
 };
 
-export default Drafts;
+export default RestrictedDrafts;
