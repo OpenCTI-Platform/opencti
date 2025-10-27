@@ -151,7 +151,8 @@ import { extractEntityRepresentativeName, extractRepresentative } from './entity
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { addFilter, checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
-  ALIAS_FILTER, BULK_SEARCH_KEYWORDS_FILTER,
+  ALIAS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER,
   BULK_SEARCH_KEYWORDS_FILTER_KEYS,
   COMPUTED_RELIABILITY_FILTER,
   ID_FILTER,

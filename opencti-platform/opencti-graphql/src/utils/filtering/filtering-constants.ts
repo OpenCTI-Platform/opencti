@@ -208,7 +208,7 @@ export const FILTER_KEYS_WITH_ME_VALUE = [
   MEMBERS_USER_FILTER,
 ];
 
-// special filter key
+// multi filter keys
 export const BULK_SEARCH_KEYWORDS_FILTER_KEYS = [
   'name',
   'aliases',
