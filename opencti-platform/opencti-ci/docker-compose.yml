@@ -104,7 +104,27 @@ services:
     ports:
       - 4400:4100
 
+  opencti-direct-worker:
+    container_name: opencti-direct-worker
+    image: filigran/worker:${TAG}
+    restart: unless-stopped
+    environment:
+      - OPENCTI_URL=http://opencti-direct-start:4300
+      - OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      - WORKER_LOG_LEVEL=info
+    networks:
+      - runner-docker-network
 
+  opencti-test-worker:
+    container_name: opencti-test-worker
+    image: filigran/worker:${TAG}
+    restart: unless-stopped
+    environment:
+      - OPENCTI_URL=http://api-tests:4010
+      - OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      - WORKER_LOG_LEVEL=info
+    networks:
+      - runner-docker-network
 
 networks:
   runner-docker-network:
