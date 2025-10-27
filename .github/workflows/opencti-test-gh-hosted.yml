@@ -89,7 +89,7 @@ jobs:
         cache-to: type=gha,mode=max
 
   run-opencti-test-stack:
-    needs: build-opencti-platform
+    needs: [build-opencti-platform, build-opencti-worker]
     runs-on: ubuntu-latest
     steps:
     - name: Display Runner Information
@@ -245,6 +245,7 @@ jobs:
 
     - name: Stop docker stats monitor and print logs
       if: always()
+      continue-on-error: true
       run: |
         kill $(cat monitor.pid) || true
         echo "==== Docker stats log ===="
