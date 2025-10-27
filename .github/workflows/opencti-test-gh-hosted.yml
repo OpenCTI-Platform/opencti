@@ -124,14 +124,14 @@ jobs:
       continue-on-error: true
       run: |
           sleep 20;
-          echo -e "\n\n *********\n ********* logs Minio \n"; sleep 2
-          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep minio | awk '{print $1}')
-          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 2
-          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep elasticsearch | awk '{print $1}')
-          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 2
-          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep rabbit | awk '{print $1}')
-          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 2
-          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep redis | awk '{print $1}')
+          echo -e "\n\n *********\n ********* logs Minio \n"; 
+          docker logs minio
+          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1
+          docker logs elasticsearch
+          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1
+          docker logs rabbitmq
+          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
+          docker logs redis
           
           echo -e "\n\n *********\n ********* test backend endpoint \n"; sleep 2
           set -x
@@ -168,36 +168,68 @@ jobs:
     - name: Log backend
       continue-on-error: true
       run: |
-          echo -e "\n\n *********\n ********* logs Minio \n"; sleep 2
-          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep minio | awk '{print $1}')
-          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 2
-          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep elastic | awk '{print $1}')
-          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 2
-          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep rabbit | awk '{print $1}')
-          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 2
-          docker logs $(docker ps -a --format '{{.ID}} {{.Image}}' | grep redis | awk '{print $1}')
-        
+          echo -e "\n\n *********\n ********* logs Minio \n"; 
+          docker logs minio
+          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1
+          docker logs elasticsearch
+          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1
+          docker logs rabbitmq
+          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
+          docker logs redis
 
-    - name: Logs opencti raw start
+    - name: Logs opencti start
       continue-on-error: true
       run: |
-          echo "$(date)"  
-          docker logs opencti-live-start
-    - name: Logs opencti raw start
-      continue-on-error: true
-      run: |
-          echo "$(date)"  
-          docker logs opencti-live-start
-    - name: Logs opencti direct start
-      continue-on-error: true
-      run: |
+          echo -e "\n\n *********\n ********* Log OpenCTI DIRECT"; 
           echo "$(date)"  
           docker logs opencti-direct-start
-    - name: Logs opencti restore start
-      continue-on-error: true
-      run: |
+          echo -e "\n\n *********\n ********* Log OpenCTI LIVE"; sleep 1
+          echo "$(date)"  
+          docker logs opencti-live-start
+          echo -e "\n\n *********\n ********* Log OpenCTI RAW"; sleep 1
+          echo "$(date)"  
+          docker logs opencti-raw-start
+          echo -e "\n\n *********\n ********* Log OpenCTI RESTORE"; sleep 1
           echo "$(date)"  
           docker logs opencti-restore-start
+
+
+    - name: Start api test
+      run: |
+        docker run --network runner-docker-network \
+          --name api-test \
+          -v "/home/efaure/workspace/OpenCTI/opencti-tmp/opencti:/home/workspace" \
+          -e APP__BASE_URL=http://api-tests:4010/ \
+          -e APP__ADMIN__PASSWORD=admin \
+          -e APP__CHILD_LOCKING_PROCESS__ENABLED=false \
+          -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
+          -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4200/graphql \
+          -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4300/graphql \
+          -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4400/graphql \
+          -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+          -e REDIS__HOSTNAME=redis \
+          -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
+          -e MINIO__ENDPOINT=minio \
+          -e RABBITMQ__HOSTNAME=rabbitmq \
+          -e EXPIRATION_SCHEDULER__ENABLED=false \
+          -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
+          -e SMTP__ENABLED=false \
+          -e PYTHONUNBUFFERED=1  \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -x;
+            echo -e "\n\n *********\n ********* Start OpenCTI API test";
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
+            apk add build-base git libffi-dev cargo;
+            cd /home/workspace/opencti-platform/opencti-graphql
+            npm install -g corepack
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn build
+            yarn check-ts
+            yarn lint
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test
+        '
+        
 
     - name: Memory, container and process infos
       continue-on-error: true
