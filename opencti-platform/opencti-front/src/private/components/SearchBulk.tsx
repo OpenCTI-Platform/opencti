@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { SearchBulkQuery, SearchBulkQuery$variables } from './__generated__/SearchBulkQuery.graphql';
 import { SearchBulkQuery_data$data } from './__generated__/SearchBulkQuery_data.graphql';
-import { allEntitiesKeyList } from './common/bulk/utils/querySearchEntityByText';
 import DataTable from '../../components/dataGrid/DataTable';
 import { addFilter, emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
@@ -130,9 +129,8 @@ interface SearchBulkProps {
 
 const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
   const buildSearchBulkFilters = (values: string[], filters: FilterGroup) => {
-    return values.length > 0
-      ? addFilter(filters, allEntitiesKeyList as unknown as string, values)
-      : filters;
+    if (values.length === 0) return filters;
+    return addFilter(filters, 'bulkSearchKeywords', values);
   };
 
   const initialValues = {
