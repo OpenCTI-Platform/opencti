@@ -43,6 +43,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.action?.disabled,
     fontFamily: 'Consolas, monaco, monospace',
   },
+  regardingOfOperatorReadOnly: {
+    display: 'inline-block',
+    height: '100%',
+    borderRadius: 0,
+    margin: '0 2px 0 0',
+    fontFamily: 'Consolas, monaco, monospace',
+  },
   label: {
     cursor: 'pointer',
     '&:hover': {
@@ -55,6 +62,7 @@ interface FilterValuesProps {
   label: string | React.JSX.Element;
   tooltip?: boolean;
   currentFilter: Filter;
+  parentFilter?: Filter;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   redirection?: boolean;
   handleSwitchLocalMode?: (filter: Filter) => void;
@@ -69,6 +77,7 @@ interface FilterValuesProps {
 const FilterValues: FunctionComponent<FilterValuesProps> = ({
   label,
   tooltip,
+  parentFilter,
   currentFilter,
   filtersRepresentativesMap,
   redirection,
@@ -139,6 +148,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
+    const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
     return (
       <Fragment key={id}>
         {filterOperator === 'within'
@@ -166,11 +176,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               filterDefinition={filterDefinition}
               filterOperator={filterOperator}
             />
-            {filterKey !== 'regardingOf' && filterKey !== 'dynamicRegardingOf' && last(filterValues) !== id && (
-              <div
-                className={operatorClassName}
-                onClick={operatorOnClick}
-              >
+            {last(filterValues) !== id && isRegardingOfFilter && (
+              <div className={classes.regardingOfOperatorReadOnly} onClick={operatorOnClick}>,</div>
+            )}
+            {last(filterValues) !== id && !isRegardingOfFilter && (
+              <div className={operatorClassName} onClick={operatorOnClick}>
                 {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
               </div>
             )}
@@ -242,6 +252,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                       <FilterValues
                         label={keyLabel}
                         tooltip={true}
+                        parentFilter={currentFilter}
                         currentFilter={val}
                         filtersRepresentativesMap={filtersRepresentativesMap}
                       />
@@ -258,6 +269,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                           <FilterValues
                             label={keyLabel}
                             tooltip={false}
+                            parentFilter={currentFilter}
                             currentFilter={val}
                             filtersRepresentativesMap={filtersRepresentativesMap}
                             redirection
