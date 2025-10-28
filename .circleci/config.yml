@@ -11,23 +11,26 @@ jobs:
     steps:
       - checkout
       - run:
+          name: debug
+          command: pwd ; ls -lart
+      - run:
           name: go to client-python
           command: cd client-python
       - run:
           name: install dependencies
-          command: pip3 install -r requirements.txt --user
+          command: cd client-python && pip3 install -r requirements.txt --user
       - run:
           name: install test-dependencies
-          command: pip3 install -r test-requirements.txt --user
+          command: cd client-python && pip3 install -r test-requirements.txt --user
       - run:
           name: confirm black version
-          command: black --version
+          command: cd client-python && black --version
       - run:
           name: run isort check
-          command: isort --check-only .
+          command: cd client-python && isort --check-only .
       - run:
           name: run black check
-          command: black --check .
+          command: cd client-python && black --check .
       - slack/notify:
           branch_pattern: master
           event: fail
@@ -52,12 +55,9 @@ jobs:
     steps:
       - checkout
       - run:
-          name: go to client-python
-          command: cd client-python
-      - run:
-          name: install dependencies
+          name: cd client-python &&  install dependencies
           command: >
-            pip3 install --user -r requirements.txt -r test-requirements.txt
+            cd client-python && pip3 install --user -r requirements.txt -r test-requirements.txt
       - run:
           name: check version
           command: |
@@ -70,7 +70,7 @@ jobs:
       - run:
           name: build
           command: >
-            SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" python3 -m build
+            cd client-python &&  SOURCE_DATE_EPOCH="$(git log -1 --pretty=%ct)" python3 -m build
       - slack/notify:
           branch_pattern: master
           event: fail
@@ -88,22 +88,20 @@ jobs:
       - attach_workspace:
           at: ~/repo/client-python
       - run:
-          name: go to client-python
-          command: cd client-python
-      - run:
           name: install dependencies
-          command: pip3 install -r requirements.txt --user
+          command: cd client-python && pip3 install -r requirements.txt --user
       - run:
           name: install twine
-          command: pip3 install twine
+          command: cd client-python && pip3 install twine
       - run:
           name: init .pypirc
           command: >
+            cd client-python
             printf "[pypi]\nusername = __token__\npassword = %s\n"
             "${PYPI_PASSWORD}" >> ~/.pypirc
       - run:
           name: upload to pypi
-          command: twine upload dist/*
+          command: cd client-python && twine upload dist/*
       - slack/notify:
           branch_pattern: master
           event: fail
