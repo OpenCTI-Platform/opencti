@@ -12,7 +12,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { getDraftContext } from '../utils/draftContext';
 
-const publishEventToConnectors = async (context, user, element, targetConnectors, stixLoaders) => {
+const publishEventToConnectors = async (context, user, element, targetConnectors, trigger, stixLoaders) => {
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
   const elementStandardId = element.standard_id;
@@ -40,6 +40,8 @@ const publishEventToConnectors = async (context, user, element, targetConnectors
         work_id: work.id, // Related action for history
         applicant_id: null, // No specific user asking for the import
         draft_id: draftContext ?? null,
+        trigger, // create | update
+        mode: 'auto'
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ENRICHMENT,
@@ -63,7 +65,7 @@ export const updateEntityAutoEnrichment = async (context, user, element, scope, 
   }
   // Get the list of compatible connectors
   const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope, { mode: 'update' });
-  return publishEventToConnectors(context, user, element, targetConnectors, stixLoaders);
+  return publishEventToConnectors(context, user, element, targetConnectors, 'update', stixLoaders);
 };
 
 export const createEntityAutoEnrichment = async (context, user, element, scope, stixLoaders) => {
@@ -75,7 +77,7 @@ export const createEntityAutoEnrichment = async (context, user, element, scope, 
   }
   // Get the list of compatible connectors
   const targetConnectors = await findConnectorsForElementEnrichment(context, user, element, scope, { mode: 'creation' });
-  return publishEventToConnectors(context, user, element, targetConnectors, stixLoaders);
+  return publishEventToConnectors(context, user, element, targetConnectors, 'create', stixLoaders);
 };
 
 const findConnectorsForElementEnrichment = async (context, user, element, scope, opts = {}) => {

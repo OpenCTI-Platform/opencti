@@ -340,6 +340,8 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
         work_id: work.id, // Related action for history
         applicant_id: null, // No specific user asking for the import
         draft_id: draftContext ?? null,
+        mode: 'manual',
+        trigger: 'update'
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ENRICHMENT,
@@ -550,6 +552,8 @@ const askFieldsAnalysisForConnector = async (context, user, analyzedId, contentS
       internal: {
         work_id: work.id, // Related action for history
         applicant_id: null, // No specific user asking for the analysis
+        mode: 'manual',
+        trigger: 'update'
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ANALYSIS,
@@ -585,6 +589,8 @@ const askFileAnalysisForConnector = async (context, user, analyzedId, contentSou
       internal: {
         work_id: work.id, // Related action for history
         applicant_id: null, // No specific user asking for the analysis
+        mode: 'manual',
+        trigger: 'update'
       },
       event: {
         event_type: CONNECTOR_INTERNAL_ANALYSIS,
