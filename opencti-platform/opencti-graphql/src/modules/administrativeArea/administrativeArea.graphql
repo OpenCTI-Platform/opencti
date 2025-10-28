@@ -109,7 +109,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     country: Country
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(version: Version): String
     importFiles(
     first: Int
     prefixMimeType: String

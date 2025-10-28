@@ -183,7 +183,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   decayChartData: DecayChartData
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
