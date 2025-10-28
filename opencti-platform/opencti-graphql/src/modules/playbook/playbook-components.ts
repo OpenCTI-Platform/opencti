@@ -384,6 +384,7 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
   notify: async ({ executionId, eventId, playbookId, playbookNode,
     previousPlaybookNodeId, dataInstanceId, bundle }) => {
     if (playbookNode.configuration.connector) {
+      const baseData = extractBundleBaseElement(dataInstanceId, bundle);
       const message = {
         internal: {
           work_id: null, // No work id associated
@@ -396,6 +397,8 @@ const PLAYBOOK_CONNECTOR_COMPONENT: PlaybookComponent<ConnectorConfiguration> = 
             previous_step_id: previousPlaybookNodeId,
           },
           applicant_id: AUTOMATION_MANAGER_USER.id, // System user is responsible for the automation
+          trigger: isNotEmptyField(baseData.extensions?.[STIX_EXT_OCTI]?.id) ? 'create' : 'update',
+          mode: 'auto'
         },
         event: {
           entity_id: dataInstanceId,

@@ -204,6 +204,8 @@ export const askEntityExport = async (context, user, format, entity, type, conte
       internal: {
         work_id: work.id, // Related action for history
         applicant_id: user.id, // User asking for the import
+        trigger: null, // Export as no specific trigger
+        mode: 'manual'
       },
       event: {
         event_type: CONNECTOR_INTERNAL_EXPORT_FILE,
