@@ -43,6 +43,8 @@ class OpenCTIConnector:
         auto: bool,
         only_contextual: bool,
         playbook_compatible: bool,
+        auto_update: bool,
+        enrichment_resolution: str,
         listen_callback_uri=None,
     ):
         self.id = connector_id
@@ -55,6 +57,8 @@ class OpenCTIConnector:
         else:
             self.scope = []
         self.auto = auto
+        self.auto_update = auto_update
+        self.enrichment_resolution = enrichment_resolution
         self.only_contextual = only_contextual
         self.playbook_compatible = playbook_compatible
         self.listen_callback_uri = listen_callback_uri
@@ -72,6 +76,8 @@ class OpenCTIConnector:
                 "type": self.type.name,
                 "scope": self.scope,
                 "auto": self.auto,
+                "auto_update": self.auto_update,
+                "enrichment_resolution": self.enrichment_resolution,
                 "only_contextual": self.only_contextual,
                 "playbook_compatible": self.playbook_compatible,
                 "listen_callback_uri": self.listen_callback_uri,

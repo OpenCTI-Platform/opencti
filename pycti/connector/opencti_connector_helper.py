@@ -365,6 +365,16 @@ class ListenQueue(threading.Thread):
             event_data = json_data["event"]
             entity_id = event_data.get("entity_id")
             entity_type = event_data.get("entity_type")
+            stix_entity = (
+                json.loads(event_data.get("stix_entity"))
+                if event_data.get("stix_entity")
+                else None
+            )
+            stix_objects = (
+                json.loads(event_data.get("stix_objects"))
+                if event_data.get("stix_objects")
+                else None
+            )
             validation_mode = event_data.get("validation_mode", "workbench")
             force_validation = event_data.get("force_validation", False)
             # Set the API headers
@@ -430,17 +440,18 @@ class ListenQueue(threading.Thread):
                 else:
                     # If not playbook but enrichment, compute object on enrichment_entity
                     opencti_entity = event_data["enrichment_entity"]
-                    stix_objects = self.helper.api.stix2.prepare_export(
-                        entity=self.helper.api.stix2.generate_export(
-                            copy.copy(opencti_entity)
+                    if stix_objects is None:
+                        stix_objects = self.helper.api.stix2.prepare_export(
+                            entity=self.helper.api.stix2.generate_export(
+                                copy.copy(opencti_entity)
+                            )
                         )
-                    )
-                    stix_entity = [
-                        e
-                        for e in stix_objects
-                        if e["id"] == opencti_entity["standard_id"]
-                        or e["id"] == "x-opencti-" + opencti_entity["standard_id"]
-                    ][0]
+                        stix_entity = [
+                            e
+                            for e in stix_objects
+                            if e["id"] == opencti_entity["standard_id"]
+                            or e["id"] == "x-opencti-" + opencti_entity["standard_id"]
+                        ][0]
                     event_data["stix_objects"] = stix_objects
                     event_data["stix_entity"] = stix_entity
                 # Handle organization propagation
@@ -1116,6 +1127,15 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.connect_auto = get_config_variable(
             "CONNECTOR_AUTO", ["connector", "auto"], config, default=False
         )
+        self.connect_auto_update = get_config_variable(
+            "CONNECTOR_AUTO_UPDATE", ["connector", "auto_update"], config, default=False
+        )
+        self.connect_enrichment_resolution = get_config_variable(
+            "CONNECTOR_ENRICHMENT_RESOLUTION",
+            ["connector", "enrichment_resolution"],
+            config,
+            default="none",
+        )
         self.bundle_send_to_queue = get_config_variable(
             "CONNECTOR_SEND_TO_QUEUE",
             ["connector", "send_to_queue"],
@@ -1231,14 +1251,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
-            self.connect_id,
-            self.connect_name,
-            self.connect_type,
-            self.connect_scope,
-            self.connect_auto,
-            self.connect_only_contextual,
-            playbook_compatible,
-            (
+            connector_id=self.connect_id,
+            connector_name=self.connect_name,
+            connector_type=self.connect_type,
+            scope=self.connect_scope,
+            auto=self.connect_auto,
+            only_contextual=self.connect_only_contextual,
+            playbook_compatible=playbook_compatible,
+            auto_update=self.connect_auto_update,
+            enrichment_resolution=self.connect_enrichment_resolution,
+            listen_callback_uri=(
                 self.listen_protocol_api_uri + self.listen_protocol_api_path
                 if self.listen_protocol == "API"
                 else None

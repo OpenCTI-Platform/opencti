@@ -60,11 +60,9 @@ class Settings:
             platform_theme_light_logo_login
             platform_map_tile_server_dark
             platform_map_tile_server_light
-            platform_openbas_url
-            platform_openbas_disable_display
-            platform_openerm_url
-            platform_openmtd_url
             platform_ai_enabled
+            platform_openaev_url
+            platform_opengrc_url
             platform_ai_type
             platform_ai_model
             platform_ai_has_token

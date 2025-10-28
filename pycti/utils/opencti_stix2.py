@@ -885,6 +885,7 @@ class OpenCTIStix2:
             "Tool": self.opencti.tool.read,
             "Vocabulary": self.opencti.vocabulary.read,
             "Vulnerability": self.opencti.vulnerability.read,
+            "Security-Coverage": self.opencti.security_coverage.read,
         }
 
     def get_reader(self, entity_type: str):
@@ -961,6 +962,7 @@ class OpenCTIStix2:
             "narrative": self.opencti.narrative,
             "task": self.opencti.task,
             "x-opencti-task": self.opencti.task,
+            "security-coverage": self.opencti.security_coverage,
             "vocabulary": self.opencti.vocabulary,
             # relationships
             "relationship": self.opencti.stix_core_relationship,

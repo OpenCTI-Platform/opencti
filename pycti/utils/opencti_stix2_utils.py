@@ -64,6 +64,7 @@ STIX_CORE_OBJECTS = [
     "threat-actor",
     "tool",
     "vulnerability",
+    "security-coverage",
 ]
 
 SUPPORTED_STIX_ENTITY_OBJECTS = STIX_META_OBJECTS + STIX_CORE_OBJECTS

@@ -624,6 +624,7 @@ class StixCoreRelationship:
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
+        coverage_information = kwargs.get("coverage_information", None)
         update = kwargs.get("update", False)
 
         self.opencti.app_logger.info(
@@ -668,6 +669,7 @@ class StixCoreRelationship:
                     "killChainPhases": kill_chain_phases,
                     "x_opencti_workflow_id": x_opencti_workflow_id,
                     "x_opencti_stix_ids": x_opencti_stix_ids,
+                    "coverage_information": coverage_information,
                     "update": update,
                 }
             },
@@ -1175,6 +1177,19 @@ class StixCoreRelationship:
                     )
                 )
 
+            raw_coverages = (
+                stix_relation["coverage"] if "coverage" in stix_relation else []
+            )
+            coverage_information = list(
+                map(
+                    lambda cov: {
+                        "coverage_name": cov["name"],
+                        "coverage_score": cov["score"],
+                    },
+                    raw_coverages,
+                )
+            )
+
             source_ref = stix_relation["source_ref"]
             target_ref = stix_relation["target_ref"]
             return self.create(
@@ -1197,6 +1212,7 @@ class StixCoreRelationship:
                     if "stop_time" in stix_relation
                     else default_date
                 ),
+                coverage_information=coverage_information,
                 revoked=(
                     stix_relation["revoked"] if "revoked" in stix_relation else None
                 ),
