@@ -23,6 +23,7 @@ import { addUser, findById } from '../../../src/domain/user';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
 import { getFakeAuthUser } from '../../utils/domainQueryHelper';
 import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
+import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../../../src/modules/malwareAnalysis/malwareAnalysis-types';
 
 // test queries involving dynamic filters
 
@@ -63,6 +64,9 @@ const LIST_QUERY = gql`
                 node {
                     id
                     standard_id
+                    representative {
+                        main
+                    }
                     entity_type
                 }
             }
@@ -2137,7 +2141,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
-
   it('should list entities according to search filters with trunc word and unordered', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2156,7 +2159,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
-
   it('should not find entities according to search filters with trunc word and double quote', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2193,7 +2195,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
-
   it('should not find any entities according to search filters which is not in any description', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2211,7 +2212,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(0);
   });
-
   it('should find entities according to search filters with one existing word and another word which is not present in any description', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2229,7 +2229,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(3);
   });
-
   it('should find entities according to search filters on short string', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2248,7 +2247,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
-
   it('should find entities according to search filters on unordered short string', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2267,7 +2265,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
-
   it('should not find entities according to search filters on trunc short string and double quotes', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2286,7 +2283,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(0);
   });
-
   it('should find entities according to search filters on short string with double quotes', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2305,7 +2301,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
-
   it('should not find any entities according to search filters on abracadra', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2323,7 +2318,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(0);
   });
-
   it('should find one entity according to search filters on abracadra and testing', async () => {
     const queryResult = await queryAsAdmin({ query: REPORT_LIST_QUERY,
       variables: {
@@ -2341,7 +2335,6 @@ describe('Complex filters combinations for elastic queries', () => {
       } });
     expect(queryResult.data.reports.edges.length).toEqual(1);
   });
-
   it('should list entities according to relative date time range filters', async () => {
     // published within [2023-09-01, 2023-09-30]
     let queryResult = await queryAsAdmin({
@@ -2380,7 +2373,6 @@ describe('Complex filters combinations for elastic queries', () => {
     });
     expect(queryResult.data.reports.edges.length).toEqual(3); // the reports published in the last 3 years: report1, report2, report4
   });
-
   it('should test environment deleted', async () => {
     const DELETE_REPORT_QUERY = gql`
         mutation reportDelete($id: ID!) {
@@ -2446,87 +2438,7 @@ describe('Complex filters combinations for elastic queries', () => {
 
 describe('Complex filters regarding of for elastic queries', () => {
   it('should list entities using basic regarding of filter', async () => {
-    const queryResult = await queryAsAdmin({
-      query: LIST_QUERY,
-      variables: {
-        filters: {
-          mode: 'and',
-          filters: [
-            {
-              key: 'entity_type',
-              values: ['Malware', 'Intrusion-Set'],
-              operator: 'eq',
-              mode: 'or'
-            }
-          ],
-          filterGroups: [
-            {
-              mode: 'and',
-              filters: [
-                {
-                  key: 'regardingOf',
-                  operator: 'eq',
-                  values: [
-                    {
-                      key: 'relationship_type',
-                      values: ['uses']
-                    }
-                  ],
-                  mode: 'or'
-                }
-              ],
-              filterGroups: []
-            }
-          ]
-        },
-      }
-    });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(2);
-    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
-    expect(queryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
-  });
-  it('should list entities using complex regarding of filter', async () => {
-    const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
-    const queryResult = await queryAsAdmin({
-      query: LIST_QUERY,
-      variables: {
-        filters: {
-          mode: 'and',
-          filters: [
-            {
-              key: 'entity_type',
-              values: ['Malware', 'Intrusion-Set'],
-              operator: 'eq',
-              mode: 'or'
-            }
-          ],
-          filterGroups: [
-            {
-              mode: 'and',
-              filters: [
-                {
-                  key: 'regardingOf',
-                  operator: 'eq',
-                  values: [
-                    { key: 'id', values: [attackPattern.internal_id] },
-                    { key: 'relationship_type', values: ['uses'] },
-                    { key: 'direction_forced', values: [false] },
-                  ],
-                  mode: 'or'
-                }
-              ],
-              filterGroups: []
-            }
-          ]
-        },
-      }
-    });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
-    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
-  });
-  it('should list entities using complex regarding of filter with force direction', async () => {
-    const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
-    const genFilters = (reverse) => {
+    const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq') => {
       return {
         mode: 'and',
         filters: [
@@ -2540,10 +2452,99 @@ describe('Complex filters regarding of for elastic queries', () => {
         filterGroups: [
           {
             mode: 'and',
+            filters: withRegardingOf ? [
+              {
+                key: 'regardingOf',
+                operator: regardingOfOperator,
+                values: [
+                  {
+                    key: 'relationship_type',
+                    values: ['uses']
+                  }
+                ],
+                mode: 'or'
+              }
+            ] : [],
+            filterGroups: []
+          }
+        ]
+      };
+    };
+    const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
+    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    expect(globalCount).toEqual(3);
+    const eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq') } });
+    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq') } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+  });
+  it('should list entities using complex regarding of filter', async () => {
+    const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
+    const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq') => {
+      return {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware', 'Intrusion-Set'],
+            operator: 'eq',
+            mode: 'or'
+          }
+        ],
+        filterGroups: withRegardingOf ? [
+          {
+            mode: 'and',
             filters: [
               {
                 key: 'regardingOf',
-                operator: 'eq',
+                operator: regardingOfOperator,
+                values: [
+                  { key: 'id', values: [attackPattern.internal_id] },
+                  { key: 'relationship_type', values: ['uses'] },
+                  { key: 'direction_forced', values: [false] },
+                ],
+                mode: 'or'
+              }
+            ],
+            filterGroups: []
+          }
+        ] : []
+      };
+    };
+    const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
+    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    expect(globalCount).toEqual(3);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq') } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq') } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(notEqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+  });
+  it('should list entities using complex regarding of filter with force direction', async () => {
+    const attackPattern = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17', ENTITY_TYPE_ATTACK_PATTERN);
+    const generateFilters = (reverse, withRegardingOf = true, regardingOfOperator = 'eq') => {
+      return {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware', 'Intrusion-Set'],
+            operator: 'eq',
+            mode: 'or'
+          }
+        ],
+        filterGroups: withRegardingOf ? [
+          {
+            mode: 'and',
+            filters: [
+              {
+                key: 'regardingOf',
+                operator: regardingOfOperator,
                 values: [
                   { key: 'id', values: [attackPattern.internal_id] },
                   { key: 'relationship_type', values: ['uses'] },
@@ -2555,70 +2556,202 @@ describe('Complex filters regarding of for elastic queries', () => {
             ],
             filterGroups: []
           }
+        ] : []
+      };
+    };
+    const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, false) } });
+    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    expect(globalCount).toEqual(3);
+    // reverse = true
+    const queryResultReverse = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, true, 'eq') } });
+    expect(queryResultReverse.data.globalSearch.edges.length).toEqual(1);
+    expect(queryResultReverse.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    const notEqQueryResultReverse = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, true, 'not_eq') } });
+    expect(notEqQueryResultReverse.data.globalSearch.edges.length).toEqual(2);
+    expect(notEqQueryResultReverse.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(notEqQueryResultReverse.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    // reverse = false
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, true, 'eq') } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(0); // 0 instead of 1 because of the reverse that implies a post filtering
+    const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false, true, 'not_eq') } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(2); // 2 here as post filtering is not applied on not_eq
+    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(notEqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+  });
+  it('should list entities using basic regarding of dynamic filter', async () => {
+    const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq') => {
+      return {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware'],
+            operator: 'eq',
+            mode: 'or'
+          }
+        ],
+        filterGroups: withRegardingOf ? [
+          {
+            mode: 'and',
+            filters: [
+              {
+                key: 'dynamicRegardingOf',
+                operator: regardingOfOperator,
+                values: [
+                  {
+                    key: 'dynamic',
+                    values: [
+                      {
+                        mode: 'and',
+                        filters: [
+                          {
+                            key: 'entity_type',
+                            operator: 'eq',
+                            values: [ENTITY_TYPE_ATTACK_PATTERN],
+                            mode: 'or'
+                          }
+                        ],
+                        filterGroups: []
+                      }
+                    ]
+                  },
+                  {
+                    key: 'relationship_type',
+                    values: ['uses']
+                  }
+                ],
+                mode: 'or'
+              }
+            ],
+            filterGroups: []
+          }
+        ] : []
+      };
+    };
+    const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
+    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    expect(globalCount).toEqual(2);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq') } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq') } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+  });
+  it('should list entities using multi relationships regarding of filter', async () => {
+    const generateFilters = (withRegardingOf = true, relationships = [], regardingOfOperator = 'eq') => {
+      return {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware'],
+            operator: 'eq',
+            mode: 'or'
+          }
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: withRegardingOf ? [
+              {
+                key: 'regardingOf',
+                operator: regardingOfOperator,
+                values: [
+                  {
+                    key: 'relationship_type',
+                    values: relationships
+                  }
+                ],
+                mode: 'or'
+              }
+            ] : [],
+            filterGroups: []
+          }
         ]
       };
     };
-    const queryResultReverse = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: genFilters(true) } });
-    expect(queryResultReverse.data.globalSearch.edges.length).toEqual(1);
-    expect(queryResultReverse.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: genFilters(false) } });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(0);
+    const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
+    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    expect(globalCount).toEqual(2);
+    // Paradise Ransomware / malware--faa5b705-cf44-4e50-8472-29e5fec43c3c [standard_id = malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714]
+    // - uses > attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc
+    // - uses > attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
+    // - intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 < uses
+    // Spelevo EK / malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88 [standard_id = malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85]
+    // - related-to > malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263"
+    let eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses'], 'eq') } });
+    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses', 'related-to'], 'eq') } });
+    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data.globalSearch.edges[0].node.representative.main).toEqual('Paradise Ransomware');
+    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(eqQueryResult.data.globalSearch.edges[1].node.representative.main).toEqual('Spelevo EK');
+    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    let notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses', 'related-to'], 'not_eq') } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(0);
+    notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, ['uses'], 'not_eq') } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
   });
-  it('should list entities using basic regarding of dynamic filter', async () => {
-    const queryResult = await queryAsAdmin({
-      query: LIST_QUERY,
-      variables: {
-        filters: {
-          mode: 'and',
-          filters: [
-            {
-              key: 'entity_type',
-              values: ['Malware'],
-              operator: 'eq',
-              mode: 'or'
-            }
-          ],
-          filterGroups: [
-            {
-              mode: 'and',
-              filters: [
-                {
-                  key: 'dynamicRegardingOf',
-                  operator: 'eq',
-                  values: [
-                    {
-                      key: 'dynamic',
-                      values: [
-                        {
-                          mode: 'and',
-                          filters: [
-                            {
-                              key: 'entity_type',
-                              operator: 'eq',
-                              values: [ENTITY_TYPE_ATTACK_PATTERN],
-                              mode: 'or'
-                            }
-                          ],
-                          filterGroups: []
-                        }
-                      ]
-                    },
-                    {
-                      key: 'relationship_type',
-                      values: ['uses']
-                    }
-                  ],
-                  mode: 'or'
-                }
-              ],
-              filterGroups: []
-            }
-          ]
-        },
-      }
-    });
-    expect(queryResult.data.globalSearch.edges.length).toEqual(1);
-    expect(queryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+  it('should list entities using multi ids regarding of filter', async () => {
+    const generateFilters = (withRegardingOf = true, ids = [], regardingOfOperator = 'eq') => {
+      return {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware'],
+            operator: 'eq',
+            mode: 'or'
+          }
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: withRegardingOf ? [
+              {
+                key: 'regardingOf',
+                operator: regardingOfOperator,
+                values: [
+                  {
+                    key: 'id',
+                    values: ids
+                  }
+                ],
+                mode: 'or'
+              }
+            ] : [],
+            filterGroups: []
+          }
+        ]
+      };
+    };
+    const baseQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(false) } });
+    const globalCount = baseQueryResult.data.globalSearch.edges.length;
+    // console.log(JSON.stringify(baseQueryResult, null, 2));
+    expect(globalCount).toEqual(2);
+    // Paradise Ransomware / malware--faa5b705-cf44-4e50-8472-29e5fec43c3c [standard_id = malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714]
+    // - uses > attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc
+    // - uses > attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
+    // - intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 < uses
+    // Spelevo EK / malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88 [standard_id = malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85]
+    // - related-to > malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263"
+    const targetAttack = await storeLoadById(testContext, ADMIN_USER, 'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc', ENTITY_TYPE_ATTACK_PATTERN);
+    let eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id], 'eq') } });
+    // console.log(JSON.stringify(eqQueryResult, null, 2));
+    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    const malwareAnalysis = await storeLoadById(testContext, ADMIN_USER, 'malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263', ENTITY_TYPE_MALWARE_ANALYSIS);
+    eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id, malwareAnalysis.internal_id], 'eq') } });
+    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data.globalSearch.edges[0].node.representative.main).toEqual('Paradise Ransomware');
+    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    expect(eqQueryResult.data.globalSearch.edges[1].node.representative.main).toEqual('Spelevo EK');
+    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+    let notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id], 'not_eq') } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id, malwareAnalysis.internal_id], 'not_eq') } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(0);
   });
 });
 
@@ -2689,7 +2822,6 @@ describe('User filter tests', () => {
     const userBeforeServiceAccountCreated = await findById(testContext, authUser, userBeforeServiceAccountAddResult.id);
     createdUsers.push(userBeforeServiceAccountCreated);
   });
-
   afterAll(async () => {
     for (let i = 0; i < createdUsers.length; i += 1) {
       const userId = createdUsers[i].id;
@@ -2697,6 +2829,7 @@ describe('User filter tests', () => {
       await deleteElementById(testContext, authUser, userId, ENTITY_TYPE_USER);
     }
   });
+
   it('should list one User service account', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_USERS_QUERY,
       variables: {
