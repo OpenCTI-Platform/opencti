@@ -347,12 +347,12 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   });
 
   const notes = data?.notes?.edges ?? [];
-  const accordionRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [open, setOpen] = useState<boolean>(false);
 
   const scrollToBottom = () => {
-    const element = accordionRef.current;
+    const element = containerRef.current;
     if (!element) return;
 
     setTimeout(() => {
@@ -363,11 +363,27 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
         top: targetPosition,
         behavior: 'smooth',
       });
-    }, 300);
+    }, 200);
+  };
+
+  const scrollToTop = () => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    setTimeout(() => {
+      const rect = element.getBoundingClientRect();
+      const OFFSET_TITLE_BLOCK = 100; // arbitrary offset to see the title block
+      const targetPosition = rect.top + window.pageYOffset - marginTop - OFFSET_TITLE_BLOCK;
+
+      window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth',
+      });
+    }, 100);
   };
 
   useEffect(() => {
-    if (accordionRef.current) {
+    if (containerRef.current && open) {
       scrollToBottom();
     }
   }, [open]);
@@ -397,12 +413,13 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
+        scrollToTop();
       },
     });
   };
 
   return (
-    <div style={{ marginTop, marginBottom: 20 }} ref={accordionRef}>
+    <div style={{ marginTop, marginBottom: 20 }} ref={containerRef}>
       <Header
         data={data}
         id={id}
