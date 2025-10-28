@@ -468,6 +468,8 @@ export const uploadJobImport = async (context, user, file, entityId, opts = {}) 
           work_id: work.id, // Related action for history
           applicant_id: user.id, // User asking for the import
           draft_id: draftContext ?? null, // If we are in a draft, import in current draft context
+          trigger: 'update',
+          mode: 'auto'
         },
         event: {
           file_id: file.id,

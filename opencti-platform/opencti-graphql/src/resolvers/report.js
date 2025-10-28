@@ -26,6 +26,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { loadThroughDenormalized } from './stix';
 import { INPUT_PARTICIPANT } from '../schema/general';
 import { filterMembersWithUsersOrgs } from '../utils/access';
+import { findSecurityCoverageByCoveredId } from '../modules/securityCoverage/securityCoverage-domain';
 
 const reportResolvers = {
   Query: {
@@ -67,7 +68,8 @@ const reportResolvers = {
         return [];
       }
       return filterMembersWithUsersOrgs(context, context.user, participants);
-    }
+    },
+    securityCoverage: (report, _, context) => findSecurityCoverageByCoveredId(context, context.user, report.id),
   },
   Mutation: {
     reportEdit: (_, { id }, context) => ({

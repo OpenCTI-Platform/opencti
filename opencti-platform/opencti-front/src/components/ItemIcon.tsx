@@ -104,6 +104,7 @@ import {
   LockOutline,
   LockPattern,
   ProgressWrench,
+  ShieldCheckOutline,
   ShieldSearch,
   SourceFork,
   SourcePull,
@@ -348,6 +349,10 @@ const iconSelector = (
     case 'task-template':
       return (
         <TaskAlt style={style} fontSize={fontSize} role="img" />
+      );
+    case 'security-coverage':
+      return (
+        <ShieldCheckOutline style={style} fontSize={fontSize} role="img" />
       );
     case 'history':
       return (

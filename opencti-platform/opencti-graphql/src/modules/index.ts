@@ -72,6 +72,7 @@ import './fintelDesign/fintelDesign';
 import './securityPlatform/securityPlatform';
 import './emailTemplate/emailTemplate';
 import './form/form';
+import './securityCoverage/securityCoverage';
 
 // incomplete modules
 import './report/report';
@@ -128,7 +129,6 @@ import './internal/csvMapper/csvMapper-graphql';
 import './internal/jsonMapper/jsonMapper-graphql';
 import './publicDashboard/publicDashboard-graphql';
 import './ai/ai-graphql';
-import './xtm/xtm-graphql';
 import './deleteOperation/deleteOperation-graphql';
 import './support/support-graphql';
 import './exclusionList/exclusionList-graphql';
@@ -140,6 +140,7 @@ import './requestAccess/requestAccess-graphql';
 import './pir/pir-graphql';
 import './fintelDesign/fintelDesign-graphql';
 import './securityPlatform/securityPlatform-graphql';
+import './securityCoverage/securityCoverage-graphql';
 import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';

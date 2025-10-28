@@ -45,6 +45,7 @@ enum VocabularyCategory {
   hair_color_ov
   eye_color_ov
   persona_type_ov
+  coverage_ov
 }
 
 type VocabularyFieldDefinition {

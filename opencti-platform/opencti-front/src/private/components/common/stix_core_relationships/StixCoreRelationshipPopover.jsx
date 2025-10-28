@@ -17,7 +17,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import StixCoreRelationshipEdition from './StixCoreRelationshipEdition';
-import { deleteNode } from '../../../../utils/store';
+import { deleteNodeFromContainer } from '../../../../utils/store';
 
 const styles = (theme) => ({
   container: {
@@ -96,11 +96,12 @@ class StixCoreRelationshipPopover extends Component {
       },
       updater: (store) => {
         if (typeof this.props.onDelete !== 'function') {
-          const { stixCoreRelationshipId, paginationOptions, connectionKey } = this.props;
+          const { stixCoreRelationshipId, paginationOptions, connectionKey, objectId } = this.props;
           const currentConnectionKey = connectionKey || 'Pagination_stixCoreRelationships';
           if (stixCoreRelationshipId) {
-            deleteNode(
+            deleteNodeFromContainer(
               store,
+              objectId,
               currentConnectionKey,
               paginationOptions,
               stixCoreRelationshipId,
@@ -119,7 +120,7 @@ class StixCoreRelationshipPopover extends Component {
   }
 
   render() {
-    const { classes, t, stixCoreRelationshipId, disabled } = this.props;
+    const { classes, t, stixCoreRelationshipId, disabled, isCoverage } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -150,6 +151,7 @@ class StixCoreRelationshipPopover extends Component {
             open={this.state.displayUpdate}
             handleClose={this.handleCloseUpdate.bind(this)}
             noStoreUpdate={true}
+            isCoverage={isCoverage}
           />
         )}
         <Dialog
@@ -196,6 +198,7 @@ StixCoreRelationshipPopover.propTypes = {
   t: PropTypes.func,
   onDelete: PropTypes.func,
   connectionKey: PropTypes.string,
+  objectId: PropTypes.string,
 };
 
 export default compose(

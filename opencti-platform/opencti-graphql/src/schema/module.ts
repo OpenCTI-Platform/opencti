@@ -3,7 +3,6 @@ import type { RelationDefinition } from '../database/stix';
 import { stixCoreRelationshipsMapping as coreRels } from '../database/stix';
 import type { ConvertFn, RepresentativeFn } from '../database/stix-2-1-converter';
 import { registerStixDomainConverter, registerStixMetaConverter, registerStixRepresentativeConverter } from '../database/stix-2-1-converter';
-// import { registerGraphqlSchema } from '../graphql/schema';
 import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -28,6 +27,9 @@ import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { registerEntityOverviewLayoutCustomization } from './overviewLayoutCustomization-register';
 import type { OverviewWidgetCustomization } from '../generated/graphql';
+import type { AuthContext, AuthUser } from '../types/user';
+
+export const modules = new Map();
 
 export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   type: {
@@ -46,6 +48,7 @@ export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   };
   representative: RepresentativeFn<Z>
   converter_2_1: ConvertFn<T, Z>
+  bundleResolver?: (context: AuthContext, user: AuthUser, id: string) => Promise<string>
   overviewLayoutCustomization?: Array<OverviewWidgetCustomization>
   attributes: Array<AttributeDefinition>
   relations: Array<{
@@ -155,4 +158,7 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
   if (definition.overviewLayoutCustomization) {
     registerEntityOverviewLayoutCustomization(definition.type.name, definition.overviewLayoutCustomization);
   }
+
+  // Register global
+  modules.set(definition.type.name, definition);
 };

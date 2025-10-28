@@ -8,6 +8,7 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import { CoverageInformationFieldEdit } from '@components/common/form/CoverageInformationField';
 import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -75,6 +76,10 @@ const StixCoreRelationshipEditionOverviewFragment = graphql`
     description
     relationship_type
     is_inferred
+    coverage_information {
+      coverage_name
+      coverage_score
+    }
     status {
       id
       order
@@ -188,6 +193,7 @@ export interface StixCoreRelationshipEditionOverviewProps {
   queryRef: PreloadedQuery<StixCoreRelationshipEditionOverviewQuery>;
   stixCoreRelationship: StixCoreRelationshipEditionOverview_stixCoreRelationship$data;
   noStoreUpdate: boolean;
+  isCoverage?: boolean;
 }
 
 interface StixCoreRelationshipAddInput {
@@ -201,11 +207,15 @@ interface StixCoreRelationshipAddInput {
   objectMarking: FieldOption[];
   message?: string;
   references?: FieldOption[];
+  coverage_information?: readonly {
+    readonly coverage_name: string;
+    readonly coverage_score: number;
+  }[] | undefined;
 }
 
 const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
 Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
-> = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate }) => {
+> = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate, isCoverage = false }) => {
   const stixCoreRelationshipType = 'stix-core-relationship';
 
   const { t_i18n } = useFormatter();
@@ -300,6 +310,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
     createdBy: convertCreatedBy(stixCoreRelationship) as FieldOption,
     objectMarking: convertMarkings(stixCoreRelationship),
     references: [],
+    ...(isCoverage ? { coverage_information: stixCoreRelationship.coverage_information || [] } : {}),
   };
   return (
     <>
@@ -397,6 +408,15 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                   />
                 }
               />
+              {isCoverage && (
+                <CoverageInformationFieldEdit
+                  id={stixCoreRelationship.id}
+                  name="coverage_information"
+                  mode={'relation'}
+                  values={values.coverage_information ?? []}
+                  containerStyle={fieldSpacingContainerStyle}
+                />
+              )}
               <KillChainPhasesField
                 name="killChainPhases"
                 style={fieldSpacingContainerStyle}

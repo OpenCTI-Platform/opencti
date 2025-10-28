@@ -392,7 +392,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
-        <Select
+        { availableOperators.length > 0 && <Select
           labelId="change-operator-select-label"
           id="change-operator-select"
           value={filterOperator}
@@ -417,13 +417,13 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               onMouseDown: stopEvent,
             },
           }}
-        >
+                                           >
           {availableOperators.map((value) => (
             <MenuItem key={value} value={value}>
               {t_i18n(OperatorKeyValues[value])}
             </MenuItem>
           ))}
-        </Select>
+        </Select>}
         {noValueOperator && isSpecificFilter(finalFilterDefinition) && (
           <>{getSpecificFilter(finalFilterDefinition, subKey, disabled)}</>
         )}

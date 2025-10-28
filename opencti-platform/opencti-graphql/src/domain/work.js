@@ -373,8 +373,9 @@ export const updateProcessedTime = async (context, user, workId, message, inErro
   let source = 'ctx._source["processed_time"] = params.processed_time;';
   const { isComplete, total } = await isWorkCompleted(workId);
   if (currentWork.import_expected_number === 0 || isComplete) {
-    params.completed_number = total ?? 0;
+    params.completed_number = total && !Number.isNaN(total) ? total : 1;
     source += `ctx._source['status'] = "complete";
+               ctx._source['import_expected_number'] = params.completed_number;
                ctx._source['completed_number'] = params.completed_number;
                ctx._source['completed_time'] = params.processed_time;`;
   }
