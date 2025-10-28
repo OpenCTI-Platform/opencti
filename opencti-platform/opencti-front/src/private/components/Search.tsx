@@ -197,7 +197,7 @@ const Search = () => {
       isSortable: isRuntimeSort,
     },
     creator: {
-      label: 'Creator',
+      label: 'Creators',
       percentWidth: 12,
       isSortable: isRuntimeSort,
     },
