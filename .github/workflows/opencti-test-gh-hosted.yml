@@ -18,7 +18,7 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       with:
-        builder-name: gha-builder-platform
+        name: gha-builder-platform
     - name: Login to DockerHub
       uses: docker/login-action@v3
       with:
@@ -61,7 +61,7 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       with:
-        builder-name: gha-builder-worker
+        name: gha-builder-worker
     - name: Login to DockerHub
       uses: docker/login-action@v3
       with:
@@ -197,6 +197,16 @@ jobs:
           echo "$(date)"  
           docker logs opencti-restore-start
 
+    - name: Logs worker start
+      continue-on-error: true
+      run: |
+          echo -e "\n\n *********\n ********* Log OpenCTI DIRECT worker"; 
+          echo "$(date)"  
+          docker logs opencti-direct-worker
+          echo -e "\n\n *********\n ********* Log OpenCTI Test Worker"; sleep 1
+          echo "$(date)"  
+          docker logs opencti-test-worker
+
 
     - name: Monitor ressources usage in background
       run: |
@@ -246,6 +256,37 @@ jobs:
             yarn lint
             NODE_OPTIONS=--max_old_space_size=8192 yarn test
         '
+
+
+    - name: Logs opencti full
+      if: always()
+      continue-on-error: true
+      run: |
+          echo -e "\n\n *********\n ********* Log OpenCTI DIRECT"; 
+          echo "$(date)"  
+          docker logs opencti-direct-start
+          echo -e "\n\n *********\n ********* Log OpenCTI LIVE"; sleep 1
+          echo "$(date)"  
+          docker logs opencti-live-start
+          echo -e "\n\n *********\n ********* Log OpenCTI RAW"; sleep 1
+          echo "$(date)"  
+          docker logs opencti-raw-start
+          echo -e "\n\n *********\n ********* Log OpenCTI RESTORE"; sleep 1
+          echo "$(date)"  
+          docker logs opencti-restore-start
+
+    - name: Logs worker full
+      if: always()
+      continue-on-error: true
+      run: |
+          echo -e "\n\n *********\n ********* Log OpenCTI DIRECT worker"; 
+          echo "$(date)"  
+          docker logs opencti-direct-worker
+          echo -e "\n\n *********\n ********* Log OpenCTI Test Worker"; sleep 1
+          echo "$(date)"  
+          docker logs opencti-test-worker
+
+
 
     - name: Stop docker stats monitor and print logs
       if: always()
