@@ -436,16 +436,16 @@ export const checkRequestActionAndGetWorkflow = async (context: AuthContext, use
   await checkRequestAccessEnabled(context, user);
   const rfi = await findRFIById(context, user, id);
   if (!rfi.x_opencti_request_access) {
-    throw UnsupportedError('This RFI is not compatible');
+    throw UnsupportedError('This RFI is not compatible', { id });
   }
   const actionData = rfi.x_opencti_request_access;
   const action: RequestAccessAction = JSON.parse(actionData);
   if (!action.entities || !action.members) {
-    throw UnsupportedError('This RFI is not compatible');
+    throw UnsupportedError('This RFI is not compatible', { id });
   }
   const x_opencti_workflow_id = await getRFIStatusForAction(context, user, status);
   if (isEmptyField((x_opencti_workflow_id))) {
-    throw UnsupportedError('This RFI is not correctly configured');
+    throw UnsupportedError('This RFI is not correctly configured', { id });
   }
   // endregion
   return { action, x_opencti_workflow_id };
@@ -495,7 +495,7 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
   const entityCaseRfi = await internalLoadById<BasicStoreEntityCaseRfi>(context, user, id);
   const isUserCanAction = await isUserCanActionRequestAccess(context, user, entityCaseRfi);
   if (!isUserCanAction) {
-    throw UnsupportedError('You need to be able to edit the RFI and share knowledge');
+    throw UnsupportedError('You need to be able to edit the RFI and share knowledge', { id });
   }
   // region Check validity
   const { action, x_opencti_workflow_id } = await checkRequestActionAndGetWorkflow(context, user, id, ActionStatus.APPROVED);
@@ -504,11 +504,11 @@ export const approveRequestAccess = async (context: AuthContext, user: AuthUser,
   const targetInstanceToShare = (action.entities ?? [])[0];
   const instanceToShare = await internalLoadById<BasicStoreEntity>(context, user, targetInstanceToShare);
   if (isEmptyField(instanceToShare)) {
-    throw UnsupportedError('You cant share the requested element (restrictions or markings)');
+    throw UnsupportedError('You cant share the requested element (restrictions or markings)', { targetInstanceToShare });
   }
   // If user have access but restrictions is applied, element will not be shared by organization
   if (isNotEmptyField((instanceToShare.restricted_members))) {
-    throw UnsupportedError('Element is not sharable at the moment (restricted)');
+    throw UnsupportedError('Element is not sharable at the moment (restricted)', { targetInstanceToShare });
   }
   // endregion
   // region Execute the sharing

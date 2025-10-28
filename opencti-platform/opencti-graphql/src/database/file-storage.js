@@ -141,7 +141,7 @@ export const deleteFileFromStorage = async (id) => {
 export const deleteFile = async (context, user, id) => {
   const draftContext = getDraftContext(context, user);
   if (draftContext && !isDraftFile(id, draftContext)) {
-    throw UnsupportedError('Cannot delete non draft imports in draft');
+    throw UnsupportedError('Cannot delete non draft imports in draft', { id });
   }
   const up = await loadFile(context, user, id);
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);

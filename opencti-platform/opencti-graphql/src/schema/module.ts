@@ -108,7 +108,7 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
         schemaTypesDefinition.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);
         break;
       default:
-        throw UnsupportedError('Unsupported category');
+        throw UnsupportedError('Unsupported category', { category: definition.type.category });
     }
     if (definition.type.aliased) {
       registerStixDomainAliased(definition.type.name);

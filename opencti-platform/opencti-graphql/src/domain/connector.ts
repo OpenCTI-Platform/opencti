@@ -189,7 +189,7 @@ export const managedConnectorEdit = async (
 ) => {
   const conn: any = await storeLoadById(context, user, input.id, ENTITY_TYPE_CONNECTOR);
   if (isEmptyField(conn)) {
-    throw UnsupportedError('Connector not found');
+    throw UnsupportedError('Connector not found', { id: input.id });
   }
   const contractsMap = getSupportedContractsByImage();
   const targetContract: any = contractsMap.get(conn.manager_contract_image);
@@ -252,7 +252,7 @@ export const managedConnectorAdd = async (
   }
   const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
   if (isEmptyField(connectorUser)) {
-    throw UnsupportedError('Connector user not found');
+    throw UnsupportedError('Connector user not found', { id: finalUserId });
   }
   // Sanitize name
   const sanitizedName = sanitizeContainerName(input.name);

@@ -171,7 +171,7 @@ export const uploadAndAskJobImport = async (context, user, args = {}) => {
 export const deleteImport = async (context, user, fileName) => {
   const draftContext = getDraftContext(context, user);
   if (draftContext && !isDraftFile(fileName, draftContext)) {
-    throw UnsupportedError('Cannot delete non draft imports in draft');
+    throw UnsupportedError('Cannot delete non draft imports in draft', { fileName });
   }
   // Imported file must be handled specifically
   // File deletion must publish a specific event

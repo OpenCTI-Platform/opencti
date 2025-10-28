@@ -45,7 +45,7 @@ export const stixDelete = async (context, user, id, opts = {}) => {
       }
       return element.id;
     }
-    throw UnsupportedError('This method can only delete Stix element');
+    throw UnsupportedError('This method can only delete Stix element', { id: element.id, type: element.entity_type});
   }
   throw FunctionalError(`Cannot delete the stix element, ${id} cannot be found.`);
 };
@@ -59,12 +59,12 @@ export const sendStixBundle = async (context, user, connectorId, bundle, work_id
     // 01. Simple check bundle
     const jsonBundle = JSON.parse(bundle);
     if (jsonBundle.type !== 'bundle' || !jsonBundle.objects || jsonBundle.objects.length === 0) {
-      throw UnsupportedError('Invalid stix bundle');
+      throw UnsupportedError('Invalid stix bundle', { work_id });
     }
     // 02. Create work and send the bundle to ingestion
     const connector = await storeLoadById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
     if (!connector) {
-      throw UnsupportedError('Invalid connector');
+      throw UnsupportedError('Invalid connector', { connectorId });
     }
     let target_work_id = work_id;
     if (isEmptyField(work_id)) {
@@ -270,7 +270,7 @@ const createSharingTask = async (context, type, containerId, organizationId) => 
 
 export const addOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
   if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot restrict organization in draft');
+    throw UnsupportedError('Cannot restrict organization in draft', { organizationId });
   }
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
@@ -297,7 +297,7 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
 
 export const removeOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
   if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot remove organization restriction in draft');
+    throw UnsupportedError('Cannot remove organization restriction in draft', { organizationId );
   }
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);

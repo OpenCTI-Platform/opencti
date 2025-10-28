@@ -249,7 +249,7 @@ export const playbookReplaceNode = async (
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
-    throw UnsupportedError('Playbook related component not found');
+    throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
   const existingEntryPoint = definition.nodes.filter((n) => n.id !== nodeId).find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
@@ -303,7 +303,7 @@ export const playbookInsertNode = async (
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
   if (!relatedComponent) {
-    throw UnsupportedError('Playbook related component not found');
+    throw UnsupportedError('Playbook related component not found', { id: input.component_id });
   }
   const existingEntryPoint = definition.nodes.find((n) => PLAYBOOK_COMPONENTS[n.component_id]?.is_entry_point);
   if (relatedComponent.is_entry_point && existingEntryPoint) {
@@ -400,7 +400,7 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
   // Check from consistency
   const node = definition.nodes.find((n) => n.id === input.from_node);
   if (!node) {
-    throw UnsupportedError('Playbook link node from not found');
+    throw UnsupportedError('Playbook link node from not found', { id: input.from_node });
   }
   const nodePort = PLAYBOOK_COMPONENTS[node.component_id].ports.find((p) => p.id === input.from_port);
   if (!nodePort || nodePort.type === 'in') {
@@ -414,7 +414,7 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
   // Check to consistency
   const toNode = definition.nodes.find((n) => n.id === input.to_node);
   if (!toNode) {
-    throw UnsupportedError('Playbook link node from not found');
+    throw UnsupportedError('Playbook link node from not found', { id: input.to_node });
   }
   // Build the link
   const linkId = uuidv4();

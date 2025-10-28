@@ -204,7 +204,7 @@ export const testParticipant = (stix: any, filter: Filter) => {
 export const testAuthorize = (stix: any, filter: Filter) => {
   const restricted_members: AuthorizedMember[] = stix.extensions?.[STIX_EXT_OCTI]?.authorized_members ?? [];
   if (filter.values.length !== 1) {
-    throw UnsupportedError('Filter only support one user in parameter');
+    throw UnsupportedError('Filter only support one user in parameter', { id: filter.id });
   }
   const user = filter.values[0] as AuthUser;
   // TODO Need refactor to really get the right result as BYPASS for now will be always notify

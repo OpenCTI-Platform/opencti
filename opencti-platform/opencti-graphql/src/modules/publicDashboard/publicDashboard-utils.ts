@@ -76,10 +76,10 @@ export const getWidgetArguments = async (
   const publicDashboardsMapByUriKey = await getEntitiesMapFromCache<PublicDashboardCached>(context, SYSTEM_USER, ENTITY_TYPE_PUBLIC_DASHBOARD);
   const publicDashboard = publicDashboardsMapByUriKey.get(uriKey);
   if (!publicDashboard) {
-    throw UnsupportedError('Dashboard not found');
+    throw UnsupportedError('Dashboard not found', { uriKey });
   }
   if (!publicDashboard.enabled) {
-    throw UnsupportedError('Dashboard not enabled');
+    throw UnsupportedError('Dashboard not enabled', { uriKey });
   }
 
   const { user_id, private_manifest }: PublicDashboardCached = publicDashboard;
@@ -88,7 +88,7 @@ export const getWidgetArguments = async (
   const platformUsersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const platformUser = platformUsersMap.get(user_id);
   if (!platformUser) {
-    throw UnsupportedError('User not found');
+    throw UnsupportedError('User not found', { user_id });
   }
 
   // Determine the marking definitions allowed.
