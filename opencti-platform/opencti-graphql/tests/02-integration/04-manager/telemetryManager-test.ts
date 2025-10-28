@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { Resource } from '@opentelemetry/resources';
+import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
-import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
-import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+// eslint-disable-next-line import/no-unresolved
+import { ATTR_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/incubating';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../../../src/telemetry/TelemetryMeterManager';
 import { PLATFORM_VERSION } from '../../../src/config/conf';
 import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATION } from '../../../src/manager/telemetryManager';
@@ -11,13 +12,13 @@ import { redisClearTelemetry, redisSetTelemetryAdd } from '../../../src/database
 describe('Telemetry manager test coverage', () => {
   test('Verify that metrics get collected from both elastic and redis', async () => {
     // GIVEN a configured telemetry
-    const filigranResource = new Resource({
-      [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-      [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
-      [SEMRESATTRS_SERVICE_INSTANCE_ID]: 'api-test-telemetry-id',
+    const filigranResource = resourceFromAttributes({
+      [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
+      [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
+      [ATTR_SERVICE_INSTANCE_ID]: 'api-test-telemetry-id',
       'service.instance.creation': new Date().toUTCString()
     });
-    const resource = Resource.default().merge(filigranResource);
+    const resource = defaultResource().merge(filigranResource);
 
     // no readers so no data is sent for this test
     const filigranMeterProvider = new MeterProvider(({ resource, readers: [] }));
