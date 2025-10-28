@@ -12,7 +12,7 @@ export type ComputeLinkNode = {
   type?: string;
 };
 
-export type AppData = {
+export type AppDataProps = {
   computeLink: (node: ComputeLinkNode) => string | undefined;
   metricsDefinition: MetricsDefinition[];
 };
@@ -26,16 +26,16 @@ const useComputeLinkFn = () => {
         node.from.id
       }/knowledge/sightings/${node.id}`;
     } else if (node.relationship_type) {
-      if (node.from && !isRelationship(node.from.entity_type)) {
+      if (node.from && !isRelationship(node.from.entity_type)) { // 'from' not restricted and not a relationship
         redirectLink = `${resolveLink(node.from.entity_type)}/${
           node.from.id
         }/knowledge/relations/${node.id}`;
-      } else if (node.to && !isRelationship(node.to.entity_type)) {
+      } else if (node.to && !isRelationship(node.to.entity_type)) { // if 'from' is restricted or a relationship, redirect to the knowledge relationship tab of 'to'
         redirectLink = `${resolveLink(node.to.entity_type)}/${
           node.to.id
         }/knowledge/relations/${node.id}`;
       } else {
-        redirectLink = undefined;
+        redirectLink = undefined; // no redirection if from and to are restricted
       }
     } else if (node.entity_type === 'Workspace') {
       redirectLink = `${resolveLink(node.type)}/${node.id}`;
@@ -48,9 +48,9 @@ const useComputeLinkFn = () => {
   return computeLink;
 };
 
-const AppDataContext = createContext<AppData | null>(null);
+const AppDataContext = createContext<AppDataProps | null>(null);
 
-export const useAppData = (): AppData => {
+export const useAppData = (): AppDataProps => {
   const appData = useContext(AppDataContext);
   if (!appData) {
     throw new Error('useAppData must be used within AppDataProvider');
@@ -58,19 +58,20 @@ export const useAppData = (): AppData => {
   return appData;
 };
 
-// Convenience hook for backward compatibility
-export const useComputeLink = (): AppData['computeLink'] => {
+export const useComputeLink = (): AppDataProps['computeLink'] => {
   const { computeLink } = useAppData();
   return computeLink;
 };
 
-const PrivateAppDataProvider: React.FC<{
+type PrivateAppDataProviderProps = {
   children: ReactNode;
   metricsDefinition: MetricsDefinition[];
-}> = ({ children, metricsDefinition }) => {
+};
+
+const PrivateAppDataProvider: React.FC<PrivateAppDataProviderProps> = ({ children, metricsDefinition }) => {
   const computeLink = useComputeLinkFn();
 
-  const appData: AppData = {
+  const appData: AppDataProps = {
     computeLink,
     metricsDefinition,
   };
@@ -82,19 +83,21 @@ const PrivateAppDataProvider: React.FC<{
   );
 };
 
+type AppDataProviderProps = {
+  isPublicRoute: boolean;
+  metricsDefinition?: MetricsDefinition[];
+  children: ReactNode;
+};
+
 export const AppDataProvider = ({
   isPublicRoute,
   metricsDefinition = [],
   children,
-}: {
-  isPublicRoute: boolean;
-  metricsDefinition?: MetricsDefinition[];
-  children: ReactNode;
-}) => {
+}: AppDataProviderProps) => {
   if (isPublicRoute) {
-    const appData: AppData = {
+    const appData: AppDataProps = {
       computeLink: () => '',
-      metricsDefinition: [],
+      metricsDefinition,
     };
 
     return (
