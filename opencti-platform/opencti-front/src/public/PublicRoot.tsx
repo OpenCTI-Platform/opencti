@@ -37,7 +37,10 @@ const PublicRoot = () => {
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <AppDataProvider isPublicRoute={true} metricsDefinition={metricsDefinition}>
+            <AppDataProvider
+              isPublicRoute={true}
+              metricsDefinition={metricsDefinition}
+            >
               <CssBaseline />
               <Message />
               <Routes>
