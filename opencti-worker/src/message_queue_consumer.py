@@ -17,6 +17,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     execution_pool: ThreadPoolExecutor | ThreadPoolSelector
     handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
     should_stop: bool = field(default=False, init=False)
+    is_realtime: bool = False
 
     def __post_init__(self) -> None:
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
@@ -79,11 +80,19 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
                         "tag": method.delivery_tag,
                     },
                 )
-                task_future = self.execution_pool.submit(
-                    self.consume_message,
-                    method.delivery_tag,
-                    body,
-                )
+                if type(self.execution_pool) is ThreadPoolSelector:
+                    task_future = self.execution_pool.submit(
+                        self.is_realtime,
+                        self.consume_message,
+                        method.delivery_tag,
+                        body,
+                    )
+                else:
+                    task_future = self.execution_pool.submit(
+                        self.consume_message,
+                        method.delivery_tag,
+                        body,
+                    )
                 while task_future.running():  # Loop while the thread is processing
                     self.pika_connection.sleep(0.05)
                 self.logger.info("Message processed, thread terminated")

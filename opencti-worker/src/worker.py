@@ -271,8 +271,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
                         )
+                        is_realtime = False
                         if is_priority_connector(connector["connector_priority_group"]):
-                            execution_pool = realtime_push_execution_pool
+                            is_realtime = True
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
@@ -280,6 +281,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             pika_parameters,
                             push_thread_pool_selector,
                             push_handler.handle_message,
+                            is_realtime
                         )
 
                     # Listen for webhook message
