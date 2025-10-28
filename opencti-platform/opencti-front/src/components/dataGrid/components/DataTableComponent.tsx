@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
-import { useAppData } from 'src/utils/hooks/useAppData';
+import { useAppData } from '../../../utils/hooks/useAppData';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
 import { buildMetricsColumns, defaultColumnsMap } from '../dataTableUtils';
