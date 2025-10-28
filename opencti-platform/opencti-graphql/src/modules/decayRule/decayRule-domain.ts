@@ -27,7 +27,7 @@ import {
 const DECAY_FACTOR: number = 3.0;
 
 export interface DecayChartData {
-  live_score_serie: DecayHistory[]
+  live_score_serie: DecayHistoryChart[]
 }
 
 export interface DecayModel {
@@ -51,17 +51,24 @@ export interface ComputeDecayChartInput {
   decayBaseScore: number,
   decayBaseScoreDate: Date,
   decayRule: DecayModel,
-  decayHistory: DecayHistory[],
+  decayHistory: DecayHistoryChart[],
 }
 
+// for storage on elastic
 export interface DecayHistory {
+  updated_at: Date
+  score: number
+  updated_by: string
+}
+
+export interface DecayHistoryChart {
   updated_at: Date
   score: number
 }
 
 export interface DecayLiveDetails {
   live_score: number
-  live_points: DecayHistory[]
+  live_points: DecayHistoryChart[]
 }
 
 export const dayToMs = (days: number) => {
@@ -200,14 +207,15 @@ export const computeTimeFromExpectedScore = (initialScore: number, score: number
  * Compute all data point (x as time, y as score value) needed to draw the decay mathematical curve as time serie.
  * If Decay has been reset, add point before current decay start date.
  * @param computeChartInput all data required to compute the decay curve
+ * @param userId
  */
-export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartInput): DecayHistory[] => {
+export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartInput): DecayHistoryChart[] => {
   if (computeChartInput) {
-    const decayData: DecayHistory[] = [];
+    const decayData: DecayHistoryChart[] = [];
     const startDateInMs = moment(computeChartInput.decayBaseScoreDate).valueOf();
     computeChartInput.scoreList.forEach((scoreValue) => {
       const timeForScore = dayToMs(computeTimeFromExpectedScore(computeChartInput.decayBaseScore, scoreValue, computeChartInput.decayRule));
-      const point: DecayHistory = { updated_at: moment(startDateInMs + timeForScore).toDate(), score: scoreValue };
+      const point: DecayHistoryChart = { updated_at: moment(startDateInMs + timeForScore).toDate(), score: scoreValue };
       decayData.push(point);
     });
 
@@ -216,7 +224,7 @@ export const computeChartDecayAlgoSerie = (computeChartInput: ComputeDecayChartI
       const orderedDecayHistoryAsc = [...computeChartInput.decayHistory];
 
       let i = 0;
-      const scoreInThePast: DecayHistory[] = [];
+      const scoreInThePast: DecayHistoryChart[] = [];
       while ((orderedDecayHistoryAsc[i].updated_at < computeChartInput.decayBaseScoreDate) && i < orderedDecayHistoryAsc.length) {
         const historyPointToProcess = orderedDecayHistoryAsc[i];
         scoreInThePast.push({ updated_at: historyPointToProcess.updated_at, score: historyPointToProcess.score });
