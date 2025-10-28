@@ -61,7 +61,7 @@ const VocabularyCategories = () => {
         label: 'Description',
         width: '45%',
         isSortable: false,
-        render: (node: VocabularyDefinition) => node.description,
+        render: (node: VocabularyDefinition) => t_i18n(node.description),
       },
     };
     return (
