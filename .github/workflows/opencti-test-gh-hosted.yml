@@ -223,7 +223,8 @@ jobs:
     - name: Start api test
       run: |
         docker run --network runner-docker-network \
-          --name api-test \
+          --name api-tests \
+          -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ADMIN__PASSWORD=admin \
@@ -275,13 +276,18 @@ jobs:
           echo "$(date)"  
           docker logs opencti-restore-start
 
-    - name: Logs worker full
+    - name: Logs DIRECT worker
       if: always()
       continue-on-error: true
       run: |
           echo -e "\n\n *********\n ********* Log OpenCTI DIRECT worker"; 
           echo "$(date)"  
           docker logs opencti-direct-worker
+
+    - name: Logs TEST worker
+      if: always()
+      continue-on-error: true
+      run: |        
           echo -e "\n\n *********\n ********* Log OpenCTI Test Worker"; sleep 1
           echo "$(date)"  
           docker logs opencti-test-worker
