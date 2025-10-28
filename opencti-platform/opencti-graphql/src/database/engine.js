@@ -3088,6 +3088,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
         const types = typeParameter?.values;
         // Construct and push the final regarding of filter
+        const mode = filter.operator === 'eq' ? FilterMode.Or : FilterMode.And;
         if (isEmptyField(ids)) {
           const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
             : types.map((t) => buildRefRelationKey(t, '*'));
@@ -3098,13 +3099,9 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
           const keys = isEmptyField(types)
             ? buildRefRelationKey('*', '*')
             : types.flatMap((t) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
-          regardingFilters.push({ key: keys, operator: filter.operator, values: ids });
+          regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
         }
-        finalFilterGroups.push({
-          mode: filter.operator === 'eq' ? (filter.mode ?? FilterMode.Or) : FilterMode.And,
-          filters: regardingFilters,
-          filterGroups: []
-        });
+        finalFilterGroups.push({ mode, filters: regardingFilters, filterGroups: [] });
       }
       if (filterKey === IDS_FILTER) {
         // the special filter key 'ids' take all the ids into account
