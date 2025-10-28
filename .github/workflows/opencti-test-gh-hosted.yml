@@ -12,6 +12,33 @@ jobs:
     outputs:
       tags: ${{ steps.meta.outputs.tags }}
       version: ${{ steps.meta.outputs.version }}
+
+    services:
+      opencti-servicetest-start:
+        image: filigran/platform:sha-aeb1612
+        ports:
+          - 4700:4100
+        env:
+          BASE_NAME: opencti-servicetest-start
+          APP__PORT: 4100
+          APP__ADMIN__PASSWORD: admin
+          APP__CHILD_LOCKING_PROCESS__ENABLED: false
+          APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+          APP__HEALTH_ACCESS_KEY: cihealthkey
+          APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
+          EXPIRATION_SCHEDULER__ENABLED: false
+          SUBSCRIPTION_SCHEDULER__ENABLED: false
+          APP__ENABLED_DEV_FEATURES: '["*"]'
+
+          REDIS__HOSTNAME: redis
+          REDIS__NAMESPACE: ${BASE_NAME}-start
+          ELASTICSEARCH__URL: http://elasticsearch:9200
+          ELASTICSEARCH__INDEX_PREFIX: ${BASE_NAME}-start
+          MINIO__ENDPOINT: minio
+          MINIO__BUCKET_NAME: ${BASE_NAME}-start-bucket
+          RABBITMQ__HOSTNAME: rabbitmq
+          RABBITMQ__QUEUE_PREFIX: ${BASE_NAME}-start
+
     steps:
     - uses: actions/checkout@v5
 
@@ -248,6 +275,9 @@ jobs:
             echo -e "\n\n *********\n ********* Start OpenCTI API test";
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
             apk add build-base git libffi-dev cargo;
+            cd /home/workspace
+            git clone https://github.com/OpenCTI-Platform/connectors.git
+            git clone https://github.com/OpenCTI-Platform/client-python.git
             cd /home/workspace/opencti-platform/opencti-graphql
             npm install -g corepack
             cp /home/workspace/opencti-platform/.yarnrc.yml .
