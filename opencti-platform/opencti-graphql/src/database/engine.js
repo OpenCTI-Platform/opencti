@@ -3088,7 +3088,7 @@ const completeSpecialFilterKeys = async (context, user, inputFilters) => {
         }
         const types = typeParameter?.values;
         // Construct and push the final regarding of filter
-        const mode = filter.operator === 'eq' ? FilterMode.Or : FilterMode.And;
+        const mode = (filter.operator === 'eq' || isEmptyField(filter.operator)) ? FilterMode.Or : FilterMode.And;
         if (isEmptyField(ids)) {
           const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
             : types.map((t) => buildRefRelationKey(t, '*'));
