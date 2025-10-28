@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as R from 'ramda';
+import { useAppData } from 'src/utils/hooks/useAppData';
 import { DataTableLinesDummy } from './DataTableLine';
 import DataTableBody from './DataTableBody';
 import { buildMetricsColumns, defaultColumnsMap } from '../dataTableUtils';
@@ -17,7 +18,6 @@ import {
 import { getDefaultFilterObject } from '../../../utils/filters/filtersUtils';
 import { ICON_COLUMN_SIZE, SELECT_COLUMN_SIZE } from './DataTableHeader';
 import callbackResizeObserver from '../../../utils/resizeObservers';
-import useAttributes from '../../../utils/hooks/useAttributes';
 
 type DataTableComponentProps = Pick<DataTableProps,
 | 'dataColumns'
@@ -46,7 +46,8 @@ type DataTableComponentProps = Pick<DataTableProps,
 | 'data'
 | 'emptyStateMessage'
 | 'disableLineSelection'
-| 'pageSize'>;
+| 'pageSize'
+>;
 
 const DataTableComponent = ({
   dataColumns,
@@ -77,7 +78,7 @@ const DataTableComponent = ({
   emptyStateMessage,
   pageSize,
 }: DataTableComponentProps) => {
-  const { metricsDefinition } = useAttributes();
+  const { metricsDefinition } = useAppData();
 
   const defaultComputeLink = useDataTableComputeLink();
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);

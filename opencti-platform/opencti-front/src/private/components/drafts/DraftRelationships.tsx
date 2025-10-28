@@ -14,7 +14,7 @@ import { UsePreloadedPaginationFragment } from '../../../utils/hooks/usePreloade
 import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import ItemEntityType from '../../../components/ItemEntityType';
-import { useComputeLink } from '../../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../../utils/hooks/useAppData';
 
 const draftRelationshipsLineFragment = graphql`
     fragment DraftRelationships_node on StixCoreRelationship {

@@ -20,7 +20,7 @@ import { RootSettings$data, RootSettings$key } from './__generated__/RootSetting
 import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> element
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
-import { ComputeLinkProvider } from '../utils/hooks/useComputeLink';
+import { ComputeLinkProvider } from '../utils/hooks/useAppData';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {

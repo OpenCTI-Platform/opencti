@@ -14,7 +14,7 @@ import PublicDashboard from './components/PublicDashboard';
 import PublicSettingsProvider from './PublicSettingsProvider';
 import Message from '../components/Message';
 import Playground from './components/Playground';
-import { ComputeLinkProvider } from '../utils/hooks/useComputeLink';
+import { AppDataProvider } from '../utils/hooks/useAppData';
 
 const queryRef = loadQuery<LoginRootPublicQuery>(
   environment,
@@ -27,14 +27,17 @@ const PublicRoot = () => {
     rootPublicQuery,
     queryRef,
   );
+
   const isPlaygroundEnabled = settings.playground_enabled;
+  // make array mutable for the rest of the app
+  const metricsDefinition = Array.from(settings.metrics_definition ?? []);
 
   return (
     <PublicSettingsProvider settings={settings}>
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <ComputeLinkProvider isPublicRoute={true}>
+            <AppDataProvider isPublicRoute={true} metricsDefinition={metricsDefinition}>
               <CssBaseline />
               <Message />
               <Routes>
@@ -42,7 +45,7 @@ const PublicRoot = () => {
                 <Route path="/dashboard/:uriKey/*" element={boundaryWrapper(PublicDashboard)} />
                 {isPlaygroundEnabled && <Route path="/graphql/" element={boundaryWrapper(Playground)}/>}
               </Routes>
-            </ComputeLinkProvider>
+            </AppDataProvider>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>

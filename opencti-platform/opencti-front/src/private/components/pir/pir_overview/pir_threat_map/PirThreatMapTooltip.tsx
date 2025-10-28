@@ -21,7 +21,7 @@ import type { Theme } from '../../../../../components/Theme';
 import { PirThreatMapMarker } from './pirThreatMapUtils';
 import { itemColor } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
-import { useComputeLink } from '../../../../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../../../../utils/hooks/useAppData';
 
 interface PirThreatMapTooltipProps {
   data?: PirThreatMapMarker[]

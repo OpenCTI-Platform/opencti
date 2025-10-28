@@ -1434,6 +1434,8 @@ type PublicSettings implements ThemeSettings & IntlSettings {
     platform_providers: [PublicProvider!]!
     platform_enterprise_edition_license_validated: Boolean!
     playground_enabled: Boolean!
+
+    metrics_definition: [MetricDefinition!]
 }
 
 type MetricAttributes {
