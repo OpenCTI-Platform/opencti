@@ -6,18 +6,18 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
 import DialogTitle from '@mui/material/DialogTitle';
-import { Stack } from '@mui/material';
+import { Stack, Box } from '@mui/material';
+import { isEmptyField } from 'src/utils/utils';
 import { useFormatter } from '../../../../components/i18n';
 import { noteMutationRelationDelete } from './AddNotesLines';
 import NotePopover from './NotePopover';
@@ -35,17 +35,6 @@ import ItemLikelihood from '../../../../components/ItemLikelihood';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  external: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    color: theme.palette.text?.secondary,
-  },
-}));
 
 const StixCoreObjectOrStixCoreRelationshipNoteCardFragment = graphql`
   fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
@@ -90,7 +79,6 @@ const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
 StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
 > = ({ data, stixCoreObjectOrStixCoreRelationshipId, paginationOptions }) => {
   const { t_i18n, nsdt } = useFormatter();
-  const classes = useStyles();
   const theme = useTheme<Theme>();
 
   const note = useFragment(
@@ -136,9 +124,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
 
   return (
     <Card
-      sx={{
-        marginBottom: 2,
-      }}
+      sx={{ marginBottom: 2 }}
       variant="outlined"
     >
       <CardHeader
@@ -194,71 +180,81 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
         }
       />
 
-      <CardContent>
-        <Grid container={true} spacing={3}>
-          <Grid item xs={9}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Abstract')}
-            </Typography>
-            {note.attribute_abstract && (
-              <MarkdownDisplay
-                content={note.attribute_abstract}
-                remarkGfmPlugin={true}
-              />
-            )}
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t_i18n('Content')}
-            </Typography>
-            {note.content && (
-              <MarkdownDisplay content={note.content} remarkGfmPlugin={true} />
-            )}
+      <CardContent sx={{ position: 'relative' }}>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 8, lg: 9 }}>
+            <Stack spacing={3}>
+              <Box>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Abstract')}
+                </Typography>
+                {
+                  isEmptyField(note.attribute_abstract) ? '-' : (
+                    <MarkdownDisplay
+                      content={note.attribute_abstract}
+                      remarkGfmPlugin={true}
+                    />
+                  )
+                }
+              </Box>
+
+              <Box>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t_i18n('Content')}
+                </Typography>
+                {
+                  isEmptyField(note.content) ? '-' : (
+                    <MarkdownDisplay content={note.content} remarkGfmPlugin={true} />
+                  )
+                }
+              </Box>
+            </Stack>
           </Grid>
-          <Grid item xs={3}>
-            <StixCoreObjectLabelsView
-              labels={note.objectLabel}
-              id={note.id}
-              entity_type={note.entity_type}
-            />
-            <Grid container={true} spacing={3}>
-              <Grid item xs={6}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Confidence level')}
-                </Typography>
-                <ItemConfidence
-                  confidence={note.confidence}
-                  entityType={note.entity_type}
-                />
+
+          <Grid size={{ xs: 6, md: 3 }}>
+            <Stack spacing={3}>
+              {/* FIXME: remove style marginTop: 20px in StixCoreObjectLabelsView */}
+              <Grid size={{ xs: 10, md: 12 }}>
+                <Box sx={{ marginTop: '-20px!important' }}>
+                  <StixCoreObjectLabelsView
+                    labels={note.objectLabel}
+                    id={note.id}
+                    entity_type={note.entity_type}
+                  />
+                </Box>
               </Grid>
-              <Grid item xs={6}>
-                <Typography
-                  variant="h3"
-                  gutterBottom={true}
-                  style={{ marginTop: 20 }}
-                >
-                  {t_i18n('Likelihood')}
-                </Typography>
-                <ItemLikelihood likelihood={note.likelihood} />
+
+              <Grid container>
+                <Grid size={{ xs: 3, md: 6 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Confidence level')}
+                  </Typography>
+                  <ItemConfidence
+                    confidence={note.confidence}
+                    entityType={note.entity_type}
+                  />
+                </Grid>
+                <Grid size={{ xs: 3, md: 6 }}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t_i18n('Likelihood')}
+                  </Typography>
+                  <ItemLikelihood likelihood={note.likelihood} />
+                </Grid>
               </Grid>
-            </Grid>
+            </Stack>
           </Grid>
         </Grid>
+
         <IconButton
           component={Link}
           to={`/dashboard/analyses/notes/${note.id}`}
-          classes={{ root: classes.external }}
-          size="large"
+          sx={{ position: 'absolute', bottom: 8, right: 8 }}
+          size="small"
         >
           <OpenInNewOutlined fontSize="small" />
         </IconButton>
       </CardContent>
+
       <Dialog
         open={displayDialog}
         slotProps={{ paper: { elevation: 1 } }}
