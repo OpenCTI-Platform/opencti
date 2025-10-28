@@ -789,7 +789,7 @@ const WidgetCreationParameters = () => {
             label={t_i18n('Display legend')}
           />
         )}
-        {getCurrentCategory(type) === 'list' && context !== 'fintelTemplate'
+        {type === 'list' && context !== 'fintelTemplate'
           && dataSelection.map(({ perspective, columns, filters }, index) => {
             if (perspective === 'relationships' || perspective === 'entities') {
               const getEntityTypeFromFilters = (filterGroup?: FilterGroup | null): string | undefined => {
