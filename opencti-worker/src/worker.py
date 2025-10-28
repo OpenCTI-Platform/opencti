@@ -300,8 +300,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 listen_handler.handle_message,
                             )
 
-                # Check if some consumer must be stopped
-                for consumer_queue in self.consumers:
+                # Stop consumers whose queues no longer exist
+                # Iterate over a copy since self.consumers may be modified during iteration
+                for consumer_queue in list(self.consumers):
                     if consumer_queue not in queues:
                         self.worker_logger.info(
                             "Queue no longer exists, killing thread...",
