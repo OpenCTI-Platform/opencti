@@ -265,8 +265,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.objects_max_refs,
                         )
                         execution_pool = push_execution_pool
-                        if is_priority_connector(connector["connector_priority_group"]):
-                            execution_pool = realtime_push_execution_pool
+                        # TODO to be reactivate until global thread pool size remain the same, so we avoid unexpected platform overloading
+                        # if is_priority_connector(connector["connector_priority_group"]):
+                        #     execution_pool = realtime_push_execution_pool
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
