@@ -5,7 +5,7 @@ import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessag
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { createRuleContent } from './rules-utils';
 import { convertStixToInternalTypes, generateInternalType } from '../schema/schemaUtils';
-import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
+import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
 import type { StixReport } from '../types/stix-2-1-sdo';
 import type { StixRelation } from '../types/stix-2-1-sro';
@@ -46,7 +46,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     data: StixReport,
     addedTargets: ArrayRefs,
     deletedTargets: Array<BasicStoreRelation>,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;
@@ -137,7 +137,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     report: StixReport,
     addedRefs: Array<string>,
     removedRefs: Array<string>,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     if (addedRefs.length > 0) {
       const identities = await internalFindByIds(context, RULE_MANAGER_USER, addedRefs) as Array<StoreObject>;
@@ -193,7 +193,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   const handlePartOfRelationCreation = async (
     context: AuthContext,
     partOfRelation: StixRelation,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     let partOfTargetStandardId: StixId;
     const { id: partOfStandardId } = partOfRelation;
@@ -218,7 +218,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   const applyInsert = async (
     data: StixObject,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
     // eslint-disable-next-line consistent-return
   ): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
@@ -268,8 +268,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   const insert = async (
     element: StixObject,
-    _createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     return applyInsert(element, createInferredRelationCallback);
   };

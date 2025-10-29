@@ -4,7 +4,7 @@ import { createInferredRelation, deleteInferredRuleElement } from '../database/m
 import { createRuleContent } from './rules-utils';
 import { computeAverage } from '../database/utils';
 import { fullRelationsList } from '../database/middleware-loader';
-import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
+import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { BasicStoreRelation, StoreObject } from '../types/store';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -17,7 +17,7 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -103,8 +103,8 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
   };
   const insert = async (
     element: StixRelation,
-    _createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     return applyUpsert(element, createInferredRelationCallback);
   };

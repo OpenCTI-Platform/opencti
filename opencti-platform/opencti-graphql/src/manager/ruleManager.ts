@@ -15,7 +15,7 @@ import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship, isStixRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { internalLoadById, fullRelationsList } from '../database/middleware-loader';
-import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction, RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
+import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RuleDefinition, RuleRuntime, RuleScope } from '../types/rules';
 import type { BasicManagerEntity, BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { RuleManager } from '../generated/graphql';
@@ -163,8 +163,8 @@ export const rulesApplyHandler = async (
   user: AuthUser,
   events: Array<DataEvent>,
   forRules: Array<RuleRuntime> = [],
-  createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
-  createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+  createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
+  createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
 ) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
@@ -352,8 +352,8 @@ export const executeRuleApply = async (
   user: AuthUser,
   rule: RuleRuntime,
   id: string,
-  createInferredEntityCallback: createInferredEntityCallbackFunction | undefined,
-  createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+  createInferredEntityCallback: CreateInferredEntityCallbackFunction | undefined,
+  createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
 ) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, id);
@@ -369,8 +369,8 @@ export const ruleApply = async (
   user: AuthUser,
   elementId: string,
   ruleId: string,
-  createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
-  createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+  createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
+  createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
 ) => {
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   if (!rule) {

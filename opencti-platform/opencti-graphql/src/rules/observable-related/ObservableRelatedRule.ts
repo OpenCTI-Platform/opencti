@@ -11,13 +11,13 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
-import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction } from '../../types/rules';
+import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction } from '../../types/rules';
 
 const ruleRelatedObservableBuilder = () => {
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -81,8 +81,8 @@ const ruleRelatedObservableBuilder = () => {
   };
   const insert = async (
     element: StixRelation,
-    _createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     return applyUpsert(element, createInferredRelationCallback);
   };

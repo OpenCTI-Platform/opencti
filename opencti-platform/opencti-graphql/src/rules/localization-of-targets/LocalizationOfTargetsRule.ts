@@ -11,13 +11,13 @@ import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../ty
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import { internalLoadById } from '../../database/middleware-loader';
-import type { createInferredEntityCallbackFunction, createInferredRelationCallbackFunction } from '../../types/rules';
+import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction } from '../../types/rules';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -60,8 +60,8 @@ const ruleLocalizationOfTargetsBuilder = () => {
   };
   const insert = async (
     element: StixRelation,
-    _createInferredEntityCallback?: createInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: createInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
+    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
   ): Promise<void> => {
     return applyUpsert(element, createInferredRelationCallback);
   };
