@@ -174,6 +174,7 @@ const SearchBulk = ({ inputValues, dataColumns }: SearchBulkProps) => {
           storageKey={BULK_SEARCH_LOCAL_STORAGE_KEY}
           initialValues={initialValues}
           toolbarFilters={queryFilters}
+          additionalFilters={queryFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           exportContext={{ entity_type: 'Stix-Core-Object' }}
           lineFragment={searchBulkLineFragment}
