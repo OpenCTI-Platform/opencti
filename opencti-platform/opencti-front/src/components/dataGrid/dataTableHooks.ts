@@ -6,7 +6,7 @@ import usePreloadedPaginationFragment, { UsePreloadedPaginationFragment } from '
 import { useFormatter } from '../i18n';
 import useEntityToggle from '../../utils/hooks/useEntityToggle';
 import useLocalStorage, { UseLocalStorageHelpers, usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
-import { useComputeLink } from '../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../utils/hooks/useAppData';
 
 export const useLineData = (lineFragment: GraphQLTaggedNode) => (row: KeyType) => useFragment(lineFragment, row);
 

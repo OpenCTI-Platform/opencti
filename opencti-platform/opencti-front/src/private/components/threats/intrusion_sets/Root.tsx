@@ -8,8 +8,8 @@ import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
-import StixCoreObjectSimulationResultContainer from '../../common/stix_core_objects/StixCoreObjectSimulationResultContainer';
 import IntrusionSet from './IntrusionSet';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -63,6 +63,13 @@ const intrusionSetQuery = graphql`
         id
       }
       x_opencti_graph_data
+      securityCoverage {
+        id
+        coverage_information {
+          coverage_name
+          coverage_score
+        }
+      }
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...IntrusionSet_intrusionSet
@@ -222,7 +229,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
               {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
                 <AIInsights id={intrusionSet.id} />
-                <StixCoreObjectSimulationResultContainer id={intrusionSet.id} type="threat" />
+                <StixCoreObjectSecurityCoverage id={intrusionSet.id} coverage={intrusionSet.securityCoverage} />
               </div>
               )}
             </Box>

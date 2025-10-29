@@ -1500,6 +1500,7 @@ type PublicSettings implements IntlSettings & ThemeSettings {
   platform_providers: [PublicProvider!]!
   platform_enterprise_edition_license_validated: Boolean!
   playground_enabled: Boolean!
+  metrics_definition: [MetricDefinition!]
 }
 
 type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSettings {
@@ -1522,10 +1523,8 @@ type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSett
   platform_theme: Theme
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
-  platform_openbas_url: String
-  platform_openbas_disable_display: Boolean
-  platform_openerm_url: String
-  platform_openmtd_url: String
+  platform_openaev_url: String
+  platform_opengrc_url: String
   platform_xtmhub_url: String
   platform_login_message: String
   platform_consent_message: String
@@ -2108,6 +2107,8 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
@@ -2263,6 +2264,8 @@ type Connector implements BasicObject & InternalObject {
   title: String!
   active: Boolean
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   connector_trigger_filters: String
@@ -3176,6 +3179,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 input CampaignAddInput {
@@ -3765,6 +3769,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   deleteWithElementsCount: Int
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 input ReportAddInput {
@@ -4567,6 +4572,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 input IntrusionSetAddInput {
@@ -5894,6 +5900,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 input IncidentAddInput {
@@ -8100,9 +8107,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme
 
@@ -8264,11 +8271,17 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   cases(first: Int): CaseConnection
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
+  coverage_information: [CoverageResult!]
   creators: [Creator!]
   toStix: String
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
+}
+
+input SecurityCoverageExpectation {
+  coverage_name: String!
+  coverage_score: Int!
 }
 
 input StixCoreRelationshipAddInput {
@@ -8292,6 +8305,7 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  coverage_information: [SecurityCoverageExpectation!]
   clientMutationId: String
   update: Boolean
 }
@@ -8847,8 +8861,6 @@ type Query {
   publicStixRelationships(uriKey: String!, widgetId: String!, startDate: DateTime, endDate: DateTime): StixRelationshipConnection
   theme(id: ID!): Theme
   themes(first: Int, after: ID, orderBy: ThemeOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): ThemeConnection
-  obasStixCoreObjectSimulationsResult(id: ID!): StixObjectSimulationsResult
-  obasScenarioElementsDistribution(id: ID!, type: ScenarioType, filters: FilterGroup): [Distribution]
   deleteOperation(id: String!): DeleteOperation
   deleteOperations(first: Int, after: ID, orderBy: DeleteOperationOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DeleteOperationConnection
   supportPackage(id: String!): SupportPackage
@@ -8876,6 +8888,8 @@ type Query {
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
   securityPlatforms(first: Int, after: ID, orderBy: SecurityPlatformOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityPlatformConnection
+  securityCoverage(id: String!): SecurityCoverage
+  securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
@@ -9738,12 +9752,6 @@ type Mutation {
   aiSummarize(id: ID!, content: String!, format: Format): String
   aiExplain(id: ID!, content: String!): String
   aiNLQ(search: String!): NLQResponse
-  obasContainerGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasContainerGenerateScenarioWithInjectPlaceholders`.")
-  obasThreatGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasThreatGenerateScenarioWithInjectPlaceholders`.")
-  obasVictimGenerateScenario(id: ID!, interval: Int, selection: Selection, simulationType: SimulationType, useAI: Boolean, filters: FilterGroup): String @deprecated(reason: "[>=6.5 & <6.8]. Use `obasVictimGenerateScenarioWithInjectPlaceholders`.")
-  obasContainerGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
-  obasThreatGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
-  obasVictimGenerateScenarioWithInjectPlaceholders(id: ID!, simulationConfig: SimulationConfig, filters: FilterGroup): GenerationResponse
   deleteOperationRestore(id: ID!): ID
   deleteOperationConfirm(id: ID!): ID
   supportPackageAdd(input: SupportPackageAddInput!): SupportPackage
@@ -9786,6 +9794,13 @@ type Mutation {
   securityPlatformContextClean(id: ID!): SecurityPlatform
   securityPlatformRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityPlatformRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityPlatform
+  securityCoverageAdd(input: SecurityCoverageAddInput!): SecurityCoverage
+  securityCoverageDelete(id: ID!): ID
+  securityCoverageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): SecurityCoverage
+  securityCoverageContextPatch(id: ID!, input: EditContext!): SecurityCoverage
+  securityCoverageContextClean(id: ID!): SecurityCoverage
+  securityCoverageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  securityCoverageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -10221,6 +10236,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 enum GroupingsOrdering {
@@ -10819,6 +10835,7 @@ enum VocabularyCategory {
   hair_color_ov
   eye_color_ov
   persona_type_ov
+  coverage_ov
 }
 
 type VocabularyFieldDefinition {
@@ -11344,6 +11361,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
   name: String!
   description: String
   content: String
@@ -12254,6 +12272,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation
+  securityCoverage: SecurityCoverage
 }
 
 enum ThreatActorsIndividualOrdering {
@@ -13607,60 +13626,6 @@ type NLQResponse {
   notResolvedValues: [String!]!
 }
 
-enum ScenarioType {
-  container
-  threat
-  victim
-}
-
-enum Selection {
-  multiple
-  random
-}
-
-enum SimulationType {
-  technical
-  simulated
-  mixed
-}
-
-enum Platform {
-  Windows
-  Linux
-  MacOS
-}
-
-enum Architecture {
-  x86_64
-  arm64
-}
-
-input SimulationConfig {
-  interval: Int!
-  selection: Selection!
-  simulationType: SimulationType!
-  platforms: [Platform]
-  architecture: Architecture
-}
-
-type GenerationResponse {
-  urlResponse: String
-  attackPatternsNotAvailableInOpenBAS: String
-  hasInjectPlaceholders: Boolean
-}
-
-type SimulationsResult {
-  unknown: Int
-  success: Int
-  failure: Int
-}
-
-type StixObjectSimulationsResult {
-  prevention: SimulationsResult
-  detection: SimulationsResult
-  human: SimulationsResult
-}
-
 type DeletedElement {
   id: String!
   source_index: String!
@@ -14326,6 +14291,132 @@ input SecurityPlatformAddInput {
   x_opencti_workflow_id: String
   externalReferences: [String]
   update: Boolean
+}
+
+type CoverageResult {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  metrics: [Metric]
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  draftVersion: DraftVersion
+  refreshed_at: DateTime
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  identity_class: String!
+  name: String!
+  description: String
+  contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
+  x_opencti_reliability: String
+  security_platform_type: String
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  pirInformation(pirId: ID!): PirInformation
+  coverage_last_result: DateTime
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [CoverageResult!]
+  external_uri: String
+  periodicity: String
+  auto_enrichment_disable: Boolean
+  objectCovered: StixDomainObject
+  toStixBundle: String
+}
+
+enum SecurityCoverageOrdering {
+  name
+  confidence
+  created
+  created_at
+  creator
+  modified
+  updated_at
+  objectMarking
+  coverage_last_result
+  _score
+}
+
+type SecurityCoverageConnection {
+  pageInfo: PageInfo!
+  edges: [SecurityCoverageEdge!]!
+}
+
+type SecurityCoverageEdge {
+  cursor: String!
+  node: SecurityCoverage!
+}
+
+input SecurityCoverageAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  objectCovered: String!
+  created: DateTime
+  modified: DateTime
+  revoked: Boolean
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  x_opencti_workflow_id: String
+  external_uri: String
+  externalReferences: [String]
+  update: Boolean
+  auto_enrichment_disable: Boolean!
+  periodicity: String
+  coverage_last_result: DateTime
+  coverage_valid_from: DateTime
+  coverage_valid_to: DateTime
+  coverage_information: [SecurityCoverageExpectation!]
 }
 
 input AskSendOtpInput {

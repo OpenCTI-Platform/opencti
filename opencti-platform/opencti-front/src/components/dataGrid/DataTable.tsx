@@ -14,7 +14,7 @@ import { FilterIconButtonProps } from '../FilterIconButton';
 import { isNotEmptyField } from '../../utils/utils';
 import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
-import { useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
+import { FilterSearchContext, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 import useDraftContext from '../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 
@@ -26,7 +26,7 @@ type DataTableInternalFiltersProps = Pick<DataTableProps,
   availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
   availableEntityTypes?: string[]
   availableRelationshipTypes?: string[]
-  searchContextFinal?: { entityTypes: string[]; elementId?: string[] }
+  searchContextFinal?: FilterSearchContext
   additionalHeaderButtons?: ReactNode[]
   currentView?: string
   exportContext?: { entity_type: string, entity_id?: string }
@@ -100,6 +100,7 @@ const DataTableInternalFilters = ({
           availableRelationFilterTypes={availableRelationFilterTypes}
           availableEntityTypes={availableEntityTypes}
           entityTypes={computedEntityTypes}
+          searchContext={searchContextFinal}
         />
       )}
     </>

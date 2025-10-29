@@ -310,7 +310,7 @@ export const idGen = (type, data, namespace) => {
   if (isEmptyField(data)) {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type].flat();
-    const missingKeys = properties.map((p) => p.src).join(' - ');
+    const missingKeys = properties.flat().map((p) => p.src).join(' - ');
     throw FunctionalError(`Missing required elements for ${type} creation (${missingKeys})`, { properties });
   }
   // In some cases like TLP, standard id are fixed by the community

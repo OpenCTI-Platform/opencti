@@ -49,7 +49,7 @@ const elWhiteUser = async () => {
   return buildStandardUser([{ internal_id: TLP_WHITE.internal_id, standard_id: TLP_WHITE.standard_id }], ALL_TLP);
 };
 
-const VOCABULARY_COUNT = 347;
+const VOCABULARY_COUNT = 350;
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
@@ -452,7 +452,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(423 + entitiesCounterTotal + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
+    expect(data.edges.length).toEqual(76 + VOCABULARY_COUNT + entitiesCounterTotal + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -601,7 +601,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(555);
+    expect(data.edges.length).toEqual(209 + VOCABULARY_COUNT);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -739,7 +739,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(entitiesCounter.label);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.externalReference);
-    expect(data.edges.length).toEqual(566);
+    expect(data.edges.length).toEqual(220 + VOCABULARY_COUNT);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {

@@ -41,6 +41,13 @@ export const rootPublicQuery = graphql`
       ...AppIntlProvider_settings
       ...AppThemeProvider_settings
       ...PublicSettingsProvider_settings
+      metrics_definition {
+        entity_type
+        metrics {
+          attribute
+          name
+        }
+      }
     }
   }
 `;

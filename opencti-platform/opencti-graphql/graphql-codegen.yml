@@ -64,6 +64,7 @@ generates:
         FintelDesign: ../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign
         Pir: ../modules/pir/pir-types#BasicStoreEntityPir
         SecurityPlatform: ../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform
+        SecurityCoverage: ../modules/securityCoverage/securityCoverage-types#BasicStoreEntitySecurityCoverage
         EmailTemplate: ../modules/emailTemplate/emailTemplate-types#BasicStoreEntityEmailTemplate
         Form: ../modules/form/form-types#BasicStoreEntityForm
 

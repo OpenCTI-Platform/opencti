@@ -133,11 +133,12 @@ import {
   isUpdatedAtObject,
   noReferenceAttributes
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
+  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_VULNERABILITY,
@@ -173,7 +174,7 @@ import {
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
-import { createEntityAutoEnrichment } from '../domain/enrichment';
+import { createEntityAutoEnrichment, updateEntityAutoEnrichment } from '../domain/enrichment';
 import { convertExternalReferenceToStix, convertStoreToStix } from './stix-2-1-converter';
 import {
   buildAggregationRelationFilter,
@@ -236,7 +237,10 @@ import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
+import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
+import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
+import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -538,6 +542,12 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
     .filter((i) => isNotEmptyField(i))
     .map((e) => (convertStoreToStix(e)));
 };
+export const stixBundleByIdStringify = async (context, user, type, id) => {
+  const resolver = modules.get(type)?.bundleResolver;
+  if (resolver) return await resolver(context, user, id);
+  throw UnsupportedError('No bundle resolver for type', { type });
+};
+
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);
   return data ? JSON.stringify(data) : '';
@@ -795,10 +805,13 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
             });
         } else if (hasOpenVocab) {
           const ids = isListing ? id : [id];
-          const category = getVocabularyCategoryForField(destKey, type);
+          const { category, field } = getVocabularyCategoryForField(destKey, type);
           ids.forEach((i) => {
-            const vocabularyId = idVocabulary(i, category);
-            const vocabularyElement = { id: vocabularyId, destKey, multiple: isListing };
+            if (field.composite && field.multiple) {
+              throw FunctionalError('Composite vocab only support single definition', { field });
+            }
+            const vocabularyId = field.composite ? idVocabulary(i[field.composite], category) : idVocabulary(i, category);
+            const vocabularyElement = { id: vocabularyId, destKey, vocab: { field, data: i }, multiple: isListing };
             if (fetchingIdsMap.has(vocabularyId)) {
               fetchingIdsMap.get(vocabularyId).push(vocabularyElement);
             } else {
@@ -873,14 +886,43 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     }
     const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, resolutionsMap.values());
     const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
-      const isMultiple = R.head(val).i_group.multiple;
-      if (val.length === 1) {
-        return { [k]: isMultiple ? val : R.head(val) };
+      const attr = schemaAttributesDefinition.getAttribute(type, k);
+      const ref = schemaRelationsRefDefinition.getRelationRef(type, k);
+      if (!ref && !attr) {
+        throw UnsupportedError('Invalid attribute resolution', { key: k, type, doc_code: 'ELEMENT_NOT_FOUND' });
       }
+      const isMultiple = attr?.multiple || ref?.multiple;
+      // If single value
       if (!isMultiple) {
-        throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val, doc_code: 'ELEMENT_ID_COLLISION' });
+        const rawValues = Array.isArray(val) ? val : [val];
+        if (rawValues.length > 1) {
+          throw UnsupportedError('Input resolve refs expect single value', { key: k, values: rawValues, doc_code: 'ELEMENT_ID_COLLISION' });
+        }
+        const rawValue = rawValues[0];
+        const { vocab } = rawValue.i_group;
+        if (vocab) {
+          if (vocab.field.composite) {
+            return { [k]: { ...vocab.data, [vocab.field.composite]: rawValue.name } };
+          }
+          return { [k]: rawValue.name };
+        }
+        return { [k]: rawValue };
       }
-      return { [k]: val };
+      // If multiple values
+      const result = [];
+      val.forEach((rawValue) => {
+        const { vocab } = rawValue.i_group;
+        if (vocab) {
+          if (vocab.field.composite) {
+            result.push({ ...vocab.data, [vocab.field.composite]: rawValue.name });
+          } else {
+            result.push(rawValue.name);
+          }
+        } else {
+          result.push(rawValue);
+        }
+      });
+      return { [k]: result };
     });
     const unresolvedIds = expectedIds.filter((id) => !resolvedIds.has(id));
     // In case of missing from / to, fail directly
@@ -904,17 +946,16 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const entityVocabs = Object.values(vocabularyDefinitions).filter(({ entity_types }) => entity_types.includes(type));
     entityVocabs.forEach(({ fields }) => {
       const existingFields = fields.filter(({ key }) => Boolean(input[key]));
-      existingFields.forEach(({ key, required, multiple }) => {
+      existingFields.forEach(({ key, required, composite, multiple }) => {
         const resolvedData = inputResolved[key];
         if (isEmptyField(resolvedData) && required) {
           throw FunctionalError('Missing mandatory attribute for vocabulary', { key });
         }
         if (isNotEmptyField(resolvedData)) {
           const isArrayValues = Array.isArray(resolvedData);
-          if (isArrayValues && !multiple) {
+          if (isArrayValues && !multiple && !composite) {
             throw FunctionalError('Find multiple vocabularies for single one', { key, data: resolvedData });
           }
-          inputResolved[key] = isArrayValues ? resolvedData.map(({ name }) => name) : resolvedData.name;
         }
       });
     });
@@ -1663,21 +1704,21 @@ const prepareAttributesForUpdate = async (context, user, instance, elements) => 
     if (def.type === 'numeric') {
       return {
         key: input.key,
-        value: R.map((value) => {
+        value: (input.value ?? []).map((value) => {
           // Like at creation, we need to be sure that confidence is default to 0
           const baseValue = (input.key === confidence.name && isEmptyField(value)) ? 0 : value;
           const parsedValue = baseValue ? Number(baseValue) : baseValue;
           return Number.isNaN(parsedValue) ? null : parsedValue;
-        }, input.value),
+        }),
       };
     }
     // Check boolean
     if (def.type === 'boolean') {
       return {
         key: input.key,
-        value: R.map((value) => {
+        value: (input.value ?? []).map((value) => {
           return value === true || value === 'true';
-        }, input.value),
+        }),
       };
     }
     // Check dates for empty values
@@ -2386,6 +2427,15 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           pir_ids
         }
       );
+      // region Security coverage hook
+      // TODO Implements a more generic approach to notify enrichment
+      // If entity is currently covered
+      const isRefUpdate = relationsToCreate.length > 0 || relationsToDelete.length > 0;
+      if (isRefUpdate && data.updatedInstance[RELATION_COVERED]) {
+        const securityCoverage = await internalLoadById(context, user, data.updatedInstance[RELATION_COVERED]);
+        await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
+      }
+      // endregion
       return { element: updatedInstance, event, isCreation: false };
     }
     // Return updated element after waiting for it.
@@ -2428,6 +2478,22 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 
+const generateEnrichmentLoaders = (context, user, element) => {
+  return {
+    loadById: () => stixLoadByIdStringify(context, user, element.internal_id),
+    bundleById: () => stixBundleByIdStringify(context, user, element.entity_type, element.internal_id),
+  };
+};
+const triggerCreateEntityAutoEnrichment = async (context, user, element) => {
+  const loaders = generateEnrichmentLoaders(context, user, element);
+  await createEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
+};
+const triggerEntityUpdateAutoEnrichment = async (context, user, element) => {
+  // If element really updated, try to enrich if needed
+  const loaders = generateEnrichmentLoaders(context, user, element);
+  await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
+};
+
 export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
   const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
@@ -2437,7 +2503,12 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   const entitySetting = await getEntitySettingFromCache(context, initial.entity_type);
   await validateInputUpdate(context, user, initial.entity_type, initial, inputs, entitySetting);
   // Continue update
-  return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
+  const data = await updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
+  if (data.event) {
+    // If element really updated, try to enrich if needed
+    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+  }
+  return data;
 };
 
 export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
@@ -2747,25 +2818,39 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
     }
   }
   if (type === ENTITY_TYPE_INDICATOR) {
-    // Do not compute decay again when base score does not change
-    // if the element was revoked, we need to update the score to reactivate the indicator
-    if (!resolvedElement.revoked && updatePatch.decay_applied_rule
-      && (updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score)) {
-      logApp.debug('UPSERT INDICATOR -- no decay reset because no score change', { resolvedElement, basePatch });
-      // don't reset score, valid_from & valid_until
-      updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
-      updatePatch.valid_from = resolvedElement.valid_from;
-      updatePatch.valid_until = resolvedElement.valid_until;
-      // don't reset decay attributes
-      // updatePatch.decay_base_score = element.decay_base_score; // no need since it's the same score
-      updatePatch.revoked = resolvedElement.revoked;
-      updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
-      updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
-      updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
-      updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
-    } else {
-      // As base_score as change, decay will be reset by upsert
-      logApp.debug('UPSERT INDICATOR -- Decay is reset', { resolvedElement, basePatch });
+    if (resolvedElement.decay_applied_rule) {
+      // Do not compute decay again when:
+      // - base score does not change
+      // - same userIs has already updated to the same score previously
+      const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
+      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
+      if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource) {
+        logApp.debug(`[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`, { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score, isScoreInUpsertSameAsBaseScore, hasSameScoreChangedBySameSource });
+        // don't reset score, valid_from & valid_until
+        updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
+        updatePatch.valid_from = resolvedElement.valid_from;
+        updatePatch.valid_until = resolvedElement.valid_until;
+        // don't reset decay attributes
+        updatePatch.revoked = resolvedElement.revoked;
+        updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
+        updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
+        updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
+        updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
+      } else {
+        // As base_score as change, decay will be reset by upsert
+        logApp.debug('[OPENCTI][DECAY] Decay is restarted', { elementScore: resolvedElement.x_opencti_score, initialPatchScore: basePatch.x_opencti_score, updatePatchScore: updatePatch.x_opencti_score });
+      }
+    }
+
+    // When revoke is updated to true => false, we need to reset score to a valid score if no score in input
+    if (resolvedElement.revoked === true && basePatch.revoked === false) {
+      if (!updatePatch.x_opencti_score) {
+        if (resolvedElement.decay_applied_rule) {
+          updatePatch.x_opencti_score = resolvedElement.decay_base_score > INDICATOR_DEFAULT_SCORE ? resolvedElement.decay_base_score : INDICATOR_DEFAULT_SCORE;
+        } else {
+          updatePatch.x_opencti_score = INDICATOR_DEFAULT_SCORE;
+        }
+      }
     }
   }
   // Upsert relations with times extensions
@@ -2808,7 +2893,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       const inputData = updatePatch[attributeKey];
       const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
-      const isFullSync = context.synchronizedUpsert; // In case of full synchronization, just update the data
+      const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
@@ -3104,6 +3189,20 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
+    // region Security coverage hook
+    // TODO Implements a more generic approach to notify enrichment
+    // If relation is created from/to an element currently covered
+    // (from) Element[covered] <- use -> Attack pattern (to)
+    // (from) Element[covered] <- targets -> Vulnerability (to)
+    if (dataRel.element.from[RELATION_COVERED]) {
+      const isVuln = relationshipType === RELATION_TARGETS && dataRel.element.to.entity_type === ENTITY_TYPE_VULNERABILITY;
+      const isAttackPattern = relationshipType === RELATION_USES && dataRel.element.to.entity_type === ENTITY_TYPE_ATTACK_PATTERN;
+      if (isVuln || isAttackPattern) {
+        const securityCoverage = await internalLoadById(context, user, dataRel.element.from[RELATION_COVERED]);
+        await triggerEntityUpdateAutoEnrichment(context, user, securityCoverage);
+      }
+    }
+    // endregion
     return { element: { ...resolvedInput, ...dataRel.element }, event, isCreation: true };
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -3392,7 +3491,9 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
   if (data.isCreation) {
-    await createEntityAutoEnrichment(context, user, data.element, type);
+    await triggerCreateEntityAutoEnrichment(context, user, data.element);
+  } else if (data.event !== null) { // upsert
+    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
   }
   return isCompleteResult ? data : data.element;
 };

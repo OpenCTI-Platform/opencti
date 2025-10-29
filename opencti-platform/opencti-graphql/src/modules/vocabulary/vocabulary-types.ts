@@ -27,6 +27,8 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/th
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
+import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
@@ -37,6 +39,7 @@ interface VocabularyDefinition {
   entity_types: string[],
   fields: {
     key: string,
+    composite?: string,
     required: boolean,
     multiple: boolean,
   }[]
@@ -81,6 +84,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   // C
+  coverage_ov: {
+    entity_types: [ENTITY_TYPE_SECURITY_COVERAGE, RELATION_HAS_COVERED],
+    fields: [{
+      key: 'coverage_information',
+      composite: 'coverage_name',
+      required: false,
+      multiple: false,
+    }]
+  },
   case_severity_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT, ENTITY_TYPE_CONTAINER_CASE_RFI, ENTITY_TYPE_CONTAINER_CASE_RFT], // Fill entire list
     fields: [{

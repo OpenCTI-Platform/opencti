@@ -8,6 +8,7 @@ import { OperationType } from 'relay-runtime';
 import type { LocalStorage } from '../../utils/hooks/useLocalStorageModel';
 import { NumberOfElements, PaginationLocalStorage, UseLocalStorageHelpers } from '../../utils/hooks/useLocalStorage';
 import { FilterGroup } from '../../utils/filters/filtersHelpers-types';
+import { FilterSearchContext } from '../../utils/filters/filtersUtils';
 
 export type LocalStorageColumn = { percentWidth: number, visible?: boolean, index?: number };
 export type LocalStorageColumns = Record<string, LocalStorageColumn>;
@@ -166,7 +167,8 @@ export interface DataTableDisplayFiltersProps {
   entityTypes?: string[]
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableFilterKeys?: string[] | undefined;
-  availableEntityTypes?: string[]
+  availableEntityTypes?: string[];
+  searchContext?: FilterSearchContext;
 }
 
 export interface DataTableFiltersProps {

@@ -463,6 +463,7 @@ export const stixCoreRelationshipCreationFromEntityToMutation = graphql`
 
 interface StixCoreRelationshipCreationFromEntityProps {
   entityId: string;
+  objectId?: string;
   allowedRelationshipTypes?: string[];
   isRelationReversed?: boolean;
   targetStixDomainObjectTypes?: string[];
@@ -478,6 +479,7 @@ interface StixCoreRelationshipCreationFromEntityProps {
   openExports?: boolean;
   handleReverseRelation?: () => void;
   currentView?: string;
+  isCoverage?: boolean;
 }
 
 export interface StixCoreRelationshipCreationFromEntityForm {
@@ -488,6 +490,7 @@ export interface StixCoreRelationshipCreationFromEntityForm {
   killChainPhases: FieldOption[];
   objectMarking: FieldOption[];
   externalReferences: FieldOption[];
+  coverage_information?: Array<{ coverage_name: string; coverage_score: number }>;
 }
 
 export interface TargetEntity {
@@ -504,6 +507,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     paginationOptions,
     isRelationReversed,
     connectionKey,
+    objectId,
     allowedRelationshipTypes,
     defaultStartTime,
     defaultStopTime,
@@ -514,6 +518,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     openExports = false,
     handleReverseRelation = undefined,
     currentView,
+    isCoverage = false,
   } = props;
 
   const LOCAL_STORAGE_KEY = `stixCoreRelationshipCreationFromEntity-${entityId}-${targetStixDomainObjectTypes?.join('-')}-${targetStixCyberObservableTypes?.join('-')}`;
@@ -558,9 +563,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const [open, setOpen] = useState(targetEntitiesProps.length !== 0);
   const [openCreateObservable, setOpenCreateObservable] = useState(false);
   const [step, setStep] = useState(targetEntitiesProps.length === 0 ? 0 : 1);
-  const [targetEntities, setTargetEntities] = useState(
-    targetEntitiesProps,
-  );
+  const [targetEntities, setTargetEntities] = useState(targetEntitiesProps);
   useEffect(() => {
     if (!R.equals(targetEntitiesProps, targetEntities) && targetEntitiesProps.length > targetEntities.length) {
       setTargetEntities(targetEntitiesProps);
@@ -624,7 +627,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               connKey,
               paginationOptions,
               'stixCoreRelationshipAdd',
-              null,
+              objectId,
               null,
               null,
               isRelationReversed ? 'from' : 'to',
@@ -637,6 +640,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               connKey,
               paginationOptions,
               'stixCoreRelationshipAdd',
+              objectId,
             );
           }
         },
@@ -667,10 +671,11 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
         R.assoc('createdBy', values.createdBy?.value),
         R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-        R.assoc(
-          'externalReferences',
-          R.pluck('value', values.externalReferences),
-        ),
+        R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
+        isCoverage && values.coverage_information ? R.assoc('coverage_information', values.coverage_information.map((c) => ({
+          coverage_name: c.coverage_name,
+          coverage_score: typeof c.coverage_score === 'string' ? parseInt(c.coverage_score, 10) : c.coverage_score,
+        }))) : R.identity,
       )(values);
       try {
         // eslint-disable-next-line no-await-in-loop
@@ -763,7 +768,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   } as UsePreloadedPaginationFragment<StixCoreRelationshipCreationFromEntityStixCoreObjectsLinesQueryType>;
 
   const [tableRootRef, setTableRootRef] = useState<HTMLDivElement | null>(null);
-
   const renderSelectEntity = (entity_type: string, name = '') => {
     return (
       <div
@@ -866,6 +870,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               defaultConfidence={undefined}
               defaultCreatedBy={undefined}
               defaultMarkingDefinitions={undefined}
+              isCoverage={isCoverage}
             />
           );
         }}
