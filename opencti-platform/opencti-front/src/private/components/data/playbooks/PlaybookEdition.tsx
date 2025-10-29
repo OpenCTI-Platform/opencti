@@ -27,7 +27,7 @@ const PlaybookEdition = ({ id }: { id: string }) => {
 
   return (
     <Drawer
-      title={t_i18n('Update a decay rule')}
+      title={t_i18n('Update a playbook')}
       controlledDial={EditEntityControlledDial}
     >
       {queryRef && (
