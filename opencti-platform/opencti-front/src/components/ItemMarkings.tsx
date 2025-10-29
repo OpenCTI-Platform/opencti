@@ -171,7 +171,7 @@ const ItemMarkings = ({
     >
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Badge
-          variant="dot"
+          variant={markings.length > limit ? 'dot' : 'standard'}
           color="primary"
           sx={{
             '& .MuiBadge-badge': {
