@@ -253,7 +253,7 @@ jobs:
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
             apk add build-base git libffi-dev cargo;
             cd /home/workspace
-            git clone https://github.com/OpenCTI-Platform/connectors.git
+            git clone https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
             git clone https://github.com/OpenCTI-Platform/client-python.git
             cd /home/workspace/opencti-platform/opencti-graphql
             npm install -g corepack
