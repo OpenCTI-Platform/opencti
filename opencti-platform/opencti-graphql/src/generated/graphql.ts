@@ -21240,6 +21240,7 @@ export type PublicProvider = {
 export type PublicSettings = IntlSettings & ThemeSettings & {
   __typename?: 'PublicSettings';
   id: Scalars['ID']['output'];
+  metrics_definition?: Maybe<Array<MetricDefinition>>;
   platform_banner_level?: Maybe<Scalars['String']['output']>;
   platform_banner_text?: Maybe<Scalars['String']['output']>;
   platform_consent_confirm_text?: Maybe<Scalars['String']['output']>;
@@ -43096,6 +43097,7 @@ export type PublicProviderResolvers<ContextType = any, ParentType extends Resolv
 
 export type PublicSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicSettings'] = ResolversParentTypes['PublicSettings']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics_definition?: Resolver<Maybe<Array<ResolversTypes['MetricDefinition']>>, ParentType, ContextType>;
   platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

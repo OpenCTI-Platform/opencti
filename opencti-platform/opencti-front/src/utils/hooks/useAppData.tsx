@@ -1,4 +1,5 @@
 import React, { ReactNode, createContext, useContext } from 'react';
+import { MetricsDefinition } from 'src/components/dataGrid/dataTableUtils';
 import { resolveLink } from '../Entity';
 import useSchema from './useSchema';
 
@@ -9,6 +10,11 @@ export type ComputeLinkNode = {
   from?: { entity_type: string; id: string };
   to?: { entity_type: string; id: string };
   type?: string;
+};
+
+export type AppDataProps = {
+  computeLink: (node: ComputeLinkNode) => string | undefined;
+  metricsDefinition: MetricsDefinition[];
 };
 
 const useComputeLinkFn = () => {
@@ -42,35 +48,68 @@ const useComputeLinkFn = () => {
   return computeLink;
 };
 
-type ComputeLinkFn = ReturnType<typeof useComputeLinkFn>;
+const AppDataContext = createContext<AppDataProps | null>(null);
 
-const ComputeLinkContext = createContext<ComputeLinkFn | null>(null);
-
-export const useComputeLink = (): ComputeLinkFn => {
-  const computeLink = useContext(ComputeLinkContext);
-  if (!computeLink) {
-    throw new Error('useSafeComputeLink must be used within ComputeLinkProvider');
+export const useAppData = (): AppDataProps => {
+  const appData = useContext(AppDataContext);
+  if (!appData) {
+    throw new Error('useAppData must be used within AppDataProvider');
   }
+  return appData;
+};
+
+export const useComputeLink = (): AppDataProps['computeLink'] => {
+  const { computeLink } = useAppData();
   return computeLink;
 };
 
-const PrivateComputeLinkProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+type PrivateAppDataProviderProps = {
+  children: ReactNode;
+  metricsDefinition: MetricsDefinition[];
+};
+
+const PrivateAppDataProvider: React.FC<PrivateAppDataProviderProps> = ({ children, metricsDefinition }) => {
   const computeLink = useComputeLinkFn();
+
+  const appData: AppDataProps = {
+    computeLink,
+    metricsDefinition,
+  };
+
   return (
-    <ComputeLinkContext.Provider value={computeLink as ComputeLinkFn}>
+    <AppDataContext.Provider value={appData}>
       {children}
-    </ComputeLinkContext.Provider>
+    </AppDataContext.Provider>
   );
 };
 
-export const ComputeLinkProvider = ({ isPublicRoute, children }: { isPublicRoute: boolean, children: ReactNode }) => {
+type AppDataProviderProps = {
+  isPublicRoute: boolean;
+  metricsDefinition?: MetricsDefinition[];
+  children: ReactNode;
+};
+
+export const AppDataProvider = ({
+  isPublicRoute,
+  metricsDefinition = [],
+  children,
+}: AppDataProviderProps) => {
   if (isPublicRoute) {
+    const appData: AppDataProps = {
+      computeLink: () => '',
+      metricsDefinition,
+    };
+
     return (
-      <ComputeLinkContext.Provider value={() => ''}>
+      <AppDataContext.Provider value={appData}>
         {children}
-      </ComputeLinkContext.Provider>
+      </AppDataContext.Provider>
     );
   }
 
-  return <PrivateComputeLinkProvider>{children}</PrivateComputeLinkProvider>;
+  return (
+    <PrivateAppDataProvider metricsDefinition={metricsDefinition}>
+      {children}
+    </PrivateAppDataProvider>
+  );
 };

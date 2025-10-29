@@ -3,7 +3,7 @@ import { WidgetColumn } from 'src/utils/widget/widget';
 import { DataTableProps, DataTableVariant } from '../dataGrid/dataTableTypes';
 import DataTableWithoutFragment from '../dataGrid/DataTableWithoutFragment';
 import ItemIcon from '../ItemIcon';
-import { useComputeLink } from '../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../utils/hooks/useAppData';
 
 interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
