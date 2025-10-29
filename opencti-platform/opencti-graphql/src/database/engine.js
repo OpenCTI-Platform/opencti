@@ -3865,10 +3865,10 @@ const buildRegardingOfFilter = async (context, user, elements, filters) => {
   return undefined;
 };
 
-const buildSearchResult = (elements, first, searchAfter, globalCount, connectionFormat) => {
+const buildSearchResult = (elements, first, searchAfter, globalCount, filterCount, connectionFormat) => {
   if (connectionFormat) {
     const nodeHits = elements.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
-    return buildPagination(first, searchAfter, nodeHits, globalCount);
+    return buildPagination(first, searchAfter, nodeHits, globalCount, filterCount);
   }
   return elements;
 };
@@ -3910,11 +3910,11 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     // If filters contains an "in regards of" filter a post-security filtering is needed
     const regardingOfFilter = elements.length === 0 ? undefined : await buildRegardingOfFilter(context, user, elements, filters);
     const filteredElements = regardingOfFilter ? await asyncFilter(elements, regardingOfFilter) : elements;
-    const result = buildSearchResult(filteredElements, first, body.search_after, globalCount, connectionFormat);
+    const filterCount = elements.length - filteredElements.length;
+    const result = buildSearchResult(filteredElements, first, body.search_after, globalCount, filterCount, connectionFormat);
     if (withResultMeta) {
       const lastProcessedSort = R.last(elements)?.sort;
       const endCursor = lastProcessedSort ? offsetToCursor(lastProcessedSort) : null;
-      const filterCount = elements.length - filteredElements.length;
       return { elements: result, endCursor, total: globalCount, filterCount };
     }
     return result;

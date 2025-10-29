@@ -249,10 +249,10 @@ export const emptyPaginationResult = () => {
   };
 };
 
-export const buildPaginationFromEdges = (limit, searchAfter, edges, globalCount) => {
+export const buildPaginationFromEdges = (limit, searchAfter, edges, globalCount, filteredCount = 0) => {
   // Because of stateless approach its difficult to know if its finish
   // this test could lead to an extra round trip sometimes
-  const hasNextPage = edges.length === limit;
+  const hasNextPage = (edges.length + filteredCount) === limit;
   // For same reason its difficult to know if a previous page exists.
   // Considering for now that if user specific an offset, it should exists a previous page.
   const hasPreviousPage = searchAfter !== undefined && searchAfter !== null;
@@ -268,14 +268,14 @@ export const buildPaginationFromEdges = (limit, searchAfter, edges, globalCount)
   return { edges, pageInfo };
 };
 
-export const buildPagination = (limit, searchAfter, instances, globalCount) => {
+export const buildPagination = (limit, searchAfter, instances, globalCount, filteredCount = 0) => {
   // TODO Make this transformation async
   const edges = instances.map((record) => {
     const { node, sort, types } = record;
     const cursor = sort ? offsetToCursor(sort) : '';
     return { node, cursor, types };
   });
-  return buildPaginationFromEdges(limit, searchAfter, edges, globalCount);
+  return buildPaginationFromEdges(limit, searchAfter, edges, globalCount, filteredCount);
 };
 
 export const inferIndexFromConceptType = (conceptType, inferred = false) => {
