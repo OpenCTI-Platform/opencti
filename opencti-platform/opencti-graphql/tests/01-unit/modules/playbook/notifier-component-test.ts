@@ -51,7 +51,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
     });
 
     it('should call storeNotificationEvent with correct message when event is a PIR', async () => {
-      vi.spyOn(playbookManagerUtils, 'isEventInPir').mockReturnValue(true);
+      vi.spyOn(playbookManagerUtils, 'isEventInPir').mockResolvedValue(true);
 
       const mockEventPirDelete = { type: 'delete', message: 'PIR message' } as unknown as StreamDataEvent;
 
@@ -83,23 +83,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
       expect(result).toEqual({ output_port: undefined, bundle: mockBundle });
     });
 
-    it('should skip notification if event is in PIR and type is update', async () => {
-      vi.spyOn(playbookManagerUtils, 'isEventInPir').mockReturnValue(true);
-
-      await PLAYBOOK_NOTIFIER_COMPONENT.executor({
-        dataInstanceId: 'instance-id',
-        playbookId: 'playbook-id',
-        playbookNode,
-        bundle: mockBundle,
-        event: { type: 'update' } as unknown as StreamDataEvent
-      } as unknown as ExecutorParameters<NotifierConfiguration>);
-
-      expect(redis.storeNotificationEvent).not.toHaveBeenCalled();
-    });
-
-    it('should call storeNotificationEvent with generetad message is event is not a PIR', async () => {
-      vi.spyOn(playbookManagerUtils, 'isEventInPir').mockReturnValue(false);
-
+    it('should call storeNotificationEvent with generetad message if event in undefined', async () => {
       const expectedNotificationEvent: notificationManager.DigestEvent = {
         version: notificationManager.EVENT_NOTIFICATION_VERSION,
         playbook_source: mockPlaybook.name,
@@ -121,7 +105,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
         playbookId: 'playbook-id',
         playbookNode,
         bundle: mockBundle,
-        event: {} as unknown as StreamDataEvent
+        event: undefined
       } as unknown as ExecutorParameters<NotifierConfiguration>);
 
       expect(redis.storeNotificationEvent).toHaveBeenCalledWith(mockContext, expectedNotificationEvent);

@@ -11,8 +11,8 @@ import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION
 import { generateCreateMessage } from '../../../database/generate-message';
 import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/redis';
-import { isEventInPir } from '../../../manager/playbookManager/playbookManagerUtils';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
+import { StreamDataEventTypeEnum } from '../../../manager/playbookManager/playbookManagerUtils';
 
 export interface NotifierConfiguration {
   notifiers: string[]
@@ -63,39 +63,33 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
     const notificationsCall = [];
-    const isPirEvent = event && isEventInPir(event);
-    // TODO Remove this check on update in next chunk
-    if (!event || (event && !isPirEvent) || (isPirEvent && event.type !== 'update')) {
-      for (let index = 0; index < targetUsers.length; index += 1) {
-        const targetUser = targetUsers[index];
-        const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
-        const userContext = { ...context, user_inside_platform_organization };
-        const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
 
-        const notificationEvent: DigestEvent = {
-          version: EVENT_NOTIFICATION_VERSION,
-          playbook_source: playbook.name,
-          notification_id: playbookNode.id,
-          target: convertToNotificationUser(targetUser, notifiers),
-          type: 'digest',
-          data: stixElements.map((stixObject) => {
-            let message = generateCreateMessage({
-              ...stixObject,
-              entity_type: convertStixToInternalTypes(stixObject.type)
-            });
-            if (isPirEvent) {
-              message = event.message;
-            }
-            return {
-              notification_id: playbookNode.id,
-              instance: stixObject,
-              type: event?.type ?? 'create', // TODO Improve that with type event follow up
-              message: message === '-' ? playbookNode.name : message,
-            };
-          })
-        };
-        notificationsCall.push(storeNotificationEvent(context, notificationEvent));
-      }
+    for (let index = 0; index < targetUsers.length; index += 1) {
+      const targetUser = targetUsers[index];
+      const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
+      const userContext = { ...context, user_inside_platform_organization };
+      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
+
+      const notificationEvent: DigestEvent = {
+        version: EVENT_NOTIFICATION_VERSION,
+        playbook_source: playbook.name,
+        notification_id: playbookNode.id,
+        target: convertToNotificationUser(targetUser, notifiers),
+        type: 'digest',
+        data: stixElements.map((stixObject) => {
+          const message = event && event.type !== StreamDataEventTypeEnum.CREATE ? event.message : generateCreateMessage({
+            ...stixObject,
+            entity_type: convertStixToInternalTypes(stixObject.type)
+          });
+          return {
+            notification_id: playbookNode.id,
+            instance: stixObject,
+            type: event?.type ?? 'create', // TODO Improve that with type event follow up
+            message: message === '-' ? playbookNode.name : message,
+          };
+        })
+      };
+      notificationsCall.push(storeNotificationEvent(context, notificationEvent));
     }
     if (notificationsCall.length > 0) {
       await Promise.all(notificationsCall);

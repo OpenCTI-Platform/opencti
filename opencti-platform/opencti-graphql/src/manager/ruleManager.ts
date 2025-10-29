@@ -23,7 +23,7 @@ import { FilterMode, FilterOperator } from '../generated/graphql';
 import type { StixCoreObject } from '../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
-import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
+import type { BaseEvent, DataEvent, DeleteEvent, MergeEvent, SseEvent, StreamDataEvent, StreamDataEventType, UpdateEvent } from '../types/event';
 import { getActivatedRules, getRule } from '../domain/rules';
 import { executionContext, RULE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import { isModuleActivated } from '../database/cluster-module';
@@ -43,7 +43,7 @@ export const getManagerInfo = async (context: AuthContext, user: AuthUser): Prom
   return { activated: isRuleEngineActivated, ...ruleStatus };
 };
 
-export const buildInternalEvent = (type: 'update' | 'create' | 'delete', stix: StixCoreObject): StreamDataEvent => {
+export const buildInternalEvent = (type: StreamDataEventType, stix: StixCoreObject): StreamDataEvent => {
   return {
     version: EVENT_CURRENT_VERSION,
     type,
