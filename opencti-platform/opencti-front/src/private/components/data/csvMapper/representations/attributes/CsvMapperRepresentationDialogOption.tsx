@@ -48,6 +48,11 @@ const CsvMapperRepresentationDialogOption: FunctionComponent<CsvMapperRepresenta
         onClose={handleClose}
         aria-labelledby="csv-mapper-dialog-title"
         aria-describedby="Configure optional settings to the field"
+        slotProps={{
+          paper: {
+            elevation: 1,
+          },
+        }}
       >
         <DialogTitle id="csv-mapper-dialog-title">
           {t_i18n('Attribute mapping configuration')}
