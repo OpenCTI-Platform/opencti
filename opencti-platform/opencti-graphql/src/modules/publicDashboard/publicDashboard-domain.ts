@@ -48,6 +48,7 @@ import { ES_MAX_CONCURRENCY } from '../../database/engine';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { fromB64, toB64 } from '../../utils/base64';
+import { computeLoaders } from '../../http/httpAuthenticatedContext';
 
 export const findById = (
   context: AuthContext,
@@ -292,12 +293,19 @@ export const publicDashboardDelete = async (context: AuthContext, user: AuthUser
 };
 
 // region Widgets Public API
+const ensurePublicContext = async (context: AuthContext, uriKey: string, widgetId: string) => {
+  const { user, dataSelection, parameters } = await getWidgetArguments(context, uriKey, widgetId);
+  context.user = user;
+  context.user_inside_platform_organization = true;
+  context.batch = computeLoaders(context, user);
+
+  return { user, dataSelection, parameters };
+};
 
 // heatmap & vertical-bar & line & area
 export const publicStixCoreObjectsMultiTimeSeries = async (context: AuthContext, args: QueryPublicStixCoreObjectsMultiTimeSeriesArgs) => {
-  const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user;
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
+
   const timeSeriesParameters = dataSelection.map((selection) => {
     return { field: selection.date_attribute, filters: selection.filters };
   });
@@ -315,9 +323,7 @@ export const publicStixRelationshipsMultiTimeSeries = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsMultiTimeSeriesArgs,
 ) => {
-  const { user, parameters, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user;
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection, parameters } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const timeSeriesParameters = dataSelection.map((selection) => {
     const filters = {
@@ -348,9 +354,7 @@ export const publicStixCoreObjectsNumber = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsNumberArgs
 ): Promise<NumberResult> => {
-  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user;
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -373,9 +377,7 @@ export const publicStixRelationshipsNumber = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsNumberArgs
 ): Promise<NumberResult> => {
-  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user;
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -398,9 +400,7 @@ export const publicStixCoreObjectsDistribution = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsDistributionArgs
 ) => {
-  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user;
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const mainSelection = dataSelection[0];
   const breakdownSelection = dataSelection[1];
@@ -472,9 +472,7 @@ export const publicStixRelationshipsDistribution = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsDistributionArgs
 ) => {
-  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user;
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const mainSelection = dataSelection[0];
   const breakdownSelection = dataSelection[1];
@@ -567,9 +565,7 @@ export const publicBookmarks = async (
   context: AuthContext,
   args: QueryPublicBookmarksArgs
 ) => {
-  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user;
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -587,9 +583,7 @@ export const publicStixCoreObjectsPaginated = async (
   context: AuthContext,
   args: QueryPublicStixCoreObjectsArgs
 ) => {
-  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user; // context.user is used in standard api
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
   const { filters } = selection;
@@ -614,9 +608,7 @@ export const publicStixRelationships = async (
   context: AuthContext,
   args: QueryPublicStixRelationshipsArgs
 ) => {
-  const { user, dataSelection } = await getWidgetArguments(context, args.uriKey, args.widgetId);
-  context.user = user;
-  context.user_inside_platform_organization = true;
+  const { user, dataSelection } = await ensurePublicContext(context, args.uriKey, args.widgetId);
 
   const selection = dataSelection[0];
   const { filters } = selection;
