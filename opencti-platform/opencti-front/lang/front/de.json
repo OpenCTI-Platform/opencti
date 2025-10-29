@@ -4379,6 +4379,7 @@
   "You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the": "Sie können Ihre Plattform so konfigurieren, dass sie OpenCTI-Streams konsumieren kann. Eine Liste öffentlicher und kommerzieller nativer Feeds finden Sie in der",
   "You can enable/disable default values for marking in the customization of each entity type.": "Sie können in der Anpassung jedes Entitätstyps Standardwerte für die Markierung aktivieren/deaktivieren.",
   "You can now set a new password for your account.": "Sie können nun ein neues Passwort für Ihr Konto festlegen.",
+  "You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.": "Im Entwurfsmodus können Sie kein Support-Paket erstellen. Vergewissern Sie sich, dass Sie sich nicht im Entwurfsmodus befinden, um ein Paket zu erstellen.",
   "You cannot have more than 500 e-mail addresses": "Sie können nicht mehr als 500 E-Mail-Adressen haben",
   "You currently do not have any connector manager registered into your platform.": "Sie haben derzeit keinen Verbindungsmanager in Ihrer Plattform registriert.",
   "You do not have any access to support packages of this OpenCTI instance.": "Sie haben keinen Zugriff auf die Support-Pakete dieser OpenCTI-Instanz.",
