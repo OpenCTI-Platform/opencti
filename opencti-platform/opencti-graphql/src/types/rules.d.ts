@@ -60,8 +60,8 @@ interface RuleRuntime extends RuleDefinition {
   activated?: boolean;
   insert: (
     element: StixEntities | StixRelation,
-    createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ) => Promise<void>;
   update: (element: StixEntities | StixRelation, event: UpdateEvent) => Promise<void>;
   clean: (element: StoreObject, deletedDependencies: Array<string>) => Promise<void>;

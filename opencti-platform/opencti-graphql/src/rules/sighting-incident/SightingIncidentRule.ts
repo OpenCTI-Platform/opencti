@@ -38,8 +38,8 @@ const ruleSightingIncidentBuilder = () => {
   const handleIndicatorUpsert = async (
     context: AuthContext,
     indicator: StixIndicator,
-    createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     const { extensions } = indicator;
     const indicatorId = extensions[STIX_EXT_OCTI].id;
@@ -60,34 +60,22 @@ const ruleSightingIncidentBuilder = () => {
         const ruleContentData = { ...ruleBaseContent, first_seen, last_seen };
         const ruleContent = createRuleContent(id, dependencies, explanation, ruleContentData);
         const inferredEntityStandardId = idGenFromData(ENTITY_TYPE_INCIDENT, ruleContent.content.dependencies.sort());
-        if (createInferredEntityCallback) {
-          await createInferredEntityCallback(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
-        } else {
-          await createInferredEntity(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
-        }
+        await createInferredEntityCallback(context, input, ruleContent, ENTITY_TYPE_INCIDENT);
         const ruleRelContent = createRuleContent(id, dependencies, explanation, ruleBaseContent);
         // Create **Incident C** `related-to` **indicator A**
         const incidentToIndicator = { fromId: inferredEntityStandardId, toId: indicatorId, relationship_type: RELATION_RELATED_TO };
-        if (createInferredRelationCallback) {
-          await createInferredRelationCallback(context, incidentToIndicator, ruleRelContent);
-        } else {
-          await createInferredRelation(context, incidentToIndicator, ruleRelContent);
-        }
+        await createInferredRelationCallback(context, incidentToIndicator, ruleRelContent);
         // Create **Incident C** `targets` **identity B**
         const incidentToIdentity = { fromId: inferredEntityStandardId, toId: identityId, relationship_type: RELATION_TARGETS };
-        if (createInferredRelationCallback) {
-          await createInferredRelationCallback(context, incidentToIdentity, ruleRelContent);
-        } else {
-          await createInferredRelation(context, incidentToIdentity, ruleRelContent);
-        }
+        await createInferredRelationCallback(context, incidentToIdentity, ruleRelContent);
       }
     }
   };
   const handleIndicatorRelationUpsert = async (
     context: AuthContext,
     sightingRelation: StixSighting,
-    createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ) => {
     const indicatorId = sightingRelation.extensions[STIX_EXT_OCTI].sighting_of_ref;
     const sightingIndicator = await stixLoadById(context, RULE_MANAGER_USER, indicatorId);
@@ -95,8 +83,8 @@ const ruleSightingIncidentBuilder = () => {
   };
   const applyUpsert = async (
     data: StixIndicator | StixSighting,
-    createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
@@ -113,13 +101,13 @@ const ruleSightingIncidentBuilder = () => {
   };
   const insert = async (
     element: StixIndicator | StixSighting,
-    createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     return applyUpsert(element, createInferredEntityCallback, createInferredRelationCallback);
   };
   const update = async (element: StixIndicator | StixSighting): Promise<void> => {
-    return applyUpsert(element);
+    return applyUpsert(element, createInferredRelation, createInferredEntity);
   };
   return { ...def, insert, update, clean };
 };

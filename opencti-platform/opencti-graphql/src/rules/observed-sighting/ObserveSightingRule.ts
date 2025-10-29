@@ -48,7 +48,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const handleIndicatorUpsert = async (
     context: AuthContext,
     indicator: StixDomainObject,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     const { id: indicatorId } = indicator.extensions[STIX_EXT_OCTI];
     const { object_marking_refs: indicatorMarkings } = indicator;
@@ -86,11 +86,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
             confidence,
             objectMarking: elementMarkings,
           });
-          if (createInferredRelationCallback) {
-            await createInferredRelationCallback(context, input, ruleContent);
-          } else {
-            await createInferredRelation(context, input, ruleContent);
-          }
+          await createInferredRelationCallback(context, input, ruleContent);
         }
       }
     }
@@ -98,7 +94,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const handleObservedDataUpsert = async (
     context: AuthContext,
     observedData: StixObservedData,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     const { created_by_ref: organizationId } = observedData;
     const { id: observedDataId } = observedData.extensions[STIX_EXT_OCTI];
@@ -137,11 +133,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
             confidence,
             objectMarking: elementMarkings,
           });
-          if (createInferredRelationCallback) {
-            await createInferredRelationCallback(context, input, ruleContent);
-          } else {
-            await createInferredRelation(context, input, ruleContent);
-          }
+          await createInferredRelationCallback(context, input, ruleContent);
         }
       }
     }
@@ -149,7 +141,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   const handleObservableRelationUpsert = async (
     context: AuthContext,
     baseOnRelation: StixRelation,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ) => {
     const { source_ref: indicatorId } = baseOnRelation.extensions[STIX_EXT_OCTI];
     const baseOnIndicator = (await stixLoadById(context, RULE_MANAGER_USER, indicatorId)) as unknown as StixIndicator;
@@ -159,7 +151,7 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   };
   const applyUpsert = async (
     data: StixObject,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);
@@ -181,12 +173,12 @@ const ruleObserveSightingBuilder = (): RuleRuntime => {
   };
   const insert = async (
     element: StixObject,
-    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     return applyUpsert(element, createInferredRelationCallback);
   };
-  const update = async (element: StixObject): Promise<void> => applyUpsert(element);
+  const update = async (element: StixObject): Promise<void> => applyUpsert(element, createInferredRelation);
   return { ...def, insert, update, clean };
 };
 const RuleObserveSighting = ruleObserveSightingBuilder();

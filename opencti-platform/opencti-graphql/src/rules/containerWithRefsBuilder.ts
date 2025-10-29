@@ -46,7 +46,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     data: StixReport,
     addedTargets: ArrayRefs,
     deletedTargets: Array<BasicStoreRelation>,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;

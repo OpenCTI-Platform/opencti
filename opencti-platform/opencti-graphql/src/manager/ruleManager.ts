@@ -6,7 +6,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import { buildCreateEvent, createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
+import { createEntity, createInferredRelation, createInferredEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE, isEmptyField, isNotEmptyField, READ_DATA_INDICES } from '../database/utils';
 import { ABSTRACT_STIX_RELATIONSHIP, RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
@@ -163,8 +163,8 @@ export const rulesApplyHandler = async (
   user: AuthUser,
   events: Array<DataEvent>,
   forRules: Array<RuleRuntime> = [],
-  createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-  createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+  createInferredEntityCallback: CreateInferredEntityCallbackFunction = createInferredRelation,
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction = createInferredEntity
 ) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
@@ -352,8 +352,8 @@ export const executeRuleApply = async (
   user: AuthUser,
   rule: RuleRuntime,
   id: string,
-  createInferredEntityCallback: CreateInferredEntityCallbackFunction | undefined,
-  createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+  createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction
 ) => {
   // Execute rules over one element, act as element creation
   const instance = await storeLoadByIdWithRefs(context, user, id);
@@ -369,8 +369,8 @@ export const ruleApply = async (
   user: AuthUser,
   elementId: string,
   ruleId: string,
-  createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-  createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+  createInferredEntityCallback: CreateInferredEntityCallbackFunction = createInferredEntity,
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction = createInferredRelation,
 ) => {
   const rule = await getRule(context, user, ruleId) as RuleRuntime;
   if (!rule) {

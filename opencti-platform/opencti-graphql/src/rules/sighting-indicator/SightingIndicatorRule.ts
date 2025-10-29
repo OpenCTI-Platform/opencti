@@ -28,7 +28,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
   const applyFromStixRelation = async (
     context: AuthContext,
     data: StixRelation,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     // **indicator A** `based on` **observable C**
     const createdId = data.extensions[STIX_EXT_OCTI].id;
@@ -59,11 +59,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
           last_seen: range.end,
           objectMarking: elementMarkings
         });
-        if (createInferredRelationCallback) {
-          await createInferredRelationCallback(context, input, ruleContent);
-        } else {
-          await createInferredRelation(context, input, ruleContent);
-        }
+        await createInferredRelationCallback(context, input, ruleContent);
       }
     };
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
@@ -76,7 +72,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
   const applyFromStixSighting = async (
     context: AuthContext,
     data: StixSighting,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     // **indicator A** is `sighted` in **identity/location B**
     const createdId = data.extensions[STIX_EXT_OCTI].id;
@@ -108,11 +104,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
           last_seen: range.end,
           objectMarking: elementMarkings
         });
-        if (createInferredRelationCallback) {
-          await createInferredRelationCallback(context, input, ruleContent);
-        } else {
-          await createInferredRelation(context, input, ruleContent);
-        }
+        await createInferredRelationCallback(context, input, ruleContent);
       }
     };
     const listFromArgs: RelationOptions<BasicStoreRelation> = {
@@ -124,7 +116,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
   };
   const applyUpsert = async (
     data: StixRelation | StixSighting,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     if (data.extensions[STIX_EXT_OCTI].type === STIX_SIGHTING_RELATIONSHIP) {
@@ -140,13 +132,13 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
   };
   const insert = async (
     element: StixRelation,
-    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+    return applyUpsert(element, createInferredRelation);
   };
   return { ...def, insert, update, clean };
 };
