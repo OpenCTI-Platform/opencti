@@ -4,7 +4,7 @@ import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format'
 import { createRuleContent } from './rules-utils';
 import { computeAverage } from '../database/utils';
 import { fullRelationsList } from '../database/middleware-loader';
-import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
+import type { CreateInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { BasicStoreRelation, StoreObject } from '../types/store';
@@ -64,11 +64,11 @@ const buildRelationWithRelationRule = (ruleDefinition: RuleDefinition, relationT
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(id, element, deletedDependencies);
   };
-  const insert = async (
-    element: StixRelation,
-    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
-  ): Promise<void> => {
+  const insert: RuleRuntime['insert'] = async (
+    element,
+    _createInferredEntityCallback,
+    createInferredRelationCallback
+  ) => {
     return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {

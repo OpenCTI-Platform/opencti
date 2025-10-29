@@ -13,7 +13,7 @@ import { createInferredRelation, deleteInferredRuleElement } from '../../databas
 import { fullRelationsList, type RelationOptions } from '../../database/middleware-loader';
 import { RELATION_INDICATES, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
-import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RuleRuntime } from '../../types/rules';
+import type { CreateInferredRelationCallbackFunction, RuleRuntime } from '../../types/rules';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
@@ -127,11 +127,11 @@ const indicateSightedRuleBuilder = (): RuleRuntime => {
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (
-    element: StixRelation,
-    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
-  ): Promise<void> => {
+  const insert: RuleRuntime['insert'] = async (
+    element,
+    _createInferredEntityCallback,
+    createInferredRelationCallback
+  ) => {
     return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {

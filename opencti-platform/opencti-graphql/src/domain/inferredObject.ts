@@ -2,7 +2,6 @@ import { createInferredEntity, createInferredRelation } from '../database/middle
 import type { AuthContext, AuthUser } from '../types/user';
 import { RULE_MANAGER_USER } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
-import { publishStixToStream } from '../database/redis';
 
 export const createInternalInferredRelation = async (context: AuthContext, user: AuthUser, jsonInput: string) => {
   // This API should only be available to task manager user

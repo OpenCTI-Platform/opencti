@@ -263,7 +263,7 @@ const sendResultToQueue = async (context, user, task, objects, opts = {}) => {
     no_split: opts.forceNoSplit ?? false
   });
 };
-const buildBaseBundleElement = (element, standard_id) => {
+const buildBaseBundleElement = (element, additionalOCTIExtensions, standard_id) => {
   const baseObject = {
     id: standard_id ?? element.standard_id,
     type: convertTypeToStixType(element.entity_type),
@@ -271,6 +271,7 @@ const buildBaseBundleElement = (element, standard_id) => {
       [STIX_EXT_OCTI]: {
         id: element.internal_id,
         type: element.entity_type,
+        ...additionalOCTIExtensions
       }
     }
   };
@@ -285,7 +286,8 @@ const buildBaseBundleElement = (element, standard_id) => {
   return baseObject;
 };
 const buildBundleElement = (element, actionType, operations) => {
-  const bundleObject = buildBaseBundleElement(element);
+  const additionalExtensions = baseOperationBuilder(actionType, operations, element);
+  const bundleObject = buildBaseBundleElement(element, additionalExtensions);
   bundleObject.extensions[STIX_EXT_OCTI] = {
     ...bundleObject.extensions[STIX_EXT_OCTI],
     ...baseOperationBuilder(actionType, operations, element)
@@ -529,12 +531,11 @@ const ruleApplyCallback = async (context, user, task, ruleId) => {
       let bundlesSent = 0;
       const element = elements[index];
       const addObjectToBundle = async (input, isRel = false) => {
-        const inferredEntityObject = buildBaseBundleElement(element, `${element.standard_id}_e_${inferredObjectsBundle.length}`);
-        inferredEntityObject.extensions[STIX_EXT_OCTI] = {
-          ...inferredEntityObject.extensions[STIX_EXT_OCTI],
+        const additionalExtensions = {
           opencti_operation: isRel ? 'inferred_rel' : 'inferred_entity',
           opencti_inferred_input: JSON.stringify(input)
         };
+        const inferredEntityObject = buildBaseBundleElement(element, additionalExtensions, `${element.standard_id}_e_${inferredObjectsBundle.length}`);
         inferredObjectsBundle.push(inferredEntityObject);
         if (inferredObjectsBundle.length > RULE_APPLY_MAX_BUNDLE_SIZE) {
           bundlesSent += 1;

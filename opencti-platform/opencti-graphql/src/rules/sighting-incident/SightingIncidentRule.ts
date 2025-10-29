@@ -15,7 +15,7 @@ import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import type { StixIndicator } from '../../modules/indicator/indicator-types';
 import { ENTITY_TYPE_INDICATOR } from '../../modules/indicator/indicator-types';
-import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction } from '../../types/rules';
+import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RuleRuntime } from '../../types/rules';
 import { idGenFromData } from '../../schema/identifier';
 
 // 'If **indicator A** has `revoked` **false** and **indicator A** is `sighted` in ' +
@@ -99,11 +99,11 @@ const ruleSightingIncidentBuilder = () => {
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (
-    element: StixIndicator | StixSighting,
-    createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
-  ): Promise<void> => {
+  const insert: RuleRuntime['insert'] = async (
+    element,
+    createInferredEntityCallback,
+    createInferredRelationCallback
+  ) => {
     return applyUpsert(element, createInferredEntityCallback, createInferredRelationCallback);
   };
   const update = async (element: StixIndicator | StixSighting): Promise<void> => {

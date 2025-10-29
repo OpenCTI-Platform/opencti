@@ -5,14 +5,14 @@ import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessag
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { createRuleContent } from './rules-utils';
 import { convertStixToInternalTypes, generateInternalType } from '../schema/schemaUtils';
-import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
+import type { CreateInferredRelationCallbackFunction, RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
 import type { StixId, StixObject } from '../types/stix-2-1-common';
 import type { StixReport } from '../types/stix-2-1-sdo';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { internalFindByIds, internalLoadById, fullRelationsList } from '../database/middleware-loader';
-import type { RelationCreation, UpdateEvent } from '../types/event';
+import type { UpdateEvent } from '../types/event';
 import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
@@ -253,11 +253,11 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(id, element, deletedDependencies);
   };
-  const insert = async (
-    element: StixObject,
-    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
-  ): Promise<void> => {
+  const insert: RuleRuntime['insert'] = async (
+    element,
+    _createInferredEntityCallback,
+    createInferredRelationCallback
+  ) => {
     return applyInsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixObject, event: UpdateEvent): Promise<void> => applyUpdate(element, event);

@@ -11,7 +11,7 @@ import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../ty
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import { internalLoadById } from '../../database/middleware-loader';
-import type { CreateInferredEntityCallbackFunction, CreateInferredRelationCallbackFunction } from '../../types/rules';
+import type { CreateInferredRelationCallbackFunction, RuleRuntime } from '../../types/rules';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
@@ -54,11 +54,11 @@ const ruleLocalizationOfTargetsBuilder = () => {
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (
-    element: StixRelation,
-    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
-    createInferredRelationCallback: CreateInferredRelationCallbackFunction
-  ): Promise<void> => {
+  const insert: RuleRuntime['insert'] = async (
+    element,
+    _createInferredEntityCallback,
+    createInferredRelationCallback
+  ) => {
     return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
