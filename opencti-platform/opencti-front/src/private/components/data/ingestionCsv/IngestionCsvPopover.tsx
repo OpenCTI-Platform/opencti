@@ -249,7 +249,7 @@ const IngestionCsvPopover: FunctionComponent<IngestionCsvPopoverProps> = ({
 
         </Menu>
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense>
             <>
               <IngestionCsvEditionContainer
                 queryRef={queryRef}

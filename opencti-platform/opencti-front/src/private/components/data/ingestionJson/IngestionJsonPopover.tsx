@@ -221,7 +221,7 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </MenuItem>
         </Menu>
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense>
             <>
               <IngestionJsonEditionContainer
                 queryRef={queryRef}
