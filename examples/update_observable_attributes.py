@@ -52,3 +52,12 @@ author = opencti_api_client.identity.create(
 opencti_api_client.stix_cyber_observable.update_created_by(
     id=observable["id"], identity_id=author["id"]
 )
+
+observable_sshkey = opencti_api_client.stix_cyber_observable.create(
+    observableData={"type": "SSH-Key", "fingerprint_sha256": "sha256_test"}
+)
+
+opencti_api_client.stix_cyber_observable.update_field(
+    id=observable_sshkey.get("id"),
+    input={"key": "fingerprint_sha256", "value": "sha256_test_edit_name"},
+)

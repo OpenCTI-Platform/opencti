@@ -287,6 +287,8 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
             type = "IPv6-Addr"
         elif type.lower() == "persona":
             type = "Persona"
+        elif type.lower() == "ssh-key":
+            type = "SSH-Key"
         elif type.lower() == "hostname" or type.lower() == "x-opencti-hostname":
             type = "Hostname"
         elif type.lower() == "payment-card" or type.lower() == "x-opencti-payment-card":
@@ -420,6 +422,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     $PaymentCard: PaymentCardAddInput
                     $Persona: PersonaAddInput
                     $MediaContent: MediaContentAddInput
+                    $SSHKey: SSHKeyAddInput
                 ) {
                     stixCyberObservableAdd(
                         type: $type,
@@ -465,6 +468,7 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         PaymentCard: $PaymentCard
                         Persona: $Persona
                         MediaContent: $MediaContent
+                        SSHKey: $SSHKey
                     ) {
                         id
                         standard_id
@@ -710,6 +714,49 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                     "subject_public_key_exponent": (
                         observable_data["subject_public_key_exponent"]
                         if "subject_public_key_exponent" in observable_data
+                        else None
+                    ),
+                }
+            elif type == "SSH-Key" or type.lower() == "ssh-key":
+                input_variables["SSHKey"] = {
+                    "key_type": (
+                        observable_data["key_type"]
+                        if "key_type" in observable_data
+                        else None
+                    ),
+                    "public_key": (
+                        observable_data["public_key"]
+                        if "public_key" in observable_data
+                        else None
+                    ),
+                    "fingerprint_sha256": (
+                        observable_data["fingerprint_sha256"]
+                        if "fingerprint_sha256" in observable_data
+                        else False
+                    ),
+                    "fingerprint_md5": (
+                        observable_data["fingerprint_md5"]
+                        if "fingerprint_md5" in observable_data
+                        else None
+                    ),
+                    "key_length": (
+                        observable_data["key_length"]
+                        if "key_length" in observable_data
+                        else None
+                    ),
+                    "comment": (
+                        observable_data["comment"]
+                        if "comment" in observable_data
+                        else None
+                    ),
+                    "created": (
+                        observable_data["created"]
+                        if "created" in observable_data
+                        else None
+                    ),
+                    "expiration_date": (
+                        observable_data["expiration_date"]
+                        if "expiration_date" in observable_data
                         else None
                     ),
                 }

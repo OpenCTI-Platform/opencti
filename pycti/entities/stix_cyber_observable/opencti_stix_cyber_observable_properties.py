@@ -174,6 +174,16 @@ SCO_PROPERTIES = """
           hash
         }
     }
+     ... on SSHKey {
+        key_type
+        public_key
+        fingerprint_sha256
+        fingerprint_md5
+        key_length
+        expiration_date
+        comment
+        created
+    }
     ... on IPv4Addr {
         value
     }
@@ -478,6 +488,16 @@ SCO_PROPERTIES_WITH_FILES = """
           algorithm
           hash
         }
+    }
+    ... on SSHKey {
+        key_type
+        public_key
+        fingerprint_sha256
+        fingerprint_md5
+        key_length
+        expiration_date
+        comment
+        created
     }
     ... on IPv4Addr {
         value
