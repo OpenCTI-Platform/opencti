@@ -235,9 +235,9 @@ jobs:
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=false \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
-          -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4200/graphql \
-          -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4300/graphql \
-          -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4400/graphql \
+          -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4100/graphql \
+          -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
+          -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
           -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e REDIS__HOSTNAME=redis \
           -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
