@@ -96,34 +96,6 @@ jobs:
   run-opencti-test-stack:
     needs: [build-opencti-platform, build-opencti-worker]
     runs-on: ubuntu-latest
-    services:
-      opencti-servicetest-start:
-        image: filigran/platform:sha-aeb1612
-        credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-        ports:
-          - 4700:4100
-        env:
-          BASE_NAME: opencti-servicetest-start
-          APP__PORT: 4100
-          APP__ADMIN__PASSWORD: admin
-          APP__CHILD_LOCKING_PROCESS__ENABLED: false
-          APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-          APP__HEALTH_ACCESS_KEY: cihealthkey
-          APP__APP_LOG__EXTENDED_ERROR_MESSAGE: true
-          EXPIRATION_SCHEDULER__ENABLED: false
-          SUBSCRIPTION_SCHEDULER__ENABLED: false
-          APP__ENABLED_DEV_FEATURES: '["*"]'
-
-          REDIS__HOSTNAME: redis
-          REDIS__NAMESPACE: ${BASE_NAME}-start
-          ELASTICSEARCH__URL: http://elasticsearch:9200
-          ELASTICSEARCH__INDEX_PREFIX: ${BASE_NAME}-start
-          MINIO__ENDPOINT: minio
-          MINIO__BUCKET_NAME: ${BASE_NAME}-start-bucket
-          RABBITMQ__HOSTNAME: rabbitmq
-          RABBITMQ__QUEUE_PREFIX: ${BASE_NAME}-start
 
     steps:
     - name: Display Runner Information
@@ -169,9 +141,9 @@ jobs:
           
           echo -e "\n\n *********\n ********* test backend endpoint \n"; sleep 2
           set -x
-          docker run --rm --network runner-docker-network curlimages/curl curl http://elasticsearch:9200
           docker run --rm --network runner-docker-network curlimages/curl curl http://redis:6379
           docker run --rm --network runner-docker-network curlimages/curl curl http://rabbitmq:5672
+          docker run --rm --network runner-docker-network curlimages/curl curl http://elasticsearch:9200
           docker run --rm --network runner-docker-network curlimages/curl curl http://elasticsearch:9200
 
     - name: Memory, container and process infos
@@ -197,7 +169,9 @@ jobs:
           ./wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
           ./wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
           ./wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
-
+          docker network inspect runner-docker-network
+          docker run --rm --network runner-docker-network curlimages/curl curl  http://opencti-raw-start:4100/health?health_access_key=cihealthkey
+          docker run --rm --network runner-docker-network curlimages/curl curl  http://opencti-direct-start:4100/health?health_access_key=cihealthkey
 
     - name: Log backend
       continue-on-error: true
