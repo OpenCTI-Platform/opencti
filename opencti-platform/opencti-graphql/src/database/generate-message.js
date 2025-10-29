@@ -72,8 +72,8 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
     .slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).map(([type, operations]) => {
       const actionRequestAccess = operations.find((op) => op.key === 'x_opencti_request_access');
       const pirExplanations = operations.find((op) => op.key === pirExplanation.name);
-      return `${type}s ${operations
-        .filter((op) => !ACTION_KEYS.includes(op.key))
+      const filteredOperations = operations.filter((op) => !ACTION_KEYS.includes(op.key));
+      return `${type}s ${filteredOperations
         .slice(0, MAX_OPERATIONS_FOR_MESSAGE).map(({ key, value, object_path, previous }) => {
           let message = 'nothing';
           let convertedKey;
@@ -128,8 +128,8 @@ export const generateUpdatePatchMessage = (patchElements, entityType, data = {})
             }
           }
           return `\`${message}\` in \`${convertedKey}\`${(fromArray.length > 3) ? ` and ${fromArray.length - 3} more items` : ''}`;
-        }).join(' - ')}`;
+        }).join(' - ')}${filteredOperations.length > 3 ? ` and ${filteredOperations.length - 3} more operations` : ''}`;
     }).join(' | ');
   // Return generated update message
-  return `${generatedMessage}${patchElements.length > 3 ? ` and ${patchElements.length - 3} more operations` : ''}`;
+  return generatedMessage;
 };
