@@ -17,7 +17,7 @@ const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -47,11 +47,7 @@ const ruleLocalizationOfTargetsBuilder = () => {
         stop_time: range.end,
         objectMarking: elementMarkings,
       });
-      if (createInferredRelationCallback) {
-        await createInferredRelationCallback(context, input, ruleContent);
-      } else {
-        await createInferredRelation(context, input, ruleContent);
-      }
+      await createInferredRelationCallback(context, input, ruleContent);
     }
   };
   // Contract
@@ -60,13 +56,13 @@ const ruleLocalizationOfTargetsBuilder = () => {
   };
   const insert = async (
     element: StixRelation,
-    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+    return applyUpsert(element, createInferredRelation);
   };
   return { ...def, insert, update, clean };
 };

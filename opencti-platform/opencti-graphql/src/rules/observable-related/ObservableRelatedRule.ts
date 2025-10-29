@@ -17,7 +17,7 @@ const ruleRelatedObservableBuilder = () => {
   // Execution
   const applyUpsert = async (
     data: StixRelation,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
@@ -50,11 +50,7 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const input = { fromId: targetRef, toId, relationship_type: RELATION_RELATED_TO };
-        if (createInferredRelationCallback) {
-          await createInferredRelationCallback(context, input, ruleContent);
-        } else {
-          await createInferredRelation(context, input, ruleContent);
-        }
+        await createInferredRelationCallback(context, input, ruleContent);
         // -----------------------------------------------------------------------------------------------------------
         // Create relation TO = FROM
         // Create the inferred relation
@@ -65,11 +61,7 @@ const ruleRelatedObservableBuilder = () => {
           objectMarking: elementMarkings,
         });
         const reverseInput = { fromId: toId, toId: targetRef, relationship_type: RELATION_RELATED_TO };
-        if (createInferredRelationCallback) {
-          await createInferredRelationCallback(context, reverseInput, reverseRuleContent);
-        } else {
-          await createInferredRelation(context, reverseInput, reverseRuleContent);
-        }
+        await createInferredRelationCallback(context, reverseInput, reverseRuleContent);
       }
     };
     const listFromArgs = { fromId: sourceRef, callback: listFromCallback };
@@ -81,13 +73,13 @@ const ruleRelatedObservableBuilder = () => {
   };
   const insert = async (
     element: StixRelation,
-    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+    return applyUpsert(element, createInferredRelation);
   };
   return { ...def, insert, update, clean };
 };

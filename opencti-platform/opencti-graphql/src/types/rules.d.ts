@@ -53,8 +53,8 @@ interface RuleDefinition {
   scopes: Array<RuleScope>;
 }
 
-type CreateInferredRelationCallbackFunction = (context: AuthContext, input: any, ruleContent: any, opts?: any | undefined) => Promise<void>;
-type CreateInferredEntityCallbackFunction = (context: AuthContext, input: any, ruleContent: any, type: string) => Promise<void>;
+type CreateInferredRelationCallbackFunction = (context: AuthContext, input: any, ruleContent: any, opts?: any | undefined) => Promise<any>;
+type CreateInferredEntityCallbackFunction = (context: AuthContext, input: any, ruleContent: any, type: string) => Promise<any>;
 
 interface RuleRuntime extends RuleDefinition {
   activated?: boolean;

@@ -68,26 +68,18 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       if (!reportObjectRefIds.includes(partOfStandardId)) {
         const ruleRelationContent = createRuleContent(id, dependencies, [reportId, partOfId], {});
         const inputForRelation = { fromId: reportId, toId: partOfId, relationship_type: RELATION_OBJECT };
-        if (createInferredRelationCallback) {
-          await createInferredRelationCallback(context, inputForRelation, ruleRelationContent, opts);
-        } else {
-          const inferredRelation = await createInferredRelation(context, inputForRelation, ruleRelationContent, opts) as RelationCreation;
-          if (inferredRelation.isCreation) {
-            createdTargets.push(inferredRelation.element[INPUT_DOMAIN_TO]);
-          }
+        const inferredRelation = await createInferredRelationCallback(context, inputForRelation, ruleRelationContent, opts);
+        if (inferredRelation?.isCreation) {
+          createdTargets.push(inferredRelation.element[INPUT_DOMAIN_TO]);
         }
       }
       // -----------------------------------------------------------------------------------------------------------
       if (!reportObjectRefIds.includes(partOfTargetStandardId)) {
         const ruleIdentityContent = createRuleContent(id, dependencies, isSource ? [reportId, partOfTargetId] : [reportId, partOfFromId], {});
         const inputForIdentity = { fromId: reportId, toId: isSource ? partOfTargetId : partOfFromId, relationship_type: RELATION_OBJECT };
-        if (createInferredRelationCallback) {
-          await createInferredRelationCallback(context, inputForIdentity, ruleIdentityContent, opts);
-        } else {
-          const inferredTarget = await createInferredRelation(context, inputForIdentity, ruleIdentityContent, opts) as RelationCreation;
-          if (inferredTarget.isCreation) {
-            createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO]);
-          }
+        const inferredTarget = await createInferredRelationCallback(context, inputForIdentity, ruleIdentityContent, opts);
+        if (inferredTarget?.isCreation) {
+          createdTargets.push(inferredTarget.element[INPUT_DOMAIN_TO]);
         }
       }
     }
@@ -124,12 +116,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       }
       const message = await generateUpdateMessage(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
-      if (createInferredRelationCallback) {
-        // Fake a relation creation to push event to stream
-        await createInferredRelationCallback(context, {}, {}, { isPublishStixToStream: true, publishStixEvent: updateEvent });
-      } else {
-        await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
-      }
+      await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }
   };
   const handleReportCreation = async (
@@ -137,7 +124,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     report: StixReport,
     addedRefs: Array<string>,
     removedRefs: Array<string>,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     if (addedRefs.length > 0) {
       const identities = await internalFindByIds(context, RULE_MANAGER_USER, addedRefs) as Array<StoreObject>;
@@ -163,7 +150,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
             }
           }
           // update the report
-          await createObjectRefsInferences(context, report, addedTargets, []);
+          await createObjectRefsInferences(context, report, addedTargets, [], createInferredRelationCallback);
         }
       };
       const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
@@ -193,7 +180,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   const handlePartOfRelationCreation = async (
     context: AuthContext,
     partOfRelation: StixRelation,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     let partOfTargetStandardId: StixId;
     const { id: partOfStandardId } = partOfRelation;
@@ -218,7 +205,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   const applyInsert = async (
     data: StixObject,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
     // eslint-disable-next-line consistent-return
   ): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
@@ -258,7 +245,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       const leftAddedRefs = addedRefs.filter(typeRefFilter);
       const removedLeftRefs = removedRefs.filter(typeRefFilter);
       if (leftAddedRefs.length > 0 || removedLeftRefs.length > 0) {
-        await handleReportCreation(context, report, leftAddedRefs, removedLeftRefs);
+        await handleReportCreation(context, report, leftAddedRefs, removedLeftRefs, createInferredRelation);
       }
     }
   };
@@ -268,8 +255,8 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
   };
   const insert = async (
     element: StixObject,
-    _createInferredEntityCallback?: CreateInferredEntityCallbackFunction | undefined,
-    createInferredRelationCallback?: CreateInferredRelationCallbackFunction | undefined
+    _createInferredEntityCallback: CreateInferredEntityCallbackFunction,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
   ): Promise<void> => {
     return applyInsert(element, createInferredRelationCallback);
   };
