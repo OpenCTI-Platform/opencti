@@ -145,6 +145,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/pirs';
     case 'EmailTemplate':
       return '/dashboard/settings/accesses/email_templates';
+    case 'SSH-Key':
+      return '/dashboard/observations/observables';
     default:
       return null;
   }
