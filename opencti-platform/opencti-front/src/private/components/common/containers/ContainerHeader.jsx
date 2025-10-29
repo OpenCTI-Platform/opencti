@@ -788,7 +788,9 @@ const ContainerHeader = (props) => {
                     </Box>
                   )}
                 </PopoverMenu>
-                <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+                {DeleteComponent && (
+                  <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
+                )}
               </>
             )}
             {EditComponent}
