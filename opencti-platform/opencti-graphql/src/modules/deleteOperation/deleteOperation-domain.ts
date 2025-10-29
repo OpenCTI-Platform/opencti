@@ -150,7 +150,7 @@ const resolveEntitiesToRestore = async (context: AuthContext, user: AuthUser, de
     const relationshipInput = { ...mainElementToRestoreInput, from, to };
     const existingRelations = await getExistingRelations(context, user, relationshipInput);
     if (existingRelations.length > 0) {
-      throw FunctionalError('Cannot restore relation, duplicate existing relation detected', { deleteOperationId: deleteOperation.id }, { deleteOperationId: deleteOperation.id });
+      throw FunctionalError('Cannot restore relation, duplicate existing relation detected', { deleteOperationId: deleteOperation.id });
     }
   }
 

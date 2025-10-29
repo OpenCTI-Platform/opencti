@@ -245,7 +245,7 @@ export const updatePir = async (context: AuthContext, user: AuthUser, pirId: str
   const allowedKeys = ['lastEventId', 'name', 'description'];
   const keys = input.map((i) => i.key);
   if (keys.some((k) => !allowedKeys.includes(k))) {
-    throw FunctionalError('Error while updating the PIR, invalid or forbidden key.', { pirId: pirId, key: k });
+    throw FunctionalError('Error while updating the PIR, invalid or forbidden key.', { pirId });
   }
   return editInternalObject<StoreEntityPir>(context, user, pirId, ENTITY_TYPE_PIR, input, opts);
 };

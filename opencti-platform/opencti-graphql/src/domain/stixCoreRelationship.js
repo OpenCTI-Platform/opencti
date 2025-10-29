@@ -110,7 +110,7 @@ export const stixCoreRelationshipDelete = async (context, user, stixCoreRelation
 
 export const stixCoreRelationshipDeleteByFromAndTo = async (context, user, fromId, toId, relationshipType) => {
   if (!isStixCoreRelationship(relationshipType)) {
-    throw FunctionalError('Only stix-core-relationship can be deleted through this method, not ${relationshipType}.');
+    throw FunctionalError(`Only stix-core-relationship can be deleted through this method, not ${relationshipType}.`);
   }
   await deleteRelationsByFromAndTo(context, user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
   return true;

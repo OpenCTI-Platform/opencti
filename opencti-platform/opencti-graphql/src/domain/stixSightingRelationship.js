@@ -75,7 +75,7 @@ export const stixSightingRelationshipEditContext = async (context, user, stixSig
 export const stixSightingRelationshipRemoveFromDraft = async (context, user, stixCoreObjectId) => {
   const stixSighting = await storeLoadById(context, user, stixCoreObjectId, STIX_SIGHTING_RELATIONSHIP, { includeDeletedInDraft: true });
   if (!stixSighting) {
-    throw FunctionalError('Cannot remove the object from draft, Stix-Sighting-Relationship cannot be found.', { id: stixCoreObjectId});
+    throw FunctionalError('Cannot remove the object from draft, Stix-Sighting-Relationship cannot be found.', { id: stixCoreObjectId });
   }
   // TODO currently not locked, but might need to be
   await elRemoveElementFromDraft(context, user, stixSighting);

@@ -372,7 +372,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   const connectors = await storeLoadByIds(context, user, connectorIds, ENTITY_TYPE_CONNECTOR);
   const element = await storeLoadByIdWithRefs(context, user, enrichedId);
   if (!element) {
-    throw FunctionalError('Cannot enrich the object, element cannot be found.', { stixCoreObjectId });
+    throw FunctionalError('Cannot enrich the object, element cannot be found.', { enrichedId });
   }
   // If we are in a draft, specify it in work message and send draft_id in message
   const draftContext = getDraftContext(context, user);

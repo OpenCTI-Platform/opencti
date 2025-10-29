@@ -973,7 +973,7 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     const inputCreatedBy = inputResolved[INPUT_CREATED_BY];
     if (inputCreatedBy) {
       if (!isStixDomainObjectIdentity(inputCreatedBy.entity_type)) {
-        throw FunctionalError('CreatedBy relation must be an Identity entity', { inputCreatedBy.entity_type });
+        throw FunctionalError('CreatedBy relation must be an Identity entity', { entityType: inputCreatedBy.entity_type });
       }
     }
     return inputResolved;
@@ -2078,7 +2078,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   if (initial.entity_type === ENTITY_TYPE_IDENTITY_INDIVIDUAL && !isEmptyField(initial.contact_information) && !bypassIndividualUpdate) {
     const isIndividualUser = await isIndividualAssociatedToUser(context, initial);
     if (isIndividualUser) {
-      throw FunctionalError('Cannot update an individual corresponding to a user', { initial.internal_id });
+      throw FunctionalError('Cannot update an individual corresponding to a user', { id: initial.internal_id });
     }
   }
   if (updates.length === 0) {

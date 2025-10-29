@@ -100,7 +100,7 @@ export const externalReferenceDeleteRelation = async (context, user, externalRef
     throw FunctionalError('Cannot delete the relation, External-Reference cannot be found.', { externalReferenceId });
   }
   if (!isStixRefRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method, got ${input.relationship_type}.`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
   await deleteRelationsByFromAndTo(
     context,

@@ -45,7 +45,7 @@ export const stixDelete = async (context, user, id, opts = {}) => {
       }
       return element.id;
     }
-    throw UnsupportedError('This method can only delete Stix element', { id: element.id, type: element.entity_type});
+    throw UnsupportedError('This method can only delete Stix element', { id: element.id, type: element.entity_type });
   }
   throw FunctionalError(`Cannot delete the stix element, ${id} cannot be found.`);
 };
@@ -297,7 +297,7 @@ export const addOrganizationRestriction = async (context, user, fromId, organiza
 
 export const removeOrganizationRestriction = async (context, user, fromId, organizationId, directContainerSharing) => {
   if (getDraftContext(context, user)) {
-    throw UnsupportedError('Cannot remove organization restriction in draft', { organizationId );
+    throw UnsupportedError('Cannot remove organization restriction in draft', { organizationId });
   }
   const organizationIds = Array.isArray(organizationId) ? organizationId : [organizationId];
   const from = await internalLoadById(context, user, fromId);
