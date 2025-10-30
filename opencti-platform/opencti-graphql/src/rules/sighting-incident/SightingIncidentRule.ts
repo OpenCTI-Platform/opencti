@@ -107,7 +107,7 @@ const ruleSightingIncidentBuilder = () => {
     return applyUpsert(element, createInferredEntityCallback, createInferredRelationCallback);
   };
   const update = async (element: StixIndicator | StixSighting): Promise<void> => {
-    return applyUpsert(element, createInferredRelation, createInferredEntity);
+    return applyUpsert(element, createInferredEntity, createInferredRelation);
   };
   return { ...def, insert, update, clean };
 };
