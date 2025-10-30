@@ -102,6 +102,17 @@ export const generateKeyValueForIndicator = (entityType, indicatorName, observab
     } else if (observable.name) {
       key = `${entityType}_name`;
     }
+  } else if (entityType === 'SSH-Key') {
+    key = '';
+    value = '';
+    if (observable.fingerprint_sha256) {
+      key = `${entityType}_sha256`;
+      value = observable.fingerprint_sha256;
+    }
+    if (observable.fingerprint_md5) {
+      key = key.length > 0 ? `${key}__${entityType}_md5` : `${entityType}_md5`;
+      value = value.length > 0 ? `${value}__${observable.fingerprint_md5}` : observable.fingerprint_md5;
+    }
   } else if (observable.pid) {
     key = `${entityType}_pid`;
   } else if (observable.subject) {
@@ -292,7 +303,6 @@ export const stixCyberObservableEditField = async (context, user, stixCyberObser
     }
     throw FunctionalError('Cannot update payload_bin when url is present.');
   }
-
   const { element: stixCyberObservable } = await updateAttribute(
     context,
     user,

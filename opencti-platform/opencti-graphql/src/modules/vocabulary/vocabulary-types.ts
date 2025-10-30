@@ -378,6 +378,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       multiple: false,
     }],
   },
+  key_type_ov: {
+    description: 'An enumeration of SSH key types',
+    entity_types: [ENTITY_PROCESS],
+    fields: [{
+      key: 'key_type',
+      required: false,
+      multiple: false,
+    }],
+  },
   // T
   threat_actor_group_type_ov: {
     description: 'Threat actor type is an open vocabulary used to describe what type of threat actor group is. For example, some threat actors groups are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor group can be both a disgruntled insider and a spy. [Casey 2007])',

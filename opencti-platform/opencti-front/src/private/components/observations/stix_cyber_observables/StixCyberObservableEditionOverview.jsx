@@ -804,6 +804,15 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           persona_name
           persona_type
         }
+        ... on SSHKey {
+          public_key
+          key_type
+          key_length
+          fingerprint_sha256
+          fingerprint_md5
+          comment
+          expiration_date
+        }
         x_opencti_score
         x_opencti_description
         createdBy {
