@@ -18,6 +18,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemStatus from '../../../../components/ItemStatus';
 import ItemDueDate from '../../../../components/ItemDueDate';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -133,12 +134,7 @@ export const tasksDataColumns: DataColumns = {
 
 interface TasksLineProps {
   node: TasksLine_node$key;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent,
-  ) => void;
+  onLabelClick: HandleAddFilter;
   selectedElements: Record<string, TasksLine_node$data>;
   deSelectedElements: Record<string, TasksLine_node$data>;
   onToggleEntity: (
