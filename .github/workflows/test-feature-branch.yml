@@ -100,18 +100,14 @@ jobs:
 
       - name: Deploy feature environment via AWX
         run: |
-          awx --version 
-          pip install --upgrade awxkit
-          awx --version 
-          JOB_ID=$(awx --conf.host ${{ secrets.AWX_URL }} \
+          awx --conf.host ${{ secrets.AWX_URL }} \
             --conf.username ${{ secrets.AWX_USER }} \
             --conf.password ${{ secrets.AWX_PASSWORD }} \
             job_templates launch 'Deploy OpenCTI feature branch for testing' \
             --wait \
             --inventory eu-west-staging \
             --extra_vars '{"octi_version":"${{steps.meta.outputs.version}}","octi_config": ${{ inputs.octi_config }},"redis_cluster":"${{ inputs.redis_cluster }}"}' \
-            -f json | jq -r '.id')
-            awx jobs wait $JOB_ID
+            -f human
       - name: Forge URL to match playbook limitations
         id: urlforge
         run: |
