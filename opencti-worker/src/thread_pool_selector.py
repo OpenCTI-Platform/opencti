@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
+import threading
+from typing import Any, Callable
 
 
 @dataclass(unsafe_hash=True)
@@ -10,47 +12,54 @@ class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
     realtime_execution_pool: ThreadPoolExecutor
 
     def __post_init__(self) -> None:
-        self.default_active_threads = set()
-        self.realtime_active_threads = set()
+        self.default_active_threads_count = 0
+        self.realtime_active_threads_count = 0
+        self.count_lock = threading.Lock()
+
+    def decrement_default_count(self, _future):
+        self.count_lock.acquire()
+        self.default_active_threads_count -= 1
+        self.count_lock.release()
+
+    def decrement_realtime_count(self, _future):
+        self.count_lock.acquire()
+        self.realtime_active_threads_count -= 1
+        self.count_lock.release()
 
     def submit_to_default_pool(self, consume_message_fn, delivery_tag, body):
         task_future = self.default_execution_pool.submit(
             consume_message_fn, delivery_tag, body
         )
-        self.default_active_threads.add(task_future)
-        task_future.add_done_callback(self.default_active_threads.remove)
+        self.count_lock.acquire()
+        self.default_active_threads_count += 1
+        self.count_lock.release()
+        task_future.add_done_callback(self.decrement_default_count)
         return task_future
 
     def submit_to_realtime_pool(self, consume_message_fn, delivery_tag, body):
         task_future = self.realtime_execution_pool.submit(
             consume_message_fn, delivery_tag, body
         )
-        self.realtime_active_threads.add(task_future)
-        task_future.add_done_callback(self.realtime_active_threads.remove)
+        self.count_lock.acquire()
+        self.realtime_active_threads_count += 1
+        self.count_lock.release()
+        task_future.add_done_callback(self.decrement_realtime_count)
         return task_future
 
-    def submit(self, is_realtime, consume_message_fn, delivery_tag, body):
+    def submit(self, is_realtime, fn: Callable[..., Any], *args: Any, **kwargs: Any):
+        is_default_pool_full = (
+            self.default_active_threads_count >= self.default_pool_size
+        )
+        is_realtime_pool_full = (
+            self.realtime_active_threads_count >= self.realtime_pool_size
+        )
         if is_realtime:
-            if (
-                len(self.default_active_threads) <= self.default_pool_size
-                and len(self.realtime_active_threads) > self.realtime_pool_size
-            ):
-                return self.submit_to_default_pool(
-                    consume_message_fn, delivery_tag, body
-                )
+            if is_realtime_pool_full and not is_default_pool_full:
+                return self.submit_to_default_pool(fn, args, kwargs)
             else:
-                return self.submit_to_realtime_pool(
-                    consume_message_fn, delivery_tag, body
-                )
+                return self.submit_to_realtime_pool(fn, args, kwargs)
         else:
-            if (
-                len(self.realtime_active_threads) <= self.realtime_pool_size
-                and len(self.default_active_threads) > self.default_pool_size
-            ):
-                return self.submit_to_realtime_pool(
-                    consume_message_fn, delivery_tag, body
-                )
+            if is_default_pool_full and not is_realtime_pool_full:
+                return self.submit_to_realtime_pool(fn, args, kwargs)
             else:
-                return self.submit_to_default_pool(
-                    consume_message_fn, delivery_tag, body
-                )
+                return self.submit_to_default_pool(fn, args, kwargs)

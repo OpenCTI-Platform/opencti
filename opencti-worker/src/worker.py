@@ -182,7 +182,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         self.worker_logger = self.api.logger_class("worker")
 
     def build_pika_parameters(
-            self, connector_config: Dict[str, Any]
+        self, connector_config: Dict[str, Any]
     ) -> pika.ConnectionParameters:
         ssl_options = None
         if connector_config["connection"]["use_ssl"]:
@@ -234,7 +234,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                 # Telemetry
                 max_ingestion_units_count.set(self.opencti_pool_size)
                 running_ingestion_units_gauge.set(
-                    len(push_execution_pool._threads) + len(realtime_push_execution_pool._threads))
+                    len(push_execution_pool._threads)
+                    + len(realtime_push_execution_pool._threads)
+                )
 
                 # Fetch queue configuration from API
                 queues: List[Any] = []
@@ -272,10 +274,16 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
                         )
-                        is_realtime = is_priority_connector(connector["connector_priority_group"])
+                        is_realtime = is_priority_connector(
+                            connector["connector_priority_group"]
+                        )
 
-                        def selector_submit_consume(consume_message_fn, delivery_tag, body):
-                            return push_thread_pool_selector.submit(is_realtime, consume_message_fn, delivery_tag, body)
+                        def selector_submit_consume(
+                            consume_message_fn, delivery_tag, body
+                        ):
+                            return push_thread_pool_selector.submit(
+                                is_realtime, consume_message_fn, delivery_tag, body
+                            )
 
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
@@ -284,7 +292,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             pika_parameters,
                             selector_submit_consume,
                             push_handler.handle_message,
-                            is_realtime
                         )
 
                     # Listen for webhook message
@@ -330,10 +337,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
 if __name__ == "__main__":
     worker: Worker = Worker()
 
-
     def exit_handler(_signum, _frame):
         worker.stop()
-
 
     signal.signal(signal.SIGINT, exit_handler)
     signal.signal(signal.SIGTERM, exit_handler)
