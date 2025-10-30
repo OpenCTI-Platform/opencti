@@ -77,7 +77,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefR
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
-import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import { BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
@@ -181,7 +181,15 @@ export const findUnknownStixCoreObjects = async (context, user, args) => {
         const hashMatch = Object.values(stixObject.hashes).filter((h) => !!h).some((h) => h === value);
         if (hashMatch) return hashMatch;
       }
-      // complete? // TODO (try to find in aliases and x_opencti_aliases)
+      // try to find in attributes of bulk search filter
+      for (let i = 0; i < BULK_SEARCH_KEYWORDS_FILTER_KEYS.length; i += 1) {
+        const key = BULK_SEARCH_KEYWORDS_FILTER_KEYS[i];
+        const stixObjectValue = stixObject[key];
+        if (stixObjectValue) {
+          const keyMatch = Array.isArray(stixObjectValue) ? stixObjectValue.includes(value) : stixObjectValue === value;
+          if (keyMatch) return true;
+        }
+      }
     }
     return representativeMatch;
   };
