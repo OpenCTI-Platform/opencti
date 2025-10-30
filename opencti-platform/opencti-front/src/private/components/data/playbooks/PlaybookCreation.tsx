@@ -13,39 +13,30 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useRef } from 'react';
+import React, { InputHTMLAttributes, useRef } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import ToggleButton from '@mui/material/ToggleButton';
 import { FileUploadOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
+import { FormikConfig } from 'formik/dist/types';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
-import Drawer from '../../common/drawer/Drawer';
-import { commitMutation, handleError } from '../../../../relay/environment';
+import Drawer, { DrawerControlledDialType } from '../../common/drawer/Drawer';
+import { handleError } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import { resolveLink } from '../../../../utils/Entity';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { PlaybookCreationImportMutation } from './__generated__/PlaybookCreationImportMutation.graphql';
+import { PlaybookCreationMutation } from './__generated__/PlaybookCreationMutation.graphql';
+import type { Theme } from '../../../../components/Theme';
 
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles((theme) => ({
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-}));
-
-const PlaybookCreationMutation = graphql`
+const playbookCreationMutation = graphql`
   mutation PlaybookCreationMutation($input: PlaybookAddInput!) {
     playbookAdd(input: $input) {
       id
@@ -54,63 +45,70 @@ const PlaybookCreationMutation = graphql`
   }
 `;
 
-const playbookCreationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
-
-export const importMutation = graphql`
+const playbookImportMutation = graphql`
   mutation PlaybookCreationImportMutation($file: Upload!) {
     playbookImport(file: $file)
   }
 `;
 
-const PlaybookCreation = ({ paginationOptions }) => {
-  const classes = useStyles();
-  const { t_i18n } = useFormatter();
+interface PlaybookCreationForm {
+  name: string
+  description: string
+}
+
+const PlaybookCreation = () => {
+  const theme = useTheme<Theme>();
   const navigate = useNavigate();
-  const inputRef = useRef();
-  const theme = useTheme();
-  const [commitImportMutation] = useApiMutation(importMutation);
-  const onSubmit = (values, { setSubmitting, resetForm }) => {
-    commitMutation({
-      mutation: PlaybookCreationMutation,
-      variables: {
-        input: values,
-      },
-      updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_playbooks',
-          paginationOptions,
-          'playbookAdd',
-        );
-      },
-      setSubmitting,
+  const { t_i18n } = useFormatter();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [importMutation] = useApiMutation<PlaybookCreationImportMutation>(playbookImportMutation);
+  const [createMutation] = useApiMutation<PlaybookCreationMutation>(playbookCreationMutation);
+
+  const playbookCreationValidation = Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+  });
+  const initialValues = {
+    name: '',
+    description: '',
+  };
+
+  const onSubmit: FormikConfig<PlaybookCreationForm>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
+    setSubmitting(true);
+    createMutation({
+      variables: { input: values },
       onCompleted: (response) => {
-        setSubmitting(false);
         resetForm();
-        navigate(`${resolveLink('Playbook')}/${response.playbookAdd.id}`);
+        setSubmitting(false);
+        if (response.playbookAdd) {
+          navigate(`${resolveLink('Playbook')}/${response.playbookAdd.id}`);
+        }
       },
     });
   };
-  const handleImport = (event) => {
-    const importedFile = event.target.files[0];
-    commitImportMutation({
-      variables: { file: importedFile },
-      onCompleted: (data) => {
-        inputRef.current.value = null; // Reset the input uploader ref
-        navigate(
-          `${resolveLink('Playbook')}/${data.playbookImport}`,
-        );
-      },
-      onError: (error) => {
-        inputRef.current.value = null; // Reset the input uploader ref
-        handleError(error);
-      },
-    });
+
+  const handleImport: InputHTMLAttributes<HTMLInputElement>['onChange'] = (event) => {
+    const importedFile = event.target?.files?.[0];
+    if (importedFile) {
+      importMutation({
+        variables: { file: importedFile },
+        onError: handleError,
+        onCompleted: (data) => {
+          navigate(`${resolveLink('Playbook')}/${data.playbookImport}`);
+        },
+      });
+    }
+    if (inputRef.current) {
+      // Reset the input uploader ref
+      inputRef.current.value = '';
+    }
   };
-  const CreatePlaybookControlledDial = (props) => (
+
+  const CreatePlaybookControlledDial: DrawerControlledDialType = (props) => (
     <>
       <ToggleButton
         value="import"
@@ -128,25 +126,28 @@ const PlaybookCreation = ({ paginationOptions }) => {
       />
     </>
   );
+
   return (
     <>
-      <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
+      <VisuallyHiddenInput
+        ref={inputRef}
+        type="file"
+        accept="application/JSON"
+        onChange={handleImport}
+      />
       <Drawer
         title={t_i18n('Create a playbook')}
         controlledDial={CreatePlaybookControlledDial}
       >
         {({ onClose }) => (
-          <Formik
-            initialValues={{
-              name: '',
-              description: '',
-            }}
-            validationSchema={playbookCreationValidation(t_i18n)}
+          <Formik<PlaybookCreationForm>
+            initialValues={initialValues}
+            validationSchema={playbookCreationValidation}
+            onReset={onClose}
             onSubmit={(values, formikHelpers) => {
               onSubmit(values, formikHelpers);
               onClose();
             }}
-            onReset={onClose}
           >
             {({ submitForm, handleReset, isSubmitting }) => (
               <Form>
@@ -155,22 +156,27 @@ const PlaybookCreation = ({ paginationOptions }) => {
                   variant="standard"
                   name="name"
                   label={t_i18n('Name')}
-                  fullWidth={true}
+                  fullWidth
                 />
                 <Field
                   component={TextField}
                   variant="standard"
                   name="description"
                   label={t_i18n('Description')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
+                  style={fieldSpacingContainerStyle}
+                  fullWidth
                 />
-                <div className={classes.buttons}>
+                <div style={{
+                  ...fieldSpacingContainerStyle,
+                  display: 'flex',
+                  justifyContent: 'end',
+                  gap: theme.spacing(2),
+                }}
+                >
                   <Button
                     variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t_i18n('Cancel')}
                   </Button>
@@ -179,7 +185,6 @@ const PlaybookCreation = ({ paginationOptions }) => {
                     color="secondary"
                     onClick={submitForm}
                     disabled={isSubmitting}
-                    classes={{ root: classes.button }}
                   >
                     {t_i18n('Create')}
                   </Button>
