@@ -180,7 +180,7 @@ export const rulesApplyHandler = async (
         const mergeEvent = event as MergeEvent;
         const mergeEvents = await ruleMergeHandler(mergeEvent);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        await rulesApplyHandler(context, user, mergeEvents);
+        await rulesApplyHandler(context, user, mergeEvents, forRules, createInferredEntityCallback, createInferredRelationCallback);
       }
       // In case of deletion, call clean on every impacted elements
       if (type === EVENT_TYPE_DELETE) {
@@ -423,7 +423,9 @@ export const executeRuleElementRescan = async (context: AuthContext, user: AuthU
 export const rulesRescan = async (context: AuthContext, user: AuthUser, elementId: string) => {
   const elem = await internalLoadById(context, user, elementId, { baseData: true });
   if (elem) {
-    await executeRuleElementRescan(context, user, elem);
+    executeRuleElementRescan(context, user, elem).catch((e) => {
+      logApp.warn('RULE RESCAN - Unexpected error during rule rescan', { elementId, cause: e });
+    });
     return true;
   }
   return false;
