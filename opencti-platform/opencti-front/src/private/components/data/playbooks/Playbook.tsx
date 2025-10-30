@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import 'reactflow/dist/style.css';
 import ReactFlow, { ReactFlowProvider } from 'reactflow';
 import { ErrorBoundary } from '../../Error';
@@ -26,14 +26,54 @@ import { addPlaceholders, computeEdges, computeNodes } from './utils/playbook';
 import useManipulateComponents from './hooks/useManipulateComponents';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
+import { Playbook_playbook$key } from './__generated__/Playbook_playbook.graphql';
+import { Playbook_playbookComponents$key } from './__generated__/Playbook_playbookComponents.graphql';
 
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
 const proOptions = { account: 'paid-pro', hideAttribution: true };
 const fitViewOptions = { padding: 0.8 };
 
-const PlaybookComponent = ({ playbook, playbookComponents }) => {
+const playbookFragment = graphql`
+  fragment Playbook_playbook on Playbook {
+    id
+    entity_type
+    name
+    description
+    playbook_definition
+    playbook_running
+    ...PlaybookHeader_playbook
+  }
+`;
+
+const playbookComponentsFragment = graphql`
+  fragment Playbook_playbookComponents on Query {
+    playbookComponents {
+      id
+      name
+      description
+      icon
+      is_entry_point
+      is_internal
+      configuration_schema
+      ports {
+        id
+        type
+      }
+    }
+  }
+`;
+
+interface PlaybookProps {
+  dataPlaybook: Playbook_playbook$key;
+  dataPlaybookComponents: Playbook_playbookComponents$key;
+}
+
+const Playbook = ({ dataPlaybook, dataPlaybookComponents }: PlaybookProps) => {
   const { t_i18n } = useFormatter();
-  const definition = JSON.parse(playbook.playbook_definition);
+  const playbook = useFragment(playbookFragment, dataPlaybook);
+  const { playbookComponents } = useFragment(playbookComponentsFragment, dataPlaybookComponents);
+  const definition = JSON.parse(playbook.playbook_definition ?? '{}');
+
   const Flow = () => {
     const {
       setAction,
@@ -59,6 +99,7 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
       setSelectedNode,
     );
     useLayout(playbook.id);
+
     return (
       <>
         <ReactFlow
@@ -79,10 +120,10 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
       </>
     );
   };
+
   return (
     <>
       <Breadcrumbs
-        variant="list"
         elements={[
           { label: t_i18n('Data') },
           { label: t_i18n('Processing') },
@@ -101,19 +142,5 @@ const PlaybookComponent = ({ playbook, playbookComponents }) => {
     </>
   );
 };
-
-const Playbook = createFragmentContainer(PlaybookComponent, {
-  playbook: graphql`
-    fragment Playbook_playbook on Playbook {
-      id
-      entity_type
-      name
-      description
-      playbook_definition
-      playbook_running
-      ...PlaybookHeader_playbook
-    }
-  `,
-});
 
 export default Playbook;

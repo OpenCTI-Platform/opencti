@@ -13,70 +13,65 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
-import { graphql } from 'react-relay';
-import { QueryRenderer } from '../../../../relay/environment';
-import { RootPlaybookQuery$data } from './__generated__/RootPlaybookQuery.graphql';
+import { graphql, usePreloadedQuery } from 'react-relay';
+import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
+import { RootPlaybookQuery } from './__generated__/RootPlaybookQuery.graphql';
 import Playbook from './Playbook';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
 const playbookQuery = graphql`
   query RootPlaybookQuery($id: String!) {
     playbook(id: $id) {
-      id
       ...Playbook_playbook
     }
-    playbookComponents {
-      id
-      name
-      description
-      icon
-      is_entry_point
-      is_internal
-      configuration_schema
-      ports {
-        id
-        type
-      }
-    }
+    ...Playbook_playbookComponents
   }
 `;
 
+interface RootPlaybookComponentProps {
+  playbookQueryRef: PreloadedQuery<RootPlaybookQuery>
+}
+
+const RootPlaybookComponent = ({
+  playbookQueryRef,
+}: RootPlaybookComponentProps) => {
+  const data = usePreloadedQuery(playbookQuery, playbookQueryRef);
+  const { playbook } = data;
+  if (!playbook) return <ErrorNotFound/>;
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Playbook
+            dataPlaybook={playbook}
+            dataPlaybookComponents={data}
+          />
+        }
+      />
+    </Routes>
+  );
+};
+
 const RootPlaybook = () => {
   const { playbookId } = useParams();
+  if (!playbookId) return <ErrorNotFound/>;
+  const playbookQueryRef = useQueryLoading<RootPlaybookQuery>(
+    playbookQuery,
+    { id: playbookId },
+  );
+
   return (
-    <QueryRenderer
-      query={playbookQuery}
-      variables={{ id: playbookId }}
-      render={({ props }: { props: RootPlaybookQuery$data }) => {
-        if (props) {
-          if (props.playbook && props.playbookComponents) {
-            return (
-              <Routes>
-                <Route
-                  path="/"
-                  element={
-                    <Playbook
-                      playbook={props.playbook}
-                      playbookComponents={props.playbookComponents}
-                    />
-                  }
-                />
-              </Routes>
-            );
-          }
-          return <ErrorNotFound />;
-        }
-        return <Loader />;
-      }}
-    />
+    <Suspense fallback={<Loader />}>
+      {playbookQueryRef && (
+        <RootPlaybookComponent playbookQueryRef={playbookQueryRef} />
+      )}
+    </Suspense>
   );
 };
 
