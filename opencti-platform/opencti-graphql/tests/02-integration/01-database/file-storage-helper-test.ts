@@ -11,6 +11,7 @@ const adminContext: AuthContext = {
   source: 'file-storage-helper-test',
   otp_mandatory: false,
   user_inside_platform_organization: false,
+  sharedData: {},
 };
 
 describe('File storage upload with marking', () => {
