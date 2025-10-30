@@ -1,4 +1,3 @@
-import type { DateTime } from '@elastic/elasticsearch/lib/api/types';
 import type { StixDate, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { StixContainer } from '../../types/stix-2-1-sdo';
@@ -22,7 +21,7 @@ export interface BasicStoreEntityThreatActorIndividual extends BasicStoreEntity 
   primary_motivations: string
   secondary_motivations: string[]
   personal_motivations: string[]
-  date_of_birth: DateTime
+  date_of_birth: Date
   gender: string
   job_title: string
   marital_status: string
@@ -48,7 +47,7 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
   primary_motivations: string
   secondary_motivations: string[]
   personal_motivations: string[]
-  date_of_birth: DateTime
+  date_of_birth: Date
   gender: string
   job_title: string
   marital_status: string
@@ -61,7 +60,7 @@ export interface StoreEntityThreatActorIndividual extends StoreEntity {
 }
 
 export interface StixThreatActorIndividualExtension extends StixOpenctiExtension {
-  date_of_birth: DateTime
+  date_of_birth: Date
   gender: string
   job_title: string
   marital_status: string

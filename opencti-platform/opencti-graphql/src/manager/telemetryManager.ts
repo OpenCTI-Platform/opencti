@@ -1,9 +1,9 @@
-import { Resource } from '@opentelemetry/resources';
-import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
-import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
-import { ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
+import { defaultResource, resourceFromAttributes } from '@opentelemetry/resources';
+import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
+// eslint-disable-next-line import/no-unresolved
+import { ATTR_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/incubating';
+import { AggregationTemporality, ConsoleMetricExporter, InstrumentType, MeterProvider } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
-import { AggregationTemporality } from '@opentelemetry/sdk-metrics/build/src/export/AggregationTemporality';
 import conf, { DEV_MODE, logApp, PLATFORM_VERSION } from '../config/conf';
 import { executionContext, SYSTEM_USER, TELEMETRY_MANAGER_USER } from '../utils/access';
 import { getClusterInformation } from '../database/cluster-module';
@@ -197,13 +197,13 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
   // Meter Provider creation
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const platformId = settings.id;
-  const filigranResource = new Resource({
-    [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
-    [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
-    [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
+  const filigranResource = resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
+    [ATTR_SERVICE_VERSION]: PLATFORM_VERSION,
+    [ATTR_SERVICE_INSTANCE_ID]: platformId,
     'service.instance.creation': settings.created_at as unknown as string
   });
-  const resource = Resource.default().merge(filigranResource);
+  const resource = defaultResource().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
   const filigranTelemetryMeterManager = new TelemetryMeterManager(filigranMeterProvider);
   filigranTelemetryMeterManager.registerFiligranTelemetry();

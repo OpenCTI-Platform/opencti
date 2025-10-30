@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { Readable } from 'stream';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+// eslint-disable-next-line import/no-unresolved
+import { ATTR_DB_NAME, ATTR_DB_OPERATION } from '@opentelemetry/semantic-conventions/incubating';
 import { defaultValidationMode, deleteFile } from '../database/file-storage';
 import { internalLoadById, fullEntitiesList } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
@@ -222,7 +223,7 @@ export const batchFileWorks = async (context, user, files) => {
     return files.map((fileId) => items.filter(({ event_source_id }) => event_source_id === fileId));
   };
   return telemetry(context, user, 'BATCH works for file', {
-    [SEMATTRS_DB_NAME]: 'file_domain',
-    [SEMATTRS_DB_OPERATION]: 'read',
+    [ATTR_DB_NAME]: 'file_domain',
+    [ATTR_DB_OPERATION]: 'read',
   }, getWorkForFileFn);
 };

@@ -492,38 +492,27 @@ export const HUB_REGISTRATION_MANAGER_USER: AuthUser = {
 
 export interface AuthorizedMember { id: string, access_right: string, groups_restriction_ids?: string[] | null }
 
-class TracingContext {
-  ctx: Context | undefined;
+export type TracingContext = {
+  getCtx: () => Context | undefined,
+  getTracer: () => Tracer,
+  setCurrentCtx: (span: Span) => void,
+};
 
-  tracer: Tracer;
+const createTracingContext = (tracer: Tracer): TracingContext => {
+  let ctx: Context | undefined;
 
-  constructor(tracer: Tracer) {
-    this.tracer = tracer;
-    this.ctx = undefined;
-  }
-
-  getCtx() {
-    return this.ctx;
-  }
-
-  getTracer() {
-    return this.tracer;
-  }
-
-  setCurrentCtx(span: Span) {
-    this.ctx = trace.setSpan(telemetryContext.active(), span);
-  }
-}
-
-export const enforceEnableFeatureFlag = (flag: string) => {
-  if (!isFeatureEnabled(flag)) {
-    throw UnsupportedError('Feature is disabled', { flag });
-  }
+  return {
+    getCtx: () => ctx,
+    getTracer: () => tracer,
+    setCurrentCtx: (span: Span) => {
+      ctx = trace.setSpan(telemetryContext.active(), span);
+    }
+  };
 };
 
 export const executionContext = (source: string, auth?: AuthUser, draftContext?: string): AuthContext => {
   const tracer = trace.getTracer('instrumentation-opencti', '1.0.0');
-  const tracing = new TracingContext(tracer);
+  const tracing = createTracingContext(tracer);
   return {
     otp_mandatory: false,
     user_inside_platform_organization: false,

@@ -39,7 +39,7 @@ import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
 import { extractStixRepresentativeForUser } from '../database/stix-representative';
 import { EVENT_TYPE_UPDATE } from '../database/utils';
-import NotificationTool from '../utils/NotificationTool';
+import notificationTool from '../utils/notificationTool';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -145,8 +145,7 @@ export async function handleEmailNotification(
   const { title, template, url_suffix: urlSuffix } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_EMAIL_INTERFACE;
 
   const renderedTitle = ejs.render(title, templateData);
-  const octiTool = new NotificationTool();
-  const renderedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix, octi: octiTool });
+  const renderedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix, octi: notificationTool });
 
   const emailPayload = {
     from: `${settings.platform_title} <${settings.platform_email}>`,
