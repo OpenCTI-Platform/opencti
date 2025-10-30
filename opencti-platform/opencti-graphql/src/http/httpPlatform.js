@@ -40,7 +40,11 @@ export const sanitizeReferer = (refererToSanitize) => {
   const resolvedUrl = new URL(refererToSanitize, base).toString();
   if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
     // same domain URL accept the redirection
-    return refererToSanitize;
+    if (refererToSanitize.startsWith('/')) {
+      // in case of relative URL, keep relative.
+      return refererToSanitize;
+    }
+    return resolvedUrl;
   }
   logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
   return '/';
