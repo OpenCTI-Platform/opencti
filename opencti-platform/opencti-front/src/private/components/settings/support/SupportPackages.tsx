@@ -18,6 +18,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { insertNode } from '../../../../utils/store';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const LOCAL_STORAGE_KEY = 'support-packages';
 
@@ -36,6 +37,8 @@ export const supportPackageAddMutation = graphql`
 
 const SupportPackages = () => {
   const { t_i18n, nsdt } = useFormatter();
+  const draftContext = useDraftContext();
+  const disabledInDraft = !!draftContext;
   const [commitSupportPackageAdd] = useApiMutation(supportPackageAddMutation);
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<SupportPackageLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
@@ -123,25 +126,34 @@ const SupportPackages = () => {
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Support packages')}
       </Typography>
-      <Tooltip title={
-        <Alert
-          severity="warning"
-          variant="outlined"
-          style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
-        >
-          {t_i18n('We are doing our best to remove any sensitive information from support packages but we encourage you to check the content before sharing a support package depending on your security policy.')}
-        </Alert>
-        }
+      <Tooltip title={disabledInDraft
+        ? <Alert
+            severity="warning"
+            variant="outlined"
+            style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
+          >
+          {t_i18n('You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.')}
+        </Alert> : (
+          <Alert
+            severity="warning"
+            variant="outlined"
+            style={{ position: 'relative', marginTop: 20, marginBottom: 20 }}
+          >
+            {t_i18n('We are doing our best to remove any sensitive information from support packages but we encourage you to check the content before sharing a support package depending on your security policy.')}
+          </Alert>
+        )}
       >
-        <Button
-          style={{ float: 'right', marginTop: '-34px' }}
-          onClick={generateSupportPackage}
-          size="small"
-          variant="outlined"
-          color="primary"
-        >
-          {t_i18n('Generate Support Package')}
-        </Button>
+        <span style={{ float: 'right', marginTop: '-34px', display: 'inline-block' }}>
+          <Button
+            onClick={generateSupportPackage}
+            size="small"
+            variant="outlined"
+            color="primary"
+            disabled={disabledInDraft}
+          >
+            {t_i18n('Generate Support Package')}
+          </Button>
+        </span>
       </Tooltip>
       <div className="clearfix"/>
       <Paper className="paper-for-grid" variant="outlined" sx={{
