@@ -2,6 +2,9 @@ FROM filigran/python-nodejs-fips:latest AS base
 
 FROM base AS graphql-deps-builder
 
+ARG TAG_VERSION
+ENV TAG_VERSION=${TAG_VERSION}
+
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./
 COPY opencti-graphql/patch ./patch
@@ -13,6 +16,9 @@ RUN set -ex; \
 
 
 FROM base AS graphql-builder
+
+ARG TAG_VERSION
+ENV TAG_VERSION=${TAG_VERSION}
 
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./
@@ -26,8 +32,6 @@ COPY opencti-graphql /opt/opencti-build/opencti-graphql
 RUN yarn build:prod
 
 FROM base AS app
-
-ARG TAG_VERSION
 
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo postfix postfix-pcre; \
@@ -47,7 +51,6 @@ COPY opencti-graphql/script ./script
 ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS="--force-fips --max_old_space_size=12288"
 ENV NODE_ENV=production
-ENV TAG_VERSION=${TAG_VERSION}
 
 RUN set -ex; \
     install -m 0777 -d '/opt/opencti/logs' \
