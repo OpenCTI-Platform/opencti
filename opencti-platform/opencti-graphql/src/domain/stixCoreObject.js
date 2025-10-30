@@ -329,7 +329,7 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   const contextOutOfDraft = { ...context, draft_context: '' };
   let stix_objects;
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
-  const stix_entity = convertStoreToStix(element);
+  const stix_entity = JSON.stringify(convertStoreToStix(element));
   const works = [];
   for (let index = 0; index < connectors.length; index += 1) {
     const connector = connectors[index];
