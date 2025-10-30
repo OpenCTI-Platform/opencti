@@ -70,6 +70,7 @@ interface StixOpenctiExtension {
   converter_csv?: string | undefined
   opencti_operation?: string
   metrics: Array<StixMetric>
+  opencti_field_patch?: EditInput[]
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {
