@@ -77,7 +77,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipAddRefR
 import { buildContextDataForFile, completeContextDataForEntity, publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentativeName, extractRepresentative } from '../database/entity-representative';
 import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-utils';
-import { BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
+import { BULK_SEARCH_KEYWORDS_FILTER, BULK_SEARCH_KEYWORDS_FILTER_KEYS, INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
 import { uploadToStorage } from '../database/file-storage-helper';
@@ -165,11 +165,19 @@ export const globalSearchPaginated = async (context, user, args) => {
 };
 
 export const findUnknownStixCoreObjects = async (context, user, args) => {
-  const { values: inputValues, filters, orderBy, orderMode } = args;
+  const { values: inputValues, orderBy, orderMode } = args;
   if (inputValues.length === 0) {
     return [];
   }
   const values = R.uniq(inputValues);
+  const filters = {
+    mode: 'and',
+    filters: [
+      { key: 'entity_type', values: [ABSTRACT_STIX_CORE_OBJECT] },
+      { key: BULK_SEARCH_KEYWORDS_FILTER, values },
+    ],
+    filterGroups: [],
+  };
   const knownScos = await globalSearchPaginated(context, user, { filters, first: 5000 });
   const knownNodes = knownScos.edges.map((n) => n.node) ?? [];
 
