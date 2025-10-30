@@ -94,12 +94,10 @@ export const filterConnectorsForElementEnrichment = async (context, connectors, 
     const conn = activeConnectors[i];
     const scopeMatch = scope ? (conn.connector_scope ?? []).some((s) => s.toLowerCase() === scope.toLowerCase()) : true;
     let autoTrigger = false;
-    if (conn.connector_trigger_filters) {
-      autoTrigger = await isStixMatchConnectorFilter(context, element, conn.connector_trigger_filters);
-    } else if (mode === 'creation') {
-      autoTrigger = conn.auto === true;
-    } else {
-      autoTrigger = conn.auto_update === true;
+    if (mode === 'creation') {
+      autoTrigger = conn.connector_trigger_filters ? await isStixMatchConnectorFilter(context, element, conn.connector_trigger_filters) : conn.auto === true;
+    } else if (mode === 'update') {
+      autoTrigger = conn.auto_update;
     }
     if (scopeMatch && autoTrigger) {
       targetConnectors.push(conn);
