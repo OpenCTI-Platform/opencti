@@ -103,9 +103,11 @@ jobs:
           awx --conf.host ${{ secrets.AWX_URL }} \
             --conf.username ${{ secrets.AWX_USER }} \
             --conf.password ${{ secrets.AWX_PASSWORD }} \
-            -f human job_templates launch 'Deploy OpenCTI feature branch for testing' \
+            -f human job_templates \
+            --wait \
+            launch 'Deploy OpenCTI feature branch for testing' \
             --inventory eu-west-staging \
-            --extra_vars "{\"octi_version\":\"${{steps.meta.outputs.version}}\",\"octi_config\":\"${{ inputs.octi_config }}\",\"redis_cluster\":\"${{ inputs.redis_cluster }}\"}"
+            --extra_vars '{"octi_version":"${{steps.meta.outputs.version}}","octi_config": ${{ inputs.octi_config }},"redis_cluster":"${{ inputs.redis_cluster }}"}'
 
       - name: Forge URL to match playbook limitations
         id: urlforge
