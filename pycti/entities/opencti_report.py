@@ -108,6 +108,7 @@ class Report:
             modified
             name
             description
+            content
             report_types
             published
             objects(all: true) {
