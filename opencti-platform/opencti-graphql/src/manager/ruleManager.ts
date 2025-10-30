@@ -163,8 +163,8 @@ export const rulesApplyHandler = async (
   user: AuthUser,
   events: Array<DataEvent>,
   forRules: Array<RuleRuntime> = [],
-  createInferredEntityCallback: CreateInferredEntityCallbackFunction = createInferredRelation,
-  createInferredRelationCallback: CreateInferredRelationCallbackFunction = createInferredEntity
+  createInferredEntityCallback: CreateInferredEntityCallbackFunction = createInferredEntity,
+  createInferredRelationCallback: CreateInferredRelationCallbackFunction = createInferredRelation
 ) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
