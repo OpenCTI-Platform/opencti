@@ -17,7 +17,6 @@ import { IngestionCsvEditionContainerQuery } from '@components/data/ingestionCsv
 import { IngestionCsvCreationContainer } from '@components/data/ingestionCsv/IngestionCsvCreation';
 import DialogTitle from '@mui/material/DialogTitle';
 import fileDownload from 'js-file-download';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
