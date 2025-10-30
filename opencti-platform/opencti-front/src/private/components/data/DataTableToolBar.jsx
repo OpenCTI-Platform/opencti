@@ -28,6 +28,7 @@ import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import {
   AddOutlined,
+  AddBoxOutlined,
   AutoFixHighOutlined,
   BrushOutlined,
   CancelOutlined,
@@ -99,6 +100,7 @@ import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFi
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
+import ImportFilesDialog from "@components/common/files/import_files/ImportFilesDialog";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -412,6 +414,7 @@ class DataTableToolBar extends Component {
       killChainPhases: [],
       groups: [],
       displayEditButtons: true,
+      unknownEntities: undefined,
     };
   }
 
@@ -657,6 +660,12 @@ class DataTableToolBar extends Component {
     }
     this.setState({ actionsInputs });
   }
+  handleLaunchCreateUnknownEntities() {
+    this.setState({ unknownValues: Object.keys(this.props.selectedElements) });
+  }
+  handleCloseCreateUnknownEntities() {
+    this.setState({ unknownValues: undefined });
+  }
   handleLaunchRead(read) {
     const actions = [{
       type: 'REPLACE',
@@ -838,19 +847,17 @@ class DataTableToolBar extends Component {
 
     const finalActions = taskScope === 'USER'
       ? this.getUserDatatableFinalActions(actions)
-      : R.map(
+      : actions.map(
         (n) => ({
           type: n.type,
           context: n.context
             ? {
               ...n.context,
-              values: R.map((o) => o.id || o.value || o, n.context.values),
+              values: n.context.values.map((o) => o.id || o.value || o),
             }
             : null,
           containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-        }),
-        actions,
-      );
+        }));
 
     if (selectAll) {
       commitMutation({
@@ -2607,6 +2614,21 @@ class DataTableToolBar extends Component {
                     )}
                   </div>
                 )}
+                {taskScope === 'UNKNOWN_ENTITIES' &&
+                  <Tooltip title={t('Create unknown entities')}>
+                    <span>
+                      <IconButton
+                        aria-label={t('Create unknown entities')}
+                        disabled={numberOfSelectedElements === 0 || this.state.processing}
+                        onClick={this.handleLaunchCreateUnknownEntities.bind(this)}
+                        color="primary"
+                        size="small"
+                      >
+                        <AddBoxOutlined fontSize="small" />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                }
               </Toolbar>
               <Dialog
                 slotProps={{ paper: { elevation: 1 } }}
@@ -3438,6 +3460,10 @@ class DataTableToolBar extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
+              <ImportFilesDialog
+                open={this.state.unknownValues}
+                handleClose={this.handleCloseCreateUnknownEntities.bind(this)}
+              />
             </>
           );
         }}

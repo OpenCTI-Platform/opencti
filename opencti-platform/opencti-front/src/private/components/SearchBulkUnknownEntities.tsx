@@ -59,6 +59,7 @@ const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDis
           globalCount={unknownEntities.length}
           dataColumns={dataColumns}
           storageKey={LOCAL_STORAGE_KEY}
+          taskScope="UNKNOWN_ENTITIES"
            />}
     </>
   );
