@@ -30,16 +30,8 @@ const checkForRefsDuplicates = (entityDocument: any): string[] => {
   return refsWithDuplicates;
 };
 
-export enum InconsistencyOperation {
-  REF_DUPLICATE_CLEAN = 'ref_duplicate_clean',
-  REF_MISSING_REPAIR = 'ref_missing_repair',
-}
-const allOperations = [InconsistencyOperation.REF_DUPLICATE_CLEAN, InconsistencyOperation.REF_MISSING_REPAIR];
-export const cleanAllEntityInconsistencies = async (context: AuthContext, user: AuthUser, internal_id: string, operationsToApply: InconsistencyOperation[] = allOperations) => {
-  if (!isBypassUser(user)) {
-    return;
-  }
-  const query = {
+const getLoadByInternalIdQuery = (internal_id: string) => {
+  return {
     bool: {
       filter: [{
         term: {
@@ -48,6 +40,10 @@ export const cleanAllEntityInconsistencies = async (context: AuthContext, user: 
       }]
     }
   };
+};
+
+const loadRawElement = async (context: AuthContext, user: AuthUser, internal_id: string): Promise<any> => {
+  const query = getLoadByInternalIdQuery(internal_id);
   const rawSearchQuery = {
     index: READ_DATA_INDICES_WITHOUT_INFERRED,
     size: ES_MAX_PAGINATION,
@@ -59,9 +55,24 @@ export const cleanAllEntityInconsistencies = async (context: AuthContext, user: 
   });
 
   if (rawDocument.hits?.hits?.length === 0) {
+    return null;
+  }
+  return rawDocument.hits.hits[0];
+};
+
+export enum InconsistencyOperation {
+  REF_DUPLICATE_CLEAN = 'ref_duplicate_clean',
+  REF_MISSING_REPAIR = 'ref_missing_repair',
+}
+const allOperations = [InconsistencyOperation.REF_DUPLICATE_CLEAN, InconsistencyOperation.REF_MISSING_REPAIR];
+export const cleanAllEntityInconsistencies = async (context: AuthContext, user: AuthUser, internal_id: string, operationsToApply: InconsistencyOperation[] = allOperations) => {
+  if (!isBypassUser(user)) {
     return;
   }
-  const elementDocument = rawDocument.hits.hits[0];
+  const elementDocument = await loadRawElement(context, user, internal_id);
+  if (!elementDocument) {
+    return;
+  }
   let source = '';
   let shouldUpdate = false;
   const params: { duplicatedKeys?: string[] } = {};
@@ -85,7 +96,7 @@ export const cleanAllEntityInconsistencies = async (context: AuthContext, user: 
       conflicts: 'proceed',
       body: {
         script: { source, params },
-        query,
+        query: getLoadByInternalIdQuery(internal_id),
       },
     });
   }
