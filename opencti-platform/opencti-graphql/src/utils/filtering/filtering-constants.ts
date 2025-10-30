@@ -230,4 +230,6 @@ export const BULK_SEARCH_KEYWORDS_FILTER_KEYS = [
   'user_id',
   'account_login',
   'path',
+  'attribute_key',
+  'persona_name',
 ];
