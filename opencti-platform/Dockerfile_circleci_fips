@@ -27,6 +27,8 @@ RUN yarn build:prod
 
 FROM base AS app
 
+ARG TAG_VERSION
+
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo postfix postfix-pcre; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel;
@@ -45,6 +47,7 @@ COPY opencti-graphql/script ./script
 ENV PYTHONUNBUFFERED=1
 ENV NODE_OPTIONS="--force-fips --max_old_space_size=12288"
 ENV NODE_ENV=production
+ENV TAG_VERSION=${TAG_VERSION}
 
 RUN set -ex; \
     install -m 0777 -d '/opt/opencti/logs' \
