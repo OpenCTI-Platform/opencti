@@ -33,10 +33,10 @@ class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
         task_future.add_done_callback(self.decrement_default_count)
         return task_future
 
-    def submit_to_realtime_pool(self, fn: Callable[..., Any], *args: Any, **kwargs: Any):
-        task_future = self.realtime_execution_pool.submit(
-            fn, args, kwargs
-        )
+    def submit_to_realtime_pool(
+        self, fn: Callable[..., Any], *args: Any, **kwargs: Any
+    ):
+        task_future = self.realtime_execution_pool.submit(fn, args, kwargs)
         with self.count_lock:
             self.realtime_active_threads_count += 1
         task_future.add_done_callback(self.decrement_realtime_count)
