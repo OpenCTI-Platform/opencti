@@ -383,7 +383,6 @@ const useGraphInteractions = () => {
         o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
       ))
       : objects;
-    setRawObjects(filteredObjects);
     setGraphData(context === 'correlation'
       ? buildCorrelationData(filteredObjects, resetPositions ? {} : rawPositions)
       : buildGraphData(filteredObjects, resetPositions ? {} : rawPositions));
