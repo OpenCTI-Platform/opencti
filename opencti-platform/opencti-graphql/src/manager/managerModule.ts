@@ -1,12 +1,12 @@
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { clearIntervalAsync as clearDynamicIntervalAsync, setIntervalAsync as setDynamicIntervalAsync } from 'set-interval-async/dynamic';
 import moment from 'moment/moment';
-import { createStreamProcessor, type StreamProcessor } from '../database/redis';
+import { createStreamProcessor } from '../database/stream/stream-handler';
+import { type StreamProcessor } from '../database/stream/stream-utils';
 import { lockResources } from '../lock/master-lock';
 import type { BasicStoreSettings } from '../types/settings';
 import { logApp } from '../config/conf';
 import { TYPE_LOCK_ERROR } from '../config/errors';
-import { SYSTEM_USER } from '../utils/access';
 import { utcDate } from '../utils/format';
 import { wait } from '../database/utils';
 import type { DataEvent, SseEvent } from '../types/event';
@@ -27,7 +27,7 @@ export interface ManagerCronScheduler {
 }
 
 export interface ManagerStreamScheduler {
-  handler: (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => void;
+  handler: (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => Promise<void>;
   interval: number;
   lockKey: string;
   streamOpts?: { withInternal?: boolean; streamName?: string; bufferTime: number };
@@ -103,7 +103,7 @@ const initManager = (manager: ManagerDefinition) => {
         lock = await lockResources([manager.streamSchedulerHandler.lockKey], { retryCount: 0 });
         running = true;
         logApp.info(`[OPENCTI-MODULE] Running ${manager.label} stream handler`);
-        streamProcessor = createStreamProcessor(SYSTEM_USER, manager.label, manager.streamSchedulerHandler.handler, manager.streamSchedulerHandler.streamOpts);
+        streamProcessor = createStreamProcessor(manager.label, manager.streamSchedulerHandler.handler, manager.streamSchedulerHandler.streamOpts);
         const startFrom = manager.streamSchedulerHandler.streamProcessorStartFrom();
         await streamProcessor.start(startFrom);
         while (!shutdown && streamProcessor.running()) {

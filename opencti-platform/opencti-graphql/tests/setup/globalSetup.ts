@@ -20,6 +20,7 @@ import { deleteAllBucketContent } from '../../src/database/file-storage';
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from '../utils/testQuery';
+import { initializeStreamStack } from '../../src/database/stream/stream-handler';
 
 /**
  * This is run once before all tests (for setup) and after all (for teardown).
@@ -40,6 +41,7 @@ const initializePlatform = async () => {
   const stopTime = new Date().getTime();
 
   await initializeInternalQueues();
+  await initializeStreamStack();
   await initializeBucket();
   await initializeSchema();
   await initializeData(context, true);

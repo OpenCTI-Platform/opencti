@@ -25,13 +25,14 @@ import { FunctionalError } from '../config/errors';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR, type ParsedPir, type ParsedPirCriterion, type StoreEntityPir } from '../modules/pir/pir-types';
 import { constructFinalPirFilters, parsePir } from '../modules/pir/pir-utils';
 import { getEntitiesListFromCache } from '../database/cache';
-import { createRedisClient, fetchStreamEventsRangeFromEventId } from '../database/redis';
+import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-handler';
 import { updatePir } from '../modules/pir/pir-domain';
 import { pushToWorkerForConnector } from '../database/rabbitmq';
 import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
 import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
+import { StreamProvider } from '../database/stream/stream-utils';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'Pir Manager';
@@ -165,29 +166,22 @@ const processStreamEventsForPir = (context: AuthContext, pir: BasicStoreEntityPi
  * Handler called every {PIR_MANAGER_INTERVAL} and studying a range of stream events.
  */
 const pirManagerHandler = async () => {
-  const redisClient = await createRedisClient(PIR_MANAGER_LABEL, false);
-  try {
-    const context = executionContext(PIR_MANAGER_CONTEXT);
-    const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
+  const context = executionContext(PIR_MANAGER_CONTEXT);
+  const allPirs = await getEntitiesListFromCache<BasicStoreEntityPir>(context, PIR_MANAGER_USER, ENTITY_TYPE_PIR);
 
-    // Loop through all Pirs by group
-    await BluePromise.map(allPirs, async (pir) => {
-      // Fetch stream events since last event id caught by the Pir.
-      const { lastEventId } = await fetchStreamEventsRangeFromEventId(
-        redisClient,
-        pir.lastEventId,
-        processStreamEventsForPir(context, pir),
-        { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE },
-      );
+  // Loop through all Pirs by group
+  await BluePromise.map(allPirs, async (pir) => {
+    // Fetch stream events since last event id caught by the Pir.
+    const { lastEventId } = await fetchStreamEventsRangeFromEventId(
+      pir.lastEventId,
+      processStreamEventsForPir(context, pir),
+      { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE, autoReconnect: false, provider: StreamProvider.PIR },
+    );
       // Update pir last event id.
-      if (lastEventId !== pir.lastEventId) {
-        await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }], { auditLogEnabled: false });
-      }
-    }, { concurrency: PIR_MANAGER_MAX_CONCURRENCY });
-  } finally {
-    // close redis client connexion
-    redisClient.disconnect();
-  }
+    if (lastEventId !== pir.lastEventId) {
+      await updatePir(context, PIR_MANAGER_USER, pir.id, [{ key: 'lastEventId', value: [lastEventId] }], { auditLogEnabled: false });
+    }
+  }, { concurrency: PIR_MANAGER_MAX_CONCURRENCY });
 };
 
 // Configuration of the manager.

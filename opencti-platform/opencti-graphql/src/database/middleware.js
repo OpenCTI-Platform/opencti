@@ -90,7 +90,8 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
-import { notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
+import { notify, redisAddDeletions } from './redis';
+import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,

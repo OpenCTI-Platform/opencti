@@ -1,8 +1,6 @@
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import { Cluster, Redis } from 'ioredis';
 import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptions, SentinelAddress, SentinelConnectionOptions } from 'ioredis';
 import { Redlock } from '@sesamecare-oss/redlock';
-import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp, REDIS_PREFIX } from '../config/conf';
@@ -28,31 +26,17 @@ import type {
 } from '../types/event';
 import type { StixCoreObject, StixObject } from '../types/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
-import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../types/clusterConfig';
 import type { ExecutionEnvelop } from '../types/playbookExecution';
-import { generateCreateMessage, generateDeleteMessage, generateMergeMessage, generateRestoreMessage } from './generate-message';
 import { INPUT_OBJECTS } from '../schema/general';
 import { enrichWithRemoteCredentials } from '../config/credentials';
-import { getDraftContext } from '../utils/draftContext';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
-import { asyncMap } from '../utils/data-processing';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-
-import { convertStoreToStix_2_1 } from './stix-2-1-converter';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
-export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 const PLAYBOOK_LOG_MAX_SIZE = conf.get('playbook_manager:log_max_size') || 10000;
-
-export const EVENT_CURRENT_VERSION = '4';
-
-const isStreamPublishable = (opts: EventOpts) => {
-  return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
-};
 
 const connectionName = (provider: string) => `${REDIS_PREFIX}${provider.replaceAll(' ', '_')}`;
 
@@ -162,7 +146,7 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
 
 // region Initialization of clients
 type RedisConnection = Cluster | Redis;
-interface RedisClients { base: RedisConnection; lock: RedisConnection; pubsub: RedisPubSub }
+interface RedisClients { base: RedisConnection; pir: RedisConnection; lock: RedisConnection; pubsub: RedisPubSub }
 
 let redisClients: RedisClients;
 // Method reserved for lock child process
@@ -175,11 +159,13 @@ export const initializeOnlyRedisLockClient = async () => {
 };
 export const initializeRedisClients = async () => {
   const base = await createRedisClient('base', true);
+  const pir = await createRedisClient('Pir Manager', true);
   const lock = await createRedisClient('lock', true);
   const publisher = await createRedisClient('publisher', true);
   const subscriber = await createRedisClient('subscriber', true);
   redisClients = {
     base,
+    pir,
     lock,
     pubsub: new RedisPubSub({
       publisher,
@@ -199,7 +185,8 @@ export const shutdownRedisClients = () => {
 // endregion
 
 // region pubsub
-const getClientBase = (): Cluster | Redis => redisClients.base;
+export const getClientBase = (): Cluster | Redis => redisClients.base;
+export const getClientPir = (): Cluster | Redis => redisClients.pir;
 const getClientLock = (): Cluster | Redis => redisClients.lock;
 const getClientPubSub = (): RedisPubSub => redisClients.pubsub;
 export const pubSubAsyncIterator = (topic: string | string[]) => {
@@ -444,7 +431,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       }
       lock = await lock.extend(maxTtl);
       queue();
-    } catch (_error) {
+    } catch {
       logApp.error('Execution timeout, error extending resources', { locks });
       if (process.send) {
         // If process.send, we use a child process
@@ -487,7 +474,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       try {
         // Finally try to unlock
         await lock.release();
-      } catch (_e) {
+      } catch {
         // Nothing to do here
       }
     },
@@ -1032,7 +1019,7 @@ export const redisGetExclusionListCache = async () => {
   const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
   try {
     return rawCache ? JSON.parse(rawCache) : [];
-  } catch (_e) {
+  } catch {
     logApp.error('Exclusion cache could not be parsed properly. Asking for a cache refresh.', { rawCache });
     await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
     return [];

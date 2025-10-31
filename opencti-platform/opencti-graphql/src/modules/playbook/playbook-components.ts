@@ -67,7 +67,7 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import { stixLoadByIds } from '../../database/middleware';
 import { usableNotifiers } from '../notifier/notifier-domain';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../manager/notificationManager';
-import { storeNotificationEvent } from '../../database/redis';
+import { storeNotificationEvent } from '../../database/stream/stream-handler';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { createStixPattern } from '../../python/pythonBridge';

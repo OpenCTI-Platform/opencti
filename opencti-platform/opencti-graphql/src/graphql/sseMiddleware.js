@@ -4,7 +4,7 @@ import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
 import conf, { basePath, logApp } from '../config/conf';
 import { TAXIIAPI } from '../domain/user';
-import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
+import { createStreamProcessor } from '../database/stream/stream-handler';
 import { generateInternalId } from '../schema/identifier';
 import { stixLoadById, storeLoadByIdsWithRefs } from '../database/middleware';
 import { elCount, elList } from '../database/engine';
@@ -45,6 +45,7 @@ import { asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
+import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
@@ -331,7 +332,7 @@ const createSseMiddleware = () => {
       }
       const { client } = createSseChannel(req, res, startStreamId);
       const opts = { autoReconnect: true };
-      const processor = createStreamProcessor(user, user.user_email, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(user.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
           const { id: eventId, event, data } = elements[index];
@@ -575,7 +576,7 @@ const createSseMiddleware = () => {
       let error;
       const userEmail = user.user_email;
       const opts = { autoReconnect: true };
-      const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
+      const processor = createStreamProcessor(userEmail, async (elements, lastEventId) => {
         // Default Live collection doesn't have a stored Object associated
         if (!error && (!collection || collection.stream_live)) {
           // Process the stream elements

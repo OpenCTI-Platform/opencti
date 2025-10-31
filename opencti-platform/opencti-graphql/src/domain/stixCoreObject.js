@@ -19,7 +19,8 @@ import {
   storeLoadByIds,
 } from '../database/middleware-loader';
 import { findStixCoreRelationshipsPaginated } from './stixCoreRelationship';
-import { delEditContext, notify, setEditContext, storeUpdateEvent } from '../database/redis';
+import { delEditContext, notify, setEditContext } from '../database/redis';
+import { storeUpdateEvent } from '../database/stream/stream-handler';
 import conf, { BUS_TOPICS, logApp } from '../config/conf';
 import { ForbiddenAccess, FunctionalError, LockTimeoutError, ResourceNotFoundError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
