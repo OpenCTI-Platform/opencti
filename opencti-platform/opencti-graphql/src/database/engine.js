@@ -3733,7 +3733,7 @@ export const elAggregationNestedTermsWithFilter = async (context, user, indexNam
 };
 
 export const elAggregationsList = async (context, user, indexName, aggregations, opts = {}) => {
-  const { types = [], resolveToRepresentative = true } = opts;
+  const { types = [], resolveToRepresentative = true, postResolveFilter } = opts;
   const queryAggs = {};
   aggregations.forEach((agg) => {
     queryAggs[agg.name] = {
@@ -3768,7 +3768,10 @@ export const elAggregationsList = async (context, user, indexName, aggregations,
   const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b) => b.key))));
   if (resolveToRepresentative) {
     const baseFields = ['internal_id', 'name', 'entity_type']; // Needs to take elements required to fill extractEntityRepresentative function
-    const aggsElements = await elFindByIds(context, user, aggsValues, { baseData: true, baseFields });
+    let aggsElements = await elFindByIds(context, user, aggsValues, { baseData: !postResolveFilter, baseFields }); // If post filter is required, we need to retrieve all fields
+    if (postResolveFilter) {
+      aggsElements = await postResolveFilter(aggsElements);
+    }
     const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: extractEntityRepresentativeName(element) })));
     return aggsMap.map((agg) => {
       const values = data.aggregations[agg].buckets?.map((b) => ({ label: aggsElementsCache[b.key], value: b.key }))?.filter((v) => !!v.label);
@@ -3865,10 +3868,10 @@ const buildRegardingOfFilter = async (context, user, elements, filters) => {
   return undefined;
 };
 
-const buildSearchResult = (elements, first, searchAfter, globalCount, connectionFormat) => {
+const buildSearchResult = (elements, first, searchAfter, globalCount, filterCount, connectionFormat) => {
   if (connectionFormat) {
     const nodeHits = elements.map((n) => ({ node: n, sort: n.sort, types: n.regardingOfTypes }));
-    return buildPagination(first, searchAfter, nodeHits, globalCount);
+    return buildPagination(first, searchAfter, nodeHits, globalCount, filterCount);
   }
   return elements;
 };
@@ -3910,11 +3913,11 @@ export const elPaginate = async (context, user, indexName, options = {}) => {
     // If filters contains an "in regards of" filter a post-security filtering is needed
     const regardingOfFilter = elements.length === 0 ? undefined : await buildRegardingOfFilter(context, user, elements, filters);
     const filteredElements = regardingOfFilter ? await asyncFilter(elements, regardingOfFilter) : elements;
-    const result = buildSearchResult(filteredElements, first, body.search_after, globalCount, connectionFormat);
+    const filterCount = elements.length - filteredElements.length;
+    const result = buildSearchResult(filteredElements, first, body.search_after, globalCount, filterCount, connectionFormat);
     if (withResultMeta) {
       const lastProcessedSort = R.last(elements)?.sort;
       const endCursor = lastProcessedSort ? offsetToCursor(lastProcessedSort) : null;
-      const filterCount = elements.length - filteredElements.length;
       return { elements: result, endCursor, total: globalCount, filterCount };
     }
     return result;

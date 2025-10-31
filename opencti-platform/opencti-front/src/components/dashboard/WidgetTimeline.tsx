@@ -40,7 +40,7 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
                 sx={{ paddingTop: '18px' }}
                 color="text.secondary"
               >
-                {fldt(value.created)}
+                {fldt(value.created_at)}
               </TimelineOppositeContent>
               <TimelineSeparator>
                 {link ? (

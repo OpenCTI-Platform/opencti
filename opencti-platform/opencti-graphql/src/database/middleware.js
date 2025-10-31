@@ -544,8 +544,10 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
 };
 export const stixBundleByIdStringify = async (context, user, type, id) => {
   const resolver = modules.get(type)?.bundleResolver;
-  if (resolver) return await resolver(context, user, id);
-  throw UnsupportedError('No bundle resolver for type', { type });
+  if (!resolver) {
+    return null;
+  }
+  return await resolver(context, user, id);
 };
 
 export const stixLoadByIdStringify = async (context, user, id) => {

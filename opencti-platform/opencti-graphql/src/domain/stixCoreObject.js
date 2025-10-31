@@ -355,13 +355,16 @@ export const askElementEnrichmentForConnectors = async (context, user, enrichedI
   // If we are in a draft, specify it in work message and send draft_id in message
   const draftContext = getDraftContext(context, user);
   const contextOutOfDraft = { ...context, draft_context: '' };
-  const stix_objects = await stixBundleByIdStringify(context, user, element.entity_type, element.internal_id);
+  let stix_objects;
   const workMessage = draftContext ? `Manual enrichment in draft ${draftContext}` : 'Manual enrichment';
-  const stix_entity = convertStoreToStix(element);
+  const stix_entity = JSON.stringify(convertStoreToStix(element));
   const works = [];
   for (let index = 0; index < connectors.length; index += 1) {
     const connector = connectors[index];
     const stixResolutionMode = connector.enrichment_resolution ?? 'stix_bundle';
+    if (stixResolutionMode === 'stix_bundle' && stix_objects === undefined) {
+      stix_objects = await stixBundleByIdStringify(context, user, element.entity_type, element.internal_id);
+    }
     const work = await createWork(contextOutOfDraft, user, connector, workMessage, element.standard_id, { draftContext });
     const message = {
       internal: {
