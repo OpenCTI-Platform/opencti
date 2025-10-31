@@ -9,6 +9,8 @@ import { RootNarrativeQuery } from '@components/techniques/narratives/__generate
 import { RootNarrativeSubscription } from '@components/techniques/narratives/__generated__/RootNarrativeSubscription.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Narrative from './Narrative';
 import NarrativeKnowledge from './NarrativeKnowledge';
@@ -55,6 +57,7 @@ const narrativeQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Narrative_narrative
       ...NarrativeKnowledge_narrative
@@ -99,7 +102,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
   const paddingRight = getPaddingRight(location.pathname, narrativeId, '/dashboard/techniques/narratives');
   const link = `/dashboard/techniques/narratives/${narrativeId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {narrative ? (
         <>
           <Routes>
@@ -135,6 +138,13 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <NarrativeEdition narrativeId={narrative.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={narrative}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -249,7 +259,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
