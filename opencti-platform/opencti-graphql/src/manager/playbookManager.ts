@@ -191,7 +191,7 @@ export const playbookExecutor = async ({
         const nextInstance = definition.nodes.find((c) => c.id === connection.to.id);
         const fromInstance = definition.nodes.find((c) => c.id === connection.from.id);
         if (!nextInstance || !fromInstance) {
-          throw UnsupportedError('Invalid playbook, nextInstance needed');
+          throw UnsupportedError('Invalid playbook, nextInstance needed', { playbookId });
         }
         const fromConnector = PLAYBOOK_COMPONENTS[fromInstance.component_id];
         const nextConnector = PLAYBOOK_COMPONENTS[nextInstance.component_id];
@@ -210,7 +210,7 @@ export const playbookExecutor = async ({
     }
   } else {
     if (!nextStep.component.notify) {
-      throw UnsupportedError('Notify definition is required');
+      throw UnsupportedError('Notify definition is required', { playbookId });
     }
     // Component must rely on an external call.
     // Execution will be continued through an external API call

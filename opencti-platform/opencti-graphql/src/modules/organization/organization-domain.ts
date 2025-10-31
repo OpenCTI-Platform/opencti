@@ -56,13 +56,13 @@ export const organizationAdminAdd = async (context: AuthContext, user: AuthUser,
   // Get organization and members
   const organization = await findById(context, user, organizationId);
   if (!organization) {
-    throw FunctionalError('Organization not found');
+    throw FunctionalError('Organization not found', { organizationId });
   }
   const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga. If not, throw exception
   if (!updatedUser) {
-    throw FunctionalError('User is not part of the organization');
+    throw FunctionalError('User is not part of the organization', { user: user.id, org: organization.id });
   }
   // Add user to organization admins list
   const updated = await editAuthorizedAuthorities(context, user, organization.id, [...(organization.authorized_authorities ?? []), memberId]);
@@ -82,13 +82,13 @@ export const organizationAdminRemove = async (context: AuthContext, user: AuthUs
   // Get organization and members
   const organization = await findById(context, user, organizationId);
   if (!organization) {
-    throw FunctionalError('Organization not found');
+    throw FunctionalError('Organization not found', { organizationId });
   }
   const members: BasicStoreEntity[] = await fullEntitiesThroughRelationsFromList(context, user, organization.id, RELATION_PARTICIPATE_TO, ENTITY_TYPE_USER);
   const updatedUser = members.find(({ id }) => id === memberId);
   // Check if user is part of Orga and is orga_admin. If not, throw exception
   if (!updatedUser) {
-    throw FunctionalError('User is not part of the organization');
+    throw FunctionalError('User is not part of the organization', { user: user.id, org: organization.id });
   }
   // Remove user from organization admins list
   const indexOfMember = (organization.authorized_authorities ?? []).indexOf(memberId);

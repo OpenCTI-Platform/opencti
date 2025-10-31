@@ -54,7 +54,7 @@ const format = (value: string | string[], def: AttributeDefinition, attribute: S
       return value.map((val) => formatValue(val, def.type, attribute));
     }
     if (value.length > 1) {
-      throw UnsupportedError('Only one value expected as attribute definition is not multiple');
+      throw UnsupportedError('Only one value expected as attribute definition is not multiple', { value });
     }
     return formatValue(value[0], def.type, attribute);
   }

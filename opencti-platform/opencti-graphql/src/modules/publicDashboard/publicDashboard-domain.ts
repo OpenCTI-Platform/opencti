@@ -150,10 +150,10 @@ export const addPublicDashboard = async (
     input.dashboard_id,
   );
   if (!dashboard) {
-    throw FunctionalError('Cannot find dashboard');
+    throw FunctionalError('Cannot find dashboard', { id: input.dashboard_id });
   }
   if (!dashboard.manifest) {
-    throw FunctionalError('Cannot publish an empty dashboard');
+    throw FunctionalError('Cannot publish an empty dashboard', { id: input.dashboard_id });
   }
 
   const access = getUserAccessRight(user, dashboard);

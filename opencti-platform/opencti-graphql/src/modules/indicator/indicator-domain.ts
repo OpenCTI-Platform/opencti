@@ -392,7 +392,7 @@ export const indicatorEditField = async (context: AuthContext, user: AuthUser, i
   // Region Validation
   const indicatorBeforeUpdate = await findById(context, user, id);
   if (!indicatorBeforeUpdate) {
-    throw FunctionalError('Cannot edit the field, Indicator cannot be found.');
+    throw FunctionalError('Cannot edit the field, Indicator cannot be found.', { id });
   }
   // validation check because according to STIX 2.1 specification the valid_until must be greater than the valid_from
   let { valid_from, valid_until } = indicatorBeforeUpdate;

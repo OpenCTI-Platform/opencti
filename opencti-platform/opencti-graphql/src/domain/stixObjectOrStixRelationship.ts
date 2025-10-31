@@ -89,10 +89,10 @@ export const stixObjectOrRelationshipDeleteRefRelation = async (
 ): Promise<any> => { // TODO remove any when all resolvers in ts
   const stixObjectOrRelationship = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   if (!stixObjectOrRelationship) {
-    throw FunctionalError('Cannot delete the relation, Stix-Object or Stix-Relationship cannot be found.');
+    throw FunctionalError('Cannot delete the relation, Stix-Object or Stix-Relationship cannot be found.', { id: stixObjectOrRelationshipId });
   }
   if (!isStixRefRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`, { id: stixObjectOrRelationshipId });
   }
   return patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, relationshipType, [toId], UPDATE_OPERATION_REMOVE, opts);
 };

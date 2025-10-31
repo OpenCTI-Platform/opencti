@@ -40,9 +40,9 @@ export const createOnTheFlyUser = async (
   const isUserAlreadyExisting = await userAlreadyExists(context, input.userName);
   if (isUserAlreadyExisting) {
     if (input.serviceAccount) {
-      throw FunctionalError('This service account already exists. Change the instance name to change the automatically created service account name', {});
+      throw FunctionalError('This service account already exists. Change the instance name to change the automatically created service account name', { name: input.userName });
     }
-    throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', {});
+    throw FunctionalError('This user already exists. Change the feed\'s name to change the automatically created user\'s name', { name: input.userName });
   }
   const { platform_organization } = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
