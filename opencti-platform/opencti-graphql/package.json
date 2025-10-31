@@ -149,6 +149,7 @@
     "passport-ldapauth": "3.0.1",
     "passport-local": "1.0.0",
     "python-shell": "5.0.0",
+    "rabbitmq-stream-js-client": "0.6.2",
     "ramda": "0.32.0",
     "rate-limiter-flexible": "8.2.1",
     "semver": "7.7.3",
