@@ -761,8 +761,8 @@ const StixDomainObjectHeader = (props) => {
                 )}
               </PopoverMenu>
             ) : null}
-            {EditComponent}
             {isFeatureEnable('FAB_RELATIONSHIP') && RelateComponent}
+            {EditComponent}
             <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </div>
         </div>
