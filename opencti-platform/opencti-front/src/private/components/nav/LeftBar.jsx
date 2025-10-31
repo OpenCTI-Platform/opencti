@@ -81,6 +81,7 @@ import AskArianeButton from '../chatbox/AskArianeButton';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import useGranted, {
+  AUTOMATION_AUTMANAGE,
   BYPASS,
   CSVMAPPERS,
   EXPLORE,
@@ -226,7 +227,7 @@ const LeftBar = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
   const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
-  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, SETTINGS_SETACCESSES, CSVMAPPERS]);
+  const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);
   const isGrantedToParameters = useGranted([SETTINGS_SETPARAMETERS]);
@@ -663,6 +664,7 @@ const LeftBar = () => {
                 { type: 'Report', link: '/dashboard/analyses/reports', label: 'Reports', icon: <DescriptionOutlined fontSize="small" /> },
                 { type: 'Grouping', link: '/dashboard/analyses/groupings', label: 'Groupings', icon: <WorkspacesOutlined fontSize="small" /> },
                 { type: 'Malware-Analysis', link: '/dashboard/analyses/malware_analyses', label: 'Malware analyses', icon: <BiotechOutlined fontSize="small" /> },
+                { type: 'Security-Coverage', link: '/dashboard/analyses/security_coverages', label: 'Security coverages', icon: <SecurityOutlined fontSize="inherit" /> },
                 { type: 'Note', link: '/dashboard/analyses/notes', label: 'Notes', icon: <SubjectOutlined fontSize="inherit" /> },
                 { type: 'External-Reference', link: '/dashboard/analyses/external_references', label: 'External references', icon: <LocalOfferOutlined fontSize="small" /> },
               ],

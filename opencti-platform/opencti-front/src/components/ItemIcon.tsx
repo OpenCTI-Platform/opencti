@@ -104,6 +104,7 @@ import {
   LockOutline,
   LockPattern,
   ProgressWrench,
+  ShieldCheckOutline,
   ShieldSearch,
   SourceFork,
   SourcePull,
@@ -349,6 +350,10 @@ const iconSelector = (
       return (
         <TaskAlt style={style} fontSize={fontSize} role="img" />
       );
+    case 'security-coverage':
+      return (
+        <ShieldCheckOutline style={style} fontSize={fontSize} role="img" />
+      );
     case 'history':
       return (
         <ClipboardTextClockOutline
@@ -435,6 +440,7 @@ const iconSelector = (
     case 'tracking-number':
     case 'media-content':
     case 'persona':
+    case 'ssh-key':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
     case 'sighting':

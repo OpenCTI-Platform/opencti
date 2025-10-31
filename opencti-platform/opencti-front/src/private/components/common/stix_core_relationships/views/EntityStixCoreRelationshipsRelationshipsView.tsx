@@ -33,6 +33,8 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   paddingRightButtonAdd?: number
   role?: string,
   handleChangeView?: (viewMode: string) => void
+  allowCreation?: boolean
+  isCoverage?: boolean
 }
 
 const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStixCoreRelationshipsRelationshipsViewProps> = ({
@@ -52,6 +54,8 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   enableEntitiesView = true,
   paddingRightButtonAdd = null,
   handleChangeView,
+  allowCreation = true,
+  isCoverage = false,
 }) => {
   const { viewStorage, helpers: storageHelpers, localStorageKey } = localStorage;
   const {
@@ -67,7 +71,48 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
   const { platformModuleHelpers } = useAuth();
   const isObservables = isStixCyberObservables(stixCoreObjectTypes);
   const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
-  const dataColumns: DataColumns = {
+  const dataColumns: DataColumns = isCoverage ? {
+    [isObservables ? 'observable_value' : 'name']: {
+      label: isObservables ? 'Value' : 'Name',
+      width: '30%',
+      isSortable: false,
+    },
+    coverage_information: {
+      label: 'Coverage',
+      width: '15%',
+      isSortable: false,
+    },
+    createdBy: {
+      label: 'Author',
+      width: '12%',
+      isSortable: isRuntimeSort,
+    },
+    creator: {
+      label: 'Creators',
+      width: '12%',
+      isSortable: isRuntimeSort,
+    },
+    start_time: {
+      label: 'Start time',
+      width: '8%',
+      isSortable: true,
+    },
+    stop_time: {
+      label: 'Stop time',
+      width: '8%',
+      isSortable: true,
+    },
+    confidence: {
+      label: 'Confidence',
+      isSortable: true,
+      width: '7%',
+    },
+    objectMarking: {
+      label: 'Marking',
+      isSortable: isRuntimeSort,
+      width: '8%',
+    },
+  } : {
     relationship_type: {
       label: 'Relationship type',
       width: '8%',
@@ -172,9 +217,9 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={storageHelpers.handleSort}
-        handleSearch={storageHelpers.handleSearch}
-        handleAddFilter={storageHelpers.handleAddFilter}
-        handleRemoveFilter={storageHelpers.handleRemoveFilter}
+        handleSearch={!isCoverage && storageHelpers.handleSearch}
+        handleAddFilter={!isCoverage && storageHelpers.handleAddFilter}
+        handleRemoveFilter={!isCoverage && storageHelpers.handleRemoveFilter}
         handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
         handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
         displayImport={true}
@@ -187,11 +232,11 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         filters={filters}
         availableEntityTypes={relationshipTypes}
         availableRelationshipTypes={relationshipTypes}
-        handleToggleExports={storageHelpers.handleToggleExports}
+        handleToggleExports={!isCoverage && storageHelpers.handleToggleExports}
         openExports={openExports}
         exportContext={{ entity_id: entityId, entity_type: 'stix-core-relationship' }}
         noPadding={true}
-        handleChangeView={handleChangeView || storageHelpers.handleChangeView}
+        handleChangeView={!isCoverage && (handleChangeView || storageHelpers.handleChangeView)}
         enableNestedView={enableNestedView}
         enableContextualView={enableContextualView}
         disableCards={true}
@@ -225,6 +270,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
                 selectAll={selectAll}
+                isCoverage={isCoverage}
               />
             ) : isRelationReversed ? (
               <EntityStixCoreRelationshipsLinesTo
@@ -238,6 +284,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
                 selectAll={selectAll}
+                isCoverage={isCoverage}
               />
             ) : (
               <EntityStixCoreRelationshipsLinesFrom
@@ -251,6 +298,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 selectedElements={selectedElements}
                 deSelectedElements={deSelectedElements}
                 selectAll={selectAll}
+                isCoverage={isCoverage}
               />
             ))
           }
@@ -268,7 +316,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         type={'stix-core-relationship'}
       />
 
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {allowCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
           allowedRelationshipTypes={relationshipTypes}
@@ -281,8 +329,9 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
           paginationOptions={paginationOptions}
           paddingRight={paddingRightButtonAdd ?? 220}
           currentView={finalView}
+          isCoverage={isCoverage}
         />
-      </Security>
+      </Security>}
     </>
   );
 };

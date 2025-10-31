@@ -2,6 +2,9 @@ FROM filigran/python-nodejs-fips:latest AS base
 
 FROM base AS graphql-deps-builder
 
+ARG TAG_VERSION
+ENV TAG_VERSION=${TAG_VERSION}
+
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./
 COPY opencti-graphql/patch ./patch
@@ -13,6 +16,9 @@ RUN set -ex; \
 
 
 FROM base AS graphql-builder
+
+ARG TAG_VERSION
+ENV TAG_VERSION=${TAG_VERSION}
 
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./

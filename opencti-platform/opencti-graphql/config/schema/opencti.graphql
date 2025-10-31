@@ -63,6 +63,8 @@ enum Capabilities {
   MODULES_MODMANAGE
   PIRAPI
   PIRAPI_PIRUPDATE
+  AUTOMATION
+  AUTOMATION_AUTMANAGE
   SETTINGS
   SETTINGS_SETMANAGEXTMHUB
   SETTINGS_SETPARAMETERS
@@ -1432,6 +1434,8 @@ type PublicSettings implements ThemeSettings & IntlSettings {
     platform_providers: [PublicProvider!]!
     platform_enterprise_edition_license_validated: Boolean!
     playground_enabled: Boolean!
+
+    metrics_definition: [MetricDefinition!]
 }
 
 type MetricAttributes {
@@ -1484,10 +1488,8 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_theme_light_logo_login: String
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
-  platform_openbas_url: String
-  platform_openbas_disable_display: Boolean
-  platform_openerm_url: String
-  platform_openmtd_url: String
+  platform_openaev_url: String
+  platform_opengrc_url: String
   platform_xtmhub_url: String
   platform_login_message: String
   platform_consent_message: String
@@ -2069,6 +2071,8 @@ input RegisterConnectorInput {
   type: ConnectorType!
   scope: [String!]
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   listen_callback_uri: String
@@ -2220,6 +2224,8 @@ type Connector implements BasicObject & InternalObject {
   title: String!
   active: Boolean
   auto: Boolean
+  auto_update: Boolean
+  enrichment_resolution: String
   only_contextual: Boolean
   playbook_compatible: Boolean
   connector_trigger_filters: String
@@ -2697,7 +2703,6 @@ input KillChainPhaseAddInput {
 }
 
 ######## STIX CORE OBJECT ENTITIES
-
 type Representative {
   main: String!
   secondary: String
@@ -3452,6 +3457,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input CampaignAddInput {
   stix_id: StixId
@@ -4510,6 +4516,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   workflowEnabled: Boolean
   deleteWithElementsCount: Int @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input ReportAddInput {
   stix_id: StixId
@@ -5803,6 +5810,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input IntrusionSetAddInput {
   stix_id: StixId
@@ -7918,6 +7926,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   status: Status
   workflowEnabled: Boolean
   pirInformation(pirId: ID!): PirInformation @auth(for: [PIRAPI])
+  securityCoverage: SecurityCoverage
 }
 input IncidentAddInput {
   stix_id: StixId
@@ -12535,6 +12544,146 @@ input PersonaAddInput {
   persona_name: String! @constraint(minLength: 2, format: "not-blank")
   persona_type: String!
 }
+
+type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  metrics:[Metric]
+  # StixObject
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  refreshed_at: DateTime
+  draftVersion: DraftVersion
+  # inferences
+  x_opencti_inferences: [Inference]
+  # StixCoreObject
+  createdBy: Identity
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectLabel: [Label!]
+  objectOrganization: [Organization!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: FilterGroup
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: FilterGroup
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinions_metrics: OpinionsMetrics
+  # StixCyberObservable
+  x_opencti_score: Int
+  x_opencti_description: String
+  observable_value: String!
+  indicators(first: Int): IndicatorConnection
+  # SSHKey
+  key_type: String
+  public_key: String
+  fingerprint_sha256: String!
+  fingerprint_md5: String
+  key_length: String
+  expiration_date: DateTime
+  comment: String
+  created: DateTime
+  # Technical
+  creators: [Creator!]
+  toStix: String
+  importFiles(
+    first: Int
+    prefixMimeType: String
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  pendingFiles(
+    first: Int
+    after: ID
+    orderBy: FileOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: FilterGroup
+  ): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input SSHKeyAddInput {
+  key_type: String
+  public_key: String
+  fingerprint_sha256: String! @constraint(minLength: 5)
+  fingerprint_md5: String @constraint(minLength: 5)
+  key_length: String
+  comment: String
+  created: DateTime
+  expiration_date: DateTime
+}
 ###### RELATIONSHIPS
 
 interface BasicRelationship {
@@ -12631,6 +12780,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Individual
   | Organization
   | SecurityPlatform
+  | SecurityCoverage
   | Sector
   | System
   | Indicator
@@ -12658,6 +12808,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Artifact
   | StixFile
   | X509Certificate
+  | SSHKey
   | IPv4Addr
   | IPv6Addr
   | MacAddr
@@ -12747,6 +12898,7 @@ union StixObjectOrStixRelationship =
   | Artifact
   | StixFile
   | X509Certificate
+  | SSHKey
   | IPv4Addr
   | IPv6Addr
   | MacAddr
@@ -12787,6 +12939,7 @@ union StixObjectOrStixRelationship =
   | CsvMapper
   | PublicDashboard
   | Pir
+  | SecurityCoverage
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -12830,6 +12983,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | Artifact
   | StixFile
   | X509Certificate
+  | SSHKey
   | IPv4Addr
   | IPv6Addr
   | MacAddr
@@ -13045,6 +13199,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     filters: FilterGroup
   ): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
+  coverage_information: [CoverageResult!]
   # Technical
   creators: [Creator!]
   toStix: String
@@ -13052,6 +13207,12 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   status: Status
   workflowEnabled: Boolean
 }
+
+input SecurityCoverageExpectation {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
 input StixCoreRelationshipAddInput {
   # StixRelationship
   stix_id: StixId
@@ -13075,6 +13236,8 @@ input StixCoreRelationshipAddInput {
   externalReferences: [String]
   killChainPhases: [String]
   x_opencti_workflow_id: String
+  coverage_information: [SecurityCoverageExpectation!]
+  # Technical
   clientMutationId: String
   update: Boolean
 }
@@ -15247,6 +15410,7 @@ type Mutation {
     PaymentCard: PaymentCardAddInput
     MediaContent: MediaContentAddInput
     Persona: PersonaAddInput
+    SSHKey: SSHKeyAddInput
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations @auth
   stixCyberObservablesExportAsk(input: StixCyberObservablesExportAskInput!): [File!] @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])

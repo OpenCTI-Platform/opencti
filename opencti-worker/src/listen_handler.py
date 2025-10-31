@@ -28,6 +28,7 @@ class ListenHandler:
                 headers={
                     "User-Agent": f"pycti/{__version__}",
                     "Authorization": f"Bearer {self.connector_token}",
+                    "Content-Type": "application/json",
                 },
                 verify=self.listen_api_ssl_verify,
                 proxies={
@@ -36,7 +37,7 @@ class ListenHandler:
                 },
                 timeout=300,
             )
-            if response.status_code != 202:
+            if response.status_code != 200 and response.status_code != 202:
                 raise RequestException(response.status_code, response.text)
 
             return "ack"

@@ -36,7 +36,7 @@ const stixObjectOrStixRelationshipResolvers = {
         return 'StixSightingRelationship';
       }
       if (obj.entity_type) {
-        return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
+        return obj.entity_type.replace(/(?:^|-|_)(\w)/g, (_, letter) => letter.toUpperCase());
       }
       /* v8 ignore next */
       return 'Unknown';

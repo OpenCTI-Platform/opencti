@@ -32,6 +32,7 @@ enum VocabularyCategory {
   service_status_ov
   service_type_ov
   start_type_ov
+  key_type_ov
   threat_actor_group_type_ov
   threat_actor_group_role_ov
   threat_actor_group_sophistication_ov
@@ -45,6 +46,7 @@ enum VocabularyCategory {
   hair_color_ov
   eye_color_ov
   persona_type_ov
+  coverage_ov
 }
 
 type VocabularyFieldDefinition {

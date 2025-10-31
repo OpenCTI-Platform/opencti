@@ -11,7 +11,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { truncate } from '../../../utils/String';
 import { useFormatter } from '../../../components/i18n';
-import { useComputeLink } from '../../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../../utils/hooks/useAppData';
 
 const draftSightingsLineFragment = graphql`
     fragment DraftSightings_node on StixSightingRelationship {

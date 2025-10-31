@@ -22,7 +22,6 @@ import {
   STIX_CYBER_OBSERVABLES
 } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../../../src/modules/case/case-types';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 import {
   ALIAS_FILTER,
   CONNECTED_TO_INSTANCE_FILTER,
@@ -38,6 +37,8 @@ import stixCoreObjectFilterKeys from '../../data/filter-keys-schema/stix-core-ob
 import stixCoreRelationshipFilterKeys from '../../data/filter-keys-schema/stix-core-relationship';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import indicatorFilterKeys from '../../data/filter-keys-schema/indicatorFilterKeys';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../src/modules/grouping/grouping-types';
 
 describe('Filter keys schema generation testing', async () => {
   const filterKeysSchemaArray = await generateFilterKeysSchema();
@@ -229,9 +230,8 @@ describe('Filter keys schema generation testing', async () => {
 
     // Stix Core Relationships
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CORE_RELATIONSHIP)?.get(RELATION_FROM_FILTER);
-    expect(filterDefinition?.subEntityTypes.length).toEqual(58); // 57 stix core relationship types + abstract type 'stix-core-relationships'
+    expect(filterDefinition?.subEntityTypes.length).toEqual(59); // 58 stix core relationship types + abstract type 'stix-core-relationships'
     // Stix Cyber Observables
-    filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get('x_opencti_score'); // attribute existing for all the observables
     filterDefinition = filterKeysSchema.get(ABSTRACT_STIX_CYBER_OBSERVABLE)?.get(INPUT_LABELS); // ref existing for all the observables
     expect(filterDefinition?.subEntityTypes.length).toEqual(STIX_CYBER_OBSERVABLES.length + 1); // 31 observables + abstract type 'Stix-Cyber-Observable'
   });

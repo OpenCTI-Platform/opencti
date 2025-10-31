@@ -10,7 +10,9 @@ const RootReport = lazy(() => import('./reports/Root'));
 const Groupings = lazy(() => import('./Groupings'));
 const RootGrouping = lazy(() => import('./groupings/Root'));
 const MalwareAnalyses = lazy(() => import('./MalwareAnalyses'));
+const SecurityCoverages = lazy(() => import('./SecurityCoverages'));
 const RootMalwareAnalysis = lazy(() => import('./malware_analyses/Root'));
+const RootSecurityCoverages = lazy(() => import('./security_coverages/Root'));
 const Notes = lazy(() => import('./Notes'));
 const RootNote = lazy(() => import('./notes/Root'));
 const RootOpinion = lazy(() => import('./opinions/Root'));
@@ -60,6 +62,14 @@ const Root = () => {
         <Route
           path="/malware_analyses/:malwareAnalysisId/*"
           element={boundaryWrapper(RootMalwareAnalysis)}
+        />
+        <Route
+          path="/security_coverages"
+          element={boundaryWrapper(SecurityCoverages)}
+        />
+        <Route
+          path="/security_coverages/:securityCoverageId/*"
+          element={boundaryWrapper(RootSecurityCoverages)}
         />
         <Route
           path="/notes"

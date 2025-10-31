@@ -157,14 +157,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             0,
         )
-        self.worker_queue_concurrency_enabled = get_config_variable(
-            "WORKER_QUEUE_CONCURRENCY_ENABLED",
-            ["worker", "queue_concurrency_enabled"],
-            config,
-            False,
-            False,
-        )
-
         # Telemetry
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
@@ -273,8 +265,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             self.objects_max_refs,
                         )
                         execution_pool = push_execution_pool
-                        if is_priority_connector(connector["connector_priority_group"]):
-                            execution_pool = realtime_push_execution_pool
+                        # TODO to be reactivate until global thread pool size remain the same, so we avoid unexpected platform overloading
+                        # if is_priority_connector(connector["connector_priority_group"]):
+                        #     execution_pool = realtime_push_execution_pool
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
@@ -282,7 +275,6 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             pika_parameters,
                             execution_pool,
                             push_handler.handle_message,
-                            self.worker_queue_concurrency_enabled,
                         )
 
                     # Listen for webhook message
@@ -307,11 +299,11 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.build_pika_parameters(connector_config),
                                 listen_execution_pool,
                                 listen_handler.handle_message,
-                                self.worker_queue_concurrency_enabled,
                             )
 
-                # Check if some consumer must be stopped
-                for consumer_queue in self.consumers:
+                # Stop consumers whose queues no longer exist
+                # Iterate over a copy since self.consumers may be modified during iteration
+                for consumer_queue in list(self.consumers):
                     if consumer_queue not in queues:
                         self.worker_logger.info(
                             "Queue no longer exists, killing thread...",

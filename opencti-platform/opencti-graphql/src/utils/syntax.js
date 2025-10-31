@@ -50,6 +50,9 @@ export const extractObservablesFromIndicatorPattern = (pattern) => {
         if (formattedType === 'Ipv6-Addr') {
           formattedType = 'IPv6-Addr';
         }
+        if (formattedType === 'Ssh-Key') {
+          formattedType = 'SSH-Key';
+        }
         this.element.type = formattedType;
       }
     }

@@ -298,6 +298,34 @@ const useSearchEntities = ({
     type: 'User',
     color: theme.palette.primary.main,
   };
+
+  // construct entity types filter values
+  const scoTypes = (schema.scos ?? []).map((n) => ({
+    label: t_i18n(`entity_${n.label}`),
+    value: n.label,
+    type: n.label,
+  }));
+  const sdoTypes = (schema.sdos ?? []).map((n) => ({
+    label: t_i18n(`entity_${n.label}`),
+    value: n.label,
+    type: n.label,
+  }));
+  const scrTypes = (schema.scrs ?? []).map((n) => ({
+    label: t_i18n(`relationship_${n.label}`),
+    value: n.label,
+    type: n.label,
+  }));
+  const abstractTypeFilterValue = (abstractType: string) => ({
+    label: t_i18n(`entity_${abstractType}`),
+    value: abstractType,
+    type: abstractType,
+  });
+  const objectRelationshipType = {
+    label: t_i18n('relationship_object'),
+    value: 'object',
+    type: 'stix-internal-relationship',
+  };
+
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
     [key]: [...newEntities, ...(c[key] ?? [])].filter(
@@ -722,22 +750,24 @@ const useSearchEntities = ({
         // region entity and relation types
         case 'contextEntityType': {
           const elementTypeResult = [
-            ...(schema.scos ?? []).map((n) => ({
-              label: t_i18n(`entity_${n.label}`),
-              value: n.label,
-              type: n.label,
-            })),
-            ...(schema.sdos ?? []).map((n) => ({
-              label: t_i18n(`entity_${n.label}`),
-              value: n.label,
-              type: n.label,
-            })),
-            ...INTERNAL_TYPES_IN_ACTIVITY.map((n) => ({
+            ...scoTypes,
+            ...sdoTypes,
+            ...scrTypes,
+          ];
+          if (searchContext.elementType === 'Pir') {
+            elementTypeResult.push({
+              label: t_i18n('relationship_in-pir'),
+              value: 'in-pir',
+              type: 'in-pir',
+            });
+          }
+          if (searchContext.entityTypes.includes('Activity')) {
+            elementTypeResult.push(...INTERNAL_TYPES_IN_ACTIVITY.map((n) => ({
               label: t_i18n(`entity_${n}`),
               value: n,
               type: n,
-            })),
-          ];
+            })));
+          }
           const elementTypeTypes = elementTypeResult.sort((a, b) => a.label.localeCompare(b.label));
           unionSetEntities(filterKey, elementTypeTypes);
           break;
@@ -781,22 +811,14 @@ const useSearchEntities = ({
               || availableEntityTypes.includes('Stix-Cyber-Observable')
             ) {
               result = [
-                ...(schema.scos ?? []).map((n) => ({
-                  label: t_i18n(`entity_${n.label}`),
-                  value: n.label,
-                  type: n.label,
-                })),
+                ...scoTypes,
                 ...result,
               ];
               // if there are not only stix cyber observables in the entity types list, add the 'Stix Cyber Observable' abstract type
               if (!availableEntityTypes
                 || (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object')))) {
                 result = [
-                  {
-                    label: t_i18n('entity_Stix-Cyber-Observable'),
-                    value: 'Stix-Cyber-Observable',
-                    type: 'Stix-Cyber-Observable',
-                  },
+                  abstractTypeFilterValue('Stix-Cyber-Observable'),
                   ...result,
                 ];
               }
@@ -808,22 +830,14 @@ const useSearchEntities = ({
               || availableEntityTypes.includes('Stix-Domain-Object')
             ) {
               result = [
-                ...(schema.sdos ?? []).map((n) => ({
-                  label: t_i18n(`entity_${n.label}`),
-                  value: n.label,
-                  type: n.label,
-                })),
+                ...sdoTypes,
                 ...result,
               ];
               // if there are not only stix domain objects in the entity types list, add the 'Stix Domain Object' abstract type
               if (!availableEntityTypes
                 || (availableEntityTypes && (availableEntityTypes.length > 1 || availableEntityTypes.includes('Stix-Core-Object')))) {
                 result = [
-                  {
-                    label: t_i18n('entity_Stix-Domain-Object'),
-                    value: 'Stix-Domain-Object',
-                    type: 'Stix-Domain-Object',
-                  },
+                  abstractTypeFilterValue('Stix-Domain-Object'),
                   ...result,
                 ];
               }
@@ -834,22 +848,14 @@ const useSearchEntities = ({
               || availableEntityTypes.includes('stix-core-relationship')
             ) {
               result = [
-                ...(schema.scrs ?? []).map((n) => ({
-                  label: t_i18n(`relationship_${n.label}`),
-                  value: n.label,
-                  type: n.label,
-                })),
+                ...scrTypes,
                 ...result,
               ];
               // if there are not only stix core relationships in the entity types list, add the 'Stix Core Relationship' abstract type
               if (!availableEntityTypes
                 || (availableEntityTypes && availableEntityTypes.length > 1)) {
                 result = [
-                  {
-                    label: t_i18n('entity_Stix-Core-Relationship'),
-                    value: 'Stix-Core-Relationship',
-                    type: 'Stix-Core-Relationship',
-                  },
+                  abstractTypeFilterValue('Stix-Core-Relationship'),
                   ...result,
                 ];
               }
@@ -861,11 +867,7 @@ const useSearchEntities = ({
             ) {
               result = [
                 ...result,
-                {
-                  label: t_i18n('relationship_stix-sighting-relationship'),
-                  value: 'stix-sighting-relationship',
-                  type: 'stix-sighting-relationship',
-                },
+                abstractTypeFilterValue('stix-sighting-relationship'),
               ];
             }
             // push the 'contains' relationship
@@ -875,11 +877,7 @@ const useSearchEntities = ({
             ) {
               result = [
                 ...result,
-                {
-                  label: t_i18n('relationship_object'),
-                  value: 'object',
-                  type: 'stix-internal-relationship',
-                },
+                objectRelationshipType,
               ];
             }
             const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
@@ -895,36 +893,12 @@ const useSearchEntities = ({
           unionSetEntities(
             filterKey,
             [
-              ...(schema.scos ?? []).map((n) => ({
-                label: t_i18n(`entity_${n.label}`),
-                value: n.label,
-                type: n.label,
-              })),
-              {
-                label: t_i18n('entity_Stix-Cyber-Observable'),
-                value: 'Stix-Cyber-Observable',
-                type: 'Stix-Cyber-Observable',
-              },
-              ...(schema.sdos ?? []).map((n) => ({
-                label: t_i18n(`entity_${n.label}`),
-                value: n.label,
-                type: n.label,
-              })),
-              {
-                label: t_i18n('entity_Stix-Domain-Object'),
-                value: 'Stix-Domain-Object',
-                type: 'Stix-Domain-Object',
-              },
-              ...(schema.scrs ?? []).map((n) => ({
-                label: t_i18n(`relationship_${n.label}`),
-                value: n.label,
-                type: n.label,
-              })),
-              {
-                label: t_i18n('entity_Stix-Core-Relationship'),
-                value: 'Stix-Core-Relationship',
-                type: 'Stix-Core-Relationship',
-              },
+              ...scoTypes,
+              abstractTypeFilterValue('Stix-Cyber-Observable'),
+              ...sdoTypes,
+              abstractTypeFilterValue('Stix-Domain-Object'),
+              ...scrTypes,
+              abstractTypeFilterValue('Stix-Core-Relationship'),
             ].sort((a, b) => a.label.localeCompare(b.label)),
           );
           break;
@@ -938,52 +912,26 @@ const useSearchEntities = ({
                 type: n,
               }));
           } else if (isSubKey || !searchContext.entityTypes) { // if relationship_type is the subKey of regarding_of, we always display all the relationship types
-            relationshipsTypes = (schema.scrs ?? [])
-              .map((n) => ({
-                label: t_i18n(`relationship_${n.label}`),
-                value: n.label,
-                type: n.label,
-              }))
-              .concat([
-                {
-                  label: t_i18n('relationship_stix-sighting-relationship'),
-                  value: 'stix-sighting-relationship',
-                  type: 'stix-sighting-relationship',
-                },
-                {
-                  label: t_i18n('relationship_object'),
-                  value: 'object',
-                  type: 'stix-internal-relationship',
-                },
-              ]);
+            relationshipsTypes = [
+              ...scrTypes,
+              abstractTypeFilterValue('stix-sighting-relationship'),
+              objectRelationshipType,
+            ];
           } else { // display relationship types according to searchContext.entityTypes
             const { entityTypes } = searchContext;
             if (entityTypes.includes('stix-core-relationship')) {
-              relationshipsTypes = (schema.scrs ?? [])
-                .map((n) => ({
-                  label: t_i18n(`relationship_${n.label}`),
-                  value: n.label,
-                  type: n.label,
-                }));
+              relationshipsTypes = scrTypes;
             }
             if (entityTypes.includes('stix-sighting-relationship')) {
               relationshipsTypes = [
                 ...relationshipsTypes,
-                {
-                  label: t_i18n('relationship_stix-sighting-relationship'),
-                  value: 'stix-sighting-relationship',
-                  type: 'stix-sighting-relationship',
-                },
+                abstractTypeFilterValue('stix-sighting-relationship'),
               ];
             }
             if (entityTypes.includes('contains')) {
               relationshipsTypes = [
                 ...relationshipsTypes,
-                {
-                  label: t_i18n('relationship_object'),
-                  value: 'object',
-                  type: 'stix-internal-relationship',
-                },
+                objectRelationshipType,
               ];
             }
           }

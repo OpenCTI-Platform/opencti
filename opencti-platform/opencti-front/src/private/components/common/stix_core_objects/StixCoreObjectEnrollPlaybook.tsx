@@ -8,7 +8,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreObjectEnrollPlaybookLines, { stixCoreObjectEnrollPlaybookLinesQuery } from './StixCoreObjectEnrollPlaybookLines';
 import { useFormatter } from '../../../../components/i18n';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { AUTOMATION } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 interface StixCoreObjectEnrollPlaybookLinesProps {
@@ -35,7 +35,7 @@ const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybo
   };
 
   return (
-    <Security needs={[SETTINGS_SETACCESSES]}>
+    <Security needs={[AUTOMATION]}>
       <>
         {!handleClose && (
           <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Enroll in playbook')}>

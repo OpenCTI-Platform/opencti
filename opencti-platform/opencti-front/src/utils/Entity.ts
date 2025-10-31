@@ -18,6 +18,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/settings/customization/fintel_designs';
     case 'Note':
       return '/dashboard/analyses/notes';
+    case 'Security-Coverage':
+      return '/dashboard/analyses/security_coverages';
     case 'Observed-Data':
       return '/dashboard/events/observed_data';
     case 'Opinion':
@@ -143,6 +145,8 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/pirs';
     case 'EmailTemplate':
       return '/dashboard/settings/accesses/email_templates';
+    case 'SSH-Key':
+      return '/dashboard/observations/observables';
     default:
       return null;
   }

@@ -34,6 +34,7 @@ type BasicDefinition = {
   multiple: boolean, // If attribute can have multiple values
   mandatoryType: MandatoryType // If attribute is mandatory
   upsert: boolean // If attribute can be upsert by the integration
+  upsert_force_replace?: boolean, // For multiple, if upsert will for a replacement instead of cumulate information
   isFilterable: boolean // If attribute can be used as a filter key in the UI
   editDefault: boolean // TO CHECK ?????
   update?: boolean // If attribute can be updated (null = true)
@@ -399,6 +400,23 @@ export const errors: AttributeDefinition = {
     { name: 'error', label: 'Error', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'source', label: 'Source', type: 'string', format: 'text', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
     { name: 'timestamp', label: 'Timestamp', type: 'date', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
+  ]
+};
+
+export const coverageInformation: AttributeDefinition = {
+  name: 'coverage_information',
+  label: 'Coverage',
+  type: 'object',
+  format: 'nested',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  upsert_force_replace: true,
+  isFilterable: false, // Filter will be done by a special key
+  mappings: [
+    { name: 'coverage_name', label: 'Coverage name', type: 'string', format: 'vocabulary', vocabularyCategory: 'coverage_ov', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'coverage_score', label: 'Coverage score', type: 'numeric', mandatoryType: 'external', precision: 'float', upsert: true, editDefault: false, multiple: false, isFilterable: false },
   ]
 };
 

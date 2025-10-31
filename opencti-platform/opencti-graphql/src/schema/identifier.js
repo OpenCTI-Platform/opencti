@@ -129,6 +129,7 @@ const stixBaseCyberObservableContribution = {
     [C.ENTITY_TRACKING_NUMBER]: [{ src: 'value' }],
     [C.ENTITY_PAYMENT_CARD]: [{ src: 'card_number' }],
     [C.ENTITY_MEDIA_CONTENT]: [{ src: 'url' }],
+    [C.ENTITY_SSH_KEY]: [{ src: 'fingerprint_sha256' }],
     [C.ENTITY_PERSONA]: [{ src: 'persona_name' }, { src: 'persona_type' }],
     // Types embedded
     [C.ENTITY_EMAIL_MIME_PART_TYPE]: [], // ALL
@@ -309,7 +310,7 @@ export const idGen = (type, data, namespace) => {
   if (isEmptyField(data)) {
     const contrib = resolveContribution(type);
     const properties = contrib.definition[type].flat();
-    const missingKeys = properties.map((p) => p.src).join(' - ');
+    const missingKeys = properties.flat().map((p) => p.src).join(' - ');
     throw FunctionalError(`Missing required elements for ${type} creation (${missingKeys})`, { properties });
   }
   // In some cases like TLP, standard id are fixed by the community

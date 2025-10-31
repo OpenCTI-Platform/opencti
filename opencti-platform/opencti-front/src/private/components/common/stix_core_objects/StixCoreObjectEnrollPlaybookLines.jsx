@@ -12,7 +12,7 @@ import List from '@mui/material/List';
 import Alert from '@mui/material/Alert';
 import inject18n, { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNENRICHMENT } from '../../../../utils/hooks/useGranted';
+import { AUTOMATION } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
@@ -76,7 +76,7 @@ const StixCoreObjectEnrollPlaybook = ({
                   divider={true}
                   classes={{ root: classes.item }}
                   secondaryAction={
-                    <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                    <Security needs={[AUTOMATION]}>
                       <div style={{ right: 0 }}>
                         <Tooltip title={t_i18n('Trigger this playbook now')}>
                           <IconButton

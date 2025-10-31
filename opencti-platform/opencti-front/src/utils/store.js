@@ -110,6 +110,10 @@ export const deleteNode = (store, key, filters, id) => {
   deleteNodeFromId(store, store.getRoot().getDataID(), key, filters, id);
 };
 
+export const deleteNodeFromContainer = (store, containerId, key, filters, id) => {
+  deleteNodeFromId(store, containerId ?? store.getRoot().getDataID(), key, filters, id);
+};
+
 export const deleteNodeFromEdge = (store, path, rootId, deleteId, params) => {
   const node = store.get(rootId);
   const records = node.getLinkedRecord(path, params);

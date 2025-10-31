@@ -9,7 +9,7 @@ import { getMainRepresentative } from '../../utils/defaultRepresentatives';
 import ItemIcon from '../ItemIcon';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
-import { useComputeLink } from '../../utils/hooks/useComputeLink';
+import { useComputeLink } from '../../utils/hooks/useAppData';
 
 interface WidgetDistributionListProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

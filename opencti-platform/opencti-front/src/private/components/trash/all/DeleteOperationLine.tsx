@@ -65,7 +65,6 @@ const cellSx = {
   float: 'left',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
-  textOverflow: 'ellipsis',
   paddingRight: '10px',
 };
 

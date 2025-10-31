@@ -95,6 +95,7 @@ import {
   ENTITY_PHONE_NUMBER,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
+  ENTITY_SSH_KEY,
   ENTITY_TEXT,
   ENTITY_TRACKING_NUMBER,
   ENTITY_URL,
@@ -114,14 +115,13 @@ import {
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
-  INPUT_OBJECTS,
   INPUT_PARTICIPANT
 } from '../schema/general';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
 import { isInternalId, isStixId } from '../schema/schemaUtils';
-import { assertType, cleanObject, convertToStixDate } from './stix-converter-utils';
+import { assertType, cleanObject, convertObjectReferences, convertToStixDate } from './stix-converter-utils';
 import { type StoreRelationPir } from '../modules/pir/pir-types';
 
 export const isTrustedStixId = (stixId: string): boolean => {
@@ -157,16 +157,6 @@ export const convertTypeToStixType = (type: string): string => {
 const isValidStix = (data: S.StixObject): boolean => {
   // TODO @JRI @SAM
   return !R.isEmpty(data);
-};
-
-export const convertObjectReferences = (instance: StoreEntity, isInferred = false) => {
-  const objectRefs = instance[INPUT_OBJECTS] ?? [];
-  return objectRefs.filter((r) => {
-    // If related relation not available, it's just a creation, so inferred false
-    if (!r.i_relation) return !isInferred;
-    // If related relation is available, select accordingly
-    return isInferredIndex(r.i_relation._index) === isInferred;
-  }).map((m) => m.standard_id);
 };
 
 // Extensions
@@ -1204,6 +1194,26 @@ const convertPersonaToStix = (instance: StoreCyberObservable, type: string): SCO
     }
   };
 };
+const convertSSHKeyToStix = (instance: StoreCyberObservable, type: string): SCO.StixSSHKey => {
+  assertType(ENTITY_SSH_KEY, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...buildStixCyberObservable(instance),
+    key_type: instance.key_type,
+    public_key: instance.public_key,
+    fingerprint_sha256: instance.fingerprint_sha256,
+    fingerprint_md5: instance.fingerprint_md5,
+    key_length: instance.key_length,
+    comment: instance.comment,
+    created: convertToStixDate(instance.created),
+    expiration_date: convertToStixDate(instance.expiration_date),
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
+  };
+};
 
 const checkInstanceCompletion = (instance: StoreRelation) => {
   if (instance.from === undefined || isEmptyField(instance.from)) {
@@ -1244,7 +1254,8 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
         target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
         target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
-        kill_chain_phases: buildKillChainPhases(instance)
+        kill_chain_phases: buildKillChainPhases(instance),
+        coverage: instance.coverage,
       })
     }
   };
@@ -1309,6 +1320,7 @@ const convertInPirRelToStix = (instance: StoreRelationPir): SRO.StixRelation => 
         target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
         target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
         kill_chain_phases: [],
+        coverage: instance.coverage,
         pir_score: instance.pir_score,
         pir_explanation: instance.pir_explanation,
       })
@@ -1642,6 +1654,9 @@ const convertToStix = (instance: StoreCommon): S.StixObject => {
     }
     if (ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE === type) {
       return convertX509CertificateToStix(cyber, type);
+    }
+    if (ENTITY_SSH_KEY === type) {
+      return convertSSHKeyToStix(cyber, type);
     }
     // No converter_2_1 found
     throw UnsupportedError(`No observable converter available for ${type}`);

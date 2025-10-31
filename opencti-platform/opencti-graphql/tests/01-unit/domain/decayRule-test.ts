@@ -17,8 +17,10 @@ import {
   computeTimeFromExpectedScore,
   computeScoreList,
   computeChartDecayAlgoSerie,
-  type ComputeDecayChartInput
+  type ComputeDecayChartInput,
+  type DecayHistory
 } from '../../../src/modules/decayRule/decayRule-domain';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 const indicator_fallback_applied_rule: IndicatorDecayRule = {
   decay_rule_id: 'fake-rule-id',
@@ -187,11 +189,12 @@ describe('Decay update testing', () => {
       decay_history: [{
         updated_at: moment().subtract('5', 'days').toDate(),
         score: 50,
+        updated_by: ADMIN_USER.id
       }],
     };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator);
+    const patchResult = computeIndicatorDecayPatch(testContext, ADMIN_USER, indicatorInput as BasicStoreEntityIndicator);
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should not be revoked.').toBeUndefined();
@@ -219,7 +222,7 @@ describe('Decay update testing', () => {
     };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator);
+    const patchResult = computeIndicatorDecayPatch(testContext, ADMIN_USER, indicatorInput as BasicStoreEntityIndicator);
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should not be revoked.').toBeUndefined();
@@ -235,7 +238,7 @@ describe('Decay update testing', () => {
       x_opencti_score: 20,
       decay_base_score: 100,
       decay_history: [
-        { updated_at: new Date(2023, 1), score: 100 },
+        { updated_at: new Date(2023, 1), score: 100, updated_by: ADMIN_USER.id },
       ],
       valid_from: moment().subtract('5', 'days').toDate(),
       valid_until: moment().add('5', 'days').toDate(),
@@ -249,7 +252,7 @@ describe('Decay update testing', () => {
     };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator);
+    const patchResult = computeIndicatorDecayPatch(testContext, ADMIN_USER, indicatorInput as BasicStoreEntityIndicator);
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should be revoked.').toBeTruthy();
@@ -278,7 +281,7 @@ describe('Decay update testing', () => {
     };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator);
+    const patchResult = computeIndicatorDecayPatch(testContext, ADMIN_USER, indicatorInput as BasicStoreEntityIndicator);
 
     // THEN
     expect(patchResult?.revoked, 'This indicator should be revoked.').toBeTruthy();
@@ -306,7 +309,7 @@ describe('Decay update testing', () => {
     };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator) as IndicatorPatch;
+    const patchResult = computeIndicatorDecayPatch(testContext, ADMIN_USER, indicatorInput as BasicStoreEntityIndicator) as IndicatorPatch;
 
     // THEN
     expect(patchResult.revoked, 'This indicator should be revoked.').toBeTruthy();
@@ -326,7 +329,7 @@ describe('Decay update testing', () => {
     };
 
     // WHEN next reaction point is computed
-    const patchResult = computeIndicatorDecayPatch(indicatorInput as BasicStoreEntityIndicator) as IndicatorPatch;
+    const patchResult = computeIndicatorDecayPatch(testContext, ADMIN_USER, indicatorInput as BasicStoreEntityIndicator) as IndicatorPatch;
 
     // THEN
     expect(patchResult, 'No database operation should be done.').toBeNull();
@@ -338,10 +341,10 @@ describe('Decay history trimming testing', () => {
     const currentDecayHistory = [];
     const nowDate = new Date();
     for (let i = 0; i < 1000; i += 1) {
-      const decayHistoryPoint = { updated_at: nowDate, score: i };
+      const decayHistoryPoint: DecayHistory = { updated_at: nowDate, score: i, updated_by: ADMIN_USER.id };
       currentDecayHistory.push(decayHistoryPoint);
     }
-    const newDecayHistoryPoint = { updated_at: nowDate, score: -1 };
+    const newDecayHistoryPoint: DecayHistory = { updated_at: nowDate, score: -1, updated_by: ADMIN_USER.id };
     const trimmedDecayHistory = computeIndicatorDecayHistory(currentDecayHistory, newDecayHistoryPoint);
 
     expect(trimmedDecayHistory.length).toBe(MAX_DECAY_HISTORY_POINTS);

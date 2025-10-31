@@ -15,7 +15,6 @@ import {
   ENTITY_TYPE_TOOL
 } from '../../schema/stixDomainObject';
 import { ENTITY_PERSONA, ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
-import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import type { StixObject } from '../../types/stix-2-1-common';
@@ -28,6 +27,10 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/th
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
+import { RELATION_HAS_COVERED } from '../../schema/stixCoreRelationship';
+
+import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
@@ -36,6 +39,7 @@ interface VocabularyDefinition {
   entity_types: string[],
   fields: {
     key: string,
+    composite?: string,
     required: boolean,
     multiple: boolean,
   }[]
@@ -80,6 +84,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   // C
+  coverage_ov: {
+    entity_types: [ENTITY_TYPE_SECURITY_COVERAGE, RELATION_HAS_COVERED],
+    fields: [{
+      key: 'coverage_information',
+      composite: 'coverage_name',
+      required: false,
+      multiple: false,
+    }]
+  },
   case_severity_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT, ENTITY_TYPE_CONTAINER_CASE_RFI, ENTITY_TYPE_CONTAINER_CASE_RFT], // Fill entire list
     fields: [{
@@ -361,6 +374,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     entity_types: [ENTITY_PROCESS],
     fields: [{
       key: 'start_type',
+      required: false,
+      multiple: false,
+    }],
+  },
+  key_type_ov: {
+    description: 'An enumeration of SSH key types',
+    entity_types: [ENTITY_PROCESS],
+    fields: [{
+      key: 'key_type',
       required: false,
       multiple: false,
     }],

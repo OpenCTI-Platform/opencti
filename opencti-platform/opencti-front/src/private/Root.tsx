@@ -20,7 +20,7 @@ import { RootSettings$data, RootSettings$key } from './__generated__/RootSetting
 import 'filigran-chatbot/dist/web'; // allows to use <filigran-chatbot /> element
 import useNetworkCheck from '../utils/hooks/useCheckNetwork';
 import { useBaseHrefAbsolute } from '../utils/hooks/useDocumentModifier';
-import { ComputeLinkProvider } from '../utils/hooks/useComputeLink';
+import { AppDataProvider } from '../utils/hooks/useAppData';
 
 const rootSettingsFragment = graphql`
   fragment RootSettings on Settings {
@@ -48,10 +48,8 @@ const rootSettingsFragment = graphql`
     platform_language
     platform_map_tile_server_dark
     platform_map_tile_server_light
-    platform_openbas_url
-    platform_openbas_disable_display
-    platform_openerm_url
-    platform_openmtd_url
+    platform_openaev_url
+    platform_opengrc_url
     platform_xtmhub_url
     xtm_hub_registration_status
     platform_theme
@@ -395,6 +393,7 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
   const bannerSettings = computeBannerSettings(settings);
   const platformModuleHelpers = platformModuleHelper(settings);
   const platformAnalyticsConfiguration = generateAnalyticsConfig(settings);
+  const metricsDefinition = Array.from(settings.metrics_definition || []);
 
   const { isReachable } = useNetworkCheck(`${settings?.platform_xtmhub_url}/health`);
   useBaseHrefAbsolute();
@@ -414,11 +413,14 @@ const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
-            <ComputeLinkProvider isPublicRoute={false}>
+            <AppDataProvider
+              isPublicRoute={false}
+              metricsDefinition={metricsDefinition}
+            >
               <AnalyticsProvider instance={Analytics(platformAnalyticsConfiguration)}>
                 <Index settings={settings} />
               </AnalyticsProvider>
-            </ComputeLinkProvider>
+            </AppDataProvider>
           </ConnectedIntlProvider>
         </ConnectedThemeProvider>
       </StyledEngineProvider>

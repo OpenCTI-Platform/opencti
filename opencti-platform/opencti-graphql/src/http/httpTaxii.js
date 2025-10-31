@@ -117,7 +117,7 @@ const initTaxiiApi = (app) => {
         title: 'OpenCTI TAXII Server',
         description: 'A global and natively segregate taxii root',
         max_content_length: 100 * 1024 * 1024, // '100mb'
-        versions: [TAXII_VERSION],
+        versions: [TAXII_RESPONSE_CONTENT_TYPE],
       };
       sendJsonResponse(res, rootContent);
     } catch (e) {

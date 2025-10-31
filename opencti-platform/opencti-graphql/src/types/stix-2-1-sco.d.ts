@@ -431,6 +431,7 @@ type windows_integrity_level_enum = 'low' | 'medium' | 'high' | 'system';
 type windows_service_start_type_enum = 'SERVICE_AUTO_START' | 'SERVICE_BOOT_START' | 'SERVICE_DEMAND_START' | 'SERVICE_DISABLED' | 'SERVICE_SYSTEM_ALERT';
 type windows_service_type_enum = 'SERVICE_KERNEL_DRIVER' | 'SERVICE_FILE_SYSTEM_DRIVER' | 'SERVICE_WIN32_OWN_PROCESS' | 'SERVICE_WIN32_SHARE_PROCESS';
 type windows_service_status_enum = 'SERVICE_CONTINUE_PENDING' | 'SERVICE_PAUSE_PENDING' | 'SERVICE_PAUSED' | 'SERVICE_RUNNING' | 'SERVICE_START_PENDING' | 'SERVICE_STOP_PENDING' | 'SERVICE_STOPPED';
+type ssh_key_type_enum = 'rsa' | 'ecdsa' | 'ed25519' | 'dsa';
 export interface StixProcess extends StixCyberObject {
   is_hidden: boolean; // optional
   pid: number; // optional
@@ -622,6 +623,24 @@ export interface StixPersona extends StixCyberObject {
   created_by_ref: StixId | undefined,
   object_marking_refs: Array<StixId>;
   external_references: Array<StixInternalExternalReference>;
+  extensions: {
+    [STIX_EXT_OCTI]: StixOpenctiExtension
+    [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
+  }
+}
+
+// Custom object extension - SSH key
+// key_type, public_key, fingerprint_sha256, fingerprint_md5, key_length, comment, created, expiration_date
+export interface StixSSHKey extends StixCyberObject {
+  key_type: string; // optional
+  public_key: string; // optional
+  fingerprint_sha256: string;
+  fingerprint_md5: string; // optional
+  key_length: number; // optional
+  comment: string; // optional
+  created: StixDate | undefined; // optional
+  expiration_date: StixDate | undefined; // optional
+  external_references: Array<StixInternalExternalReference>; // optional
   extensions: {
     [STIX_EXT_OCTI]: StixOpenctiExtension
     [STIX_EXT_OCTI_SCO]: { extension_type : 'new-sco' }
