@@ -48,7 +48,7 @@ const PLAYBOOK_LOG_MAX_SIZE = conf.get('playbook_manager:log_max_size') || 10000
 
 export const EVENT_CURRENT_VERSION = '4';
 
-const isStreamPublishable = (opts: EventOpts) => {
+export const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
 
@@ -591,7 +591,7 @@ export const buildStixUpdateEvent = (user: AuthUser, previousStix: StixCoreObjec
 export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
   await pushToStream(context, user, getClientBase(), event);
 };
-const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts): UpdateEvent => {
+export const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, opts: UpdateEventOpts): UpdateEvent => {
   // Build and send the event
   const stix = convertStoreToStix(instance) as StixCoreObject;
   const previousStix = convertStoreToStix(previous) as StixCoreObject;

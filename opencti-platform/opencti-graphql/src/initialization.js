@@ -5,7 +5,12 @@ import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema, searchEngineInit } from './database/engine';
 import { initializeAdminUser } from './config/providers';
 import { initializeBucket, storageInit } from './database/file-storage';
-import { enforceQueuesConsistency, initializeInternalQueues, rabbitMQIsAlive } from './database/rabbitmq';
+import {
+  enforceQueuesConsistency,
+  initializeInternalQueues,
+  initializeLiveStream,
+  rabbitMQIsAlive
+} from './database/rabbitmq';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { redisInit } from './database/redis';
@@ -100,6 +105,7 @@ const platformInit = async (withMarkings = true) => {
     if (!alreadyExists) {
       logApp.info('[INIT] New platform detected, initialization...');
       await initializeInternalQueues();
+      await initializeLiveStream();
       await initializeBucket();
       await initializeSchema();
       if (ES_IS_INIT_MIGRATION) {
@@ -122,6 +128,7 @@ const platformInit = async (withMarkings = true) => {
       await patchPlatformId(context);
       await refreshMappingsAndIndices();
       await initializeInternalQueues();
+      await initializeLiveStream();
       await enforceQueuesConsistency(context, SYSTEM_USER);
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);

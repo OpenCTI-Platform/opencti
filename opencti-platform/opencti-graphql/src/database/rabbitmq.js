@@ -11,9 +11,13 @@ import { getHttpClient } from '../utils/http-client';
 import { fullEntitiesList } from './middleware-loader';
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC } from '../schema/internalObject';
 import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
+import { getDraftContext } from '../utils/draftContext';
+import { buildUpdateEvent, isStreamPublishable } from './redis';
+import { isStixExportableInStreamData } from '../schema/stixCoreObject';
 
 export const CONNECTOR_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.connector.exchange`;
 export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
+export const STREAM_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.stream.exchange`;
 
 const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
 const QUEUE_TYPE = conf.get('rabbitmq:queue_type');
@@ -214,8 +218,30 @@ export const connectorConfig = (id, listen_callback_uri = undefined) => ({
 });
 
 export const listenRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}listen_routing_${connectorId}`;
-
 export const pushRouting = (connectorId) => `${RABBIT_QUEUE_PREFIX}push_routing_${connectorId}`;
+export const streamRouting = (streamName) => `${RABBIT_QUEUE_PREFIX}stream_routing_${streamName}`;
+
+export const RABBITMQ_STREAM_NAME = 'stream.octi';
+export const registerStreamQueue = async () => {
+  const streamQueue = `${RABBIT_QUEUE_PREFIX}stream_${RABBITMQ_STREAM_NAME}`;
+  await amqpExecute(async (channel) => {
+    // 01. Ensure exchange exists
+    const assertExchange = util.promisify(channel.assertExchange).bind(channel);
+    await assertExchange(STREAM_EXCHANGE, 'direct', { durable: true });
+    // 02. Ensure listen queue exists
+    const assertStreamQueue = util.promisify(channel.assertQueue).bind(channel);
+    await assertStreamQueue(streamQueue, {
+      exclusive: false,
+      durable: true,
+      autoDelete: false,
+      arguments: { name: 'stream.opencti', 'x-queue-type': 'stream' },
+    });
+    // 03. bind queue for each connector scope
+    const bindQueue = util.promisify(channel.bindQueue).bind(channel);
+    await bindQueue(streamQueue, STREAM_EXCHANGE, streamRouting(RABBITMQ_STREAM_NAME), {});
+    return true;
+  });
+};
 
 export const registerConnectorQueues = async (id, name, type, scope) => {
   const listenQueue = `${RABBIT_QUEUE_PREFIX}listen_${id}`;
@@ -278,6 +304,10 @@ export const initializeInternalQueues = async () => {
     const internalQueue = internalQueues[i];
     await registerConnectorQueues(internalQueue.id, internalQueue.name, internalQueue.type, internalQueue.scope);
   }
+};
+
+export const initializeLiveStream = async () => {
+  await registerStreamQueue();
 };
 
 export const getInternalPlaybookQueues = async (context, user) => {
@@ -366,6 +396,40 @@ export const pushToWorkerForConnector = (connectorId, message) => {
 
 export const pushToConnector = (connectorId, message) => {
   return send(CONNECTOR_EXCHANGE, listenRouting(connectorId), JSON.stringify(message));
+};
+
+const mapJSToStream = (event) => {
+  const cmdArgs = [];
+  Object.keys(event).forEach((key) => {
+    const value = event[key];
+    if (value !== undefined) {
+      cmdArgs.push(key);
+      cmdArgs.push(JSON.stringify(value));
+    }
+  });
+  return cmdArgs;
+};
+export const rabbitStoreUpdateEvent = async (context, user, previous, instance, message, opts = {}) => {
+  try {
+    if (isStixExportableInStreamData(instance)) {
+      const event = buildUpdateEvent(user, previous, instance, message, opts);
+      await pushToStream(context, user, event, opts);
+      return event;
+    }
+    return undefined;
+  } catch (e) {
+    throw DatabaseError('Error in store update event', { cause: e });
+  }
+};
+export const pushToStream = async (context, user, event, opts = {}) => {
+  const draftContext = getDraftContext(context, user);
+  const eventToPush = { ...event, event_id: context.eventId };
+  if (!draftContext && isStreamPublishable(opts)) {
+    const routingKey = streamRouting(RABBITMQ_STREAM_NAME);
+    const streamMessage = JSON.stringify(mapJSToStream(eventToPush));
+    return send(STREAM_EXCHANGE, routingKey, streamMessage);
+  }
+  return null;
 };
 
 export const getRabbitMQVersion = (context) => {

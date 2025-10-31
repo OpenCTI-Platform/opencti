@@ -241,6 +241,7 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import {rabbitStoreUpdateEvent} from "./rabbitmq";
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -2429,6 +2430,12 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
           pir_ids
         }
       );
+      const rabbitEvent = await rabbitStoreUpdateEvent(context, user, initial, updatedInstance, message, {
+        ...opts,
+        commit,
+        related_restrictions: relatedRestrictions,
+        pir_ids
+      });
       // region Security coverage hook
       // TODO Implements a more generic approach to notify enrichment
       // If entity is currently covered
