@@ -40,7 +40,7 @@ export const sanitizeReferer = (refererToSanitize) => {
   const resolvedUrl = new URL(refererToSanitize, base).toString();
   if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
     // same domain URL accept the redirection
-    if (refererToSanitize.startsWith('/')) {
+    if (refererToSanitize.startsWith('/') && !refererToSanitize.startsWith('//')) {
       // in case of relative URL, keep relative.
       return refererToSanitize;
     }
