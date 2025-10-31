@@ -34,7 +34,7 @@ import {
   playbookImport,
   playbookDuplicate
 } from './playbook-domain';
-import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager';
+import { executePlaybookOnEntity, playbookStepExecution } from '../../manager/playbookManager/playbookManager';
 import { getLastPlaybookExecutions } from '../../database/redis';
 import { getConnectorQueueSize } from '../../database/rabbitmq';
 

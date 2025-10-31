@@ -17,6 +17,7 @@ import type { JSONSchemaType } from 'ajv';
 import type { StixObject, StixOpenctiExtensionSDO, StixBundle } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
+import type { StreamDataEvent } from '../../types/event';
 
 export const ENTITY_TYPE_PLAYBOOK = 'Playbook';
 
@@ -66,6 +67,7 @@ export interface ExecutorParameters<T extends object> {
   playbookNode: NodeInstance<T>
   previousStepBundle: StixBundle | null
   bundle: StixBundle
+  event?: StreamDataEvent
 }
 
 export interface PlaybookComponent<T extends object> {
