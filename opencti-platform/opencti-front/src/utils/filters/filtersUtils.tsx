@@ -49,7 +49,7 @@ export const FiltersVariant = {
   dialog: 'dialog',
 };
 
-const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids'];
+const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids', 'bulkSearchKeywords'];
 
 const pirScoreFilterDefinition = (pirId: string) => ({
   filterKey: `pir_score.${pirId}`,

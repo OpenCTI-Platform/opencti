@@ -25,7 +25,7 @@ import BulkTextModalButton from 'src/components/fields/BulkTextField/BulkTextMod
 import StixDomainObjectCreation from '@components/common/stix_domain_objects/StixDomainObjectCreation';
 import { PaginationOptions } from 'src/components/list_lines';
 import StixCyberObservableCreation from '@components/observations/stix_cyber_observables/StixCyberObservableCreation';
-import { allEntitiesKeyList, type StixCoreResultsType } from '../utils/querySearchEntityByText';
+import { type StixCoreResultsType } from '../utils/querySearchEntityByText';
 import { getRelationsFromOneEntityToAny, RelationsDataFromEntity, RelationsToEntity } from '../../../../../utils/Relation';
 
 export const searchStixCoreObjectsByRepresentativeQuery = graphql`
@@ -125,7 +125,7 @@ const querySearchEntityByText = async (text: string) => {
       mode: 'and',
       filters: [
         {
-          key: allEntitiesKeyList,
+          key: 'bulkSearchKeywords',
           values: [text],
         },
       ],

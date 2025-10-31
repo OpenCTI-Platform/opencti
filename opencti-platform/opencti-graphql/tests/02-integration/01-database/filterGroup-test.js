@@ -8,6 +8,7 @@ import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship
 import { ABSTRACT_INTERNAL_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_LOCATION, ID_INTERNAL } from '../../../src/schema/general';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import {
+  BULK_SEARCH_KEYWORDS_FILTER,
   COMPUTED_RELIABILITY_FILTER,
   IDS_FILTER,
   INSTANCE_RELATION_FILTER,
@@ -2433,6 +2434,22 @@ describe('Complex filters combinations for elastic queries', () => {
     queryResult = await queryAsAdmin({ query: READ_MARKING_QUERY, variables: { id: marking2StixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.markingDefinition).toBeNull();
+  });
+
+  it('should list scos with bulk search keyword filter', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY,
+      variables: {
+        first: 25,
+        filters: {
+          mode: 'and',
+          filters: [{
+            key: BULK_SEARCH_KEYWORDS_FILTER,
+            values: ['france', 'test', 'azerty'],
+          }],
+          filterGroups: [],
+        },
+      } });
+    expect(queryResult.data.globalSearch.edges.length).toEqual(2); // one country with 'France' name + 1 observable with 'azerty' value
   });
 });
 
