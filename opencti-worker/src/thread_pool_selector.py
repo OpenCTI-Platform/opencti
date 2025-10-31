@@ -33,16 +33,16 @@ class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
         task_future.add_done_callback(self.decrement_default_count)
         return task_future
 
-    def submit_to_realtime_pool(
-        self, fn: Callable[..., Any], *args: Any, **kwargs: Any
-    ):
-        task_future = self.realtime_execution_pool.submit(fn, args, kwargs)
+    def submit_to_realtime_pool(self, consume_message_fn, delivery_tag, body):
+        task_future = self.realtime_execution_pool.submit(
+            consume_message_fn, delivery_tag, body
+        )
         with self.count_lock:
             self.realtime_active_threads_count += 1
         task_future.add_done_callback(self.decrement_realtime_count)
         return task_future
 
-    def submit(self, is_realtime, fn: Callable[..., Any], *args: Any, **kwargs: Any):
+    def submit(self, is_realtime, consume_message_fn, delivery_tag, body):
         is_default_pool_full = (
             self.default_active_threads_count >= self.default_pool_size
         )
@@ -51,11 +51,19 @@ class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
         )
         if is_realtime:
             if is_realtime_pool_full and not is_default_pool_full:
-                return self.submit_to_default_pool(fn, args, kwargs)
+                return self.submit_to_default_pool(
+                    consume_message_fn, delivery_tag, body
+                )
             else:
-                return self.submit_to_realtime_pool(fn, args, kwargs)
+                return self.submit_to_realtime_pool(
+                    consume_message_fn, delivery_tag, body
+                )
         else:
             if is_default_pool_full and not is_realtime_pool_full:
-                return self.submit_to_realtime_pool(fn, args, kwargs)
+                return self.submit_to_realtime_pool(
+                    consume_message_fn, delivery_tag, body
+                )
             else:
-                return self.submit_to_default_pool(fn, args, kwargs)
+                return self.submit_to_default_pool(
+                    consume_message_fn, delivery_tag, body
+                )
