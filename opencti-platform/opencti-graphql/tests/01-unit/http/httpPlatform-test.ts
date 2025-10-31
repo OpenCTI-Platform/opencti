@@ -44,6 +44,13 @@ describe('httpPlatform: sanitizeReferer function', () => {
       expect(result).toBe('/some-relative/path');
       expect(logApp.info).not.toHaveBeenCalled();
     });
+
+    it('should return expected referer', () => {
+      const refererToSanitize = '//my.wrong';
+      const result = sanitizeReferer(refererToSanitize);
+      expect(result).toBe('/');
+      expect(logApp.info).toHaveBeenCalled();
+    });
   });
 
   describe('When refererToSanitize is correct and has hash and search params', () => {
