@@ -10,6 +10,8 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import { RootOrganizationSubscription } from '@components/entities/organizations/__generated__/RootOrganizationSubscription.graphql';
 import { propOr } from 'ramda';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Organization from './Organization';
 import OrganizationKnowledge from './OrganizationKnowledge';
@@ -69,6 +71,7 @@ const organizationQuery = graphql`
           name
         }
       }
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Organization_organization
       ...OrganizationKnowledge_organization
@@ -137,7 +140,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   const link = `/dashboard/entities/organizations/${organizationId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, organizationId, '/dashboard/entities/organizations', viewAs === 'knowledge');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {organization ? (
         <>
           <Routes>
@@ -185,6 +188,13 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <OrganizationEdition organizationId={organization.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={organization}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -345,7 +355,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { System_system$key } from './__generated__/System_system.graphql';
 import SystemDetails from './SystemDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -68,7 +69,11 @@ interface SystemProps {
   viewAs: string;
 }
 
-const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {
+const System: React.FC<SystemProps> = ({
+  systemData, viewAs,
+}) => {
+  useInitCreateRelationshipContext();
+
   const system = useFragment<System_system$key>(
     systemFragment,
     systemData,

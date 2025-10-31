@@ -2,6 +2,7 @@ import { graphql } from 'relay-runtime';
 import React from 'react';
 import { useFragment } from 'react-relay';
 import { Grid } from '@mui/material';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import { Event_event$key } from './__generated__/Event_event.graphql';
 import EventDetails from './EventDetails';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -67,7 +68,11 @@ interface EventProps {
   eventData: Event_event$key;
 }
 
-const Event: React.FC<EventProps> = ({ eventData }) => {
+const Event: React.FC<EventProps> = ({
+  eventData,
+}) => {
+  useInitCreateRelationshipContext();
+
   const event = useFragment<Event_event$key>(
     eventFragment,
     eventData,

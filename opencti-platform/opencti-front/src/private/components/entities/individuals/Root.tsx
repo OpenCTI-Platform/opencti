@@ -10,6 +10,8 @@ import { RootIndividualQuery } from '@components/entities/individuals/__generate
 import { RootIndicatorSubscription } from '@components/observations/indicators/__generated__/RootIndicatorSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Individual from './Individual';
 import IndividualKnowledge from './IndividualKnowledge';
@@ -58,6 +60,7 @@ const individualQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Individual_individual
       ...IndividualKnowledge_individual
@@ -132,7 +135,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
   }
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {individual ? (
         <>
           <Routes>
@@ -174,6 +177,13 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
               EditComponent={!individual.isUser && (
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <IndividualEdition individualId={individual.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={individual}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -333,7 +343,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
