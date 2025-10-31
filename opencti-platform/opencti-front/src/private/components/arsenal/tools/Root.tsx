@@ -8,6 +8,8 @@ import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import ToolEdition from '@components/arsenal/tools/ToolEdition';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Tool from './Tool';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -55,6 +57,7 @@ const toolQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Tool_tool
       ...ToolKnowledge_tool
@@ -101,7 +104,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
   const paddingRight = getPaddingRight(location.pathname, toolId, '/dashboard/arsenal/tools');
   const link = `/dashboard/arsenal/tools/${toolId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {tool ? (
         <>
           <Routes>
@@ -141,6 +144,13 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <ToolEdition toolId={tool.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={tool}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -265,7 +275,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
