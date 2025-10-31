@@ -14,7 +14,6 @@ import IngestionJsonEditionContainer, { ingestionJsonEditionContainerQuery } fro
 import { IngestionJsonCreationContainer } from '@components/data/ingestionJson/IngestionJsonCreation';
 import { IngestionJsonLinesPaginationQuery$variables } from '@components/data/ingestionJson/__generated__/IngestionJsonLinesPaginationQuery.graphql';
 import { IngestionJsonEditionContainerQuery } from '@components/data/ingestionJson/__generated__/IngestionJsonEditionContainerQuery.graphql';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import Transition from '../../../../components/Transition';
@@ -221,7 +220,7 @@ const IngestionJsonPopover: FunctionComponent<IngestionJsonPopoverProps> = ({
           </MenuItem>
         </Menu>
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense>
             <>
               <IngestionJsonEditionContainer
                 queryRef={queryRef}
