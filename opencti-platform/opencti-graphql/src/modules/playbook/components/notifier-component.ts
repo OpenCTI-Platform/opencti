@@ -13,6 +13,7 @@ import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/redis';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
 import { isEventInPirRelationship } from '../../../manager/playbookManager/playbookManagerUtils';
+import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 
 export interface NotifierConfiguration {
   notifiers: string[]
@@ -83,8 +84,10 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
             entity_type: convertStixToInternalTypes(stixObject.type)
           });
           if (event) {
-            if (isEventInPirRelationship(event) || event.type === 'update') {
+            if (isEventInPirRelationship(event)) {
               message = event.message;
+            } else if (event.type === 'update') {
+              message = `${event.message} in \`${extractEntityRepresentativeName(stixObject)}\``;
             } else if (event.type === 'delete') {
               message = generateDeleteMessage({
                 ...stixObject,
