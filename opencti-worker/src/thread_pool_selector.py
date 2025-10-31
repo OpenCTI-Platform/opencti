@@ -17,22 +17,19 @@ class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
         self.count_lock = threading.Lock()
 
     def decrement_default_count(self, _future):
-        self.count_lock.acquire()
-        self.default_active_threads_count -= 1
-        self.count_lock.release()
+        with self.count_lock:
+            self.default_active_threads_count -= 1
 
     def decrement_realtime_count(self, _future):
-        self.count_lock.acquire()
-        self.realtime_active_threads_count -= 1
-        self.count_lock.release()
+        with self.count_lock:
+            self.realtime_active_threads_count -= 1
 
     def submit_to_default_pool(self, consume_message_fn, delivery_tag, body):
         task_future = self.default_execution_pool.submit(
             consume_message_fn, delivery_tag, body
         )
-        self.count_lock.acquire()
-        self.default_active_threads_count += 1
-        self.count_lock.release()
+        with self.count_lock:
+            self.default_active_threads_count += 1
         task_future.add_done_callback(self.decrement_default_count)
         return task_future
 
@@ -40,9 +37,8 @@ class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
         task_future = self.realtime_execution_pool.submit(
             consume_message_fn, delivery_tag, body
         )
-        self.count_lock.acquire()
-        self.realtime_active_threads_count += 1
-        self.count_lock.release()
+        with self.count_lock:
+            self.realtime_active_threads_count += 1
         task_future.add_done_callback(self.decrement_realtime_count)
         return task_future
 
