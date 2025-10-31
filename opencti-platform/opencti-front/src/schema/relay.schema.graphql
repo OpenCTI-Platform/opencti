@@ -1620,6 +1620,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
+  xtm_hub_is_backend_reachable: Boolean
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String

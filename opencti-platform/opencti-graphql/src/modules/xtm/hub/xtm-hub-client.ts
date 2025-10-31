@@ -6,6 +6,19 @@ type RegistrationStatus = 'active' | 'inactive';
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
 
 export const xtmHubClient = {
+  isBackendReachable: async (): Promise<{ isReachable: boolean }> => {
+    try {
+      const httpClient = getHttpClient({
+        baseURL: HUB_BACKEND_URL,
+        responseType: 'json',
+      });
+
+      const response = await httpClient.head('/health', { timeout: 5000 });
+      return { isReachable: response.status >= 200 && response.status < 300 };
+    } catch (error) {
+      return { isReachable: false };
+    }
+  },
   refreshRegistrationStatus: async ({ platformId, token, platformVersion }: { platformId: string, token: string, platformVersion: string }): Promise<RegistrationStatus> => {
     const query = `
       mutation RefreshPlatformRegistrationConnectivityStatus($input: RefreshPlatformRegistrationConnectivityStatusInput!) {
