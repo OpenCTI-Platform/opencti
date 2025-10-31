@@ -6,7 +6,7 @@ import { isNotEmptyField, READ_INDEX_HISTORY, READ_INDEX_INFERRED_ENTITIES, READ
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
 import { internalFindByIds, internalLoadById, topEntitiesList } from '../../src/database/middleware-loader';
 import { queryAsAdmin, testContext } from './testQuery';
-import { fetchStreamInfo } from '../../src/database/redis';
+import { fetchStreamInfo } from '../../src/database/stream/stream-handler';
 import { logApp } from '../../src/config/conf';
 import { TASK_TYPE_RULE } from '../../src/domain/backgroundTask-common';
 
