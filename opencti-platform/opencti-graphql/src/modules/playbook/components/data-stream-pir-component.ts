@@ -19,8 +19,8 @@ const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = 
       items: { type: 'string', oneOf: [] }
     },
     create: { type: 'boolean', default: true, $ref: 'A new entity enters a selected PIR' },
-    // update: { type: 'boolean', default: false, $ref: 'An entity from a selected PIR has been updated' },
     delete: { type: 'boolean', default: false, $ref: 'An entity has left a selected PIR' },
+    update: { type: 'boolean', default: false, $ref: 'An entity from a selected PIR has been updated' },
     filters: { type: 'string' },
   },
   required: ['create', 'delete'],

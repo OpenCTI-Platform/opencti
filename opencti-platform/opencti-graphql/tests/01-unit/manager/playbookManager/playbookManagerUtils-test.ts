@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { isEventInPir, isValidEventType } from '../../../../src/manager/playbookManager/playbookManagerUtils';
-import type { StreamDataEvent } from '../../../../src/types/event';
-import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
+import { isEventInPirRelationship, isValidEventType } from '../../../../src/manager/playbookManager/playbookManagerUtils';
 import * as stixRelationship from '../../../../src/schema/stixRelationship';
+import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
+import type { StreamDataEvent } from '../../../../src/types/event';
 
 describe('playbookManagerUtils', () => {
   describe('isValidEventType', () => {
@@ -18,20 +18,10 @@ describe('playbookManagerUtils', () => {
         const result = isValidEventType('create', { create: false });
         expect(result).toBeFalsy();
       });
-
-      describe('When evenType is not correct, even if all events in configuration are true', () => {
-        it('should return false', () => {
-          const result = isValidEventType('random-event-type', {
-            update: true,
-            create: true,
-            delete: true });
-          expect(result).toBeFalsy();
-        });
-      });
     });
   });
 
-  describe('isEventInPir', () => {
+  describe('isEventInPirRelationship', () => {
     describe('When scope is internal, data relationship type is relation in pir, and isStixRelation is true', () => {
       it('should return true', () => {
         vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
@@ -41,13 +31,13 @@ describe('playbookManagerUtils', () => {
             relationship_type: RELATION_IN_PIR
           }
         } as unknown as StreamDataEvent;
-        const result = isEventInPir(streamEventMock);
+        const result = isEventInPirRelationship(streamEventMock);
         expect(result).toBeTruthy();
       });
     });
 
     describe('When scope is not internal, but the rest is correct', () => {
-      it('should return false', () => {
+      it('should return false', async () => {
         vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
         const streamEventMock = {
           scope: 'external',
@@ -55,13 +45,13 @@ describe('playbookManagerUtils', () => {
             relationship_type: RELATION_IN_PIR
           }
         } as unknown as StreamDataEvent;
-        const result = isEventInPir(streamEventMock);
+        const result = await isEventInPirRelationship(streamEventMock);
         expect(result).toBeFalsy();
       });
     });
 
     describe('When data relationship type is not a relation in pir, but the rest is correct', () => {
-      it('should return false', () => {
+      it('should return false', async () => {
         vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
         const streamEventMock = {
           scope: 'internal',
@@ -69,13 +59,13 @@ describe('playbookManagerUtils', () => {
             relationship_type: 'random-relationship-type'
           }
         } as unknown as StreamDataEvent;
-        const result = isEventInPir(streamEventMock);
+        const result = await isEventInPirRelationship(streamEventMock);
         expect(result).toBeFalsy();
       });
     });
 
     describe('When isStixRelation is false, but the rest is correct', () => {
-      it('should return false', () => {
+      it('should return false', async () => {
         vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(false);
         const streamEventMock = {
           scope: 'internal',
@@ -83,7 +73,7 @@ describe('playbookManagerUtils', () => {
             relationship_type: RELATION_IN_PIR
           }
         } as unknown as StreamDataEvent;
-        const result = isEventInPir(streamEventMock);
+        const result = await isEventInPirRelationship(streamEventMock);
         expect(result).toBeFalsy();
       });
     });

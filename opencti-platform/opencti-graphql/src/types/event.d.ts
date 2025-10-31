@@ -42,9 +42,11 @@ interface StreamNotifEvent extends BaseEvent {
   type: 'live' | 'digest' | 'action';
 }
 
+export type StreamDataEventType = 'update' | 'create' | 'delete';
+
 interface StreamDataEvent extends BaseEvent {
   scope: 'internal' | 'external';
-  type: 'update' | 'create' | 'delete';
+  type: StreamDataEventType;
   origin: Partial<UserOrigin>;
   message: string;
   data: StixCoreObject
