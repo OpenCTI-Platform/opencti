@@ -10,6 +10,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import City from './City';
 import CityKnowledge from './CityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -57,6 +59,7 @@ const cityQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...City_city
       ...CityKnowledge_city
@@ -92,7 +95,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
   const link = `/dashboard/locations/cities/${cityId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, city?.id, '/dashboard/locations/cities');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {city ? (
         <>
           <Routes>
@@ -135,6 +138,13 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CityEdition cityId={city.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={city}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -267,7 +277,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
