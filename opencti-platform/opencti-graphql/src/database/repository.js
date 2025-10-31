@@ -21,7 +21,7 @@ export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGr
 export const completeConnector = (connector) => {
   if (connector) {
     const completed = { ...connector };
-    completed.title = connector.title ? connector.title : connector.name;
+    completed.container_name = connector.container_name || '-';
     completed.is_managed = isNotEmptyField(connector.catalog_id);
     completed.connector_scope = connector.connector_scope ? connector.connector_scope.split(',') : [];
     completed.config = connectorConfig(connector.id, connector.listen_callback_uri);
