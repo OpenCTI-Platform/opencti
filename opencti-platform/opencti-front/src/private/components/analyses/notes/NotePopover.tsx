@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
 import ToggleButton from '@mui/material/ToggleButton';
 import MoreVert from '@mui/icons-material/MoreVert';
 import { graphql } from 'react-relay';
@@ -37,27 +36,30 @@ interface NotePopoverProps {
   size?: 'medium' | 'large' | 'small' | undefined;
   note: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data;
   paginationOptions?: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
-  variant?: string;
 }
 
 const NotePopover: FunctionComponent<NotePopoverProps> = ({
   id,
   handleOpenRemoveExternal,
-  size,
+  size = 'large',
   note,
   paginationOptions,
-  variant,
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
+
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
   const [displayEnroll, setDisplayEnroll] = useState(false);
+
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
+
   const [commit] = useApiMutation(NotePopoverDeletionMutation);
+
   const deletion = useDeletion({ handleClose });
   const { setDeleting, handleOpenDelete, handleCloseDelete } = deletion;
+
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -80,46 +82,32 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
       },
     });
   };
+
   const handleOpenEdit = () => {
     setDisplayEdit(true);
     handleClose();
   };
+
   const handleCloseEdit = () => setDisplayEdit(false);
+
   const handleOpenRemove = () => {
     if (handleOpenRemoveExternal) {
       handleOpenRemoveExternal();
     }
     handleClose();
   };
+
   const handleOpenEnroll = () => {
     setDisplayEnroll(true);
     handleClose();
   };
+
   const handleCloseEnroll = () => {
     setDisplayEnroll(false);
   };
 
   return (
     <>
-      {variant === 'inLine' ? (
-        <IconButton
-          onClick={handleOpen}
-          aria-haspopup="true"
-          size={size || 'large'}
-          style={{ marginTop: size === 'small' ? -3 : 3 }}
-          color="primary"
-        >
-          <MoreVert />
-        </IconButton>
-      ) : (
-        <ToggleButton
-          value="popover"
-          size="small"
-          onClick={handleOpen}
-        >
-          <MoreVert fontSize="small" color="primary" />
-        </ToggleButton>
-      )}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenEdit}>{t_i18n('Update')}</MenuItem>
         {handleOpenRemoveExternal && (
@@ -140,10 +128,23 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
           <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         </CollaborativeSecurity>
       </Menu>
+
       <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
         <StixCoreObjectEnrichment stixCoreObjectId={id} onClose={undefined} isOpen={undefined} />
       </Security>
+
       <StixCoreObjectEnrollPlaybook stixCoreObjectId={id} open={displayEnroll} handleClose={handleCloseEnroll} />
+
+      <ToggleButton
+        onClick={handleOpen}
+        aria-haspopup="true"
+        value="popover"
+        size={size}
+        color="primary"
+      >
+        <MoreVert fontSize="small" color="primary" />
+      </ToggleButton>
+
       <DeleteDialog
         deletion={deletion}
         submitDelete={submitDelete}
