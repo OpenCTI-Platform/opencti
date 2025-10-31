@@ -105,7 +105,7 @@ interface ImportFilesDialogProps {
   open: boolean;
   handleClose: () => void;
   entityId?: string;
-  draftId?: string;
+  initialFreeTextContent?: string;
 }
 
 export type OptionsFormValues = {
@@ -509,7 +509,9 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
               {activeStep === 1 && (
                 importMode === 'form'
                   ? <ImportFilesFormSelector />
-                  : <ImportFilesUploader connectorsForImport={connectorsForImport}/>
+                  : <ImportFilesUploader
+                      connectorsForImport={connectorsForImport}
+                    />
               )}
               {activeStep === 2 && (
                 importMode === 'form'
@@ -540,10 +542,13 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   );
 };
 
-const ImportFilesDialog = ({ open, entityId, handleClose }: ImportFilesDialogProps) => {
+const ImportFilesDialog = ({ open, entityId, handleClose, initialFreeTextContent }: ImportFilesDialogProps) => {
+  const initialValue = initialFreeTextContent
+    ? { entityId, activeStep: 1, mode: 'manual', initialFreeTextContent }
+    : { entityId };
   return (
-    <ImportFilesProvider initialValue={{ entityId }}>
-      <ImportFiles open={open} handleClose={handleClose}></ImportFiles>
+    <ImportFilesProvider initialValue={initialValue}>
+      <ImportFiles open={open} handleClose={handleClose} ></ImportFiles>
     </ImportFilesProvider>
   );
 };

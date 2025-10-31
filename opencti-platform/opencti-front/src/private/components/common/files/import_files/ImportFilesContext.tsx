@@ -157,6 +157,9 @@ export type UploadStatus = 'uploading' | 'success' | undefined;
 
 interface InitialValues {
   entityId?: string;
+  activeStep?: number;
+  importMode?: ImportMode;
+  initialFreeTextContent?: string;
 }
 
 type ImportFilesContextProps = InitialValues & {
@@ -187,8 +190,8 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT']); // Check capability to set connectors and validation mode
   const draftContext = useDraftContext();
 
-  const [activeStep, setActiveStep] = useState(canSelectImportMode ? 0 : 1);
-  const [importMode, setImportMode] = useState<ImportMode | undefined>(!canSelectImportMode ? 'auto' : undefined);
+  const [activeStep, setActiveStep] = useState(initialValue.activeStep ?? (canSelectImportMode ? 0 : 1));
+  const [importMode, setImportMode] = useState<ImportMode | undefined>(!canSelectImportMode ? 'auto' : initialValue.importMode);
   const [files, setFiles] = useState<FileWithConnectors[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | UploadStatus>();
   const [draftId, setDraftId] = useState<string | undefined>(draftContext?.id);

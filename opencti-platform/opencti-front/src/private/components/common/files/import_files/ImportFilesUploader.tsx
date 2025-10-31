@@ -14,11 +14,13 @@ export type FileWithConnectors = {
 
 interface ImportFilesUploaderProps {
   connectorsForImport: ImportFilesContextQuery$data['connectorsForImport'];
+  isTextViewInitialValue?: boolean;
+  initialFreeTextContent?: string;
 }
 
 const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) => {
-  const { files, setFiles } = useImportFilesContext();
-  const [isTextView, setIsTextView] = useState(false);
+  const { files, setFiles, initialFreeTextContent } = useImportFilesContext();
+  const [isTextView, setIsTextView] = useState(!!initialFreeTextContent);
 
   const updateFiles = (newFiles: File[]) => {
     const extendedFiles: FileWithConnectors[] = newFiles.map((file) => {
@@ -45,11 +47,13 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
             openFreeText={() => setIsTextView(true)}
           />
         ) : (
-          <ImportFilesFreeText onSumbit={(file) => {
-            updateFiles([file]);
-            setIsTextView(false);
-          }}
-            onClose={ () => setIsTextView(false) }
+          <ImportFilesFreeText
+            onSumbit={(file) => {
+              updateFiles([file]);
+              setIsTextView(false);
+            }}
+            onClose={() => setIsTextView(false)}
+            initialContent={initialFreeTextContent}
           />
         )}
       </Grid>

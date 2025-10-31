@@ -65,6 +65,7 @@ import Avatar from '@mui/material/Avatar';
 import { FormControlLabel, Switch } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import ImportFilesDialog from '@components/common/files/import_files/ImportFilesDialog';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
@@ -100,7 +101,6 @@ import { getEntityTypeTwoFirstLevelsFilterValues, removeIdAndIncorrectKeysFromFi
 import { getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 import { killChainPhasesSearchQuery } from '../settings/KillChainPhases';
-import ImportFilesDialog from "@components/common/files/import_files/ImportFilesDialog";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -857,7 +857,8 @@ class DataTableToolBar extends Component {
             }
             : null,
           containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-        }));
+        }),
+      );
 
     if (selectAll) {
       commitMutation({
@@ -2614,8 +2615,8 @@ class DataTableToolBar extends Component {
                     )}
                   </div>
                 )}
-                {taskScope === 'UNKNOWN_ENTITIES' &&
-                  <Tooltip title={t('Create unknown entities')}>
+                {taskScope === 'UNKNOWN_ENTITIES'
+                  && <Tooltip title={t('Create unknown entities')}>
                     <span>
                       <IconButton
                         aria-label={t('Create unknown entities')}
@@ -3463,6 +3464,7 @@ class DataTableToolBar extends Component {
               <ImportFilesDialog
                 open={this.state.unknownValues}
                 handleClose={this.handleCloseCreateUnknownEntities.bind(this)}
+                initialFreeTextContent={(this.state.unknownValues ?? []).join('\n')}
               />
             </>
           );
