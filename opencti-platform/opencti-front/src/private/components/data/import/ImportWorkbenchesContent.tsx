@@ -184,10 +184,11 @@ const ImportWorkbenchesContent = () => {
     objectLabel: {
       percentWidth: 10,
       render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => {
+        const labels = metaData?.labels?.filter((l) => !!l)?.map((l) => ({ value: l, id: l as string, color: undefined }));
         return (
           <StixCoreObjectLabels
             variant="inList"
-            labels={metaData?.labels}
+            labels={labels}
           />
         );
       },

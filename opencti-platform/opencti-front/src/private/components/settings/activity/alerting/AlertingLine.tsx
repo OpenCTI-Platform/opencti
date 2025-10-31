@@ -19,6 +19,7 @@ import { AlertingPaginationQuery$variables } from './__generated__/AlertingPagin
 import AlertingPopover from './AlertingPopover';
 import { deserializeFilterGroupForFrontend } from '../../../../../utils/filters/filtersUtils';
 import { chipInListBasicStyle } from '../../../../../utils/chipStyle';
+import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -68,12 +69,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface AlertingLineProps {
   node: AlertingLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
   paginationOptions?: AlertingPaginationQuery$variables;
 }
 

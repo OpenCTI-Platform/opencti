@@ -1,4 +1,4 @@
-import React, { FunctionComponent, SyntheticEvent } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
@@ -20,6 +20,7 @@ import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import { StixCoreObjectOrStixCoreRelationshipContainerLine_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipContainerLine_node.graphql';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -52,12 +53,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
   node: StixCoreObjectOrStixCoreRelationshipContainerLine_node$data;
   dataColumns: DataColumns;
-  onLabelClick: (
-    key: string,
-    id: string,
-    value: string,
-    event: SyntheticEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
   redirectionMode: string;
 }
 

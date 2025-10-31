@@ -17,6 +17,7 @@ import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import ItemCopy from '../../../../components/ItemCopy';
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -43,12 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface IngestionTaxiiLineProps {
   node: IngestionTaxiiLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent,
-  ) => void;
+  onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables;
 }
 

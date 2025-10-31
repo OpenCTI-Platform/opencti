@@ -20,6 +20,7 @@ import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import IngestionTaxiiCollectionPopover from './IngestionTaxiiCollectionPopover';
 import { APP_BASE_PATH } from '../../../../relay/environment';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -46,12 +47,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface IngestionTaxiiCollectionLineProps {
   node: IngestionTaxiiCollectionLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent,
-  ) => void;
+  onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables;
 }
 

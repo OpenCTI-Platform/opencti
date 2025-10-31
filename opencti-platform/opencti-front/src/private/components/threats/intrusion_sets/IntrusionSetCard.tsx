@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAttackCard';
 import { IntrusionSetCard_node$key } from './__generated__/IntrusionSetCard_node.graphql';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 export const IntrusionSetCardFragment = graphql`
   fragment IntrusionSetCard_node on IntrusionSet {
@@ -117,7 +118,7 @@ export const IntrusionSetCardFragment = graphql`
 
 interface IntrusionSetCardProps {
   node: IntrusionSetCard_node$key;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   bookmarksIds?: string[];
 }
 const IntrusionSetCard: FunctionComponent<IntrusionSetCardProps> = ({
