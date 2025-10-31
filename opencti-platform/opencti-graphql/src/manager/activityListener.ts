@@ -17,7 +17,7 @@ import { LRUCache } from 'lru-cache';
 import { type ActionHandler, type ActionListener, registerUserActionListener, type UserAction, type UserReadAction } from '../listener/UserActionListener';
 import conf, { auditLogTypes, logAudit } from '../config/conf';
 import type { BasicStoreSettings } from '../types/settings';
-import { EVENT_ACTIVITY_VERSION, storeActivityEvent } from '../database/redis';
+import { storeActivityEvent } from '../database/stream/stream-handler';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS, isInternalObject } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -26,6 +26,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { REDACTED_INFORMATION } from '../database/utils';
 import type { ActivityStreamEvent } from '../types/event';
+import { EVENT_ACTIVITY_VERSION } from '../database/stream/stream-utils';
 
 const INTERNAL_READ_ENTITIES = [ENTITY_TYPE_WORKSPACE];
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];

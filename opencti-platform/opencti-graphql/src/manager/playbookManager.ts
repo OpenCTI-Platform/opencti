@@ -18,7 +18,9 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import * as jsonpatch from 'fast-json-patch';
 import moment from 'moment';
 import type { Moment } from 'moment/moment';
-import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
+import { redisPlaybookUpdate } from '../database/redis';
+import { createStreamProcessor } from '../database/stream/stream-handler';
+import { type StreamProcessor } from '../database/stream/stream-utils';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -371,7 +373,7 @@ const initPlaybookManager = () => {
       lock = await lockResources([PLAYBOOK_LIVE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running playbook manager');
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Playbook manager', playbookStreamHandler);
+      streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler);
       await streamProcessor.start('live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
