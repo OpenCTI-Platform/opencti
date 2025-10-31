@@ -44,7 +44,8 @@ import {
   stixCoreObjectsNumber,
   stixCoreObjectsTimeSeries,
   stixCoreObjectsTimeSeriesByAuthor,
-  stixCoreRelationshipsPaginated
+  stixCoreRelationshipsPaginated,
+  cleanInconsistency
 } from '../domain/stixCoreObject';
 import { fetchEditContext } from '../database/redis';
 import { distributionRelations, stixLoadByIdStringify } from '../database/middleware';
@@ -180,6 +181,7 @@ const stixCoreObjectResolvers = {
       exportAsk: ({ input }) => stixCoreObjectExportAsk(context, context.user, id, input),
       exportPush: (args) => stixCoreObjectExportPush(context, context.user, id, args),
       removeFromDraft: () => stixCoreObjectRemoveFromDraft(context, context.user, id),
+      cleanInconsistency: () => cleanInconsistency(context, context.user, id),
     }),
     stixCoreObjectsExportAsk: (_, { input }, context) => stixCoreObjectsExportAsk(context, context.user, input),
     stixCoreObjectsExportPush: (_, { entity_id, entity_type, file, file_markings, listFilters }, context) => {

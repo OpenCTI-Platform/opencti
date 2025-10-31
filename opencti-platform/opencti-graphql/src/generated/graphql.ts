@@ -21558,6 +21558,7 @@ export type Query = {
   stixCoreObjectAskAiActivity?: Maybe<AiActivity>;
   stixCoreObjectAskAiForecast?: Maybe<AiForecast>;
   stixCoreObjectAskAiHistory?: Maybe<AiHistory>;
+  stixCoreObjectCleanInconsistency?: Maybe<Scalars['String']['output']>;
   stixCoreObjectOrStixCoreRelationship?: Maybe<StixCoreObjectOrStixCoreRelationship>;
   stixCoreObjectRaw?: Maybe<Scalars['String']['output']>;
   stixCoreObjects?: Maybe<StixCoreObjectConnection>;
@@ -23597,6 +23598,11 @@ export type QueryStixCoreObjectAskAiHistoryArgs = {
   forceRefresh?: InputMaybe<Scalars['Boolean']['input']>;
   id: Scalars['ID']['input'];
   language?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryStixCoreObjectCleanInconsistencyArgs = {
+  id: Scalars['String']['input'];
 };
 
 
@@ -27337,6 +27343,7 @@ export type StixCoreObjectEditMutations = {
   askAnalysis?: Maybe<Work>;
   askEnrichment?: Maybe<Work>;
   askEnrichments?: Maybe<Array<Work>>;
+  cleanInconsistency?: Maybe<Scalars['Boolean']['output']>;
   clearAccessRestriction?: Maybe<StixCoreObject>;
   delete?: Maybe<Scalars['ID']['output']>;
   exportAsk?: Maybe<Array<File>>;
@@ -43631,6 +43638,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectAskAiActivity?: Resolver<Maybe<ResolversTypes['AiActivity']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAskAiActivityArgs, 'id'>>;
   stixCoreObjectAskAiForecast?: Resolver<Maybe<ResolversTypes['AiForecast']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAskAiForecastArgs, 'id'>>;
   stixCoreObjectAskAiHistory?: Resolver<Maybe<ResolversTypes['AiHistory']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectAskAiHistoryArgs, 'id'>>;
+  stixCoreObjectCleanInconsistency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectCleanInconsistencyArgs, 'id'>>;
   stixCoreObjectOrStixCoreRelationship?: Resolver<Maybe<ResolversTypes['StixCoreObjectOrStixCoreRelationship']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectOrStixCoreRelationshipArgs, 'id'>>;
   stixCoreObjectRaw?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryStixCoreObjectRawArgs, 'id'>>;
   stixCoreObjects?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryStixCoreObjectsArgs>>;
@@ -44794,6 +44802,7 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
   askAnalysis?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskAnalysisArgs, 'contentSource' | 'contentType'>>;
   askEnrichment?: Resolver<Maybe<ResolversTypes['Work']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentArgs, 'connectorId'>>;
   askEnrichments?: Resolver<Maybe<Array<ResolversTypes['Work']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsAskEnrichmentsArgs, 'connectorIds'>>;
+  cleanInconsistency?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   clearAccessRestriction?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   exportAsk?: Resolver<Maybe<Array<ResolversTypes['File']>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'input'>>;
