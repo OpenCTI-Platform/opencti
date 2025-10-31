@@ -93,6 +93,18 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
+
+  trigger-build-workflow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build OpenCTI platform and workers
+        uses: peter-evans/workflow-dispatch@v2
+        with:
+          workflow: opencti-docker-build.yml
+          wait-for-completion: true
+          inputs: |
+            commit_sha: ${{ github.sha::7 }}
+
   run-opencti-test-stack:
     needs: [build-opencti-platform, build-opencti-worker]
     runs-on: ubuntu-latest
@@ -105,9 +117,7 @@ jobs:
           echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
           echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
           echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
-          ls -larth  ${{ github.workspace }}/.. 
           env
-          free -m
 
     - name: OpenCTI checkout
       uses: actions/checkout@v4
@@ -122,42 +132,9 @@ jobs:
       run: |
          set -x
          cd opencti-platform/opencti-ci         
-         export TAG=${{ needs.build-opencti-platform.outputs.version }}
+         export TAG=${{ github.sha::7 }}
          docker network create runner-docker-network
          docker compose up -d
-
-    - name: Log backend start
-      continue-on-error: true
-      run: |
-          sleep 20;
-          echo -e "\n\n *********\n ********* logs Minio \n"; 
-          docker logs minio
-          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1
-          docker logs elasticsearch
-          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1
-          docker logs rabbitmq
-          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
-          docker logs redis
-          
-          echo -e "\n\n *********\n ********* test backend endpoint \n"; sleep 2
-          set -x
-          docker run --rm --network runner-docker-network curlimages/curl curl http://redis:6379
-          docker run --rm --network runner-docker-network curlimages/curl curl http://rabbitmq:5672
-          docker run --rm --network runner-docker-network curlimages/curl curl http://elasticsearch:9200
-          docker run --rm --network runner-docker-network curlimages/curl curl http://elasticsearch:9200
-
-    - name: Memory, container and process infos
-      continue-on-error: true
-      run: |
-          echo -e "\n *********\n ********* docker ps"
-          docker ps -a
-          echo -e "\n *********\n ********* docker stat"
-          docker stats --no-stream        
-          echo -e "\n *********\n ********* ps"
-          ps aux | sort -nk +4 | tail -10
-          echo -e "\n *********\n ********* free memory"
-          free -m
-        
 
     - name: Wait for OpenCTI sync instances to start
       continue-on-error: true
@@ -169,47 +146,6 @@ jobs:
           ./wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
           ./wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
           ./wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
-          docker network inspect runner-docker-network
-          docker run --rm --network runner-docker-network curlimages/curl curl  http://opencti-raw-start:4100/health?health_access_key=cihealthkey
-          docker run --rm --network runner-docker-network curlimages/curl curl  http://opencti-direct-start:4100/health?health_access_key=cihealthkey
-
-    - name: Log backend
-      continue-on-error: true
-      run: |
-          echo -e "\n\n *********\n ********* logs Minio \n"; 
-          docker logs minio
-          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1
-          docker logs elasticsearch
-          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1
-          docker logs rabbitmq
-          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
-          docker logs redis
-
-    - name: Logs opencti start
-      continue-on-error: true
-      run: |
-          echo -e "\n\n *********\n ********* Log OpenCTI DIRECT"; 
-          echo "$(date)"  
-          docker logs opencti-direct-start
-          echo -e "\n\n *********\n ********* Log OpenCTI LIVE"; sleep 1
-          echo "$(date)"  
-          docker logs opencti-live-start
-          echo -e "\n\n *********\n ********* Log OpenCTI RAW"; sleep 1
-          echo "$(date)"  
-          docker logs opencti-raw-start
-          echo -e "\n\n *********\n ********* Log OpenCTI RESTORE"; sleep 1
-          echo "$(date)"  
-          docker logs opencti-restore-start
-
-    - name: Logs worker start
-      continue-on-error: true
-      run: |
-          echo -e "\n\n *********\n ********* Log OpenCTI DIRECT worker"; 
-          echo "$(date)"  
-          docker logs opencti-direct-worker
-          echo -e "\n\n *********\n ********* Log OpenCTI Test Worker"; sleep 1
-          echo "$(date)"  
-          docker logs opencti-test-worker
 
 
     - name: Monitor ressources usage in background
@@ -265,40 +201,50 @@ jobs:
             NODE_OPTIONS=--max_old_space_size=8192 yarn test
         '
 
+# Output all logs used during the job
 
-    - name: Logs opencti full
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      continue-on-error: true
+      run: |
+          echo -e "\n\n *********\n ********* logs Minio \n"; 
+          docker logs minio
+          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1
+          docker logs elasticsearch
+          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1
+          docker logs rabbitmq
+          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
+          docker logs redis
+
+    - name: Logs opencti-direct-start
       if: always()
       continue-on-error: true
       run: |
-          echo -e "\n\n *********\n ********* Log OpenCTI DIRECT"; 
-          echo "$(date)"  
           docker logs opencti-direct-start
-          echo -e "\n\n *********\n ********* Log OpenCTI LIVE"; sleep 1
-          echo "$(date)"  
-          docker logs opencti-live-start
-          echo -e "\n\n *********\n ********* Log OpenCTI RAW"; sleep 1
-          echo "$(date)"  
-          docker logs opencti-raw-start
-          echo -e "\n\n *********\n ********* Log OpenCTI RESTORE"; sleep 1
-          echo "$(date)"  
-          docker logs opencti-restore-start
-
-    - name: Logs DIRECT worker
+    - name: Logs opencti-live-start
       if: always()
       continue-on-error: true
       run: |
-          echo -e "\n\n *********\n ********* Log OpenCTI DIRECT worker"; 
-          echo "$(date)"  
-          docker logs opencti-direct-worker
-
-    - name: Logs TEST worker
+          docker logs opencti-live-start
+    - name: Logs opencti-raw-start
       if: always()
       continue-on-error: true
-      run: |        
-          echo -e "\n\n *********\n ********* Log OpenCTI Test Worker"; sleep 1
-          echo "$(date)"  
+      run: |
+          docker logs opencti-raw-start
+    - name: Logs opencti-restore-start
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-restore-start
+    - name: Logs opencti-direct-worker
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-direct-worker
+    - name: Logs opencti-test-worker
+      if: always()
+      continue-on-error: true
+      run: |
           docker logs opencti-test-worker
-
 
 
     - name: Stop docker stats monitor and print logs
@@ -308,15 +254,3 @@ jobs:
         kill $(cat monitor.pid) || true
         echo "==== Docker stats log ===="
         cat docker_stats.log        
-
-    - name: Memory, container and process infos
-      continue-on-error: true
-      run: |
-          echo -e "\n *********\n ********* docker ps"
-          docker ps -a
-          echo -e "\n *********\n ********* docker stat"
-          docker stats --no-stream        
-          echo -e "\n *********\n ********* ps"
-          ps aux | sort -nk +4 | tail -10
-          echo -e "\n *********\n ********* free memory"
-          free -m
