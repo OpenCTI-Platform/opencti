@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildPirFilters, isEventInPirRelationship, isEventMatchesPir, listenPirEvents } from '../../../../src/manager/playbookManager/listenPirEventsUtils';
+import { buildPirFilters, isEventMatchesPir, listenPirEvents } from '../../../../src/manager/playbookManager/listenPirEventsUtils';
 import type { AuthContext } from '../../../../src/types/user';
 import type { SseEvent, StreamDataEvent } from '../../../../src/types/event';
 import type { BasicStoreEntityPlaybook } from '../../../../src/modules/playbook/playbook-types';
@@ -273,64 +273,6 @@ describe('listenPirEventsUtils', () => {
         expect(playbookUtils.isValidEventType).toHaveBeenCalled();
         expect(middleware.stixLoadById).not.toHaveBeenCalled();
         expect(playbookExecutor.playbookExecutor).not.toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('isEventInPir', () => {
-    describe('When scope is internal, data relationship type is relation in pir, and isStixRelation is true', () => {
-      it('should return true', () => {
-        vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
-        const streamEventMock = {
-          scope: 'internal',
-          data: {
-            relationship_type: RELATION_IN_PIR
-          }
-        } as unknown as StreamDataEvent;
-        const result = isEventInPirRelationship(streamEventMock);
-        expect(result).toBeTruthy();
-      });
-    });
-
-    describe('When scope is not internal, but the rest is correct', () => {
-      it('should return false', async () => {
-        vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
-        const streamEventMock = {
-          scope: 'external',
-          data: {
-            relationship_type: RELATION_IN_PIR
-          }
-        } as unknown as StreamDataEvent;
-        const result = await isEventInPirRelationship(streamEventMock);
-        expect(result).toBeFalsy();
-      });
-    });
-
-    describe('When data relationship type is not a relation in pir, but the rest is correct', () => {
-      it('should return false', async () => {
-        vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
-        const streamEventMock = {
-          scope: 'internal',
-          data: {
-            relationship_type: 'random-relationship-type'
-          }
-        } as unknown as StreamDataEvent;
-        const result = await isEventInPirRelationship(streamEventMock);
-        expect(result).toBeFalsy();
-      });
-    });
-
-    describe('When isStixRelation is false, but the rest is correct', () => {
-      it('should return false', async () => {
-        vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(false);
-        const streamEventMock = {
-          scope: 'internal',
-          data: {
-            relationship_type: RELATION_IN_PIR
-          }
-        } as unknown as StreamDataEvent;
-        const result = await isEventInPirRelationship(streamEventMock);
-        expect(result).toBeFalsy();
       });
     });
   });
