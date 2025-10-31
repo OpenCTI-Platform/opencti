@@ -577,7 +577,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   // TODO: Remove once Create Relationship FAB is removed everywhere
   const location = useLocation();
   const { isFeatureEnable } = useHelper();
-  const categoriesWithRelateComponent = ['threats', 'events', 'observations', 'arsenal', 'techniques'];
+  const categoriesWithRelateComponent = ['threats', 'events', 'observations', 'arsenal', 'techniques', 'entities'];
   const showFAB = !isFeatureEnable('FAB_RELATIONSHIP')
       || !categoriesWithRelateComponent.some((category) => location.pathname.includes(`/dashboard/${category}`));
 
