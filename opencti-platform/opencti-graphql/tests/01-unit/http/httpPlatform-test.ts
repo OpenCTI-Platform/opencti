@@ -21,9 +21,9 @@ describe('httpPlatform: sanitizeReferer function', () => {
   });
 
   describe('When refererToSanitize is undefined', () => {
-    it('should return baseUrl', () => {
+    it('should return /', () => {
       const result = sanitizeReferer(undefined);
-      expect(result).toBe(baseUrl);
+      expect(result).toBe('/');
       expect(logApp.info).not.toHaveBeenCalled();
     });
   });
@@ -41,7 +41,7 @@ describe('httpPlatform: sanitizeReferer function', () => {
     it('should return expected referer', () => {
       const refererToSanitize = '/some-relative/path';
       const result = sanitizeReferer(refererToSanitize);
-      expect(result).toBe(`${baseUrl}/some-relative/path`);
+      expect(result).toBe('/some-relative/path');
       expect(logApp.info).not.toHaveBeenCalled();
     });
   });
@@ -56,10 +56,10 @@ describe('httpPlatform: sanitizeReferer function', () => {
   });
 
   describe('When refererToSanitize is not a correct value', () => {
-    it('should return baseUrl', () => {
+    it('should return /', () => {
       const refererToSanitize = 'http://www.wrong.com';
       const result = sanitizeReferer(refererToSanitize);
-      expect(result).toBe(baseUrl);
+      expect(result).toBe('/');
       expect(logApp.info).toHaveBeenCalled();
     });
   });
@@ -73,11 +73,18 @@ describe('httpPlatform: sanitizeReferer function', () => {
     });
   });
 
-  describe('When refererToSanitize is not an IP', () => {
+  describe('When refererToSanitize is an IP', () => {
     it('should return baseUrl', () => {
       const refererToSanitize = '22.0.0.1';
       const result = sanitizeReferer(refererToSanitize);
       expect(result).toBe(`${baseUrl}/22.0.0.1`);
+      expect(logApp.info).not.toHaveBeenCalled();
+    });
+
+    it('should return baseUrl', () => {
+      const refererToSanitize = '22.0.0.1/path/one';
+      const result = sanitizeReferer(refererToSanitize);
+      expect(result).toBe(`${baseUrl}/22.0.0.1/path/one`);
       expect(logApp.info).not.toHaveBeenCalled();
     });
   });

@@ -35,16 +35,19 @@ import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
 
 export const sanitizeReferer = (refererToSanitize) => {
+  if (!refererToSanitize) return '/';
   const base = getBaseUrl();
-  if (!refererToSanitize) return base;
-
   const resolvedUrl = new URL(refererToSanitize, base).toString();
   if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
     // same domain URL accept the redirection
+    if (refererToSanitize.startsWith('/')) {
+      // in case of relative URL, keep relative.
+      return refererToSanitize;
+    }
     return resolvedUrl;
   }
   logApp.info('Error auth provider callback : url has been altered', { url: refererToSanitize });
-  return base;
+  return '/';
 };
 
 const extractRefererPathFromReq = (req) => {
