@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildPirFilters, isEventInPir, isEventMatchesPir, listenPirEvents } from '../../../../src/manager/playbookManager/listenPirEventsUtils';
+import { buildPirFilters, isEventInPirRelationship, isEventMatchesPir, listenPirEvents } from '../../../../src/manager/playbookManager/listenPirEventsUtils';
 import type { AuthContext } from '../../../../src/types/user';
 import type { SseEvent, StreamDataEvent } from '../../../../src/types/event';
 import type { BasicStoreEntityPlaybook } from '../../../../src/modules/playbook/playbook-types';
@@ -287,7 +287,7 @@ describe('listenPirEventsUtils', () => {
             relationship_type: RELATION_IN_PIR
           }
         } as unknown as StreamDataEvent;
-        const result = isEventInPir(streamEventMock);
+        const result = isEventInPirRelationship(streamEventMock);
         expect(result).toBeTruthy();
       });
     });
@@ -301,7 +301,7 @@ describe('listenPirEventsUtils', () => {
             relationship_type: RELATION_IN_PIR
           }
         } as unknown as StreamDataEvent;
-        const result = await isEventInPir(streamEventMock);
+        const result = await isEventInPirRelationship(streamEventMock);
         expect(result).toBeFalsy();
       });
     });
@@ -315,7 +315,7 @@ describe('listenPirEventsUtils', () => {
             relationship_type: 'random-relationship-type'
           }
         } as unknown as StreamDataEvent;
-        const result = await isEventInPir(streamEventMock);
+        const result = await isEventInPirRelationship(streamEventMock);
         expect(result).toBeFalsy();
       });
     });
@@ -329,7 +329,7 @@ describe('listenPirEventsUtils', () => {
             relationship_type: RELATION_IN_PIR
           }
         } as unknown as StreamDataEvent;
-        const result = await isEventInPir(streamEventMock);
+        const result = await isEventInPirRelationship(streamEventMock);
         expect(result).toBeFalsy();
       });
     });
