@@ -11,7 +11,7 @@ Playbook automation is accessible in the user interface under Data > Processing 
 
 !!! note "Right needed"
 
-    You need the "Manage credentials" [capability](../administration/users.md) to use the Playbooks automation, because you will be able to manipulate data simple users cannot access.
+    You need the "Manage Playbooks" [capability](../administration/users.md) to use the Playbooks automation, because you will be able to manipulate data simple users cannot access.
 
 You will then be able to:
 

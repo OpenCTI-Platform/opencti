@@ -48,6 +48,8 @@ Roles are used in the platform to grant the given groups with some **capabilitie
 | `Access ingestion`                                      | Access (read only) remote OCTI streams, TAXII feeds, RSS feeds, CSV feeds.              |
 | &nbsp;&nbsp;`Manage ingestion`                          | Create, update, delete any remote OCTI streams, TAXII feeds, RSS feeds, CSV feeds.      |
 | `Manage data mappers`                                   | Create, update and delete CSV & JSON mappers.                                           |
+| `Use Playbooks`                                         | Use Playbooks (enroll an entity in a playbook).                                                                         |
+| &nbsp;&nbsp;`Manage Playbooks`                          | Manage Playbooks.                                                                       |
 | `Access to admin functionalities`                       | Parent capability allowing users to only view the settings.                             |
 | &nbsp;&nbsp;`Access administration parameters`          | Access and manage overall parameters of the platform in `Settings > Parameters`.        |
 | &nbsp;&nbsp;`Manage credentials`                        | Access and manage roles, groups, users, organizations and security policies.            |
