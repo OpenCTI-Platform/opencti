@@ -48,7 +48,7 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
         idInnerFilter.values = filterValuesRemap(idInnerFilter, resolvedMap, from);
         regardingOfValues.push(idInnerFilter);
       }
-      const typeInnerFilter = f.values.find((v) => toKeys(v.key).includes('type'));
+      const typeInnerFilter = f.values.find((v) => toKeys(v.key).includes('relationship_type'));
       if (typeInnerFilter) { // Type is not mandatory
         regardingOfValues.push(typeInnerFilter);
       }
