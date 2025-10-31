@@ -933,7 +933,9 @@ const PlaybookAddComponentsContent = ({
                           value.map((n) => (n.const ? n.const : n)),
                         )}
                         noFieldUpdate={true}
-                        options={v.items.oneOf}
+                        options={[...(v.items.oneOf ?? [])]
+                          .sort((a, b) => t_i18n(a?.title ?? '')
+                            .localeCompare(t_i18n(b?.title ?? '')))}
                         textfieldprops={{
                           variant: 'standard',
                           label: t_i18n(v.$ref ?? k),
