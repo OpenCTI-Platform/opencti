@@ -50,7 +50,7 @@ const IngestionJson = () => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
-  setTitle(t_i18n('Json Feeds | Ingestion | Data'));
+  setTitle(t_i18n('JSON Feeds | Ingestion | Data'));
   const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
