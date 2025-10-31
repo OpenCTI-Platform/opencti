@@ -9,6 +9,8 @@ import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import { RootAttackPatternQuery } from '@components/techniques/attack_patterns/__generated__/RootAttackPatternQuery.graphql';
 import { RootAttackPatternSubscription } from '@components/techniques/attack_patterns/__generated__/RootAttackPatternSubscription.graphql';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AttackPattern from './AttackPattern';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
@@ -55,6 +57,7 @@ const attackPatternQuery = graphql`
       name
       aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...AttackPattern_attackPattern
       ...AttackPatternKnowledge_attackPattern
@@ -100,7 +103,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
   const link = `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`;
 
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {attackPattern ? (
         <>
           <Routes>
@@ -139,6 +142,13 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AttackPatternEdition attackPatternId={attackPattern.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={attackPattern}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -254,7 +264,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
