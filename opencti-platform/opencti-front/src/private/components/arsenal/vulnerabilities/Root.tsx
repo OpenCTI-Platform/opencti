@@ -7,6 +7,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Vulnerability from './Vulnerability';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
@@ -55,6 +57,7 @@ const vulnerabilityQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Vulnerability_vulnerability
       ...VulnerabilityKnowledge_vulnerability
@@ -100,7 +103,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
   const paddingRight = getPaddingRight(location.pathname, vulnerabilityId, '/dashboard/arsenal/vulnerabilities');
   const link = `/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {vulnerability ? (
         <>
           <Routes>
@@ -141,6 +144,13 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <VulnerabilityEdition vulnerabilityId={vulnerabilityId} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={vulnerability}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -268,7 +278,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
