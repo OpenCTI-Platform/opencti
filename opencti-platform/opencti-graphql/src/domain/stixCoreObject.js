@@ -169,7 +169,7 @@ export const findUnknownStixCoreObjects = async (context, user, args) => {
   if (inputValues.length === 0) {
     return [];
   }
-  const values = R.uniq(inputValues);
+  const values = [...new Set(inputValues)]; // uniq values only
   const filters = {
     mode: 'and',
     filters: [
