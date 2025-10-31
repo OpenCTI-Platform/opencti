@@ -102,18 +102,18 @@ export const listenPirEvents = async (
     const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
 
     if (await isEventMatchesPir(context, streamEvent.data, inPirFilters)) {
-      // TODO j'en suis arrivé là
-      let isEntityMatchFilters: boolean | undefined = false;
-      let entity:StixObject | undefined;
+      let isEntityMatchFilters: boolean = false;
+      let stixEntity: StixObject | undefined;
 
-      if (isStixRelation(data) && (type === StreamDataEventTypeEnum.CREATE || type === StreamDataEventTypeEnum.DELETE)) {
-        entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
-        isEntityMatchFilters = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersOnSource);
-      } else if (type === StreamDataEventTypeEnum.UPDATE) {
-        entity = data;
-        isEntityMatchFilters = await isStixMatchFilterGroup(context, SYSTEM_USER, data, filtersOnSource);
+      if (isEventInPirRelationship(streamEvent.data) && isStixRelation(data)) {
+        stixEntity = await stixLoadById(context, AUTOMATION_MANAGER_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
+        isEntityMatchFilters = !!stixEntity && await isStixMatchFilterGroup(context, AUTOMATION_MANAGER_USER, stixEntity, filtersOnSource);
+      } else if (isEventUpdateOnEntity(streamEvent.data)) {
+        stixEntity = data;
+        isEntityMatchFilters = await isStixMatchFilterGroup(context, AUTOMATION_MANAGER_USER, data, filtersOnSource);
       }
-      if (isEntityMatchFilters && entity) {
+
+      if (isEntityMatchFilters && stixEntity) {
         const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
         const connector = PLAYBOOK_COMPONENTS[instance.component_id];
         const nextStep = { component: connector, instance };
@@ -121,14 +121,14 @@ export const listenPirEvents = async (
           id: uuidv4(),
           spec_version: STIX_SPEC_VERSION,
           type: 'bundle',
-          objects: [entity]
+          objects: [stixEntity]
         };
         await playbookExecutor({
           eventId,
           // Basic
           executionId: uuidv4(),
           playbookId: playbook.id,
-          dataInstanceId: entity.id,
+          dataInstanceId: stixEntity.id,
           definition: def,
           // Steps
           previousStep: null,
