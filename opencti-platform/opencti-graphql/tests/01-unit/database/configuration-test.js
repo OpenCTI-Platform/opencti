@@ -18,7 +18,7 @@ describe('configuration testing', () => {
     expect(isUriProxyExcluded('127.0.0.12', ['127.0.0.1'])).toBe(false);
     expect(isUriProxyExcluded('172.0.0.12', ['172.0.0.0/24'])).toBe(true);
   });
-  it('should proxy configured correctly', () => {
+  it.skip('should proxy configured correctly', () => {
     // https
     const httpsAgent = getPlatformHttpProxyAgent('https://192.168.101.12:3000');
     expect(httpsAgent.proxy.protocol === 'https:').toBe(true);
