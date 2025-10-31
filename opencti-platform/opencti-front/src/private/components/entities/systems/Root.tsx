@@ -10,6 +10,8 @@ import { RootSystemQuery } from '@components/entities/systems/__generated__/Root
 import { RootSystemsSubscription } from '@components/entities/systems/__generated__/RootSystemsSubscription.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import System from './System';
 import SystemKnowledge from './SystemKnowledge';
@@ -56,6 +58,7 @@ const systemQuery = graphql`
       entity_type
       name
       x_opencti_aliases
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...System_system
       ...SystemKnowledge_system
@@ -124,7 +127,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
   const link = `/dashboard/entities/systems/${systemId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, systemId, '/dashboard/entities/systems');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {system ? (
         <>
           <Routes>
@@ -168,6 +171,13 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SystemEdition systemId={system.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={system}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -326,7 +336,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
