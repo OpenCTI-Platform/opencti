@@ -9,6 +9,8 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import AdministrativeArea from './AdministrativeArea';
 import AdministrativeAreaKnowledge from './AdministrativeAreaKnowledge';
@@ -57,6 +59,7 @@ const administrativeAreaQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...AdministrativeArea_administrativeArea
       ...AdministrativeAreaKnowledge_administrativeArea
@@ -94,7 +97,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
   const link = `/dashboard/locations/administrative_areas/${administrativeAreaId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, administrativeArea?.id, '/dashboard/locations/administrative_areas');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {administrativeArea ? (
         <>
           <Routes>
@@ -138,6 +141,13 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <AdministrativeAreaEdition
                     administrativeAreaId={administrativeArea.id}
+                  />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={administrativeArea}
                   />
                 </Security>
               )}
@@ -273,7 +283,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
