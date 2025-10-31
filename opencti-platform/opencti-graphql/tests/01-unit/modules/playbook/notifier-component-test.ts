@@ -51,7 +51,7 @@ describe('PLAYBOOK_NOTIFIER_COMPONENT', () => {
     });
 
     it('should call storeNotificationEvent with correct message when event is a PIR', async () => {
-      vi.spyOn(playbookManagerUtils, 'isEventInPir').mockResolvedValue(true);
+      vi.spyOn(playbookManagerUtils, 'isEventInPirRelationship').mockResolvedValue(true);
 
       const mockEventPirDelete = { type: 'delete', message: 'PIR message' } as unknown as StreamDataEvent;
 
