@@ -1,6 +1,7 @@
 {
   "app": {
     "port": 4010,
+    "base_url": "http://127.0.0.1:4010/",
     "performance_logger": false,
     "enabled_dev_features": ["*"],
     "sync_raw_start_remote_uri": "http://127.0.0.1:4200/graphql",
