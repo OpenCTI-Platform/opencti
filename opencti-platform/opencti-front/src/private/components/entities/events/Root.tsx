@@ -9,6 +9,8 @@ import { RootEventQuery } from '@components/entities/events/__generated__/RootEv
 import { RootEventsSubscription } from '@components/entities/events/__generated__/RootEventsSubscription.graphql';
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Event from './Event';
 import EventKnowledge from './EventKnowledge';
@@ -54,6 +56,7 @@ const eventQuery = graphql`
       entity_type
       name
       aliases
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Event_event
       ...EventKnowledge_event
@@ -99,7 +102,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
   const link = `/dashboard/entities/events/${eventId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, eventId, '/dashboard/entities/events');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {event ? (
         <>
           <Routes>
@@ -139,6 +142,13 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <EventEdition eventId={event.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={event}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -288,7 +298,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {
