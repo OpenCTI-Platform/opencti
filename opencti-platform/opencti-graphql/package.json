@@ -45,7 +45,7 @@
     "node": ">= 20.0.0"
   },
   "dependencies": {
-    "@apollo/server": "4.12.2",
+    "@apollo/server": "5.1.0",
     "@as-integrations/express5": "1.1.2",
     "@aws-sdk/client-s3": "3.917.0",
     "@aws-sdk/client-sts": "3.917.0",
@@ -113,7 +113,7 @@
     "graphql-rate-limit-directive": "2.0.6",
     "graphql-redis-subscriptions": "2.7.0",
     "graphql-scalars": "1.25.0",
-    "graphql-subscriptions": "2.0.0",
+    "graphql-subscriptions": "3.0.0",
     "graphql-upload": "17.0.0",
     "graphql-ws": "5.16.2",
     "helmet": "8.1.0",
