@@ -12,6 +12,7 @@ import Checkbox from '@mui/material/Checkbox';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 // Custom field components
+import TypesField from '@components/observations/TypesField';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import SwitchField from '../../../../../components/fields/SwitchField';
@@ -374,6 +375,19 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
             multiple={field.multiple || false}
+          />
+        );
+      }
+
+      case 'types': {
+        return (
+          <TypesField
+            name={fieldName}
+            label={displayLabel}
+            required={field.isMandatory}
+            containerstyle={fieldSpacingContainerStyle}
+            multiple={field.multiple || false}
+            onChange={setFieldValue}
           />
         );
       }

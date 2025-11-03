@@ -539,6 +539,13 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         mandatory: false,
         type: 'files',
       },
+      {
+        value: 'x_opencti_main_observable_type',
+        name: 'x_opencti_main_observable_type',
+        label: t_i18n('Main observable type'),
+        mandatory: false,
+        type: 'types',
+      },
     ];
 
     // Merge special attributes with entity attributes
@@ -582,6 +589,8 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
         availableFieldTypes = [{ value: 'externalReferences', label: 'External References' }];
       } else if (field.attributeMapping.attributeName === 'x_opencti_files') {
         availableFieldTypes = [{ value: 'files', label: 'Files' }];
+      } else if (field.attributeMapping.attributeName === 'x_opencti_main_observable_type') {
+        availableFieldTypes = [{ value: 'types', label: 'Types' }];
       } else {
         availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes)
           .filter((fieldType) => {
@@ -697,7 +706,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
           fullWidth
           variant="standard"
           style={{ marginTop: 20 }}
-          disabled={!field.attributeMapping.attributeName || (field.isMandatory && !isInParsedMode)}
+          disabled={!field.attributeMapping.attributeName}
         >
           <InputLabel>{t_i18n('Field Type')}</InputLabel>
           <Select
