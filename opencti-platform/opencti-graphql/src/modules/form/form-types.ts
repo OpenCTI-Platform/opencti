@@ -20,6 +20,7 @@ export enum FormFieldType {
   ExternalReferences = 'externalReferences',
   Files = 'files',
   OpenVocab = 'openvocab',
+  Types = 'types',
 }
 
 // Additional entity configuration

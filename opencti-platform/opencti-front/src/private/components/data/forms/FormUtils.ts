@@ -2,7 +2,7 @@
  * Utility functions and constants for Form components
  */
 import type { FormFieldAttribute, EntityTypeOption, AttributeOption, RelationshipTypeOption, FormBuilderData, FormSchemaDefinition } from './Form.d';
-import { getOpenVocabAttributes } from '../../../../utils/vocabularyMapping';
+import { getOpenVocabAttributes, getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 
 // Field type options for the UI
 export const FIELD_TYPES = [
@@ -284,7 +284,10 @@ export const getAvailableRelationships = (
 };
 
 // Helper to convert attribute type to field type for forms
-const mapAttributeTypeToFieldType = (attrType: string): string => {
+const mapAttributeTypeToFieldType = (attrType: string, attrName: string): string => {
+  if (attrName === 'x_opencti_main_observable_type') return 'types';
+  if (attrName === 'createdBy') return 'ref';
+  if (attrName === 'objectLabel' || attrName === 'objectMarking') return 'refs';
   if (attrType === 'date') return 'datetime';
   if (attrType === 'boolean') return 'checkbox';
   if (attrType === 'numeric' || attrType === 'integer' || attrType === 'float') return 'number';
@@ -319,7 +322,11 @@ export const getInitialMandatoryFields = (
     const defaultValue = (attr.defaultValues && attr.defaultValues.length && attr.defaultValues.length > 0) ? attr.defaultValues[0] : null;
 
     // Convert attribute type to appropriate field type
-    const fieldType = mapAttributeTypeToFieldType(attr.type || 'string');
+    let fieldType = mapAttributeTypeToFieldType(attr.type || 'string', attr.name);
+    const vocabMapping = getVocabularyMappingByAttribute(attr.name);
+    if (vocabMapping) {
+      fieldType = 'openvocab';
+    }
 
     return {
       id: generateFieldId(),
