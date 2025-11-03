@@ -24,7 +24,7 @@ RUN yarn build:prod
 # Build front
 WORKDIR /opt/opencti-build/opencti-front
 COPY opencti-front ../.yarnrc.yml /opt/opencti-build/opencti-front
-RUN yarn install
+RUN yarn install --immutable
 RUN yarn build
 
 FROM base AS app
@@ -46,7 +46,7 @@ WORKDIR /opt/opencti
 COPY --from=builder /opt/opencti-build/opencti-graphql/build ./build
 COPY --from=builder /opt/opencti-build/opencti-graphql/static ./static
 COPY --from=builder /opt/opencti-build/opencti-graphql/public ./public
-COPY opencti-graphql/src ./src
+COPY opencti-graphql/src/python ./src/python
 COPY opencti-graphql/config ./config
 
 ENV PYTHONUNBUFFERED=1
