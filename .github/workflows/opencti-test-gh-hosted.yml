@@ -103,7 +103,7 @@ jobs:
           workflow: opencti-docker-build.yml
           wait-for-completion: true
           inputs: |
-            commit_sha: ${{ github.sha::7 }}
+            commit_sha: ${{ github.sha }}
 
   run-opencti-test-stack:
     needs: [build-opencti-platform, build-opencti-worker]
@@ -132,7 +132,7 @@ jobs:
       run: |
          set -x
          cd opencti-platform/opencti-ci         
-         export TAG=${{ github.sha::7 }}
+         export TAG=${{ github.sha }}
          docker network create runner-docker-network
          docker compose up -d
 
