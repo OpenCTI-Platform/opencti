@@ -97,11 +97,13 @@ jobs:
   trigger-build-workflow:
     runs-on: ubuntu-latest
     steps:
+      - name: OpenCTI checkout
+        uses: actions/checkout@v4
       - name: Build OpenCTI platform and workers
         uses: ./.github/workflows/opencti-docker-build.yml
         with:
           secrets: inherit
-  
+
 
   run-opencti-test-stack:
     needs: [build-opencti-platform, build-opencti-worker]
