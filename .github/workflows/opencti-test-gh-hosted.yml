@@ -47,8 +47,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: type=registry,ref=filigran/platform:buildcache
+        cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
 
   build-opencti-worker:
     name: build-opencti-worker
@@ -90,8 +90,8 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: type=registry,ref=filigran/platform:buildcache
+        cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
 
 
   trigger-build-workflow:
