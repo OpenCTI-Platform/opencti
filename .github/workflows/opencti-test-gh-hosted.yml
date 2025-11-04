@@ -98,12 +98,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build OpenCTI platform and workers
-        uses: peter-evans/workflow-dispatch@v2
+        uses: ./.github/workflows/opencti-docker-build.yml
         with:
-          workflow: opencti-docker-build.yml
-          wait-for-completion: true
-          inputs: |
-            commit_sha: ${{ github.sha }}
+          secrets: inherit
+  
 
   run-opencti-test-stack:
     needs: [build-opencti-platform, build-opencti-worker]

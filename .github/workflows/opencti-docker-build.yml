@@ -1,10 +1,11 @@
 name: Build OpenCTI Platform and worker images
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       image_tag:
         description: "Image Tag"
+        type: string
         required: true
 
 jobs:
