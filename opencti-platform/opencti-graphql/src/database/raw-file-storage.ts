@@ -1,8 +1,17 @@
 import * as s3 from '@aws-sdk/client-s3';
-import { CopyObjectCommand, type ListObjectsV2CommandInput, S3Client, type S3ClientConfig } from '@aws-sdk/client-s3';
+import {
+  CopyObjectCommand,
+  type GetObjectCommandOutput,
+  type HeadObjectCommandOutput,
+  type ListObjectsV2CommandInput,
+  type ListObjectsV2CommandOutput,
+  S3Client,
+  type S3ClientConfig
+} from '@aws-sdk/client-s3';
 import { getDefaultRoleAssumerWithWebIdentity } from '@aws-sdk/client-sts';
 import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { Upload } from '@aws-sdk/lib-storage';
+import type { Readable } from 'stream';
 import { enrichWithRemoteCredentials } from '../config/credentials';
 import conf, { booleanConf, logApp, logS3Debug } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
@@ -111,9 +120,10 @@ export const deleteFileFromStorage = async (id: string) => {
 /**
  * Download a file from S3 at given S3 key (id)
  * @param id
- * @returns {Promise<*|null>} null when error occurs on download.
+ * @returns {Promise<Readable | null>} Readable stream of the file content, or null if file doesn't exist
+ * @throws {UnsupportedError} when file body is null or undefined
  */
-export const downloadFile = async (id: string) => {
+export const downloadFile = async (id: string): Promise<Readable | null> => {
   try {
     const object = await s3Client.send(new s3.GetObjectCommand({
       Bucket: bucketName,
@@ -121,12 +131,17 @@ export const downloadFile = async (id: string) => {
     }));
     if (!object || !object.Body) {
       logApp.error('[FILE STORAGE] Cannot retrieve file from S3, null body in response', { fileId: id });
+      throw UnsupportedError('File body is null or undefined', { fileId: id });
+    }
+    return object.Body as Readable;
+  } catch (err: any) {
+    // If file doesn't exist, return null instead of throwing
+    if (err.name === 'NoSuchKey') {
       return null;
     }
-    return object.Body;
-  } catch (err) {
+    // For other errors, log and throw
     logApp.error('[FILE STORAGE] Cannot retrieve file from S3', { cause: err, fileId: id });
-    return null;
+    throw err;
   }
 };
 
@@ -142,8 +157,8 @@ export const streamToString = (stream: any, encoding: BufferEncoding = 'utf8'): 
   });
 };
 
-export const getFileContent = async (id: string, encoding: BufferEncoding = 'utf8') => {
-  const object = await s3Client.send(new s3.GetObjectCommand({
+export const getFileContent = async (id: string, encoding: BufferEncoding = 'utf8'): Promise<string | undefined> => {
+  const object: GetObjectCommandOutput = await s3Client.send(new s3.GetObjectCommand({
     Bucket: bucketName,
     Key: id
   }));
@@ -166,9 +181,9 @@ export const rawCopyFile = async (sourceId: string, targetId: string) => {
 /**
  * Get file size from S3 (calling HEAD on S3 file).
  */
-export const getFileSize = async (user: AuthUser, fileS3Path: string) => {
+export const getFileSize = async (user: AuthUser, fileS3Path: string): Promise<number | undefined> => {
   try {
-    const object = await s3Client.send(new s3.HeadObjectCommand({
+    const object: HeadObjectCommandOutput = await s3Client.send(new s3.HeadObjectCommand({
       Bucket: bucketName,
       Key: fileS3Path
     }));
@@ -178,7 +193,7 @@ export const getFileSize = async (user: AuthUser, fileS3Path: string) => {
   }
 };
 
-export const rawUpload = async (key: string, body: string) => {
+export const rawUpload = async (key: string, body: string | Readable | Buffer) => {
   const s3Upload = new Upload({
     client: s3Client,
     params: {
@@ -190,7 +205,7 @@ export const rawUpload = async (key: string, body: string) => {
   await s3Upload.done();
 };
 
-export const rawListObjects = async (directory: string, recursive: boolean, continuationToken?: string) => {
+export const rawListObjects = async (directory: string, recursive: boolean, continuationToken?: string): Promise<ListObjectsV2CommandOutput> => {
   const requestParams: ListObjectsV2CommandInput = {
     Bucket: bucketName,
     Prefix: directory,

@@ -81,18 +81,22 @@ export const sendDisseminationEmail = async (
   for (let i = 0; i < opts.attachFileIds.length; i += 1) {
     const attachFileId = opts.attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
-    const canBeDisseminated = file && allowedTypesInAttachment.includes(file.metaData.mimetype);
+    const canBeDisseminated = file && file.metaData.mimetype && allowedTypesInAttachment.includes(file.metaData.mimetype);
     if (!canBeDisseminated) {
       throw UnsupportedError('File cant be disseminate', { id: attachFileId });
     }
     sentFiles.push(file);
-    const stream = await downloadFile(file.id);
-    attachmentListForSendMail.push({ filename: file.name, content: stream });
+    try {
+      const stream = await downloadFile(file.id);
+      attachmentListForSendMail.push({ filename: file.name, content: stream });
+    } catch (err) {
+      throw UnsupportedError('Cannot download file for dissemination', { id: file.id, cause: err });
+    }
   }
 
   if (opts.htmlToBodyFileId) {
     const bodyFile = await loadFile(context, user, opts.htmlToBodyFileId);
-    const canBeInBody = bodyFile && allowedTypesInBody.includes(bodyFile.metaData.mimetype);
+    const canBeInBody = bodyFile && bodyFile.metaData.mimetype && allowedTypesInBody.includes(bodyFile.metaData.mimetype);
     if (!canBeInBody) {
       throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: opts.htmlToBodyFileId });
     }
