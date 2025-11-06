@@ -130,7 +130,7 @@ jobs:
          cd opencti-platform/opencti-ci         
          export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
-         docker compose up -d
+         docker compose --profile "*" up -d
 
     - name: Wait for OpenCTI sync instances to start
       continue-on-error: true
@@ -269,6 +269,14 @@ jobs:
     - name: OpenCTI checkout
       uses: actions/checkout@v4
 
+    - name: Set up Docker Compose for backends
+      run: |
+         set -x
+         cd opencti-platform/opencti-ci         
+         export TAG=${{ needs.build-opencti-platform.outputs.version }}
+         docker network create runner-docker-network
+         docker compose --profile "backend" up -d
+
     - name: Monitor ressources usage in background
       run: |
         # Run docker stats every 60s and save to file
@@ -285,8 +293,8 @@ jobs:
 
     - name: Start unit test
       run: |
-        docker run \
-          --name api-tests \
+        docker run --network runner-docker-network \
+          --name unit-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
           -e APP__BASE_URL=http://api-tests:4010/ \
