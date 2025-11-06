@@ -153,7 +153,7 @@ export const requestFileFromStorageAsAdmin = async (storageId: string) => {
   logApp.info(`[TEST] request on storage file ${storageId}`);
   const stream = await downloadFile(storageId);
   expect(stream, `No stream mean no file found in storage or error for ${storageId}`).not.toBeNull();
-  return streamConverter(stream);
+  return streamConverter(stream!);
 };
 
 export const readCsvFromFileStream = async (filePath: string, fileName: string) => {

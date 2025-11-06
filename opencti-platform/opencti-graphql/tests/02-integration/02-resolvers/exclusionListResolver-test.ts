@@ -118,7 +118,7 @@ describe('Exclusion list resolver', () => {
       it('should create a file', async () => {
         const fileStream = await downloadFile(exclusionListFileResponse.file_id ?? '');
         expect(fileStream).not.toBeNull();
-        const data = await streamConverter(fileStream);
+        const data = await streamConverter(fileStream!);
         expect(data).toEqual('127.0.0.1\n10.10.0.0\n2.2.2.2');
       });
 
@@ -137,7 +137,7 @@ describe('Exclusion list resolver', () => {
         // verify that file was modified
         const fileStream = await downloadFile(exclusionListFileResponse.file_id ?? '');
         expect(fileStream).not.toBeNull();
-        const data = await streamConverter(fileStream);
+        const data = await streamConverter(fileStream!);
         expect(data).toEqual('127.0.0.1\n10.10.0.0\n12.10.0.0\n2.2.2.2');
       });
 

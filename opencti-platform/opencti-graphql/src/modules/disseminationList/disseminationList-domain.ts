@@ -88,6 +88,9 @@ export const sendDisseminationEmail = async (
     sentFiles.push(file);
     try {
       const stream = await downloadFile(file.id);
+      if (!stream) {
+        throw UnsupportedError('File not found in storage', { id: file.id });
+      }
       attachmentListForSendMail.push({ filename: file.name, content: stream });
     } catch (err) {
       throw UnsupportedError('Cannot download file for dissemination', { id: file.id, cause: err });
