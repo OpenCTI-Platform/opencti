@@ -94,8 +94,10 @@ jobs:
         cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
 
 
-  trigger-build-workflow:
+  call-build-workflow:
       uses: ./.github/workflows/opencti-docker-build.yml
+      with:
+        image_tag: ${{ github.sha }}
       secrets: inherit
 
 
