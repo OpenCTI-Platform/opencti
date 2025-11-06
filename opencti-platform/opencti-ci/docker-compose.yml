@@ -1,6 +1,7 @@
 services:
   redis:
     container_name: redis
+    profiles: ["backend"]
     image: redis:8.0.3
     restart: unless-stopped
     networks:
@@ -9,6 +10,7 @@ services:
       - 6379:6379
   elasticsearch:
     container_name: elasticsearch
+    profiles: ["backend"]
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.2
     environment:
       - discovery.type=single-node
@@ -29,6 +31,7 @@ services:
       - 9300:9300
   minio:
     container_name: minio
+    profiles: ["backend"]
     image: minio/minio:latest
     networks:
       - runner-docker-network
@@ -47,6 +50,7 @@ services:
       retries: 3
     restart: unless-stopped
   rabbitmq:
+    profiles: ["backend"]
     container_name: rabbitmq
     image: rabbitmq:4.1-management
     restart: unless-stopped
@@ -55,8 +59,10 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+
   opencti-raw-start:
     container_name: opencti-raw-start
+    profiles: ["opencti-api-test"]
     image: filigran/platform:${TAG}
     restart: unless-stopped
     environment:
@@ -69,6 +75,7 @@ services:
       - 4100:4100
   opencti-live-start:
     container_name: opencti-live-start
+    profiles: ["opencti-api-test"]
     image: filigran/platform:${TAG}
     restart: unless-stopped
     environment:
@@ -81,6 +88,7 @@ services:
       - 4200:4100
   opencti-direct-start:
     container_name: opencti-direct-start
+    profiles: ["opencti-api-test"]
     image: filigran/platform:${TAG}
     restart: unless-stopped
     environment:
@@ -93,6 +101,7 @@ services:
       - 4300:4100
   opencti-restore-start:
     container_name: opencti-restore-start
+    profiles: ["opencti-api-test"]
     image: filigran/platform:${TAG}
     restart: unless-stopped
     environment:
@@ -106,6 +115,7 @@ services:
 
   opencti-direct-worker:
     container_name: opencti-direct-worker
+    profiles: ["opencti-api-test"]
     image: filigran/worker:${TAG}
     restart: unless-stopped
     environment:
@@ -117,6 +127,7 @@ services:
 
   opencti-test-worker:
     container_name: opencti-test-worker
+    profiles: ["opencti-api-test"]
     image: filigran/worker:${TAG}
     restart: unless-stopped
     environment:
