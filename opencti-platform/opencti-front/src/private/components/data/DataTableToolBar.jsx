@@ -284,17 +284,6 @@ const toolBarBulkEditMarkingsDomainMutation = graphql`
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {
         id
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_color
-              x_opencti_order
-            }
-          }
-        }
       }
     }
   }
@@ -305,17 +294,6 @@ const toolBarBulkEditMarkingsCyberObservableMutation = graphql`
     stixCyberObservableEdit(id: $id) {
       fieldPatch(input: $input) {
         id
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_color
-              x_opencti_order
-            }
-          }
-        }
       }
     }
   }
