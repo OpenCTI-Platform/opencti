@@ -36,7 +36,7 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: filigran/platform
-        tags: type=raw,value=${{ github.event.inputs.image_tag }}
+        tags: type=raw,value=${{ inputs.image_tag }}
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
@@ -78,7 +78,7 @@ jobs:
       uses: docker/metadata-action@v5
       with:
         images: filigran/worker
-        tags: type=raw,value=${{ github.event.inputs.image_tag }}
+        tags: type=raw,value=${{ inputs.image_tag }}
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
