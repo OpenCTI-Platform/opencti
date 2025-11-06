@@ -139,9 +139,13 @@ const downloadAllLogFiles = async (context:AuthContext, user: AuthUser, s3Direct
       const newLocalFile = join(localDirectory, `${supportFile.name}`);
       fs.closeSync(fs.openSync(newLocalFile, 'w'));
       const stream = await downloadFile(supportFile.id);
-      const data = await streamConverter(stream);
-      fs.writeFileSync(newLocalFile, data, {});
-      logApp.info('Writing file to directory', { file: supportFile?.name, dir: localDirectory });
+      if (stream) {
+        const data = await streamConverter(stream);
+        fs.writeFileSync(newLocalFile, data, {});
+        logApp.info('Writing file to directory', { file: supportFile?.name, dir: localDirectory });
+      } else {
+        logApp.warn('Support file not found in S3, skipping', { fileId: supportFile.id, fileName: supportFile.name });
+      }
     }
   }
 };
