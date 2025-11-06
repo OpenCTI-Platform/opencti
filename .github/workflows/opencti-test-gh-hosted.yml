@@ -281,7 +281,7 @@ jobs:
 
     - name: Start unit test
       run: |
-        docker run --network runner-docker-network \
+        docker run \
           --name api-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
