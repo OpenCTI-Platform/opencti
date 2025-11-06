@@ -151,6 +151,8 @@ jobs:
           echo "==== $(date) ====" >> docker_stats.log
           docker stats --no-stream >> docker_stats.log
           free -m >> docker_stats.log
+          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
+          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
           sleep 60
         done &
         # Save background PID
@@ -274,6 +276,8 @@ jobs:
           echo "==== $(date) ====" >> docker_stats.log
           docker stats --no-stream >> docker_stats.log
           free -m >> docker_stats.log
+          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
+          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
           sleep 60
         done &
         # Save background PID
@@ -291,6 +295,7 @@ jobs:
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e REDIS__HOSTNAME=redis \
+          -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
           -e MINIO__ENDPOINT=minio \
           -e RABBITMQ__HOSTNAME=rabbitmq \
           -e EXPIRATION_SCHEDULER__ENABLED=false \
