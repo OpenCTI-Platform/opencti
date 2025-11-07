@@ -110,7 +110,7 @@ jobs:
             yarn build
             yarn check-ts
             yarn lint
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test
         '
 
 # Output all logs used during the job
