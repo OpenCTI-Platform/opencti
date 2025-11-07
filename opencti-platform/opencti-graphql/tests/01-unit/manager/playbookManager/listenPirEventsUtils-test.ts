@@ -46,12 +46,10 @@ describe('listenPirEventsUtils', () => {
     data: {
       id: 'internal-relationship--id-3',
       scope: 'internal',
-      // spec_version: '2.1',
       type: 'create',
       data: { relationship_type: RELATION_IN_PIR, },
       extensions: { 'extension-definition--id-4':
         {
-          // extension_type: 'new-sro',
           id: 'id-5',
           type: 'in-pir',
           source_ref_pir_refs: ['id-1'],
