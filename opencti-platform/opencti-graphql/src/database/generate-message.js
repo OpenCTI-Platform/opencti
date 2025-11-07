@@ -144,18 +144,12 @@ const buildMessageForValues = (entityType, key, values, data = {}, specificOpera
   // If standard primitive data, just join the values
   return firstValues.join(', ');
 };
+const MAX_DISPLAYED_VALUES = 3;
 const buildUpdateMessageForPatchOperation = (operationType, patchOperation, entityType, data = {}, specificOperationCases = {}) => {
   const { key, value, object_path, previous } = patchOperation;
   const keyName = getKeyName(entityType, key, object_path);
   const valuesArray = getValuesArray(value); // TODO we need the whole values
   const previousArray = getValuesArray(previous);
-
-  // TODO special case PIR, should be handled in buildMessageForValues
-  // case in-pir relationship update: the message should only display the variation of score
-  const { isPirScoreUpdate } = specificOperationCases;
-  if (key === 'pir_score' && operationType === 'replace' && isPirScoreUpdate) {
-    return `\`${valuesArray.join(', ')}\` to \`${previousArray.join(', ')}\` in \`${keyName}\``;
-  }
   const messageForValues = buildMessageForValues(entityType, key, valuesArray, data, specificOperationCases);
   const messageForPrevious = buildMessageForValues(entityType, key, previousArray, data, specificOperationCases);
 
@@ -164,8 +158,8 @@ const buildUpdateMessageForPatchOperation = (operationType, patchOperation, enti
     message = `\`${messageForPrevious}\` with \`${messageForValues}\``;
   }
   message += ` in \`${keyName}\``;
-  if (valuesArray.length > 3) { // TODO const for 3
-    message += ` and ${valuesArray.length - 3} more items`; // TODO should be tested on the whole values
+  if (valuesArray.length > MAX_DISPLAYED_VALUES) {
+    message += ` and ${valuesArray.length - MAX_DISPLAYED_VALUES} more items`; // TODO should be tested on the whole values
   }
   return message;
 };
