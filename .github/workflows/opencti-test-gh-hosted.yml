@@ -295,7 +295,7 @@ jobs:
           --name opencti-e2e-start \
           -p 4500:4100 \
           -v ${{ github.workspace }}:/home/workspace \        
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \ \
+          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
           -e APP__ADMIN__PASSWORD=admin \
