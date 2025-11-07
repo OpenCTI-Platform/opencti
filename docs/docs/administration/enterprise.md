@@ -20,7 +20,12 @@ Then you will need to put a valid OpenCTI EE license. If you don't have it, you 
 
 ![OpenCTI EE EULA](assets/enterprise-eula.png)
 
-As a reminder, Filigran can provide free-to-use licenses for development and research purposes as well as for non-governmental charity organizations.
+As a reminder:
+
+- Filigran is the only company producing and providing OpenCTI Enterprise Edition license keys.
+- Filigran can provide free-to-use OpenCTI Enterprise Edition licenses for development and research purposes (e.g. connector development purposes, integrations with technical partners, etc...) as well as for non-governmental charity organizations.
+- OpenCTI Enterprise Edition licenses are automatically provided to all Filigran SaaS customers.
+- **For all other usages including On-Premise deployments, OpenCTI Enterprise Edition is reserved to organizations that have signed a Filigran Enterprise agreement.**
 
 ## Available features
 
