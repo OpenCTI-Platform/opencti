@@ -20,7 +20,7 @@ jobs:
     - name: Display Runner Information
       continue-on-error: true
       run: |
-          set -x
+          set -ex
           echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
           echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
           echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
@@ -40,7 +40,7 @@ jobs:
 
     - name: Set up Docker Compose for backends and sync instances
       run: |
-         set -x
+         set -ex
          cd opencti-platform/opencti-ci         
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
@@ -49,7 +49,7 @@ jobs:
     - name: Wait for OpenCTI sync instances to start
       continue-on-error: true
       run: |
-          set -x
+          set -ex
           echo "$(date)"  
           cd opencti-platform/opencti-ci
           ./wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
@@ -96,7 +96,7 @@ jobs:
           -e SMTP__ENABLED=false \
           -e PYTHONUNBUFFERED=1  \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -x;
+          sh -c 'set -ex;
             echo -e "\n\n *********\n ********* Start OpenCTI API test";
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
             apk add build-base git libffi-dev cargo;
@@ -110,11 +110,10 @@ jobs:
             yarn build
             yarn check-ts
             yarn lint
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration
         '
 
-# Output all logs used during the job
-
+    # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
       continue-on-error: true
       run: |
@@ -174,7 +173,7 @@ jobs:
     - name: Display Runner Information
       continue-on-error: true
       run: |
-          set -x
+          set -ex
           echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
           echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
           echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
@@ -185,13 +184,13 @@ jobs:
 
     - name: Set up Docker Compose for backends
       run: |
-         set -x
+         set -ex
          cd opencti-platform/opencti-ci         
          export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 
-    - name: Monitor ressources usage in background
+    - name: Monitor resources usage in background
       run: |
         # Run docker stats every 60s and save to file
         while true; do
@@ -225,7 +224,7 @@ jobs:
           -e SMTP__ENABLED=false \
           -e PYTHONUNBUFFERED=1  \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -x;
+          sh -c 'set -ex;
             echo -e "\n\n *********\n ********* Start OpenCTI API test";
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
             apk add build-base git libffi-dev cargo;
@@ -241,6 +240,153 @@ jobs:
             yarn lint
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit
         '
+
+    - name: Stop docker stats monitor and print logs
+      if: always()
+      continue-on-error: true
+      run: |
+        kill $(cat monitor.pid) || true
+        echo "==== Docker stats log ===="
+        cat docker_stats.log        
+
+
+  run-opencti-e2e-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Display Runner Information
+      continue-on-error: true
+      run: |
+          set -ex
+          echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
+          echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
+          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
+          env
+
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Monitor resources usage in background
+      run: |
+        # Run docker stats every 60s and save to file
+        while true; do
+          echo "==== $(date) ====" >> docker_stats.log
+          docker stats --no-stream >> docker_stats.log
+          free -m >> docker_stats.log
+          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
+          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
+          sleep 60
+        done &
+        # Save background PID
+        echo $! > monitor.pid
+
+    - name: Set up Docker Compose for backends
+      run: |
+         set -ex
+         cd opencti-platform/opencti-ci         
+         export TAG=${{ needs.build-opencti-platform.outputs.version }}
+         docker network create runner-docker-network
+         docker compose --profile "backend" up -d
+
+
+    - name: Start e2e opencti and worker instance
+      run: |
+        docker run -d --network runner-docker-network \
+          --name opencti-e2e-start \
+          -p 4500:4100 \
+          -v ${{ github.workspace }}:/home/workspace \        
+          -E APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \ \
+          -e APP__PORT=4100 \
+          -e APP__ENABLED_DEV_FEATURES='["*"]' \
+          -e APP__ADMIN__PASSWORD=admin \
+          -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
+          -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+          -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
+          -e APP__HEALTH_ACCESS_KEY=cihealthkey \
+          -e REDIS__HOSTNAME=redis \
+          -e REDIS__NAMESPACE=e2e-start \
+          -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
+          -e ELASTICSEARCH__INDEX_PREFIX=e2e-start \
+          -e MINIO__ENDPOINT=minio \
+          -e MINIO__BUCKET_NAME=e2e-start-bucket \
+          -e RABBITMQ__HOSTNAME=rabbitmq \
+          -e RABBITMQ__QUEUE_PREFIX=e2e-start \
+          -e EXPIRATION_SCHEDULER__ENABLED=false \
+          -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
+          -e PUBLISHER_MANAGER__ENABLED=false \
+          -e SMTP__ENABLED=false \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -ex;        
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+            apk add build-base git libffi-dev cargo
+            mkdir -p /tmp/e2e-start-platform/
+            cp -a /home/workspace/* /tmp/e2e-start-platform/
+            tree -L 2 /tmp/e2e-start-platform/
+            cd /tmp/e2e-start-platform/client-python
+            pip install -r requirements.txt
+            pip install -e .[dev,doc]
+            cd /tmp/e2e-start-platform/opencti-platform/opencti-graphql
+            npm install -g corepack
+            cp /tmp/e2e-start-platform/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn install:python
+            yarn build:dev
+            yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
+            NODE_OPTIONS=--max_old_space_size=8192 yarn start
+            ';
+        
+        docker run -d --network runner-docker-network \
+          --name opencti-e2e-worker \
+          -v ${{ github.workspace }}:/home/workspace \
+          -e OPENCTI_URL=http://opencti-e2e-start:4100 \
+          -e OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+          -e WORKER_LOG_LEVEL=info \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -x;
+            sleep 10
+            mkdir -p /tmp/opencti-e2e-worker
+            cp -a /home/workspace/* /tmp/opencti-e2e-worker
+            apk add build-base git libffi-dev cargo
+            cd /tmp/opencti-e2e-worker/client-python
+            echo "[INFO] using client-python on branch $(git branch --show-current)"
+            pip install -r requirements.txt
+            pip install -e .[dev,doc]
+            while ! nc -z opencti-e2e-start 4100 ; do sleep 1 ; done
+            cd /tmp/opencti-e2e-worker/opencti-worker
+            pip install -r src/requirements.txt
+            python3 src/worker.py
+        '
+
+    - name: Frontend tests
+      run: |
+        docker run --network runner-docker-network \
+          --name frontend-e2e-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          -e BACK_END_URL=http://opencti-e2e-start:4100 \
+          -e E2E_TEST=true \
+          -e TEAMS_WEBHOOK="teams-webhook-url" \
+          node:22.21.0 \
+          sh -c 'set -ex;
+              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+              apt-get update
+              apt-get -y install netcat-traditional
+              mkdir -p /tmp/opencti-front-e2e-tests
+              cp -a /home/workspace/* /tmp/opencti-front-e2e-tests
+              cd /tmp/opencti-front-e2e-tests/opencti-platform/opencti-front
+              npm install -g corepack
+              cp /tmp/opencti-front-e2e-tests/opencti-platform/.yarnrc.yml .
+              yarn install
+              npx playwright install --with-deps chromium
+              yarn build
+              yarn test:e2e
+            '
+
+
+
+    - name: Frontend e2e tests
+      run: |
+        docker run --network runner-docker-network \        
+        
 
     - name: Stop docker stats monitor and print logs
       if: always()
