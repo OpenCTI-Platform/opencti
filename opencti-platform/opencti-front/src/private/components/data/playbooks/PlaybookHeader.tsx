@@ -151,7 +151,7 @@ const PlaybookHeaderComponent = ({
       </ToggleButtonGroup>
       <PlaybookPopover
         playbookId={playbook.id}
-        running={playbook.playbook_running}
+        running={!!playbook.playbook_running}
       />
       <PlaybookEdition id={playbook.id}/>
       <Drawer

@@ -22,6 +22,7 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import ToggleButton from '@mui/material/ToggleButton';
 import { useNavigate } from 'react-router-dom';
 import fileDownload from 'js-file-download';
+import { PlaybooksLinesPaginationQuery$variables } from '@components/data/__generated__/PlaybooksLinesPaginationQuery.graphql';
 import PlaybookPopoverToggleDialog from './PlaybookPopoverToggleDialog';
 import { fetchQuery } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
@@ -59,7 +60,7 @@ const playbookExportQuery = graphql`
 interface PlaybookPopoverProps {
   playbookId: string
   running: boolean
-  paginationOptions: unknown
+  paginationOptions?: PlaybooksLinesPaginationQuery$variables
 }
 
 const PlaybookPopover = ({
