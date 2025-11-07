@@ -1,4 +1,3 @@
-import ejs from 'ejs';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
@@ -40,6 +39,8 @@ import { extractRepresentative } from '../database/entity-representative';
 import { extractStixRepresentativeForUser } from '../database/stix-representative';
 import { EVENT_TYPE_UPDATE } from '../database/utils';
 import NotificationTool from '../utils/NotificationTool';
+import { sanitizeNotificationData } from '../utils/templateContextSanitizer';
+import { safeRender } from '../utils/safeEjs.client';
 
 const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -143,9 +144,15 @@ export async function handleEmailNotification(
 ) {
   const { title, template, url_suffix: urlSuffix } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_EMAIL_INTERFACE;
 
-  const renderedTitle = ejs.render(title, templateData);
-  const octiTool = new NotificationTool();
-  const renderedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix, octi: octiTool });
+  const sanitizedData = {
+    // Sanitize template data before rendering
+    ...sanitizeNotificationData(templateData),
+    url_suffix: urlSuffix,
+    octi: new NotificationTool(),
+  };
+
+  const renderedTitle = await safeRender(title, sanitizedData);
+  const renderedEmail = await safeRender(template, sanitizedData);
 
   const emailPayload = {
     from: await smtpComputeFrom(),
@@ -173,13 +180,22 @@ export async function handleSimplifiedEmailNotification(
     header,
     logo,
     footer,
-    background_color: bgColor,
-    url_suffix: urlSuffix
+    background_color,
+    url_suffix
   } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL_INTERFACE;
 
-  const finalTemplateData = { ...templateData, header, logo, footer, background_color: bgColor, url_suffix: urlSuffix };
-  const renderedTitle = ejs.render(title, finalTemplateData);
-  const renderedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
+  const sanitizedData = {
+    // Sanitize template data before rendering
+    ...sanitizeNotificationData(templateData),
+    header,
+    logo,
+    footer,
+    background_color,
+    url_suffix,
+  };
+
+  const renderedTitle = await safeRender(title, sanitizedData);
+  const renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData);
 
   const emailPayload = {
     from: await smtpComputeFrom(),
@@ -203,12 +219,11 @@ export async function handleWebhookNotification(configurationString: string | un
   const { url, template, verb, params, headers } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
 
   // Use ejs.render with escape function that uses JSON.stringify
-  const renderedWebhookTemplate = ejs.render(template, templateData, {
+  const renderedWebhookTemplate = await safeRender(template, sanitizeNotificationData(templateData), {
     escape: (value: any) => {
       const result = JSON.stringify(value);
       return result.startsWith('"') && result.endsWith('"') ? result.slice(1, -1) : result;
-    }
-  });
+    } });
   const webhookPayload = JSON.parse(renderedWebhookTemplate);
 
   const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));

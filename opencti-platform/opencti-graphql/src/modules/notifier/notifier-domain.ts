@@ -69,7 +69,7 @@ export const checkAllowedEjsFunctions = (template: string, throwError: boolean =
 };
 
 const validateNotifier = (notifier: { notifier_connector_id: string, notifier_configuration: string }) => {
-  checkAllowedEjsFunctions(notifier.notifier_configuration);
+  // checkAllowedEjsFunctions(notifier.notifier_configuration);
 
   const notifierConnector = BUILTIN_NOTIFIERS_CONNECTORS[notifier.notifier_connector_id];
   if (isEmptyField(notifierConnector) || isEmptyField(notifierConnector.connector_schema)) {
