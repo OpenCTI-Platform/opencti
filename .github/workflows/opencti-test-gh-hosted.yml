@@ -250,7 +250,7 @@ jobs:
         cat docker_stats.log        
 
 
-  run-opencti-e2e-test:
+  run-opencti-frontend-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -364,28 +364,23 @@ jobs:
     - name: Frontend tests
       run: |
         docker run --network runner-docker-network \
-          --name frontend-e2e-tests \
+          --name frontend-tests \
           -v ${{ github.workspace }}:/home/workspace \
-          -e BACK_END_URL=http://opencti-e2e-start:4100 \
-          -e E2E_TEST=true \
-          -e TEAMS_WEBHOOK="teams-webhook-url" \
-          node:22.21.0 \
-          sh -c 'set -ex;
-              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-              apt-get update
-              apt-get -y install netcat-traditional
-              mkdir -p /tmp/opencti-front-e2e-tests
-              cp -a /home/workspace/* /tmp/opencti-front-e2e-tests
-              cd /tmp/opencti-front-e2e-tests/opencti-platform/opencti-front
-              npm install -g corepack
-              cp /tmp/opencti-front-e2e-tests/opencti-platform/.yarnrc.yml .
-              yarn install
-              npx playwright install --with-deps chromium
-              yarn build
-              yarn test:e2e
-            '
-
-
+          node:22-alpine \
+          sh -c 'set -x;
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+            apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
+            mkdir -p /tmp/opencti-front-tests
+            cp -a /home/workspace/* /tmp/opencti-front-tests
+            npm install -g node-gyp
+            npm install -g corepack
+            cd /tmp/opencti-front-tests/opencti-platform/opencti-front
+            cp /tmp/opencti-front-tests/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn build
+            yarn check-ts
+            yarn lint
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
 
     - name: Frontend e2e tests
       run: |
