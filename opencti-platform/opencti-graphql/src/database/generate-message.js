@@ -67,7 +67,7 @@ const ACTION_KEYS = ['x_opencti_request_access', pirExplanation.name];
 export const MAX_PATCH_ELEMENTS_FOR_MESSAGE = 3;
 export const MAX_OPERATIONS_FOR_MESSAGE = 3;
 export const generateUpdatePatchMessage = (patchElements, entityType, data = {}) => {
-  logApp.info('patchElements ===========', { patchElements });
+  logApp.info('patchElements ===========', { patchElements }); // TODO remove
   // noinspection UnnecessaryLocalVariableJS
   const generatedMessage = patchElements
     .slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).map(([type, operations]) => {
