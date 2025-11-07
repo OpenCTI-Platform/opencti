@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { ThreatActorIndividualCard_node$key } from './__generated__/ThreatActorIndividualCard_node.graphql';
 import { GenericAttack, GenericAttackCard } from '../../common/cards/GenericAttackCard';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 export const ThreatActorIndividualCardFragment = graphql`
   fragment ThreatActorIndividualCard_node on ThreatActorIndividual {
@@ -124,7 +125,7 @@ export const ThreatActorIndividualCardFragment = graphql`
 `;
 interface ThreatActorIndividualCardProps {
   node: ThreatActorIndividualCard_node$key;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   bookmarksIds?: string[];
 }
 const ThreatActorIndividualCard: FunctionComponent<

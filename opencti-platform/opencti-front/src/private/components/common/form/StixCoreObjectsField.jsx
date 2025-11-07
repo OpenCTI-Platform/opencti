@@ -86,6 +86,10 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
             name
             description
           }
+          ... on Event {
+            name
+            description
+          }
           ... on Sector {
             name
             description

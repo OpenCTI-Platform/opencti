@@ -80,7 +80,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
         <Grid
           container={true}
           spacing={3}
-          sx={{ marginTop: '10px', marginBottom: '10px' }}
+          sx={{ marginTop: '10px' }}
         >
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -142,22 +142,6 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               {t_i18n('Description')}
             </Typography>
             <ExpandableMarkdown source={indicator.description} limit={400} removeLinks />
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              sx={{ marginTop: '20px' }}
-            >
-              {t_i18n('Indicator types')}
-            </Typography>
-            <FieldOrEmpty source={indicator.indicator_types}>
-              {indicator.indicator_types?.map((indicatorType) => (
-                <Chip
-                  key={indicatorType}
-                  classes={{ root: classes.chip }}
-                  label={indicatorType}
-                />
-              ))}
-            </FieldOrEmpty>
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -179,6 +163,47 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               status={indicator.x_opencti_detection}
             />
             <StixCoreObjectKillChainPhasesView killChainPhases={indicator.killChainPhases ?? []} />
+          </Grid>
+        </Grid>
+        <Grid
+          container={true}
+          spacing={3}
+          sx={{ marginBottom: '10px' }}
+        >
+          <Grid item xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              sx={{ marginTop: '20px' }}
+            >
+              {t_i18n('Indicator types')}
+            </Typography>
+            <FieldOrEmpty source={indicator.indicator_types}>
+              {indicator.indicator_types?.map((indicatorType) => (
+                <Chip
+                  key={indicatorType}
+                  classes={{ root: classes.chip }}
+                  label={indicatorType}
+                />
+              ))}
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item xs={4}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              sx={{ marginTop: '20px' }}
+            >
+              {t_i18n('Main observable type')}
+            </Typography>
+            <FieldOrEmpty source={indicator.x_opencti_main_observable_type}>
+              <Chip
+                classes={{ root: classes.chip }}
+                label={indicator.x_opencti_main_observable_type}
+              />
+            </FieldOrEmpty>
+          </Grid>
+          <Grid item xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -218,6 +243,7 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       valid_until
       x_opencti_score
       x_opencti_detection
+      x_opencti_main_observable_type
       x_mitre_platforms
       indicator_types
       decay_base_score
