@@ -291,6 +291,10 @@ jobs:
 
     - name: Start e2e opencti and worker instance
       run: |
+        set -x;
+        sleep 2;
+        echo ${{ github.workspace }};
+        ls ${{ github.workspace }};
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
