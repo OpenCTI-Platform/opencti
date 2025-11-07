@@ -990,7 +990,7 @@
   "Workspace graph data": "Données du graphique de l'espace de travail",
   "Workspace type": "Type d'espace de travail",
   "X_Aliases": "X_Aliases",
-  "XTM Hub is backend reachable": "Le backend de XTM Hub est accessible",
+  "XTM Hub backend is reachable": "Le backend du XTM Hub est joignable",
   "XTM Hub last connectivity check": "Dernier contrôle de connectivité du XTM Hub",
   "XTM Hub registration date": "Date d'inscription au XTM Hub",
   "XTM Hub registration manager": "Manager d'enregistrement XTM Hub",

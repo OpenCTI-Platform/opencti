@@ -31,7 +31,7 @@ export const xtmHubSettingsQuery = graphql`
       xtm_hub_registration_user_id
       xtm_hub_registration_user_name
       xtm_hub_last_connectivity_check
-      xtm_hub_is_backend_reachable
+      xtm_hub_backend_is_reachable
       xtm_hub_token
     }
   }
@@ -62,7 +62,7 @@ const XtmHubSettingsComponent = () => {
       {
         isGrantedToXtmHub
         && isXTMHubAccessible
-        && xtmHubSettings.xtm_hub_is_backend_reachable
+        && xtmHubSettings.xtm_hub_backend_is_reachable
         && (<XtmHubTab registrationStatus={xtmHubSettings.xtm_hub_registration_status || undefined} />)
       }
       <div className="clearfix" />

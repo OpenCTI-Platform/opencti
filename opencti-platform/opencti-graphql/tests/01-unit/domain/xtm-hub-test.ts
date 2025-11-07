@@ -61,7 +61,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }, { key: 'xtm_hub_is_backend_reachable', value: [true] }]
+        [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
       );
     });
 
@@ -87,7 +87,7 @@ describe('XTM hub', () => {
           { key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.Registered] },
           { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
           { key: 'xtm_hub_should_send_connectivity_email', value: [true] },
-          { key: 'xtm_hub_is_backend_reachable', value: [true] }
+          { key: 'xtm_hub_backend_is_reachable', value: [true] }
         ]
       );
     });
@@ -109,7 +109,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_is_backend_reachable', value: [false] }]
+        [{ key: 'xtm_hub_backend_is_reachable', value: [false] }]
       );
     });
 
@@ -130,7 +130,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_is_backend_reachable', value: [true] }]
+        [{ key: 'xtm_hub_backend_is_reachable', value: [true] }]
       );
     });
 
@@ -152,7 +152,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }, { key: 'xtm_hub_is_backend_reachable', value: [true] }]
+        [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
       );
     });
 
@@ -176,7 +176,7 @@ describe('XTM hub', () => {
           HUB_REGISTRATION_MANAGER_USER,
           'id',
           ENTITY_TYPE_SETTINGS,
-          [{ key: 'xtm_hub_should_send_connectivity_email', value: [false] }, { key: 'xtm_hub_is_backend_reachable', value: [true] }]
+          [{ key: 'xtm_hub_should_send_connectivity_email', value: [false] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
         );
       });
 
