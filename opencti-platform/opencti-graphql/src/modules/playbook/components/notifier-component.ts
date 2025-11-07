@@ -87,7 +87,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
             if (isEventInPirRelationship(event)) {
               message = event.message;
             } else if (event.type === 'update') {
-              message = `${event.message} in \`${extractEntityRepresentativeName(stixObject)}\``;
+              message = `${event.message} in \`${extractEntityRepresentativeName(stixObject)}\` ${event.data.type}`;
             } else if (event.type === 'delete') {
               message = generateDeleteMessage({
                 ...stixObject,

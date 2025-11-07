@@ -9,9 +9,9 @@ import { isStixRelation } from '../../schema/stixRelationship';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import type { AuthContext } from '../../types/user';
-import { AUTOMATION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER } from '../../utils/access';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { isEventInPirRelationship, isEventUpdateOnEntity, isValidEventType, StreamDataEventTypeEnum } from './playbookManagerUtils';
+import { isEventInPirRelationship, isEventUpdateOnEntity, isValidEventType } from './playbookManagerUtils';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { playbookExecutor } from './playbookExecutor';
 import { storeLoadById } from '../../database/middleware-loader';
@@ -77,6 +77,7 @@ export const isEventMatchesPir = async (
   // Else if it's an update of an entity, we check if this entity is flagged in PIR.
   if (isEventUpdateOnEntity(eventData)) {
     const entityPirList = await listOfPirInEntity(context, eventData.data.id);
+
     if (entityPirList.length > 0) {
       // If entity is flagged and no PIR filtering set, it matches.
       if (!pirList || pirList.length === 0) return true;
