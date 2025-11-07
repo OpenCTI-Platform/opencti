@@ -6,103 +6,14 @@ on:
       - oob/ci-migrate-to-gh
 
 jobs:
-  build-opencti-platform:
-    name: build-opencti-platform
-    runs-on: ubuntu-latest
-    outputs:
-      tags: ${{ steps.meta.outputs.tags }}
-      version: ${{ steps.meta.outputs.version }}
-
-    steps:
-    - uses: actions/checkout@v5
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        name: gha-builder-platform
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Login to GHCR
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Docker meta
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: filigran/platform
-        tags: |
-          type=sha,format=short
-    - name: Build and push
-      uses: docker/build-push-action@v6
-      with:
-        context: opencti-platform
-        file: opencti-platform/Dockerfile_featurebranch
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=registry,ref=filigran/platform:buildcache
-        cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
-
-  build-opencti-worker:
-    name: build-opencti-worker
-    runs-on: ubuntu-latest
-    outputs:
-      tags: ${{ steps.meta.outputs.tags }}
-      version: ${{ steps.meta.outputs.version }}
-    steps:
-    - uses: actions/checkout@v5
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        name: gha-builder-worker
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Login to GHCR
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Docker meta
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: filigran/worker
-        tags: |
-          type=sha,format=short
-    - name: Build and push
-      uses: docker/build-push-action@v6
-      with:
-        context: opencti-worker
-        file: opencti-worker/Dockerfile
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=registry,ref=filigran/platform:buildcache
-        cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
-
-
   call-build-workflow:
       uses: ./.github/workflows/opencti-docker-build.yml
       with:
         image_tag: ${{ github.sha }}
       secrets: inherit
 
-
   run-opencti-integration-test:
-    needs: [build-opencti-platform, build-opencti-worker]
+    needs: call-build-workflow
     runs-on: ubuntu-latest
 
     steps:
@@ -126,12 +37,12 @@ jobs:
 
     - name: Collect Workflow Telemetry
       uses: catchpoint/workflow-telemetry-action@v2
-      
+
     - name: Set up Docker Compose for backends and sync instances
       run: |
          set -x
          cd opencti-platform/opencti-ci         
-         export TAG=${{ needs.build-opencti-platform.outputs.version }}
+         export TAG=${{ github.sha }}
          docker network create runner-docker-network
          docker compose --profile "*" up -d
 
@@ -147,7 +58,7 @@ jobs:
           ./wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
 
-    - name: Monitor ressources usage in background
+    - name: Monitor resources usage in background
       run: |
         # Run docker stats every 60s and save to file
         while true; do
