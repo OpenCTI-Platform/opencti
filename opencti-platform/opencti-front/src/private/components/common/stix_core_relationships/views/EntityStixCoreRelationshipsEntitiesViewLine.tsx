@@ -24,6 +24,7 @@ import {
   EntityStixCoreRelationshipsEntitiesViewLine_node$key,
 } from './__generated__/EntityStixCoreRelationshipsEntitiesViewLine_node.graphql';
 import ItemEntityType from '../../../../../components/ItemEntityType';
+import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -207,7 +208,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
 interface EntityStixCoreRelationshipsEntitiesLineProps {
   node: EntityStixCoreRelationshipsEntitiesViewLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   onToggleEntity: UseEntityToggle<{ id: string }>['onToggleEntity'];
   selectedElements: UseEntityToggle<{ id: string }>['selectedElements'];
   deSelectedElements: UseEntityToggle<{ id: string }>['deSelectedElements'];

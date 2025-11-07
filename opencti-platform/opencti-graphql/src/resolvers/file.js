@@ -29,9 +29,7 @@ const fileResolvers = {
   },
   Mutation: {
     uploadImport: (_, args, context) => uploadImport(context, context.user, args),
-    uploadPending: (_, args, context) => {
-      return uploadPending(context, context.user, args);
-    },
+    uploadPending: (_, args, context) => uploadPending(context, context.user, args),
     deleteImport: (_, { fileName }, context) => deleteImport(context, context.user, fileName),
     askJobImport: (_, args, context) => askJobImport(context, context.user, args),
     uploadAndAskJobImport: (_, args, context) => uploadAndAskJobImport(context, context.user, args),

@@ -17,6 +17,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
 import MarkdownDisplay from '../../../../../components/MarkdownDisplay';
 import { useGenerateAuditMessage } from '../../../../../utils/history';
+import { HandleAddFilter } from '../../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -45,12 +46,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface AuditLineProps {
   node: AuditLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void;
+  onLabelClick: HandleAddFilter;
 }
 
 const AuditLineFragment = graphql`

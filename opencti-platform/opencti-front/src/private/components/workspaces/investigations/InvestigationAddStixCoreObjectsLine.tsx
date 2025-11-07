@@ -15,6 +15,7 @@ import { getMainRepresentative } from '../../../../utils/defaultRepresentatives'
 import type { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
 import ItemEntityType from '../../../../components/ItemEntityType';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -43,12 +44,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface InvestigationAddStixCoreObjectsLineComponentProps {
   dataColumns: DataColumns
   node: InvestigationAddStixCoreObjectsLine_node$data,
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent
-  ) => void,
+  onLabelClick: HandleAddFilter,
   onToggleEntity: (
     entity: InvestigationAddStixCoreObjectsLine_node$data,
     event: React.SyntheticEvent

@@ -97,7 +97,7 @@ export const uploadPending = async (context, user, args) => {
   }
   const { file, entityId = null, labels = null, errorOnExisting = false, refreshEntity = false, file_markings = [] } = args;
   let finalFile = file;
-  const meta = { labels_text: labels ? labels.join(';') : undefined };
+  const meta = { labels, labels_text: labels ? labels.join(';') : undefined };
   const entity = entityId ? await internalLoadById(context, user, entityId) : undefined;
 
   // In the case of a workbench of an entity, if we want to refresh the entity data contains in
