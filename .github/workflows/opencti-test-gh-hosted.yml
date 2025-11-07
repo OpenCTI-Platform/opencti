@@ -298,7 +298,7 @@ jobs:
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
-          -v ${{ github.workspace }}:/home/workspace \        
+          -v ${{ github.workspace }}:/home/workspace \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
@@ -389,8 +389,27 @@ jobs:
 
     - name: Frontend e2e tests
       run: |
-        docker run --network runner-docker-network \        
-        
+        docker run --network runner-docker-network \
+          --name frontend-e2e-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          -e BACK_END_URL=http://opencti-e2e-start:4100 \
+          -e E2E_TEST=true \
+          -e TEAMS_WEBHOOK="teams-webhook-url" \
+          node:22.21.0 \
+          sh -c 'set -ex;
+              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+              apt-get update
+              apt-get -y install netcat-traditional
+              mkdir -p /tmp/opencti-front-e2e-tests
+              cp -a /home/workspace/* /tmp/opencti-front-e2e-tests
+              cd /tmp/opencti-front-e2e-tests/opencti-platform/opencti-front
+              npm install -g corepack
+              cp /tmp/opencti-front-e2e-tests/opencti-platform/.yarnrc.yml .
+              yarn install
+              npx playwright install --with-deps chromium
+              yarn build
+              yarn test:e2e
+            '
 
     - name: Stop docker stats monitor and print logs
       if: always()
