@@ -1,5 +1,6 @@
 import * as R from 'ramda';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+// eslint-disable-next-line import/no-unresolved
+import { ATTR_DB_NAME, ATTR_DB_OPERATION } from '@opentelemetry/semantic-conventions/incubating';
 import type { BasicStoreCommon, BasicStoreIdentifier } from '../types/store';
 import { logApp } from '../config/conf';
 import { UnsupportedError } from '../config/errors';
@@ -137,8 +138,8 @@ const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>
     return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
   };
   return telemetry(context, user, `CACHE ${type}`, {
-    [SEMATTRS_DB_NAME]: 'cache_engine',
-    [SEMATTRS_DB_OPERATION]: 'select',
+    [ATTR_DB_NAME]: 'cache_engine',
+    [ATTR_DB_OPERATION]: 'select',
   }, getEntitiesFromCacheFn);
 };
 

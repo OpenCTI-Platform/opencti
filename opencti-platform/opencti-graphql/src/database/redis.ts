@@ -1,4 +1,5 @@
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
+// eslint-disable-next-line import/no-unresolved
+import { ATTR_DB_NAME } from '@opentelemetry/semantic-conventions/incubating';
 import { Cluster, Redis } from 'ioredis';
 import type { ChainableCommander, CommonRedisOptions, ClusterOptions, RedisOptions, SentinelAddress, SentinelConnectionOptions } from 'ioredis';
 import { Redlock } from '@sesamecare-oss/redlock';
@@ -518,7 +519,7 @@ const pushToStream = async (context: AuthContext, user: AuthUser, client: Cluste
       }
     };
     await telemetry(context, user, 'INSERT STREAM', {
-      [SEMATTRS_DB_NAME]: 'stream_engine',
+      [ATTR_DB_NAME]: 'stream_engine',
     }, pushToStreamFn);
   }
 };

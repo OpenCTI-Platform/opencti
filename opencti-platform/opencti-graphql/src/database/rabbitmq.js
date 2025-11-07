@@ -1,6 +1,7 @@
 import amqp from 'amqplib/callback_api';
 import util from 'util';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+// eslint-disable-next-line import/no-unresolved
+import { ATTR_DB_NAME, ATTR_DB_OPERATION } from '@opentelemetry/semantic-conventions/incubating';
 import { LRUCache } from 'lru-cache';
 import conf, { booleanConf, configureCA, loadCert, logApp } from '../config/conf';
 import { DatabaseError } from '../config/errors';
@@ -174,8 +175,8 @@ export const metrics = async (context, user) => {
     return { overview, consumers, queues: platformQueues };
   };
   return telemetry(context, user, 'QUEUE metrics', {
-    [SEMATTRS_DB_NAME]: 'messaging_engine',
-    [SEMATTRS_DB_OPERATION]: 'metrics',
+    [ATTR_DB_NAME]: 'messaging_engine',
+    [ATTR_DB_OPERATION]: 'metrics',
   }, metricApi);
 };
 
