@@ -122,7 +122,7 @@ const buildMessageForValues = (entityType, key, values, data = {}, specificOpera
   if (key === authorizedMembers.name) {
     return values.map(({ id, access_right }) => {
       const member = members.find(({ internal_id }) => internal_id === id);
-      return `\`${member?.name ?? id} (${access_right})\``;
+      return `${member?.name ?? id} (${access_right})`;
     }).join(', ');
   }
   if (key === X_WORKFLOW_ID) {
