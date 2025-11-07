@@ -17,7 +17,6 @@ import * as JSONPath from 'jsonpath-plus';
 
 import '../modules';
 import { v4 as uuidv4 } from 'uuid';
-import ejs from 'ejs';
 import {
   type BasedRepresentationAttribute,
   type ComplexAttributePath,
@@ -47,6 +46,7 @@ import { logApp } from '../config/conf';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { fromRef, toRef } from '../schema/stixRefRelationship';
+import { safeRender } from '../utils/safeEjs.client';
 
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
@@ -106,7 +106,7 @@ const extractComplexPathFromJson = async (
     }
     return defaultValue;
   };
-  const val = await ejs.render(`<?- ${formula} ?>`, data, { delimiter: '?', async: true });
+  const val = await safeRender(`<?- ${formula} ?>`, data, { delimiter: '?', async: true });
   return attrDef ? format(val, attrDef, attribute) : val;
 };
 
