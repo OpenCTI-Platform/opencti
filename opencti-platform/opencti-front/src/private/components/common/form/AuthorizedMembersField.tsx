@@ -4,8 +4,7 @@ import ObjectMembersField, { OptionMember } from '@components/common/form/Object
 import FormHelperText from '@mui/material/FormHelperText';
 import { Field, FieldArray, FieldProps, Formik } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
-import IconButton from '@mui/material/IconButton';
-import { Add } from '@mui/icons-material';
+import { Button } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
 import React, { CSSProperties, useEffect, useState } from 'react';
@@ -432,7 +431,7 @@ const AuthorizedMembersField = ({
                       </MenuItem>
                     ))}
                   </Field>
-                  <IconButton
+                  <Button
                     color="primary"
                     aria-label="More"
                     onClick={() => handleSubmit()}
@@ -444,8 +443,8 @@ const AuthorizedMembersField = ({
                     }
                     style={{ marginTop: 10 }}
                   >
-                    <Add fontSize="small" />
-                  </IconButton>
+                    {t_i18n('Add')}
+                  </Button>
                 </div>
                 {values.newAccessMember && values.newAccessMember.type === 'Organization' && (
                   <div style={fieldSpacingContainerStyle}>
