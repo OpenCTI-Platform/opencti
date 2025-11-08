@@ -74,8 +74,7 @@ import inject18n from '../../../components/i18n';
 import { truncate } from '../../../utils/String';
 import { commitMutation, fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import ItemIcon from '../../../components/ItemIcon';
-import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
-import ObjectMarkingField from '../common/form/ObjectMarkingField';
+import ObjectMarkingField, { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import { labelsSearchQuery } from '../settings/LabelsQuery';
 import Security from '../../../utils/Security';
@@ -514,7 +513,7 @@ class DataTableToolBar extends Component {
   handleBulkEditMarkings() {
     const { t } = this.props;
     const { bulkMarkings } = this.state;
-    const { selectedElements, selectAll, filters } = this.props;
+    const { selectedElements, selectAll } = this.props;
 
     if (!bulkMarkings || bulkMarkings.length === 0) {
       MESSAGING$.notifyError(t('Please select at least one marking'));
@@ -531,9 +530,8 @@ class DataTableToolBar extends Component {
       MESSAGING$.notifyError(t('Bulk edit markings for all entities requires a background task. Please select specific entities.'));
       this.handleCloseEditMarkings();
       return;
-    } else {
-      entitiesToProcess = Object.values(selectedElements || {});
     }
+    entitiesToProcess = Object.values(selectedElements || {});
 
     if (entitiesToProcess.length === 0) {
       MESSAGING$.notifyError(t('Please select at least one entity'));
@@ -546,7 +544,7 @@ class DataTableToolBar extends Component {
     let errorCount = 0;
     const total = entitiesToProcess.length;
 
-    const processEntity = (entity, index) => {
+    const processEntity = (entity) => {
       return new Promise((resolve) => {
         // Determine which mutation to use based on entity type
         const isStixCyberObservable = entity.entity_type && entity.entity_type.includes('Stix-Cyber-Observable');
@@ -580,7 +578,7 @@ class DataTableToolBar extends Component {
             }
             resolve();
           },
-          onError: (error) => {
+          onError: () => {
             errorCount += 1;
             if (successCount + errorCount === total) {
               this.setState({ processing: false });
@@ -598,8 +596,8 @@ class DataTableToolBar extends Component {
     };
 
     // Process entities sequentially to avoid overwhelming the server
-    entitiesToProcess.reduce((promise, entity, index) => {
-      return promise.then(() => processEntity(entity, index));
+    entitiesToProcess.reduce((promise, entity) => {
+      return promise.then(() => processEntity(entity));
     }, Promise.resolve());
   }
 
