@@ -4537,7 +4537,7 @@ const StixRelationshipsList = ({
         <QueryRenderer
           query={stixRelationshipsListQuery}
           variables={{
-            first: 50,
+            first: selection.number ?? 50,
             orderBy: dateAttribute,
             orderMode: selection.sort_mode ?? 'desc',
             filters,
