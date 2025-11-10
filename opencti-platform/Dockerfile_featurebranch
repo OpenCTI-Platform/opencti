@@ -50,13 +50,13 @@ FROM base AS app
 
 RUN apk add --no-cache tini python3 python3-dev
 RUN set -eux; \
-    apk add --no-cache --virtual build-dep gcc; \
+    apk add --no-cache gcc; \
     rm -f /usr/lib/python3.12/EXTERNALLY-MANAGED; \
     python3 -m ensurepip; \
     rm -rv /usr/lib/python*/ensurepip; \
     pip3 install --no-cache-dir --upgrade pip setuptools wheel; \
     ln -sf python3 /usr/bin/python; \
-    apk del build-dep
+    apk del gcc
 
 COPY opencti-graphql/src/python/requirements.txt /opt/opencti/src/python/requirements.txt
 RUN pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt
