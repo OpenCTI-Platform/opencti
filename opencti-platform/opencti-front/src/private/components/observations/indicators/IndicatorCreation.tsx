@@ -31,7 +31,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import type { Theme } from '../../../../components/Theme';
 import { IndicatorCreationMutation, IndicatorCreationMutation$variables } from './__generated__/IndicatorCreationMutation.graphql';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
 import CustomFileUploader from '../../common/files/CustomFileUploader';
@@ -172,8 +172,8 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       confidence: parseInt(String(values.confidence), 10),
       x_opencti_score: parseInt(String(values.x_opencti_score), 10),
       x_opencti_detection: values.x_opencti_detection,
-      valid_from: values.valid_from ? parse(values.valid_from).format() : null,
-      valid_until: values.valid_until ? parse(values.valid_until).format() : null,
+      valid_from: values.valid_from ? formatDate(values.valid_from) : null,
+      valid_until: values.valid_until ? formatDate(values.valid_until) : null,
       killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
       createdBy: values.createdBy?.value,
       objectMarking: values.objectMarking.map((v) => v.value),

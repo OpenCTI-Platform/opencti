@@ -16,7 +16,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
@@ -154,8 +154,8 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
         description: values.description,
         infrastructure_types: values.infrastructure_types,
         confidence: parseInt(String(values.confidence), 10),
-        first_seen: values.first_seen ? parse(values.first_seen).format() : null,
-        last_seen: values.last_seen ? parse(values.last_seen).format() : null,
+        first_seen: values.first_seen ? formatDate(values.first_seen) : null,
+        last_seen: values.last_seen ? formatDate(values.last_seen) : null,
         killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
         createdBy: values.createdBy?.value,
         objectMarking: values.objectMarking.map((v) => v.value),

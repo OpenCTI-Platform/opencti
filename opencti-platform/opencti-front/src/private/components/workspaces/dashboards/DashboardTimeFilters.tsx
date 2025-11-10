@@ -4,7 +4,7 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { parse } from 'src/utils/Time';
+import { formatDate } from 'src/utils/Time';
 import { InvestigationGraph_fragment$data } from '@components/workspaces/investigations/__generated__/InvestigationGraph_fragment.graphql';
 import { EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
@@ -37,7 +37,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
   };
 
   const handleChangeDate = (type: 'startDate' | 'endDate', value: Date | null) => {
-    const formattedDate = value ? parse(value).format() : null;
+    const formattedDate = value ? formatDate(value) : null;
     handleDateChange(type, formattedDate);
   };
 

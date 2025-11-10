@@ -13,7 +13,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -146,8 +146,8 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
         description: values.description,
         event_types: values.event_types,
         confidence: parseInt(String(values.confidence), 10),
-        start_time: values.start_time ? parse(values.start_time).format() : null,
-        stop_time: values.stop_time ? parse(values.stop_time).format() : null,
+        start_time: values.start_time ? formatDate(values.start_time) : null,
+        stop_time: values.stop_time ? formatDate(values.stop_time) : null,
         createdBy: values.createdBy?.value,
         objectMarking: values.objectMarking.map((v) => v.value),
         objectLabel: values.objectLabel.map((v) => v.value),
