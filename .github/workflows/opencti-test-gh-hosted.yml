@@ -414,6 +414,8 @@ jobs:
 
     - name: upload e2e artifact
       uses: actions/upload-artifact@v4
+      if: always()
+      continue-on-error: true
       with:
         name: opencti-e2e-frontend
         path: ${{ github.workspace }}/frontend-e2e-test/test-results
