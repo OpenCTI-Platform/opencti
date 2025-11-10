@@ -1,9 +1,23 @@
-import moment from 'moment-timezone';
-import { subDays } from 'date-fns';
+import {
+  parseISO,
+  format,
+  formatISO,
+  subDays,
+  subMonths,
+  subYears,
+  addDays,
+  subMinutes,
+  getUnixTime,
+  differenceInMinutes,
+  differenceInSeconds,
+  endOfMonth,
+  startOfDay,
+  endOfDay,
+} from 'date-fns';
 import { isNone } from '../components/i18n';
 
-const defaultDateFormat = 'YYYY-MM-DD';
-const yearDateFormat = 'YYYY';
+const defaultDateFormat = 'yyyy-MM-dd';
+const yearDateFormat = 'yyyy';
 
 export const ONE_SECOND = 1000;
 export const FIVE_SECONDS = 5000;
@@ -16,63 +30,59 @@ export const buildDate = (date) => {
   return new Date(date);
 };
 
-export const parse = (date) => moment(date);
+// Parse a date string or Date object into a Date object
+export const parse = (date) => {
+  if (date instanceof Date) return date;
+  if (typeof date === 'string') return parseISO(date);
+  if (typeof date === 'number') return new Date(date);
+  return new Date(date);
+};
+
 export const formatDate = (date) => {
   if (isNone(date)) {
     return null;
   }
-  return parse(date).format();
+  return formatISO(parse(date));
 };
 
 export const dayStartDate = (date = null, fromStart = true) => {
-  let start = new Date();
-  if (date) {
-    start = parse(date).toDate();
-  }
+  let start = date ? parse(date) : new Date();
   if (fromStart) {
-    start.setHours(0, 0, 0, 0);
+    start = startOfDay(start);
   }
   return start;
 };
 
 export const dayEndDate = (date = null) => {
-  let end = new Date();
-  if (date) {
-    end = parse(date).toDate();
-  }
-  end.setHours(23, 59, 59, 999);
-  return end;
+  const end = date ? parse(date) : new Date();
+  return endOfDay(end);
 };
 
-export const now = () => moment().format();
+export const now = () => formatISO(new Date());
 
-export const nowUTC = () => moment().utc().format();
+export const nowUTC = () => formatISO(new Date());
 
-export const dayAgo = () => moment().subtract(1, 'days').format();
+export const dayAgo = () => formatISO(subDays(new Date(), 1));
 
-export const daysAgo = (number, date, fromStart = true) => moment(dayStartDate(date ?? null, fromStart)).subtract(number, 'days').format();
+export const daysAgo = (number, date, fromStart = true) => formatISO(subDays(dayStartDate(date ?? null, fromStart), number));
 
-export const lastDayOfThePreviousMonth = () => moment().subtract(1, 'months').endOf('month').format();
+export const lastDayOfThePreviousMonth = () => formatISO(endOfMonth(subMonths(new Date(), 1)));
 
 export const daysAfter = (number, date, noFuture = true) => {
-  const newDate = moment(date || dayStartDate())
-    .add(number, 'days')
-    .format();
-  if (noFuture && moment(newDate).unix() > moment().unix()) {
-    return moment(dayEndDate()).format();
+  const newDate = addDays(date ? parse(date) : dayStartDate(), number);
+  if (noFuture && getUnixTime(newDate) > getUnixTime(new Date())) {
+    return formatISO(dayEndDate());
   }
-  return newDate;
+  return formatISO(newDate);
 };
 
-export const minutesBefore = (number, date) => moment(date || dayStartDate())
-  .subtract(number, 'minutes')
-  .format();
+export const minutesBefore = (number, date) => formatISO(subMinutes(date ? parse(date) : dayStartDate(), number));
 
-export const monthsAgo = (number) => moment(dayStartDate()).subtract(number, 'months').format();
+export const monthsAgo = (number) => formatISO(subMonths(dayStartDate(), number));
 
-export const yearsAgo = (number) => moment(dayStartDate()).subtract(number, 'years').format();
+export const yearsAgo = (number) => formatISO(subYears(dayStartDate(), number));
 
-export const yearFormat = (data) => (data && data !== '-' ? parse(data).format(yearDateFormat) : '');
+export const yearFormat = (data) => (data && data !== '-' ? format(parse(data), yearDateFormat) : '');
 
 /**
  * @param {string | null} specificFormat
@@ -82,29 +92,29 @@ export const dateFormat = (data, specificFormat = null) => {
     return null;
   }
   return data && data !== '-'
-    ? parse(data).format(specificFormat || defaultDateFormat)
+    ? format(parse(data), specificFormat || defaultDateFormat)
     : '';
 };
 
 export const formatTimeForToday = (time) => {
-  const today = dateFormat(new Date(), 'YYYY-MM-DD');
+  const today = format(new Date(), 'yyyy-MM-dd');
   return `${today}T${time}`;
 };
 
-export const timestamp = (date) => parse(date).unix();
+export const timestamp = (date) => getUnixTime(parse(date));
 
-export const jsDate = (date) => parse(date).toDate();
+export const jsDate = (date) => parse(date);
 
 export const minutesBetweenDates = (startDate, endDate) => {
   const start = parse(startDate);
   const end = parse(endDate);
-  return end.diff(start, 'minutes') + 1;
+  return differenceInMinutes(end, start) + 1;
 };
 
 export const secondsBetweenDates = (startDate, endDate) => {
   const start = parse(startDate);
   const end = parse(endDate);
-  return end.diff(start, 'seconds') + 1;
+  return differenceInSeconds(end, start) + 1;
 };
 
 /**

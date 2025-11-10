@@ -1,6 +1,5 @@
 import Tooltip from '@mui/material/Tooltip';
 import { IconButton, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import moment from 'moment/moment';
 import { MoreVert, SendOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
@@ -191,7 +190,7 @@ const StixCoreObjectContentFilesList = ({
                     secondary={(
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ paddingBottom: theme.spacing(0.5) }}>
-                          {fld(file.lastModified ?? moment())}
+                          {fld(file.lastModified ?? new Date())}
                         </span>
                         <ItemMarkings
                           markingDefinitions={file.objectMarking ?? []}
