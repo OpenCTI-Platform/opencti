@@ -49,8 +49,6 @@ const elWhiteUser = async () => {
   return buildStandardUser([{ internal_id: TLP_WHITE.internal_id, standard_id: TLP_WHITE.standard_id }], ALL_TLP);
 };
 
-const VOCABULARY_COUNT = 354;
-
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', async () => {
     expect(searchEngineInit()).resolves.toBeTruthy();
@@ -411,13 +409,13 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.capability);
+    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.Capability);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
-    expect(entityTypeMap.get('Credential')).toBe(1);
+    expect(entityTypeMap.get('Credential')).toBe(entitiesCounter.Credential);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.entitySetting);
-    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.externalReference);
-    expect(entityTypeMap.get('StixFile')).toBe(1);
+    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.EntitySetting);
+    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
+    expect(entityTypeMap.get('StixFile')).toBe(entitiesCounter.StixFile);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
     expect(entityTypeMap.get('Individual')).toBe(1);
     expect(entityTypeMap.get('Sector')).toBe(3);
@@ -426,7 +424,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Indicator')).toBe(3);
     expect(entityTypeMap.get('Intrusion-Set')).toBe(1);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
-    expect(entityTypeMap.get('Label')).toBe(entitiesCounter.label);
+    expect(entityTypeMap.get('Label')).toBe(entitiesCounter.Label);
     expect(entityTypeMap.get('Region')).toBe(2);
     expect(entityTypeMap.get('Country')).toBe(1);
     expect(entityTypeMap.get('City')).toBe(1);
@@ -445,12 +443,12 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
     expect(entityTypeMap.get('Status')).toBe(7);
-    expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.statusTemplate);
+    expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
-    expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
+    expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(data.edges.length).toEqual(74 + VOCABULARY_COUNT + entitiesCounterTotal + TESTING_ORGS.length + TESTING_USERS.length + TESTING_ROLES.length + TESTING_GROUPS.length);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
@@ -560,13 +558,13 @@ describe('Elasticsearch pagination', () => {
     const entityTypeMap = mapEdgesCountPerEntityType(data);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(2);
     expect(entityTypeMap.get('Campaign')).toBe(1);
-    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.capability);
+    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.Capability);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(1);
-    expect(entityTypeMap.get('Credential')).toBe(1);
+    expect(entityTypeMap.get('Credential')).toBe(entitiesCounter.Credential);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.entitySetting);
-    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.externalReference);
-    expect(entityTypeMap.get('StixFile')).toBe(1);
+    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.EntitySetting);
+    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
+    expect(entityTypeMap.get('StixFile')).toBe(entitiesCounter.StixFile);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
     expect(entityTypeMap.get('Individual')).toBe(1);
     expect(entityTypeMap.get('Sector')).toBe(3);
@@ -575,7 +573,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Indicator')).toBe(3);
     expect(entityTypeMap.get('Intrusion-Set')).toBe(1);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
-    expect(entityTypeMap.get('Label')).toBe(entitiesCounter.label);
+    expect(entityTypeMap.get('Label')).toBe(entitiesCounter.Label);
     expect(entityTypeMap.get('Region')).toBe(2);
     expect(entityTypeMap.get('Country')).toBe(1);
     expect(entityTypeMap.get('City')).toBe(1);
@@ -593,12 +591,12 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
     expect(entityTypeMap.get('Status')).toBe(7);
-    expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.statusTemplate);
+    expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(2);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
-    expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
+    expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(data.edges.length).toEqual(207 + VOCABULARY_COUNT);
   });
   it('should entity paginate with field exist filter', async () => {
@@ -663,7 +661,7 @@ describe('Elasticsearch pagination', () => {
     };
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: ES_MAX_PAGINATION });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.externalReference);
+    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
     expect(entityTypeMap.get('Individual')).toBe(1);
     expect(entityTypeMap.get('Organization')).toBe(TESTING_ORGS.length);
     expect(entityTypeMap.get('Incident')).toBe(1);
@@ -674,8 +672,8 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Notifier')).toBe(2);
     expect(entityTypeMap.get('Opinion')).toBe(1);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(1);
-    expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
-    expect(data.edges.length).toEqual(VOCABULARY_COUNT + TESTING_ORGS.length + 26);
+    expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
+    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 26);
     filters = {
       mode: 'and',
       filters: [
@@ -694,11 +692,11 @@ describe('Elasticsearch pagination', () => {
       first: ES_MAX_PAGINATION
     });
     const entityTypeMap = mapEdgesCountPerEntityType(data);
-    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.capability);
-    expect(entityTypeMap.get('Credential')).toBe(1);
+    expect(entityTypeMap.get('Capability')).toBe(entitiesCounter.Capability);
+    expect(entityTypeMap.get('Credential')).toBe(entitiesCounter.Credential);
     expect(entityTypeMap.get('DecayRule')).toBe(4);
-    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.entitySetting);
-    expect(entityTypeMap.get('StixFile')).toBe(1);
+    expect(entityTypeMap.get('EntitySetting')).toBe(entitiesCounter.EntitySetting);
+    expect(entityTypeMap.get('StixFile')).toBe(entitiesCounter.StixFile);
     expect(entityTypeMap.get('Group')).toBe(TESTING_GROUPS.length + 3);
     expect(entityTypeMap.get('ManagerConfiguration')).toBe(1);
     expect(entityTypeMap.get('Role')).toBe(TESTING_ROLES.length + 3);
@@ -706,7 +704,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Settings')).toBe(1);
     expect(entityTypeMap.get('Software')).toBe(1);
     expect(entityTypeMap.get('Status')).toBe(7);
-    expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.statusTemplate);
+    expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
     expect(entityTypeMap.get('Organization')).toBe(TESTING_ORGS.length + 6);
@@ -731,11 +729,11 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Incident')).toBe(1);
     expect(entityTypeMap.get('Individual')).toBe(1);
     expect(entityTypeMap.get('Malware-Analysis')).toBe(1);
-    expect(entityTypeMap.get('Vocabulary')).toBe(VOCABULARY_COUNT);
+    expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
     expect(entityTypeMap.get('Notifier')).toBe(2);
-    expect(entityTypeMap.get('Label')).toBe(entitiesCounter.label);
+    expect(entityTypeMap.get('Label')).toBe(entitiesCounter.Label);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(2);
-    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.externalReference);
+    expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
     expect(data.edges.length).toEqual(218 + VOCABULARY_COUNT);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;

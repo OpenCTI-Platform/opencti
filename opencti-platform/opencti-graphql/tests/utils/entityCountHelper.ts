@@ -1,9 +1,12 @@
 export const entitiesCounter: Record<string, number> = {};
-entitiesCounter.capability = 51;
-entitiesCounter.entitySetting = 45;
-entitiesCounter.externalReference = 7;
-entitiesCounter.label = 13;
-entitiesCounter.statusTemplate = 8;
+entitiesCounter.Capability = 51;
+entitiesCounter.Credential = 1;
+entitiesCounter.EntitySetting = 45;
+entitiesCounter.ExternalReference = 7;
+entitiesCounter.Label = 13;
+entitiesCounter.StatusTemplate = 8;
+entitiesCounter.StixFile = 1;
+entitiesCounter.Vocabulary = 347;
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 
