@@ -1,9 +1,17 @@
 export const entitiesCounter: Record<string, number> = {};
 entitiesCounter.Capability = 51;
 entitiesCounter.Credential = 1;
+entitiesCounter.DecayRule = 4;
 entitiesCounter.EntitySetting = 45;
 entitiesCounter.ExternalReference = 7;
+entitiesCounter.Incident = 1;
+entitiesCounter.Individual = 1;
 entitiesCounter.Label = 13;
+entitiesCounter['Marking-Definition'] = 11;
+entitiesCounter.Note = 1;
+entitiesCounter.Notifier = 2;
+entitiesCounter.Opinion = 1;
+entitiesCounter.Sector = 3;
 entitiesCounter.StatusTemplate = 8;
 entitiesCounter.StixFile = 1;
 entitiesCounter.Vocabulary = 354;
