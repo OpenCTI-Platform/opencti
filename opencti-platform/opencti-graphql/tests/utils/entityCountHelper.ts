@@ -1,14 +1,31 @@
 export const entitiesCounter: Record<string, number> = {};
 entitiesCounter.capability = 51;
 entitiesCounter.entitySetting = 45;
+entitiesCounter.externalReference = 7;
 entitiesCounter.label = 13;
 entitiesCounter.statusTemplate = 8;
-entitiesCounter.externalReference = 7;
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 
 export const relationsCounter: Record<string, number> = {};
 relationsCounter['accesses-to'] = 28;
+relationsCounter['attributed-to'] = 2;
+relationsCounter['created-by'] = 22;
+relationsCounter['external-reference'] = 7;
 relationsCounter['has-capability'] = 63;
 relationsCounter['has-role'] = 9;
+relationsCounter.indicates = 4;
+relationsCounter['kill-chain-phase'] = 3;
+relationsCounter['located-at'] = 4;
+relationsCounter['member-of'] = 13;
+relationsCounter.mitigates = 1;
+relationsCounter.object = 38;
+relationsCounter['object-label'] = 30;
 relationsCounter['object-marking'] = 28;
+relationsCounter['operating-system'] = 1;
+relationsCounter['participate-to'] = 4;
+relationsCounter['part-of'] = 6;
+relationsCounter['related-to'] = 2;
+relationsCounter['stix-sighting-relationship'] = 2;
+relationsCounter.targets = 2;
+relationsCounter.uses = 3;

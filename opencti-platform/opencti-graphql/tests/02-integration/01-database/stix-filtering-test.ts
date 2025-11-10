@@ -7,6 +7,7 @@ import stixReports from '../../data/stream-events/stream-event-stix2-reports.jso
 import stixIndicators from '../../data/stream-events/stream-event-stix2-indicators.json';
 import stixBundle from '../../data/filters/DATA-TEST-FILTERS.json';
 import type { FilterGroup } from '../../../src/generated/graphql';
+import { relationsCounter } from '../../utils/entityCountHelper';
 
 const stixReport = stixReports[0]; //  confidence 3, revoked=false, labels=report, TLP:TEST
 const stixIndicator = stixIndicators[0]; // confidence 75, revoked=true, no label
@@ -233,7 +234,7 @@ describe('Stix Filtering', () => {
         ],
         filterGroups: [],
       } as FilterGroup;
-      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // 1 "mitigates" rel
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([relationsCounter.mitigates, 63]); // number of "mitigates" rel over the total
 
       // same test, reverse order
       filterGroup = {
@@ -244,7 +245,7 @@ describe('Stix Filtering', () => {
         ],
         filterGroups: [],
       } as FilterGroup;
-      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([1, 63]); // 1 "mitigates" rel
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([relationsCounter.mitigates, 63]); // number of "mitigates" rel over the total
     });
 
     it('using parent entity types', async () => {
@@ -330,7 +331,7 @@ describe('Stix Filtering', () => {
         filters: [{ key: ['entity_type'], operator: 'eq', values: ['Stix-Sighting-Relationship'], mode: 'or' }],
         filterGroups: [],
       } as FilterGroup;
-      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([2, 62]); // 2/24 rels are Stix-sighting-rel
+      expect(await testManyStix(stixBundle.objects, makeCallback(filterGroup))).toEqual([relationsCounter['stix-sighting-relationship'], 62]); // 2/24 rels are Stix-sighting-rel
 
       filterGroup = {
         mode: 'or',

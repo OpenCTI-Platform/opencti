@@ -51,6 +51,7 @@ import { addIndividual } from '../../../src/domain/individual';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
 import { generateInternalId } from '../../../src/schema/identifier';
 import { mapEdgesCountPerEntityType } from '../../utils/domainQueryHelper';
+import { relationsCounter } from "../../utils/entityCountHelper";
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -257,13 +258,13 @@ describe('Relations listing', () => {
     const stixRefRelationships = await pageRelationsConnection(testContext, ADMIN_USER, 'stix-ref-relationship');
     expect(stixRefRelationships).not.toBeNull();
     const entityTypeMap = mapEdgesCountPerEntityType(stixRefRelationships);
-    expect(entityTypeMap.get('created-by')).toBe(22);
-    expect(entityTypeMap.get('kill-chain-phase')).toBe(3);
-    expect(entityTypeMap.get('object-label')).toBe(30);
-    expect(entityTypeMap.get('object')).toBe(38);
-    expect(entityTypeMap.get('external-reference')).toBe(7);
+    expect(entityTypeMap.get('created-by')).toBe(relationsCounter['created-by']);
+    expect(entityTypeMap.get('kill-chain-phase')).toBe(relationsCounter['kill-chain-phase']);
+    expect(entityTypeMap.get('object-label')).toBe(relationsCounter['object-label']);
+    expect(entityTypeMap.get('object')).toBe(relationsCounter.object);
+    expect(entityTypeMap.get('external-reference')).toBe(relationsCounter['external-reference']);
     expect(entityTypeMap.get('object-marking')).toBe(29);
-    expect(entityTypeMap.get('operating-system')).toBe(1);
+    expect(entityTypeMap.get('operating-system')).toBe(relationsCounter['operating-system']);
     expect(stixRefRelationships.edges.length).toEqual(130);
   });
   it('should list relations with roles', async () => {
@@ -272,7 +273,7 @@ describe('Relations listing', () => {
       toRole: 'uses_to',
     });
     expect(stixRelations).not.toBeNull();
-    expect(stixRelations.edges.length).toEqual(3);
+    expect(stixRelations.edges.length).toEqual(relationsCounter.uses);
     for (let index = 0; index < stixRelations.edges.length; index += 1) {
       const stixRelation = stixRelations.edges[index].node;
       expect(stixRelation.fromRole).toEqual('uses_from');
@@ -326,7 +327,7 @@ describe('Relations listing', () => {
   it('should list relations with relation filtering', async () => {
     let stixRelations = await pageRelationsConnection(testContext, ADMIN_USER, 'uses');
     expect(stixRelations).not.toBeNull();
-    expect(stixRelations.edges.length).toEqual(3);
+    expect(stixRelations.edges.length).toEqual(relationsCounter.uses);
     // Filter the list through relation filter
     // [Malware: Paradise Ransomware] ---- (user) ---- <uses> ---- (usage) ---- [Attack pattern: Spear phishing messages with text only]
     //                                                   |
@@ -426,7 +427,7 @@ describe('Relations listing', () => {
   it('should list sightings', async () => {
     const stixSightings = await pageRelationsConnection(testContext, ADMIN_USER, 'stix-sighting-relationship');
     expect(stixSightings).not.toBeNull();
-    expect(stixSightings.edges.length).toEqual(2);
+    expect(stixSightings.edges.length).toEqual(relationsCounter['stix-sighting-relationship']);
   });
 });
 
