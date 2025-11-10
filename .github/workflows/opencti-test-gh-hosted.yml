@@ -270,8 +270,8 @@ jobs:
 
     - name: Duplicate workspace
       run: |
-         cp ${{ github.workspace }}/origin ${{ github.workspace }}/frontend-test
-         cp ${{ github.workspace }}/origin ${{ github.workspace }}/frontend-e2e-test
+         cp -pr ${{ github.workspace }}/origin ${{ github.workspace }}/frontend-test
+         cp -pr ${{ github.workspace }}/origin ${{ github.workspace }}/frontend-e2e-test
 
     - name: Monitor resources usage in background
       run: |
