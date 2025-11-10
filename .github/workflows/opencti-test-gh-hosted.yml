@@ -265,6 +265,13 @@ jobs:
 
     - name: OpenCTI checkout
       uses: actions/checkout@v4
+      with:
+        path: origin
+
+    - name: Duplicate workspace
+      run: |
+         cp ${{ github.workspace }}/origin ${{ github.workspace }}/frontend-test
+         cp ${{ github.workspace }}/origin ${{ github.workspace }}/frontend-e2e-test
 
     - name: Monitor resources usage in background
       run: |
@@ -295,10 +302,11 @@ jobs:
         sleep 2;
         echo ${{ github.workspace }};
         ls ${{ github.workspace }};
+        ls ${{ github.workspace }}/origin;
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
-          -v ${{ github.workspace }}:/home/workspace \
+          -v ${{ github.workspace }}/origin:/home/workspace \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
@@ -341,7 +349,7 @@ jobs:
         
         docker run -d --network runner-docker-network \
           --name opencti-e2e-worker \
-          -v ${{ github.workspace }}:/home/workspace \
+          -v ${{ github.workspace }}/origin:/home/workspace \
           -e OPENCTI_URL=http://opencti-e2e-start:4100 \
           -e OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e WORKER_LOG_LEVEL=info \
@@ -365,17 +373,15 @@ jobs:
       run: |
         docker run --network runner-docker-network \
           --name frontend-tests \
-          -v ${{ github.workspace }}:/home/workspace \
+          -v ${{ github.workspace }}/frontend-test:/home/workspace \
           node:22-alpine \
           sh -c 'set -x;
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
             apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
-            mkdir -p /tmp/opencti-front-tests
-            cp -a /home/workspace/* /tmp/opencti-front-tests
             npm install -g node-gyp
             npm install -g corepack
-            cd /tmp/opencti-front-tests/opencti-platform/opencti-front
-            cp /tmp/opencti-front-tests/opencti-platform/.yarnrc.yml .
+            cd /home/workspace//opencti-platform/opencti-front
+            cp /home/workspace/s/opencti-platform/.yarnrc.yml .
             yarn install
             yarn build
             yarn check-ts
@@ -387,7 +393,7 @@ jobs:
       run: |
         docker run --network runner-docker-network \
           --name frontend-e2e-tests \
-          -v ${{ github.workspace }}:/home/workspace \
+          -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
           -e BACK_END_URL=http://opencti-e2e-start:4100 \
           -e E2E_TEST=true \
           -e TEAMS_WEBHOOK="teams-webhook-url" \
@@ -396,16 +402,22 @@ jobs:
               echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
               apt-get update
               apt-get -y install netcat-traditional
-              mkdir -p /tmp/opencti-front-e2e-tests
-              cp -a /home/workspace/* /tmp/opencti-front-e2e-tests
-              cd /tmp/opencti-front-e2e-tests/opencti-platform/opencti-front
+              cd /home/workspace/opencti-platform/opencti-front
               npm install -g corepack
-              cp /tmp/opencti-front-e2e-tests/opencti-platform/.yarnrc.yml .
+              cp /home/workspace/opencti-platform/.yarnrc.yml .
               yarn install
               npx playwright install --with-deps chromium
               yarn build
               yarn test:e2e
             '
+
+
+    - name: upload e2e artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: opencti-e2e-frontend
+        path: ${{ github.workspace }}/frontend-e2e-test/test-results
+        retention-days: 1
 
     - name: Stop docker stats monitor and print logs
       if: always()
