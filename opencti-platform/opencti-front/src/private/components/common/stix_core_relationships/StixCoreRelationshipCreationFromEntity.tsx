@@ -846,6 +846,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
               speeddial={undefined}
               handleClose={undefined}
               onCompleted={undefined}
+              // TODO: remove with release 6.9
+              controlledDialStyles={{ position: 'fixed', top: 16, right: 16 }}
             />
           )}
           {targetEntities.length === 0 && isOnlySCOs && (
@@ -906,6 +908,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 isFromBulkRelation={undefined}
                 defaultMarkingDefinitions={undefined}
                 stixDomainObjectTypes={undefined}
+                // TODO: remove with release 6.9
+                controlledDialStyles={{ position: 'fixed', top: 16, right: 16 }}
               />
               <StixCyberObservableCreation
                 display={open}
@@ -918,6 +922,8 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                 handleClose={handleCloseCreateObservable}
                 type={undefined}
                 defaultCreatedBy={undefined}
+                // TODO: remove with release 6.9
+                controlledDialStyles={{ position: 'fixed', top: 16, right: 16 }}
               />
             </>
           )}
