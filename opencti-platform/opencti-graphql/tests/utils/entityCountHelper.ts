@@ -6,7 +6,7 @@ entitiesCounter.ExternalReference = 7;
 entitiesCounter.Label = 13;
 entitiesCounter.StatusTemplate = 8;
 entitiesCounter.StixFile = 1;
-entitiesCounter.Vocabulary = 347;
+entitiesCounter.Vocabulary = 354;
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 
