@@ -4518,7 +4518,7 @@ export const prepareElementForIndexing = async (element) => {
           // If we extend the preparation 5 times, log a warn
           // It will help to understand what kind of key have so many elements
           if (yieldCount === 5) {
-            logApp.warn('[ENGINE] Element preparation too many values', { id: element.id, key, size: value.length });
+            logApp.warn('[ENGINE] Element preparation too many values', { id: element.id ?? element.internal_id, key, size: value.length });
           }
           yieldCount += 1;
         }
