@@ -4767,7 +4767,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
             const { pir_score } = e;
             impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from', pir_score });
           } else {
-            impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
+            impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.fromType, side: 'from' });
           }
         }
         if (isImpactedRole(relationshipType, fromType, toType, toRole)) {
@@ -4804,6 +4804,7 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
           script += `ctx._source['${field}'].addAll(params['${field}']);`;
         }
         const fromSide = t.elements.find((e) => e.side === 'from');
+
         const toSide = t.elements.find((e) => e.side === 'to');
         if (fromSide && isStixRefRelationship(t.relation)) {
           // updated_at and modified only updated for ref relationships

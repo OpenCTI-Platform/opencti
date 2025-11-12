@@ -242,7 +242,7 @@ const StixDomainObjectOverview = ({
             >
               {t_i18n('Modification date')}
             </Typography>
-            {fldt(stixDomainObject.updated_at)}
+            {fldt(stixDomainObject.modified)}
           </Grid>
           <Grid item xs={6}>
             {withPattern && (
