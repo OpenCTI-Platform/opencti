@@ -17,7 +17,6 @@ import { Button, DialogActions, DialogContent, DialogTitle } from '@mui/material
 import React, { useState } from 'react';
 import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import Dialog from '@mui/material/Dialog';
 import { PirCreationFormData } from './pir-form-utils';
 import PirCreationFormGeneralSettings, { redisStreamQuery } from './PirCreationFormGeneralSettings';
 import PirCreationFormStepper from './PirCreationFormStepper';
@@ -28,11 +27,11 @@ import { PirCreationFormGeneralSettingsRedisStreamQuery } from './__generated__/
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface PirCreationFormProps {
-  onClose: () => void
+  onCancel: () => void
   onSubmit: (data: PirCreationFormData) => void
 }
 
-const PirCreationForm = ({ onClose, onSubmit }: PirCreationFormProps) => {
+const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
   const { t_i18n } = useFormatter();
   const [step, setStep] = useState(0);
 
@@ -108,7 +107,7 @@ const PirCreationForm = ({ onClose, onSubmit }: PirCreationFormProps) => {
             </DialogContent>
 
             <DialogActions>
-              <Button onClick={onClose}>
+              <Button onClick={onCancel}>
                 {t_i18n('Cancel')}
               </Button>
               {step !== 1 && (

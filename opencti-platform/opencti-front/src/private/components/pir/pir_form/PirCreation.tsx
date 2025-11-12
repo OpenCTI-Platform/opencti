@@ -90,7 +90,7 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
         onClose={handleCloseDialog}
       >
         <PirCreationForm
-          onClose={handleCloseDialog}
+          onCancel={handleCloseDialog}
           onSubmit={submit}
         />
       </Dialog>
