@@ -156,10 +156,10 @@ const MAX_DISPLAYED_VALUES = 3;
 const buildUpdateMessageForPatchOperation = (operationType, patchOperation, entityType, data = {}, specificOperationCases = {}) => {
   const { key, value, object_path, previous } = patchOperation;
   const keyName = getKeyName(entityType, key, object_path);
-  const valuesArray = getValuesArray(value); // TODO we need the whole values
+  const valuesArray = getValuesArray(value);
   const previousArray = getValuesArray(previous);
   const messageForValues = buildMessageForValues(entityType, key, valuesArray, data, specificOperationCases);
-  const messageForPrevious = buildMessageForValues(entityType, key, previousArray, data, specificOperationCases);
+  const messageForPrevious = buildMessageForValues(entityType, key, previousArray, data);
 
   let message = `\`${messageForValues}\``;
   if (operationType === 'replace') {
@@ -167,7 +167,7 @@ const buildUpdateMessageForPatchOperation = (operationType, patchOperation, enti
   }
   message += ` in \`${keyName}\``;
   if (valuesArray.length > MAX_DISPLAYED_VALUES) {
-    message += ` and ${valuesArray.length - MAX_DISPLAYED_VALUES} more items`; // TODO should be tested on the whole values
+    message += ` and ${valuesArray.length - MAX_DISPLAYED_VALUES} more items`;
   }
   return message;
 };

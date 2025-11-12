@@ -162,7 +162,7 @@ describe('generateUpdatePatchMessage tests', () => {
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
     expect(message).toEqual('replaces `NEW` with `ANALYZED` in `Workflow status`');
   });
-  it.skip('should generate message for Workflow status update with request access', () => {
+  it('should generate message for Workflow status update with request access', () => {
     const data = { creators: [], members: [] };
     const patchElements = [
       [
