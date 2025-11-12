@@ -13,31 +13,28 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { useState } from 'react';
+import React, { useState, UIEvent } from 'react';
 import { graphql } from 'react-relay';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
-import DialogTitle from '@mui/material/DialogTitle';
 import ToggleButton from '@mui/material/ToggleButton';
 import { useNavigate } from 'react-router-dom';
 import fileDownload from 'js-file-download';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
-import { playbookMutationFieldPatch } from './PlaybookEditionForm';
+import { PlaybooksLinesPaginationQuery$variables } from '@components/data/__generated__/PlaybooksLinesPaginationQuery.graphql';
+import PlaybookPopoverToggleDialog from './PlaybookPopoverToggleDialog';
+import { fetchQuery } from '../../../../relay/environment';
 import { deleteNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { resolveLink } from '../../../../utils/Entity';
+import { PlaybookPopoverExportQuery$data } from './__generated__/PlaybookPopoverExportQuery.graphql';
+import { PlaybookPopoverDeletionMutation } from './__generated__/PlaybookPopoverDeletionMutation.graphql';
+import { PlaybookPopoverDuplicateMutation } from './__generated__/PlaybookPopoverDuplicateMutation.graphql';
 
 const playbookPopoverDeletionMutation = graphql`
   mutation PlaybookPopoverDeletionMutation($id: ID!) {
@@ -60,59 +57,68 @@ const playbookExportQuery = graphql`
   }
 `;
 
-const PlaybookPopover = (props) => {
-  const { playbookId, running, paginationOptions } = props;
+interface PlaybookPopoverProps {
+  playbookId: string
+  running: boolean
+  paginationOptions?: PlaybooksLinesPaginationQuery$variables
+}
+
+const PlaybookPopover = ({
+  playbookId,
+  running,
+  paginationOptions,
+}: PlaybookPopoverProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [displayStart, setDisplayStart] = useState(false);
-  const [starting, setStarting] = useState(false);
-  const [displayStop, setDisplayStop] = useState(false);
-  const [stopping, setStopping] = useState(false);
-  const handleOpen = (event) => {
+  const [anchorEl, setAnchorEl] = useState<Element | null>(null);
+  const [displayToggle, setDisplayToggle] = useState(false);
+
+  const handleOpen = (event: UIEvent) => {
     stopEvent(event);
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = (event) => {
+  const handleClose = (event: UIEvent) => {
     stopEvent(event);
     setAnchorEl(null);
   };
-  const handleOpenStart = (event) => {
-    setAnchorEl(null);
-    setDisplayStart(true);
+
+  const handleOpenToggle = (event: UIEvent) => {
     handleClose(event);
+    setDisplayToggle(true);
   };
-  const handleCloseStart = (event) => {
-    setDisplayStart(false);
-    stopEvent(event);
-  };
-  const handleOpenStop = (event) => {
-    setDisplayStop(true);
-    handleClose(event);
+  const handleCloseToggle = (event?: UIEvent) => {
+    if (event) stopEvent(event);
+    setDisplayToggle(false);
   };
 
   const deletion = useDeletion({ handleClose: () => setAnchorEl(null) });
   const { setDeleting, handleOpenDelete } = deletion;
 
-  const handleCloseStop = (event) => {
-    setDisplayStop(false);
-    stopEvent(event);
-  };
-
   const deleteSuccessMessage = t_i18n('', {
     id: '... successfully deleted',
     values: { entity_type: t_i18n('entity_Playbook') },
   });
-  const [commitDelete] = useApiMutation(playbookPopoverDeletionMutation, undefined, { successMessage: deleteSuccessMessage });
+  const [commitDelete] = useApiMutation<PlaybookPopoverDeletionMutation>(
+    playbookPopoverDeletionMutation,
+    undefined,
+    { successMessage: deleteSuccessMessage },
+  );
 
   const duplicatedSuccessMessage = t_i18n('', {
     id: '... successfully duplicated',
     values: { entity_type: t_i18n('entity_Playbook') },
   });
-  const [commitDuplicate] = useApiMutation(playbookPopoverDuplicateMutation, undefined, { successMessage: duplicatedSuccessMessage });
+  const [commitDuplicate] = useApiMutation<PlaybookPopoverDuplicateMutation>(
+    playbookPopoverDuplicateMutation,
+    undefined,
+    { successMessage: duplicatedSuccessMessage },
+  );
 
   const exportPlaybook = async () => {
-    const { playbook } = await fetchQuery(playbookExportQuery, { id: playbookId }).toPromise();
+    const { playbook } = await fetchQuery(
+      playbookExportQuery,
+      { id: playbookId },
+    ).toPromise() as PlaybookPopoverExportQuery$data;
     if (playbook) {
       const blob = new Blob([playbook.toConfigurationExport], { type: 'text/json' });
       const [day, month, year] = new Date().toLocaleDateString('fr-FR').split('/');
@@ -121,9 +127,8 @@ const PlaybookPopover = (props) => {
     }
   };
 
-  const onExport = async (e) => {
-    stopEvent(e);
-    setAnchorEl(undefined);
+  const onExport = async (e: UIEvent) => {
+    handleClose(e);
     await exportPlaybook();
   };
 
@@ -139,7 +144,7 @@ const PlaybookPopover = (props) => {
     });
   };
 
-  const submitDelete = (event) => {
+  const submitDelete = (event: UIEvent) => {
     setDeleting(true);
     stopEvent(event);
     commitDelete({
@@ -163,42 +168,12 @@ const PlaybookPopover = (props) => {
     });
   };
 
-  const submitStart = (event) => {
-    setStarting(true);
-    stopEvent(event);
-    commitMutation({
-      mutation: playbookMutationFieldPatch,
-      variables: {
-        id: playbookId,
-        input: { key: 'playbook_running', value: ['true'] },
-      },
-      onCompleted: () => {
-        setStarting(false);
-        setDisplayStart(false);
-      },
-    });
-  };
-
-  const submitStop = (event) => {
-    setStopping(true);
-    stopEvent(event);
-    commitMutation({
-      mutation: playbookMutationFieldPatch,
-      variables: {
-        id: playbookId,
-        input: { key: 'playbook_running', value: ['false'] },
-      },
-      onCompleted: () => {
-        setStopping(false);
-        setDisplayStop(false);
-      },
-    });
-  };
-
   const MoreVertButton = paginationOptions ? IconButton : ToggleButton;
 
   return (
     <>
+      {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+      {/* @ts-ignore */}
       <MoreVertButton
         onClick={handleOpen}
         aria-haspopup="true"
@@ -215,11 +190,10 @@ const PlaybookPopover = (props) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        {running ? (
-          <MenuItem onClick={handleOpenStop}>{t_i18n('Stop')}</MenuItem>
-        ) : (
-          <MenuItem onClick={handleOpenStart}>{t_i18n('Start')}</MenuItem>
-        )}
+        {running
+          ? <MenuItem onClick={handleOpenToggle}>{t_i18n('Stop')}</MenuItem>
+          : <MenuItem onClick={handleOpenToggle}>{t_i18n('Start')}</MenuItem>
+        }
         <MenuItem onClick={submitDuplicate}>{t_i18n('Duplicate')}</MenuItem>
         <MenuItem onClick={handleOpenDelete}>{t_i18n('Delete')}</MenuItem>
         <MenuItem onClick={onExport}>{t_i18n('Export')}</MenuItem>
@@ -229,54 +203,12 @@ const PlaybookPopover = (props) => {
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this playbook?')}
       />
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayStart}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={() => setDisplayStart(false)}
-      >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to start this playbook?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseStart} disabled={starting}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button onClick={submitStart} color="secondary" disabled={starting}>
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={displayStop}
-        keepMounted={true}
-        slots={{ transition: Transition }}
-        onClose={() => setDisplayStop(false)}
-      >
-        <DialogTitle>
-          {t_i18n('Are you sure?')}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to stop this playbook?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseStop} disabled={stopping}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button onClick={submitStop} color="secondary" disabled={stopping}>
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <PlaybookPopoverToggleDialog
+        playbookRunning={running}
+        playbookId={playbookId}
+        showDialog={displayToggle}
+        close={handleCloseToggle}
+      />
     </>
   );
 };
