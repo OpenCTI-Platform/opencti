@@ -27,6 +27,7 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
+import canDeleteConnector from './utils/canDeleteConnector';
 
 interface ConnectorPopoverProps {
   connector: Connector_connector$data;
@@ -164,17 +165,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         <MenuItem onClick={handleOpenClearWorks}>{t_i18n('Clear all works')}</MenuItem>
         <MenuItem
           onClick={handleOpenDelete}
-          disabled={(() => {
-            if (connector.built_in) return true;
-            if (connector.is_managed) {
-              // Allow deletion once stop has been requested or connector is stopped
-              const canDelete = connector.manager_requested_status === 'stopping'
-                             || connector.manager_requested_status === 'stopped'
-                             || connector.manager_current_status === 'stopped';
-              return !canDelete;
-            }
-            return !!connector.active;
-          })()}
+          disabled={!canDeleteConnector(connector)}
         >
           {t_i18n('Delete')}
         </MenuItem>

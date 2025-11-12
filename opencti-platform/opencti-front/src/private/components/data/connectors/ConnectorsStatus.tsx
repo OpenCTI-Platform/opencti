@@ -27,6 +27,7 @@ import ConnectorsList, { connectorsListQuery } from '@components/data/connectors
 import ConnectorsState, { connectorsStateQuery } from '@components/data/connectors/ConnectorsState';
 import { ConnectorsListQuery } from '@components/data/connectors/__generated__/ConnectorsListQuery.graphql';
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
+import { Connector_connector$data } from '@components/data/connectors/__generated__/Connector_connector.graphql';
 import { getConnectorMetadata, IngestionConnectorType } from '@components/data/IngestionCatalog/utils/ingestionConnectorTypeMetadata';
 import Transition from '../../../../components/Transition';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -41,6 +42,7 @@ import type { Theme } from '../../../../components/Theme';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SortConnectorsHeader from './SortConnectorsHeader';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
+import canDeleteConnector from './utils/canDeleteConnector';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -377,7 +379,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                   }}
                                   aria-haspopup="true"
                                   color="primary"
-                                  disabled={!!connector.active || !!connector.built_in}
+                                  disabled={!canDeleteConnector(connector as unknown as Connector_connector$data)}
                                   size="large"
                                 >
                                   <DeleteOutlined />
