@@ -30,7 +30,7 @@ describe('Data initialization test', () => {
 
   it('should create all capabilities', async () => {
     const capabilities = await fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_CAPABILITY]);
-    expect(capabilities.length).toEqual(entitiesCounter.capability);
+    expect(capabilities.length).toEqual(entitiesCounter.Capability);
     const capabilitiesNames = capabilities.map((capa) => capa.name).sort();
     const allExpectedNames = [
       'AUTOMATION',

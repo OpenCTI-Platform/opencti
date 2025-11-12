@@ -1,6 +1,6 @@
-import { expect, it, describe, beforeAll, afterAll } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, testContext, TESTING_GROUPS, USER_PLATFORM_ADMIN, ADMIN_USER } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext, USER_PLATFORM_ADMIN } from '../../utils/testQuery';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import { resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
@@ -8,6 +8,7 @@ import { adminQueryWithError, queryAsAdminWithSuccess, queryAsUserWithSuccess } 
 import { getGroupEntityByName } from '../../utils/domainQueryHelper';
 import type { BasicStoreEntityMarkingDefinition } from '../../../src/types/store';
 import { deleteElementById } from '../../../src/database/middleware';
+import { entitiesCounter } from '../../utils/entityCountHelper';
 
 const LIST_QUERY = gql`
   query groups($first: Int, $after: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode, $search: String, $filters: FilterGroup) {
@@ -208,7 +209,7 @@ describe('Group resolver standard behavior', () => {
   });
   it('should list groups', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult?.data?.groups.edges.length).toEqual(TESTING_GROUPS.length + 4);
+    expect(queryResult?.data?.groups.edges.length).toEqual(entitiesCounter.Group + 1);
   });
   it('should update group', async () => {
     const UPDATE_QUERY = gql`

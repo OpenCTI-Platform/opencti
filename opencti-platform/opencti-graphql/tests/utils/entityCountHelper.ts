@@ -1,11 +1,72 @@
-export const entitiesCounter: Record<string, number> = {};
-entitiesCounter.capability = 51;
-entitiesCounter.entitySetting = 45;
-entitiesCounter.label = 13;
-entitiesCounter.statusTemplate = 8;
-entitiesCounter.externalReference = 7;
+import { TESTING_GROUPS, TESTING_ORGS, TESTING_ROLES, TESTING_USERS } from './testQuery';
+
+export const entitiesCounter = {
+  AdministrativeArea: 1,
+  AttackPattern: 2,
+  Campaign: 1,
+  Capability: 51,
+  City: 1,
+  Country: 1,
+  CourseOfAction: 1,
+  Credential: 1,
+  DecayRule: 4,
+  EntitySetting: 45,
+  ExternalReference: 7,
+  Group: TESTING_GROUPS.length + 3,
+  Incident: 1,
+  Indicator: 3,
+  Individual: 1,
+  IntrusionSet: 1,
+  KillChainPhase: 2,
+  Label: 13,
+  Malware: 2,
+  MalwareAnalysis: 1,
+  ManagerConfiguration: 1,
+  MarkingDefinition: 11,
+  Note: 1,
+  Notifier: 2,
+  ObservedData: 1,
+  Opinion: 1,
+  Organization: TESTING_ORGS.length + 6,
+  Region: 2,
+  Report: 1,
+  Role: TESTING_ROLES.length + 3,
+  RuleManager: 1,
+  Sector: 3,
+  Settings: 1,
+  Software: 1,
+  Status: 7,
+  StatusTemplate: 8,
+  StixFile: 1,
+  ThreatActorGroup: 1,
+  ThreatActorIndividual: 2,
+  TrackingNumber: 1,
+  User: TESTING_USERS.length + 1,
+  Vocabulary: 354,
+};
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 
-export const relationsCounter: Record<string, number> = {};
-relationsCounter['has-capability'] = 63;
+export const relationsCounter = {
+  'accesses-to': 28,
+  'attributed-to': 2,
+  'created-by': 22,
+  'external-reference': 7,
+  'has-capability': 63,
+  'has-role': 9,
+  indicates: 4,
+  'kill-chain-phase': 3,
+  'located-at': 4,
+  'member-of': 13,
+  mitigates: 1,
+  object: 38,
+  'object-label': 30,
+  'object-marking': 28,
+  'operating-system': 1,
+  'participate-to': 4,
+  'part-of': 6,
+  'related-to': 2,
+  'stix-sighting-relationship': 2,
+  targets: 2,
+  uses: 3,
+};

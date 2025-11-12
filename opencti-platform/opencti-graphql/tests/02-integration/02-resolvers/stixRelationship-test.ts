@@ -9,6 +9,7 @@ import { RELATION_INDICATES, RELATION_RELATED_TO } from '../../../src/schema/sti
 import { RELATION_OBJECT } from '../../../src/schema/stixRefRelationship';
 import { UNTIL_END_STR } from '../../../src/utils/format';
 import { RELATION_PARTICIPATE_TO } from '../../../src/schema/internalRelationship';
+import { relationsCounter } from '../../utils/entityCountHelper';
 
 describe('StixRelationship', () => {
   it('should limit stixRelationshipsDistribution scope to stix relationships', async () => {
@@ -88,7 +89,7 @@ describe('StixRelationship', () => {
       },
     });
     const relationshipsNumber = await relationshipsNumberResult.count;
-    expect(relationshipsNumber).toEqual(2); // 2 stix-sighting-relationships
+    expect(relationshipsNumber).toEqual(relationsCounter['stix-sighting-relationship']); // number of stix-sighting-relationships
   });
   it('should stixRelationship number with indicates and related-to', async () => {
     // -- stix core relationships --
@@ -107,7 +108,7 @@ describe('StixRelationship', () => {
       },
     });
     const relationshipsNumber = await relationshipsNumberResult.count;
-    expect(relationshipsNumber).toEqual(6); // 2 'related-to' relationships + 4 'indicates' relationships
+    expect(relationshipsNumber).toEqual(relationsCounter['related-to'] + relationsCounter.indicates); // 2 'related-to' relationships + 4 'indicates' relationships
   });
   it('should stixRelationship number with labels', async () => {
     // -- 'label' ref relationship (not taken into account) --
