@@ -3,14 +3,15 @@ import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser } from '../types/user';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
-import { XtmHubRegistrationStatus } from '../generated/graphql';
+import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../generated/graphql';
 import { updateAttribute } from '../database/middleware';
 import { BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
 import { HUB_REGISTRATION_MANAGER_USER } from '../utils/access';
-import { getSettings } from './settings';
+import { getSettings, settingsEditField } from './settings';
 import { notify } from '../database/redis';
 import { utcDate } from '../utils/format';
 import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-hub-email';
+import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 
 export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUser): Promise<{
   status: XtmHubRegistrationStatus
@@ -67,4 +68,36 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
 
   return { status: newRegistrationStatus };
+};
+
+export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, input: AutoRegisterInput): Promise<{ success: boolean; } > => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+
+  const licenseInfo = getEnterpriseEditionInfoFromPem(settings.internal_id, settings.enterprise_license);
+
+  if (!input.platform_token) {
+    return { success: false };
+  }
+  const response = await xtmHubClient.autoRegister(
+    {
+      platformId: settings.id,
+      platformToken: input.platform_token,
+      platformUrl: settings.platform_url,
+      platformTitle: settings.platform_title ?? ''
+    },
+    licenseInfo.license_type
+  );
+  if (!response.success) {
+    return { success: false };
+  }
+  await settingsEditField(
+    context,
+    HUB_REGISTRATION_MANAGER_USER,
+    settings.id,
+    [
+      { key: 'xtm_hub_token', value: [input.platform_token] },
+      { key: 'xtm_hub_registration_status', value: ['registered'] }
+    ]
+  );
+  return { success: true };
 };

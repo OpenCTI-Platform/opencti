@@ -9926,6 +9926,7 @@ type Mutation {
   formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
   formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
+  autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
 }
 
@@ -14593,6 +14594,14 @@ type FormSubmissionResponse {
 
 type CheckXTMHubConnectivityResponse {
   status: XTMHubRegistrationStatus
+}
+
+input AutoRegisterInput {
+  platform_token: String!
+}
+
+type Success {
+  success: Boolean!
 }
 
 type Metric {

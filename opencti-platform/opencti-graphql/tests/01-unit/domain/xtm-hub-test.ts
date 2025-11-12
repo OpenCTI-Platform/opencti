@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, type MockInstance, vi } from 'vitest';
 import * as cache from '../../../src/database/cache';
-import { checkXTMHubConnectivity } from '../../../src/domain/xtm-hub';
+import * as confModule from '../../../src/config/conf';
+import { autoRegisterOpenCTI, checkXTMHubConnectivity } from '../../../src/domain/xtm-hub';
 import { testContext } from '../../utils/testQuery';
 import { HUB_REGISTRATION_MANAGER_USER } from '../../../src/utils/access';
-import { XtmHubRegistrationStatus } from '../../../src/generated/graphql';
+import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../../../src/generated/graphql';
 import { xtmHubClient } from '../../../src/modules/xtm/hub/xtm-hub-client';
 import type { BasicStoreSettings } from '../../../src/types/settings';
 import * as middleware from '../../../src/database/middleware';
@@ -11,6 +12,7 @@ import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import * as settingsModule from '../../../src/domain/settings';
 import * as redisModule from '../../../src/database/redis';
 import * as xtmHubEmail from '../../../src/modules/xtm/hub/xtm-hub-email';
+import * as licensingModule from '../../../src/modules/settings/licensing';
 
 describe('XTM hub', () => {
   describe('checkXTMHubConnectivity', () => {
@@ -225,6 +227,84 @@ describe('XTM hub', () => {
 
         expect(sendAdministratorsLostConnectivityEmailSpy).not.toBeCalled();
       });
+    });
+  });
+
+  describe('autoRegisterOpenCTI', () => {
+    let autoRegisterSpy: MockInstance;
+    let settingsEditFieldSpy: MockInstance;
+    let confGetSpy: MockInstance;
+    let getEntityFromCacheSpy: MockInstance;
+    let getEnterpriseEditionInfoFromPemSpy: MockInstance;
+    beforeEach(() => {
+      autoRegisterSpy = vi.spyOn(xtmHubClient, 'autoRegister');
+      settingsEditFieldSpy = vi.spyOn(settingsModule, 'settingsEditField');
+      getEntityFromCacheSpy = vi.spyOn(cache, 'getEntityFromCache');
+      confGetSpy = vi.spyOn(confModule.default, 'get');
+      getEnterpriseEditionInfoFromPemSpy = vi.spyOn(licensingModule, 'getEnterpriseEditionInfoFromPem');
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('should successfully auto-register a platform', async () => {
+      const input: AutoRegisterInput = {
+        platform_token: 'test-token'
+      };
+
+      autoRegisterSpy.mockResolvedValue({
+        success: true
+      });
+
+      settingsEditFieldSpy.mockResolvedValue({});
+      confGetSpy.mockReturnValue('platform_id');
+      getEntityFromCacheSpy.mockResolvedValue({
+        id: 'settings_id'
+      });
+      getEnterpriseEditionInfoFromPemSpy.mockReturnValue({
+        license_enterprise: '',
+        license_by_configuration: '',
+        license_validated: true,
+        license_valid_cert: '',
+        license_customer: '',
+        license_expired: '',
+        license_extra_expiration: '',
+        license_extra_expiration_days: '',
+        license_expiration_date: '',
+        license_start_date: '',
+        license_expiration_prevention: '',
+        license_platform: '',
+        license_type: 'trial',
+        license_platform_match: '',
+        license_creator: '',
+        license_global: ''
+      });
+
+      await autoRegisterOpenCTI(testContext, HUB_REGISTRATION_MANAGER_USER, input);
+      expect(settingsEditFieldSpy).toHaveBeenCalledWith(
+        testContext,
+        HUB_REGISTRATION_MANAGER_USER,
+        'settings_id',
+        [
+          { key: 'xtm_hub_token', value: ['test-token'] },
+          { key: 'xtm_hub_registration_status', value: ['registered'] }
+        ]
+      );
+    });
+
+    it('should handle registration failure', async () => {
+      const input: AutoRegisterInput = {
+        platform_token: 'test-token'
+      };
+      autoRegisterSpy.mockResolvedValue({
+        success: false
+      });
+
+      settingsEditFieldSpy.mockResolvedValue({});
+
+      await autoRegisterOpenCTI(testContext, HUB_REGISTRATION_MANAGER_USER, input);
+      expect(settingsEditFieldSpy).not.toHaveBeenCalled();
     });
   });
 });
