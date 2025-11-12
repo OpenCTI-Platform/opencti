@@ -11,7 +11,6 @@ import { authorizedMembers, creators as creatorsAttribute } from '../schema/attr
 import { X_WORKFLOW_ID } from '../schema/identifier';
 import { isStoreRelationPir } from '../schema/internalRelationship';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
-import { logApp } from '../config/conf';
 
 export const generateMergeMessage = (instance, sources) => {
   const name = extractEntityRepresentativeName(instance);
