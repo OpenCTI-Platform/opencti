@@ -2,6 +2,7 @@ import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
+import { entitiesCounter } from '../../utils/entityCountHelper';
 
 const LIST_QUERY = gql`
   query cities(
@@ -106,7 +107,7 @@ describe('City resolver standard behavior', () => {
   });
   it('should list cities', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.cities.edges.length).toEqual(2);
+    expect(queryResult.data.cities.edges.length).toEqual(entitiesCounter.City + 1); // +1 city created in this file
   });
   it('should update city', async () => {
     const UPDATE_QUERY = gql`
