@@ -18,7 +18,7 @@ steps:
       - cp -R opencti-platform platform-reference
       - apk add git github-cli
       # Faking that client-python is here
-      # - git clone https://github.com/OpenCTI-Platform/client-python client-python --depth=1
+      - git clone https://github.com/OpenCTI-Platform/client-python client-python --depth=1
       - chmod 777 scripts/*
       - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
