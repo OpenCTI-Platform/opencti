@@ -21,7 +21,6 @@ const useBuildListOutcome = () => {
     widgetPerspective?: WidgetPerspective | null,
   ) => {
     const variables = {
-      types: ['Stix-Core-Object'],
       first: dataSelection.number ?? 10,
       orderBy: dataSelection.sort_by ?? 'created_at',
       orderMode: dataSelection.sort_mode ?? 'asc',
@@ -30,10 +29,12 @@ const useBuildListOutcome = () => {
 
     let nodes: ListItem[] = [];
     if (widgetPerspective === 'entities') {
-      const data = await fetchQuery(stixCoreObjectsListQuery, variables).toPromise() as StixCoreObjectsListQuery$data;
+      const types = ['Stix-Core-Object'];
+      const data = await fetchQuery(stixCoreObjectsListQuery, { ...variables, types }).toPromise() as StixCoreObjectsListQuery$data;
       nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
     } else if (widgetPerspective === 'relationships') {
-      const data = await fetchQuery(stixRelationshipsListQuery, variables).toPromise() as StixRelationshipsListQuery$data;
+      const types = ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object'];
+      const data = await fetchQuery(stixRelationshipsListQuery, { ...variables, types }).toPromise() as StixRelationshipsListQuery$data;
       nodes = (data.stixRelationships?.edges ?? []).flatMap((n) => (n ? n.node : [])) ?? [];
     } else {
       throw Error(t_i18n('Perspective of fintel template list widget should be either "entities" or "relationships"'));
