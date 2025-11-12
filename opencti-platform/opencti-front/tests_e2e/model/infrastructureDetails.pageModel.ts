@@ -21,8 +21,8 @@ export default class InfrastructureDetailsPageModel {
     return this.page.getByRole('tab', { name: 'Knowledge' }).click();
   }
 
-  getVictimologyTab() {
-    return this.page.getByRole('menuitem', { name: 'Victimology' }).click();
+  getCampaignsTab() {
+    return this.page.getByRole('menuitem', { name: 'Campaigns' }).click();
   }
 
   getCreateRelationshipButton() {

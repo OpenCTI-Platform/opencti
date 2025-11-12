@@ -16,7 +16,7 @@ test('Create a new relationship in infrastructure knowledge', async ({ page }) =
   await infrastructurePage.getItemFromList('Test e2e').click();
   await expect(infrastructureDetailsPage.getInfrastructureDetailsPage()).toBeVisible();
   await infrastructureDetailsPage.getKnowledgeTab();
-  await infrastructureDetailsPage.getVictimologyTab();
+  await infrastructureDetailsPage.getCampaignsTab();
   await infrastructureDetailsPage.getCreateRelationshipButton().click();
   await expect(stixCoreRelationshipCreationFromEntity.getStixCoreRelationshipCreationFromEntityComponent()).toBeVisible();
 });
