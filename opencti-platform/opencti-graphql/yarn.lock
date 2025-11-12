@@ -4607,12 +4607,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/archiver@npm:6.0.4":
-  version: 6.0.4
-  resolution: "@types/archiver@npm:6.0.4"
+"@types/archiver@npm:7.0.0":
+  version: 7.0.0
+  resolution: "@types/archiver@npm:7.0.0"
   dependencies:
     "@types/readdir-glob": "npm:*"
-  checksum: 10c0/ac971a5a72d55064b0a62ccebff643f220c957f109a68486c48b51c566df3a7fdbf5ddce8eb1bbd644c4c6486f882cf90044f5ebb08ce16dfe0b1cbb491f8c2c
+  checksum: 10c0/30fe68377e3fbdd9691235bca1c99e1d6ac9c850156a56abc09fa3ed7777c520a260cbee6a1c796994a5adee96dcdc6dd3742cc4444aca713e2611c6b6d1f73d
   languageName: node
   linkType: hard
 
@@ -11683,7 +11683,7 @@ __metadata:
     "@pyroscope/nodejs": "npm:0.4.5"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@sesamecare-oss/redlock": "npm:1.4.0"
-    "@types/archiver": "npm:6.0.4"
+    "@types/archiver": "npm:7.0.0"
     "@types/bluebird": "npm:3.5.42"
     "@types/content-type": "npm:1.1.9"
     "@types/ejs": "npm:3.1.5"
