@@ -4765,13 +4765,13 @@ export const elIndexElements = async (context, user, indexingType, elements) => 
         if (isImpactedRole(relationshipType, fromType, toType, fromRole)) {
           if (relationshipType === RELATION_IN_PIR) {
             const { pir_score } = e;
-            impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from', pir_score });
+            impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.from.entity_type, side: 'from', pir_score });
           } else {
-            impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.fromType, side: 'from' });
+            impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.from.entity_type, side: 'from' });
           }
         }
         if (isImpactedRole(relationshipType, fromType, toType, toRole)) {
-          impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.from.entity_type, side: 'to' });
+          impacts.push({ refField, from: e.toId, relationshipType, to: e.from, type: e.to.entity_type, side: 'to' });
         }
         return impacts;
       }),
