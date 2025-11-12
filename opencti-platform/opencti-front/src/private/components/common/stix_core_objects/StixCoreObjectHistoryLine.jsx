@@ -32,7 +32,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = () => ({
   container: {
-    marginBottom: 5,
+    height: 60,
   },
   line: {
     content: ' ',
@@ -286,7 +286,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
   render() {
     const { nsdt, classes, node, isRelation, t } = this.props;
     return (
-      <div className={classes.container}>
+      <ListItem className={classes.container}>
         <div className={classes.avatar}>
           <Badge
             color="secondary"
@@ -463,7 +463,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-      </div>
+      </ListItem>
     );
   }
 }

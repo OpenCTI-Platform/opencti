@@ -6,6 +6,7 @@ import {
   StixCoreObjectHistoryLinesQuery$variables,
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
 import { StixCoreObjectHistoryLines_data$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
+import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
 import StixCoreObjectHistoryLine from './StixCoreObjectHistoryLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -67,48 +68,52 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
   }, FIVE_SECONDS);
 
   const logs = data?.logs?.edges ?? [];
+
   return (
     <Paper
       style={{
         marginTop: 6,
-        padding: 15,
+        padding: '0 15px',
         borderRadius: 4,
       }}
       className={'paper-for-grid'}
       variant="outlined"
     >
       {logs.length > 0 ? (
-        logs.filter((l) => !!l).map((logEdge) => {
-          const log = logEdge.node;
-          return (
-            <StixCoreObjectHistoryLine
-              key={log.id}
-              node={log}
-              isRelation={isRelationLog}
-            />
-          );
-        })
-      ) : (
-        <div
-          style={{
-            display: 'table',
-            height: '100%',
-            width: '100%',
-          }}
-        >
-          <span
+        <List>
+          {logs.filter((l) => !!l).map((logEdge) => {
+            const log = logEdge.node;
+            return (
+              <StixCoreObjectHistoryLine
+                key={log.id}
+                node={log}
+                isRelation={isRelationLog}
+              />
+            );
+          })}
+        </List>
+      )
+        : (
+          <div
             style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
+              display: 'table',
+              height: '100%',
+              width: '100%',
             }}
           >
-            {isRelationLog
-              ? t_i18n('No relations history about this entity.')
-              : t_i18n('No history about this entity.')}
-          </span>
-        </div>
-      )}
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {isRelationLog
+                ? t_i18n('No relations history about this entity.')
+                : t_i18n('No history about this entity.')}
+            </span>
+          </div>
+        )}
     </Paper>
   );
 };

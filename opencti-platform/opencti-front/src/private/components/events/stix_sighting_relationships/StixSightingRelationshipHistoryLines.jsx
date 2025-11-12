@@ -10,7 +10,7 @@ import inject18n from '../../../../components/i18n';
 const styles = (theme) => ({
   paperHistory: {
     marginTop: theme.spacing(1),
-    padding: 15,
+    padding: '0 15px',
     borderRadius: 4,
   },
 });
