@@ -103,6 +103,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
       {infrastructure ? (
         <div
           style={{ paddingRight: paddingRightValue() }}
+          data-testid="infrastructure-details-page"
         >
           <Breadcrumbs elements={[
             { label: t_i18n('Observations') },
