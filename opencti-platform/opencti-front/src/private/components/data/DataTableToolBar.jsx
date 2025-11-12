@@ -28,7 +28,6 @@ import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
 import {
   AddOutlined,
-  AddBoxOutlined,
   AutoFixHighOutlined,
   BrushOutlined,
   CancelOutlined,
@@ -65,7 +64,6 @@ import Avatar from '@mui/material/Avatar';
 import { FormControlLabel, Switch } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import ImportFilesDialog from '../common/files/import_files/ImportFilesDialog';
 import UserEmailSend from '../settings/users/UserEmailSend';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
@@ -414,7 +412,6 @@ class DataTableToolBar extends Component {
       killChainPhases: [],
       groups: [],
       displayEditButtons: true,
-      unknownEntities: undefined,
     };
   }
 
@@ -2145,7 +2142,6 @@ class DataTableToolBar extends Component {
       taskScope,
       displayEditButtons,
     } = this.props;
-    console.log('selecg all in toolbar', this.props.selectAll);
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
 
     const isUserDatatable = taskScope === 'USER';
