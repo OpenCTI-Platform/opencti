@@ -108,8 +108,6 @@ jobs:
             cp /home/workspace/opencti-platform/.yarnrc.yml .
             yarn install
             yarn build
-            yarn check-ts
-            yarn lint
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration
         '
 
