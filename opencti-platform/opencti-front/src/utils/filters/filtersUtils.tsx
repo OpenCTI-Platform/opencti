@@ -342,7 +342,7 @@ export const buildFiltersAndOptionsForWidgets = (
     };
   }
   if (isKnowledgeRelationshipWidget) {
-    filters = addFilter(filters, 'entity_type', ['Stix-Core-Relationship', 'object']);
+    filters = addFilter(filters, 'entity_type', ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object']);
   }
   return { filters };
 };
