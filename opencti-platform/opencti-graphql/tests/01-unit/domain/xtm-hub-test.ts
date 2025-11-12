@@ -18,13 +18,15 @@ describe('XTM hub', () => {
   describe('checkXTMHubConnectivity', () => {
     const xtm_hub_token = 'fake-token';
     let getEntityFromCacheSpy: MockInstance;
-    let xtmHubClientSpy: MockInstance;
+    let xtmHubClientRefreshStatusSpy: MockInstance;
+    let xtmHubClientIsBackendReachableSpy: MockInstance;
     let updateAttributeSpy: MockInstance;
     let sendAdministratorsLostConnectivityEmailSpy: MockInstance;
 
     beforeEach(() => {
       getEntityFromCacheSpy = vi.spyOn(cache, 'getEntityFromCache');
-      xtmHubClientSpy = vi.spyOn(xtmHubClient, 'refreshRegistrationStatus');
+      xtmHubClientRefreshStatusSpy = vi.spyOn(xtmHubClient, 'refreshRegistrationStatus');
+      xtmHubClientIsBackendReachableSpy = vi.spyOn(xtmHubClient, 'isBackendReachable').mockResolvedValue({ isReachable: true });
       updateAttributeSpy = vi.spyOn(middleware, 'updateAttribute').mockResolvedValue({});
       sendAdministratorsLostConnectivityEmailSpy = vi.spyOn(xtmHubEmail, 'sendAdministratorsLostConnectivityEmail').mockResolvedValue({} as any);
       vi.spyOn(settingsModule, 'getSettings').mockResolvedValue({} as any);
@@ -51,7 +53,7 @@ describe('XTM hub', () => {
         xtm_hub_registration_status: XtmHubRegistrationStatus.Registered
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientSpy.mockResolvedValue('inactive');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -61,7 +63,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }]
+        [{ key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.LostConnectivity] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
       );
     });
 
@@ -73,7 +75,7 @@ describe('XTM hub', () => {
         xtm_hub_should_send_connectivity_email: false
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientSpy.mockResolvedValue('active');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -86,8 +88,30 @@ describe('XTM hub', () => {
         [
           { key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.Registered] },
           { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
-          { key: 'xtm_hub_should_send_connectivity_email', value: [true] }
+          { key: 'xtm_hub_should_send_connectivity_email', value: [true] },
+          { key: 'xtm_hub_backend_is_reachable', value: [true] }
         ]
+      );
+    });
+
+    it('should update is backend reachable to false when xtm hub backend is not reachable', async () => {
+      xtmHubClientIsBackendReachableSpy.mockResolvedValue({ isReachable: false });
+      const settings: Partial<BasicStoreSettings> = {
+        id: 'id',
+        xtm_hub_token,
+        xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity
+      };
+      getEntityFromCacheSpy.mockResolvedValue(settings);
+      xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+
+      await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+      expect(updateAttributeSpy).toBeCalledWith(
+        testContext,
+        HUB_REGISTRATION_MANAGER_USER,
+        'id',
+        ENTITY_TYPE_SETTINGS,
+        [{ key: 'xtm_hub_backend_is_reachable', value: [false] }]
       );
     });
 
@@ -98,12 +122,18 @@ describe('XTM hub', () => {
         xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientSpy.mockResolvedValue('inactive');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
       expect(result.status).toBe(XtmHubRegistrationStatus.LostConnectivity);
-      expect(updateAttributeSpy).not.toBeCalled();
+      expect(updateAttributeSpy).toBeCalledWith(
+        testContext,
+        HUB_REGISTRATION_MANAGER_USER,
+        'id',
+        ENTITY_TYPE_SETTINGS,
+        [{ key: 'xtm_hub_backend_is_reachable', value: [true] }]
+      );
     });
 
     it('should only update last connectivity check when connection stays active', async () => {
@@ -114,7 +144,7 @@ describe('XTM hub', () => {
         xtm_hub_should_send_connectivity_email: true
       };
       getEntityFromCacheSpy.mockResolvedValue(settings);
-      xtmHubClientSpy.mockResolvedValue('active');
+      xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
 
       const result = await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -124,7 +154,7 @@ describe('XTM hub', () => {
         HUB_REGISTRATION_MANAGER_USER,
         'id',
         ENTITY_TYPE_SETTINGS,
-        [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }]
+        [{ key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
       );
     });
 
@@ -138,7 +168,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientSpy.mockResolvedValue('inactive');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -148,7 +178,7 @@ describe('XTM hub', () => {
           HUB_REGISTRATION_MANAGER_USER,
           'id',
           ENTITY_TYPE_SETTINGS,
-          [{ key: 'xtm_hub_should_send_connectivity_email', value: [false] }]
+          [{ key: 'xtm_hub_should_send_connectivity_email', value: [false] }, { key: 'xtm_hub_backend_is_reachable', value: [true] }]
         );
       });
 
@@ -161,7 +191,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: true
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientSpy.mockResolvedValue('inactive');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -177,7 +207,7 @@ describe('XTM hub', () => {
           xtm_hub_should_send_connectivity_email: false
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientSpy.mockResolvedValue('inactive');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
@@ -191,7 +221,7 @@ describe('XTM hub', () => {
           xtm_hub_registration_status: XtmHubRegistrationStatus.Registered
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
-        xtmHubClientSpy.mockResolvedValue('active');
+        xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 

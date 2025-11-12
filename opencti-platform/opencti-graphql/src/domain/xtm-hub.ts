@@ -50,6 +50,9 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
     }
   }
 
+  const { isReachable } = await xtmHubClient.isBackendReachable();
+  attributeUpdates.push({ key: 'xtm_hub_backend_is_reachable', value: [isReachable] });
+
   if (attributeUpdates.length === 0) {
     return { status: newRegistrationStatus };
   }
