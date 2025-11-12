@@ -1,46 +1,51 @@
-export const entitiesCounter: Record<string, number> = {};
-entitiesCounter.Capability = 51;
-entitiesCounter.Credential = 1;
-entitiesCounter.DecayRule = 4;
-entitiesCounter.EntitySetting = 45;
-entitiesCounter.ExternalReference = 7;
-entitiesCounter.Incident = 1;
-entitiesCounter.Indicator = 3;
-entitiesCounter.Individual = 1;
-entitiesCounter.IntrusionSet = 1;
-entitiesCounter.KillChainPhase = 2;
-entitiesCounter.Label = 13;
-entitiesCounter.MarkingDefinition = 11;
-entitiesCounter.Note = 1;
-entitiesCounter.Notifier = 2;
-entitiesCounter.Opinion = 1;
-entitiesCounter.Sector = 3;
-entitiesCounter.Status = 7;
-entitiesCounter.StatusTemplate = 8;
-entitiesCounter.StixFile = 1;
-entitiesCounter.Vocabulary = 354;
+export const entitiesCounter: Record<string, number> = {
+  Capability: 51,
+  Credential: 1,
+  DecayRule: 4,
+  EntitySetting: 45,
+  ExternalReference: 7,
+  Incident: 1,
+  Indicator: 3,
+  Individual: 1,
+  IntrusionSet: 1,
+  KillChainPhase: 2,
+  Label: 13,
+  MarkingDefinition: 11,
+  Note: 1,
+  Notifier: 2,
+  ObservedData: 1,
+  Opinion: 1,
+  RuleManager: 1,
+  Sector: 3,
+  Software: 1,
+  Status: 7,
+  StatusTemplate: 8,
+  StixFile: 1,
+  Vocabulary: 354,
+};
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 
-export const relationsCounter: Record<string, number> = {};
-relationsCounter['accesses-to'] = 28;
-relationsCounter['attributed-to'] = 2;
-relationsCounter['created-by'] = 22;
-relationsCounter['external-reference'] = 7;
-relationsCounter['has-capability'] = 63;
-relationsCounter['has-role'] = 9;
-relationsCounter.indicates = 4;
-relationsCounter['kill-chain-phase'] = 3;
-relationsCounter['located-at'] = 4;
-relationsCounter['member-of'] = 13;
-relationsCounter.mitigates = 1;
-relationsCounter.object = 38;
-relationsCounter['object-label'] = 30;
-relationsCounter['object-marking'] = 28;
-relationsCounter['operating-system'] = 1;
-relationsCounter['participate-to'] = 4;
-relationsCounter['part-of'] = 6;
-relationsCounter['related-to'] = 2;
-relationsCounter['stix-sighting-relationship'] = 2;
-relationsCounter.targets = 2;
-relationsCounter.uses = 3;
+export const relationsCounter: Record<string, number> = {
+  'accesses-to': 28,
+  'attributed-to': 2,
+  'created-by': 22,
+  'external-reference': 7,
+  'has-capability': 63,
+  'has-role': 9,
+  indicates: 4,
+  'kill-chain-phase': 3,
+  'located-at': 4,
+  'member-of': 13,
+  mitigates: 1,
+  object: 38,
+  'object-label': 30,
+  'object-marking': 28,
+  'operating-system': 1,
+  'participate-to': 4,
+  'part-of': 6,
+  'related-to': 2,
+  'stix-sighting-relationship': 2,
+  targets: 2,
+  uses: 3,
+};
