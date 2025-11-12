@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { generateUpdatePatchMessage } from '../../../src/database/generate-message';
+import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 
 describe('generateUpdatePatchMessage tests', () => {
   it('should generate message for simple field update', () => {
@@ -221,4 +222,81 @@ describe('generateUpdatePatchMessage tests', () => {
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
     expect(message).toEqual('adds `user2` in `Creators`');
   });
-});// TODO tests for string + json, date, object
+  it('should generate message for date update', () => {
+    const data = { creators: [], members: [] };
+    const patchElements = [
+      [
+        'replace',
+        [
+          {
+            key: 'valid_from',
+            previous: [
+              '2025-10-28T16:26:27.168Z'
+            ],
+            value: [
+              '2025-10-21T15:26:27.168Z'
+            ]
+          }
+        ]
+      ]
+    ];
+    const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_INDICATOR, data);
+    expect(message).toEqual('replaces `2025-10-28T16:26:27.168Z` with `2025-10-21T15:26:27.168Z` in `Valid from`');
+  });
+  it('should generate message for attribute with object type update', () => {
+    const data = { creators: [], members: [] };
+    const patchElements = [
+      [
+        'replace',
+        [
+          {
+            key: 'x_opencti_files',
+            previous: [
+              {
+                file_markings: [],
+                id: 'import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file1.json',
+                mime_type: 'application/json',
+                name: 'file1.json',
+                version: '2025-11-12T15:28:21.073Z'
+              }
+            ],
+            value: [
+              {
+                file_markings: [],
+                id: 'import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file1.json',
+                mime_type: 'application/json',
+                name: 'file1.json',
+                version: '2025-11-12T15:28:21.073Z'
+              },
+              {
+                file_markings: [],
+                id: 'import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file2.json',
+                mime_type: 'application/json',
+                name: 'file2.json',
+                version: '2025-11-12T15:35:04.034Z'
+              }
+            ]
+          }
+        ]
+      ]
+    ];
+    const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_INDICATOR, data);
+    expect(message).toEqual('replaces `\n'
+      + 'file_markings : []\n'
+      + 'id : import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file1.json\n'
+      + 'mime_type : application/json\n'
+      + 'name : file1.json\n'
+      + 'version : 2025-11-12T15:28:21.073Z` with `\n'
+      + 'file_markings : []\n'
+      + 'id : import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file1.json\n'
+      + 'mime_type : application/json\n'
+      + 'name : file1.json\n'
+      + 'version : 2025-11-12T15:28:21.073Z,\n'
+      + 'file_markings : []\n'
+      + 'id : import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file2.json\n'
+      + 'mime_type : application/json\n'
+      + 'name : file2.json\n'
+      + 'version : 2025-11-12T15:35:04.034Z'
+      + '` in `Files`');
+  });
+});
