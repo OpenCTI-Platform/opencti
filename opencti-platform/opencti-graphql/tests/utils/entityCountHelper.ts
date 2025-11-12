@@ -1,5 +1,9 @@
 export const entitiesCounter: Record<string, number> = {
+  AttackPattern: 2,
+  Campaign: 1,
   Capability: 51,
+  Country: 1,
+  CourseOfAction: 1,
   Credential: 1,
   DecayRule: 4,
   EntitySetting: 45,
@@ -15,6 +19,7 @@ export const entitiesCounter: Record<string, number> = {
   Notifier: 2,
   ObservedData: 1,
   Opinion: 1,
+  Region: 2,
   RuleManager: 1,
   Sector: 3,
   Software: 1,
