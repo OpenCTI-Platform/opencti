@@ -716,6 +716,86 @@ class StixCyberObservable(StixCyberObservableDeprecatedMixin):
                         if "subject_public_key_exponent" in observable_data
                         else None
                     ),
+                    "basic_constraints": (
+                        observable_data["basic_constraints"]
+                        if "basic_constraints" in observable_data
+                        else None
+                    ),
+                    "name_constraints": (
+                        observable_data["name_constraints"]
+                        if "name_constraints" in observable_data
+                        else None
+                    ),
+                    "policy_constraints": (
+                        observable_data["policy_constraints"]
+                        if "policy_constraints" in observable_data
+                        else None
+                    ),
+                    "key_usage": (
+                        observable_data["key_usage"]
+                        if "key_usage" in observable_data
+                        else None
+                    ),
+                    "extended_key_usage": (
+                        observable_data["extended_key_usage"]
+                        if "extended_key_usage" in observable_data
+                        else None
+                    ),
+                    "subject_key_identifier": (
+                        observable_data["subject_key_identifier"]
+                        if "subject_key_identifier" in observable_data
+                        else None
+                    ),
+                    "authority_key_identifier": (
+                        observable_data["authority_key_identifier"]
+                        if "authority_key_identifier" in observable_data
+                        else None
+                    ),
+                    "subject_alternative_name": (
+                        observable_data["subject_alternative_name"]
+                        if "subject_alternative_name" in observable_data
+                        else None
+                    ),
+                    "issuer_alternative_name": (
+                        observable_data["issuer_alternative_name"]
+                        if "issuer_alternative_name" in observable_data
+                        else None
+                    ),
+                    "subject_directory_attributes": (
+                        observable_data["subject_directory_attributes"]
+                        if "subject_directory_attributes" in observable_data
+                        else None
+                    ),
+                    "crl_distribution_points": (
+                        observable_data["crl_distribution_points"]
+                        if "crl_distribution_points" in observable_data
+                        else None
+                    ),
+                    "inhibit_any_policy": (
+                        observable_data["inhibit_any_policy"]
+                        if "inhibit_any_policy" in observable_data
+                        else None
+                    ),
+                    "private_key_usage_period_not_before": (
+                        observable_data["private_key_usage_period_not_before"]
+                        if "private_key_usage_period_not_before" in observable_data
+                        else None
+                    ),
+                    "private_key_usage_period_not_after": (
+                        observable_data["private_key_usage_period_not_after"]
+                        if "private_key_usage_period_not_after" in observable_data
+                        else None
+                    ),
+                    "certificate_policies": (
+                        observable_data["certificate_policies"]
+                        if "certificate_policies" in observable_data
+                        else None
+                    ),
+                    "policy_mappings": (
+                        observable_data["policy_mappings"]
+                        if "policy_mappings" in observable_data
+                        else None
+                    ),
                 }
             elif type == "SSH-Key" or type.lower() == "ssh-key":
                 input_variables["SSHKey"] = {

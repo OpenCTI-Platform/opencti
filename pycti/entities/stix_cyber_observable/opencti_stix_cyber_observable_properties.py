@@ -173,6 +173,22 @@ SCO_PROPERTIES = """
           algorithm
           hash
         }
+        basic_constraints
+        name_constraints
+        policy_constraints
+        key_usage
+        extended_key_usage
+        subject_key_identifier
+        authority_key_identifier
+        subject_alternative_name
+        issuer_alternative_name
+        subject_directory_attributes
+        crl_distribution_points
+        inhibit_any_policy
+        private_key_usage_period_not_before
+        private_key_usage_period_not_after
+        certificate_policies
+        policy_mappings
     }
      ... on SSHKey {
         key_type
@@ -488,6 +504,22 @@ SCO_PROPERTIES_WITH_FILES = """
           algorithm
           hash
         }
+        basic_constraints
+        name_constraints
+        policy_constraints
+        key_usage
+        extended_key_usage
+        subject_key_identifier
+        authority_key_identifier
+        subject_alternative_name
+        issuer_alternative_name
+        subject_directory_attributes
+        crl_distribution_points
+        inhibit_any_policy
+        private_key_usage_period_not_before
+        private_key_usage_period_not_after
+        certificate_policies
+        policy_mappings
     }
     ... on SSHKey {
         key_type
