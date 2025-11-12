@@ -48,6 +48,9 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
     { successMessage: `${t_i18n('entity_Pir')} ${t_i18n('successfully created')}` },
   );
 
+  const handleOpenDialog = () => setDialogOpen(true);
+  const handleCloseDialog = () => setDialogOpen(false);
+
   const submit = (data: PirCreationFormData) => {
     const input = pirFormDataToMutationInput(data);
     createMutation({
@@ -71,7 +74,7 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
     <>
       <CreateEntityControlledDial
         entityType='Pir'
-        onOpen={() => setDialogOpen(true)}
+        onOpen={handleOpenDialog}
       />
 
       <Dialog
@@ -84,9 +87,10 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
             style: { minWidth: '950px' },
           },
         }}
+        onClose={handleCloseDialog}
       >
         <PirCreationForm
-          onCancel={() => setDialogOpen(false)}
+          onClose={handleCloseDialog}
           onSubmit={submit}
         />
       </Dialog>
