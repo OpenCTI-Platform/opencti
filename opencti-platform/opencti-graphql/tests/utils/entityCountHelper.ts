@@ -1,6 +1,6 @@
 import { TESTING_GROUPS, TESTING_ORGS, TESTING_ROLES, TESTING_USERS } from './testQuery';
 
-export const entitiesCounter: Record<string, number> = {
+export const entitiesCounter = {
   AdministrativeArea: 1,
   AttackPattern: 2,
   Campaign: 1,
@@ -47,7 +47,7 @@ export const entitiesCounter: Record<string, number> = {
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);
 
-export const relationsCounter: Record<string, number> = {
+export const relationsCounter = {
   'accesses-to': 28,
   'attributed-to': 2,
   'created-by': 22,
