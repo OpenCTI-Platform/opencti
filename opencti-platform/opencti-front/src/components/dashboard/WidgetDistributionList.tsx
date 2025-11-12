@@ -12,7 +12,7 @@ import { useFormatter } from '../i18n';
 import { useComputeLink } from '../../utils/hooks/useAppData';
 
 interface WidgetDistributionListProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   data: any[]
   hasSettingAccess?: boolean
   overflow?: string

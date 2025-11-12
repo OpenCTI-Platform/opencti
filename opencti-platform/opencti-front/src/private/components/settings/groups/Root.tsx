@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
 // @ts-nocheck
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';

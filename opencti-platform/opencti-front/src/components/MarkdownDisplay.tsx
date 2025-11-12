@@ -11,7 +11,7 @@ import FieldOrEmpty from './FieldOrEmpty';
 
 export const MarkDownComponents = (
   theme: Theme,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
 ): Record<string, FunctionComponent<any>> => ({
   table: ({ tableProps }) => (
     <table

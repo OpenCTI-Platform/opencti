@@ -1,5 +1,5 @@
 // usually string, but can be a combined filter like regardingOf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: type unknown
 export type FilterValue = any;
 
 export type FilterGroup = {

@@ -212,7 +212,7 @@ class StixSightingRelationshipContainer extends Component {
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
     const fromRestricted = from === null;
-    // eslint-disable-next-line no-nested-ternary
+    // biome-ignore lint/style/noNestedTernary: to refactor
     const linkFrom = from
       ? from.relationship_type
         ? `${resolveLink(from.from.entity_type)}/${
@@ -221,7 +221,7 @@ class StixSightingRelationshipContainer extends Component {
         : resolveLink(from.entity_type)
       : '';
     const toRestricted = to === null;
-    // eslint-disable-next-line no-nested-ternary
+    // biome-ignore lint/style/noNestedTernary: to refactor
     const linkTo = to
       ? to.relationship_type
         ? `${resolveLink(to.from.entity_type)}/${

@@ -100,7 +100,7 @@ const StixCoreObjectOpinionsRadar: FunctionComponent<StixCoreObjectOpinionsRadar
 
   return (
     <Chart
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
       // @ts-ignore
       // Need to migrate Chart Charts.js file to TSX
       options={radarChartOptions(theme, labels, simpleNumberFormat, colors, true, 'transparent', (height / 2) - 20, handleRadarOpen)}

@@ -385,7 +385,7 @@ ContainerMappingContentComponentProps
   const handleTextSelection = (text: string) => {
     if (text && text.length > 2) {
       setSelectedText(text.trim());
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
       // @ts-ignore
       OPEN$.next({ action: 'OpenMapping' });
     }

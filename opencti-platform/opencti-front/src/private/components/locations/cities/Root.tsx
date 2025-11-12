@@ -1,5 +1,5 @@
 // TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
 // @ts-nocheck
 import React, { useMemo } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';

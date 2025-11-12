@@ -85,12 +85,13 @@ class ExportButtons extends Component {
           offsetWidth,
           offsetHeight,
           name,
-          // eslint-disable-next-line no-nested-ternary
+          // biome-ignore-start lint/style/noNestedTernary: to be refactored
           background
             ? theme === 'light'
               ? themeLight().palette.background.default
               : themeDark().palette.background.default
             : null,
+          // biome-ignore-end lint/style/noNestedTernary: to be refactored
           pixelRatio,
           this.adjust,
         ).then(() => {})
@@ -136,12 +137,13 @@ class ExportButtons extends Component {
       exportPdf(
         domElementId,
         name,
-        // eslint-disable-next-line no-nested-ternary
+        // biome-ignore-start lint/style/noNestedTernary: to be refactored
         background
           ? theme === 'light'
             ? themeLight().palette.background.default
             : themeDark().palette.background.default
           : null,
+        // biome-ignore-end lint/style/noNestedTernary: to be refactored
         pixelRatio,
         this.adjust,
       ).then(() => {}).catch(() => MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf')))

@@ -10,7 +10,7 @@ export interface DataColumn {
   isSortable: boolean;
   label: string;
   width?: string | number;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   render?: (v: any, helpers?: any) => ReactNode;
 }
 

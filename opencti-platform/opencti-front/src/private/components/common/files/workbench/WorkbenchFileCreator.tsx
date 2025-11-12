@@ -121,7 +121,7 @@ const WorkbenchFileCreator: FunctionComponent<WorkbenchFileCreatorProps> = ({
       handleCloseCreate();
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: type unknown
     const objects: any = [];
     if (entityId) {
       fetchQuery(workbenchFileCreatorStixCoreObjectQuery, { id: entityId }).toPromise()

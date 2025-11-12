@@ -92,7 +92,7 @@ interface NotifierEditionValues {
   notifier_connector_id?: FieldOption
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: type unknown
 type FormRef = React.RefObject<CoreForm<any, RJSFSchema, any>>['current'];
 
 const NotifierEdition: FunctionComponent<NotifierEditionComponentProps> = ({

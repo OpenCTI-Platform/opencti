@@ -167,7 +167,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
         )}
       </EETooltip>
       {isEnterpriseEdition && isChatbotAiEnabled() ? (
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
         // @ts-ignore
         <filigran-chatbot
           ref={chatbotRef}

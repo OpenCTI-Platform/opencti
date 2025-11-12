@@ -119,7 +119,7 @@ const IngestionCatalogConnectorCreation = ({
   const [commitRegister] = useMutation<IngestionCatalogConnectorCreationMutation>(ingestionCatalogConnectorCreationMutation);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
     // @ts-ignore
     if (!compiledValidator || compiledValidator.schema.container_image !== connector.container_image) {
       setCompiledValidator(new Validator(connector as unknown as Schema));

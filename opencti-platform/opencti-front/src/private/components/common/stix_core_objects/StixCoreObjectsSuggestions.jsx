@@ -327,12 +327,13 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                           fontSize="small"
                           disabled={suggestions.length === 0}
                           color={
-                        // eslint-disable-next-line no-nested-ternary
+                        // biome-ignore-start lint/style/noNestedTernary: to be refactored
                         suggestions.length === 0
                           ? 'disabled'
                           : displaySuggestions
                             ? 'secondary'
                             : 'primary'
+                        // biome-ignore-end lint/style/noNestedTernary: to be refactored
                       }
                         />
                       </Badge>

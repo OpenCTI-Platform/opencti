@@ -42,7 +42,7 @@ export const bytesFormat = (number, digits = 2) => {
       original: number,
     };
   }
-  // eslint-disable-next-line radix
+  // biome-ignore lint/correctness/useParseIntRadix: default radix
   const i = parseInt(Math.floor(Math.log(number) / Math.log(1024)));
   return {
     // eslint-disable-next-line no-restricted-properties

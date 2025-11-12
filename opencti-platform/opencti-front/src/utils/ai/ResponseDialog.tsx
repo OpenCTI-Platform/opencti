@@ -12,7 +12,6 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 // As we can ask AI after and follow up, there is a dependency lifecycle here that can be accepted
 // TODO: Cleanup a bit in upcoming version
-// eslint-disable-next-line import/no-cycle
 import TextFieldAskAI from '../../private/components/common/form/TextFieldAskAI';
 import { ResponseDialogAskAISubscription, ResponseDialogAskAISubscription$data } from './__generated__/ResponseDialogAskAISubscription.graphql';
 import { useFormatter } from '../../components/i18n';
@@ -100,7 +99,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
     [id],
   );
   // TODO: Check by the engineering team
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
   // @ts-ignore
   useSubscription(subConfig);
   const height = 400;

@@ -9,7 +9,7 @@ import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData
 import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetRadarProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   data: any[]
   label: string
   groupBy: string

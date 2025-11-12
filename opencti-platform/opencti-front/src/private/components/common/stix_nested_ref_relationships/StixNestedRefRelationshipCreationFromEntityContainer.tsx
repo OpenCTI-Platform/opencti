@@ -6,7 +6,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 interface StixNestedRefRelationshipCreationFromEntityContainerProps {
   entityId: string,
   entityType: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   paginationOptions: any, // FIXME find the right type
   variant: string,
 }

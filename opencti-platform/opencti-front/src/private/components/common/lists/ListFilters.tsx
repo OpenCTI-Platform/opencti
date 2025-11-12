@@ -127,10 +127,11 @@ const ListFilters = ({
           value: key,
           label: t_i18n(filterDefinition?.label ?? key),
           numberOfOccurences: subEntityTypes.length,
-          // eslint-disable-next-line no-nested-ternary
+          // biome-ignore-start lint/style/noNestedTernary: to be refactored
           groupLabel: isFilterKeyForAllTypes
             ? t_i18n('Most used filters')
             : t_i18n('All other filters'),
+          // biome-ignore-end lint/style/noNestedTernary: to be refactored
           groupOrder: isFilterKeyForAllTypes ? 1 : 0,
         };
       })

@@ -53,7 +53,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     const { t, classes, data, entityLink, paginationOptions, stixDomainObjectId } = this.props;
     // Extract all kill chain phases
     const killChainPhases = R.pipe(
-      // eslint-disable-next-line no-nested-ternary
+      // biome-ignore-start lint/style/noNestedTernary: to be refactored
       R.map((n) => (n.node
         && n.node.killChainPhases
         && n.node.killChainPhases.length > 0
@@ -64,6 +64,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
             && n.node.to.killChainPhases.length > 0
           ? n.node.to.killChainPhases[0]
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
+      // biome-ignore-end lint/style/noNestedTernary: to be refactored
       R.uniq,
       R.indexBy(R.prop('id')),
     )(data.stixRelationships.edges);
@@ -92,7 +93,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       )),
       R.map((n) => R.assoc(
         'killChainPhase',
-        // eslint-disable-next-line no-nested-ternary
+        // biome-ignore-start lint/style/noNestedTernary: to be refactored
         n && n.killChainPhases && n.killChainPhases.length > 0
           ? n.killChainPhases[0]
           : n
@@ -101,6 +102,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
               && n.to.killChainPhases.length > 0
             ? n.to.killChainPhases[0]
             : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
+        // biome-ignore-end lint/style/noNestedTernary: to be refactored
         n,
       )),
       R.sortWith([R.ascend(R.prop('years'))]),
@@ -187,7 +189,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               </ListItemIcon>
                               <ListItemText
                                 primary={
-                                // eslint-disable-next-line no-nested-ternary
+                                // biome-ignore-start lint/style/noNestedTernary: to be refactored
                                 !restricted ? (
                                   entityToDisplay.entity_type
                                   === 'Attack-Pattern' ? (
@@ -203,6 +205,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                 ) : (
                                   t('Restricted')
                                 )
+                                // biome-ignore-end lint/style/noNestedTernary: to be refactored
                               }
                                 secondary={
                                 stixDomainObject.description

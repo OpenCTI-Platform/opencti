@@ -23,7 +23,7 @@ const chartDataURI = async (chartOptions: ApexOptions) => {
   await sleep(1000); // Wait animations are over
   const dataURI = await chart.dataURI();
   document.body.removeChild(canvas);
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
   // @ts-ignore
   return dataURI.imgURI;
 };

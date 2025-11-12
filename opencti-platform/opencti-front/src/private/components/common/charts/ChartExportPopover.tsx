@@ -33,7 +33,7 @@ const ExportPopover = ({
   const handleExportToCSV = () => {
     setAnchorEl(null);
     if (chart) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
       // @ts-ignore
       const currentFormatter = chart.opts.xaxis?.labels?.formatter;
       if (currentFormatter) {

@@ -4,7 +4,7 @@ import { DataTableColumn, DataTableProps, DataTableVariant } from '../dataGrid/d
 import type { WidgetColumn } from '../../utils/widget/widget';
 
 interface WidgetListCoreObjectsProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   data: any[]
   publicWidget?: boolean
   rootRef: DataTableProps['rootRef']

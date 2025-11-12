@@ -7,7 +7,7 @@ import type { Theme } from '../Theme';
 import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';
 
 interface WidgetDonutProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   data: any[]
   groupBy: string
   withExport?: boolean

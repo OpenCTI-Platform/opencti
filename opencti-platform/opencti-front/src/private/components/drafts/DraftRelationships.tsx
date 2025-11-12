@@ -276,7 +276,7 @@ const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isRea
     setNumberOfElements: storageHelpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<DraftRelationshipsLinesPaginationQuery>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   const getRedirectionLink = (stixRelationship: any) => {
     if (isReadOnly) {
       const isUpdatedEntity = stixRelationship.draftVersion?.draft_operation === 'update' || stixRelationship.draftVersion?.draft_operation === 'update_linked';

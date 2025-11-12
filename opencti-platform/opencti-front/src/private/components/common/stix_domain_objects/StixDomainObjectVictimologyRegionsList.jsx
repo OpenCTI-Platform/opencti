@@ -352,7 +352,6 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                             )
                           }
                             secondary={
-                            // eslint-disable-next-line no-nested-ternary
                             stixCoreRelationship.description
                             && stixCoreRelationship.description.length > 0 ? (
                               <MarkdownDisplay
@@ -485,7 +484,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                         )
                                     }
                                       secondary={
-                                      // eslint-disable-next-line no-nested-ternary
+                                      // biome-ignore-start lint/style/noNestedTernary: to be refactored
                                       stixCoreRelationship.description
                                       && stixCoreRelationship.description.length
                                         > 0 ? (
@@ -501,6 +500,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                         ) : (
                                           t('No description of this targeting')
                                         )
+                                      // biome-ignore-end lint/style/noNestedTernary: to be refactored
                                     }
                                     />
                                     <ItemMarkings
@@ -593,7 +593,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                                 )
                                             }
                                               secondary={
-                                              // eslint-disable-next-line no-nested-ternary
+                                              // biome-ignore-start lint/style/noNestedTernary: to be refactored
                                               stixCoreRelationship.description
                                               && stixCoreRelationship.description
                                                 .length > 0 ? (
@@ -615,6 +615,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                                     'No description of this targeting',
                                                   )
                                                 )
+                                              // biome-ignore-end lint/style/noNestedTernary: to be refactored
                                             }
                                             />
                                             <ItemMarkings

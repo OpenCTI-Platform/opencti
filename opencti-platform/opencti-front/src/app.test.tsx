@@ -25,7 +25,7 @@ const me = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: type unknown
 const UserContextValue: any = { me, settings: {}, bannerSettings: {}, entitySettings: {}, platformModuleHelpers: {}, schema: {}, about: {} };
 
 describe('App', () => {

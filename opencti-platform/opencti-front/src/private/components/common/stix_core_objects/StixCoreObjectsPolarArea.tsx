@@ -159,7 +159,7 @@ const StixCoreObjectsPolarArea = ({
         selection.date_attribute && selection.date_attribute.length > 0
           ? selection.date_attribute
           : 'created_at',
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
       // @ts-ignore Excepts readonly array as variables but have simple array.
       filters: selection.filters,
       limit: selection.number ?? 10,

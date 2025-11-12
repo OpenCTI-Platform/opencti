@@ -10,7 +10,7 @@ import { colors } from '../../utils/Charts';
 import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';
 
 interface WidgetWordCloudProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   data: any[]
   groupBy: string
 }

@@ -16,7 +16,7 @@ import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
 
 interface WidgetTimelineProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   data: { value: any, link?: string }[]
 }
 

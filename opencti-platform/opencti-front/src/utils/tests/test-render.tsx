@@ -99,7 +99,7 @@ interface TestRenderOptions {
 const testRender = (ui: ReactNode, options?: TestRenderOptions) => {
   const { relayConfig, userContext } = options ?? {};
   // TODO Fix this
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
   // @ts-ignore
   const relayEnv = createMockEnvironment(relayConfig);
 
@@ -126,7 +126,7 @@ const testRender = (ui: ReactNode, options?: TestRenderOptions) => {
 export function testRenderHook<A, R>(hook: (args: A) => R, options?: TestRenderOptions) {
   const { relayConfig, userContext } = options ?? {};
   // TODO Fix this
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
   // @ts-ignore
   const relayEnv = createMockEnvironment(relayConfig);
 

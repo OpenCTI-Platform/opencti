@@ -468,12 +468,13 @@ const stixCoreObjectsMultiHorizontalBars = ({
               }
               return {
                 x:
-                  // eslint-disable-next-line no-nested-ternary
+                  // biome-ignore-start lint/style/noNestedTernary: to be refactored
                   selection.attribute.endsWith('_id')
                     ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                     : selection.attribute === 'entity_type'
                       ? t_i18n(`entity_${n.label}`)
                       : n.label,
+                  // biome-ignore-end lint/style/noNestedTernary: to be refactored
                 y: n.value,
                 fillColor: color,
               };

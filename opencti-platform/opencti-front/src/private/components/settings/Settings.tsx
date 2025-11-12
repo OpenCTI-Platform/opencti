@@ -712,9 +712,10 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       <ItemBoolean
                         variant="large"
                         label={
-                            // eslint-disable-next-line no-nested-ternary
+                            // biome-ignore-start lint/style/noNestedTernary: to refactor
                             !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
                               ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
+                            // biome-ignore-end
                         status={settings.platform_ai_enabled && settings.platform_ai_has_token}
                         tooltip={settings.platform_ai_has_token ? `${settings.platform_ai_type} - ${settings.platform_ai_model}` : t_i18n('The token is missing in your platform configuration, please ask your Filigran representative to provide you with it or with on-premise deployment instructions. Your can open a support ticket to do so.')}
                       />

@@ -382,7 +382,6 @@ class StixNestedRefRelationshipCreation extends Component {
       defaultMarkingDefinitions,
     } = this.props;
     const relationshipTypes = resolveEntityRef.from;
-    // eslint-disable-next-line no-nested-ternary
     const defaultRelationshipType = R.head(relationshipTypes);
     const defaultConfidence = confidence || 15;
     const defaultStartTime = !isNone(startTime) ? startTime : null;

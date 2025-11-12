@@ -465,7 +465,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               )
                             }
                               secondary={
-                              // eslint-disable-next-line no-nested-ternary
+                              // biome-ignore-start lint/style/noNestedTernary: to be refactored
                               stixCoreRelationship.description
                               && stixCoreRelationship.description.length > 0 ? (
                                 <MarkdownDisplay
@@ -476,6 +476,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 ) : (
                                   t('No description of this targeting')
                                 )
+                              // biome-ignore-end lint/style/noNestedTernary: to be refactored
                             }
                             />
                             <ItemMarkings
@@ -603,7 +604,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                             )
                                         }
                                           secondary={
-                                          // eslint-disable-next-line no-nested-ternary
+                                          // biome-ignore lint/style/noNestedTernary: to refactor
                                           stixCoreRelationship.description
                                           && stixCoreRelationship.description
                                             .length > 0 ? (

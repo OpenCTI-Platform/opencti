@@ -161,7 +161,7 @@ class StixDomainObjectTimelineComponent extends Component {
                       </Typography>
                       <span style={{ color: '#a8a8a8' }}>
                         {truncate(
-                          // eslint-disable-next-line no-nested-ternary
+                          // biome-ignore-start lint/style/noNestedTernary: to be refactored
                           stixRelationship.description
                             && stixRelationship.description.length > 0
                             ? stixRelationship.description
@@ -170,6 +170,7 @@ class StixDomainObjectTimelineComponent extends Component {
                                 stixRelationship.targetEntity,
                               )
                               : t('Restricted'),
+                          // biome-ignore-end lint/style/noNestedTernary: to be refactored
                           100,
                         )}
                       </span>

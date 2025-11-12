@@ -247,16 +247,17 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       >
         <QueryRenderer
           query={
-            // eslint-disable-next-line no-nested-ternary
+            // biome-ignore-start lint/style/noNestedTernary: to be refactored
             allDirections
               ? entityStixCoreRelationshipsLinesAllQuery
               : isRelationReversed
                 ? entityStixCoreRelationshipsLinesToQuery
                 : entityStixCoreRelationshipsLinesFromQuery
+            // biome-ignore-end lint/style/noNestedTernary: to be refactored
           }
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }: { props: unknown }) =>
-            /* eslint-disable-next-line no-nested-ternary,implicit-arrow-linebreak */
+            // biome-ignore-start lint/style/noNestedTernary: to be refactored
             (allDirections ? (
               <EntityStixCoreRelationshipsLinesAll
                 data={props}
@@ -301,6 +302,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
                 isCoverage={isCoverage}
               />
             ))
+            // biome-ignore-end lint/style/noNestedTernary: to be refactored
           }
         />
       </ListLines>

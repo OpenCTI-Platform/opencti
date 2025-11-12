@@ -504,7 +504,7 @@ export const deserializeFilterGroupForFrontend = (
 // Dashboard manifests are complex objects with filters deeply nested in widgets configurations
 // (de)serialization is a bit more complex
 // We use any here and use it when manipulating the manifest or internal fields
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: type unknown
 type AnyForDashboardManifest = any;
 
 /**

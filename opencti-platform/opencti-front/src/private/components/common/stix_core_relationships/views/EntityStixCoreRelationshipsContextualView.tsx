@@ -133,12 +133,13 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
     [isObservables ? 'observable_value' : 'name']: {
       label: isObservables ? 'Value' : 'Name',
       width: '20%',
-      // eslint-disable-next-line no-nested-ternary
+      // biome-ignore-start lint/style/noNestedTernary: to be refactored
       isSortable: isStixCoreObjects(stixCoreObjectTypes)
         ? false
         : isObservables
           ? isRuntimeSort
           : true,
+      // biome-ignore-end lint/style/noNestedTernary: to be refactored
       render: (stixCoreObject: EntityStixCoreRelationshipsContextualViewLine_node$data) => getMainRepresentative(stixCoreObject),
     },
     createdBy: {

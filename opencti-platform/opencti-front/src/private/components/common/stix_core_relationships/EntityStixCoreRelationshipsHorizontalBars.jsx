@@ -120,12 +120,13 @@ const EntityStixCoreRelationshipsHorizontalBars = (
           ) {
             const data = props.stixCoreRelationshipsDistribution.map((n) => ({
               x:
-              // eslint-disable-next-line no-nested-ternary
+              // biome-ignore-start lint/style/noNestedTernary: to be refactored
                 field === 'internal_id'
                   ? getMainRepresentative(n.entity, t_i18n('Restricted'))
                   : field === 'entity_type'
                     ? t_i18n(`entity_${n.label}`)
                     : n.label,
+              // biome-ignore-end lint/style/noNestedTernary: to be refactored
               y: n.value,
               fillColor:
                 field === 'internal_id'
@@ -207,12 +208,13 @@ const EntityStixCoreRelationshipsHorizontalBars = (
         gutterBottom={true}
         style={{
           margin:
-          // eslint-disable-next-line no-nested-ternary
+          // biome-ignore-start lint/style/noNestedTernary: to be refactored
             variant === 'inEntity'
               ? 0
               : variant !== 'inLine'
                 ? '0 0 10px 0'
                 : '-10px 0 10px -7px',
+          // biome-ignore-end lint/style/noNestedTernary: to be refactored
         }}
       >
         {title || t_i18n('StixDomainObjects distribution')}

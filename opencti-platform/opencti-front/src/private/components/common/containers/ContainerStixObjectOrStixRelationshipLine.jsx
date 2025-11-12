@@ -55,15 +55,15 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   const classes = useStyles();
   const { fd } = useFormatter();
   const restrictedWithFrom = node.from === null;
-  // eslint-disable-next-line no-nested-ternary
+  // biome-ignore-start lint/style/noNestedTernary: to refactor
   const link = node.relationship_type
-  // eslint-disable-next-line no-nested-ternary
     ? node.relationship_type === 'stix-sighting-relationship'
       ? `${resolveLink(node.relationship_type)}/${node.id}`
       : !restrictedWithFrom
         ? `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`
         : null
     : `${resolveLink(node.entity_type)}/${node.id}`;
+  // biome-ignore-end lint/style/noNestedTernary: to be refactored
   return (
     <ListItem
       divider={true}

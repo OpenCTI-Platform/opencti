@@ -153,13 +153,13 @@ const StixCoreRelationshipCreationForm = ({
   const isMultipleFrom = fromEntities.length > 1;
   const isMultipleTo = toEntities.length > 1;
 
-  // eslint-disable-next-line no-nested-ternary
+  // biome-ignore-start lint/style/noNestedTernary: to be refactored
   const defaultRelationshipType = R.head(relationshipTypes)
     ? R.head(relationshipTypes)
     : relationshipTypes.includes('related-to')
       ? 'related-to'
       : '';
-
+  // biome-ignore-end lint/style/noNestedTernary: to be refactored
   const defaultTime = now();
 
   const initialValues = useDefaultValues(

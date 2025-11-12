@@ -13,7 +13,7 @@
     "esbuild": "node builder/prod/prod.js",
     "build": "yarn relay && yarn esbuild",
     "build:standalone": "yarn relay && yarn esbuild --keep",
-    "lint": "DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
+    "lint": "biome lint src",
     "control": "yarn audit --groups dependencies --summary",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -128,6 +128,7 @@
     "yup": "1.7.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.3.2",
     "@faker-js/faker": "10.1.0",
     "@playwright/test": "1.56.1",
     "@testing-library/dom": "10.4.1",
@@ -154,14 +155,6 @@
     "chokidar": "4.0.3",
     "compression": "1.8.1",
     "esbuild": "0.25.11",
-    "eslint": "8.57.1",
-    "eslint-config-airbnb-base": "15.0.0",
-    "eslint-config-airbnb-typescript": "18.0.0",
-    "eslint-config-react-app": "7.0.1",
-    "eslint-plugin-custom-rules": "workspace:*",
-    "eslint-plugin-import": "2.32.0",
-    "eslint-plugin-import-newlines": "1.4.0",
-    "eslint-plugin-react": "7.37.5",
     "express": "4.21.2",
     "fs-extra": "11.3.2",
     "http-proxy-middleware": "3.0.5",
@@ -202,5 +195,9 @@
     "protobufjs": {
       "built": false
     }
+  },
+  "imports": {
+    "@components/*": "./src/private/components/*",
+    "src": "./src/*"
   }
 }

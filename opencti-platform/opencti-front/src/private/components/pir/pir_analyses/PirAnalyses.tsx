@@ -240,7 +240,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
                 padding: theme.spacing(1),
               }}
               >
-                {// eslint-disable-next-line @typescript-eslint/no-explicit-any
+                {// biome-ignore lint/suspicious/noExplicitAny: type unknown
                   objects.edges.slice(0, max).map((e: any, i: number) => (
                     <div
                       key={i}

@@ -1,0 +1,437 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.2/schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+		"ignoreUnknown": false,
+		"includes": [
+			"**",
+			"!**/node_modules/**",
+			"!**/coverage/**",
+			"!**/public/**",
+			"!**/builder/dev/build/**",
+			"!**/builder/prod/build/**",
+			"!**/src/static/ext/**",
+			"!**/__generated__/**",
+			"!**/packages/**",
+      "!**/builder/**",
+      "!**/src/generated/**",
+      "!**/extract-i18n-keyword.js",
+      "!**/playwright.config.ts",
+      "!**/vite.config.mts",
+      "!**/vitest.config.ts",
+      "!**/setup-vitest.ts",
+      "!**/script/**"
+		]
+	},
+  "formatter": { "enabled": true, "indentStyle": "space" },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": false,
+      "complexity": {
+        "noAdjacentSpacesInRegex": "error",
+        "noArguments": "error",
+        "noBannedTypes": "error",
+        "noCommaOperator": "error",
+        "noExcessiveLinesPerFunction": "off",
+        "noExtraBooleanCast": "error",
+        "noImplicitCoercions": "off",
+        "noUselessCatch": "error",
+        "noUselessConstructor": "error",
+        "noUselessEscapeInRegex": "error",
+        "noUselessLabel": "error",
+        "noUselessLoneBlockStatements": "error",
+        "noUselessRename": "error",
+        "noUselessStringConcat": "error",
+        "noUselessTernary": "error",
+        "noUselessThisAlias": "error",
+        "noUselessTypeConstraint": "error",
+        "noUselessUndefinedInitialization": "error",
+        "noVoid": "error",
+        "useArrowFunction": "error",
+        "useLiteralKeys": "error",
+        "useNumericLiterals": "error",
+        "useRegexLiterals": "error"
+      },
+      "correctness": {
+        "noChildrenProp": "error",
+        "noConstAssign": "error",
+        "noConstantCondition": "warn",
+        "noConstructorReturn": "error",
+        "noEmptyCharacterClassInRegex": "error",
+        "noEmptyPattern": "error",
+        "noGlobalObjectCalls": "error",
+        "noInnerDeclarations": "error",
+        "noInvalidConstructorSuper": "error",
+        "noInvalidUseBeforeDeclaration": "error",
+        "noNodejsModules": "off",
+        "noNonoctalDecimalEscape": "error",
+        "noPrecisionLoss": "error",
+        "noSelfAssign": "error",
+        "noSetterReturn": "error",
+        "noSwitchDeclarations": "warn",
+        "noUndeclaredDependencies": "off",
+        "noUndeclaredVariables": "error",
+        "noUnreachable": "error",
+        "noUnreachableSuper": "error",
+        "noUnsafeFinally": "error",
+        "noUnsafeOptionalChaining": "error",
+        "noUnusedLabels": "error",
+        "noUnusedPrivateClassMembers": "off",
+        "noUnusedVariables": "warn",
+        "useIsNan": "error",
+        "useJsxKeyInIterable": "error",
+        "useParseIntRadix": "error",
+        "useValidForDirection": "error",
+        "useValidTypeof": "error",
+        "useYield": "error"
+      },
+      "performance": { "noAwaitInLoops": "warn" },
+      "security": {
+        "noBlankTarget": "error",
+        "noDangerouslySetInnerHtmlWithChildren": "error",
+        "noGlobalEval": "error"
+      },
+      "style": {
+        "noCommonJs": "off",
+        "noDefaultExport": "off",
+        "noInferrableTypes": "error",
+        "noMagicNumbers": "off",
+        "noNamespace": "error",
+        "noNegationElse": "off",
+        "noNestedTernary": "error",
+        "noNonNullAssertion": "warn",
+        "noParameterAssign": "error",
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "defaultStatus": "TODO: Add a custom message here.",
+              "status": "TODO: Add a custom message here.",
+              "scroll": "TODO: Add a custom message here.",
+              "outerHeight": "TODO: Add a custom message here.",
+              "screenX": "TODO: Add a custom message here.",
+              "opener": "TODO: Add a custom message here.",
+              "onfocus": "TODO: Add a custom message here.",
+              "pageYOffset": "TODO: Add a custom message here.",
+              "addEventListener": "TODO: Add a custom message here.",
+              "defaultstatus": "TODO: Add a custom message here.",
+              "history": "TODO: Add a custom message here.",
+              "frames": "TODO: Add a custom message here.",
+              "screenY": "TODO: Add a custom message here.",
+              "focus": "TODO: Add a custom message here.",
+              "outerWidth": "TODO: Add a custom message here.",
+              "opera": "TODO: Add a custom message here.",
+              "external": "TODO: Add a custom message here.",
+              "innerHeight": "TODO: Add a custom message here.",
+              "closed": "TODO: Add a custom message here.",
+              "isFinite": "Use Number.isFinite instead https://github.com/airbnb/javascript#standard-library--isfinite",
+              "frameElement": "TODO: Add a custom message here.",
+              "scrollY": "TODO: Add a custom message here.",
+              "self": "TODO: Add a custom message here.",
+              "onblur": "TODO: Add a custom message here.",
+              "find": "TODO: Add a custom message here.",
+              "parent": "TODO: Add a custom message here.",
+              "top": "TODO: Add a custom message here.",
+              "moveBy": "TODO: Add a custom message here.",
+              "menubar": "TODO: Add a custom message here.",
+              "length": "TODO: Add a custom message here.",
+              "onerror": "TODO: Add a custom message here.",
+              "onresize": "TODO: Add a custom message here.",
+              "removeEventListener": "TODO: Add a custom message here.",
+              "onload": "TODO: Add a custom message here.",
+              "scrollTo": "TODO: Add a custom message here.",
+              "moveTo": "TODO: Add a custom message here.",
+              "scrollX": "TODO: Add a custom message here.",
+              "name": "TODO: Add a custom message here.",
+              "toolbar": "TODO: Add a custom message here.",
+              "innerWidth": "TODO: Add a custom message here.",
+              "location": "TODO: Add a custom message here.",
+              "locationbar": "TODO: Add a custom message here.",
+              "scrollBy": "TODO: Add a custom message here.",
+              "resizeTo": "TODO: Add a custom message here.",
+              "stop": "TODO: Add a custom message here.",
+              "scrollbars": "TODO: Add a custom message here.",
+              "blur": "TODO: Add a custom message here.",
+              "screenTop": "TODO: Add a custom message here.",
+              "confirm": "TODO: Add a custom message here.",
+              "screen": "TODO: Add a custom message here.",
+              "screenLeft": "TODO: Add a custom message here.",
+              "event": "TODO: Add a custom message here.",
+              "onunload": "TODO: Add a custom message here.",
+              "pageXOffset": "TODO: Add a custom message here.",
+              "resizeBy": "TODO: Add a custom message here.",
+              "statusbar": "TODO: Add a custom message here.",
+              "isNaN": "Use Number.isNaN instead https://github.com/airbnb/javascript#standard-library--isnan",
+              "close": "TODO: Add a custom message here.",
+              "open": "TODO: Add a custom message here.",
+              "print": "TODO: Add a custom message here."
+            }
+          }
+        },
+        "noRestrictedImports": "off",
+        "noUselessElse": "error",
+        "noYodaExpression": "error",
+        "useArrayLiterals": "error",
+        "useAsConstAssertion": "error",
+        "useBlockStatements": "off",
+        "useCollapsedElseIf": "error",
+        "useConsistentBuiltinInstantiation": "off",
+        "useConsistentObjectDefinitions": "error",
+        "useConst": "error",
+        "useDefaultParameterLast": "error",
+        "useDefaultSwitchClause": "error",
+        "useExponentiationOperator": "error",
+        "useExportsLast": "off",
+        "useGroupedAccessorPairs": "error",
+        "useNamingConvention": {
+          "level": "off",
+          "options": { "strictCase": false, "requireAscii": false }
+        },
+        "useObjectSpread": "error",
+        "useShorthandAssign": "error",
+        "useSingleVarDeclarator": "error",
+        "useSymbolDescription": "error",
+        "useTemplate": "error",
+        "useThrowOnlyError": "error"
+      },
+      "suspicious": {
+        "noAlert": "warn",
+        "noAssignInExpressions": "warn",
+        "noAsyncPromiseExecutor": "error",
+        "noBitwiseOperators": "error",
+        "noCatchAssign": "error",
+        "noClassAssign": "error",
+        "noCommentText": "error",
+        "noCompareNegZero": "error",
+        "noConfusingLabels": "error",
+        "noConsole": "warn",
+        "noControlCharactersInRegex": "error",
+        "noDebugger": "error",
+        "noDoubleEquals": "error",
+        "noDuplicateCase": "error",
+        "noDuplicateClassMembers": "error",
+        "noDuplicateElseIf": "error",
+        "noDuplicateJsxProps": "error",
+        "noDuplicateObjectKeys": "error",
+        "noDuplicateParameters": "error",
+        "noEmptyBlockStatements": "warn",
+        "noEmptyInterface": "error",
+        "noExplicitAny": "warn",
+        "noExtraNonNullAssertion": "error",
+        "noFallthroughSwitchClause": "error",
+        "noFunctionAssign": "error",
+        "noGlobalAssign": "error",
+        "noImportAssign": "error",
+        "noIrregularWhitespace": "error",
+        "noLabelVar": "error",
+        "noMisleadingCharacterClass": "error",
+        "noMisleadingInstantiator": "error",
+        "noNonNullAssertedOptionalChain": "error",
+        "noOctalEscape": "error",
+        "noPrototypeBuiltins": "warn",
+        "noRedeclare": "error",
+        "noSelfCompare": "error",
+        "noShadowRestrictedNames": "error",
+        "noSparseArray": "error",
+        "noTemplateCurlyInString": "error",
+        "noTsIgnore": "warn",
+        "noUnsafeNegation": "error",
+        "noUselessRegexBackrefs": "error",
+        "noVar": "error",
+        "noWith": "error",
+        "useAdjacentOverloadSignatures": "error",
+        "useAwait": "off",
+        "useDefaultSwitchClauseLast": "error",
+        "useGetterReturn": "error",
+        "useGuardForIn": "error",
+        "useIterableCallbackReturn": "warn",
+        "useNamespaceKeyword": "error"
+      }
+    }
+  },
+  "javascript": { "formatter": { "quoteStyle": "single" } },
+  "overrides": [
+    { "includes": ["*.jsx", "*.js", "*.ts", "*.tsx"] },
+    {
+      "includes": ["*.ts", "*.tsx", "*.mts", "*.cts"],
+      "linter": {
+        "rules": {
+          "complexity": { "noArguments": "error" },
+          "correctness": {
+            "noConstAssign": "off",
+            "noGlobalObjectCalls": "off",
+            "noInvalidConstructorSuper": "off",
+            "noSetterReturn": "off",
+            "noUndeclaredVariables": "off",
+            "noUnreachable": "off",
+            "noUnreachableSuper": "off",
+            "useValidTypeof": "off"
+          },
+          "style": { "useConst": "error" },
+          "suspicious": {
+            "noDuplicateClassMembers": "off",
+            "noDuplicateObjectKeys": "off",
+            "noDuplicateParameters": "off",
+            "noFunctionAssign": "off",
+            "noImportAssign": "off",
+            "noRedeclare": "off",
+            "noUnsafeNegation": "off",
+            "noVar": "error",
+            "useGetterReturn": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["*.ts", "*.tsx"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noConstAssign": "off",
+            "noGlobalObjectCalls": "off",
+            "noInvalidConstructorSuper": "off",
+            "noSetterReturn": "off",
+            "noUndeclaredVariables": "off",
+            "noUnreachable": "off",
+            "noUnreachableSuper": "off",
+            "useValidTypeof": "off"
+          },
+          "suspicious": {
+            "noDuplicateClassMembers": "off",
+            "noDuplicateObjectKeys": "off",
+            "noDuplicateParameters": "off",
+            "noFunctionAssign": "off",
+            "noImportAssign": "off",
+            "noRedeclare": "off",
+            "noUnsafeNegation": "off",
+            "useGetterReturn": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["*.ts", "*.tsx", "*.mts", "*.cts"],
+      "linter": {
+        "rules": {
+          "complexity": { "noArguments": "error" },
+          "correctness": {
+            "noConstAssign": "off",
+            "noGlobalObjectCalls": "off",
+            "noInvalidConstructorSuper": "off",
+            "noSetterReturn": "off",
+            "noUndeclaredVariables": "off",
+            "noUnreachable": "off",
+            "noUnreachableSuper": "off",
+            "useValidTypeof": "off"
+          },
+          "style": { "useConst": "error" },
+          "suspicious": {
+            "noDuplicateClassMembers": "off",
+            "noDuplicateObjectKeys": "off",
+            "noDuplicateParameters": "off",
+            "noFunctionAssign": "off",
+            "noImportAssign": "off",
+            "noRedeclare": "off",
+            "noUnsafeNegation": "off",
+            "noVar": "error",
+            "useGetterReturn": "off"
+          }
+        }
+      }
+    },
+    { "includes": ["*.jsx", "*.js", "*.ts", "*.tsx"] },
+    {
+      "includes": ["*.ts", "*.tsx", "*.mts", "*.cts"],
+      "linter": {
+        "rules": {
+          "complexity": { "noArguments": "error" },
+          "correctness": {
+            "noConstAssign": "off",
+            "noGlobalObjectCalls": "off",
+            "noInvalidConstructorSuper": "off",
+            "noSetterReturn": "off",
+            "noUndeclaredVariables": "off",
+            "noUnreachable": "off",
+            "noUnreachableSuper": "off",
+            "useValidTypeof": "off"
+          },
+          "style": { "useConst": "error" },
+          "suspicious": {
+            "noDuplicateClassMembers": "off",
+            "noDuplicateObjectKeys": "off",
+            "noDuplicateParameters": "off",
+            "noFunctionAssign": "off",
+            "noImportAssign": "off",
+            "noRedeclare": "off",
+            "noUnsafeNegation": "off",
+            "noVar": "error",
+            "useGetterReturn": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["*.ts", "*.tsx"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noConstAssign": "off",
+            "noGlobalObjectCalls": "off",
+            "noInvalidConstructorSuper": "off",
+            "noSetterReturn": "off",
+            "noUndeclaredVariables": "off",
+            "noUnreachable": "off",
+            "noUnreachableSuper": "off",
+            "useValidTypeof": "off"
+          },
+          "suspicious": {
+            "noDuplicateClassMembers": "off",
+            "noDuplicateObjectKeys": "off",
+            "noDuplicateParameters": "off",
+            "noFunctionAssign": "off",
+            "noImportAssign": "off",
+            "noRedeclare": "off",
+            "noUnsafeNegation": "off",
+            "useGetterReturn": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["*.ts", "*.tsx", "*.mts", "*.cts"],
+      "linter": {
+        "rules": {
+          "complexity": { "noArguments": "error" },
+          "correctness": {
+            "noConstAssign": "off",
+            "noGlobalObjectCalls": "off",
+            "noInvalidConstructorSuper": "off",
+            "noSetterReturn": "off",
+            "noUndeclaredVariables": "off",
+            "noUnreachable": "off",
+            "noUnreachableSuper": "off",
+            "useValidTypeof": "off"
+          },
+          "style": { "useConst": "error" },
+          "suspicious": {
+            "noDuplicateClassMembers": "off",
+            "noDuplicateObjectKeys": "off",
+            "noDuplicateParameters": "off",
+            "noFunctionAssign": "off",
+            "noImportAssign": "off",
+            "noRedeclare": "off",
+            "noUnsafeNegation": "off",
+            "noVar": "error",
+            "useGetterReturn": "off"
+          }
+        }
+      }
+    },
+    { "includes": ["*.jsx", "*.js", "*.ts", "*.tsx"] }
+  ],
+  "assist": {
+    "enabled": true,
+    "actions": { "source": { "organizeImports": "off" } }
+  }
+}

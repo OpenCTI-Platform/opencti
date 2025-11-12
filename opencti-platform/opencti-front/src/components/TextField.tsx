@@ -103,7 +103,7 @@ const TextField = (props: TextFieldProps) => {
       value={value ?? ''}
       error={showError}
       helperText={
-        // eslint-disable-next-line no-nested-ternary
+        // biome-ignore-start lint/style/noNestedTernary: to be refactored
         detectDuplicate && !showError ? (
           <StixDomainObjectDetectDuplicate
             types={detectDuplicate}
@@ -114,6 +114,7 @@ const TextField = (props: TextFieldProps) => {
         ) : (
           props.helperText
         )
+        // biome-ignore-end lint/style/noNestedTernary: to be refactored
       }
       onChange={internalOnChange}
       onFocus={internalOnFocus}

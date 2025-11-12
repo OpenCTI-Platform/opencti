@@ -225,12 +225,13 @@ const DynamicResolutionField = ({
                             variant="inList"
                             status={isEmptyField(item.in_platform) || item.in_platform}
                             label={
-                              // eslint-disable-next-line no-nested-ternary
+                              // biome-ignore-start lint/style/noNestedTernary: to be refactored
                               item.in_platform
                                 ? t_i18n('In platform')
                                 : item.in_platform === null
                                   ? t_i18n('In workbench')
                                   : t_i18n('To create')
+                              // biome-ignore-end lint/style/noNestedTernary: to be refactored
                             }
                           />
                         </div>

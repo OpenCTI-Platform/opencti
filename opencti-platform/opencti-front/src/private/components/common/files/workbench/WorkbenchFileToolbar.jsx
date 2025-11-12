@@ -166,7 +166,6 @@ class WorkbenchFileToolbar extends Component {
             anchor="bottom"
             variant="persistent"
             classes={{
-              // eslint-disable-next-line no-nested-ternary
               paper: classes.bottomNav,
             }}
             open={isOpen}

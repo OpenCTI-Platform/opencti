@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // TODO Remove this when V6
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
 // @ts-nocheck
 
 import React from 'react';

@@ -220,7 +220,7 @@ class StixCoreRelationshipContainer extends Component {
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
     const fromRestricted = from === null;
-    // eslint-disable-next-line no-nested-ternary
+    // biome-ignore-start lint/style/noNestedTernary: to be refactored
     const linkFrom = from
       ? from.relationship_type
         ? `${resolveLink(from.from.entity_type)}/${
@@ -228,8 +228,9 @@ class StixCoreRelationshipContainer extends Component {
         }/knowledge/relations`
         : resolveLink(from.entity_type)
       : '';
+    // biome-ignore-end lint/style/noNestedTernary: to be refactored
     const toRestricted = to === null;
-    // eslint-disable-next-line no-nested-ternary
+    // biome-ignore-start lint/style/noNestedTernary: to be refactored
     const linkTo = to
       ? to.relationship_type
         ? `${resolveLink(to.from.entity_type)}/${
@@ -237,6 +238,7 @@ class StixCoreRelationshipContainer extends Component {
         }/knowledge/relations`
         : resolveLink(to.entity_type)
       : '';
+    // biome-ignore-end lint/style/noNestedTernary: to be refactored
     const expandable = stixCoreRelationship.x_opencti_inferences
       && stixCoreRelationship.x_opencti_inferences.length > 1;
     return (
@@ -367,12 +369,13 @@ class StixCoreRelationshipContainer extends Component {
                     </div>
                     <div className={classes.type}>
                       {
-                        // eslint-disable-next-line no-nested-ternary
+                        // biome-ignore-start lint/style/noNestedTernary: to be refactored
                         !toRestricted
                           ? to.relationship_type
                             ? t('Relationship')
                             : t(`entity_${to.entity_type}`)
                           : t('Restricted')
+                        // biome-ignore-end lint/style/noNestedTernary: to be refactored
                       }
                     </div>
                   </div>

@@ -35,7 +35,7 @@ const lightColors = [
 ];
 
 interface WidgetMultiHeatMapProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   data: any[]
   minValue: number
   maxValue: number

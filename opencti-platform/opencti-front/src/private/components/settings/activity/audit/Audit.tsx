@@ -169,10 +169,10 @@ const Audit = () => {
     await fetchQuery(AuditCSVQuery, { ...paginationOptions, first: 5000 })
       .toPromise()
       .then((result) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
         // @ts-ignore
         const { audits } = result;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
         // @ts-ignore
         const csvData = audits.edges.map((n) => {
           const { node } = n;

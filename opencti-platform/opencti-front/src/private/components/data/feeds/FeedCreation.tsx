@@ -184,7 +184,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
     : { 0: {} };
 
   // TODO: typing this state properly implies deep refactoring
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   const [feedAttributes, setFeedAttributes] = useState<{ [key: string]: any }>(feedAttributesInitialState);
   const { ignoredAttributesInFeeds } = useAttributes();
 

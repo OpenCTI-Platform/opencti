@@ -579,7 +579,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     )
                 )}
                 {connector.connector_info && (
-                // eslint-disable-next-line no-nested-ternary
+                // biome-ignore-start lint/style/noNestedTernary: to refactor
                   connector.connector_info.last_run_datetime ? (
                     <>
                       <Typography variant="h3" gutterBottom={true}>
@@ -607,6 +607,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       </Typography>
                     </>)
                   )
+                  // biome-ignore-end lint/style/noNestedTernary: to refactor
                 )}
               </Grid>
               <Grid item xs={6}>
@@ -614,7 +615,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {t_i18n('Next run')}
                 </Typography>
                 {connector.connector_info && (
-                // eslint-disable-next-line no-nested-ternary
+                  // biome-ignore-start lint/style/noNestedTernary: to refactor
                   connector.connector_info.run_and_terminate ? (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('External schedule')}
@@ -630,6 +631,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       </Typography>
                     )
                   )
+                  // biome-ignore-end lint/style/noNestedTernary: to refactor
                 )}
                 {!connector.connector_info && (
                 <Typography variant="body1" gutterBottom={true}>

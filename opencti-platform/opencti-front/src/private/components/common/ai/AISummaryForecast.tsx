@@ -104,7 +104,7 @@ const AISummaryForecast = ({ id, loading, setLoading }: AISummaryForecastProps) 
     [busId],
   );
   // TODO: Check by the engineering team
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // biome-ignore lint/suspicious/noTsIgnore: disable ts-ignore
   // @ts-ignore
   useSubscription(subConfig);
 

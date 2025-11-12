@@ -8,7 +8,7 @@ import { getMainRepresentative, isFieldForIdentifier } from '../../utils/default
 import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetTreeProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: type unknown
   data: any[]
   groupBy: string
   withExport?: boolean
