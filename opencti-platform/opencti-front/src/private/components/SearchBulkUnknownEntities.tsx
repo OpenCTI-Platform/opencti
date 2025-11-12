@@ -7,7 +7,7 @@ import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import Loader from '../../components/Loader';
 import type { DataTableProps } from '../../components/dataGrid/dataTableTypes';
 
-const LOCAL_STORAGE_KEY = 'searchBulk_unknownEntities';
+export const UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY = 'searchBulk_unknownEntities';
 
 const searchBulkUnknownEntitiesQuery = graphql`
   query SearchBulkUnknownEntitiesQuery(
@@ -58,7 +58,7 @@ const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDis
           data={unknownEntities}
           globalCount={unknownEntities.length}
           dataColumns={dataColumns}
-          storageKey={LOCAL_STORAGE_KEY}
+          storageKey={UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY}
           taskScope="UNKNOWN_ENTITIES"
            />}
     </>
@@ -77,7 +77,7 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }:
     orderAsc: true,
   };
   const { paginationOptions } = usePaginationLocalStorage<SearchBulkUnknownEntitiesQuery>(
-    LOCAL_STORAGE_KEY,
+    UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY,
     initialValues,
   );
 

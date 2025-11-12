@@ -660,12 +660,6 @@ class DataTableToolBar extends Component {
     }
     this.setState({ actionsInputs });
   }
-  handleLaunchCreateUnknownEntities() {
-    this.setState({ unknownValues: Object.keys(this.props.selectedElements) });
-  }
-  handleCloseCreateUnknownEntities() {
-    this.setState({ unknownValues: undefined });
-  }
   handleLaunchRead(read) {
     const actions = [{
       type: 'REPLACE',
@@ -2151,6 +2145,7 @@ class DataTableToolBar extends Component {
       taskScope,
       displayEditButtons,
     } = this.props;
+    console.log('selecg all in toolbar', this.props.selectAll);
     const { actions, keptEntityId, mergingElement, actionsInputs, promoteToContainer } = this.state;
 
     const isUserDatatable = taskScope === 'USER';
@@ -2615,21 +2610,6 @@ class DataTableToolBar extends Component {
                     )}
                   </div>
                 )}
-                {taskScope === 'UNKNOWN_ENTITIES'
-                  && <Tooltip title={t('Create unknown entities')}>
-                    <span>
-                      <IconButton
-                        aria-label={t('Create unknown entities')}
-                        disabled={numberOfSelectedElements === 0 || this.state.processing}
-                        onClick={this.handleLaunchCreateUnknownEntities.bind(this)}
-                        color="primary"
-                        size="small"
-                      >
-                        <AddBoxOutlined fontSize="small" />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                }
               </Toolbar>
               <Dialog
                 slotProps={{ paper: { elevation: 1 } }}
@@ -3461,11 +3441,6 @@ class DataTableToolBar extends Component {
                   </Button>
                 </DialogActions>
               </Dialog>
-              <ImportFilesDialog
-                open={this.state.unknownValues}
-                handleClose={this.handleCloseCreateUnknownEntities.bind(this)}
-                initialFreeTextContent={(this.state.unknownValues ?? []).join('\n')}
-              />
             </>
           );
         }}

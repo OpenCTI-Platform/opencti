@@ -1,6 +1,6 @@
 import React from 'react';
-import DataTableToolBar from '@components/data/DataTableToolBar';
 import { useTheme } from '@mui/styles';
+import DataTableWithoutFragmentToolBar from '@components/data/DataTableWithoutFragmentToolBar';
 import type { DataTableProps } from './dataTableTypes';
 import DataTableComponent from './components/DataTableComponent';
 import type { Theme } from '../Theme';
@@ -27,18 +27,25 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   globalCount: number
 };
 
-const DataTableWithoutFragmentInternalToolbar = ({ taskScope }: { taskScope: string }) => {
+interface DataTableWithoutFragmentInternalToolBarProps {
+  taskScope: string,
+  dataIds: string[],
+}
+
+const DataTableWithoutFragmentInternalToolbar = ({ taskScope, dataIds }: DataTableWithoutFragmentInternalToolBarProps) => {
   const theme = useTheme<Theme>();
 
   const {
     useDataTableToggle: {
       selectedElements,
       deSelectedElements,
-      numberOfSelectedElements,
       selectAll,
       handleClearSelectedElements,
     },
   } = useDataTableContext();
+  const selectedValues = selectAll
+    ? dataIds.filter((v) => !Object.keys(deSelectedElements).includes(v))
+    : Object.keys(selectedElements);
 
   return (
     <div
@@ -47,12 +54,8 @@ const DataTableWithoutFragmentInternalToolbar = ({ taskScope }: { taskScope: str
         flex: 1,
       }}
     >
-      <DataTableToolBar
-        selectedElements={selectedElements}
-        deSelectedElements={deSelectedElements}
-        numberOfSelectedElements={numberOfSelectedElements}
-        selectAll={selectAll}
-        types={['Stix-Core-Object']}
+      <DataTableWithoutFragmentToolBar
+        selectedValues={selectedValues}
         handleClearSelectedElements={handleClearSelectedElements}
         taskScope={taskScope}
       />
@@ -75,7 +78,10 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps & {
       initialValues={{}}
       disableLineSelection={!taskScope}
       dataTableToolBarComponent={taskScope
-        ? <DataTableWithoutFragmentInternalToolbar taskScope={taskScope} />
+        ? <DataTableWithoutFragmentInternalToolbar
+            dataIds={(data as { id: string, value: string, entity_type: string }[]).map((d) => d.id)}
+            taskScope={taskScope}
+          />
         : undefined
       }
     />
