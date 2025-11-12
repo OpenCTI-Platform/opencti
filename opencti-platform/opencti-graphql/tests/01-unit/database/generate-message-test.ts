@@ -105,8 +105,12 @@ describe('generateUpdatePatchMessage tests', () => {
       creators: [],
       members: [
         {
-          internal_id: 'member-id',
-          name: 'Member Name'
+          internal_id: 'bff2afb7-03d3-40ad-bdd0-d6977f045ddf',
+          name: 'User1'
+        },
+        {
+          internal_id: 'fgg2afb7-07d3-50ad-bdd0-d6977f045ddf',
+          name: 'User2'
         }
       ]
     };
@@ -119,15 +123,15 @@ describe('generateUpdatePatchMessage tests', () => {
             operation: 'replace',
             previous: [{
               access_right: 'admin',
-              id: 'user1'
+              id: 'bff2afb7-03d3-40ad-bdd0-d6977f045ddf'
             }],
             value: [{
               access_right: 'admin',
-              id: 'user1'
+              id: 'bff2afb7-03d3-40ad-bdd0-d6977f045ddf'
             },
             {
               access_right: 'edit',
-              id: 'user2'
+              id: 'fgg2afb7-07d3-50ad-bdd0-d6977f045ddf'
             }
             ]
           }
@@ -135,7 +139,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
-    expect(message).toEqual('replaces `user1 (admin)` with `user1 (admin), user2 (edit)` in `Authorized members`');
+    expect(message).toEqual('replaces `User1 (admin)` with `User1 (admin), User2 (edit)` in `Authorized members`');
   });
   it('should generate message for Workflow status update', () => {
     const data = { creators: [], members: [] };
@@ -158,4 +162,63 @@ describe('generateUpdatePatchMessage tests', () => {
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
     expect(message).toEqual('replaces `NEW` with `ANALYZED` in `Workflow status`');
   });
-});// TODO tests for creators update, string + json, date, object and request access
+  it.skip('should generate message for Workflow status update with request access', () => {
+    const data = { creators: [], members: [] };
+    const patchElements = [
+      [
+        'replace',
+        [
+          {
+            key: 'x_opencti_workflow_id',
+            previous: [
+              'NEW'
+            ],
+            value: [
+              'ANALYZED'
+            ]
+          },
+          {
+            key: 'x_opencti_request_access',
+            previous: [],
+            value: [
+              JSON.stringify({ status: 'APPROVED' })
+            ]
+          }
+        ]
+      ]
+    ];
+    const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
+    expect(message).toEqual('replaces `NEW` with `ANALYZED (request access APPROVED)` in `Workflow status`');
+  });
+  it('should generate message for Creators update', () => {
+    const data = { creators: [{
+      id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+      name: 'admin'
+    },
+    {
+      id: '51c085a6-612a-463b-9575-27513bf85d99',
+      name: 'user2'
+    }],
+    members: []
+    };
+    const patchElements = [
+      [
+        'add',
+        [
+          {
+            key: 'creator_id',
+            operation: 'add',
+            previous: [
+              '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+            ],
+            value: [
+              '51c085a6-612a-463b-9575-27513bf85d99'
+            ]
+          }
+        ]
+      ]
+    ];
+    const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
+    expect(message).toEqual('adds `user2` in `Creators`');
+  });
+});// TODO tests for string + json, date, object

@@ -63,6 +63,14 @@ export const generateRestoreMessage = (instance) => {
   return generateCreateDeleteMessage('restore', instance);
 };
 
+export const getKeyValuesFromPatchElements = (patchElements, keyName) => {
+  return patchElements.slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).flatMap(([,operations]) => {
+    return operations.slice(0, MAX_OPERATIONS_FOR_MESSAGE).flatMap(({ key, value, previous }) => {
+      return key === keyName ? ([value ?? [], previous ?? []]).flat() : [];
+    });
+  });
+};
+
 const ACTION_KEYS = ['x_opencti_request_access', pirExplanation.name];
 export const MAX_PATCH_ELEMENTS_FOR_MESSAGE = 3;
 export const MAX_OPERATIONS_FOR_MESSAGE = 3;
