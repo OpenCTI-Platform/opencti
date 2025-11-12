@@ -592,7 +592,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Software')).toBe(1);
     expect(entityTypeMap.get('Status')).toBe(entitiesCounter.Status);
     expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
-    expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.Individual);
+    expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(1);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(1);
     expect(entityTypeMap.get('Tracking-Number')).toBe(1);
     expect(entityTypeMap.get('User')).toBe(TESTING_USERS.length + 1);
