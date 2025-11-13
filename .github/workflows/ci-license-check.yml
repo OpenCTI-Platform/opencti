@@ -1,0 +1,67 @@
+name: Verify licenses
+
+on:
+  workflow_call:
+
+jobs:
+  license-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Display Runner Information
+      continue-on-error: true
+      run: |
+          set -ex
+          echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
+          echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
+          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
+          env
+
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Backend verify license
+      run: |
+        docker run  \
+          --name backend-verify-licenses \
+          -v ${{ github.workspace }}:/home/workspace \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -x;
+             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+             apk add build-base git libffi-dev cargo
+             pip3 install --upgrade setuptools
+             cd "/home/workspace/client-python"
+             pip install -r requirements.txt
+             pip install -e .[dev,doc]
+             cd "/home/workspace/opencti-platform/opencti-graphql"
+             npm install -g corepack
+             cp /home/workspace/opencti-platform/.yarnrc.yml .
+             yarn install
+             yarn verify-licenses
+            '
+
+    - name: Frontend verify license
+      run: |
+        docker run  \
+          --name backend-verify-licenses \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22.21.0 \
+          sh -c 'set -x;
+             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+             cd ./opencti-platform/opencti-front
+             npm install -g corepack
+             cp /home/workspace/opencti-platform/.yarnrc.yml .
+             yarn install
+             yarn verify-licenses
+            '
+
+    - name: Generate license
+      run: |
+        docker run  \
+          --name generate-licenses \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22.21.0 \
+          sh -c 'set -x;
+             chmod 777 scripts/*
+             ./scripts/generate-licenses.sh
+             test -f ./licenses/third-party-licenses.txt
+            '

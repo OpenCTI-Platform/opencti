@@ -7,17 +7,21 @@ on:
 
 jobs:
   wf-build-opencti:
-      uses: ./.github/workflows/opencti-docker-build.yml
+      uses: ./.github/workflows/ci-docker-build.yml
       with:
         image_tag: ${{ github.sha }}
       secrets: inherit
 
   wf-api-test:
-      uses: ./.github/workflows/opencti-test-api.yml
+      uses: ./.github/workflows/ci-test-api.yml
       needs: wf-build-opencti
       secrets: inherit
 
   wf-frontend-test:
-      uses: ./.github/workflows/opencti-test-frontend.yml
+      uses: ./.github/workflows/ci-test-frontend.yml
       secrets: inherit
 
+
+  wf-license-check:
+      uses: ./.github/workflows/ci-license-check.yml
+      secrets: inherit
