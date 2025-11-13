@@ -102,7 +102,6 @@ jobs:
             apk add build-base git libffi-dev cargo;
             cd /home/workspace
             git clone https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
-            git clone https://github.com/OpenCTI-Platform/client-python.git
             cd /home/workspace/opencti-platform/opencti-graphql
             npm install -g corepack
             cp /home/workspace/opencti-platform/.yarnrc.yml .
@@ -228,7 +227,6 @@ jobs:
             apk add build-base git libffi-dev cargo;
             cd /home/workspace
             git clone https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
-            git clone https://github.com/OpenCTI-Platform/client-python.git
             cd /home/workspace/opencti-platform/opencti-graphql
             npm install -g corepack
             cp /home/workspace/opencti-platform/.yarnrc.yml .
