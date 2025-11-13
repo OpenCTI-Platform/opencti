@@ -15,7 +15,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import SelectField from '../../../../components/fields/SelectField';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
+import { convertEventTypes, convertNotifiers, convertTriggers, instanceEventTypesOptions } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
@@ -103,11 +103,11 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
-  const defaultInstanceTriggerFilters = {
-    ...emptyFilterGroup,
-    filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
-  };
-  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
+  // const defaultInstanceTriggerFilters = {
+  //   ...emptyFilterGroup,
+  //   filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
+  // };
+  // const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
 
   useEffect(() => {
     commitFieldPatch({
@@ -277,10 +277,31 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       'event_types',
       newInstanceTriggerValue ? instanceEventTypesOptions : eventTypesOptions,
     );
-    helpers.handleClearAllFilters();
-    instanceTriggerFiltersHelpers.handleClearAllFilters();
+    // helpers.handleClearAllFilters();
+    // instanceTriggerFiltersHelpers.handleClearAllFilters();
     setInstanceTrigger(newInstanceTriggerValue);
+    // If enabling instance trigger, add the connectedToId filter
+    if (newInstanceTriggerValue) {
+      const connectedToIdFilter = getDefaultFilterObject(
+        'connectedToId',
+        useFilterDefinition('connectedToId', ['Instance']),
+      );
+      helpers.handleAddFilterWithEmptyValue({
+        key: 'connectedToId',
+        ...connectedToIdFilter,
+      });
+    }
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: {
+          key: 'instance_trigger',
+          value: newInstanceTriggerValue,
+        },
+      },
+    });
   };
+
   const currentTime = trigger.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
   ];
@@ -337,7 +358,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               options={
                 trigger.instance_trigger
                   ? instanceEventTypesOptions
-                  : filterEventTypesOptions
+                  : eventTypesOptions
               }
               onChange={(
                 name: string,
@@ -463,7 +484,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                 gap: 1,
               }}
               >
-                {(!trigger.instance_trigger
+                {(!instance_trigger
               && <Filters
                 availableFilterKeys={stixFilters}
                 helpers={helpers}
@@ -472,7 +493,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
             )}
               </Box>
 
-              {trigger.instance_trigger
+              {instance_trigger
                 ? (
                   <FilterIconButton
                     filters={filters}
