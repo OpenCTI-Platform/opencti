@@ -366,23 +366,18 @@ jobs:
         '
 
 
-#    - name: Wait for OpenCTI sync instances to start
-#      continue-on-error: true
-#      run: |
-#          set -ex
-#          echo "$(date)"
-#          cd ${{ github.workspace }}/opencti-ci
-#          ./wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 140 10
-
-
+    - name: Wait for OpenCTI sync instances to start
+      continue-on-error: true
+      run: |
+          set -ex
+          echo "$(date)"
+          cd ${{ github.workspace }}/opencti-ci
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 140 10
 
     - name: Logs opencti-e2e-start
       if: always()
       continue-on-error: true
       run: |
-          docker logs opencti-e2e-start
-          sleep 30
-          echo -e "\n\n *********\n *********  \n"; 
           docker logs opencti-e2e-start
 
 #    - name: Frontend tests
