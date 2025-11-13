@@ -28,6 +28,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { MESSAGING$ } from '../../../../relay/environment';
+import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from '../IngestionCatalog/utils/JsonFormVerticalLayout';
 
 type ManagerContractProperty = [string, IngestionTypedProperty];
 
@@ -53,6 +54,7 @@ interface ManagedConnectorValues {
 
 const customRenderers = [
   ...materialRenderers,
+  { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
@@ -269,7 +271,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                         <AccordionSummary id="accordion-panel">
                           <Typography>{t_i18n('Advanced options')}</Typography>
                         </AccordionSummary>
-                        <AccordionDetails>
+                        <AccordionDetails sx={{ paddingTop: 2 }}>
                           <JsonForms
                             data={values}
                             schema={optionalProperties}
