@@ -42,7 +42,7 @@ jobs:
     - name: Frontend verify license
       run: |
         docker run  \
-          --name backend-verify-licenses \
+          --name frontend-verify-licenses \
           -v ${{ github.workspace }}:/home/workspace \
           node:22.21.0 \
           sh -c 'set -x;
