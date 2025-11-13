@@ -38,6 +38,7 @@ import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { resolveLink } from '../../../../utils/Entity';
+import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -78,6 +79,7 @@ const sanitizeContainerName = (label: string): string => {
 
 const customRenderers = [
   ...materialRenderers,
+  { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
@@ -398,7 +400,7 @@ const IngestionCatalogConnectorCreation = ({
                             <AccordionSummary id="accordion-panel">
                               <Typography>{t_i18n('Advanced options')}</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails sx={{ paddingTop: 2 }}>
                               <JsonForms
                                 data={configDefaults}
                                 schema={optionalProperties}
