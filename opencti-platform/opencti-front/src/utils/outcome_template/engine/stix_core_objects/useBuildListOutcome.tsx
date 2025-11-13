@@ -9,6 +9,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Widget, WidgetPerspective } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
+import { RELATIONSHIP_WIDGETS_TYPES } from '../../../widget/widgetUtils';
 
 type ListItem = object & { id: string };
 
@@ -33,7 +34,7 @@ const useBuildListOutcome = () => {
       const data = await fetchQuery(stixCoreObjectsListQuery, { ...variables, types }).toPromise() as StixCoreObjectsListQuery$data;
       nodes = (data.stixCoreObjects?.edges ?? []).map((n) => n.node) ?? [];
     } else if (widgetPerspective === 'relationships') {
-      const types = ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object'];
+      const types = RELATIONSHIP_WIDGETS_TYPES;
       const data = await fetchQuery(stixRelationshipsListQuery, { ...variables, types }).toPromise() as StixRelationshipsListQuery$data;
       nodes = (data.stixRelationships?.edges ?? []).flatMap((n) => (n ? n.node : [])) ?? [];
     } else {
