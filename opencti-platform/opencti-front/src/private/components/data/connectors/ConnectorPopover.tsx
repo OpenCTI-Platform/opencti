@@ -27,6 +27,7 @@ import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import stopEvent from '../../../../utils/domEvent';
+import canDeleteConnector from './utils/canDeleteConnector';
 
 interface ConnectorPopoverProps {
   connector: Connector_connector$data;
@@ -162,7 +163,12 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
           <MenuItem onClick={handleOpenResetState}>{t_i18n('Reset the connector state')}</MenuItem>
         )}
         <MenuItem onClick={handleOpenClearWorks}>{t_i18n('Clear all works')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete} disabled={!!connector.active || !!connector.built_in}>{t_i18n('Delete')}</MenuItem>
+        <MenuItem
+          onClick={handleOpenDelete}
+          disabled={!canDeleteConnector(connector)}
+        >
+          {t_i18n('Delete')}
+        </MenuItem>
       </Menu>
 
       {
