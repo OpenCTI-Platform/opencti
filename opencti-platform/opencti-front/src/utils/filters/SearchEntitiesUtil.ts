@@ -1,7 +1,7 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import { isStixObjectTypes, ME_FILTER_VALUE } from './filtersUtils';
 
-// eslint-disable-next-line import/prefer-default-export
+// oxlint-disable-next-line import/prefer-default-export
 export const getOptionsFromEntities = (
   entities: Record<string, FilterOptionValue[]>,
   searchScope: Record<string, string[]>,

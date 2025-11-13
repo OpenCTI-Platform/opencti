@@ -1,5 +1,5 @@
 // usually string, but can be a combined filter like regardingOf
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line @typescript-eslint/no-explicit-any
 export type FilterValue = any;
 
 export type FilterGroup = {
