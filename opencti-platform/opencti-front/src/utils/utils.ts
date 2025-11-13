@@ -32,7 +32,7 @@ export const removeEmptyFields = (
 export const deleteElementByValue = (obj: Record<string, string>, val: string) => {
   for (const key in obj) {
     if (obj[key] === val) {
-      // eslint-disable-next-line no-param-reassign
+      // oxlint-disable-next-line no-param-reassign
       delete obj[key];
     }
   }

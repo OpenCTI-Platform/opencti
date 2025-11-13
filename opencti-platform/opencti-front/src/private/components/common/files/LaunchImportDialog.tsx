@@ -58,7 +58,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
         representations: [...parsedRepresentations],
       };
       setHasUserChoiceCsvMapper(resolveHasUserChoiceParsedCsvMapper(selectedCsvMapper));
-    } catch (_e) {
+    } catch (_error) {
       setHasUserChoiceCsvMapper(false);
     }
   };

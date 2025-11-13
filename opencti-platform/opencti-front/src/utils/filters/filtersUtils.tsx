@@ -769,7 +769,7 @@ export const useFetchFilterKeysSchema = () => {
 
   try {
     filterKeysSchema = useAuth().schema.filterKeysSchema;
-  } catch (_e) {
+  } catch (_error) {
     filterKeysSchema = new Map();
   }
   return filterKeysSchema;
