@@ -1,9 +1,10 @@
+import functools
 import os
 import signal
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 import pika
 import yaml
@@ -221,13 +222,17 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         realtime_push_execution_pool = ThreadPoolExecutor(
             max_workers=self.opencti_realtime_pool_size
         )
-        listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
+
         push_thread_pool_selector = ThreadPoolSelector(
             self.opencti_pool_size,
             push_execution_pool,
             self.opencti_realtime_pool_size,
             realtime_push_execution_pool,
         )
+
+        listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
+        def listen_execution_pool_submit(task: Callable[[], None]):
+            return listen_execution_pool.submit(task)
 
         while not self.exit_event.is_set():
             try:
@@ -278,17 +283,12 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             connector["connector_priority_group"]
                         )
 
-                        def selector_submit_consume(consume_message_fn):
-                            return push_thread_pool_selector.submit(
-                                is_realtime, consume_message_fn
-                            )
-
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
                             push_queue,
                             pika_parameters,
-                            selector_submit_consume,
+                            functools.partial(push_thread_pool_selector.submit, is_realtime),
                             push_handler.handle_message,
                         )
 
@@ -312,7 +312,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 "listen",
                                 listen_queue,
                                 self.build_pika_parameters(connector_config),
-                                listen_execution_pool.submit,
+                                listen_execution_pool_submit,
                                 listen_handler.handle_message,
                             )
 

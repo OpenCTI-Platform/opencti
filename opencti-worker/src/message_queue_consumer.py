@@ -1,6 +1,7 @@
 import functools
 from dataclasses import dataclass, field
 from threading import Thread
+from concurrent.futures import Future
 from typing import Any, Callable, Literal
 
 import pika
@@ -12,7 +13,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     consumer_type: Literal["listen", "push"]
     queue_name: str
     pika_parameters: pika.ConnectionParameters
-    submit_fn: Callable[[Callable[[int, str], None]], Any]
+    submit_fn: Callable[[Callable[[], None]], Future[None]]
     handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
     should_stop: bool = field(default=False, init=False)
 

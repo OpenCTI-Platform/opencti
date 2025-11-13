@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor
 import threading
-from typing import Any, Callable
+from typing import Callable
 
 
 @dataclass(unsafe_hash=True)
@@ -24,21 +24,21 @@ class ThreadPoolSelector:  # pylint: disable=too-many-instance-attributes
         with self.count_lock:
             self.realtime_active_threads_count -= 1
 
-    def submit_to_default_pool(self, consume_message_fn):
+    def submit_to_default_pool(self, consume_message_fn: Callable[[], None]):
         task_future = self.default_execution_pool.submit(consume_message_fn)
         with self.count_lock:
             self.default_active_threads_count += 1
         task_future.add_done_callback(self.decrement_default_count)
         return task_future
 
-    def submit_to_realtime_pool(self, consume_message_fn):
+    def submit_to_realtime_pool(self, consume_message_fn: Callable[[], None]):
         task_future = self.realtime_execution_pool.submit(consume_message_fn)
         with self.count_lock:
             self.realtime_active_threads_count += 1
         task_future.add_done_callback(self.decrement_realtime_count)
         return task_future
 
-    def submit(self, is_realtime, consume_message_fn):
+    def submit(self, is_realtime: bool, consume_message_fn: Callable[[], None]):
         is_default_pool_full = (
             self.default_active_threads_count >= self.default_pool_size
         )
