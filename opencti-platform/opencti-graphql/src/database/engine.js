@@ -9,7 +9,7 @@ import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION, SEMATTRS_DB_STATEMENT } from '@opentelemetry/semantic-conventions';
-import * as jsonpatch from 'fast-json-patch';
+import * as jsonpatch from '../utils/jsonpatch';
 import {
   buildPagination,
   buildPaginationFromEdges,
@@ -1190,7 +1190,7 @@ export const elUpdateIndicesMappings = async () => {
         return R.is(Object, o.value) && (isPropertiesCompletion || isDirectType || isObjectType);
       });
     if (addOperations.length > 0) {
-      const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations).newDocument;
+      const properties = jsonpatch.applyPatch(indexMappingProperties, addOperations, true);
       const body = { properties };
       await engine.indices.putMapping({ index, body }).catch((e) => {
         throw DatabaseError('Updating index mapping fail', { index, cause: e });

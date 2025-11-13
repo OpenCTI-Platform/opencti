@@ -1,7 +1,8 @@
 import * as R from 'ramda';
-import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import type { Moment } from 'moment';
+import type { Operation } from '../utils/jsonpatch';
+import * as jsonpatch from '../utils/jsonpatch';
 import { createStreamProcessor, fetchRangeNotifications, storeNotificationEvent, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
@@ -287,7 +288,7 @@ const filterInstancesByRefEventIds = (
 // with the indication, for each instance, if there are in the patch ('added in') or in the reverse_patch ('removed from')
 export const filterUpdateInstanceIdsFromUpdatePatch = (
   listenedInstanceIdsMap: Map<string, StixObject>,
-  updatePatch: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+  updatePatch: { patch: Operation[], reverse_patch: Operation[] },
 ) => {
   const addedIds = updatePatch.patch
     .map((n) => (n as { path: string, value: string[] }).value)
@@ -340,7 +341,7 @@ const eventTypeTranslaterForSideEvents = async (
   previousInstance: StixCoreObject | StixRelationshipObject,
   instance: StixCoreObject | StixRelationshipObject,
   listenedInstanceIdsMap: Map<string, StixObject>,
-  updatePatch?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+  updatePatch?: { patch: Operation[], reverse_patch: Operation[] },
 ) => {
   // 1. case update, we should check the updatePatch content
   if (currentType === EVENT_TYPE_UPDATE && updatePatch) {
@@ -410,7 +411,7 @@ const generateNotificationMessageForFilteredSideEvents = async (
   data: StixCoreObject | StixRelationshipObject,
   frontendFilters: FilterGroup,
   translatedType: string,
-  updatePatch?: { patch: jsonpatch.Operation[], reverse_patch: jsonpatch.Operation[] },
+  updatePatch?: { patch: Operation[], reverse_patch: Operation[] },
   previousData?: StixCoreObject | StixRelationshipObject,
 ) => {
   // Get ids from the user trigger filters that user has access to
@@ -478,7 +479,7 @@ export const buildTargetEvents = async (
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: updatePatch } = streamEvent.data as UpdateEvent;
-    const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(data), updatePatch.reverse_patch);
+    const previous = jsonpatch.applyPatch(data, updatePatch.reverse_patch);
     for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
       // For each user for a specific trigger
       const user = users[indexUser];

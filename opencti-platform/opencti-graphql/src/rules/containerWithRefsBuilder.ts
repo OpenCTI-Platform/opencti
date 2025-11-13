@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
+import * as jsonpatch from '../utils/jsonpatch';
 import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessage, stixLoadById } from '../database/middleware';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { createRuleContent } from './rules-utils';
@@ -212,7 +212,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     if (entityType === containerType) {
       const report = data as StixReport;
       const previousPatch = event.context.reverse_patch;
-      const previousData = jsonpatch.applyPatch<StixReport>(structuredClone(report), previousPatch).newDocument;
+      const previousData = jsonpatch.applyPatch<StixReport>(report, previousPatch);
       const previousRefIds = [...(previousData.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(previousData.object_refs ?? [])];
       const previousRefIdsSet = new Set(previousRefIds);
       const newRefIds = [...(report.extensions[STIX_EXT_OCTI].object_refs_inferred ?? []), ...(report.object_refs ?? [])];

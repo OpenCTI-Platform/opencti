@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
-import type { Operation } from 'fast-json-patch';
-import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import type { Operation } from '../utils/jsonpatch';
+import * as jsonpatch from '../utils/jsonpatch';
 import { buildCreateEvent, createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
@@ -186,7 +186,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
         const updateEvent = event as UpdateEvent;
         const internalId = updateEvent.data.extensions[STIX_EXT_OCTI].id;
         const previousPatch = updateEvent.context.reverse_patch;
-        const previousStix = jsonpatch.applyPatch<StixCoreObject>(structuredClone(data), previousPatch).newDocument;
+        const previousStix = jsonpatch.applyPatch<StixCoreObject>(data, previousPatch);
         for (let ruleIndex = 0; ruleIndex < rules.length; ruleIndex += 1) {
           const rule = rules[ruleIndex];
           // TODO Improve filtering definition to rely on attribute values
