@@ -47,7 +47,7 @@ jobs:
           node:22.21.0 \
           sh -c 'set -x;
              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-             cd ./opencti-platform/opencti-front
+             cd /home/workspace/opencti-platform/opencti-front
              npm install -g corepack
              cp /home/workspace/opencti-platform/.yarnrc.yml .
              yarn install
@@ -61,7 +61,7 @@ jobs:
           -v ${{ github.workspace }}:/home/workspace \
           node:22.21.0 \
           sh -c 'set -x;
-             chmod 777 scripts/*
-             ./scripts/generate-licenses.sh
-             test -f ./licenses/third-party-licenses.txt
+             chmod 777 /home/workspace/scripts/*
+             /home/workspace/scripts/generate-licenses.sh
+             test -f /home/workspace/licenses/third-party-licenses.txt
             '

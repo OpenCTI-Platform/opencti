@@ -1,4 +1,4 @@
-name: OpenCTI CI GitHub hosted api-test
+name: OpenCTI CI
 on:
   workflow_dispatch:
   push:
