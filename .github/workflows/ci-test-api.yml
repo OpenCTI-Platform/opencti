@@ -154,6 +154,156 @@ jobs:
         echo "==== Docker stats log ===="
         cat docker_stats.log        
 
+  run-opencti-rules-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Display Runner Information
+      continue-on-error: true
+      run: |
+          set -ex
+          echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
+          echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
+          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
+          env
+
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Collect Workflow Telemetry
+      uses: catchpoint/workflow-telemetry-action@v2
+
+    - name: Set up Docker Compose for backends and sync instances
+      run: |
+         set -ex
+         cd opencti-platform/opencti-ci         
+         export TAG=${{ github.sha }}
+         docker network create runner-docker-network
+         docker compose --profile "*" up -d
+
+    - name: Wait for OpenCTI sync instances to start
+      continue-on-error: true
+      run: |
+          set -ex
+          echo "$(date)"  
+          cd opencti-platform/opencti-ci
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
+
+
+    - name: Monitor resources usage in background
+      run: |
+        # Run docker stats every 60s and save to file
+        while true; do
+          echo "==== $(date) ====" >> docker_stats.log
+          docker stats --no-stream >> docker_stats.log
+          free -m >> docker_stats.log
+          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
+          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
+          sleep 60
+        done &
+        # Save background PID
+        echo $! > monitor.pid
+
+    - name: Start api test
+      run: |
+        docker run --network runner-docker-network \
+          --name api-tests \
+          -p 4010:4100 \
+          -v ${{ github.workspace }}:/home/workspace \
+          -e APP__BASE_URL=http://api-tests:4010/ \
+          -e APP__ADMIN__PASSWORD=admin \
+          -e APP__CHILD_LOCKING_PROCESS__ENABLED=false \
+          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
+          -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
+          -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4100/graphql \
+          -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
+          -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
+          -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+          -e REDIS__HOSTNAME=redis \
+          -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
+          -e MINIO__ENDPOINT=minio \
+          -e RABBITMQ__HOSTNAME=rabbitmq \
+          -e EXPIRATION_SCHEDULER__ENABLED=false \
+          -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
+          -e SMTP__ENABLED=false \
+          -e PYTHONUNBUFFERED=1  \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -ex;
+            echo -e "\n\n *********\n ********* Start OpenCTI API test";
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
+            apk add build-base git libffi-dev cargo;
+            cd /home/workspace
+            git clone https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
+            cd /home/workspace/opencti-platform/opencti-graphql
+            npm install -g corepack
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn build
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules
+        '
+
+    # Output all logs used during the job
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      continue-on-error: true
+      run: |
+          echo -e "\n\n *********\n ********* logs Minio \n"; 
+          docker logs minio
+          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1
+          docker logs elasticsearch
+          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1
+          docker logs rabbitmq
+          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
+          docker logs redis
+
+    - name: Logs opencti-direct-start
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-direct-start
+    - name: Logs opencti-live-start
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-live-start
+    - name: Logs opencti-raw-start
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-raw-start
+    - name: Logs opencti-restore-start
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-restore-start
+    - name: Logs opencti-direct-worker
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-direct-worker
+    - name: Logs opencti-test-worker
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-test-worker
+
+
+    - name: Stop docker stats monitor and print logs
+      if: always()
+      continue-on-error: true
+      run: |
+        kill $(cat monitor.pid) || true
+        echo "==== Docker stats log ===="
+        cat docker_stats.log        
+
 
   run-opencti-api-non-integration-test:
     runs-on: ubuntu-latest
