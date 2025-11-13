@@ -202,7 +202,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     workflow_id: instance.x_opencti_workflow_id,
     labels_ids: (instance[INPUT_LABELS] ?? []).map((m) => m.internal_id).filter((id) => isNotEmptyField(id)),
     created_by_ref_id: instance[INPUT_CREATED_BY]?.internal_id,
-    pir_refs_ids: (instance[INPUT_IN_PIR] ?? []).map((m) => m.internal_id),
+    pir_information: instance.pir_information ?? [],
     metrics: instance.metrics ?? []
   };
   return cleanObject(octiExtensions);
