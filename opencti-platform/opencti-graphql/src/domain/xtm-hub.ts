@@ -5,7 +5,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
 import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../generated/graphql';
 import { updateAttribute } from '../database/middleware';
-import { BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
+import { booleanConf, BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
 import { HUB_REGISTRATION_MANAGER_USER } from '../utils/access';
 import { getSettings, settingsEditField } from './settings';
 import { notify } from '../database/redis';
@@ -33,9 +33,11 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
 
   const lastCheckDate = utcDate(settings.xtm_hub_last_connectivity_check);
   const are24HoursPassed = utcDate().diff(lastCheckDate, 'hours') >= 24;
+  const isEmailEnabled = booleanConf('xtm:xtmhub_connectivity_email_enabled', true);
   const shouldSendLostConnectivityEmail = !isConnectivityActive
     && are24HoursPassed
-    && settings.xtm_hub_should_send_connectivity_email;
+    && settings.xtm_hub_should_send_connectivity_email
+    && isEmailEnabled;
   if (shouldSendLostConnectivityEmail) {
     await sendAdministratorsLostConnectivityEmail(context, settings);
     attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [false] });

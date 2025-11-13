@@ -13,6 +13,7 @@ import * as settingsModule from '../../../src/domain/settings';
 import * as redisModule from '../../../src/database/redis';
 import * as xtmHubEmail from '../../../src/modules/xtm/hub/xtm-hub-email';
 import * as licensingModule from '../../../src/modules/settings/licensing';
+import * as conf from '../../../src/config/conf';
 
 describe('XTM hub', () => {
   describe('checkXTMHubConnectivity', () => {
@@ -222,6 +223,23 @@ describe('XTM hub', () => {
         };
         getEntityFromCacheSpy.mockResolvedValue(settings);
         xtmHubClientRefreshStatusSpy.mockResolvedValue('active');
+
+        await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
+
+        expect(sendAdministratorsLostConnectivityEmailSpy).not.toBeCalled();
+      });
+
+      it('should not send connectivity email when email sending is disabled via configuration', async () => {
+        const settings: Partial<BasicStoreSettings> = {
+          id: 'id',
+          xtm_hub_token,
+          xtm_hub_registration_status: XtmHubRegistrationStatus.LostConnectivity,
+          xtm_hub_last_connectivity_check: new Date(new Date().getTime() - 1000 * 60 * 60 * 24),
+          xtm_hub_should_send_connectivity_email: true,
+        };
+        getEntityFromCacheSpy.mockResolvedValue(settings);
+        xtmHubClientRefreshStatusSpy.mockResolvedValue('inactive');
+        vi.spyOn(conf, 'booleanConf').mockReturnValue(false);
 
         await checkXTMHubConnectivity(testContext, HUB_REGISTRATION_MANAGER_USER);
 
