@@ -278,11 +278,9 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             connector["connector_priority_group"]
                         )
 
-                        def selector_submit_consume(
-                            consume_message_fn, delivery_tag, body
-                        ):
+                        def selector_submit_consume(consume_message_fn):
                             return push_thread_pool_selector.submit(
-                                is_realtime, consume_message_fn, delivery_tag, body
+                                is_realtime, consume_message_fn
                             )
 
                         self.consumers[push_queue] = MessageQueueConsumer(

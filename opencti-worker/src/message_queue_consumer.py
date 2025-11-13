@@ -12,7 +12,7 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
     consumer_type: Literal["listen", "push"]
     queue_name: str
     pika_parameters: pika.ConnectionParameters
-    submit_fn: Callable[[Callable[[int, str], None], int, str], Any]
+    submit_fn: Callable[[Callable[[int, str], None]], Any]
     handle_message: Callable[[str], Literal["ack", "nack", "requeue"]]
     should_stop: bool = field(default=False, init=False)
 
@@ -77,9 +77,10 @@ class MessageQueueConsumer:  # pylint: disable=too-many-instance-attributes
                         "tag": method.delivery_tag,
                     },
                 )
-                task_future = self.submit_fn(
+                consume = functools.partial(
                     self.consume_message, method.delivery_tag, body
                 )
+                task_future = self.submit_fn(consume)
                 while task_future.running():  # Loop while the thread is processing
                     self.pika_connection.sleep(0.05)
                 self.logger.info("Message processed, thread terminated")
