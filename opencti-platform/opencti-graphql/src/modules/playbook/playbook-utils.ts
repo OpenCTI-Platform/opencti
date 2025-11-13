@@ -66,3 +66,14 @@ export const convertMembersToUsers = async (
   });
   return R.uniqBy(R.prop('id'), users);
 };
+
+export const applyOperationFieldPatch = (element: StixObject, patchObject: {
+  key: string;
+  value: any[];
+  operation: 'add' | 'replace' | 'remove'
+}[]) => {
+  // eslint-disable-next-line no-param-reassign
+  element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+  // eslint-disable-next-line no-param-reassign
+  element.extensions[STIX_EXT_OCTI].opencti_field_patch = patchObject;
+};

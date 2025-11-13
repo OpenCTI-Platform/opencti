@@ -88,7 +88,7 @@ import { removeOrganizationRestriction } from '../../domain/stix';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { extractBundleBaseElement } from './playbook-utils';
+import { applyOperationFieldPatch, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
 
@@ -1026,9 +1026,8 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           const operationObject = elementOperations.map((op) => {
             return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
           });
-          if (id) {
-            element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
-            element.extensions[STIX_EXT_OCTI].opencti_field_patch = operationObject;
+          if (id && isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS')) {
+            applyOperationFieldPatch(element, operationObject);
           }
           patchOperations.push(...elementOperations.map((e) => e.patchOperation));
         }
