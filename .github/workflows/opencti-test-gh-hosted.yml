@@ -331,7 +331,7 @@ jobs:
             apk add build-base git libffi-dev cargo
             mkdir -p /tmp/e2e-start-platform/
             cp -a /home/workspace/* /tmp/e2e-start-platform/
-            tree -L 2 /tmp/e2e-start-platform/
+            ls -larth /tmp/e2e-start-platform/
             cd /tmp/e2e-start-platform/client-python
             pip install -r requirements.txt
             pip install -e .[dev,doc]
@@ -368,13 +368,13 @@ jobs:
         '
 
 
-    - name: Wait for OpenCTI sync instances to start
-      continue-on-error: true
-      run: |
-          set -ex
-          echo "$(date)"  
-          cd opencti-platform/opencti-ci
-          ./wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 140 10
+#    - name: Wait for OpenCTI sync instances to start
+#      continue-on-error: true
+#      run: |
+#          set -ex
+#          echo "$(date)"
+#          cd ${{ github.workspace }}/opencti-ci
+#          ./wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 140 10
 
 
 
@@ -383,7 +383,9 @@ jobs:
       continue-on-error: true
       run: |
           docker logs opencti-e2e-start
-
+          sleep 30
+          echo -e "\n\n *********\n *********  \n"; 
+          docker logs opencti-e2e-start
 
 #    - name: Frontend tests
 #      run: |
@@ -444,6 +446,25 @@ jobs:
       continue-on-error: true
       run: |
           docker logs opencti-e2e-start
+
+    - name: Logs opencti-e2e-worker
+      if: always()
+      continue-on-error: true
+      run: |
+          docker logs opencti-e2e-worker
+
+    # Output all logs used during the job
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      continue-on-error: true
+      run: |
+          echo -e "\n\n *********\n ********* logs Minio \n"; 
+          docker logs minio
+          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1
+          docker logs elasticsearch
+          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1
+          docker logs rabbitmq
+          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
+          docker logs redis
 
     - name: Stop docker stats monitor and print logs
       if: always()
