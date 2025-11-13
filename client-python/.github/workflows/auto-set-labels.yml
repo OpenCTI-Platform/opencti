@@ -1,0 +1,14 @@
+name: Assign label Filigran team on PR from an organization
+on: pull_request
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setting labels
+        uses: FiligranHQ/auto-label@1.0.0
+        with:
+          labels_by_organization: "{\"FiligranHQ\":[\"filigran team\"]}"
