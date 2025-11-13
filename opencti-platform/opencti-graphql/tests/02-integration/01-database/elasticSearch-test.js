@@ -444,7 +444,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Software')).toBe(entitiesCounter.Software);
     expect(entityTypeMap.get('Status')).toBe(entitiesCounter.Status);
     expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
-    expect(entityTypeMap.get('Theme')).toBe(2);
+    expect(entityTypeMap.get('Theme')).toBe(entitiesCounter.Theme);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.ThreatActorIndividual);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(entitiesCounter.ThreatActorGroup);
     expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
@@ -593,7 +593,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Software')).toBe(entitiesCounter.Software);
     expect(entityTypeMap.get('Status')).toBe(entitiesCounter.Status);
     expect(entityTypeMap.get('StatusTemplate')).toBe(entitiesCounter.StatusTemplate);
-    expect(entityTypeMap.get('Theme')).toBe(2);
+    expect(entityTypeMap.get('Theme')).toBe(entitiesCounter.Theme);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.ThreatActorIndividual);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(entitiesCounter.ThreatActorGroup);
     expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
@@ -712,7 +712,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Organization')).toBe(entitiesCounter.Organization);
     expect(entityTypeMap.get('Marking-Definition')).toBe(entitiesCounter.MarkingDefinition);
     expect(entityTypeMap.get('Attack-Pattern')).toBe(entitiesCounter.AttackPattern);
-    expect(entityTypeMap.get('Theme')).toBe(2);
+    expect(entityTypeMap.get('Theme')).toBe(entitiesCounter.Theme);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(entitiesCounter.ThreatActorIndividual);
     expect(entityTypeMap.get('Threat-Actor-Group')).toBe(entitiesCounter.ThreatActorGroup);
     expect(entityTypeMap.get('Course-Of-Action')).toBe(entitiesCounter.CourseOfAction);

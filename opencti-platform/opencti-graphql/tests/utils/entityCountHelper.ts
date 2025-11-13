@@ -38,6 +38,7 @@ export const entitiesCounter = {
   Status: 7,
   StatusTemplate: 8,
   StixFile: 1,
+  Theme: 2,
   ThreatActorGroup: 1,
   ThreatActorIndividual: 2,
   TrackingNumber: 1,
