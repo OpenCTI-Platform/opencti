@@ -507,4 +507,39 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).toBeNull();
   });
+
+  describe('When adding an object marking to a report', () => {
+    it('should add the observable', async () => {
+      const relationCreationStartDatetime = now();
+      const RELATION_ADD_OBSERVABLE_QUERY = gql`
+      mutation ReportEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
+        reportEdit(id: $id) {
+          relationAdd(input: $input) {
+            id
+            from {
+              ... on Report {
+                observable {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+      const queryResult = await queryAsAdmin({
+        query: RELATION_ADD_OBSERVABLE_QUERY,
+        variables: {
+          id: reportInternalId,
+          input: {
+            toId: 'observable--78ca4366-f5b8-4764-83f7-34ce38198e27',
+            relationship_type: 'observable',
+          },
+        },
+      });
+      expect(queryResult.data.reportEdit.relationAdd.from.observable.length).toEqual(1);
+      expect(relationCreationStartDatetime < queryResult.data.report.updated_at).toBeTruthy();
+      expect(relationCreationStartDatetime < queryResult.data.report.modified).toBeTruthy();
+    });
+  });
 });
