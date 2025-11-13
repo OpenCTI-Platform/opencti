@@ -36,7 +36,7 @@ jobs:
 
     - name: Frontend tests
       run: |
-        docker run --network runner-docker-network \
+        docker run  \
           --name frontend-tests \
           -v ${{ github.workspace }}:/home/workspace \
           node:22-alpine \
@@ -185,7 +185,7 @@ jobs:
           set -ex
           echo "$(date)"
           cd ${{ github.workspace }}/origin/opencti-platform/opencti-ci
-          ./wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 140 10
+          ./wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
     - name: Frontend e2e tests
       run: |
