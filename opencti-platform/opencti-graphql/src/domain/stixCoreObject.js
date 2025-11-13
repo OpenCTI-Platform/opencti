@@ -190,14 +190,13 @@ export const findUnknownStixCoreObjects = async (context, user, args) => {
         if (hashMatch) return hashMatch;
       }
       // try to find in attributes of bulk search filter
-      for (let i = 0; i < BULK_SEARCH_KEYWORDS_FILTER_KEYS.length; i += 1) {
-        const key = BULK_SEARCH_KEYWORDS_FILTER_KEYS[i];
+      return BULK_SEARCH_KEYWORDS_FILTER_KEYS.some((key) => {
         const stixObjectValue = stixObject[key];
-        if (stixObjectValue) {
-          const keyMatch = Array.isArray(stixObjectValue) ? stixObjectValue.includes(value) : stixObjectValue === value;
-          if (keyMatch) return true;
-        }
-      }
+        if (!stixObjectValue) return false;
+        return Array.isArray(stixObjectValue)
+          ? stixObjectValue.includes(value)
+          : stixObjectValue === value;
+      })
     }
     return representativeMatch;
   };
