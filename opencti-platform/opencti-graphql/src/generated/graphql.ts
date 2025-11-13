@@ -1124,6 +1124,10 @@ export type AuditsTimeSeriesParameters = {
   types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+export type AutoRegisterInput = {
+  platform_token: Scalars['String']['input'];
+};
+
 export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'AutonomousSystem';
   cases?: Maybe<CaseConnection>;
@@ -14636,6 +14640,7 @@ export type Mutation = {
   askSendOtp?: Maybe<Scalars['String']['output']>;
   attackPatternAdd?: Maybe<AttackPattern>;
   attackPatternEdit?: Maybe<AttackPatternEditMutations>;
+  autoRegisterOpenCTI: Success;
   bookmarkAdd?: Maybe<StixDomainObject>;
   bookmarkDelete?: Maybe<Scalars['ID']['output']>;
   campaignAdd?: Maybe<Campaign>;
@@ -15223,6 +15228,11 @@ export type MutationAttackPatternAddArgs = {
 
 export type MutationAttackPatternEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationAutoRegisterOpenCtiArgs = {
+  input: AutoRegisterInput;
 };
 
 
@@ -26808,6 +26818,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   request_access_enabled: Scalars['Boolean']['output'];
   standard_id: Scalars['String']['output'];
   updated_at: Scalars['DateTime']['output'];
+  xtm_hub_backend_is_reachable?: Maybe<Scalars['Boolean']['output']>;
   xtm_hub_last_connectivity_check?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_registration_date?: Maybe<Scalars['DateTime']['output']>;
   xtm_hub_registration_status?: Maybe<XtmHubRegistrationStatus>;
@@ -29553,6 +29564,11 @@ export type SubscriptionUserArgs = {
 
 export type SubscriptionWorkspaceArgs = {
   id: Scalars['ID']['input'];
+};
+
+export type Success = {
+  __typename?: 'Success';
+  success: Scalars['Boolean']['output'];
 };
 
 export type SupportPackage = BasicObject & InternalObject & {
@@ -34498,6 +34514,7 @@ export type ResolversTypes = ResolversObject<{
   AttributesMap: ResolverTypeWrapper<AttributesMap>;
   AttributesOrdering: AttributesOrdering;
   AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
+  AutoRegisterInput: AutoRegisterInput;
   AutonomousSystem: ResolverTypeWrapper<Omit<AutonomousSystem, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   AutonomousSystemAddInput: AutonomousSystemAddInput;
   BackgroundTask: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['BackgroundTask']>;
@@ -35321,6 +35338,7 @@ export type ResolversTypes = ResolversObject<{
   SubTypeEditMutations: ResolverTypeWrapper<Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversTypes['SubType']>, statusDelete?: Maybe<ResolversTypes['SubType']>, statusFieldPatch?: Maybe<ResolversTypes['SubType']> }>;
   SubTypesOrdering: SubTypesOrdering;
   Subscription: ResolverTypeWrapper<{}>;
+  Success: ResolverTypeWrapper<Success>;
   SupportPackage: ResolverTypeWrapper<BasicStoreEntitySupportPackage>;
   SupportPackageAddInput: SupportPackageAddInput;
   SupportPackageConnection: ResolverTypeWrapper<Omit<SupportPackageConnection, 'edges'> & { edges: Array<ResolversTypes['SupportPackageEdge']> }>;
@@ -35517,6 +35535,7 @@ export type ResolversParentTypes = ResolversObject<{
   AttributeRefInput: AttributeRefInput;
   AttributesMap: AttributesMap;
   AuditsTimeSeriesParameters: AuditsTimeSeriesParameters;
+  AutoRegisterInput: AutoRegisterInput;
   AutonomousSystem: Omit<AutonomousSystem, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   AutonomousSystemAddInput: AutonomousSystemAddInput;
   BackgroundTask: ResolversInterfaceTypes<ResolversParentTypes>['BackgroundTask'];
@@ -36218,6 +36237,7 @@ export type ResolversParentTypes = ResolversObject<{
   SubTypeEdge: Omit<SubTypeEdge, 'node'> & { node: ResolversParentTypes['SubType'] };
   SubTypeEditMutations: Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversParentTypes['SubType']>, statusDelete?: Maybe<ResolversParentTypes['SubType']>, statusFieldPatch?: Maybe<ResolversParentTypes['SubType']> };
   Subscription: {};
+  Success: Success;
   SupportPackage: BasicStoreEntitySupportPackage;
   SupportPackageAddInput: SupportPackageAddInput;
   SupportPackageConnection: Omit<SupportPackageConnection, 'edges'> & { edges: Array<ResolversParentTypes['SupportPackageEdge']> };
@@ -41683,6 +41703,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   askSendOtp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAskSendOtpArgs, 'input'>>;
   attackPatternAdd?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<MutationAttackPatternAddArgs, 'input'>>;
   attackPatternEdit?: Resolver<Maybe<ResolversTypes['AttackPatternEditMutations']>, ParentType, ContextType, RequireFields<MutationAttackPatternEditArgs, 'id'>>;
+  autoRegisterOpenCTI?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationAutoRegisterOpenCtiArgs, 'input'>>;
   bookmarkAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationBookmarkAddArgs, 'id' | 'type'>>;
   bookmarkDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationBookmarkDeleteArgs, 'id'>>;
   campaignAdd?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, RequireFields<MutationCampaignAddArgs, 'input'>>;
@@ -44655,6 +44676,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   request_access_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  xtm_hub_backend_is_reachable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   xtm_hub_last_connectivity_check?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_registration_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   xtm_hub_registration_status?: Resolver<Maybe<ResolversTypes['XTMHubRegistrationStatus']>, ParentType, ContextType>;
@@ -45579,6 +45601,11 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   stixSightingRelationship?: SubscriptionResolver<Maybe<ResolversTypes['StixSightingRelationship']>, "stixSightingRelationship", ParentType, ContextType, RequireFields<SubscriptionStixSightingRelationshipArgs, 'id'>>;
   user?: SubscriptionResolver<Maybe<ResolversTypes['User']>, "user", ParentType, ContextType, RequireFields<SubscriptionUserArgs, 'id'>>;
   workspace?: SubscriptionResolver<Maybe<ResolversTypes['Workspace']>, "workspace", ParentType, ContextType, RequireFields<SubscriptionWorkspaceArgs, 'id'>>;
+}>;
+
+export type SuccessResolvers<ContextType = any, ParentType extends ResolversParentTypes['Success'] = ResolversParentTypes['Success']> = ResolversObject<{
+  success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SupportPackageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportPackage'] = ResolversParentTypes['SupportPackage']> = ResolversObject<{
@@ -47759,6 +47786,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   SubTypeEdge?: SubTypeEdgeResolvers<ContextType>;
   SubTypeEditMutations?: SubTypeEditMutationsResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
+  Success?: SuccessResolvers<ContextType>;
   SupportPackage?: SupportPackageResolvers<ContextType>;
   SupportPackageConnection?: SupportPackageConnectionResolvers<ContextType>;
   SupportPackageEdge?: SupportPackageEdgeResolvers<ContextType>;

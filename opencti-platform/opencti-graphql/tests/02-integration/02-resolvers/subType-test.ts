@@ -119,7 +119,7 @@ describe('SubType resolver standard behavior', () => {
   });
   it('should list default subTypes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
-    expect(queryResult.data?.subTypes.edges.length).toEqual(entitiesCounter.entitySetting);
+    expect(queryResult.data?.subTypes.edges.length).toEqual(entitiesCounter.EntitySetting);
     expect(isSorted(queryResult.data?.subTypes.edges.map((edge: BasicStoreEntityEdge<any>) => edge.node.id))).toEqual(true);
   });
   it('should retrieve mandatory attribute for an entity', async () => {

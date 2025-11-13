@@ -1478,6 +1478,7 @@ type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSett
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
+  xtm_hub_backend_is_reachable: Boolean
   # AI insight
   platform_ai_enabled: Boolean!
   platform_ai_type: String
@@ -11737,7 +11738,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectOrganization: [Organization!]
   objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
@@ -11866,7 +11867,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectOrganization: [Organization!]
   objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number

@@ -16,7 +16,6 @@ import {
   queryAsAdmin,
   TEST_ORGANIZATION,
   testContext,
-  TESTING_GROUPS,
   TESTING_USERS,
   USER_CONNECTOR,
   USER_DISINFORMATION_ANALYST,
@@ -37,6 +36,7 @@ import {
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 import type { Capability, Member, UserAddInput } from '../../../src/generated/graphql';
 import { storeLoadById } from '../../../src/database/middleware-loader';
+import { entitiesCounter } from '../../utils/entityCountHelper';
 
 const LIST_QUERY = gql`
   query users(
@@ -377,15 +377,6 @@ describe('User resolver standard behavior', () => {
     expect(invalidQueryResult.errors?.[0].message).toEqual('The language you have provided is not valid');
   });
   it('should not update Name field for internal user', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-          }
-        }
-      }
-    `;
     const result = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: ADMIN_USER.id, input: { key: 'name', value: ['new name'] } },
@@ -397,15 +388,6 @@ describe('User resolver standard behavior', () => {
     }
   });
   it('should not update Email field for internal user', async () => {
-    const UPDATE_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: [EditInput]!) {
-        userEdit(id: $id) {
-          fieldPatch(input: $input) {
-            id
-          }
-        }
-      }
-    `;
     const result = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { id: ADMIN_USER.id, input: { key: 'user_email', value: ['mail@mail.com'] } },
@@ -768,8 +750,8 @@ describe('User list members query behavior', () => {
     const usersEdges = queryResult.data.members.edges as { node: Member }[];
     expect(usersEdges.length).toEqual(24);
     expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(TESTING_USERS.length + 1); // +1 = Plus admin user
-    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(TESTING_GROUPS.length + 3); // 3 built-in groups
-    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(8);
+    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(entitiesCounter.Group);
+    expect(usersEdges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(entitiesCounter.Organization);
   });
 });
 

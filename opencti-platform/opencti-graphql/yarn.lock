@@ -3722,16 +3722,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@pyroscope/nodejs@npm:0.4.5":
-  version: 0.4.5
-  resolution: "@pyroscope/nodejs@npm:0.4.5"
+"@pyroscope/nodejs@npm:0.4.7":
+  version: 0.4.7
+  resolution: "@pyroscope/nodejs@npm:0.4.7"
   dependencies:
-    "@datadog/pprof": "npm:^5.4.1"
+    "@datadog/pprof": "npm:5.9.0"
     debug: "npm:^4.3.3"
     p-limit: "npm:^3.1.0"
     regenerator-runtime: "npm:^0.13.11"
     source-map: "npm:^0.7.3"
-  checksum: 10c0/91b02e3b99230563d1afe6f9b095fa53080ba400ffd13c1cfee6a39018fa29d0309bffb6261d83f4c2cdaef445282ef85cf76fe7b80d8e3e074e26e594d7263c
+  checksum: 10c0/49d0b972d673e1b6282e90e4efa7c91586c3bd633a00a4d17c730ec311c604679610ae6a748efd188438ed49f98fed33c983ac0b9a653eaf38b574bddda62a4d
   languageName: node
   linkType: hard
 
@@ -4607,12 +4607,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/archiver@npm:6.0.4":
-  version: 6.0.4
-  resolution: "@types/archiver@npm:6.0.4"
+"@types/archiver@npm:7.0.0":
+  version: 7.0.0
+  resolution: "@types/archiver@npm:7.0.0"
   dependencies:
     "@types/readdir-glob": "npm:*"
-  checksum: 10c0/ac971a5a72d55064b0a62ccebff643f220c957f109a68486c48b51c566df3a7fdbf5ddce8eb1bbd644c4c6486f882cf90044f5ebb08ce16dfe0b1cbb491f8c2c
+  checksum: 10c0/30fe68377e3fbdd9691235bca1c99e1d6ac9c850156a56abc09fa3ed7777c520a260cbee6a1c796994a5adee96dcdc6dd3742cc4444aca713e2611c6b6d1f73d
   languageName: node
   linkType: hard
 
@@ -6000,14 +6000,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.12.2":
-  version: 1.12.2
-  resolution: "axios@npm:1.12.2"
+"axios@npm:1.13.2":
+  version: 1.13.2
+  resolution: "axios@npm:1.13.2"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.4"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10c0/80b063e318cf05cd33a4d991cea0162f3573481946f9129efb7766f38fde4c061c34f41a93a9f9521f02b7c9565ccbc197c099b0186543ac84a24580017adfed
+  checksum: 10c0/e8a42e37e5568ae9c7a28c348db0e8cf3e43d06fcbef73f0048669edfe4f71219664da7b6cc991b0c0f01c28a48f037c515263cb79be1f1ae8ff034cd813867b
   languageName: node
   linkType: hard
 
@@ -8220,14 +8220,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"express-rate-limit@npm:8.1.0":
-  version: 8.1.0
-  resolution: "express-rate-limit@npm:8.1.0"
+"express-rate-limit@npm:8.2.1":
+  version: 8.2.1
+  resolution: "express-rate-limit@npm:8.2.1"
   dependencies:
     ip-address: "npm:10.0.1"
   peerDependencies:
     express: ">= 4.11"
-  checksum: 10c0/3bb7aa646f9b79ce4e8e0a683d1c200b5d393fed60c3ecda13748fc351a9ee822436e9eeb2cbb2f5da4aae2f94fe4aafad9b679468861a8cc2bb9cd812bc102b
+  checksum: 10c0/54185f211c25655382436b8ad1a2136df0d5dc88f4d9d4438ca7cbc87cef0cd34cb01b8fc62d290445326aa6581470d2ff44502c3f1a34a5ed2c2ce56809fa01
   languageName: node
   linkType: hard
 
@@ -11680,10 +11680,10 @@ __metadata:
     "@opentelemetry/sdk-trace-base": "npm:1.25.1"
     "@opentelemetry/sdk-trace-node": "npm:1.25.1"
     "@opentelemetry/semantic-conventions": "npm:1.25.1"
-    "@pyroscope/nodejs": "npm:0.4.5"
+    "@pyroscope/nodejs": "npm:0.4.7"
     "@rollup/plugin-graphql": "npm:2.0.5"
     "@sesamecare-oss/redlock": "npm:1.4.0"
-    "@types/archiver": "npm:6.0.4"
+    "@types/archiver": "npm:7.0.0"
     "@types/bluebird": "npm:3.5.42"
     "@types/content-type": "npm:1.1.9"
     "@types/ejs": "npm:3.1.5"
@@ -11708,7 +11708,7 @@ __metadata:
     archiver: "npm:7.0.1"
     archiver-zip-encrypted: "npm:2.0.0"
     async-lock: "npm:1.4.1"
-    axios: "npm:1.12.2"
+    axios: "npm:1.13.2"
     axios-cookiejar-support: "npm:6.0.4"
     bcryptjs: "npm:3.0.2"
     bluebird: "npm:3.7.2"
@@ -11732,7 +11732,7 @@ __metadata:
     eslint-plugin-import-newlines: "npm:1.4.0"
     eventsource: "npm:2.0.2"
     express: "npm:4.21.2"
-    express-rate-limit: "npm:8.1.0"
+    express-rate-limit: "npm:8.2.1"
     express-session: "npm:1.18.2"
     fast-json-patch: "npm:3.1.1"
     file-type: "npm:21.0.0"

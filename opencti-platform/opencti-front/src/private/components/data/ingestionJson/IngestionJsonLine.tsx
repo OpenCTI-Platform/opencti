@@ -17,6 +17,7 @@ import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
 import { INGESTION_SETINGESTIONS } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -45,12 +46,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 interface IngestionJsonLineProps {
   node: IngestionJsonLine_node$key;
   dataColumns: DataColumns;
-  onLabelClick: (
-    k: string,
-    id: string,
-    value: Record<string, unknown>,
-    event: React.KeyboardEvent,
-  ) => void;
+  onLabelClick: HandleAddFilter;
   paginationOptions?: IngestionJsonLinesPaginationQuery$variables;
 }
 

@@ -24,6 +24,7 @@ import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { DataColumns } from '../../../../components/list_lines';
 import type { Theme } from '../../../../components/Theme';
+import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -237,7 +238,7 @@ const EntityStixSightingRelationshipLineFragment = graphql`
 interface EntityStixSightingRelationshipLineProps {
   dataColumns: DataColumns;
   node: EntityStixSightingRelationshipLine_node$key;
-  onLabelClick: () => void;
+  onLabelClick: HandleAddFilter;
   isTo: boolean;
   paginationOptions?: EntityStixSightingRelationshipsLinesPaginationQuery$variables;
 }

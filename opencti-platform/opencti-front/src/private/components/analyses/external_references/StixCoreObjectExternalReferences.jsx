@@ -20,6 +20,9 @@ const styles = (theme) => ({
     padding: 0,
     borderRadius: 4,
   },
+  container: {
+    height: 60,
+  },
   avatar: {
     width: 24,
     height: 24,
@@ -68,6 +71,7 @@ class StixCoreObjectExternalReferences extends Component {
                       key={i}
                       dense={true}
                       divider={true}
+                      classes={classes.container}
                     >
                       <ListItemIcon>
                         <Avatar classes={{ root: classes.avatarDisabled }}>

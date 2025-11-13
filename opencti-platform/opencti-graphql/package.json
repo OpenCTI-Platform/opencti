@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "6.8.10",
+  "version": "6.8.11",
   "private": true,
   "scripts": {
     "check-ts": "tsc --noEmit",
@@ -77,7 +77,7 @@
     "@opentelemetry/sdk-trace-base": "1.25.1",
     "@opentelemetry/sdk-trace-node": "1.25.1",
     "@opentelemetry/semantic-conventions": "1.25.1",
-    "@pyroscope/nodejs": "0.4.5",
+    "@pyroscope/nodejs": "0.4.7",
     "@sesamecare-oss/redlock": "1.4.0",
     "ae-cvss-calculator": "1.0.9",
     "ajv": "8.17.1",
@@ -87,7 +87,7 @@
     "archiver": "7.0.1",
     "archiver-zip-encrypted": "2.0.0",
     "async-lock": "1.4.1",
-    "axios": "1.12.2",
+    "axios": "1.13.2",
     "axios-cookiejar-support": "6.0.4",
     "bcryptjs": "3.0.2",
     "bluebird": "3.7.2",
@@ -102,7 +102,7 @@
     "ejs": "3.1.10",
     "eventsource": "2.0.2",
     "express": "4.21.2",
-    "express-rate-limit": "8.1.0",
+    "express-rate-limit": "8.2.1",
     "express-session": "1.18.2",
     "fast-json-patch": "3.1.1",
     "file-type": "21.0.0",
@@ -174,7 +174,7 @@
     "@graphql-codegen/typescript-resolvers": "4.5.2",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.5",
-    "@types/archiver": "6.0.4",
+    "@types/archiver": "7.0.0",
     "@types/bluebird": "3.5.42",
     "@types/content-type": "1.1.9",
     "@types/ejs": "3.1.5",
@@ -205,7 +205,7 @@
     "vitest": "3.2.4"
   },
   "resolutions": {
-    "axios": "1.12.2",
+    "axios": "1.13.2",
     "body-parser": "2.2.0",
     "chokidar": "4.0.3",
     "cookie": "1.0.2",

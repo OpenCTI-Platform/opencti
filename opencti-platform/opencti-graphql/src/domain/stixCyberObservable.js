@@ -398,12 +398,21 @@ const ignore_extract_types = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 ];
+
+// Office Open XML file extensions that should not be extracted (even if MIME type is wrong)
+const office_xml_extensions = ['.docx', '.xlsx', '.pptx'];
+
 export const artifactImport = async (context, user, args) => {
   const { file, x_opencti_description: description, createdBy, objectMarking, objectLabel } = args;
   let resolvedFile = await file;
-  // Checking infected ZIP files
 
-  if (!ignore_extract_types.includes(resolvedFile.mimetype)) {
+  // Checking infected ZIP files
+  // Use both MIME type AND file extension for robust detection of Office Open XML files
+  // This prevents extraction when MIME type is wrongly detected (e.g., as application/zip)
+  const isOfficeMimeType = ignore_extract_types.includes(resolvedFile.mimetype);
+  const isOfficeXmlExtension = office_xml_extensions.some((ext) => resolvedFile.filename?.toLowerCase().endsWith(ext));
+
+  if (!isOfficeMimeType && !isOfficeXmlExtension) {
     try {
       resolvedFile = await extractInfectedZipFile(resolvedFile);
     } catch {

@@ -1,0 +1,110 @@
+---
+kind: pipeline
+name: client-python-tests
+
+steps:
+  - name: Runner information
+    image: alpine:3.19
+    commands:
+    - echo DRONE_STAGE_MACHINE ${DRONE_STAGE_MACHINE}
+
+  - name: sleep-for-opencti
+    image: python:3.11
+    commands:
+      - sleep 180
+  - name: client-test-39
+    image: python:3.9
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+  - name: client-test-310
+    image: python:3.10
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+  - name: client-test-311
+    image: python:3.11
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+  - name: client-test-312
+    image: python:3.12
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+
+  # always run the examples last since they don't clean up
+  - name: example-tests
+    image: python:3.12
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install .
+      - cd examples/
+      - /bin/bash run_all.sh
+
+  - name: slack
+    image: plugins/slack
+    settings:
+      webhook:
+        from_secret: slack_webhook
+      username: drone
+      icon_url: https://avatars.githubusercontent.com/oa/1284929
+      channel: notifications
+    when:
+      status: [ success, failure ]
+      event:
+        exclude:
+          - pull_request
+
+services:
+  - name: redis
+    image: redis:8.2.0
+  - name: elastic
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.18.2
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: false
+      ES_JAVA_OPTS: -Xms2g -Xmx2g
+  - name: minio
+    image: minio/minio:RELEASE.2022-11-11T03-44-20Z
+    environment:
+      MINIO_ROOT_USER: ChangeMe
+      MINIO_ROOT_PASSWORD: ChangeMe
+    command: [ server, /data ]
+  - name: rabbitmq
+    image: rabbitmq:4.1.4-management
+  - name: opencti
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
+    environment:
+      APP__ADMIN__PASSWORD: admin
+      APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      APP__ENTERPRISE_EDITION_LICENSE:
+        from_secret: ee_license
+      REDIS__HOSTNAME: redis
+      REDIS__NAMESPACE: raw-start
+      ELASTICSEARCH__URL: http://elastic:9200
+      ELASTICSEARCH__INDEX_PREFIX: raw-start
+      MINIO__ENDPOINT: minio
+      MINIO__BUCKET_NAME: raw-start-bucket
+      RABBITMQ__HOSTNAME: rabbitmq
+      EXPIRATION_SCHEDULER__ENABLED: false
+      SUBSCRIPTION_SCHEDULER__ENABLED: false
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - apk add build-base git libffi-dev cargo github-cli
+      - chmod 777 scripts/*
+      - pip3 install . --upgrade --force
+      - echo "DRONE_SOURCE_BRANCH:${DRONE_SOURCE_BRANCH}, DRONE_PULL_REQUEST:${DRONE_PULL_REQUEST}"
+      - ./scripts/clone-opencti.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
+      - ls -lart
+      - cd opencti/opencti-platform/opencti-graphql
+      - yarn install
+      - sed -i '/^pycti==/d' src/python/requirements.txt
+      - yarn install:python
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+

@@ -73,6 +73,7 @@ const auditsDistributionListDistributionQuery = graphql`
         }
         # objects without representative
         ... on Creator {
+          entity_type
           name
         }
         ... on Group {

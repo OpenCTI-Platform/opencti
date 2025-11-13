@@ -1566,6 +1566,7 @@ type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSett
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
+  xtm_hub_backend_is_reachable: Boolean
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
@@ -9885,6 +9886,7 @@ type Mutation {
   formSubmit(input: FormSubmissionInput!, isDraft: Boolean! = false): FormSubmissionResponse
   formImport(file: Upload!): Form
   checkXTMHubConnectivity: CheckXTMHubConnectivityResponse!
+  autoRegisterOpenCTI(input: AutoRegisterInput!): Success!
   metricPatch(id: ID!, input: PatchMetricInput!): BasicObject
 }
 
@@ -14608,6 +14610,14 @@ type FormSubmissionResponse {
 
 type CheckXTMHubConnectivityResponse {
   status: XTMHubRegistrationStatus
+}
+
+input AutoRegisterInput {
+  platform_token: String!
+}
+
+type Success {
+  success: Boolean!
 }
 
 type Metric {

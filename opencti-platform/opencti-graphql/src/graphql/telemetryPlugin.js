@@ -36,7 +36,7 @@ export default {
         };
 
         if (!sendContext.operationName) {
-          logApp.error('TELEMETRY PLUGIN UNDEFINED OPERATION', { query: stripIgnoredCharacters(sendContext.request?.query ?? 'undefined') });
+          logApp.info('[TELEMETRY] GraphQL operation is unnamed', { query: stripIgnoredCharacters(sendContext.request?.query ?? 'undefined') });
         }
 
         if (requestError) {
