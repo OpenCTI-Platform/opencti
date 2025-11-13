@@ -140,19 +140,21 @@ export const convertMalwareToStix = (instance: StoreEntity): SDO.StixMalware => 
   assertType(ENTITY_TYPE_MALWARE, instance.entity_type);
   return {
     ...buildStixDomain(instance),
-    name: instance.name,
-    description: instance.description,
-    malware_types: instance.malware_types,
-    is_family: instance.is_family,
-    aliases: instance.aliases,
-    kill_chain_phases: buildKillChainPhases(instance),
-    first_seen: convertToStixDate(instance.first_seen),
-    last_seen: convertToStixDate(instance.last_seen),
-    architecture_execution_envs: instance.architecture_execution_envs,
-    implementation_languages: instance.implementation_languages,
-    capabilities: instance.capabilities,
-    operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
-    sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+    ...cleanObject({
+      name: instance.name,
+      description: instance.description,
+      malware_types: instance.malware_types,
+      is_family: instance.is_family,
+      aliases: instance.aliases,
+      kill_chain_phases: buildKillChainPhases(instance),
+      first_seen: convertToStixDate(instance.first_seen),
+      last_seen: convertToStixDate(instance.last_seen),
+      architecture_execution_envs: instance.architecture_execution_envs,
+      implementation_languages: instance.implementation_languages,
+      capabilities: instance.capabilities,
+      operating_system_refs: (instance[INPUT_OPERATING_SYSTEM] ?? []).map((m) => m.standard_id),
+      sample_refs: (instance[INPUT_SAMPLE] ?? []).map((m) => m.standard_id),
+    })
   };
 };
 
@@ -161,12 +163,14 @@ export const convertReportToStix = (instance: StoreEntity): SDO.StixReport => {
   const report = buildStixDomain(instance);
   return {
     ...report,
-    name: instance.name,
-    description: instance.description,
-    report_types: instance.report_types,
-    published: convertToStixDate(instance.published),
-    object_refs: convertObjectReferences(instance),
-    x_opencti_reliability: instance.x_opencti_reliability,
+    ...cleanObject({
+      name: instance.name,
+      description: instance.description,
+      report_types: instance.report_types,
+      published: convertToStixDate(instance.published),
+      object_refs: convertObjectReferences(instance),
+      x_opencti_reliability: instance.x_opencti_reliability,
+    })
   };
 };
 
@@ -175,11 +179,13 @@ export const convertNoteToStix = (instance: StoreEntity): SDO.StixNote => {
   const note = buildStixDomain(instance);
   return {
     ...note,
-    abstract: instance.attribute_abstract,
-    content: instance.content,
-    object_refs: convertObjectReferences(instance),
-    note_types: instance.note_types,
-    likelihood: instance.likelihood,
+    ...cleanObject({
+      abstract: instance.attribute_abstract,
+      content: instance.content,
+      object_refs: convertObjectReferences(instance),
+      note_types: instance.note_types,
+      likelihood: instance.likelihood,
+    })
   };
 };
 
@@ -188,10 +194,12 @@ export const convertObservedDataToStix = (instance: StoreEntity): SDO.StixObserv
   const observedData = buildStixDomain(instance);
   return {
     ...observedData,
-    first_observed: convertToStixDate(instance.first_observed),
-    last_observed: convertToStixDate(instance.last_observed),
-    number_observed: instance.number_observed,
-    object_refs: convertObjectReferences(instance),
+    ...cleanObject({
+      first_observed: convertToStixDate(instance.first_observed),
+      last_observed: convertToStixDate(instance.last_observed),
+      number_observed: instance.number_observed,
+      object_refs: convertObjectReferences(instance),
+    })
   };
 };
 
@@ -200,9 +208,11 @@ export const convertOpinionToStix = (instance: StoreEntity): SDO.StixOpinion => 
   const opinion = buildStixDomain(instance);
   return {
     ...opinion,
-    explanation: instance.explanation,
-    opinion: instance.opinion,
-    object_refs: convertObjectReferences(instance),
+    ...cleanObject({
+      explanation: instance.explanation,
+      opinion: instance.opinion,
+      object_refs: convertObjectReferences(instance),
+    })
   };
 };
 

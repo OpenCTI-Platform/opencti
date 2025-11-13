@@ -29,9 +29,11 @@ export const convertFeedbackToStix_2_0 = (instance: StoreEntityFeedback): Stix2F
   const feedback = buildStixDomain2(instance);
   return {
     ...feedback,
-    name: instance.name,
-    description: instance.description,
-    rating: instance.rating,
-    object_refs: convertObjectReferences(instance),
+    ...cleanObject({
+      name: instance.name,
+      description: instance.description,
+      rating: instance.rating,
+      object_refs: convertObjectReferences(instance),
+    })
   };
 };

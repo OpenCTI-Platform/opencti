@@ -31,11 +31,13 @@ export const convertCaseIncidentToStix_2_0 = (instance: StoreEntityCaseIncident)
   const caseIncident = buildStixDomain2(instance);
   return {
     ...caseIncident,
-    name: instance.name,
-    description: instance.description,
-    severity: instance.severity,
-    priority: instance.priority,
-    response_types: instance.response_types,
-    object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
+    ...cleanObject({
+      name: instance.name,
+      description: instance.description,
+      severity: instance.severity,
+      priority: instance.priority,
+      response_types: instance.response_types,
+      object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
+    })
   };
 };

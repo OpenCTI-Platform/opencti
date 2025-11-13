@@ -30,9 +30,11 @@ export const convertGroupingToStix_2_0 = (instance: StoreEntityGrouping): Stix2G
   const grouping = buildStixDomain2(instance);
   return {
     ...grouping,
-    name: instance.name,
-    description: instance.description,
-    context: instance.context,
-    object_refs: convertObjectReferences(instance),
+    ...cleanObject({
+      name: instance.name,
+      description: instance.description,
+      context: instance.context,
+      object_refs: convertObjectReferences(instance),
+    })
   };
 };
