@@ -854,4 +854,29 @@ describe('Stix filter testers', () => {
       expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(false);
     });
   });
+
+  describe('by PIR Score (key=x_opencti_score)', () => {
+    const stixWithScore = stixIndicators[0];
+    const stixWithoutScore = stixReports[0];
+
+    it('should test positive for a stix object with matching filter', () => {
+      let filter: Filter = {
+        key: ['x_opencti_score'],
+        mode: 'or',
+        operator: 'lt',
+        values: ['75']
+      } as Filter;
+      expect(testers.testPirScore(stixWithScore, filter)).toEqual(true);
+      expect(testers.testPirScore(stixWithoutScore, filter)).toEqual(false);
+
+      filter = {
+        key: ['x_opencti_score'],
+        mode: 'and',
+        operator: 'lt',
+        values: ['25']
+      } as Filter;
+      expect(testers.testPirScore(stixWithScore, filter)).toEqual(false);
+      expect(testers.testPirScore(stixWithoutScore, filter)).toEqual(false);
+    });
+  });
 });

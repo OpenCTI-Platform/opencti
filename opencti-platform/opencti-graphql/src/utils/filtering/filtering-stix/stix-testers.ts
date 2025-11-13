@@ -53,6 +53,7 @@ import { extractStixRepresentative } from '../../../database/stix-representative
 import { type AuthorizedMember, isUserInAuthorizedMember } from '../../access';
 import type { AuthUser } from '../../../types/user';
 import { UnsupportedError } from '../../../config/errors';
+import type { PirInformation } from '../../../modules/pir/pir-types';
 
 //-----------------------------------------------------------------------------------
 // Testers for each possible filter.
@@ -458,10 +459,11 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
 };
 
 export const testPirScore = (stix: any, filter: Filter) => {
-  const pirIds = filter.values.find((v) => v.key === 'pir_ids')?.values;
-  const pirScoreFilter = filter.values.find((v) => v.key === 'score');
-  const stixValue: number | null = stix.x_opencti_cvss_base_score ?? stix.extensions?.[STIX_EXT_OCTI].cvss_base_score ?? null;
-  return testNumericFilter(filter, stixValue);
+  const pirIds = filter.values.find((v) => v.key === 'pir_ids')?.values ?? [];
+  const pirScoreFilter: Filter = filter.values.find((v) => v.key === 'score');
+  const stixValues: number[] = stix.pir_information?.filter((pir: PirInformation) => pirIds?.includes(pir.pir_id))
+    .map((pir:PirInformation) => pir.pir_score) ?? [];
+  return stixValues.some((stixValue) => testNumericFilter(pirScoreFilter, stixValue));
 };
 
 /**
