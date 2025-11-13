@@ -291,7 +291,7 @@ describe('generateUpdatePatchMessage tests', () => {
       + 'id : import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file1.json\n'
       + 'mime_type : application/json\n'
       + 'name : file1.json\n'
-      + 'version : 2025-11-12T15:28:21.073Z,\n'
+      + 'version : 2025-11-12T15:28:21.073Z, \n'
       + 'file_markings : []\n'
       + 'id : import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file2.json\n'
       + 'mime_type : application/json\n'
