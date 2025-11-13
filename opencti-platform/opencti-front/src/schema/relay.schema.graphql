@@ -8172,7 +8172,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
@@ -14628,7 +14628,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   id: ID!
   standard_id: String!
   entity_type: String!
-  parent_types: [String]!
+  parent_types: [String!]!
   metrics: [Metric]
   representative: Representative!
   x_opencti_stix_ids: [StixId]
