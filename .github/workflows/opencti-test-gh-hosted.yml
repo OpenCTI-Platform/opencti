@@ -398,6 +398,7 @@ jobs:
           node:22.21.0 \
           sh -c 'set -ex;
               echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+              curl http://opencti-e2e-start:4100/dashboard
               apt-get update
               apt-get -y install netcat-traditional
               cd /home/workspace/opencti-platform/opencti-front
@@ -416,7 +417,7 @@ jobs:
       continue-on-error: true
       with:
         name: opencti-e2e-frontend
-        path: ${{ github.workspace }}/frontend-e2e-test/test-results
+        path: ${{ github.workspace }}/opencti-platform/opencti-front/frontend-e2e-test/test-results
         retention-days: 1
 
     - name: Stop docker stats monitor and print logs
