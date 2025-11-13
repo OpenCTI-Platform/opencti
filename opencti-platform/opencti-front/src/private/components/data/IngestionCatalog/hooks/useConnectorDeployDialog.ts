@@ -7,6 +7,7 @@ interface CatalogState {
   selectedConnector: IngestionConnector | null;
   selectedCatalogId: string;
   hasRegisteredManagers: boolean;
+  hasActiveManagers: boolean;
   deploymentCount: number
 }
 
@@ -17,6 +18,7 @@ const useConnectorDeployDialog = () => {
     selectedConnector: null,
     selectedCatalogId: '',
     hasRegisteredManagers: false,
+    hasActiveManagers: false,
     deploymentCount: 0,
   });
 
@@ -24,6 +26,7 @@ const useConnectorDeployDialog = () => {
     connector: IngestionConnector,
     catalogId: string,
     registeredManagers: boolean,
+    activeManagers: boolean,
     deploymentCount: number,
   ) => {
     setCatalogState((prev) => ({
@@ -31,6 +34,7 @@ const useConnectorDeployDialog = () => {
       selectedConnector: connector,
       selectedCatalogId: catalogId,
       hasRegisteredManagers: registeredManagers,
+      hasActiveManagers: activeManagers,
       deploymentCount,
     }));
   };
