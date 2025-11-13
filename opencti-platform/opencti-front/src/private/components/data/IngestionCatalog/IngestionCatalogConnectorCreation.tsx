@@ -130,6 +130,7 @@ const IngestionCatalogConnectorCreation = ({
     setSubmitting,
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
+    setSubmitting?.(true);
     const input = {
       name: values.display_name,
       catalog_id: catalogId,
