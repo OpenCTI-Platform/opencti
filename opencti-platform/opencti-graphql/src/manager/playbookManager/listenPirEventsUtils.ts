@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { stixLoadById } from '../../database/middleware';
-import { FilterMode } from '../../generated/graphql';
+import { FilterMode, type FilterGroup } from '../../generated/graphql';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
 import type { BasicStoreEntityPlaybook, ComponentDefinition, NodeDefinition } from '../../modules/playbook/playbook-types';
 import type { PirStreamConfiguration } from '../../modules/playbook/components/data-stream-pir-component';
@@ -16,6 +16,7 @@ import { STIX_SPEC_VERSION } from '../../database/stix';
 import { playbookExecutor } from './playbookExecutor';
 import { storeLoadById } from '../../database/middleware-loader';
 import type { BasicStoreEntity } from '../../types/store';
+import { PIR_SCORE_FILTER } from '../../utils/filtering/filtering-constants';
 
 /**
  * Build a filterGroup to filter on PIR IDs.
@@ -44,7 +45,7 @@ export const listOfPirInEntity = async (context: AuthContext, entityId: string) 
     entityId,
     ABSTRACT_STIX_CORE_OBJECT
   );
-  return entityFromId.pir_information.map((pir) => pir.pir_id);
+  return entityFromId.pir_information?.map((pir) => pir.pir_id) || [];
 };
 
 /**
@@ -89,6 +90,33 @@ export const isEventMatchesPir = async (
   return false;
 };
 
+const formatFilters = (sourceFilters: string) => {
+  const filtersOnSource: FilterGroup | undefined = sourceFilters ? JSON.parse(sourceFilters) : undefined;
+  if (!filtersOnSource) {
+    return undefined;
+  }
+
+  const formattedFirstLevelFilters = filtersOnSource.filters.map((filter) => {
+    if (filter.key[0] === PIR_SCORE_FILTER) {
+      return {
+        key: [PIR_SCORE_FILTER],
+        values: [
+          {
+            ...filter,
+            key: 'score'
+          },
+          {
+            key: 'pir_ids',
+            values: [] // TODO : add pir ids
+          }]
+      };
+    }
+    return filter;
+  });
+
+  return { ...filtersOnSource, filters: formattedFirstLevelFilters };
+};
+
 export const listenPirEvents = async (
   context: AuthContext,
   streamEvent : SseEvent<StreamDataEvent>,
@@ -97,11 +125,11 @@ export const listenPirEvents = async (
 ) => {
   const { id: eventId, data: { data, type } } = streamEvent;
   const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
+  const { filters: sourceFilters, inPirFilters } = configuration;
+
+  const filtersOnSource = formatFilters(sourceFilters);
 
   if (isValidEventType(type, configuration)) {
-    const { filters: sourceFilters, inPirFilters } = configuration;
-    const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
-
     if (await isEventMatchesPir(context, streamEvent.data, inPirFilters)) {
       let isEntityMatchFilters: boolean = false;
       let stixEntity: StixObject | undefined;

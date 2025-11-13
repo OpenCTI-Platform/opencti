@@ -459,10 +459,10 @@ export const testCvssSeverity = (stix: any, filter: Filter) => {
 };
 
 export const testPirScore = (stix: any, filter: Filter) => {
-  const pirIds = filter.values.find((v) => v.key[0] === 'pir_ids')?.values ?? [];
-  const pirScoreFilter: Filter = filter.values.find((v) => v.key[0] === 'score');
-  const stixValues: number[] = stix.pir_information?.filter((pir: PirInformation) => pirIds?.includes(pir.pir_id))
-    .map((pir:PirInformation) => pir.pir_score) ?? [];
+  const pirIds = filter.values.find((v) => v.key === 'pir_ids')?.values ?? [];
+  const pirScoreFilter = filter.values.find((v) => v.key === 'score');
+  const filterPirInformation = pirIds.length === 0 ? stix.pir_information : stix.pir_information?.filter((pir: PirInformation) => pirIds?.includes(pir.pir_id));
+  const stixValues: number[] = filterPirInformation?.map((pir:PirInformation) => pir.pir_score) ?? [];
   return stixValues.some((stixValue) => testNumericFilter(pirScoreFilter, stixValue));
 };
 

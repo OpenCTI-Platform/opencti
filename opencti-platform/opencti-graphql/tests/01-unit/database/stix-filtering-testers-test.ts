@@ -867,12 +867,12 @@ describe('Stix filter testers', () => {
         key: ['pir_score'],
         values: [
           {
-            key: ['score'],
+            key: 'score',
             values: ['50'],
             operator: 'gt'
           },
           {
-            key: ['pir_ids'],
+            key: 'pir_ids',
             values: [
               '0481ef01-b2a5-4001-a3d1-6110dc579e2a',
               '12345678-1234-1234-1234-123456789012'
