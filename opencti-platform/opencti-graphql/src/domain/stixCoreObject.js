@@ -196,7 +196,7 @@ export const findUnknownStixCoreObjects = async (context, user, args) => {
         return Array.isArray(stixObjectValue)
           ? stixObjectValue.includes(value)
           : stixObjectValue === value;
-      })
+      });
     }
     return representativeMatch;
   };
