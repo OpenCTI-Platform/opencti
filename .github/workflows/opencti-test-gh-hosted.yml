@@ -371,7 +371,7 @@ jobs:
       run: |
           set -ex
           echo "$(date)"
-          cd ${{ github.workspace }}/origin/opencti-ci
+          cd ${{ github.workspace }}/origin/opencti-platform/opencti-ci
           ./wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 140 10
 
     - name: Logs opencti-e2e-start
