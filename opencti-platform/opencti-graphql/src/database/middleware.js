@@ -510,6 +510,7 @@ export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
 };
 export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
+  console.log('---- coucou ----', instance);
   return instance ? convertStoreToStix(instance) : undefined;
 };
 const convertStoreToStixWithResolvedFiles = async (instance) => {
@@ -3188,6 +3189,9 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
       dataRel.element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       const createdRelation = { ...resolvedInput, ...dataRel.element };
+      console.log('--- createdRelation ---', createdRelation)
+      const aaa = await internalLoadById(context, user, createdRelation.fromId);
+      console.log('--- from ---', aaa)
       event = await storeCreateRelationEvent(context, user, createdRelation, opts);
     }
     // - TRANSACTION END
