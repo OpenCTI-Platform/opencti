@@ -18,12 +18,14 @@ import type { BasicStoreSettings } from '../types/settings';
 import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { elCount } from '../database/engine';
+import { elCount, elList } from '../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
+import { getExistingEntities } from '../database/middleware';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -258,6 +260,26 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region PIR information
     const pirs = await getEntitiesListFromCache(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_PIR);
     manager.setPirCount(pirs.length);
+    // endregion
+
+    // region Security Coverages
+    const securityCoveragesAddManualCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ }]
+      },
+      ENTITY_TYPE_SECURITY_COVERAGE
+    });
+    manager.setSecurityCoveragesAddManualCount(securityCoveragesAddManualCount);
+
+    const securityCoveragesAddAutoCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      filters: {
+        mode: FilterMode.And,
+        filters: [{ }]
+      },
+      ENTITY_TYPE_SECURITY_COVERAGE
+    });
+    manager.setSecurityCoveragesAddAutoCount(securityCoveragesAddAutoCount);
     // endregion
 
     // region Telemetry user events
