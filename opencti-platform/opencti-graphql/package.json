@@ -89,7 +89,7 @@
     "async-lock": "1.4.1",
     "axios": "1.13.2",
     "axios-cookiejar-support": "6.0.4",
-    "bcryptjs": "3.0.2",
+    "bcryptjs": "3.0.3",
     "bluebird": "3.7.2",
     "body-parser": "2.2.0",
     "canonicalize": "2.1.0",
