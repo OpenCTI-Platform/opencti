@@ -25649,7 +25649,7 @@ export type SshKey = BasicObject & StixCoreObject & StixCyberObservable & StixOb
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   public_key?: Maybe<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -26209,7 +26209,7 @@ export type SecurityCoverage = BasicObject & StixCoreObject & StixDomainObject &
   observedData?: Maybe<ObservedDataConnection>;
   opinions?: Maybe<OpinionConnection>;
   opinions_metrics?: Maybe<OpinionsMetrics>;
-  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  parent_types: Array<Scalars['String']['output']>;
   pendingFiles?: Maybe<FileConnection>;
   periodicity?: Maybe<Scalars['String']['output']>;
   pirInformation?: Maybe<PirInformation>;
@@ -44216,7 +44216,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SshKeyObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SshKeyOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SshKeyPendingFilesArgs>>;
   public_key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -44407,7 +44407,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<SecurityCoverageObservedDataArgs>>;
   opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<SecurityCoverageOpinionsArgs>>;
   opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<SecurityCoveragePendingFilesArgs>>;
   periodicity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<SecurityCoveragePirInformationArgs, 'pirId'>>;
