@@ -15,6 +15,10 @@ describe('StixCoreObject resolver standard behavior', () => {
     unknownValues = await findUnknownStixCoreObjects(testContext, ADMIN_USER, { values: ['unknownValue', locationName, md5Hash] });
     expect(unknownValues.length).toEqual(1);
     expect(unknownValues[0]).toEqual('unknownValue');
+    // should be case insensitive
+    unknownValues = await findUnknownStixCoreObjects(testContext, ADMIN_USER, { values: ['unknownValue', locationName.toUpperCase(), md5Hash] });
+    expect(unknownValues.length).toEqual(1);
+    expect(unknownValues[0]).toEqual('unknownValue');
     // some values are aliases
     unknownValues = await findUnknownStixCoreObjects(testContext, ADMIN_USER, { values: ['unknownValue', organizationAlias] });
     expect(unknownValues.length).toEqual(1);
