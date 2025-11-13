@@ -6000,14 +6000,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.12.2":
-  version: 1.12.2
-  resolution: "axios@npm:1.12.2"
+"axios@npm:1.13.2":
+  version: 1.13.2
+  resolution: "axios@npm:1.13.2"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.4"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10c0/80b063e318cf05cd33a4d991cea0162f3573481946f9129efb7766f38fde4c061c34f41a93a9f9521f02b7c9565ccbc197c099b0186543ac84a24580017adfed
+  checksum: 10c0/e8a42e37e5568ae9c7a28c348db0e8cf3e43d06fcbef73f0048669edfe4f71219664da7b6cc991b0c0f01c28a48f037c515263cb79be1f1ae8ff034cd813867b
   languageName: node
   linkType: hard
 
@@ -11708,7 +11708,7 @@ __metadata:
     archiver: "npm:7.0.1"
     archiver-zip-encrypted: "npm:2.0.0"
     async-lock: "npm:1.4.1"
-    axios: "npm:1.12.2"
+    axios: "npm:1.13.2"
     axios-cookiejar-support: "npm:6.0.4"
     bcryptjs: "npm:3.0.2"
     bluebird: "npm:3.7.2"
