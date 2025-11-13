@@ -8,6 +8,7 @@ import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { FunctionalError } from '../../config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import {isFeatureEnabled} from "../../config/conf";
 
 export const extractBundleBaseElement = (instanceId: string, bundle: StixBundle): StixObject => {
   const baseData = bundle.objects.find((o) => o.id === instanceId);
@@ -72,8 +73,10 @@ export const applyOperationFieldPatch = (element: StixObject, patchObject: {
   value: any[];
   operation: 'add' | 'replace' | 'remove'
 }[]) => {
-  // eslint-disable-next-line no-param-reassign
-  element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
-  // eslint-disable-next-line no-param-reassign
-  element.extensions[STIX_EXT_OCTI].opencti_field_patch = patchObject;
+  if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS')) {
+    // eslint-disable-next-line no-param-reassign
+    element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+    // eslint-disable-next-line no-param-reassign
+    element.extensions[STIX_EXT_OCTI].opencti_field_patch = patchObject;
+  }
 };

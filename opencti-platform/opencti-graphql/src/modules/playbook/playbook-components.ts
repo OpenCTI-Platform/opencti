@@ -1026,7 +1026,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           const operationObject = elementOperations.map((op) => {
             return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
           });
-          if (id && isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS')) {
+          if (id) {
             applyOperationFieldPatch(element, operationObject);
           }
           patchOperations.push(...elementOperations.map((e) => e.patchOperation));
