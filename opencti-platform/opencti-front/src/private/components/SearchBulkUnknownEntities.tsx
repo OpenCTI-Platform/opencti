@@ -1,10 +1,8 @@
 import React, { useEffect } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { allEntitiesKeyList } from '@components/common/bulk/utils/querySearchEntityByText';
 import { SearchBulkUnknownEntitiesQuery, SearchBulkUnknownEntitiesQuery$variables } from '@components/__generated__/SearchBulkUnknownEntitiesQuery.graphql';
 import DataTableWithoutFragment from '../../components/dataGrid/DataTableWithoutFragment';
 import useQueryLoading from '../../utils/hooks/useQueryLoading';
-import { useBuildEntityTypeBasedFilterContext } from '../../utils/filters/filtersUtils';
 import { usePaginationLocalStorage } from '../../utils/hooks/useLocalStorage';
 import Loader from '../../components/Loader';
 import type { DataTableProps } from '../../components/dataGrid/dataTableTypes';
@@ -13,13 +11,11 @@ const LOCAL_STORAGE_KEY = 'searchBulk_unknownEntities';
 
 const searchBulkUnknownEntitiesQuery = graphql`
   query SearchBulkUnknownEntitiesQuery(
-    $filters: FilterGroup
     $values: [String!]!
     $orderBy: UnknownStixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {
     unknownStixCoreObjects(
-      filters: $filters
       values: $values
       orderBy: $orderBy
       orderMode: $orderMode
@@ -75,19 +71,6 @@ interface SearchBulkUnknownEntitiesProps {
 }
 
 const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }: SearchBulkUnknownEntitiesProps) => {
-  const contextFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', undefined);
-
-  const queryFilters = values.length > 0
-    ? {
-      mode: 'and',
-      filters: [
-        { key: 'entity_type', values: ['Stix-Core-Object'] },
-        { key: allEntitiesKeyList, values },
-      ],
-      filterGroups: [],
-    }
-    : contextFilters;
-
   const initialValues = {
     sortBy: 'value',
     orderAsc: true,
@@ -99,9 +82,8 @@ const SearchBulkUnknownEntities = ({ values, setNumberOfEntities, isDisplayed }:
 
   const queryPaginationOptions = {
     ...paginationOptions,
-    filters: queryFilters,
     values,
-  } as SearchBulkUnknownEntitiesQuery$variables;
+  } as unknown as SearchBulkUnknownEntitiesQuery$variables;
 
   const queryRef = useQueryLoading<SearchBulkUnknownEntitiesQuery>(searchBulkUnknownEntitiesQuery, queryPaginationOptions);
 
