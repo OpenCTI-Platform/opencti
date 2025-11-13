@@ -12656,7 +12656,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   created: DateTime
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String

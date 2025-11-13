@@ -8134,7 +8134,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   comment: String
   created: DateTime
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection
@@ -14411,7 +14411,7 @@ type SecurityCoverage implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_reliability: String
   security_platform_type: String
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
   exportFiles(first: Int): FileConnection

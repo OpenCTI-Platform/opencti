@@ -26108,6 +26108,11 @@ export type SshKeyStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type SshKeyToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type SshKeyAddInput = {
   comment?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
@@ -26679,6 +26684,11 @@ export type SecurityCoverageStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type SecurityCoverageToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type SecurityCoverageAddInput = {
@@ -45012,7 +45022,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SshKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SshKeyStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SshKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SshKeyToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -45201,7 +45211,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SecurityCoverageStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SecurityCoverageToStixArgs>>;
   toStixBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
