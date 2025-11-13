@@ -90,6 +90,29 @@ export class TelemetryMeterManager {
   // Number security coverages
   securityCoveragesCount = 0;
 
+  // Region Telemetry on SSO providers usage
+  // True when the strategy is configured and enabled. False if not.
+  ssoLocalStrategyEnabled = 0;
+
+  ssoOpenidStrategyEnabled = 0;
+
+  ssoLDAPStrategyEnabled = 0;
+
+  ssoSAMLStrategyEnabled = 0;
+
+  ssoAuthZeroStrategyEnabled = 0;
+
+  ssoCertStrategyEnabled = 0;
+
+  ssoHeaderStrategyEnabled = 0;
+
+  ssoFacebookStrategyEnabled = 0;
+
+  ssoGoogleStrategyEnabled = 0;
+
+  ssoGithubStrategyEnabled = 0;
+  // endregion providers usage
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -100,6 +123,46 @@ export class TelemetryMeterManager {
 
   setIsEEActivated(EE: number) {
     this.isEEActivated = EE;
+  }
+
+  setSsoLocalStrategyEnabled(enabled: number) {
+    this.ssoLocalStrategyEnabled = enabled;
+  }
+
+  setSsoOpenidStrategyEnabled(enabled: number) {
+    this.ssoOpenidStrategyEnabled = enabled;
+  }
+
+  setSsoLDAPStrategyEnabled(enabled: number) {
+    this.ssoLDAPStrategyEnabled = enabled;
+  }
+
+  setSsoSAMLStrategyEnabled(enabled: number) {
+    this.ssoSAMLStrategyEnabled = enabled;
+  }
+
+  setSsoAuthZeroStrategyEnabled(enabled: number) {
+    this.ssoAuthZeroStrategyEnabled = enabled;
+  }
+
+  setSsoCertStrategyEnabled(enabled: number) {
+    this.ssoCertStrategyEnabled = enabled;
+  }
+
+  setSsoHeaderStrategyEnabled(enabled: number) {
+    this.ssoHeaderStrategyEnabled = enabled;
+  }
+
+  setSsoFacebookStrategyEnabled(enabled: number) {
+    this.ssoFacebookStrategyEnabled = enabled;
+  }
+
+  setSsoGoogleStrategyEnabled(enabled: number) {
+    this.ssoGoogleStrategyEnabled = enabled;
+  }
+
+  setSsoGithubStrategyEnabled(enabled: number) {
+    this.ssoGithubStrategyEnabled = enabled;
   }
 
   setInstancesCount(n: number) {
@@ -262,5 +325,16 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_deleted_count', 'Number of form intakes deleted', 'formIntakeDeletedCount');
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
-  }
+    this.registerGauge('is_sso_local_strategy_enabled', 'LocalStrategy is configured and enabled', 'ssoLocalStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_openid_strategy_enabled', 'OpenidStrategy is configured and enabled', 'ssoOpenidStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_ldap_strategy_enabled', 'LDAPStrategy is configured and enabled', 'ssoLDAPStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_saml_strategy_enabled', 'SAMLStrategy is configured and enabled', 'ssoSAMLStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_authzero_strategy_enabled', 'AuthZeroStrategy is configured and enabled', 'ssoAuthZeroStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_cert_strategy_enabled', 'CertStrategy is configured and enabled', 'ssoCertStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_header_strategy_enabled', 'HeaderStrategy is configured and enabled', 'ssoHeaderStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_facebook_strategy_enabled', 'FacebookStrategy is configured and enabled', 'ssoFacebookStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_google_strategy_enabled', 'GoogleStrategy is configured and enabled', 'ssoGoogleStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
+    
+}
 }

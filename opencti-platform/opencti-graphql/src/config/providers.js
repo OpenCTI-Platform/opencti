@@ -105,16 +105,16 @@ const configRemapping = (config) => {
 
 // Providers definition
 export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
-const STRATEGY_LOCAL = 'LocalStrategy';
+export const STRATEGY_LOCAL = 'LocalStrategy';
 export const STRATEGY_CERT = 'ClientCertStrategy';
-const STRATEGY_HEADER = 'HeaderStrategy';
-const STRATEGY_LDAP = 'LdapStrategy';
-const STRATEGY_OPENID = 'OpenIDConnectStrategy';
-const STRATEGY_FACEBOOK = 'FacebookStrategy';
-const STRATEGY_SAML = 'SamlStrategy';
-const STRATEGY_GOOGLE = 'GoogleStrategy';
-const STRATEGY_GITHUB = 'GithubStrategy';
-const STRATEGY_AUTH0 = 'Auth0Strategy';
+export const STRATEGY_HEADER = 'HeaderStrategy';
+export const STRATEGY_LDAP = 'LdapStrategy';
+export const STRATEGY_OPENID = 'OpenIDConnectStrategy';
+export const STRATEGY_FACEBOOK = 'FacebookStrategy';
+export const STRATEGY_SAML = 'SamlStrategy';
+export const STRATEGY_GOOGLE = 'GoogleStrategy';
+export const STRATEGY_GITHUB = 'GithubStrategy';
+export const STRATEGY_AUTH0 = 'Auth0Strategy';
 const AUTH_SSO = 'SSO';
 const AUTH_REQ = 'REQ';
 const AUTH_FORM = 'FORM';
