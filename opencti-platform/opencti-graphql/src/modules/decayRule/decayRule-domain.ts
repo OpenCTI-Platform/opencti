@@ -153,7 +153,7 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
     user,
     event_type: 'mutation',
     event_scope: 'delete',
-    event_access: 'administration',
+    event_access: 'administration<',
     message: `deletes decay rule \`${deleted.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_DECAY_RULE, input: deleted }
   });
