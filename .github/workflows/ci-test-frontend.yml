@@ -50,7 +50,7 @@ jobs:
 
     - name: Runner information
       continue-on-error: true
-      run: .origin/opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
+      run: .frontend-e2e-test/opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Duplicate workspace
       run: |
@@ -60,7 +60,7 @@ jobs:
     - name: Set up Docker Compose for backends
       run: |
          set -ex
-         cd origin/opencti-platform/opencti-ci         
+         cd frontend-e2e-test/opencti-platform/opencti-ci
          export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
@@ -94,7 +94,7 @@ jobs:
             yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
             NODE_OPTIONS=--max_old_space_size=8192 yarn start
             ';
-        
+
         docker run -d --network runner-docker-network \
           --name opencti-e2e-worker \
           -v ${{ github.workspace }}/frontend-e2e-worker:/home/workspace \
@@ -114,9 +114,9 @@ jobs:
             python3 src/worker.py
         '
 
-    - name: Wait for OpenCTI sync instances to start
+    - name: Wait for OpenCTI e2e backend instances to start
       continue-on-error: true
-      run: .${{ github.workspace }}/origin/opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
+      run: .${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
     - name: Frontend e2e tests
       run: |
