@@ -821,7 +821,7 @@ jobs:
       - run: sudo apt-get update -qq && sudo apt install curl
       - run:
           name: Replace pycti requirement of stable version with latest master branch code
-          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti.git.git@master#subdirectory=client-python|' -i {} \;      
+          command: find . -name requirements.txt -exec sed 's|^pycti==.*$|pycti @ git+https://github.com/OpenCTI-Platform/opencti.git@master#subdirectory=client-python|' -i {} \;      
       - run:
           name: Install buildx
           command: |
