@@ -4379,6 +4379,7 @@
   "You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the": "您可以对平台进行配置，以便使用 OpenCTI 流。公共和商业原生信息源列表可在",
   "You can enable/disable default values for marking in the customization of each entity type.": "您可以在定制每个实体类型时启用/禁用标记的默认值。",
   "You can now set a new password for your account.": "现在您可以为账户设置新密码了。",
+  "You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.": "在草稿模式下无法生成支持软件包。请确保在草稿模式下生成支持软件包。",
   "You cannot have more than 500 e-mail addresses": "电子邮件地址不能超过 500 个",
   "You currently do not have any connector manager registered into your platform.": "您目前没有在平台上注册任何连接器管理器。",
   "You do not have any access to support packages of this OpenCTI instance.": "您没有访问此 OpenCTI 实例支持包的权限。",
