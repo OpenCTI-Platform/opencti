@@ -169,9 +169,9 @@
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "5.0.7",
-    "@graphql-codegen/introspection": "4.0.3",
-    "@graphql-codegen/typescript-resolvers": "4.5.2",
+    "@graphql-codegen/cli": "6.0.1",
+    "@graphql-codegen/introspection": "5.0.0",
+    "@graphql-codegen/typescript-resolvers": "5.1.0",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.5",
     "@types/archiver": "7.0.0",

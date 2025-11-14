@@ -10,6 +10,7 @@ generates:
       - "typescript"
       - "typescript-resolvers"
     config:
+      addInterfaceFieldResolverTypes: true
       useTypeImports: true
       useIndexSignature: true
       maybeValue: T | null | undefined
