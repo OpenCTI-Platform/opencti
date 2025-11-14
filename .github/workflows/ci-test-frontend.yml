@@ -214,7 +214,7 @@ jobs:
       if: always()
       continue-on-error: true
       with:
-        name: opencti-e2e-frontend
+        name: frontend-test-results
         path: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results
         retention-days: 15
 
