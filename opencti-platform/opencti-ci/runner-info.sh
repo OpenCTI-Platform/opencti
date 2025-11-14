@@ -6,7 +6,7 @@ echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Nu
 echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
 env
 
-FILE_MONITOR="docker_stats.log"
+FILE_MONITOR="runner_resource_stat.log"
 FILE_PID="monitor.pid"
 
 while true; do
