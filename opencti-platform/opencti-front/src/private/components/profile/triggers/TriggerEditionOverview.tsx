@@ -96,7 +96,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
-  const [instance_trigger, setInstanceTrigger] = useState<boolean>(false);
+  const [instanceTrigger, setInstanceTrigger] = useState<boolean>(false);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
@@ -130,6 +130,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const triggerValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -158,6 +159,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
           .required(t_i18n('This field is required'))
         : Yup.array().nullable(),
   });
+
   const handleSubmitTriggers = (name: string, value: { value: string }[]) => triggerValidation()
     .validateAt(name, { [name]: value })
     .then(() => {
@@ -169,6 +171,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       });
     })
     .catch(() => false);
+
   const handleSubmitDay = (_: string, value: string) => {
     const day = value && value.length > 0 ? value : '1';
     const currentTime = trigger.trigger_time?.split('-') ?? [
@@ -184,6 +187,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleSubmitTime = (_: string, value: string) => {
     const time = value && value.length > 0
       ? `${parse(value).utc().format('HH:mm:00.000')}Z`
@@ -201,6 +205,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleClearTime = () => {
     return commitFieldPatch({
       variables: {
@@ -209,6 +214,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleRemoveDay = () => {
     const currentTime = trigger.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,
@@ -221,6 +227,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleAddDay = () => {
     const currentTime = trigger.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,
@@ -233,6 +240,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleSubmitField = (
     name: string,
     value: FieldOption | string | string[],
@@ -260,13 +268,14 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       })
       .catch(() => false);
   };
+
   const onChangeInstanceTrigger = (
     setFieldValue: (
       key: string,
       value: { value: string; label: string }[],
     ) => void,
   ) => {
-    const newInstanceTriggerValue = !instance_trigger;
+    const newInstanceTriggerValue = !instanceTrigger;
     setFieldValue(
       'event_types',
       newInstanceTriggerValue ? instanceEventTypesOptions : eventTypesOptions,
@@ -298,6 +307,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const currentTime = trigger.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
   ];
+
   const initialValues = {
     name: trigger.name,
     description: trigger.description,
@@ -311,6 +321,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         ? formatTimeForToday(currentTime[1])
         : formatTimeForToday(currentTime[0]),
   };
+
   return (
     <Formik
       enableReinitialize={true}
@@ -477,16 +488,16 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                 gap: 1,
               }}
               >
-                {(!instance_trigger
-              && <Filters
-                availableFilterKeys={stixFilters}
-                helpers={helpers}
-                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
-                 />
-            )}
+                {!instanceTrigger
+                  && <Filters
+                    availableFilterKeys={stixFilters}
+                    helpers={helpers}
+                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+                     />
+                }
               </Box>
 
-              {instance_trigger
+              {instanceTrigger
                 ? (
                   <FilterIconButton
                     filters={filters}
