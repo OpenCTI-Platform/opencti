@@ -7,32 +7,12 @@ jobs:
   opencti-frontend-test:
     runs-on: ubuntu-latest
     steps:
-    - name: Display Runner Information
-      continue-on-error: true
-      run: |
-          set -ex
-          echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
-          echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
-          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
-          env
-
     - name: OpenCTI checkout
       uses: actions/checkout@v4
 
-
-    - name: Monitor resources usage in background
-      run: |
-        # Run docker stats every 60s and save to file
-        while true; do
-          echo "==== $(date) ====" >> docker_stats.log
-          docker stats --no-stream >> docker_stats.log
-          free -m >> docker_stats.log
-          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
-          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
-          sleep 60
-        done &
-        # Save background PID
-        echo $! > monitor.pid
+    - name: Runner information
+      continue-on-error: true
+      run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Frontend tests
       run: |
@@ -40,7 +20,7 @@ jobs:
           --name frontend-tests \
           -v ${{ github.workspace }}:/home/workspace \
           node:22-alpine \
-          sh -c 'set -x;
+          sh -c 'set -x
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
             apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
             npm install -g node-gyp
@@ -54,48 +34,26 @@ jobs:
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
             '
 
-    - name: Stop docker stats monitor and print logs
+    - name: Print resources stats
       if: always()
       continue-on-error: true
-      run: |
-        kill $(cat monitor.pid) || true
-        echo "==== Docker stats log ===="
-        cat docker_stats.log        
+      run: cat runner_resource_stat.log
 
 
   opencti-frontend-e2e-test:
     runs-on: ubuntu-latest
     steps:
-    - name: Display Runner Information
-      continue-on-error: true
-      run: |
-          set -ex
-          echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
-          echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
-          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
-          env
-
     - name: OpenCTI checkout
       uses: actions/checkout@v4
       with:
         path: origin
 
+    - name: Runner information
+      continue-on-error: true
+      run: .origin/opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
+
     - name: Duplicate workspace
       run: cp -pr ${{ github.workspace }}/origin ${{ github.workspace }}/frontend-e2e-test
-
-    - name: Monitor resources usage in background
-      run: |
-        # Run docker stats every 60s and save to file
-        while true; do
-          echo "==== $(date) ====" >> docker_stats.log
-          docker stats --no-stream >> docker_stats.log
-          free -m >> docker_stats.log
-          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
-          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
-          sleep 60
-        done &
-        # Save background PID
-        echo $! > monitor.pid
 
     - name: Set up Docker Compose for backends
       run: |
@@ -104,7 +62,6 @@ jobs:
          export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
-
 
     - name: Start e2e opencti and worker instance
       run: |
@@ -117,26 +74,16 @@ jobs:
           --name opencti-e2e-start \
           -p 4500:4100 \
           -v ${{ github.workspace }}/origin:/home/workspace \
+          --env-file ${{ github.workspace }}/opencti-platform/opencti-ci/ci-common.env \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
-          -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
-          -e APP__ADMIN__PASSWORD=admin \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
-          -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
-          -e APP__HEALTH_ACCESS_KEY=cihealthkey \
-          -e REDIS__HOSTNAME=redis \
           -e REDIS__NAMESPACE=e2e-start \
-          -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
           -e ELASTICSEARCH__INDEX_PREFIX=e2e-start \
-          -e MINIO__ENDPOINT=minio \
           -e MINIO__BUCKET_NAME=e2e-start-bucket \
-          -e RABBITMQ__HOSTNAME=rabbitmq \
           -e RABBITMQ__QUEUE_PREFIX=e2e-start \
-          -e EXPIRATION_SCHEDULER__ENABLED=false \
-          -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
           -e PUBLISHER_MANAGER__ENABLED=false \
-          -e SMTP__ENABLED=false \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c 'set -ex;        
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
@@ -181,11 +128,7 @@ jobs:
 
     - name: Wait for OpenCTI sync instances to start
       continue-on-error: true
-      run: |
-          set -ex
-          echo "$(date)"
-          cd ${{ github.workspace }}/origin/opencti-platform/opencti-ci
-          ./wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
+      run: .${{ github.workspace }}/origin/opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
     - name: Frontend e2e tests
       run: |
@@ -222,32 +165,23 @@ jobs:
     - name: Logs opencti-e2e-start
       if: always()
       continue-on-error: true
-      run: |
-          docker logs opencti-e2e-start
+      run: docker logs opencti-e2e-start
 
     - name: Logs opencti-e2e-worker
       if: always()
       continue-on-error: true
-      run: |
-          docker logs opencti-e2e-worker
+      run: docker logs opencti-e2e-worker
 
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
       continue-on-error: true
       run: |
-          echo -e "\n\n *********\n ********* logs Minio \n"; 
-          docker logs minio
-          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1
-          docker logs elasticsearch
-          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1
-          docker logs rabbitmq
-          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
-          docker logs redis
+          echo -e "\n\n *********\n ********* logs Minio \n"; docker logs minio
+          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1; docker logs redis
 
-    - name: Stop docker stats monitor and print logs
+    - name: Print resources stats
       if: always()
       continue-on-error: true
-      run: |
-        kill $(cat monitor.pid) || true
-        echo "==== Docker stats log ===="
-        cat docker_stats.log        
+      run: cat runner_resource_stat.log

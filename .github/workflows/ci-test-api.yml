@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
     - name: Runner information
       continue-on-error: true
       run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
-
-    - name: OpenCTI checkout
-      uses: actions/checkout@v4
 
     - name: Login to DockerHub
       uses: docker/login-action@v3
@@ -48,8 +48,8 @@ jobs:
           --name api-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/opencti-platform/opencti-ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
-          --env-file /home/workspace/opencti-platform/opencti-ci/ci-common.env \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
           -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4100/graphql \
@@ -122,12 +122,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
     - name: Runner information
       continue-on-error: true
       run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
-
-    - name: OpenCTI checkout
-      uses: actions/checkout@v4
 
     - name: Login to DockerHub
       uses: docker/login-action@v3
@@ -152,7 +152,7 @@ jobs:
           --name api-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
-          --env-file /home/workspace/opencti-platform/opencti-ci/ci-common.env \
+          --env-file ${{ github.workspace }}/opencti-platform/opencti-ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
@@ -201,12 +201,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
     - name: Runner information
       continue-on-error: true
       run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
-
-    - name: OpenCTI checkout
-      uses: actions/checkout@v4
 
     - name: Set up Docker Compose for backends
       run: |
@@ -222,7 +222,7 @@ jobs:
           --name unit-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
-          --env-file /home/workspace/opencti-platform/opencti-ci/ci-common.env \
+          --env-file ${{ github.workspace }}/opencti-platform/opencti-ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
