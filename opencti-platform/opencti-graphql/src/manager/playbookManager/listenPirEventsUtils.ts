@@ -90,7 +90,7 @@ export const isEventMatchesPir = async (
   return false;
 };
 
-const formatFilters = (sourceFilters: string) => {
+const formatFilters = (sourceFilters: string, inPirFilters: { value: string; }[]) => {
   const filtersOnSource: FilterGroup | undefined = sourceFilters ? JSON.parse(sourceFilters) : undefined;
   if (!filtersOnSource) {
     return undefined;
@@ -107,7 +107,8 @@ const formatFilters = (sourceFilters: string) => {
           },
           {
             key: 'pir_ids',
-            values: [] // TODO : add pir ids
+            values: inPirFilters ? inPirFilters.map((pir) => pir.value) : []
+
           }]
       };
     }
@@ -127,7 +128,8 @@ export const listenPirEvents = async (
   const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
   const { filters: sourceFilters, inPirFilters } = configuration;
 
-  const filtersOnSource = formatFilters(sourceFilters);
+  const filtersOnSource = formatFilters(sourceFilters, inPirFilters);
+  console.log('---------------filtersOnSource', { filtersOnSource: JSON.stringify(filtersOnSource), sourceFilters });
 
   if (isValidEventType(type, configuration)) {
     if (await isEventMatchesPir(context, streamEvent.data, inPirFilters)) {

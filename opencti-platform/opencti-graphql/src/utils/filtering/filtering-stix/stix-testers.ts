@@ -464,11 +464,20 @@ export const testPirScore = (stix: any, filter: Filter) => {
   const pirScoreFilter = filter.values.find((v) => v.key === 'score');
   // Determine which PIR of the stix entity is of interest.
   // If no PIR IDs set in the filter, then we want to check on all PIR of the stix entity.
-  const filterPirInformation = pirIds.length === 0
-    ? stix.pir_information
-    : stix.pir_information?.filter((pir: PirInformation) => pirIds?.includes(pir.pir_id));
-  const stixValues: number[] = filterPirInformation?.map((pir:PirInformation) => pir.pir_score) ?? [];
+  const pirInformation :PirInformation[] = Object.values(stix.extensions).flatMap((extension: any) => extension.pir_information ?? []);
+
+  let filterPirInformation: PirInformation[] = [];
+
+  if (pirIds.length === 0) {
+    filterPirInformation = pirInformation;
+  } else {
+    filterPirInformation = pirInformation?.filter((pir: PirInformation) => pirIds.includes(pir.pir_id));
+  }
   // If at least one of the PIR matches the score filter then it's True.
+
+  const stixValues: number[] = filterPirInformation?.map((pir:PirInformation) => pir.pir_score) ?? [];
+  console.log('---- testPirScore', { stix: JSON.stringify(stix), filter: JSON.stringify(filter), pirIds, filterPirInformation, stixValues, pirScoreFilter });
+  // Problème : même quand le score passe à 100 dans l'UI, dans le stix reçu c'est toujours le score précédent qui arrive => la notif arrive avec un cran de retard
   return stixValues.some((stixValue) => testNumericFilter(pirScoreFilter, stixValue));
 };
 
