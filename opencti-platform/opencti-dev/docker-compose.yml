@@ -143,7 +143,7 @@ services:
       - "telemetry"
   opencti-dev-telemetry-otlp:
     container_name: opencti-telemetry-otlp
-    image: otel/opentelemetry-collector-contrib:0.138.0
+    image: otel/opentelemetry-collector-contrib:0.139.0
     restart: unless-stopped
     volumes:
       - "./otlp-config.yaml:/etc/config/otlp-config.yaml"
