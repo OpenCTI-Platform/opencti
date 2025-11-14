@@ -5,6 +5,7 @@ import type { UserReadActionContextData } from '../../../src/listener/UserAction
 describe('User Action listening', () => {
   it('should complete context data for entity', async () => {
     const data = {
+      _id: 'id',
       id: 'id',
       internal_id: 'internal_id',
       _index: 'index',

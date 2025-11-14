@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { adminQuery, queryAsAdmin } from '../../utils/testQuery';
 import { ENTITY_DOMAIN_NAME } from '../../../src/schema/stixCyberObservable';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
-import type { BasicStoreEntityEdge } from '../../../src/types/store';
+import type { BasicNodeEdge } from '../../../src/types/store';
 import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import type { DecayHistory } from '../../../src/modules/decayRule/decayRule-domain';
@@ -243,7 +243,7 @@ describe('Indicator resolver standard behavior', () => {
     const indicatorList: [] = queryResult.data?.indicators.edges;
     expect(indicatorList).toBeDefined();
     if (indicatorList) {
-      const indicatorCreatedEarlier = indicatorList.find((indicator: BasicStoreEntityEdge<BasicStoreEntityIndicator>) => indicator.node.name === indicatorForTestName);
+      const indicatorCreatedEarlier = indicatorList.find((indicator: BasicNodeEdge<BasicStoreEntityIndicator>) => indicator.node.name === indicatorForTestName);
       expect(indicatorCreatedEarlier).toBeDefined();
     }
   });

@@ -68,7 +68,7 @@ const LIST_QUERY = gql`
 `;
 
 type ExclusionListResponse = {
-  id: string | null;
+  id: string;
   file_id: string | null;
   exclusion_list_values_count: number | null;
   exclusion_list_file_size: number | null;
@@ -87,7 +87,7 @@ const createUploadFile = (filePath: string, fileName: string) => {
 };
 
 describe('Exclusion list resolver', () => {
-  let exclusionListFileResponse: ExclusionListResponse = { id: null, file_id: null, exclusion_list_values_count: null, exclusion_list_file_size: null };
+  let exclusionListFileResponse: ExclusionListResponse = { id: '', file_id: null, exclusion_list_values_count: null, exclusion_list_file_size: null };
 
   describe('addExclusionListFile', () => {
     describe('If I create an exclusion with a file', () => {
@@ -183,7 +183,7 @@ describe('Exclusion list resolver', () => {
       });
 
       it('should have deleted the elastic object', async () => {
-        const exclusionList = await elLoadById(testContext, ADMIN_USER, exclusionListFileResponse?.id);
+        const exclusionList = await elLoadById(testContext, ADMIN_USER, exclusionListFileResponse.id);
         expect(exclusionList).not.toBeDefined();
       });
 
