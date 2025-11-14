@@ -4,7 +4,7 @@ name: client-python-tests
 
 steps:
   - name: Runner information
-    image: alpine:3.19
+    image: alpine:3.22
     commands:
     - echo DRONE_STAGE_MACHINE ${DRONE_STAGE_MACHINE}
 
