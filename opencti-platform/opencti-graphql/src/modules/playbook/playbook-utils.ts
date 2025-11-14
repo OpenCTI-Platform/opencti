@@ -77,6 +77,9 @@ export const applyOperationFieldPatch = (element: StixObject, patchObject: {
     // eslint-disable-next-line no-param-reassign
     element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
     // eslint-disable-next-line no-param-reassign
-    element.extensions[STIX_EXT_OCTI].opencti_field_patch = patchObject;
+    element.extensions[STIX_EXT_OCTI].opencti_field_patch = [
+      ...(element.extensions[STIX_EXT_OCTI].opencti_field_patch ?? []),
+      patchObject
+    ];
   }
 };
