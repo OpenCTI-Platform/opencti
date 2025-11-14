@@ -101,7 +101,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
           <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize}/>
           <Tooltip title={'Empty coverage'} placement="bottom">
             <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
-              <span style={{ color: '#ffffff' }}>E</span>
+              <span style={{ color: theme.palette.text?.primary }}>E</span>
             </Avatar>
           </Tooltip>
         </div>
@@ -116,7 +116,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
               <Chart options={options} series={series} type="donut" width={chartSize} height={chartSize}/>
               <Tooltip title={`${coverageResult.coverage_name} ${coverageResult.coverage_score}/100`} placement="bottom">
                 <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: iconSize, height: iconSize }} style={{ top: iconPosition, left: iconPosition, fontSize: iconSize - 2 }}>
-                  <span style={{ color: '#ffffff' }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
+                  <span style={{ color: theme.palette.text?.primary }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
                 </Avatar>
               </Tooltip>
             </div>
@@ -137,7 +137,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
               <Chart options={options} series={series} type="donut" width={70} height={70}/>
               <Tooltip title={'Empty coverage'} placement="top">
                 <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }}>
-                  <span style={{ color: '#ffffff', fontSize: 18 }}>E</span>
+                  <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>E</span>
                 </Avatar>
               </Tooltip>
             </div>
@@ -168,7 +168,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
                 <Chart options={options} series={series} type="donut" width={70} height={70}/>
                 <Tooltip title={coverageResult.coverage_name} placement="top">
                   <Avatar className={classes.iconOverlay} sx={{ bgcolor: 'transparent', width: 24, height: 24 }}>
-                    <span style={{ color: '#ffffff', fontSize: 18 }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
+                    <span style={{ color: theme.palette.text?.primary, fontSize: 18 }}>{coverageResult.coverage_name.charAt(0).toUpperCase()}</span>
                   </Avatar>
                 </Tooltip>
               </div>
