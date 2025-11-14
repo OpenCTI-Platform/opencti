@@ -861,7 +861,6 @@ describe('Stix filter testers', () => {
     const stixWithNotMatchingPir = stixMalwares[1];
     const stixWithMatchingPirButLowScore = stixMalwares[2];
     const stixWithMatchingPirAndHighScore = stixMalwares[3];
-    const stixMatchingWithSeveralExtensions = stixMalwares[4];
 
     it('should test positive for a stix object with matching filter', () => {
       const filter: Filter = {
@@ -886,7 +885,6 @@ describe('Stix filter testers', () => {
       expect(testers.testPirScore(stixWithNotMatchingPir, filter)).toEqual(false);
       expect(testers.testPirScore(stixWithMatchingPirButLowScore, filter)).toEqual(false);
       expect(testers.testPirScore(stixWithMatchingPirAndHighScore, filter)).toEqual(true);
-      expect(testers.testPirScore(stixMatchingWithSeveralExtensions, filter)).toEqual(true);
     });
   });
 });

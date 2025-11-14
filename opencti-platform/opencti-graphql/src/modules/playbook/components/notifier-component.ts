@@ -84,10 +84,10 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
             entity_type: convertStixToInternalTypes(stixObject.type)
           });
           if (event) {
-            if (isEventInPirRelationship(event)) {
-              message = event.message;
-            } else if (event.type === 'update') {
+            if (event.type === 'update') {
               message = `${event.message} in \`${extractEntityRepresentativeName(stixObject)}\` ${event.data.type}`;
+            } else if (isEventInPirRelationship(event)) {
+              message = event.message;
             } else if (event.type === 'delete') {
               message = generateDeleteMessage({
                 ...stixObject,
@@ -98,7 +98,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
           return {
             notification_id: playbookNode.id,
             instance: stixObject,
-            type: event?.type ?? 'create', // TODO Improve that with type event follow up
+            type: event?.type ?? 'create',
             message: message === '-' ? playbookNode.name : message,
           };
         })
