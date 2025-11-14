@@ -10155,13 +10155,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"iterall@npm:1.3.0":
-  version: 1.3.0
-  resolution: "iterall@npm:1.3.0"
-  checksum: 10c0/40de624e5fe937c4c0e511981b91caea9ff2142bfc0316cccc8506eaa03aa253820cc17c5bc5f0a98706c7268a373e5ebee9af9a0c8a359730cf7c05938b57b5
-  languageName: node
-  linkType: hard
-
 "jackspeak@npm:^3.1.2":
   version: 3.4.3
   resolution: "jackspeak@npm:3.4.3"
@@ -11760,7 +11753,6 @@ __metadata:
     https-proxy-agent: "npm:7.0.6"
     ioredis: "npm:5.8.2"
     ipaddr.js: "npm:2.2.0"
-    iterall: "npm:1.3.0"
     js-deep-equals: "npm:2.1.1"
     json-to-plain-text: "npm:1.2.0"
     jsonpath-plus: "npm:10.3.0"
