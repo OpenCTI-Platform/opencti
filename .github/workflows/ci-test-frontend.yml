@@ -74,7 +74,7 @@ jobs:
           -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
           --env-file ${{ github.workspace }}/frontend-e2e-start/opencti-platform/opencti-ci/ci-common.env \
           --env-file ${{ github.workspace }}/frontend-e2e-start/opencti-platform/opencti-ci/ci-sync.env \
-          -e BASE_NAME=opencti-e2e-start
+          -e BASE_NAME=opencti-e2e-start \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
           -e PUBLISHER_MANAGER__ENABLED=false \
