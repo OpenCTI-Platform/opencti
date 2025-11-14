@@ -33,7 +33,6 @@ jobs:
          docker compose --profile "*" up -d
 
     - name: Wait for OpenCTI sync instances to start
-      continue-on-error: true
       run: |
           set -ex
           ./opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
