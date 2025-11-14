@@ -14,7 +14,7 @@ jobs:
 
   wf-api-test:
       uses: ./.github/workflows/ci-test-api.yml
-      needs: wf-build-opencti
+      needs: wf-build-image
       secrets: inherit
 
   wf-frontend-test:
