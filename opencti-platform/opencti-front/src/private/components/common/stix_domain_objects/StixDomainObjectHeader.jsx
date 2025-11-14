@@ -772,7 +772,7 @@ const StixDomainObjectHeader = (props) => {
             <Formik
               initialValues={{ new_alias: '' }}
               onSubmit={onSubmitCreateAlias}
-              validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+              validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
             >
               {({ submitForm, isSubmitting, setFieldValue, values }) => (
                 <Form style={{ float: 'right' }}>
@@ -853,7 +853,7 @@ const StixDomainObjectHeader = (props) => {
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={onSubmitCreateAlias}
-                validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+                validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
               >
                 {({ submitForm, isSubmitting, setFieldValue, values }) => (
                   <Form>
@@ -907,7 +907,7 @@ const StixDomainObjectHeader = (props) => {
         <Formik
           initialValues={{}}
           onSubmit={onSubmitDeleteAlias}
-          validationSchema={aliasValidation(t_i18n)}
+          validationSchema={!isBypassEnforcedRef && aliasValidation(t_i18n)}
         >
           {({ submitForm, isSubmitting, setFieldValue, values }) => (
             <Form style={{ float: 'right' }}>
