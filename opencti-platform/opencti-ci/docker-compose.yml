@@ -127,7 +127,7 @@ services:
 
   opencti-test-worker:
     container_name: opencti-test-worker
-    profiles: ["ci-test-api-sync,ci-test-api"]
+    profiles: ["ci-test-api-sync","ci-test-api"]
     image: filigran/worker:${TAG}
     restart: unless-stopped
     environment:
