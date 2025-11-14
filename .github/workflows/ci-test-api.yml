@@ -82,10 +82,10 @@ jobs:
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
       continue-on-error: true
       run: |
-          echo -e "\n\n *********\n ********* logs Minio \n"; docker logs minio
-          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1; docker logs elasticsearch
-          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1; docker logs rabbitmq
-          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1; docker logs redis
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
 
     - name: Logs opencti-direct-start
@@ -173,10 +173,10 @@ jobs:
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
       continue-on-error: true
       run: |
-          echo -e "\n\n *********\n ********* logs Minio \n"; docker logs minio
-          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1; docker logs elasticsearch
-          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1; docker logs rabbitmq
-          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1; docker logs redis
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
     - name: Logs opencti-test-worker
       if: always()
@@ -236,10 +236,10 @@ jobs:
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
       continue-on-error: true
       run: |
-          echo -e "\n\n *********\n ********* logs Minio \n"; docker logs minio
-          echo -e "\n\n *********\n ********* logs Elastic search \n"; sleep 1; docker logs elasticsearch
-          echo -e "\n\n *********\n ********* logs RabbitMQ \n"; sleep 1; docker logs rabbitmq
-          echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1; docker logs redis
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
     - name: Print resources stats
       if: always()
