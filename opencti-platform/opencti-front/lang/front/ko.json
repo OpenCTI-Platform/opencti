@@ -3785,6 +3785,7 @@
   "The password has been updated": "비밀번호가 업데이트되었습니다",
   "The public dashboard is disabled": "공용 대시보드가 비활성화되었습니다",
   "The relations attached to selected entities will be copied to the merged entity.": "선택된 엔터티에 연결된 관계가 병합된 엔터티로 복사됩니다.",
+  "The remove operation will now permanently delete the selected attribute from the entity, including attributes that already exist in the platform (not just those added during playbook execution). This action cannot be undone through the playbook.": "이제 제거 작업을 수행하면 플레이북 실행 중에 추가된 속성뿐만 아니라 플랫폼에 이미 존재하는 속성까지 포함하여 선택한 속성이 엔티티에서 영구적으로 삭제됩니다. 이 작업은 플레이북을 통해 실행 취소할 수 없습니다.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "입력한 재설정 코드가 유효하지 않거나 만료되었습니다. 30초 후에 새 코드를 요청할 수 있습니다.",
   "The retention policy will be applied on global files (files contained in": "보존 정책은 글로벌 파일(",
   "The retention policy will be applied on global workbenches (workbenches contained in": "에 포함된 파일)에 적용됩니다",

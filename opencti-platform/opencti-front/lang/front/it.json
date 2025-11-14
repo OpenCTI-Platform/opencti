@@ -3785,6 +3785,7 @@
   "The password has been updated": "La password è stata aggiornata",
   "The public dashboard is disabled": "La dashboard pubblica è disabilitata",
   "The relations attached to selected entities will be copied to the merged entity.": "La relazione allegata alle entità selezionate verrà copiata nell'entità unita.",
+  "The remove operation will now permanently delete the selected attribute from the entity, including attributes that already exist in the platform (not just those added during playbook execution). This action cannot be undone through the playbook.": "L'operazione di rimozione eliminerà definitivamente l'attributo selezionato dall'entità, compresi gli attributi già esistenti nella piattaforma (non solo quelli aggiunti durante l'esecuzione del playbook). Questa azione non può essere annullata attraverso il playbook.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "Il codice di ripristino inserito non è valido o è scaduto. È possibile richiedere un nuovo codice dopo un ritardo di 30 secondi.",
   "The retention policy will be applied on global files (files contained in": "Le polizza di ritenzione verranno applicate a file globali (file contenuti in",
   "The retention policy will be applied on global workbenches (workbenches contained in": "Le polizza di ritenzione verranno applicate a workbench globali (workbench contenuti in",

@@ -3785,6 +3785,7 @@
   "The password has been updated": "The password has been updated",
   "The public dashboard is disabled": "The public dashboard is disabled",
   "The relations attached to selected entities will be copied to the merged entity.": "The relations attached to selected entities will be copied to the merged entity.",
+  "The remove operation will now permanently delete the selected attribute from the entity, including attributes that already exist in the platform (not just those added during playbook execution). This action cannot be undone through the playbook.": "The remove operation will now permanently delete the selected attribute from the entity, including attributes that already exist in the platform (not just those added during playbook execution). This action cannot be undone through the playbook.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.",
   "The retention policy will be applied on global files (files contained in": "The retention policy will be applied on global files (files contained in",
   "The retention policy will be applied on global workbenches (workbenches contained in": "The retention policy will be applied on global workbenches (workbenches contained in",

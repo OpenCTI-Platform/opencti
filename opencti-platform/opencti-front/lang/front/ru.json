@@ -3785,6 +3785,7 @@
   "The password has been updated": "Пароль был обновлен",
   "The public dashboard is disabled": "Публичнаый дашборд отключена",
   "The relations attached to selected entities will be copied to the merged entity.": "Отношения, привязанные к выбранным сущностям, будут скопированы в объединенную сущность.",
+  "The remove operation will now permanently delete the selected attribute from the entity, including attributes that already exist in the platform (not just those added during playbook execution). This action cannot be undone through the playbook.": "Теперь операция удаления навсегда удалит выбранный атрибут из сущности, включая атрибуты, которые уже существуют в платформе (а не только те, которые были добавлены во время выполнения плейбука). Это действие не может быть отменено через игровой учебник.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "Введенный вами код сброса недействителен или срок его действия истек. Вы можете запросить новый код после задержки в 30 секунд.",
   "The retention policy will be applied on global files (files contained in": "Политика хранения будет применяться к глобальным файлам (файлам, содержащимся в",
   "The retention policy will be applied on global workbenches (workbenches contained in": "Политика хранения будет применяться к глобальным рабочим столам (рабочие столы, содержащиеся в",
