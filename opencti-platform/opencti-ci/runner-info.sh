@@ -1,5 +1,11 @@
 #!/bin/bash
 
+set -ex
+echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
+echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
+echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
+env
+
 FILE_MONITOR="docker_stats.log"
 FILE_PID="monitor.pid"
 
@@ -14,4 +20,4 @@ while true; do
   echo "Main cpu consumers:" >> $FILE_MONITOR
   ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >>  $FILE_MONITOR
   sleep 60
-done
+done &
