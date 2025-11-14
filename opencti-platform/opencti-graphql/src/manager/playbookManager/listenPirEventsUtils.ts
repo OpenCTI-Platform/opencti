@@ -93,7 +93,7 @@ export const isEventMatchesPir = async (
   return false;
 };
 
-const formatFilters = (sourceFilters: string, inPirFilters?: { value: string; }[]) => {
+export const formatFilters = (sourceFilters: string, inPirFilters?: { value: string; }[]) => {
   const filtersOnSource: FilterGroup | undefined = sourceFilters ? JSON.parse(sourceFilters) : undefined;
   if (!filtersOnSource) return undefined;
 

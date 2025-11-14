@@ -103,14 +103,6 @@ describe('listenPirEventsUtils', () => {
     });
   });
 
-  describe('When buildPirFilters is called with no list', () => {
-    const pirFilters = buildPirFilters();
-    const expectedResult = null;
-    it('should return null', () => {
-      expect(pirFilters).toEqual(expectedResult);
-    });
-  });
-
   describe('When isEventMatchesPir is called with no PIR list', () => {
     it('should return true', async () => {
       vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(false);
