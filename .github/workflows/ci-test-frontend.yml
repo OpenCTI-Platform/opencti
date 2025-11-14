@@ -46,14 +46,16 @@ jobs:
     - name: OpenCTI checkout
       uses: actions/checkout@v4
       with:
-        path: origin
+        path: frontend-e2e-test
 
     - name: Runner information
       continue-on-error: true
       run: .origin/opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Duplicate workspace
-      run: cp -pr ${{ github.workspace }}/origin ${{ github.workspace }}/frontend-e2e-test
+      run: |
+         cp -pr ${{ github.workspace }}/frontend-e2e-test ${{ github.workspace }}/frontend-e2e-start
+         cp -pr ${{ github.workspace }}/frontend-e2e-test ${{ github.workspace }}/frontend-e2e-worker
 
     - name: Set up Docker Compose for backends
       run: |
@@ -66,37 +68,26 @@ jobs:
     - name: Start e2e opencti and worker instance
       run: |
         set -x;
-        sleep 2;
-        echo ${{ github.workspace }};
-        ls ${{ github.workspace }};
-        ls ${{ github.workspace }}/origin;
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
-          -v ${{ github.workspace }}/origin:/home/workspace \
-          --env-file ${{ github.workspace }}/opencti-platform/opencti-ci/ci-common.env \
+          -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
+          --env-file ${{ github.workspace }}/frontend-e2e-start/opencti-platform/opencti-ci/ci-common.env \
+          --env-file ${{ github.workspace }}/frontend-e2e-start/opencti-platform/opencti-ci/ci-sync.env \
+          -e BASE_NAME=opencti-e2e-start
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
-          -e APP__ENABLED_DEV_FEATURES='["*"]' \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
-          -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
-          -e REDIS__NAMESPACE=e2e-start \
-          -e ELASTICSEARCH__INDEX_PREFIX=e2e-start \
-          -e MINIO__BUCKET_NAME=e2e-start-bucket \
-          -e RABBITMQ__QUEUE_PREFIX=e2e-start \
           -e PUBLISHER_MANAGER__ENABLED=false \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -ex;        
+          sh -c 'set -ex
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
             apk add build-base git libffi-dev cargo
-            mkdir -p /tmp/e2e-start-platform/
-            cp -a /home/workspace/* /tmp/e2e-start-platform/
-            ls -larth /tmp/e2e-start-platform/
-            cd /tmp/e2e-start-platform/client-python
+            cd /home/workspace/client-python
             pip install -r requirements.txt
             pip install -e .[dev,doc]
-            cd /tmp/e2e-start-platform/opencti-platform/opencti-graphql
+            cd /home/workspace/opencti-platform/opencti-graphql
             npm install -g corepack
-            cp /tmp/e2e-start-platform/opencti-platform/.yarnrc.yml .
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
             yarn install
             yarn install:python
             yarn build:dev
@@ -106,22 +97,19 @@ jobs:
         
         docker run -d --network runner-docker-network \
           --name opencti-e2e-worker \
-          -v ${{ github.workspace }}/origin:/home/workspace \
+          -v ${{ github.workspace }}/frontend-e2e-worker:/home/workspace \
           -e OPENCTI_URL=http://opencti-e2e-start:4100 \
           -e OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e WORKER_LOG_LEVEL=info \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -x;
-            sleep 10
-            mkdir -p /tmp/opencti-e2e-worker
-            cp -a /home/workspace/* /tmp/opencti-e2e-worker
+          sh -c 'set -x
             apk add build-base git libffi-dev cargo
-            cd /tmp/opencti-e2e-worker/client-python
+            cd /home/workspace/client-python
             echo "[INFO] using client-python on branch $(git branch --show-current)"
             pip install -r requirements.txt
             pip install -e .[dev,doc]
             while ! nc -z opencti-e2e-start 4100 ; do sleep 1 ; done
-            cd /tmp/opencti-e2e-worker/opencti-worker
+            cd /home/workspace/opencti-worker
             pip install -r src/requirements.txt
             python3 src/worker.py
         '
@@ -152,7 +140,7 @@ jobs:
               yarn test:e2e
             '
 
-    - name: upload front e2e artifact
+    - name: Upload front e2e test results
       uses: actions/upload-artifact@v4
       if: always()
       continue-on-error: true
