@@ -27,7 +27,7 @@ jobs:
     - name: Set up Docker Compose for backends and sync instances
       run: |
          set -ex
-         cd opencti-platform/opencti-ci         
+         cd opencti-platform/opencti-ci
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
          docker compose --profile "*" up -d
@@ -141,7 +141,7 @@ jobs:
     - name: Set up Docker Compose for backends and sync instances
       run: |
          set -ex
-         cd opencti-platform/opencti-ci         
+         cd opencti-platform/opencti-ci
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
          docker compose --profile "backend" --profile ci-test-api up -d
@@ -202,7 +202,7 @@ jobs:
     - name: Set up Docker Compose for backends
       run: |
          set -ex
-         cd opencti-platform/opencti-ci         
+         cd opencti-platform/opencti-ci
          export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
