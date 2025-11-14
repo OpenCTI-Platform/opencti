@@ -1,9 +1,9 @@
 #!/bin/bash
 set -x
 
-echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
-echo "Workflow: ${GITHUB_WORKFLOW} \t Run ID: ${GITHUB_RUN_ID} \t Run Number: ${GITHUB_RUN_NUMBER}"
-echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t  pwd $(pwd) "
+echo -e "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
+echo -e "Workflow: ${GITHUB_WORKFLOW} \t Run ID: ${GITHUB_RUN_ID} \t Run Number: ${GITHUB_RUN_NUMBER}"
+echo -e "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t  pwd $(pwd) "
 env
 
 FILE_MONITOR="runner_resource_stat.log"
