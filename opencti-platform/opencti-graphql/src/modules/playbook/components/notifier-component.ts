@@ -8,11 +8,12 @@ import { getEntityFromCache } from '../../../database/cache';
 import type { BasicStoreSettings } from '../../../types/settings';
 import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
 import { convertToNotificationUser, type DigestEvent, EVENT_NOTIFICATION_VERSION } from '../../../manager/notificationManager';
-import { generateCreateMessage } from '../../../database/generate-message';
+import { generateCreateMessage, generateDeleteMessage } from '../../../database/generate-message';
 import { convertStixToInternalTypes } from '../../../schema/schemaUtils';
 import { storeNotificationEvent } from '../../../database/redis';
-import { isEventInPir } from '../../../manager/playbookManager/playbookManagerUtils';
 import { convertMembersToUsers, extractBundleBaseElement } from '../playbook-utils';
+import { isEventInPirRelationship } from '../../../manager/playbookManager/playbookManagerUtils';
+import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 
 export interface NotifierConfiguration {
   notifiers: string[]
@@ -52,6 +53,7 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
   },
   executor: async ({ dataInstanceId, playbookId, playbookNode, bundle, event }) => {
     const context = executionContext('playbook_components');
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const playbook = await storeLoadById<BasicStoreEntityPlaybook>(context, SYSTEM_USER, playbookId, ENTITY_TYPE_PLAYBOOK);
     const { notifiers, authorized_members } = playbookNode.configuration;
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
@@ -60,42 +62,48 @@ export const PLAYBOOK_NOTIFIER_COMPONENT: PlaybookComponent<NotifierConfiguratio
       baseData,
       bundle
     );
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
     const notificationsCall = [];
-    const isPirEvent = event && isEventInPir(event);
-    // TODO Remove this check on update in next chunk
-    if (!event || (event && !isPirEvent) || (isPirEvent && event.type !== 'update')) {
-      for (let index = 0; index < targetUsers.length; index += 1) {
-        const targetUser = targetUsers[index];
-        const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
-        const userContext = { ...context, user_inside_platform_organization };
-        const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
 
-        const notificationEvent: DigestEvent = {
-          version: EVENT_NOTIFICATION_VERSION,
-          playbook_source: playbook.name,
-          notification_id: playbookNode.id,
-          target: convertToNotificationUser(targetUser, notifiers),
-          type: 'digest',
-          data: stixElements.map((stixObject) => {
-            let message = generateCreateMessage({
-              ...stixObject,
-              entity_type: convertStixToInternalTypes(stixObject.type)
-            });
-            if (isPirEvent) {
+    for (let index = 0; index < targetUsers.length; index += 1) {
+      const targetUser = targetUsers[index];
+      const user_inside_platform_organization = isUserInPlatformOrganization(targetUser, settings);
+      const userContext = { ...context, user_inside_platform_organization };
+      const stixElements = bundle.objects.filter((o) => isUserCanAccessStixElement(userContext, targetUser, o));
+
+      const notificationEvent: DigestEvent = {
+        version: EVENT_NOTIFICATION_VERSION,
+        playbook_source: playbook.name,
+        notification_id: playbookNode.id,
+        target: convertToNotificationUser(targetUser, notifiers),
+        type: 'digest',
+        data: stixElements.map((stixObject) => {
+          // Default message.
+          let message = generateCreateMessage({
+            ...stixObject,
+            entity_type: convertStixToInternalTypes(stixObject.type)
+          });
+          if (event) {
+            if (isEventInPirRelationship(event)) {
               message = event.message;
+            } else if (event.type === 'update') {
+              message = `${event.message} in \`${extractEntityRepresentativeName(stixObject)}\` ${event.data.type}`;
+            } else if (event.type === 'delete') {
+              message = generateDeleteMessage({
+                ...stixObject,
+                entity_type: convertStixToInternalTypes(stixObject.type)
+              });
             }
-            return {
-              notification_id: playbookNode.id,
-              instance: stixObject,
-              type: event?.type ?? 'create', // TODO Improve that with type event follow up
-              message: message === '-' ? playbookNode.name : message,
-            };
-          })
-        };
-        notificationsCall.push(storeNotificationEvent(context, notificationEvent));
-      }
+          }
+          return {
+            notification_id: playbookNode.id,
+            instance: stixObject,
+            type: event?.type ?? 'create', // TODO Improve that with type event follow up
+            message: message === '-' ? playbookNode.name : message,
+          };
+        })
+      };
+      notificationsCall.push(storeNotificationEvent(context, notificationEvent));
     }
     if (notificationsCall.length > 0) {
       await Promise.all(notificationsCall);

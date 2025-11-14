@@ -7,14 +7,20 @@ import type { PirStreamConfiguration } from '../../modules/playbook/components/d
 import { ABSTRACT_STIX_CORE_OBJECT } from '../../schema/general';
 import { isStixRelation } from '../../schema/stixRelationship';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
-import type { StixBundle } from '../../types/stix-2-1-common';
+import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import type { AuthContext } from '../../types/user';
-import { SYSTEM_USER } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER } from '../../utils/access';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { isEventInPir, isValidEventType } from './playbookManagerUtils';
+import { isEventInPirRelationship, isEventUpdateOnEntity, isValidEventType } from './playbookManagerUtils';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { playbookExecutor } from './playbookExecutor';
+import { storeLoadById } from '../../database/middleware-loader';
+import type { BasicStoreEntity } from '../../types/store';
 
+/**
+ * Build a filterGroup to filter on PIR IDs.
+ * @param pirList List of PIR IDs we want to filter.
+ */
 export const buildPirFilters = (pirList?: { value: string }[]) => {
   return pirList ? {
     filterGroups: [],
@@ -26,58 +32,104 @@ export const buildPirFilters = (pirList?: { value: string }[]) => {
   } : null;
 };
 
-export const isEventMatchesPir = async (context: AuthContext, eventData: unknown, pirList?: { value: string }[]) => {
-  const filtersOnInPirRel = buildPirFilters(pirList);
-  return !filtersOnInPirRel || await isStixMatchFilterGroup(context, SYSTEM_USER, eventData, filtersOnInPirRel);
+/**
+ * Get the IDs of PIR an entity is flagged.
+ * @param context To query DB.
+ * @param entityId ID of the entity to retrieve flagged PIR.
+ */
+export const listOfPirInEntity = async (context: AuthContext, entityId: string) => {
+  const entityFromId = await storeLoadById<BasicStoreEntity>(
+    context,
+    AUTOMATION_MANAGER_USER,
+    entityId,
+    ABSTRACT_STIX_CORE_OBJECT
+  );
+  return entityFromId.pir_information.map((pir) => pir.pir_id);
+};
+
+/**
+ * Determine if an event matches the PIR configuration of the playbook.
+ * It should either be:
+ * - event on a relation in-pir concerning one of selected PIR,
+ * - event update of an entity flagged by one of selected PIR.
+ *
+ * @param context To query DB.
+ * @param eventData The event.
+ * @param pirList List of selected PIR.
+ * @returns True if the event matches selected PIR.
+ */
+export const isEventMatchesPir = async (
+  context: AuthContext,
+  eventData: StreamDataEvent,
+  pirList?: { value: string }[]
+) => {
+  // If it's an event on relationship in-pir, we apply a filter of PIR ids directly on event.
+  if (isEventInPirRelationship(eventData)) {
+    const filtersOnInPirRel = buildPirFilters(pirList);
+    // True if either no PIR set or if PIR matched.
+    return !filtersOnInPirRel || await isStixMatchFilterGroup(
+      context,
+      AUTOMATION_MANAGER_USER,
+      eventData.data,
+      filtersOnInPirRel
+    );
+  }
+  // Else if it's an update of an entity, we check if this entity is flagged in PIR.
+  if (isEventUpdateOnEntity(eventData)) {
+    const entityPirList = await listOfPirInEntity(context, eventData.data.id);
+
+    if (entityPirList.length > 0) {
+      // If entity is flagged and no PIR filtering set, it matches.
+      if (!pirList || pirList.length === 0) return true;
+      // Otherwise check the entity is flagged in the corresponding PIR.
+      return entityPirList.some((pirId) => pirList.some((selectedPir) => pirId === selectedPir.value));
+    }
+  }
+  // By default, does not match.
+  return false;
 };
 
 export const listenPirEvents = async (
   context: AuthContext,
   streamEvent : SseEvent<StreamDataEvent>,
   instance: NodeDefinition,
-  playbook:BasicStoreEntityPlaybook
+  playbook: BasicStoreEntityPlaybook
 ) => {
   const { id: eventId, data: { data, type } } = streamEvent;
-  const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+  const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
 
-  if (isEventInPir(streamEvent.data) && isStixRelation(data)) {
-    const connector = PLAYBOOK_COMPONENTS[instance.component_id];
-    const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
-
-    const {
-      filters: sourceFilters,
-      inPirFilters
-    } = configuration;
-
-    const isMatchPir = await isEventMatchesPir(
-      context,
-      data,
-      inPirFilters,
-    );
-
+  if (isValidEventType(type, configuration)) {
+    const { filters: sourceFilters, inPirFilters } = configuration;
     const filtersOnSource = sourceFilters ? JSON.parse(sourceFilters) : null;
 
-    const isValidEvent = isValidEventType(type, configuration);
+    if (await isEventMatchesPir(context, streamEvent.data, inPirFilters)) {
+      let isEntityMatchFilters: boolean = false;
+      let stixEntity: StixObject | undefined;
 
-    // 02. Execute the component
-    if (isValidEvent && isMatchPir) {
-      const entity = await stixLoadById(context, SYSTEM_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
-      const isEntityMatch = entity && await isStixMatchFilterGroup(context, SYSTEM_USER, entity, filtersOnSource);
+      if (isEventInPirRelationship(streamEvent.data) && isStixRelation(data)) {
+        stixEntity = await stixLoadById(context, AUTOMATION_MANAGER_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
+        isEntityMatchFilters = !!stixEntity && await isStixMatchFilterGroup(context, AUTOMATION_MANAGER_USER, stixEntity, filtersOnSource);
+      } else if (isEventUpdateOnEntity(streamEvent.data)) {
+        stixEntity = data;
+        isEntityMatchFilters = await isStixMatchFilterGroup(context, AUTOMATION_MANAGER_USER, data, filtersOnSource);
+      }
 
-      if (isEntityMatch) {
+      if (isEntityMatchFilters && stixEntity) {
+        const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
+        const connector = PLAYBOOK_COMPONENTS[instance.component_id];
         const nextStep = { component: connector, instance };
         const bundle: StixBundle = {
           id: uuidv4(),
           spec_version: STIX_SPEC_VERSION,
           type: 'bundle',
-          objects: [entity]
+          objects: [stixEntity]
         };
         await playbookExecutor({
           eventId,
           // Basic
           executionId: uuidv4(),
           playbookId: playbook.id,
-          dataInstanceId: entity.id,
+          dataInstanceId: stixEntity.id,
           definition: def,
           // Steps
           previousStep: null,

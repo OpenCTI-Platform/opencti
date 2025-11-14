@@ -109,6 +109,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
                     // Data
                     previousStepBundle: null,
                     bundle,
+                    event: streamEvent.data
                   });
                 }
               }
