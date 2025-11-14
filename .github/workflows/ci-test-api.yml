@@ -29,6 +29,11 @@ jobs:
     - name: Collect Workflow Telemetry
       uses: catchpoint/workflow-telemetry-action@v2
 
+    - name: Monitor resources usage in background
+      run: |
+        # Run docker and resources stats every 60s and save to file
+        ./opencti-platform/opencti-ci/monitor-resource-usage.sh &
+
     - name: Set up Docker Compose for backends and sync instances
       run: |
          set -ex
@@ -48,20 +53,6 @@ jobs:
           ./wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
           ./wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
-
-    - name: Monitor resources usage in background
-      run: |
-        # Run docker stats every 60s and save to file
-        while true; do
-          echo "==== $(date) ====" >> docker_stats.log
-          docker stats --no-stream >> docker_stats.log
-          free -m >> docker_stats.log
-          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
-          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
-          sleep 60
-        done &
-        # Save background PID
-        echo $! > monitor.pid
 
     - name: Start api test
       run: |
@@ -145,12 +136,10 @@ jobs:
       run: |
           docker logs opencti-test-worker
 
-
-    - name: Stop docker stats monitor and print logs
+    - name: Print resources stats
       if: always()
       continue-on-error: true
       run: |
-        kill $(cat monitor.pid) || true
         echo "==== Docker stats log ===="
         cat docker_stats.log        
 
@@ -179,41 +168,20 @@ jobs:
     - name: Collect Workflow Telemetry
       uses: catchpoint/workflow-telemetry-action@v2
 
+    - name: Monitor resources usage in background
+      run: |
+        # Run docker and resources stats every 60s and save to file
+        ./opencti-platform/opencti-ci/monitor-resource-usage.sh &
+
     - name: Set up Docker Compose for backends and sync instances
       run: |
          set -ex
          cd opencti-platform/opencti-ci         
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
-         docker compose --profile "*" up -d
+         docker compose --profile "backend" --profile ci-test-api up -d
 
-    - name: Wait for OpenCTI sync instances to start
-      continue-on-error: true
-      run: |
-          set -ex
-          echo "$(date)"  
-          cd opencti-platform/opencti-ci
-          ./wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
-          ./wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
-          ./wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
-          ./wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
-
-
-    - name: Monitor resources usage in background
-      run: |
-        # Run docker stats every 60s and save to file
-        while true; do
-          echo "==== $(date) ====" >> docker_stats.log
-          docker stats --no-stream >> docker_stats.log
-          free -m >> docker_stats.log
-          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
-          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
-          sleep 60
-        done &
-        # Save background PID
-        echo $! > monitor.pid
-
-    - name: Start api test
+    - name: Start rules test
       run: |
         docker run --network runner-docker-network \
           --name api-tests \
@@ -223,10 +191,6 @@ jobs:
           -e APP__ADMIN__PASSWORD=admin \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=false \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
-          -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
-          -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4100/graphql \
-          -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
-          -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
           -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
           -e REDIS__HOSTNAME=redis \
           -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
@@ -264,43 +228,16 @@ jobs:
           echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
           docker logs redis
 
-    - name: Logs opencti-direct-start
-      if: always()
-      continue-on-error: true
-      run: |
-          docker logs opencti-direct-start
-    - name: Logs opencti-live-start
-      if: always()
-      continue-on-error: true
-      run: |
-          docker logs opencti-live-start
-    - name: Logs opencti-raw-start
-      if: always()
-      continue-on-error: true
-      run: |
-          docker logs opencti-raw-start
-    - name: Logs opencti-restore-start
-      if: always()
-      continue-on-error: true
-      run: |
-          docker logs opencti-restore-start
-    - name: Logs opencti-direct-worker
-      if: always()
-      continue-on-error: true
-      run: |
-          docker logs opencti-direct-worker
     - name: Logs opencti-test-worker
       if: always()
       continue-on-error: true
       run: |
           docker logs opencti-test-worker
 
-
-    - name: Stop docker stats monitor and print logs
+    - name: Print resources stats
       if: always()
       continue-on-error: true
       run: |
-        kill $(cat monitor.pid) || true
         echo "==== Docker stats log ===="
         cat docker_stats.log        
 
@@ -321,6 +258,11 @@ jobs:
     - name: OpenCTI checkout
       uses: actions/checkout@v4
 
+    - name: Monitor resources usage in background
+      run: |
+        # Run docker and resources stats every 60s and save to file
+        ./opencti-platform/opencti-ci/monitor-resource-usage.sh &
+
     - name: Set up Docker Compose for backends
       run: |
          set -ex
@@ -328,20 +270,6 @@ jobs:
          export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
-
-    - name: Monitor resources usage in background
-      run: |
-        # Run docker stats every 60s and save to file
-        while true; do
-          echo "==== $(date) ====" >> docker_stats.log
-          docker stats --no-stream >> docker_stats.log
-          free -m >> docker_stats.log
-          echo "Total CPU: $(top -bn1 | awk -F',' '/Cpu/ {sub(/^[^0-9]+/, "", $4); print 100 - $4 "%"}')"  >> docker_stats.log
-          ps -eo pid,comm,%cpu --sort=-%cpu | head -n 5 >> docker_stats.log
-          sleep 60
-        done &
-        # Save background PID
-        echo $! > monitor.pid
 
     - name: Start unit test
       run: |
@@ -379,15 +307,6 @@ jobs:
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit
         '
 
-    - name: Stop docker stats monitor and print logs
-      if: always()
-      continue-on-error: true
-      run: |
-        kill $(cat monitor.pid) || true
-        echo "==== Docker stats log ===="
-        cat docker_stats.log        
-
-
     # Output all logs used during the job
     - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
       continue-on-error: true
@@ -400,3 +319,10 @@ jobs:
           docker logs rabbitmq
           echo -e "\n\n *********\n ********* logs Redis \n"; sleep 1
           docker logs redis
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: |
+        echo "==== Docker stats log ===="
+        cat docker_stats.log
