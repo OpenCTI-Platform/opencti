@@ -7,17 +7,13 @@ jobs:
   license-check:
     runs-on: ubuntu-latest
     steps:
-    - name: Display Runner Information
-      continue-on-error: true
-      run: |
-          set -ex
-          echo "Runner Name: $RUNNER_NAME \n Runner OS: $RUNNER_OS \n Runner Arch: $RUNNER_ARCH"
-          echo "Workflow: ${{ github.workflow }} \t Run ID: ${{ github.run_id }} \t Run Number: ${{ github.run_number }}"
-          echo "Workspace  GITHUB_WORKSPACE =  ${GITHUB_WORKSPACE}  \t   github.workspace= ${{ github.workspace }} \t  pwd $(pwd) "
-          env
 
     - name: OpenCTI checkout
       uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Backend verify license
       run: |
@@ -29,10 +25,10 @@ jobs:
              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
              apk add build-base git libffi-dev cargo
              pip3 install --upgrade setuptools
-             cd "/home/workspace/client-python"
+             cd /home/workspace/client-python
              pip install -r requirements.txt
              pip install -e .[dev,doc]
-             cd "/home/workspace/opencti-platform/opencti-graphql"
+             cd /home/workspace/opencti-platform/opencti-graphql
              npm install -g corepack
              cp /home/workspace/opencti-platform/.yarnrc.yml .
              yarn install

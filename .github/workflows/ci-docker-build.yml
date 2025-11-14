@@ -41,6 +41,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         context: opencti-platform
+        # Using Dockerfile_featurebranch waiting for the merge of all dockerfile
         file: opencti-platform/Dockerfile_featurebranch
         push: true
         tags: ${{ steps.meta.outputs.tags }}
