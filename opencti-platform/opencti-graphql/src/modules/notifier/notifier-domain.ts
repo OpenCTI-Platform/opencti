@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
-import conf, { BUS_TOPICS } from '../../config/conf';
-import { FunctionalError, UnsupportedError } from '../../config/errors';
+import { BUS_TOPICS } from '../../config/conf';
+import { UnsupportedError } from '../../config/errors';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { internalFindByIds, fullEntitiesList, pageEntitiesConnection, storeLoadById, } from '../../database/middleware-loader';
@@ -30,47 +30,7 @@ import { authorizedMembers } from '../../schema/attribute-definition';
 
 const ajv = new Ajv();
 
-const EJS_FUNCTION_ALLOWED_LIST = conf.get('app:notifier_authorized_functions') || [];
-const EJS_FORBIDDEN_WORD_LIST = ['process', 'global', '__dirname', '__filename', 'exports', 'module', '__proto__', 'Object.prototype'];
-
-export const checkAllowedEjsFunctions = (template: string, throwError: boolean = true) => {
-  // look for <% xxxx %> including new lines.
-  const ejsTagRegExpr = /<%\s*([\s\S]*?)\s*%>/g;
-
-  // look for function, word + parentheses
-  const functionRegExpr = /(\w+)\s*\(/g;
-
-  let ejsTag = ejsTagRegExpr.exec(template);
-  while (ejsTag !== null) {
-    const ejsCodeContent = ejsTag[1];
-    for (let i = 0; i < EJS_FORBIDDEN_WORD_LIST.length; i += 1) {
-      const forbiddenWord = EJS_FORBIDDEN_WORD_LIST[i];
-      if (ejsCodeContent.includes(forbiddenWord)) {
-        throw FunctionalError(`Forbidden call in notifier template: ${forbiddenWord}`, { reason: `Forbidden call in notifier template: ${forbiddenWord}` });
-      }
-    }
-
-    let ejsFunc = functionRegExpr.exec(ejsCodeContent);
-    while (ejsFunc !== null) {
-      const ejsFunction = ejsFunc[1];
-      if (ejsFunction) {
-        if (!EJS_FUNCTION_ALLOWED_LIST.includes(ejsFunction)) {
-          if (throwError) {
-            throw FunctionalError(`Forbidden call in notifier template: ${ejsFunction}`, { reason: `Forbidden call in notifier template: ${ejsFunction}` });
-          }
-        }
-      }
-      ejsFunc = functionRegExpr.exec(ejsCodeContent);
-    }
-    ejsTag = ejsTagRegExpr.exec(template);
-  }
-
-  return template;
-};
-
 const validateNotifier = (notifier: { notifier_connector_id: string, notifier_configuration: string }) => {
-  // checkAllowedEjsFunctions(notifier.notifier_configuration);
-
   const notifierConnector = BUILTIN_NOTIFIERS_CONNECTORS[notifier.notifier_connector_id];
   if (isEmptyField(notifierConnector) || isEmptyField(notifierConnector.connector_schema)) {
     throw UnsupportedError('Invalid notifier connector', { id: notifier.notifier_connector_id });
