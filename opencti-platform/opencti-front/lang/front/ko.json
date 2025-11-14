@@ -1942,6 +1942,7 @@
   "if needed": "필요한 경우",
   "If needed, you can set a": "필요한 경우 다음을 설정할 수 있습니다",
   "If no design configuration is detected, the default settings will be applied.": "디자인 구성이 감지되지 않으면 기본 설정이 적용됩니다.",
+  "If no PIR is selected, the playbook will look for any PIR": "PIR이 선택되지 않은 경우 플레이북은 모든 PIR을 찾습니다",
   "If the CSV mapper is configured with \"Use default markings definitions of the user\", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.": "CSV 매퍼가 undefined으로 구성된 경우, 데이터 생성을 담당하는 사용자의 기본 마킹이 수집된 엔티티에 적용됩니다. 그렇지 않으면 적용할 마킹을 선택할 수 있습니다.",
   "If the email address you entered is associated with an account, you will receive a confirmation email with a reset code shortly.": "입력한 이메일 주소가 계정에 연결되어 있는 경우 곧 재설정 코드가 포함된 확인 이메일을 받게 됩니다.",
   "If the JSON mapper is configured with \"Use default markings definitions of the user\", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.": "JSON 매퍼가 undefined으로 구성된 경우, 데이터 생성을 담당하는 사용자의 기본 마킹이 수집된 엔티티에 적용됩니다. 그렇지 않으면 적용할 마킹을 선택할 수 있습니다.",

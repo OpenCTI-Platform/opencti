@@ -1942,6 +1942,7 @@
   "if needed": "必要に応じて",
   "If needed, you can set a": "必要に応じて",
   "If no design configuration is detected, the default settings will be applied.": "設計コンフィギュレーションが検出されない場合は、デフォルト設定が適用されます。",
+  "If no PIR is selected, the playbook will look for any PIR": "PIRが選択されていない場合、プレイブックは以下のPIRを探します。",
   "If the CSV mapper is configured with \"Use default markings definitions of the user\", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.": "CSVマッパーが\"ユーザーのデフォルトマーキング定義を使う\"で設定されている場合、取り込まれたエンティティには、データ作成担当ユーザーのデフォルトのマークが適用されます。そうでない場合は、適用するマーキングを選択できます。",
   "If the email address you entered is associated with an account, you will receive a confirmation email with a reset code shortly.": "入力されたメールアドレスがアカウントに関連付けられている場合は、まもなくリセットコードが記載された確認メールが送信されます。",
   "If the JSON mapper is configured with \"Use default markings definitions of the user\", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.": "JSONマッパーが\"ユーザーのデフォルトマーキング定義を使う\"で設定されている場合、取り込まれたエンティティには、データ作成担当ユーザーのデフォルトのマーキングが適用されます。そうでない場合は、適用するマーキングを選択できます。",

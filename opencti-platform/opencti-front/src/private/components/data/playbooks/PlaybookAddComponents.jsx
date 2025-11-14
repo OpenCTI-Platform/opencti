@@ -655,6 +655,7 @@ const PlaybookAddComponentsContent = ({
                         name="inPirFilters"
                         style={fieldSpacingContainerStyle}
                         multiple={true}
+                        helpertext={t_i18n('If no PIR is selected, the playbook will look for any PIR')}
                       />
                     );
                   }

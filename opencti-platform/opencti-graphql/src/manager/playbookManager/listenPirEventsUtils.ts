@@ -22,15 +22,15 @@ import { PIR_SCORE_FILTER } from '../../utils/filtering/filtering-constants';
  * Build a filterGroup to filter on PIR IDs.
  * @param pirList List of PIR IDs we want to filter.
  */
-export const buildPirFilters = (pirList?: { value: string }[]) => {
-  return pirList ? {
+export const buildPirFilters = (pirList: { value: string }[]) => {
+  return {
     filterGroups: [],
     mode: FilterMode.And,
     filters: [{
       key: ['toId'],
       values: pirList.map((n) => n.value),
     }],
-  } : null;
+  };
 };
 
 /**
@@ -66,19 +66,21 @@ export const isEventMatchesPir = async (
 ) => {
   // If it's an event on relationship in-pir, we apply a filter of PIR ids directly on event.
   if (isEventInPirRelationship(eventData)) {
+    // If entity is flagged and no PIR filtering set, it matches.
+    if (!pirList || pirList.length === 0) return true;
+
     const filtersOnInPirRel = buildPirFilters(pirList);
-    // True if either no PIR set or if PIR matched.
-    return !filtersOnInPirRel || await isStixMatchFilterGroup(
+    return isStixMatchFilterGroup(
       context,
       AUTOMATION_MANAGER_USER,
       eventData.data,
       filtersOnInPirRel
     );
   }
+
   // Else if it's an update of an entity, we check if this entity is flagged in PIR.
   if (isEventUpdateOnEntity(eventData)) {
     const entityPirList = await listOfPirInEntity(context, eventData.data.id);
-
     if (entityPirList.length > 0) {
       // If entity is flagged and no PIR filtering set, it matches.
       if (!pirList || pirList.length === 0) return true;
@@ -86,30 +88,23 @@ export const isEventMatchesPir = async (
       return entityPirList.some((pirId) => pirList.some((selectedPir) => pirId === selectedPir.value));
     }
   }
+
   // By default, does not match.
   return false;
 };
 
-const formatFilters = (sourceFilters: string, inPirFilters: { value: string; }[]) => {
+const formatFilters = (sourceFilters: string, inPirFilters?: { value: string; }[]) => {
   const filtersOnSource: FilterGroup | undefined = sourceFilters ? JSON.parse(sourceFilters) : undefined;
-  if (!filtersOnSource) {
-    return undefined;
-  }
+  if (!filtersOnSource) return undefined;
 
   const formattedFirstLevelFilters = filtersOnSource.filters.map((filter) => {
     if (filter.key[0] === PIR_SCORE_FILTER) {
       return {
         key: [PIR_SCORE_FILTER],
         values: [
-          {
-            ...filter,
-            key: 'score'
-          },
-          {
-            key: 'pir_ids',
-            values: inPirFilters ? inPirFilters.map((pir) => pir.value) : []
-
-          }]
+          { ...filter, key: 'score' },
+          { key: 'pir_ids', values: (inPirFilters ?? []).map((pir) => pir.value) }
+        ]
       };
     }
     return filter;
@@ -127,9 +122,7 @@ export const listenPirEvents = async (
   const { id: eventId, data: { data, type } } = streamEvent;
   const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
   const { filters: sourceFilters, inPirFilters } = configuration;
-
   const filtersOnSource = formatFilters(sourceFilters, inPirFilters);
-  console.log('---------------filtersOnSource', { filtersOnSource: JSON.stringify(filtersOnSource), sourceFilters });
 
   if (isValidEventType(type, configuration)) {
     if (await isEventMatchesPir(context, streamEvent.data, inPirFilters)) {

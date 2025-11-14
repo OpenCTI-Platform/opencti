@@ -1942,6 +1942,7 @@
   "if needed": "如果需要的话",
   "If needed, you can set a": "如果需要，您可以设置",
   "If no design configuration is detected, the default settings will be applied.": "如果未检测到设计配置，则将应用默认设置。",
+  "If no PIR is selected, the playbook will look for any PIR": "如果没有选择 PIR，游戏本将查找任何 PIR",
   "If the CSV mapper is configured with \"Use default markings definitions of the user\", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.": "如果 CSV 映射器配置了 \"使用用户的默认标记定义\"，则负责创建数据的用户的默认标记将应用于摄取的实体。否则，您可以选择要应用的标记。",
   "If the email address you entered is associated with an account, you will receive a confirmation email with a reset code shortly.": "如果您输入的电子邮件地址与帐户相关联，您将很快收到一封带有重置密码的确认电子邮件。",
   "If the JSON mapper is configured with \"Use default markings definitions of the user\", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.": "如果 JSON 映射器的配置为\"使用用户的默认标记定义\"，则负责创建数据的用户的默认标记将应用于摄取的实体。否则，您可以选择要应用的标记。",
