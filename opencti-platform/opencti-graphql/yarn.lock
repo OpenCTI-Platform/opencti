@@ -4580,14 +4580,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tokenizer/inflate@npm:^0.2.7":
-  version: 0.2.7
-  resolution: "@tokenizer/inflate@npm:0.2.7"
+"@tokenizer/inflate@npm:^0.3.1":
+  version: 0.3.1
+  resolution: "@tokenizer/inflate@npm:0.3.1"
   dependencies:
-    debug: "npm:^4.4.0"
+    debug: "npm:^4.4.1"
     fflate: "npm:^0.8.2"
     token-types: "npm:^6.0.0"
-  checksum: 10c0/75bd0c510810dfd62be9d963216b5852cde021e1f8aab43b37662bc6aa75e65fd7277fcab7d463186b55cee36a5b61129916161bdb2a7d18064016156c7daf4f
+  checksum: 10c0/6321c28ae6346e527837ef9a9242129213b57aa7b9a3752c2275f10e67985a3e0adbb3397db36c3ff3f982f16bfa53aab0f9e04d59955d86ed53fa80aec34be5
   languageName: node
   linkType: hard
 
@@ -6099,12 +6099,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bcryptjs@npm:3.0.2":
-  version: 3.0.2
-  resolution: "bcryptjs@npm:3.0.2"
+"bcryptjs@npm:3.0.3":
+  version: 3.0.3
+  resolution: "bcryptjs@npm:3.0.3"
   bin:
     bcrypt: bin/bcrypt
-  checksum: 10c0/a0923cac99f83e913f8f4e4f42df6a27c6593b24d509900331d1280c4050b1544e602a0ac67b43f7bb5c969991c3ed77fd72f19b7dc873be8ee794da3d925c7e
+  checksum: 10c0/127c94699f07eab5fbbb89d600c3f0e36ae6fd001e028139740b41fffb62a23a2743523fb88f442ae3308a27d4843b97ccb9e436d78f5c5899be187d0972c6d5
   languageName: node
   linkType: hard
 
@@ -8517,15 +8517,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-type@npm:21.0.0":
-  version: 21.0.0
-  resolution: "file-type@npm:21.0.0"
+"file-type@npm:21.1.0":
+  version: 21.1.0
+  resolution: "file-type@npm:21.1.0"
   dependencies:
-    "@tokenizer/inflate": "npm:^0.2.7"
-    strtok3: "npm:^10.2.2"
+    "@tokenizer/inflate": "npm:^0.3.1"
+    strtok3: "npm:^10.3.1"
     token-types: "npm:^6.0.0"
     uint8array-extras: "npm:^1.4.0"
-  checksum: 10c0/ee6b0bb5771ad154e236bb77b5c00907743fef3637c3825713c1d6913377d3d969ebba4a6f0aa854b8231552e2c1bd0387229fe67394dc3d08a01819c7d107b1
+  checksum: 10c0/e48676b147ada39b57827f933ac6ba85eb56257a8368c7efb5ae31f68496cf61a9bb42c79b84e6c0ac593ced1fc38b78312932457d148b61db6df7738493e0e7
   languageName: node
   linkType: hard
 
@@ -9205,17 +9205,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:16.11.0":
-  version: 16.11.0
-  resolution: "graphql@npm:16.11.0"
-  checksum: 10c0/124da7860a2292e9acf2fed0c71fc0f6a9b9ca865d390d112bdd563c1f474357141501c12891f4164fe984315764736ad67f705219c62f7580681d431a85db88
+"graphql@npm:16.12.0":
+  version: 16.12.0
+  resolution: "graphql@npm:16.12.0"
+  checksum: 10c0/b6fffa4e8a4e4a9933ebe85e7470b346dbf49050c1a482fac5e03e4a1a7bed2ecd3a4c97e29f04457af929464bc5e4f2aac991090c2f320111eef26e902a5c75
   languageName: node
   linkType: hard
 
-"graphql@patch:graphql@16.11.0#./patch/graphql-16.8.1.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 16.11.0
-  resolution: "graphql@patch:graphql@npm%3A16.11.0#./patch/graphql-16.8.1.patch::version=16.11.0&hash=d71f2e&locator=opencti-graphql%40workspace%3A."
-  checksum: 10c0/8912ae36d7c98c2ff5afbbf60a095c38a87f2ec56ea0de86641fd6087b1a7141d696c3673297854db8c5d1fbedc3ccae597aa1ed91d4a787dba124cb99b473ff
+"graphql@patch:graphql@16.12.0#./patch/graphql-16.8.1.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 16.12.0
+  resolution: "graphql@patch:graphql@npm%3A16.12.0#./patch/graphql-16.8.1.patch::version=16.12.0&hash=d71f2e&locator=opencti-graphql%40workspace%3A."
+  checksum: 10c0/297f2d022f28b2e24f20b258def5d8e95feb1ba70991edc51c9f958bb2c52f6e9b1581abe0b9167462574bc7a58985985e295f274138fe82f7bcbb8fe8e250b9
   languageName: node
   linkType: hard
 
@@ -10816,12 +10816,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:16.4.1":
-  version: 16.4.1
-  resolution: "marked@npm:16.4.1"
+"marked@npm:16.4.2":
+  version: 16.4.2
+  resolution: "marked@npm:16.4.2"
   bin:
     marked: bin/marked.js
-  checksum: 10c0/2b5bc04db3453e493ea78758f1fe5006d725ec90aab9bf991242b0820a069d9748e2ac26fb0e2603848a409649c77900e599f3f66d251d0f7e5f606576090a54
+  checksum: 10c0/fc6051142172454f2023f3d6b31cca92879ec8e1b96457086a54c70354c74b00e1b6543a76a1fad6d399366f52b90a848f6ffb8e1d65a5baff87f3ba9b8f1847
   languageName: node
   linkType: hard
 
@@ -11710,7 +11710,7 @@ __metadata:
     async-lock: "npm:1.4.1"
     axios: "npm:1.13.2"
     axios-cookiejar-support: "npm:6.0.4"
-    bcryptjs: "npm:3.0.2"
+    bcryptjs: "npm:3.0.3"
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.2.0"
     canonicalize: "npm:2.1.0"
@@ -11735,9 +11735,9 @@ __metadata:
     express-rate-limit: "npm:8.2.1"
     express-session: "npm:1.18.2"
     fast-json-patch: "npm:3.1.1"
-    file-type: "npm:21.0.0"
+    file-type: "npm:21.1.0"
     github-api: "npm:3.4.0"
-    graphql: "npm:16.11.0"
+    graphql: "npm:16.12.0"
     graphql-constraint-directive: "npm:6.0.0"
     graphql-no-alias: "npm:3.0.3"
     graphql-rate-limit-directive: "npm:2.0.6"
@@ -11760,7 +11760,7 @@ __metadata:
     license-checker-rseidelsohn: "npm:4.4.2"
     lru-cache: "npm:11.2.2"
     luxon: "npm:3.7.2"
-    marked: "npm:16.4.1"
+    marked: "npm:16.4.2"
     migrate: "npm:2.1.0"
     mime-types: "npm:3.0.1"
     moment: "npm:2.30.1"
@@ -11782,7 +11782,7 @@ __metadata:
     passport-local: "npm:1.0.0"
     python-shell: "npm:5.0.0"
     ramda: "npm:0.32.0"
-    rate-limiter-flexible: "npm:8.1.0"
+    rate-limiter-flexible: "npm:8.2.0"
     semver: "npm:7.7.3"
     set-interval-async: "npm:3.0.3"
     source-map: "npm:0.7.6"
@@ -11793,7 +11793,7 @@ __metadata:
     unzipper: "npm:0.12.3"
     uuid: "npm:11.1.0"
     uuid-time: "npm:1.0.0"
-    validator: "npm:13.15.20"
+    validator: "npm:13.15.23"
     vitest: "npm:3.2.4"
     winston: "npm:3.18.3"
     winston-daily-rotate-file: "npm:5.0.0"
@@ -12488,10 +12488,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rate-limiter-flexible@npm:8.1.0":
-  version: 8.1.0
-  resolution: "rate-limiter-flexible@npm:8.1.0"
-  checksum: 10c0/a01d177383d8703c8c5dfe5a341f51483229769e261b3a330b5ac35ed34631ffae69da3d0f53578ec2ee671739bf9c961d12cee58ba655d94b7542900b42f8db
+"rate-limiter-flexible@npm:8.2.0":
+  version: 8.2.0
+  resolution: "rate-limiter-flexible@npm:8.2.0"
+  checksum: 10c0/d85b13f3d6ec04acc9c480edf59f086c64840819bc9cbd8684bb20f60ec050756403c119a0c886968077b3167a30f81af443984bd8eeb0e0036a690eef3191d1
   languageName: node
   linkType: hard
 
@@ -13741,12 +13741,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"strtok3@npm:^10.2.2":
-  version: 10.3.1
-  resolution: "strtok3@npm:10.3.1"
+"strtok3@npm:^10.3.1":
+  version: 10.3.4
+  resolution: "strtok3@npm:10.3.4"
   dependencies:
     "@tokenizer/token": "npm:^0.3.0"
-  checksum: 10c0/4ba982bbb8009ae4d19f1ce83b95e5f3b4d774a646c6d0ade9afcb813a61e9c1ca0ad89ce06c0045ebd391f0a939e2316ebef67e74d492ef0e87a40450a5eeb4
+  checksum: 10c0/277ab69e417f4545e364ffaf9d560c991f531045dbace32d77b5c822cccd76a608b782785a2c60595274288d4d32dced184a5c21dc20348791da697127dc69a8
   languageName: node
   linkType: hard
 
@@ -14541,10 +14541,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"validator@npm:13.15.20":
-  version: 13.15.20
-  resolution: "validator@npm:13.15.20"
-  checksum: 10c0/65453f0c91ef154ae2da4d5ff3c22acff239d2c15216335ba83895b6f79914708709c641119aa9fba0ec9dd69229c1cf8196aff0081584bdda8a7f50ea97b789
+"validator@npm:13.15.23":
+  version: 13.15.23
+  resolution: "validator@npm:13.15.23"
+  checksum: 10c0/22a05ec6a98d48d2b6fb34d43ce854af61d15842362d142e64cfca0325d4d0c2d1051d9f9d3a0f741e58ea888f73a35baf7a2a810f5aed0f89183bd5040f0177
   languageName: node
   linkType: hard
 

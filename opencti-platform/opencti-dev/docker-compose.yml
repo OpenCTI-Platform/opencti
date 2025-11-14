@@ -1,7 +1,7 @@
 services:
   opencti-dev-redis:
     container_name: opencti-dev-redis
-    image: redis:8.2.2
+    image: redis:8.2.3
     restart: unless-stopped
     ports:
       - 6379:6379
@@ -36,7 +36,7 @@ services:
       - 9300:9300
   opencti-dev-kibana:
     container_name: opencti-dev-kibana
-    image: docker.elastic.co/kibana/kibana:8.19.6
+    image: docker.elastic.co/kibana/kibana:8.19.7
     environment:
       - ELASTICSEARCH_HOSTS=http://opencti-dev-elasticsearch:9200
     restart: unless-stopped
@@ -62,7 +62,7 @@ services:
   opencti-dev-opensearch:
     profiles: [ opensearch ]
     container_name: opencti-dev-opensearch
-    image: opensearchproject/opensearch:3.3.1
+    image: opensearchproject/opensearch:3.3.2
     volumes:
       - osdata:/usr/share/opensearch/data
       - ossnapshots:/usr/share/opensearch/snapshots
@@ -159,7 +159,7 @@ services:
   # docker compose --profile keycloak up -d
   opencti-dev-keycloak:
       profiles: [ keycloak ]
-      image: quay.io/keycloak/keycloak:26.4.2
+      image: quay.io/keycloak/keycloak:26.4.5
       volumes:
         - keycloakdata:/opt/keycloak/data
       container_name: opencti-dev-keycloak

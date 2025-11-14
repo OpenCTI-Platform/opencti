@@ -6,16 +6,6 @@ test.py
 examples/*.json
 examples/*.pdf
 Pipfile*
-.DS_Store
-
-# IntelliJ Platform) | JetBrains
-.idea
-*.iml
-
-# VScode
-.vscode/*
-# Local History for Visual Studio Code
-.history/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -4402,6 +4402,7 @@
   "You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the": "Вы можете настроить свою платформу на потребление потоков OpenCTI. Список публичных и коммерческих нативных потоков доступен в разделе",
   "You can enable/disable default values for marking in the customization of each entity type.": "Вы можете включить/отключить значения по умолчанию для маркировки в настройке каждого типа сущности.",
   "You can now set a new password for your account.": "Теперь вы можете установить новый пароль для своей учетной записи.",
+  "You cannot generate a support package while in draft mode. Make sure to be out of draft to generate one.": "Вы не можете сгенерировать пакет поддержки, находясь в режиме черновика. Чтобы сгенерировать пакет поддержки, необходимо выйти из режима черновика.",
   "You cannot have more than 500 e-mail addresses": "У вас не может быть более 500 адресов электронной почты",
   "You currently do not have any connector manager registered into your platform.": "В настоящее время в вашей платформе не зарегистрирован ни один менеджер коннекторов.",
   "You do not have any access to support packages of this OpenCTI instance.": "У вас нет доступа к пакетам поддержки этого экземпляра OpenCTI.",

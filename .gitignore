@@ -1,11 +1,21 @@
+# MacOS Finder files
+.DS_Store/
+
+# IntelliJ Platform) | JetBrains
+.idea/
 *.iml
-.DS_Store
-.idea
+
+# VSCode
+.vscode/
+.history/
+
+# NodeJS
+node_modules/
+
+# Yarn
+.yarn/
+
 .mypy_cache
 .venv
 venv
-.vscode
 /licenses/
-
-# Yarn directories
-.yarn/

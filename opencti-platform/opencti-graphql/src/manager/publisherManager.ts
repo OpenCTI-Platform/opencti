@@ -189,12 +189,15 @@ export async function handleSimplifiedEmailNotification(
     subject: renderedTitle,
     html: renderedEmail
   };
-
-  try {
-    await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: error, manager: 'PUBLISHER_MANAGER' });
-    throw error;
+  if (!emailPayload.to) {
+    logApp.warn('[OPENCTI-MODULE] No recipient defined in email payload', { toId: user.user_id, manager: 'PUBLISHER_MANAGER' });
+  } else {
+    try {
+      await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
+    } catch (error) {
+      logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: error, manager: 'PUBLISHER_MANAGER' });
+      throw error;
+    }
   }
 }
 
