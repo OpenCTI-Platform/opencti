@@ -19,7 +19,6 @@ import { convertEventTypes, convertNotifiers, convertTriggers, instanceEventType
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
-  emptyFilterGroup,
   getDefaultFilterObject,
   serializeFilterGroupForBackend,
   stixFilters,
@@ -103,11 +102,6 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
-  // const defaultInstanceTriggerFilters = {
-  //   ...emptyFilterGroup,
-  //   filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
-  // };
-  // const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
 
   useEffect(() => {
     commitFieldPatch({
@@ -280,14 +274,13 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     // helpers.handleClearAllFilters();
     // instanceTriggerFiltersHelpers.handleClearAllFilters();
     setInstanceTrigger(newInstanceTriggerValue);
-    // If enabling instance trigger, add the connectedToId filter
+
     if (newInstanceTriggerValue) {
       const connectedToIdFilter = getDefaultFilterObject(
         'connectedToId',
         useFilterDefinition('connectedToId', ['Instance']),
       );
       helpers.handleAddFilterWithEmptyValue({
-        key: 'connectedToId',
         ...connectedToIdFilter,
       });
     }
