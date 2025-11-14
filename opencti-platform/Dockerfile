@@ -66,7 +66,7 @@ RUN pip3 install --no-cache-dir --requirement ./src/python/requirements.txt \
     && pip3 install \
         --no-cache-dir \
         --upgrade \
-        --force 'git+https://github.com/OpenCTI-Platform/client-python@master' \
+        --force 'git+https://github.com/OpenCTI-Platform/opencti@master#subdirectory=client-python' \
     && apk del git gcc musl-dev
 
 COPY --from=graphql-deps-builder /opt/opencti-build/opencti-graphql/node_modules ./node_modules
