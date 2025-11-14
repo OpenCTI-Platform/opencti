@@ -68,7 +68,8 @@ services:
     environment:
       - BASE_NAME=opencti-raw-start
     env_file:
-      - octi-ci.env
+      - ci-common.env
+      - ci-sync.env
     networks:
       - runner-docker-network
     ports:
@@ -81,7 +82,8 @@ services:
     environment:
       - BASE_NAME=opencti-live-start
     env_file:
-      - octi-ci.env
+      - ci-common.env
+      - ci-sync.env
     networks:
       - runner-docker-network
     ports:
@@ -94,7 +96,8 @@ services:
     environment:
       - BASE_NAME=opencti-direct-start
     env_file:
-      - octi-ci.env
+      - ci-common.env
+      - ci-sync.env
     networks:
       - runner-docker-network
     ports:
@@ -107,7 +110,8 @@ services:
     environment:
       - BASE_NAME=opencti-restore-start
     env_file:
-      - octi-ci.env
+      - ci-common.env
+      - ci-sync.env
     networks:
       - runner-docker-network
     ports:
