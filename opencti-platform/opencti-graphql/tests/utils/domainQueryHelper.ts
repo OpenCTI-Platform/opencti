@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 import { ADMIN_USER, type GroupTestData, type OrganizationTestData, testContext } from './testQuery';
-import type { StoreEntityConnection } from '../../src/types/store';
+import type { BasicConnection } from '../../src/types/store';
 import type { BasicStoreEntityOrganization } from '../../src/modules/organization/organization-types';
 import { findOrganizationPaginated } from '../../src/modules/organization/organization-domain';
 import { generateStandardId } from '../../src/schema/identifier';
@@ -19,7 +19,7 @@ import { ACCOUNT_STATUS_ACTIVE } from '../../src/config/conf';
  * @param testOrg
  */
 export const getOrganizationEntity = async (testOrg: OrganizationTestData) => {
-  const allOrgs: StoreEntityConnection<BasicStoreEntityOrganization> = await findOrganizationPaginated(testContext, ADMIN_USER, { search: `"${testOrg.name}"` });
+  const allOrgs: BasicConnection<BasicStoreEntityOrganization> = await findOrganizationPaginated(testContext, ADMIN_USER, { search: `"${testOrg.name}"` });
   return allOrgs.edges.find((currentOrg) => currentOrg.node.name === testOrg.name)?.node as BasicStoreEntityOrganization;
 };
 

@@ -9,7 +9,7 @@ import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import type { AuthContext, AuthUser } from '../types/user';
 import { type StixRefRelationshipAddInput, type StixRefRelationshipsAddInput } from '../generated/graphql';
-import type { BasicStoreCommon, BasicStoreObject, StoreCommonConnection } from '../types/store';
+import type { BasicStoreCommon, BasicStoreObject, BasicConnection } from '../types/store';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { buildRelationData } from '../database/data-builder';
 import { validateMarking } from '../utils/access';
@@ -21,8 +21,8 @@ export const findById = async <T extends BasicStoreObject> (context: AuthContext
 };
 
 export const findStixObjectOrRelationshipsPaginated = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser,
-  args: EntityOptions<BasicStoreCommon>) : Promise<StoreCommonConnection<T>> => {
-  return await pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args) as unknown as StoreCommonConnection<T>;
+  args: EntityOptions<BasicStoreCommon>) : Promise<BasicConnection<T>> => {
+  return await pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args) as unknown as BasicConnection<T>;
 };
 
 const patchElementWithRefRelationships = async (

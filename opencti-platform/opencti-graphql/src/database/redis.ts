@@ -25,7 +25,7 @@ import type {
   UpdateEvent,
   UpdateEventOpts
 } from '../types/event';
-import type { StixCoreObject } from '../types/stix-2-1-common';
+import type { StixCoreObject, StixObject } from '../types/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
@@ -539,7 +539,7 @@ const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: 
     context: {
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
-      sources: await asyncListTransformation(sourceEntities, convertStoreToStix_2_1),
+      sources: await asyncListTransformation<StixObject>(sourceEntities, convertStoreToStix_2_1) as StixCoreObject[],
     }
   };
 };

@@ -3,7 +3,7 @@ import { elAttributeValues } from '../database/engine';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
+import type { Attribute, QueryRuntimeAttributesArgs } from '../generated/graphql';
 import { INTERNAL_ATTRIBUTES } from './attribute-utils';
 
 export interface DefaultValue {
@@ -25,7 +25,7 @@ export const getSchemaAttributeNames = (elementTypes: string[]) => {
     sortByLabel,
     R.map((n) => ({ node: { id: n, key: elementTypes[0], value: n } }))
   )(attributes);
-  return buildPagination(0, null, finalResult, finalResult.length);
+  return buildPagination<Attribute>(0, null, finalResult, finalResult.length);
 };
 
 export const getSchemaAttributes = () => {

@@ -58,7 +58,7 @@ export const getObjectsCount = async (context: AuthContext, user: AuthUser, draf
     convertEntityTypeLabel: true,
   };
   const draftContext = { ...context, draft_context: draft.id };
-  const distributionResult = await elAggregationCount(draftContext, context.user, READ_INDEX_DRAFT_OBJECTS, opts);
+  const distributionResult = await elAggregationCount(draftContext, user, READ_INDEX_DRAFT_OBJECTS, opts);
   // TODO fix total to include only stix domain objects & SCO & stix core relationships & sightings & stix domain objects
   const totalCount = computeSumOfList(distributionResult.map((r: { label: string, count: number }) => r.count));
   const entitiesCount = computeSumOfList(
@@ -109,7 +109,7 @@ export const getProcessingCount = async (context: AuthContext, user: AuthUser, d
     types: [ENTITY_TYPE_WORK],
     filters: draftWorksFilter,
   };
-  const draftIncompleteWorksCount = await elCount(context, context.user, READ_INDEX_HISTORY, worksOpts);
+  const draftIncompleteWorksCount = await elCount(context, user, READ_INDEX_HISTORY, worksOpts);
   const draftTasksFilter = {
     filterGroups: [],
     filters: [
@@ -132,7 +132,7 @@ export const getProcessingCount = async (context: AuthContext, user: AuthUser, d
     types: [ENTITY_TYPE_BACKGROUND_TASK],
     filters: draftTasksFilter,
   };
-  const draftIncompleteTasksCount = await elCount(context, context.user, READ_INDEX_INTERNAL_OBJECTS, tasksOpts);
+  const draftIncompleteTasksCount = await elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, tasksOpts);
   return draftIncompleteTasksCount + draftIncompleteWorksCount;
 };
 
@@ -311,7 +311,7 @@ export const buildDraftValidationBundle = async (context: AuthContext, user: Aut
   const updateEntitiesIds = updateEntities.map((e) => e.internal_id);
   const updateStixEntities = await stixLoadByIds(contextInDraft, user, updateEntitiesIds);
   const updateStixEntitiesWithPatchPromises = updateStixEntities.map(async (d: any) => {
-    const updateFieldPatchNonResolved = buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id).draft_change.draft_updates_patch);
+    const updateFieldPatchNonResolved = buildUpdateFieldPatch(updateEntities.find((e) => e.standard_id === d.id)?.draft_change?.draft_updates_patch as string);
     const updateFieldPatchResolved = await resolveDraftUpdateFiles(contextInDraft, user, updateFieldPatchNonResolved);
     const stixWithPatch = { ...d };
     stixWithPatch.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';

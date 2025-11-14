@@ -11,6 +11,7 @@ import { ENTITY_TYPE_WORK } from '../../../src/schema/internalObject';
 import { INDEX_HISTORY } from '../../../src/database/utils';
 import { deleteCompletedWorks } from '../../../src/manager/connectorManager';
 import type { BasicStoreEntityConnector } from '../../../src/types/connector';
+import type { Work } from '../../../src/types/work';
 
 describe('Old work of connector cleanup test', () => {
   let testConnector: BasicStoreEntityConnector;
@@ -48,7 +49,7 @@ describe('Old work of connector cleanup test', () => {
       received_time: dateForWorkStr,
       status,
       timestamp: dateForWorkStr,
-      updated_at: dateForWorkStr,
+      updated_at: dateForWork,
       user_id: '',
     };
 
@@ -69,7 +70,7 @@ describe('Old work of connector cleanup test', () => {
     await createWorkForTest('Work 9 days old and not complete', moment().subtract('9', 'days').toDate(), 'wait');
     await createWorkForTest('Work 2 days old and complete', moment().subtract('2', 'days').toDate(), 'complete');
 
-    const allWorkBeforeCleanup = await worksForConnector(testContext, ADMIN_USER, testConnector.id);
+    const allWorkBeforeCleanup = await worksForConnector(testContext, ADMIN_USER, testConnector.id) as Work[];
     expect(allWorkBeforeCleanup.length).toBe(3);
     expect(allWorkBeforeCleanup.some((workItem: Work) => workItem.name === 'Work 2 days old and complete')).toBeTruthy();
     expect(allWorkBeforeCleanup.some((workItem: Work) => workItem.name === 'Work 9 days old and not complete')).toBeTruthy();
@@ -79,7 +80,7 @@ describe('Old work of connector cleanup test', () => {
     await deleteCompletedWorks(testContext, testConnector);
 
     // THEN old complete one should be deleted and others still there
-    const allWorkAfterCleanup: Work[] = await worksForConnector(testContext, ADMIN_USER, testConnector.id);
+    const allWorkAfterCleanup: Work[] = await worksForConnector(testContext, ADMIN_USER, testConnector.id) as Work[];
     expect(allWorkAfterCleanup.length).toBe(2);
 
     expect(allWorkAfterCleanup.some((workItem: Work) => workItem.name === 'Work 2 days old and complete')).toBeTruthy();

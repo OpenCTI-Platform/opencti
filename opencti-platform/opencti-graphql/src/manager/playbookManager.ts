@@ -44,6 +44,7 @@ import { stixLoadByFilters, stixLoadById } from '../database/middleware';
 import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-utils';
 import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookExecution';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
+import type { BasicConnection, BasicStoreBase } from '../types/store';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
@@ -484,7 +485,7 @@ const initPlaybookManager = () => {
               }
             } else {
               const opts = { ...queryOptions, first: PLAYBOOK_CRON_MAX_SIZE };
-              const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts);
+              const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts) as BasicConnection<BasicStoreBase>;
               const elements = result.edges;
               logApp.info(`[OPENCTI-MODULE] Running playbook ${instance.name} on ${elements.length} elements`);
               for (let index = 0; index < elements.length; index += 1) {
