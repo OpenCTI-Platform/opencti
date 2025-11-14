@@ -24,6 +24,7 @@ import {
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import pjson from '../../package.json';
 import { ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
+import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import { ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_TRIGGER, NOTIFICATION_NUMBER } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -688,6 +689,11 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_EDIT_TOPIC`,
     DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_DELETE_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_RULE_ADDED_TOPIC`,
+  },
+  [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: {
+    EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_EDIT_TOPIC`,
+    DELETE_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_DELETE_TOPIC`,
+    ADDED_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_DECAY_EXCLUSION_RULE_ADDED_TOPIC`,
   },
   [ENTITY_TYPE_EXCLUSION_LIST]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}ENTITY_TYPE_EXCLUSION_LIST_EDIT_TOPIC`,

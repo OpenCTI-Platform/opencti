@@ -28,6 +28,7 @@ import type { BasicStoreEntityThreatActorIndividual } from '../modules/threatAct
 import type { BasicStoreEntityIngestionRss, BasicStoreEntityIngestionTaxii, BasicStoreEntityIngestionTaxiiCollection, BasicStoreEntityIngestionCsv, BasicStoreEntityIngestionJson } from '../modules/ingestion/ingestion-types';
 import type { BasicStoreEntityIndicator } from '../modules/indicator/indicator-types';
 import type { BasicStoreEntityDecayRule } from '../modules/decayRule/decayRule-types';
+import type { BasicStoreEntityDecayExclusionRule } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 import type { BasicStoreEntityOrganization } from '../modules/organization/organization-types';
 import type { BasicStoreEntityCsvMapper } from '../modules/internal/csvMapper/csvMapper-types';
 import type { BasicStoreEntityJsonMapper } from '../modules/internal/jsonMapper/jsonMapper-types';
@@ -6366,6 +6367,45 @@ export type DecayData = {
   __typename?: 'DecayData';
   live_score_serie?: Maybe<Array<DecayHistory>>;
 };
+
+export type DecayExclusionRule = BasicObject & InternalObject & {
+  __typename?: 'DecayExclusionRule';
+  active: Scalars['Boolean']['output'];
+  created_at: Scalars['DateTime']['output'];
+  decay_exclusion_observable_types?: Maybe<Array<Scalars['String']['output']>>;
+  description?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  parent_types: Array<Maybe<Scalars['String']['output']>>;
+  standard_id: Scalars['String']['output'];
+};
+
+export type DecayExclusionRuleAddInput = {
+  active: Scalars['Boolean']['input'];
+  decay_exclusion_observable_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+};
+
+export type DecayExclusionRuleConnection = {
+  __typename?: 'DecayExclusionRuleConnection';
+  edges: Array<DecayExclusionRuleEdge>;
+  pageInfo: PageInfo;
+};
+
+export type DecayExclusionRuleEdge = {
+  __typename?: 'DecayExclusionRuleEdge';
+  cursor: Scalars['String']['output'];
+  node: DecayExclusionRule;
+};
+
+export enum DecayExclusionRuleOrdering {
+  Score = '_score',
+  Name = 'name',
+  Order = 'order'
+}
 
 export type DecayHistory = {
   __typename?: 'DecayHistory';
@@ -14922,6 +14962,9 @@ export type Mutation = {
   dataSourceFieldPatch?: Maybe<DataSource>;
   dataSourceRelationAdd?: Maybe<StixRefRelationship>;
   dataSourceRelationDelete?: Maybe<DataSource>;
+  decayExclusionRuleAdd?: Maybe<DecayExclusionRule>;
+  decayExclusionRuleDelete?: Maybe<Scalars['ID']['output']>;
+  decayExclusionRuleFieldPatch?: Maybe<DecayExclusionRule>;
   decayRuleAdd?: Maybe<DecayRule>;
   decayRuleDelete?: Maybe<Scalars['ID']['output']>;
   decayRuleFieldPatch?: Maybe<DecayRule>;
@@ -15774,6 +15817,22 @@ export type MutationDataSourceRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationDecayExclusionRuleAddArgs = {
+  input: DecayExclusionRuleAddInput;
+};
+
+
+export type MutationDecayExclusionRuleDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationDecayExclusionRuleFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
 };
 
 
@@ -21680,6 +21739,8 @@ export type Query = {
   dataComponents?: Maybe<DataComponentConnection>;
   dataSource?: Maybe<DataSource>;
   dataSources?: Maybe<DataSourceConnection>;
+  decayExclusionRule?: Maybe<DecayExclusionRule>;
+  decayExclusionRules?: Maybe<DecayExclusionRuleConnection>;
   decayRule?: Maybe<DecayRule>;
   decayRules?: Maybe<DecayRuleConnection>;
   defaultIngestionGroupCount?: Maybe<Scalars['Int']['output']>;
@@ -22446,6 +22507,21 @@ export type QueryDataSourcesArgs = {
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
   orderBy?: InputMaybe<DataSourcesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryDecayExclusionRuleArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryDecayExclusionRulesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<DecayExclusionRuleOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
@@ -35847,6 +35923,11 @@ export type ResolversTypes = ResolversObject<{
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   DecayChartData: ResolverTypeWrapper<DecayChartData>;
   DecayData: ResolverTypeWrapper<DecayData>;
+  DecayExclusionRule: ResolverTypeWrapper<BasicStoreEntityDecayExclusionRule>;
+  DecayExclusionRuleAddInput: DecayExclusionRuleAddInput;
+  DecayExclusionRuleConnection: ResolverTypeWrapper<Omit<DecayExclusionRuleConnection, 'edges'> & { edges: Array<ResolversTypes['DecayExclusionRuleEdge']> }>;
+  DecayExclusionRuleEdge: ResolverTypeWrapper<Omit<DecayExclusionRuleEdge, 'node'> & { node: ResolversTypes['DecayExclusionRule'] }>;
+  DecayExclusionRuleOrdering: DecayExclusionRuleOrdering;
   DecayHistory: ResolverTypeWrapper<DecayHistory>;
   DecayLiveDetails: ResolverTypeWrapper<DecayLiveDetails>;
   DecayRule: ResolverTypeWrapper<BasicStoreEntityDecayRule>;
@@ -36841,6 +36922,10 @@ export type ResolversParentTypes = ResolversObject<{
   DateTime: Scalars['DateTime']['output'];
   DecayChartData: DecayChartData;
   DecayData: DecayData;
+  DecayExclusionRule: BasicStoreEntityDecayExclusionRule;
+  DecayExclusionRuleAddInput: DecayExclusionRuleAddInput;
+  DecayExclusionRuleConnection: Omit<DecayExclusionRuleConnection, 'edges'> & { edges: Array<ResolversParentTypes['DecayExclusionRuleEdge']> };
+  DecayExclusionRuleEdge: Omit<DecayExclusionRuleEdge, 'node'> & { node: ResolversParentTypes['DecayExclusionRule'] };
   DecayHistory: DecayHistory;
   DecayLiveDetails: DecayLiveDetails;
   DecayRule: BasicStoreEntityDecayRule;
@@ -38092,7 +38177,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'DataComponent' | 'DataSource' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -39571,6 +39656,32 @@ export type DecayChartDataResolvers<ContextType = any, ParentType extends Resolv
 
 export type DecayDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayData'] = ResolversParentTypes['DecayData']> = ResolversObject<{
   live_score_serie?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
+}>;
+
+export type DecayExclusionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayExclusionRule'] = ResolversParentTypes['DecayExclusionRule']> = ResolversObject<{
+  active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  decay_exclusion_observable_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DecayExclusionRuleConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayExclusionRuleConnection'] = ResolversParentTypes['DecayExclusionRuleConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['DecayExclusionRuleEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DecayExclusionRuleEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayExclusionRuleEdge'] = ResolversParentTypes['DecayExclusionRuleEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['DecayExclusionRule'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DecayHistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayHistory'] = ResolversParentTypes['DecayHistory']> = ResolversObject<{
@@ -41564,7 +41675,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
 }>;
@@ -42670,6 +42781,9 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataSourceFieldPatch?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceFieldPatchArgs, 'id' | 'input'>>;
   dataSourceRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataSourceRelationAddArgs, 'id' | 'input'>>;
   dataSourceRelationDelete?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  decayExclusionRuleAdd?: Resolver<Maybe<ResolversTypes['DecayExclusionRule']>, ParentType, ContextType, RequireFields<MutationDecayExclusionRuleAddArgs, 'input'>>;
+  decayExclusionRuleDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDecayExclusionRuleDeleteArgs, 'id'>>;
+  decayExclusionRuleFieldPatch?: Resolver<Maybe<ResolversTypes['DecayExclusionRule']>, ParentType, ContextType, RequireFields<MutationDecayExclusionRuleFieldPatchArgs, 'id' | 'input'>>;
   decayRuleAdd?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<MutationDecayRuleAddArgs, 'input'>>;
   decayRuleDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDecayRuleDeleteArgs, 'id'>>;
   decayRuleFieldPatch?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<MutationDecayRuleFieldPatchArgs, 'id' | 'input'>>;
@@ -44373,6 +44487,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   dataComponents?: Resolver<Maybe<ResolversTypes['DataComponentConnection']>, ParentType, ContextType, Partial<QueryDataComponentsArgs>>;
   dataSource?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<QueryDataSourceArgs, 'id'>>;
   dataSources?: Resolver<Maybe<ResolversTypes['DataSourceConnection']>, ParentType, ContextType, Partial<QueryDataSourcesArgs>>;
+  decayExclusionRule?: Resolver<Maybe<ResolversTypes['DecayExclusionRule']>, ParentType, ContextType, RequireFields<QueryDecayExclusionRuleArgs, 'id'>>;
+  decayExclusionRules?: Resolver<Maybe<ResolversTypes['DecayExclusionRuleConnection']>, ParentType, ContextType, Partial<QueryDecayExclusionRulesArgs>>;
   decayRule?: Resolver<Maybe<ResolversTypes['DecayRule']>, ParentType, ContextType, RequireFields<QueryDecayRuleArgs, 'id'>>;
   decayRules?: Resolver<Maybe<ResolversTypes['DecayRuleConnection']>, ParentType, ContextType, Partial<QueryDecayRulesArgs>>;
   defaultIngestionGroupCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -48055,6 +48171,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DateTime?: GraphQLScalarType;
   DecayChartData?: DecayChartDataResolvers<ContextType>;
   DecayData?: DecayDataResolvers<ContextType>;
+  DecayExclusionRule?: DecayExclusionRuleResolvers<ContextType>;
+  DecayExclusionRuleConnection?: DecayExclusionRuleConnectionResolvers<ContextType>;
+  DecayExclusionRuleEdge?: DecayExclusionRuleEdgeResolvers<ContextType>;
   DecayHistory?: DecayHistoryResolvers<ContextType>;
   DecayLiveDetails?: DecayLiveDetailsResolvers<ContextType>;
   DecayRule?: DecayRuleResolvers<ContextType>;

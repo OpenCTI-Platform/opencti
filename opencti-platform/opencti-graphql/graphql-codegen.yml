@@ -51,6 +51,7 @@ generates:
         IngestionCsv: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionCsv
         IngestionJson: ../modules/ingestion/ingestion-types#BasicStoreEntityIngestionJson
         DecayRule: ../modules/decayRule/decayRule-types#BasicStoreEntityDecayRule
+        DecayExclusionRule: ../modules/decayRule/exclusions/decayExclusionRule-types#BasicStoreEntityDecayExclusionRule
         Organization: ../modules/organization/organization-types#BasicStoreEntityOrganization
         CsvMapper: ../modules/internal/csvMapper/csvMapper-types#BasicStoreEntityCsvMapper
         JsonMapper: ../modules/internal/jsonMapper/jsonMapper-types#BasicStoreEntityJsonMapper

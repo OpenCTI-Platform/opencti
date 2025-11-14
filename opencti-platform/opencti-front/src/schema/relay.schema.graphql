@@ -8917,6 +8917,8 @@ type Query {
   indicatorsDistribution(objectId: String, field: String!, operation: StatsOperation!, limit: Int, order: String, startDate: DateTime, endDate: DateTime, dateAttribute: String): [Distribution]
   decayRule(id: String!): DecayRule
   decayRules(first: Int, after: ID, orderBy: DecayRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayRuleConnection
+  decayExclusionRule(id: String!): DecayExclusionRule
+  decayExclusionRules(first: Int, after: ID, orderBy: DecayExclusionRuleOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DecayExclusionRuleConnection
   organization(id: String!): Organization
   organizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
   securityOrganizations(first: Int, after: ID, orderBy: OrganizationsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): OrganizationConnection
@@ -9792,6 +9794,9 @@ type Mutation {
   decayRuleAdd(input: DecayRuleAddInput!): DecayRule
   decayRuleDelete(id: ID!): ID
   decayRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayRule
+  decayExclusionRuleAdd(input: DecayExclusionRuleAddInput!): DecayExclusionRule
+  decayExclusionRuleFieldPatch(id: ID!, input: [EditInput!]!): DecayExclusionRule
+  decayExclusionRuleDelete(id: ID!): ID
   organizationAdd(input: OrganizationAddInput!): Organization
   organizationDelete(id: ID!): ID
   organizationFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Organization
@@ -13121,6 +13126,43 @@ input DecayRuleAddInput {
   decay_points: [Int!]
   decay_revoke_score: Int!
   decay_observable_types: [String!]
+}
+
+type DecayExclusionRule implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  metrics: [Metric]
+  created_at: DateTime!
+  name: String!
+  description: String
+  decay_exclusion_observable_types: [String!]
+  active: Boolean!
+}
+
+enum DecayExclusionRuleOrdering {
+  name
+  order
+  _score
+}
+
+type DecayExclusionRuleEdge {
+  cursor: String!
+  node: DecayExclusionRule!
+}
+
+type DecayExclusionRuleConnection {
+  pageInfo: PageInfo!
+  edges: [DecayExclusionRuleEdge!]!
+}
+
+input DecayExclusionRuleAddInput {
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  decay_exclusion_observable_types: [String!]
+  active: Boolean!
 }
 
 type Organization implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Identity {
