@@ -88,7 +88,16 @@ describe('playbook sharing component', () => {
               creator_ids: [
                 '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
               ],
-              granted_refs: [externalOrganizationEntity.standard_id]
+              opencti_operation: 'patch',
+              opencti_field_patch: [
+                [
+                  {
+                    operation: 'add',
+                    key: 'objectOrganization',
+                    value: [externalOrganizationEntity.standard_id]
+                  }
+                ]
+              ]
             }
           },
           created: '2020-02-29T14:48:31.601Z',

@@ -626,7 +626,6 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
-        element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
         const patchValue = {
           op: EditOperation.Add,
           path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
@@ -637,10 +636,7 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
           key: INPUT_GRANTED_REFS,
           value: patchValue.value,
         };
-        element.extensions[STIX_EXT_OCTI].opencti_field_patch = [
-          ...(element.extensions[STIX_EXT_OCTI].opencti_field_patch ?? []),
-          patchOperation
-        ];
+        applyOperationFieldPatch(element, [patchOperation]);
         patchOperations.push(patchValue);
       }
       if (patchOperations.length > 0) {
@@ -700,7 +696,6 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
-        element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
         const patchValue = {
           op: EditOperation.Remove,
           path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
@@ -711,10 +706,7 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
           key: INPUT_GRANTED_REFS,
           value: patchValue.value,
         };
-        element.extensions[STIX_EXT_OCTI].opencti_field_patch = [
-          ...(element.extensions[STIX_EXT_OCTI].opencti_field_patch ?? []),
-          patchOperation
-        ];
+        applyOperationFieldPatch(element, [patchOperation]);
         patchOperations.push(patchValue);
       }
       if (patchOperations.length > 0) {
