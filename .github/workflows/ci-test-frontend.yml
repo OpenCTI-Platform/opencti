@@ -72,13 +72,26 @@ jobs:
           --name opencti-e2e-start \
           -p 4500:4100 \
           -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
-          --env-file ${{ github.workspace }}/frontend-e2e-start/opencti-platform/opencti-ci/ci-common.env \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
-          -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
+          -e APP__PORT=4100 \
           -e APP__ENABLED_DEV_FEATURES='["*"]' \
+          -e APP__ADMIN__PASSWORD=admin \
           -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
-          -e PUBLISHER_MANAGER__ENABLED=false \
+          -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+          -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
+          -e APP__HEALTH_ACCESS_KEY=cihealthkey \
+          -e REDIS__HOSTNAME=redis \
+          -e REDIS__NAMESPACE=e2e-start \
+          -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
+          -e ELASTICSEARCH__INDEX_PREFIX=e2e-start \
+          -e MINIO__ENDPOINT=minio \
           -e MINIO__BUCKET_NAME=e2e-start-bucket \
+          -e RABBITMQ__HOSTNAME=rabbitmq \
+          -e RABBITMQ__QUEUE_PREFIX=e2e-start \
+          -e EXPIRATION_SCHEDULER__ENABLED=false \
+          -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
+          -e PUBLISHER_MANAGER__ENABLED=false \
+          -e SMTP__ENABLED=false \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c 'set -ex
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"

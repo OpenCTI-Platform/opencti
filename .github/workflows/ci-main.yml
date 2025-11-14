@@ -6,7 +6,7 @@ on:
       - oob/ci-migrate-to-gh
 
 jobs:
-  wf-build-opencti:
+  wf-build-image:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         image_tag: ${{ github.sha }}
