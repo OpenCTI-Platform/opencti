@@ -346,7 +346,7 @@ steps:
 
 services:
   - name: redis
-    image: redis:8.2.2
+    image: redis:8.2.3
   - name: elastic
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.6
     environment:
