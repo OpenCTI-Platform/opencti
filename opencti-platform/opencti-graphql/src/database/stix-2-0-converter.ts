@@ -212,7 +212,7 @@ export type ConvertFn<T extends StoreEntity, Z extends S.StixObject> = (instance
 const stixDomainConverters = new Map<string, ConvertFn<any, any>>();
 // TODO add registerConverters for module converters
 
-export const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
+const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
   const type = instance.entity_type;
   if (!isBasicObject(type) && !isBasicRelationship(type)) {
     throw UnsupportedError('Type cannot be converted to Stix', { type });
