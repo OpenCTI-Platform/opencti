@@ -348,7 +348,7 @@ services:
   - name: redis
     image: redis:8.2.3
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.7
+    image: elasticsearch:8.19.7
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
