@@ -101,7 +101,7 @@
     "dataloader": "2.2.3",
     "ejs": "3.1.10",
     "eventsource": "2.0.2",
-    "express": "4.21.2",
+    "express": "5.1.0",
     "express-rate-limit": "8.2.1",
     "express-session": "1.18.2",
     "fast-json-patch": "3.1.1",
@@ -205,7 +205,6 @@
   },
   "resolutions": {
     "axios": "1.13.2",
-    "body-parser": "2.2.0",
     "chokidar": "4.0.3",
     "cookie": "1.0.2",
     "cross-fetch": "4.1.0",

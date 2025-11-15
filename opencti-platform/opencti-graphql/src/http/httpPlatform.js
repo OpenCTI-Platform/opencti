@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { URL } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -211,14 +211,14 @@ const createApp = async (app, schema) => {
   });
 
   // -- File download
-  app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/get/*file`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_get');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
-      const { file } = req.params;
+      const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
       await publishFileDownload(context, context.user, data);
@@ -233,14 +233,14 @@ const createApp = async (app, schema) => {
   });
 
   // -- File view
-  app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/view/*file`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_view');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
-      const { file } = req.params;
+      const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
@@ -295,14 +295,14 @@ const createApp = async (app, schema) => {
   });
 
   // -- Pdf view
-  app.get(`${basePath}/storage/html/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/html/*file`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_html');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
-      const { file } = req.params;
+      const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
@@ -323,14 +323,14 @@ const createApp = async (app, schema) => {
   });
 
   // -- Encrypted view
-  app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/encrypted/*file`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_encrypted');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
-      const { file } = req.params;
+      const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
       await publishFileDownload(context, context.user, data);
@@ -534,11 +534,11 @@ const createApp = async (app, schema) => {
   app.post(`${basePath}/chatbot`, getChatbotProxy);
 
   // Other routes - Render index.html
-  app.get('*', async (_, res) => {
+  app.get('*any', async (_, res) => {
     if (ENABLED_UI) {
       const context = executionContext('app_loading');
       const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-      const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
+      const data = await readFile(`${__dirname}/../public/index.html`, 'utf8');
       const settingsTitle = settings?.platform_title;
       const description = 'OpenCTI is an open source platform allowing organizations'
           + ' to manage their cyber threat intelligence knowledge and observables.';
@@ -562,14 +562,12 @@ const createApp = async (app, schema) => {
   });
 
   // Any random unexpected request not GET
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  app.use((req, res, next) => {
+  app.use((_req, res, _next) => {
     res.status(404).send({ status: 'error', error: 'Path not found' });
   });
 
   // Error handling
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  app.use((err, req, res, next) => {
+  app.use((err, req, res, _next) => {
     logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
   });
