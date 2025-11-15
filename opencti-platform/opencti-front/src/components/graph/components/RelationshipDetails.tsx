@@ -358,6 +358,11 @@ const RelationshipDetailsComponent: FunctionComponent<
     return <ErrorNotFound />;
   }
 
+  // Typed helper to access coverage_information without using `any`
+  type CoverageInfo = { coverage_name: string; coverage_score: number };
+  type FromWithCoverage = { coverage_information?: ReadonlyArray<CoverageInfo> | null } | null | undefined;
+  const coverageInfo = (stixRelationship.from as unknown as FromWithCoverage)?.coverage_information;
+
   const computeNotGenericDetails = () => {
     if (stixRelationship.parent_types.includes('stix-ref-relationship')) {
       return (
@@ -589,14 +594,13 @@ const RelationshipDetailsComponent: FunctionComponent<
         </Label>
         {fldt(stixRelationship.created_at)}
       </div>
-      {stixRelationship.relationship_type === 'has-covered'
-        && (stixRelationship.from as any)?.coverage_information && (
+      {stixRelationship.relationship_type === 'has-covered' && coverageInfo && (
         <div>
           <Label>
             {t_i18n('Security coverage metrics')}
           </Label>
           <SecurityCoverageInformation
-            coverage_information={(stixRelationship.from as any).coverage_information}
+            coverage_information={coverageInfo}
             variant="details"
           />
         </div>
