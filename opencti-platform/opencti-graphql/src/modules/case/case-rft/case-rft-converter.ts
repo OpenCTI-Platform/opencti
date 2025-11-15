@@ -31,13 +31,11 @@ export const convertCaseRftToStix_2_0 = (instance: StoreEntityCaseRft): Stix2Cas
   const caseRft = buildStixDomain2(instance);
   return {
     ...caseRft,
-    ...cleanObject({
-      name: instance.name,
-      description: instance.description,
-      severity: instance.severity,
-      priority: instance.priority,
-      takedown_types: instance.takedown_types,
-      object_refs: convertObjectReferences(instance),
-    })
+    name: instance.name,
+    description: instance.description,
+    severity: instance.severity,
+    priority: instance.priority,
+    takedown_types: instance.takedown_types,
+    object_refs: convertObjectReferences(instance),
   };
 };

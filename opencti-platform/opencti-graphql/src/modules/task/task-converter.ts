@@ -29,12 +29,10 @@ export const convertTaskToStix_2_0 = (instance: StoreEntityTask): Stix2Task => {
   const task = buildStixDomain2(instance);
   return {
     ...task,
-    ...cleanObject({
-      name: instance.name,
-      description: instance.description,
-      due_date: convertToStixDate(instance.due_date),
-      created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
-      object_refs: convertObjectReferences(instance),
-    })
+    name: instance.name,
+    description: instance.description,
+    due_date: convertToStixDate(instance.due_date),
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    object_refs: convertObjectReferences(instance)
   };
 };
