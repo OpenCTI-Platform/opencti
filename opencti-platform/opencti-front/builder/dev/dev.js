@@ -116,7 +116,7 @@ esbuild.context({
   app.use(basePath + `/static`, express.static(path.join(__dirname, "./build/static")));
   app.use(`/css`, express.static(path.join(__dirname, "./build")));
   app.use(`/js`, express.static(path.join(__dirname, "./build")));
-  app.get("*", (req, res) => {
+  app.get("*any", (req, res) => {
     const data = readFileSync(`${__dirname}/index.html`, "utf8");
     const withOptionValued = data
       .replace(/%BASE_PATH%/g, basePath)
