@@ -1,4 +1,3 @@
-import { $$asyncIterator } from 'iterall';
 import { withFilter } from 'graphql-subscriptions';
 import * as R from 'ramda';
 import { pubSubAsyncIterator } from '../database/redis';
@@ -9,33 +8,25 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { SYSTEM_USER } from '../utils/access';
 import { getMessagesFilteredByRecipients } from '../domain/settings';
+import type { BasicStoreSettingsMessage } from '../types/settings';
 
-/**
- * @returns {Promise<AsyncIterable<any>>}
- */
-const withCancel = (asyncIterator, onCancel) => {
+const withCancel = (asyncIterator: AsyncIterableIterator<any>, onCancel: () => void): AsyncIterable<any> => {
+  const returnFn = asyncIterator.return;
+  const throwFn = asyncIterator.throw;
   const updatedAsyncIterator = {
-    return() {
+    next: () => asyncIterator.next(),
+    return: returnFn ? () => {
       onCancel();
-      return asyncIterator.return();
-    },
-    next() {
-      return asyncIterator.next();
-    },
-    throw(error) {
-      return asyncIterator.throw(error);
-    },
+      return returnFn();
+    } : undefined,
+    throw: throwFn ? (error: Error) => throwFn(error) : undefined,
   };
-  // noinspection JSValidateTypes
-  return { [$$asyncIterator]: () => updatedAsyncIterator };
+  return { [Symbol.asyncIterator]: () => updatedAsyncIterator };
 };
 
-/**
- * @returns {Promise<AsyncIterable<any>>}
- */
-export const subscribeToUserEvents = async (context, topics) => {
+export const subscribeToUserEvents = async (context: any, topics: string | string[]): Promise<AsyncIterable<any>> => {
   const asyncIterator = pubSubAsyncIterator(topics);
-  const filtering = withFilter(() => asyncIterator, (payload) => {
+  const filtering = await withFilter(() => asyncIterator, (payload) => {
     if (!payload) {
       // When disconnected, an empty payload is dispatched.
       return false;
@@ -43,18 +34,13 @@ export const subscribeToUserEvents = async (context, topics) => {
     return [payload.instance.user_id, payload.instance.id].includes(context.user.id);
   })();
   return {
-    [Symbol.asyncIterator]() {
-      return filtering;
-    }
+    [Symbol.asyncIterator]: () => filtering,
   };
 };
 
-/**
- * @returns {Promise<AsyncIterable<any>>}
- */
-export const subscribeToAiEvents = async (context, id, topics) => {
+export const subscribeToAiEvents = async (context: any, id: string, topics: string | string[]): Promise<AsyncIterable<any>> => {
   const asyncIterator = pubSubAsyncIterator(topics);
-  const filtering = withFilter(() => asyncIterator, (payload) => {
+  const filtering = await withFilter(() => asyncIterator, (payload) => {
     if (!payload) {
       // When disconnected, an empty payload is dispatched.
       return false;
@@ -62,21 +48,27 @@ export const subscribeToAiEvents = async (context, id, topics) => {
     return payload.user.id === context.user.id && payload.instance.bus_id === id;
   })();
   return {
-    [Symbol.asyncIterator]() {
-      return filtering;
-    }
+    [Symbol.asyncIterator]: () => filtering,
   };
 };
 
-/**
- * @returns {Promise<AsyncIterable<any>>}
- */
-export const subscribeToInstanceEvents = async (parent, context, id, topics, opts = {}) => {
+export const subscribeToInstanceEvents = async (
+  parent: any,
+  context: any,
+  id: string,
+  topics: string | string[],
+  opts: {
+    preFn?: () => void,
+    cleanFn?: () => void,
+    notifySelf? : boolean,
+    type?: string | string[],
+  } = {}
+): Promise<AsyncIterable<any>> => {
   const { preFn, cleanFn, notifySelf = false, type } = opts;
   if (preFn) preFn();
   const item = await internalLoadById(context, context.user, id, { baseData: true, type });
   if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
-  const filtering = withFilter(
+  const filtering = await withFilter(
     () => pubSubAsyncIterator(topics),
     (payload) => {
       if (!payload) {
@@ -95,21 +87,16 @@ export const subscribeToInstanceEvents = async (parent, context, id, topics, opt
     });
   }
   return {
-    [Symbol.asyncIterator]() {
-      return filtering;
-    }
+    [Symbol.asyncIterator]: () => filtering,
   };
 };
 
-/**
- * @returns {Promise<AsyncIterable<any>>}
- */
-export const subscribeToPlatformSettingsEvents = async (context) => {
+export const subscribeToPlatformSettingsEvents = async (context: any): Promise<AsyncIterable<any>> => {
   const asyncIterator = pubSubAsyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC);
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const filtering = withFilter(() => asyncIterator, (payload) => {
-    const oldMessages = getMessagesFilteredByRecipients(context.user, settings);
-    const newMessages = getMessagesFilteredByRecipients(context.user, payload.instance);
+  const filtering = await withFilter(() => asyncIterator, (payload) => {
+    const oldMessages: BasicStoreSettingsMessage[] = getMessagesFilteredByRecipients(context.user, settings);
+    const newMessages: BasicStoreSettingsMessage[] = getMessagesFilteredByRecipients(context.user, payload.instance);
     // If removed and was activated
     const removedMessage = R.difference(oldMessages, newMessages);
     if (removedMessage.length === 1 && removedMessage[0].activated) {
@@ -126,8 +113,6 @@ export const subscribeToPlatformSettingsEvents = async (context) => {
     });
   })();
   return {
-    [Symbol.asyncIterator]() {
-      return filtering;
-    }
+    [Symbol.asyncIterator]: () => filtering,
   };
 };
