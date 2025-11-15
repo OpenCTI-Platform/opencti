@@ -26,6 +26,7 @@ import ItemEntityType from '../../ItemEntityType';
 import { GraphLink } from '../graph.types';
 import { EMPTY_VALUE } from '../../../utils/String';
 import Label from '@common/label/Label';
+import SecurityCoverageInformation from '../../../private/components/analyses/security_coverages/SecurityCoverageInformation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -89,6 +90,13 @@ const relationshipDetailsQuery = graphql`
           }
           ... on StixCoreRelationship {
             relationship_type
+          }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
           }
         }
         to {
@@ -178,6 +186,13 @@ const relationshipDetailsQuery = graphql`
           ... on StixCoreRelationship {
             relationship_type
           }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
+          }
         }
         to {
           ... on BasicObject {
@@ -249,6 +264,13 @@ const relationshipDetailsQuery = graphql`
             parent_types
             entity_type
             relationship_type
+          }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
           }
         }
         to {
@@ -567,6 +589,18 @@ const RelationshipDetailsComponent: FunctionComponent<
         </Label>
         {fldt(stixRelationship.created_at)}
       </div>
+      {stixRelationship.relationship_type === 'has-covered'
+        && (stixRelationship.from as any)?.coverage_information && (
+        <div>
+          <Label>
+            {t_i18n('Security coverage metrics')}
+          </Label>
+          <SecurityCoverageInformation
+            coverage_information={(stixRelationship.from as any).coverage_information}
+            variant="details"
+          />
+        </div>
+      )}
       {computeNotGenericDetails()}
       {expandable && (
         <IconButton

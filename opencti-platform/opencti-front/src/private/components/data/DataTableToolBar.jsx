@@ -87,7 +87,7 @@ import { externalReferencesQueriesSearchQuery } from '../analyses/external_refer
 import Drawer from '../common/drawer/Drawer';
 import EETooltip from '../common/entreprise_edition/EETooltip';
 import { objectAssigneeFieldMembersSearchQuery } from '../common/form/ObjectAssigneeField';
-import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
+import ObjectMarkingField, { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMarkingField';
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
@@ -276,6 +276,26 @@ const toolBarQueryTaskAddMutation = graphql`
   }
 `;
 
+const toolBarBulkEditMarkingsDomainMutation = graphql`
+  mutation DataTableToolBarBulkEditMarkingsDomainMutation($id: ID!, $input: [EditInput]!) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
+const toolBarBulkEditMarkingsCyberObservableMutation = graphql`
+  mutation DataTableToolBarBulkEditMarkingsCyberObservableMutation($id: ID!, $input: [EditInput]!) {
+    stixCyberObservableEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
 const toolBarConnectorsQuery = graphql`
   query DataTableToolBarConnectorsQuery($type: String!) {
     enrichmentConnectors(type: $type) {
@@ -371,6 +391,7 @@ class DataTableToolBar extends Component {
       displayAddInContainer: false,
       displayShare: false,
       displayUnshare: false,
+      displayEditMarkings: false,
       displayPromote: false,
       displaySendEmail: false,
       containerCreation: false,
@@ -383,6 +404,7 @@ class DataTableToolBar extends Component {
       description: '',
       processing: false,
       markingDefinitions: [],
+      bulkMarkings: [],
       labels: [],
       identities: [],
       users: [],
@@ -477,6 +499,105 @@ class DataTableToolBar extends Component {
 
   handleCloseUnshare() {
     this.setState({ displayUnshare: false });
+  }
+
+  handleOpenEditMarkings() {
+    this.setState({ displayEditMarkings: true });
+  }
+
+  handleCloseEditMarkings() {
+    this.setState({ displayEditMarkings: false, bulkMarkings: [] });
+  }
+
+  handleBulkEditMarkings() {
+    const { t } = this.props;
+    const { bulkMarkings } = this.state;
+    const { selectedElements, selectAll } = this.props;
+
+    if (!bulkMarkings || bulkMarkings.length === 0) {
+      MESSAGING$.notifyError(t('Please select at least one marking'));
+      return;
+    }
+
+    const markingIds = bulkMarkings.map((m) => m.value);
+    const input = [{ key: 'objectMarking', value: markingIds, operation: 'replace' }];
+
+    let entitiesToProcess = [];
+    if (selectAll) {
+      // For selectAll, we would need to fetch all entities based on filters
+      // For now, we'll show a message that this requires a task
+      MESSAGING$.notifyError(t('Bulk edit markings for all entities requires a background task. Please select specific entities.'));
+      this.handleCloseEditMarkings();
+      return;
+    }
+    entitiesToProcess = Object.values(selectedElements || {});
+
+    if (entitiesToProcess.length === 0) {
+      MESSAGING$.notifyError(t('Please select at least one entity'));
+      return;
+    }
+
+    this.setState({ processing: true });
+
+    let successCount = 0;
+    let errorCount = 0;
+    const total = entitiesToProcess.length;
+
+    const processEntity = (entity) => {
+      return new Promise((resolve) => {
+        // Determine which mutation to use based on entity type
+        const isStixCyberObservable = entity.entity_type && entity.entity_type.includes('Stix-Cyber-Observable');
+        const isStixDomainObject = entity.entity_type && !isStixCyberObservable;
+        let mutation;
+        if (isStixCyberObservable) {
+          mutation = toolBarBulkEditMarkingsCyberObservableMutation;
+        } else if (isStixDomainObject) {
+          mutation = toolBarBulkEditMarkingsDomainMutation;
+        } else {
+          // For other types (relationships, etc.), try domain object mutation
+          mutation = toolBarBulkEditMarkingsDomainMutation;
+        }
+
+        commitMutation({
+          mutation,
+          variables: {
+            id: entity.id,
+            input,
+          },
+          onCompleted: () => {
+            successCount += 1;
+            if (successCount + errorCount === total) {
+              this.setState({ processing: false });
+              this.handleCloseEditMarkings();
+              if (errorCount === 0) {
+                MESSAGING$.notifySuccess(t(`Successfully updated markings for ${successCount} ${successCount === 1 ? 'entity' : 'entities'}`));
+              } else {
+                MESSAGING$.notifyWarning(t(`Updated ${successCount} ${successCount === 1 ? 'entity' : 'entities'}, ${errorCount} ${errorCount === 1 ? 'error' : 'errors'}`));
+              }
+            }
+            resolve();
+          },
+          onError: () => {
+            errorCount += 1;
+            if (successCount + errorCount === total) {
+              this.setState({ processing: false });
+              this.handleCloseEditMarkings();
+              if (errorCount === total) {
+                MESSAGING$.notifyError(t('Failed to update markings'));
+              } else {
+                MESSAGING$.notifyWarning(t(`Updated ${successCount} ${successCount === 1 ? 'entity' : 'entities'}, ${errorCount} ${errorCount === 1 ? 'error' : 'errors'}`));
+              }
+            }
+            resolve();
+          },
+        });
+      });
+    };
+
+    // Process entities sequentially to avoid overwhelming the server
+    entitiesToProcess.reduce((promise, entity) => {
+      return promise.then(() => processEntity(entity));
+    }, Promise.resolve());
   }
 
   handleCloseSendEmail() {
@@ -2599,6 +2720,60 @@ class DataTableToolBar extends Component {
                         </Tooltip>
                       </Security>
                     )}
+                    {!deleteOperationEnabled && !removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
+                      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                        <Tooltip title={t('Edit markings')}>
+                          <IconButton
+                            color="primary"
+                            aria-label="edit-markings"
+                            onClick={this.handleOpenEditMarkings.bind(this)}
+                            size="small"
+                            disabled={
+                              numberOfSelectedElements === 0
+                              || this.state.processing
+                            }
+                          >
+                            <LabelOutline fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Security>
+                    )}
+                    {deleteOperationEnabled && (
+                      <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                        <Tooltip title={warningMessage || t('Restore')}>
+                          <span>
+                            <IconButton
+                              aria-label="restore"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
+                              onClick={this.handleLaunchRestore.bind(this)}
+                              color={warning ? 'error' : 'primary'}
+                              size="small"
+                            >
+                              <RestoreOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title={warningMessage || t('Confirm delete')}>
+                          <span>
+                            <IconButton
+                              aria-label="completeDelete"
+                              disabled={
+                                numberOfSelectedElements === 0
+                                || this.state.processing
+                              }
+                              onClick={this.handleLaunchCompleteDelete.bind(this)}
+                              color={warning ? 'error' : 'primary'}
+                              size="small"
+                            >
+                              <DeleteOutlined fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </Security>
+                    )}
                   </div>
                 )}
               </Toolbar>
@@ -3325,6 +3500,41 @@ class DataTableToolBar extends Component {
                     }}
                   >
                     {t('Unshare')}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+              <Dialog
+                slotProps={{ paper: { elevation: 1 } }}
+                fullWidth={true}
+                maxWidth="sm"
+                slots={{ transition: Transition }}
+                open={this.state.displayEditMarkings}
+                onClose={() => this.setState({ displayEditMarkings: false })}
+              >
+                <DialogTitle>{t('Edit markings')}</DialogTitle>
+                <DialogContent>
+                  <ObjectMarkingField
+                    name="bulkMarkings"
+                    label={t('Markings')}
+                    onChange={(name, values) => {
+                      this.setState({ bulkMarkings: values });
+                    }}
+                    setFieldValue={(name, values) => {
+                      this.setState({ bulkMarkings: values });
+                    }}
+                    style={{ marginTop: 20 }}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={this.handleCloseEditMarkings.bind(this)}>
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={this.handleBulkEditMarkings.bind(this)}
+                    disabled={this.state.processing || !this.state.bulkMarkings || this.state.bulkMarkings.length === 0}
+                  >
+                    {this.state.processing ? t('Processing...') : t('Apply')}
                   </Button>
                 </DialogActions>
               </Dialog>
