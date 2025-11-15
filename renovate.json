@@ -8,6 +8,7 @@
     "dependencies",
     "filigran team"
   ],
+  "commitMessagePrefix": "[deps]",
   "minimumReleaseAge": "3 days",
   "prHourlyLimit": 2,
   "timezone": "Europe/Paris",
