@@ -25,6 +25,7 @@ import ItemCreators from '../../ItemCreators';
 import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 import ItemEntityType from '../../ItemEntityType';
 import { GraphLink } from '../graph.types';
+import SecurityCoverageInformation from '../../../private/components/analyses/security_coverages/SecurityCoverageInformation';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -91,6 +92,13 @@ const relationshipDetailsQuery = graphql`
           }
           ... on StixCoreRelationship {
             relationship_type
+          }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
           }
         }
         to {
@@ -180,6 +188,13 @@ const relationshipDetailsQuery = graphql`
           ... on StixCoreRelationship {
             relationship_type
           }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
+          }
         }
         to {
           ... on BasicObject {
@@ -251,6 +266,13 @@ const relationshipDetailsQuery = graphql`
             parent_types
             entity_type
             relationship_type
+          }
+          ... on SecurityCoverage {
+            id
+            coverage_information {
+              coverage_name
+              coverage_score
+            }
           }
         }
         to {
@@ -569,6 +591,17 @@ RelationshipDetailsComponentProps
         {t_i18n('Platform creation date')}
       </Typography>
       {fldt(stixRelationship.created_at)}
+      {stixRelationship.relationship_type === 'has-covered' && (stixRelationship.from as any)?.coverage_information && (
+        <>
+          <Typography variant="h3" gutterBottom={true} className={classes.label}>
+            {t_i18n('Security coverage metrics')}
+          </Typography>
+          <SecurityCoverageInformation
+            coverage_information={(stixRelationship.from as any).coverage_information}
+            variant="details"
+          />
+        </>
+      )}
       {computeNotGenericDetails()}
       {expandable && (
         <Button
