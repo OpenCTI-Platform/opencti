@@ -2885,6 +2885,12 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   updatePatch.confidence = confidenceLevelToApply;
   // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
   // endregion
+  // Preserve vulnerability name (CVE) if missing from update patch
+  // This fixes issue #13169 where CVE information is deleted when Jira connector sends updates without name field
+  if (type === ENTITY_TYPE_VULNERABILITY && isEmptyField(updatePatch.name) && isNotEmptyField(resolvedElement.name)) {
+    // Preserve existing name (CVE identifier) if not in update patch
+    updatePatch.name = resolvedElement.name;
+  }
   // -- Upsert attributes
   const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
   for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
