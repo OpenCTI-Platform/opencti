@@ -9,13 +9,14 @@
     "filigran team"
   ],
   "minimumReleaseAge": "3 days",
-  "prConcurrentLimit": 2,
+  "prHourlyLimit": 2,
   "timezone": "Europe/Paris",
   "schedule": [
     "* 0-4,22-23 * * 1-5",
     "* * * * 0,6"
   ],
   "updateNotScheduled": false,
+  "rebaseWhen": "conflicted",
   "packageRules": [
     {
       "description": "Disable updates of images intentionally pinned to older versions for compatibility testing",
@@ -52,11 +53,13 @@
         "pin",
         "digest"
       ],
+      "rebaseWhen": "always",
       "automerge": false
     }
   ],
   "lockFileMaintenance": {
     "schedule": "* 5 * * 0",
+    "rebaseWhen": "always",
     "automerge": false,
     "enabled": true
   }
