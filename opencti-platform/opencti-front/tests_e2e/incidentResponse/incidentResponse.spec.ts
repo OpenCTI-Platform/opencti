@@ -344,7 +344,7 @@ test('Incident response live entities creation and relationships', async ({ page
   await expect(externalReferenceForm.sourceNameField.getByText('This field is required')).toBeVisible();
   await expect(externalReferenceForm.urlField.getByText('The value must be an URL')).toBeVisible();
   await externalReferenceForm.sourceNameField.fill('external ref incident response');
-  await externalReferenceForm.urlField.fill('https://github.com/OpenCTI-Platform/client-python');
+  await externalReferenceForm.urlField.fill('https://example.net');
   await externalReferenceForm.associatedFileField.uploadContentFile(path.join(__dirname, 'assets/incidentResponse.test.pdf'));
   await expect(externalReferenceForm.associatedFileField.getByText('incidentResponse.test.pdf')).toBeVisible();
   await externalReferenceForm.getCreateButton().click();
