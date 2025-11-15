@@ -75,6 +75,18 @@ export class TelemetryMeterManager {
   // +1 when a user that login into application, does not count token authentication
   userLoginCount = 0;
 
+  // Number of form intakes created
+  formIntakeCreatedCount = 0;
+
+  // Number of form intakes updated
+  formIntakeUpdatedCount = 0;
+
+  // Number of form intakes deleted
+  formIntakeDeletedCount = 0;
+
+  // Number of form intakes submitted
+  formIntakeSubmittedCount = 0;
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -183,6 +195,22 @@ export class TelemetryMeterManager {
     this.userLoginCount = n;
   }
 
+  setFormIntakeCreatedCount(n: number) {
+    this.formIntakeCreatedCount = n;
+  }
+
+  setFormIntakeUpdatedCount(n: number) {
+    this.formIntakeUpdatedCount = n;
+  }
+
+  setFormIntakeDeletedCount(n: number) {
+    this.formIntakeDeletedCount = n;
+  }
+
+  setFormIntakeSubmittedCount(n: number) {
+    this.formIntakeSubmittedCount = n;
+  }
+
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
@@ -222,5 +250,9 @@ export class TelemetryMeterManager {
     this.registerGauge('pir_count', 'number of PIRs', 'pirCount');
     this.registerGauge('connector_deployed_count', 'Number of connectors deployed via composer', 'connectorDeployedCount');
     this.registerGauge('user_login_count', 'Number of user that logs-in into application', 'userLoginCount');
+    this.registerGauge('form_intake_created_count', 'Number of form intakes created', 'formIntakeCreatedCount');
+    this.registerGauge('form_intake_updated_count', 'Number of form intakes updated', 'formIntakeUpdatedCount');
+    this.registerGauge('form_intake_deleted_count', 'Number of form intakes deleted', 'formIntakeDeletedCount');
+    this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
   }
 }

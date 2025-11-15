@@ -100,6 +100,7 @@ export const addServiceAccountIntoUserCount = async () => {
 export const addUserEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_EMAIL_SEND, 1);
 };
+
 export const addOnboardingEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND, 1);
 };
@@ -119,12 +120,15 @@ export const addFormIntakeDeletedCount = async () => {
 export const addFormIntakeSubmittedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_SUBMITTED, 1);
 };
+
 export const addUserBackgroundTaskCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_BACKGROUND_TASK_USER, 1);
 };
+
 export const addEmailTemplateCreatedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_EMAIL_TEMPLATE_CREATED, 1);
 };
+
 export const addForgotPasswordCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORGOT_PASSWORD, 1);
 };
@@ -291,6 +295,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setConnectorDeployedCount(connectorDeployedCountInRedis);
     const userLoginCountInRedis = await redisGetTelemetry(TELEMETRY_USER_LOGIN);
     manager.setUserLoginCount(userLoginCountInRedis);
+    const formIntakeCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_CREATED);
+    manager.setFormIntakeCreatedCount(formIntakeCreatedCountInRedis);
+    const formIntakeUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_UPDATED);
+    manager.setFormIntakeUpdatedCount(formIntakeUpdatedCountInRedis);
+    const formIntakeDeletedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_DELETED);
+    manager.setFormIntakeDeletedCount(formIntakeDeletedCountInRedis);
+    const formIntakeSubmittedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_SUBMITTED);
+    manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     // end region Telemetry user events
 
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');
