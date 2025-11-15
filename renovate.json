@@ -19,9 +19,15 @@
   "packageRules": [
     {
       "description": "Disable updates of images intentionally pinned to older versions for compatibility testing",
-      "matchFiles": ["^\\.drone\\.yml$"],
-      "matchDatasources": ["docker"],
-      "matchPackageNames": ["python"],
+      "matchFileNames": [
+        "^\\.drone\\.yml$"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "python"
+      ],
       "matchCurrentVersion": "^3\\.(9|10|11|12)$",
       "enabled": false
     },
