@@ -21,37 +21,19 @@ steps:
       - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
 
-  - name: backend-verify-licenses
+  - name: verify-licenses
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
     volumes:
       - name: cache-backend-verify-licenses-yarn
         path: /root/.yarn/berry
     commands:
       - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-      - apk add build-base git libffi-dev cargo
-      - pip3 install --upgrade setuptools
-      - cd "$DRONE_WORKSPACE/client-python"
-      - pip install -r requirements.txt
-      - pip install -e .[dev,doc]
-      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
-      - yarn install
+      - cd "$DRONE_WORKSPACE/opencti-platform"
+      - yarn install --mode=skip-build
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-front"
       - yarn verify-licenses
-    depends_on:
-      - dependencies-checkout
-
-  - name: frontend-verify-licenses
-    image: node:22.21.1
-    volumes:
-      - name: cache-frontend-verify-licenses-yarn
-        path: /root/.yarn/berry
-    commands:
-      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-      - cd ./opencti-platform/opencti-front
-      - npm install -g corepack
-      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
-      - yarn install
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
       - yarn verify-licenses
     depends_on:
       - dependencies-checkout
@@ -63,8 +45,7 @@ steps:
       - ./scripts/generate-licenses.sh
       - test -f ./licenses/third-party-licenses.txt
     depends_on:
-      - backend-verify-licenses
-      - frontend-verify-licenses
+      - verify-licenses
 
   - name: api-tests
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
@@ -93,14 +74,13 @@ steps:
     commands:
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
       - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - npm install -g corepack
       - apk add build-base git libffi-dev cargo
       - pip3 install --upgrade setuptools
       - cd "$DRONE_WORKSPACE/client-python"
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd "$DRONE_WORKSPACE/opencti-platform/opencti-graphql"
-      - npm install -g corepack
-      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn build
       - yarn check-ts
@@ -135,11 +115,8 @@ steps:
       path: /root/.yarn/berry
     commands:
       - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-      - apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
-      - npm install -g node-gyp
-      - cd opencti-platform/opencti-front
       - npm install -g corepack
-      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-front"
       - yarn install
       - yarn build
       - yarn check-ts
@@ -160,11 +137,10 @@ steps:
     ipc: host
     commands:
       - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - npm install -g corepack
       - apt-get update
       - apt-get -y install netcat-traditional
-      - cd opencti-platform/opencti-front
-      - npm install -g corepack
-      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-front"
       - yarn install
       - npx playwright install --with-deps chromium
       - yarn build
@@ -220,9 +196,9 @@ steps:
   - name: frontend-verify-translation
     image: node:22.21.1
     commands:
-      - cd opencti-platform/opencti-front
+      - cd "$DRONE_WORKSPACE/opencti-platform/opencti-front"
       - node script/verify-translation.js
-  
+
   - name: client-test-39
     image: python:3.9
     environment:
@@ -389,9 +365,10 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__ENABLED: false
     commands:
-      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-      - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - npm install -g corepack
+      - sleep 10
       - ls -lart
       - apk add build-base git libffi-dev cargo
       - mkdir -p /tmp/raw-start-platform/
@@ -400,8 +377,6 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/raw-start-platform/opencti-graphql
-      - npm install -g corepack
-      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
@@ -433,9 +408,10 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__ENABLED: false
     commands:
-      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-      - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - npm install -g corepack
+      - sleep 10
       - apk add build-base git libffi-dev cargo
       - mkdir -p /tmp/live-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/live-start-platform/
@@ -443,7 +419,6 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/live-start-platform/opencti-graphql
-      - npm install -g corepack
       - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
@@ -476,9 +451,10 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__ENABLED: false
     commands:
-      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-      - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - npm install -g corepack
+      - sleep 10
       - apk add build-base git libffi-dev cargo
       - mkdir -p /tmp/direct-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/direct-start-platform/
@@ -486,7 +462,6 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/direct-start-platform/opencti-graphql
-      - npm install -g corepack
       - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
@@ -499,8 +474,8 @@ services:
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
     commands:
-      - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
+      - sleep 10
       - apk add build-base git libffi-dev cargo
       - cp -a opencti-worker /tmp/direct-start-worker
       - cd "$DRONE_WORKSPACE/client-python"
@@ -520,8 +495,8 @@ services:
       OPENCTI_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
       WORKER_LOG_LEVEL: info
     commands:
-      - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
+      - sleep 10
       - cp -a opencti-worker /tmp/opencti-test-worker
       - apk add build-base git libffi-dev cargo
       - cd "$DRONE_WORKSPACE/client-python"
@@ -560,9 +535,10 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
       SMTP__ENABLED: false
     commands:
-      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
-      - sleep 10
       - if [ -f $DRONE_WORKSPACE/api-test.skip ]; then echo "API TESTS ARE SKIPPED" ; exit 0; fi
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - npm install -g corepack
+      - sleep 10
       - apk add build-base git libffi-dev cargo
       - mkdir -p /tmp/restore-start-platform/
       - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/restore-start-platform/
@@ -570,7 +546,6 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/restore-start-platform/opencti-graphql
-      - npm install -g corepack
       - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python
@@ -605,6 +580,7 @@ services:
       SMTP__ENABLED: false
     commands:
       - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - npm install -g corepack
       - sleep 10
       - apk add build-base git libffi-dev cargo
       - mkdir -p /tmp/e2e-start-platform/
@@ -613,7 +589,6 @@ services:
       - pip install -r requirements.txt
       - pip install -e .[dev,doc]
       - cd /tmp/e2e-start-platform/opencti-graphql
-      - npm install -g corepack
       - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
       - yarn install
       - yarn install:python

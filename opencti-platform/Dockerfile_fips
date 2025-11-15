@@ -4,7 +4,7 @@ FROM base AS graphql-deps-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./
-COPY opencti-graphql/patch ./patch
+COPY patch ./patch
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo postfix postfix-pcre gettext-dev \
     && npm install -g node-gyp \
@@ -16,7 +16,7 @@ FROM base AS graphql-builder
 
 WORKDIR /opt/opencti-build/opencti-graphql
 COPY opencti-graphql/package.json opencti-graphql/yarn.lock ../.yarnrc.yml ./
-COPY opencti-graphql/patch ./patch
+COPY patch ./patch
 RUN set -ex; \
     apk add --no-cache git tini gcc g++ make musl-dev cargo postfix postfix-pcre gettext-dev \
     && npm install -g node-gyp \
