@@ -12292,7 +12292,7 @@ __metadata:
     set-interval-async: "npm:3.0.3"
     source-map: "npm:0.7.6"
     tough-cookie: "npm:6.0.0"
-    trino-client: "npm:0.2.8"
+    trino-client: "npm:0.2.9"
     turndown: "npm:7.2.2"
     typescript: "npm:5.9.3"
     unzipper: "npm:0.12.3"
@@ -14478,12 +14478,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"trino-client@npm:0.2.8":
-  version: 0.2.8
-  resolution: "trino-client@npm:0.2.8"
+"trino-client@npm:0.2.9":
+  version: 0.2.9
+  resolution: "trino-client@npm:0.2.9"
   dependencies:
-    axios: "npm:1.11.0"
-  checksum: 10c0/113c971d20e2b70e9b0a2278c2cff3800e8e17d9d2390b94e059af747f0a9a32a7145bc61fea4edaa28e989b063ad7a11790c693bc33ed28ebcf5fa44502227d
+    axios: "npm:1.13.2"
+  checksum: 10c0/c04909db1ae80a489975d16366798369d6ae243e7c01bb8fb4edc3cfbaef45e56ce0b62bf26dd1e2e3befedb0a90bef23af65dfddc6a06ddade4cd90ea2a1b16
   languageName: node
   linkType: hard
 
