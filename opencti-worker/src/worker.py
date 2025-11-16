@@ -157,6 +157,14 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             True,
             0,
         )
+        self.worker_queue_concurrency_enabled = get_config_variable(
+            "WORKER_QUEUE_CONCURRENCY_ENABLED",
+            ["worker", "queue_concurrency_enabled"],
+            config,
+            False,
+            False,
+        )
+
         # Telemetry
         if self.telemetry_enabled:
             self.prom_httpd, self.prom_t = start_http_server(
@@ -275,6 +283,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             pika_parameters,
                             execution_pool,
                             push_handler.handle_message,
+                            self.worker_queue_concurrency_enabled,
                         )
 
                     # Listen for webhook message
@@ -299,6 +308,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 self.build_pika_parameters(connector_config),
                                 listen_execution_pool,
                                 listen_handler.handle_message,
+                                self.worker_queue_concurrency_enabled,
                             )
 
                 # Stop consumers whose queues no longer exist
