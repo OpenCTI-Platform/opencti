@@ -12276,7 +12276,7 @@ __metadata:
     node-forge: "npm:1.3.1"
     nodemailer: "npm:7.0.10"
     openai: "npm:4.104.0"
-    openid-client: "npm:5.6.5"
+    openid-client: "npm:5.7.1"
     opentelemetry-node-metrics: "npm:3.0.0"
     otplib: "npm:12.0.1"
     passport: "npm:0.7.0"
@@ -12317,27 +12317,27 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"openid-client@npm:5.6.5":
-  version: 5.6.5
-  resolution: "openid-client@npm:5.6.5"
+"openid-client@npm:5.7.1":
+  version: 5.7.1
+  resolution: "openid-client@npm:5.7.1"
   dependencies:
-    jose: "npm:^4.15.5"
+    jose: "npm:^4.15.9"
     lru-cache: "npm:^6.0.0"
     object-hash: "npm:^2.2.0"
     oidc-token-hash: "npm:^5.0.3"
-  checksum: 10c0/4308dcd37a9ffb1efc2ede0bc556ae42ccc2569e71baa52a03ddfa44407bf403d4534286f6f571381c5eaa1845c609ed699a5eb0d350acfb8c3bacb72c2a6890
+  checksum: 10c0/6aae649758562002eace7574b6eda02be7eddbb0df61eef497ae98b7a4a0ae4c6b09f3f0c1b9b6cb7fcc0c70bbde2576691bf31b870db1f19ab634c1def10bc7
   languageName: node
   linkType: hard
 
-"openid-client@patch:openid-client@5.6.5#./patch/openid-client-5.6.5.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 5.6.5
-  resolution: "openid-client@patch:openid-client@npm%3A5.6.5#./patch/openid-client-5.6.5.patch::version=5.6.5&hash=dbea69&locator=opencti-graphql%40workspace%3A."
+"openid-client@patch:openid-client@5.7.1#./patch/openid-client.patch::locator=opencti-graphql%40workspace%3A.":
+  version: 5.7.1
+  resolution: "openid-client@patch:openid-client@npm%3A5.7.1#./patch/openid-client.patch::version=5.7.1&hash=dbea69&locator=opencti-graphql%40workspace%3A."
   dependencies:
-    jose: "npm:^4.15.5"
+    jose: "npm:^4.15.9"
     lru-cache: "npm:^6.0.0"
     object-hash: "npm:^2.2.0"
     oidc-token-hash: "npm:^5.0.3"
-  checksum: 10c0/422ef072aa173ae31c1710eeb3de5845fd5e1f7ded39d643df052d8588b8bec84504add5162377c8e48c8c8ae7ff6ea5f5670ca3692db9a9e410c6893135731e
+  checksum: 10c0/0510bd9870d6a7c37c5bfc377425c69cf7a7e1ae57bd71acac4336124c322426dce322dd6378303d5265767a5a6734bb39f214443a2497463c850cacad73dd0c
   languageName: node
   linkType: hard
 
