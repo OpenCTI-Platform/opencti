@@ -18,7 +18,8 @@ import { Route, Routes, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery } from 'react-relay';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { RootPlaybookQuery } from './__generated__/RootPlaybookQuery.graphql';
-import Playbook from './Playbook';
+import { PlaybookComponentsQuery } from './__generated__/PlaybookComponentsQuery.graphql';
+import Playbook, { playbookComponentsQuery } from './Playbook';
 import Loader from '../../../../components/Loader';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -28,16 +29,17 @@ const playbookQuery = graphql`
     playbook(id: $id) {
       ...Playbook_playbook
     }
-    ...Playbook_playbookComponents
   }
 `;
 
 interface RootPlaybookComponentProps {
   playbookQueryRef: PreloadedQuery<RootPlaybookQuery>
+  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>
 }
 
 const RootPlaybookComponent = ({
   playbookQueryRef,
+  playbookComponentsQueryRef,
 }: RootPlaybookComponentProps) => {
   const data = usePreloadedQuery(playbookQuery, playbookQueryRef);
   const { playbook } = data;
@@ -50,7 +52,7 @@ const RootPlaybookComponent = ({
         element={
           <Playbook
             dataPlaybook={playbook}
-            dataPlaybookComponents={data}
+            playbookComponentsQueryRef={playbookComponentsQueryRef}
           />
         }
       />
@@ -61,6 +63,10 @@ const RootPlaybookComponent = ({
 const RootPlaybook = () => {
   const { playbookId } = useParams();
   if (!playbookId) return <ErrorNotFound/>;
+
+  const playbookComponentsQueryRef = useQueryLoading<PlaybookComponentsQuery>(
+    playbookComponentsQuery,
+  );
   const playbookQueryRef = useQueryLoading<RootPlaybookQuery>(
     playbookQuery,
     { id: playbookId },
@@ -68,8 +74,11 @@ const RootPlaybook = () => {
 
   return (
     <Suspense fallback={<Loader />}>
-      {playbookQueryRef && (
-        <RootPlaybookComponent playbookQueryRef={playbookQueryRef} />
+      {playbookQueryRef && playbookComponentsQueryRef && (
+        <RootPlaybookComponent
+          playbookQueryRef={playbookQueryRef}
+          playbookComponentsQueryRef={playbookComponentsQueryRef}
+        />
       )}
     </Suspense>
   );
