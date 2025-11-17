@@ -51,7 +51,7 @@ The bulk search capabilities is available in the top bar of the platform and all
 
 ![Bulk search](assets/bulk-search.png)
 
-When searching in bulk, OpenCTI is only looking for an exact match in some properties:
+When searching in bulk, OpenCTI is only looking for an case-insensitive exact match in some properties:
 
 * `name`
 * `aliases`
@@ -60,15 +60,34 @@ When searching in bulk, OpenCTI is only looking for an exact match in some prope
 * `value`
 * `subject`
 * `abstract`
+* `x_opencti_additional_names`
+* `account_login`
+* `account_type`
+* `attribute_key`
+* `card_number`
+* `iban`
 * `hashes.MD5`
 * `hashes.SHA-1`
 * `hashes.SHA-256`
 * `hashes.SHA-512`
-* `x_opencti_additional_names`
+* `path`
+* `persona_name`
+* `url`
+* `user_id`
 
-When something is not found, it appears in the list as `Unknown` and will be excluded if you choose to export your search result in a JSON STIX bundle or in a CSV file.
+Found entities are listed in the `Known entities` panel. You can export them or launch massive operations on them, like in other entities lists.
 
-![Bulk search results](assets/bulk-result.png)
+![Bulk search results for known entities](assets/bulk-search-known.png)
+
+When something is not found, it appears in the `Unknown entities` tab.
+You can quickly add some of these unknown values in the platform: select the wanted unknown values, and click on the 'Create unknown entities' button in the toolbar.
+
+![Bulk search results for unknown entities](assets/bulk-search-unknown.png)
+
+You are redirected to the `Import data` pop-up, prefilled with a file containing the selected unknown values. You can continue the steps, create a file, add it in a draft, etc.
+
+![Bulk search import of unknown entities](assets/bulk-search-unknown-import.png)
+
 
 ## Contextual search
 
