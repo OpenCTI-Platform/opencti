@@ -65,7 +65,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
         props: React.HTMLAttributes<HTMLLIElement>,
         option: string,
       ) => (
-        <li {...props}>
+        <li {...props} key={option}>
           <div className={classes.icon}>
             <ItemIcon type={option} />
           </div>
