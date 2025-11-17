@@ -98,8 +98,7 @@ jobs:
           name: init .pypirc
           command: |
             cd client-python
-            printf "[pypi]\nusername = __token__\npassword = %s\n"
-            "${PYPI_PASSWORD}" >> ~/.pypirc
+            printf "[pypi]\nusername = __token__\npassword = %s\n" "${PYPI_PASSWORD}" >> ~/.pypirc
       - run:
           name: upload to pypi
           command: cd client-python && twine upload dist/*
