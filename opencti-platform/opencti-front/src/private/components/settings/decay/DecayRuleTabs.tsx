@@ -7,12 +7,16 @@ import useConnectedDocumentModifier from 'src/utils/hooks/useConnectedDocumentMo
 import DecayRules from '@components/settings/decay/DecayRules';
 import Breadcrumbs from 'src/components/Breadcrumbs';
 import CustomizationMenu from '@components/settings/CustomizationMenu';
+import useHelper from 'src/utils/hooks/useHelper';
 import DecayExclusionRules from './DecayExclusionRules';
 
 const DecayRuleTabs = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
+  const { isFeatureEnable } = useHelper();
   setTitle(t_i18n('Decay Rules | Customization | Settings'));
+
+  const isDecayExclusionRuleFeatureEnabled = isFeatureEnable('DECAY_EXCLUSION_RULE_ENABLED');
 
   const [currentTab, setCurrentTab] = useState<number>(0);
 
@@ -20,15 +24,27 @@ const DecayRuleTabs = () => {
 
   return (
     <>
-      <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Decay rules'), current: true }]} />
+      <Breadcrumbs
+        elements={[
+          { label: t_i18n('Settings') },
+          { label: t_i18n('Customization') },
+          { label: t_i18n('Decay rules'), current: true },
+        ]}
+      />
       <CustomizationMenu />
       <Box>
-        <Tabs value={currentTab} onChange={handleChangeTab} style={{ marginBottom: '20px' }}>
-          <Tab label={t_i18n('Decay rules')} />
-          <Tab label={t_i18n('Decay exclusion rules')} />
-        </Tabs>
+        {isDecayExclusionRuleFeatureEnabled && (
+          <Tabs
+            value={currentTab}
+            onChange={handleChangeTab}
+            style={{ marginBottom: '20px' }}
+          >
+            <Tab label={t_i18n('Decay rules')} />
+            <Tab label={t_i18n('Decay exclusion rules')} />
+          </Tabs>
+        )}
         {currentTab === 0 && <DecayRules />}
-        {currentTab === 1 && <DecayExclusionRules />}
+        {currentTab === 1 && isDecayExclusionRuleFeatureEnabled && <DecayExclusionRules />}
       </Box>
     </>
   );
