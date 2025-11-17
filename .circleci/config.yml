@@ -96,7 +96,7 @@ jobs:
           command: cd client-python && pip3 install twine
       - run:
           name: init .pypirc
-          command: >
+          command: |
             cd client-python
             printf "[pypi]\nusername = __token__\npassword = %s\n"
             "${PYPI_PASSWORD}" >> ~/.pypirc
