@@ -975,12 +975,14 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           .map(({ action, path, multiple, attributeType }) => {
             if (multiple) {
               const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
+              // the patch value can be the "label" instead of id (for ex: markings ids / labels ids)
               const actionPatchValues = action.value.map((o) => {
                 // If value is an id, must be converted to standard_id has we work on stix bundle
                 if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
                 // Else, just return the value
                 return convertValue(attributeType, o.patch_value);
               });
+              // the value is always the id
               const actionValues = action.value.map((o) => {
                 // If value is an id, must be converted to standard_id has we work on stix bundle
                 if (cacheIds.has(o.value)) return (cacheIds.get(o.value) as BasicStoreCommon).standard_id;
