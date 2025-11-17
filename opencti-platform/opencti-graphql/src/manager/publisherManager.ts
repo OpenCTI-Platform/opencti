@@ -5,7 +5,7 @@ import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import { sendMail, smtpIsAlive } from '../database/smtp';
+import { sendMail, smtpComputeFrom, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
 import { addNotification } from '../modules/notification/notification-domain';
 import type { BasicStoreEntityTrigger, NotificationContentEvent, NotificationAddInput } from '../modules/notification/notification-types';
@@ -149,7 +149,7 @@ export async function handleEmailNotification(
   const renderedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix, octi: octiTool });
 
   const emailPayload = {
-    from: `${settings.platform_title} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(),
     to: user.user_email,
     subject: renderedTitle,
     html: renderedEmail
@@ -184,7 +184,7 @@ export async function handleSimplifiedEmailNotification(
   const renderedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
 
   const emailPayload = {
-    from: `${settings.platform_title} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(settings.platform_title),
     to: user.user_email,
     subject: renderedTitle,
     html: renderedEmail
@@ -412,7 +412,11 @@ const processBufferedEvents = async (
             dataToSend,
             triggersInDataToSend as BasicStoreEntityTrigger[],
             usersFromCache,
-          ).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+          ).catch((reason) => {
+            logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason });
+          });
+        } else {
+          logApp.error('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
         }
       }
     }
@@ -446,7 +450,7 @@ const handleEntityNotificationBuffer = async (forceSend = false) => {
 const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEvent>>) => {
   try {
     if (streamEvents.length === 0) {
-      // return;
+      return;
     }
     const context = executionContext('publisher_manager');
     const notifications = await getNotifications(context);

@@ -414,6 +414,7 @@
     "queue_type": "classic"
   },
   "smtp": {
+    "allow_email_rewrite": false,
     "hostname": "localhost",
     "use_ssl": false,
     "reject_unauthorized": false,
