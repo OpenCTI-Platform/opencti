@@ -262,10 +262,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region Security Coverages
-    const securityCoveragesAddCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+    const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
       types: [ENTITY_TYPE_SECURITY_COVERAGE]
     });
-    manager.setSecurityCoveragesAddCount(securityCoveragesAddCount);
+    manager.setSecurityCoveragesCount(securityCoveragesCount);
     // endregion
 
     // region Telemetry user events

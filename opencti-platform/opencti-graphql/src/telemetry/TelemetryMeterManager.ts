@@ -88,7 +88,7 @@ export class TelemetryMeterManager {
   formIntakeSubmittedCount = 0;
 
   // Number security coverages
-  securityCoveragesAddCount = 0;
+  securityCoveragesCount = 0;
 
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
@@ -214,8 +214,8 @@ export class TelemetryMeterManager {
     this.formIntakeSubmittedCount = n;
   }
 
-  setSecurityCoveragesAddCount(n: number) {
-    this.securityCoveragesAddCount = n;
+  setSecurityCoveragesCount(n: number) {
+    this.securityCoveragesCount = n;
   }
 
   registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
@@ -261,6 +261,6 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_updated_count', 'Number of form intakes updated', 'formIntakeUpdatedCount');
     this.registerGauge('form_intake_deleted_count', 'Number of form intakes deleted', 'formIntakeDeletedCount');
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
-    this.registerGauge('security_coverages_add_count', 'Number of security coverages added', 'securityCoveragesAddCount');
+    this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
   }
 }
