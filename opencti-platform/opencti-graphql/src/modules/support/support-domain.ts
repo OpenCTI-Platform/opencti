@@ -15,11 +15,10 @@ import {
   TELEMETRY_LOG_RELATIVE_LOCAL_DIR
 } from '../../config/conf';
 import { downloadFile } from '../../database/raw-file-storage';
-import { loadedFilesListing, streamConverter } from '../../database/file-storage';
+import { loadedFilesListing, streamConverter, fileToReadStream, uploadToStorage } from '../../database/file-storage';
 import type { EditInput, QuerySupportPackagesArgs, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
-import { fileToReadStream, uploadToStorage } from '../../database/file-storage';
 import { wait } from '../../database/utils';
 import {
   notify,
