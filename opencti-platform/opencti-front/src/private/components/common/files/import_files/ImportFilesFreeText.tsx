@@ -11,12 +11,12 @@ import { now } from '../../../../../utils/Time';
 type FileFreeTextType = { content: string };
 
 interface ImportFilesFreeTextProps {
-  onSumbit: (file: File) => void;
+  onSubmit: (file: File) => void;
   onClose: () => void;
   initialContent?: string;
 }
 
-const ImportFilesFreeText = ({ onSumbit, onClose, initialContent }: ImportFilesFreeTextProps) => {
+const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesFreeTextProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 
@@ -33,7 +33,7 @@ const ImportFilesFreeText = ({ onSumbit, onClose, initialContent }: ImportFilesF
         type: fileType === 'json' ? 'application/json' : 'text/plain',
       },
     ) as File;
-    onSumbit(file);
+    onSubmit(file);
     resetForm();
   };
 
