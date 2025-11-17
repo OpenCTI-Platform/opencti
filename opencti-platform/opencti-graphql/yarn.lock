@@ -12293,7 +12293,6 @@ __metadata:
     set-interval-async: "npm:3.0.3"
     source-map: "npm:0.7.6"
     tough-cookie: "npm:6.0.0"
-    trino-client: "npm:0.2.8"
     turndown: "npm:7.2.2"
     typescript: "npm:5.9.3"
     unzipper: "npm:0.12.3"
@@ -14476,15 +14475,6 @@ __metadata:
   version: 1.1.0
   resolution: "treeify@npm:1.1.0"
   checksum: 10c0/2f0dea9e89328b8a42296a3963d341ab19897a05b723d6b0bced6b28701a340d2a7b03241aef807844198e46009aaf3755139274eb082cfce6fdc1935cbd69dd
-  languageName: node
-  linkType: hard
-
-"trino-client@npm:0.2.8":
-  version: 0.2.8
-  resolution: "trino-client@npm:0.2.8"
-  dependencies:
-    axios: "npm:1.11.0"
-  checksum: 10c0/113c971d20e2b70e9b0a2278c2cff3800e8e17d9d2390b94e059af747f0a9a32a7145bc61fea4edaa28e989b063ad7a11790c693bc33ed28ebcf5fa44502227d
   languageName: node
   linkType: hard
 

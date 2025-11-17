@@ -155,7 +155,6 @@
     "set-interval-async": "3.0.3",
     "source-map": "0.7.6",
     "tough-cookie": "6.0.0",
-    "trino-client": "0.2.8",
     "turndown": "7.2.2",
     "unzipper": "0.12.3",
     "uuid": "11.1.0",
