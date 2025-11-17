@@ -169,7 +169,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "6.0.2",
     "@graphql-codegen/introspection": "5.0.0",
-    "@graphql-codegen/typescript-resolvers": "5.1.1",
+    "@graphql-codegen/typescript-resolvers": "5.1.2",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.5",
     "@types/archiver": "7.0.0",
