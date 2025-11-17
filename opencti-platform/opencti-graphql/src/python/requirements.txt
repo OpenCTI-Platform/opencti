@@ -4,5 +4,3 @@ yara-python==4.5.2
 sigmatools==0.23.1
 jsonpatch==1.33
 eql==0.9.19
-opentelemetry-api~=1.35.0
-opentelemetry-sdk~=1.35.0
