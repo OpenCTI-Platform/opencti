@@ -55,12 +55,13 @@ jobs:
     steps:
       - checkout
       - run:
-          name: cd client-python &&  install dependencies
+          name: cd client-python && install dependencies
           command: >
             cd client-python && pip3 install --user -r requirements.txt -r test-requirements.txt
       - run:
           name: check version
           command: |
+            cd client-python
             package_version="$(
                 python3 -c 'import pycti; print(pycti.__version__)'
             )"
