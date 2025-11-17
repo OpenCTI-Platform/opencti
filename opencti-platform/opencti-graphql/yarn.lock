@@ -9766,17 +9766,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:16.12.0":
+"graphql@npm:16.12.0, graphql@npm:^16.0.0, graphql@npm:^16.10.0, graphql@npm:^16.9.0":
   version: 16.12.0
   resolution: "graphql@npm:16.12.0"
   checksum: 10c0/b6fffa4e8a4e4a9933ebe85e7470b346dbf49050c1a482fac5e03e4a1a7bed2ecd3a4c97e29f04457af929464bc5e4f2aac991090c2f320111eef26e902a5c75
-  languageName: node
-  linkType: hard
-
-"graphql@patch:graphql@16.12.0#./patch/graphql-16.8.1.patch::locator=opencti-graphql%40workspace%3A.":
-  version: 16.12.0
-  resolution: "graphql@patch:graphql@npm%3A16.12.0#./patch/graphql-16.8.1.patch::version=16.12.0&hash=d71f2e&locator=opencti-graphql%40workspace%3A."
-  checksum: 10c0/297f2d022f28b2e24f20b258def5d8e95feb1ba70991edc51c9f958bb2c52f6e9b1581abe0b9167462574bc7a58985985e295f274138fe82f7bcbb8fe8e250b9
   languageName: node
   linkType: hard
 
