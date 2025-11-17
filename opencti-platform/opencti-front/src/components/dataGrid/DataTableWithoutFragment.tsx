@@ -68,6 +68,11 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps & {
 }) => {
   const { data, taskScope } = props;
 
+  const extractDataIds = () => {
+    if (!Array.isArray(data)) return [];
+    return data.map((d) => d?.id).filter((id): id is string => typeof id === 'string');
+  };
+
   return (
     <DataTableComponent
       {...props}
@@ -79,7 +84,7 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps & {
       disableLineSelection={!taskScope}
       dataTableToolBarComponent={taskScope && Array.isArray(data) && data[0].has('id')
         ? <DataTableWithoutFragmentInternalToolbar
-            dataIds={data.map((d) => d.id)}
+            dataIds={extractDataIds()}
             taskScope={taskScope}
           />
         : undefined
