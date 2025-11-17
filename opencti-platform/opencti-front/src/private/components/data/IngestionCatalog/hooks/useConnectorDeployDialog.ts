@@ -6,7 +6,6 @@ import { resolveLink } from '../../../../../utils/Entity';
 interface CatalogState {
   selectedConnector: IngestionConnector | null;
   selectedCatalogId: string;
-  hasRegisteredManagers: boolean;
   hasActiveManagers: boolean;
   deploymentCount: number
 }
@@ -17,7 +16,6 @@ const useConnectorDeployDialog = () => {
   const [catalogState, setCatalogState] = useState<CatalogState>({
     selectedConnector: null,
     selectedCatalogId: '',
-    hasRegisteredManagers: false,
     hasActiveManagers: false,
     deploymentCount: 0,
   });
@@ -25,7 +23,6 @@ const useConnectorDeployDialog = () => {
   const handleOpenDeployDialog = (
     connector: IngestionConnector,
     catalogId: string,
-    registeredManagers: boolean,
     activeManagers: boolean,
     deploymentCount: number,
   ) => {
@@ -33,7 +30,6 @@ const useConnectorDeployDialog = () => {
       ...prev,
       selectedConnector: connector,
       selectedCatalogId: catalogId,
-      hasRegisteredManagers: registeredManagers,
       hasActiveManagers: activeManagers,
       deploymentCount,
     }));

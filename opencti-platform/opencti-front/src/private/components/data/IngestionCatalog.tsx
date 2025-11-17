@@ -31,7 +31,7 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 interface IngestionCatalogComponentProps {
   catalogsData: IngestionConnectorsCatalogsQuery['response'];
   deploymentData: IngestionConnectorsQuery['response'];
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean, hasActiveManagers: boolean, deploymentCount: number) => void;
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void;
 }
 
 type IngestionTypeMap = {
@@ -136,7 +136,7 @@ const IngestionCatalogComponent = ({
   const { setTitle } = useConnectedDocumentModifier();
   const [searchParams] = useSearchParams();
 
-  const { hasRegisteredManagers, hasActiveManagers } = useConnectorManagerStatus();
+  const { hasActiveManagers } = useConnectorManagerStatus();
 
   setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
@@ -191,7 +191,7 @@ const IngestionCatalogComponent = ({
                     node={contract}
                     dataListId={catalog.id}
                     isEnterpriseEdition={isEnterpriseEdition}
-                    onClickDeploy={() => onClickDeploy(contract, catalog.id, hasRegisteredManagers, hasActiveManagers, deploymentCount)}
+                    onClickDeploy={() => onClickDeploy(contract, catalog.id, hasActiveManagers, deploymentCount)}
                     deploymentCount={deploymentCount}
                   />
                 </Grid>

@@ -37,7 +37,7 @@ const ingestionCatalogConnectorQuery = graphql`
 
 interface IngestionCatalogConnectorComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>;
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean, hasActiveManagers: boolean, deploymentCount: number) => void;
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void;
   openConfig?: boolean;
 }
 
@@ -50,7 +50,7 @@ const IngestionCatalogConnectorComponent = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
 
-  const { hasRegisteredManagers, hasActiveManagers } = useConnectorManagerStatus();
+  const { hasActiveManagers } = useConnectorManagerStatus();
 
   const { contract, connectors } = usePreloadedQuery(
     ingestionCatalogConnectorQuery,
@@ -66,7 +66,7 @@ const IngestionCatalogConnectorComponent = ({
 
   useEffect(() => {
     if (openConfig && contract && connector) {
-      onClickDeploy(connector, contract.catalog_id, hasRegisteredManagers, hasActiveManagers, deploymentCount);
+      onClickDeploy(connector, contract.catalog_id, hasActiveManagers, deploymentCount);
     }
   }, [openConfig, contract]);
 
@@ -90,7 +90,7 @@ const IngestionCatalogConnectorComponent = ({
           <IngestionCatalogConnectorHeader
             connector={connector}
             isEnterpriseEdition={isEnterpriseEdition}
-            onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasRegisteredManagers, hasActiveManagers, deploymentCount)}
+            onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasActiveManagers, deploymentCount)}
           />
           <IngestionCatalogConnectorOverview connector={connector} />
         </Stack>
