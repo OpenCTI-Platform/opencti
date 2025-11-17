@@ -19,6 +19,7 @@ import { convertEventTypes, convertNotifiers, convertTriggers, instanceEventType
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
   getDefaultFilterObject,
   serializeFilterGroupForBackend,
   stixFilters,
@@ -93,15 +94,27 @@ interface TriggerEditionFormValues {
 
 const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
   const { t_i18n } = useFormatter();
+  const defaultInstanceTriggerFilters = {
+    ...emptyFilterGroup,
+    filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
+  };
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
+  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instanceTrigger, setInstanceTrigger] = useState<boolean>(false);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
+  const onReset = () => {
+    handleClose?.();
+    setInstanceTrigger(false);
+    instanceTriggerFiltersHelpers.handleClearAllFilters();
+    helpers.handleClearAllFilters();
+  };
+  const jsonFilters = instanceTrigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters);
 
   useEffect(() => {
     commitFieldPatch({
@@ -109,7 +122,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         id: trigger.id,
         input: {
           key: 'filters',
-          value: serializeFilterGroupForBackend(filters),
+          value: jsonFilters,
         },
       },
     });
@@ -328,6 +341,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       initialValues={initialValues as never}
       validationSchema={triggerValidation()}
       onSubmit={onSubmit}
+      onClose={onReset}
     >
       {({ values, setFieldValue }) => (
         <Form>
