@@ -82,7 +82,7 @@ const DataTableWithoutFragment = (props: OCTIDataTableProps & {
       resolvePath={(a) => a}
       initialValues={{}}
       disableLineSelection={!taskScope}
-      dataTableToolBarComponent={taskScope && Array.isArray(data) && data[0].has('id')
+      dataTableToolBarComponent={taskScope
         ? <DataTableWithoutFragmentInternalToolbar
             dataIds={extractDataIds()}
             taskScope={taskScope}
