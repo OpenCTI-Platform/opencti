@@ -15,7 +15,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import SelectField from '../../../../components/fields/SelectField';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, instanceEventTypesOptions } from '../../../../utils/edition';
+import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
@@ -102,19 +102,12 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
-  const [instanceTrigger, setInstanceTrigger] = useState<boolean>(false);
+  const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
-  const onReset = () => {
-    handleClose?.();
-    setInstanceTrigger(false);
-    instanceTriggerFiltersHelpers.handleClearAllFilters();
-    helpers.handleClearAllFilters();
-  };
-  const jsonFilters = instanceTrigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters);
 
   useEffect(() => {
     commitFieldPatch({
@@ -122,7 +115,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         id: trigger.id,
         input: {
           key: 'filters',
-          value: jsonFilters,
+          value: instanceTrigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters),
         },
       },
     });
@@ -293,8 +286,9 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       'event_types',
       newInstanceTriggerValue ? instanceEventTypesOptions : eventTypesOptions,
     );
-    // helpers.handleClearAllFilters();
-    // instanceTriggerFiltersHelpers.handleClearAllFilters();
+
+    helpers.handleClearAllFilters();
+    instanceTriggerFiltersHelpers.handleClearAllFilters();
     setInstanceTrigger(newInstanceTriggerValue);
 
     if (newInstanceTriggerValue) {
@@ -334,14 +328,12 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         ? formatTimeForToday(currentTime[1])
         : formatTimeForToday(currentTime[0]),
   };
-
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={triggerValidation()}
       onSubmit={onSubmit}
-      onClose={onReset}
     >
       {({ values, setFieldValue }) => (
         <Form>
@@ -376,7 +368,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               options={
                 trigger.instance_trigger
                   ? instanceEventTypesOptions
-                  : eventTypesOptions
+                  : filterEventTypesOptions
               }
               onChange={(
                 name: string,
@@ -493,6 +485,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
             tooltip={instanceTriggerDescription}
             containerstyle={{ marginTop: 20 }}
             onChange={() => onChangeInstanceTrigger(setFieldValue)}
+            checked={instanceTrigger}
           />
           {trigger.trigger_type === 'live' && (
             <span>
