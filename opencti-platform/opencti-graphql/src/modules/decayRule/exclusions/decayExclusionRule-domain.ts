@@ -1,3 +1,4 @@
+import { now } from '../../../utils/format';
 import { FunctionalError, UnsupportedError } from '../../../config/errors';
 import { deleteElementById, updateAttribute } from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
@@ -22,7 +23,9 @@ export const findDecayExclusionRulePaginated = (context: AuthContext, user: Auth
 
 export const addDecayExclusionRule = (context: AuthContext, user: AuthUser, input: DecayExclusionRuleAddInput) => {
   if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
-  return createInternalObject<StoreEntityDecayExclusionRule>(context, user, input, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
+  const defaultOps = { created_at: now() };
+  const decayExclusionRuleInput = { ...input, ...defaultOps };
+  return createInternalObject<StoreEntityDecayExclusionRule>(context, user, decayExclusionRuleInput, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
 };
 export const fieldPatchDecayExclusionRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
