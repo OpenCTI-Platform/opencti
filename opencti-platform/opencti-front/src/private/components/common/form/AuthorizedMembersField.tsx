@@ -109,7 +109,8 @@ const AuthorizedMembersField = ({
   // Value in sync with internal Formik field 'applyAccesses'.
   // Require to use a state in addition to the Formik field because
   // we use the value outside the scope of the internal Formik form.
-  const [applyAccesses, setApplyAccesses] = useState(enableAccesses || (value && Array.isArray(value) && value.length > 0));
+  const hasValue = value && Array.isArray(value) && value.length > 0;
+  const [applyAccesses, setApplyAccesses] = useState(enableAccesses || hasValue);
   const accessForAllMembers = (value ?? []).find(
     (o) => o.value === ALL_MEMBERS_AUTHORIZED_CONFIG.id,
   );
@@ -148,7 +149,7 @@ const AuthorizedMembersField = ({
 
   // Initialize the field with owner and/or current on enableAccesses truthly.
   useEffect(() => {
-    if (enableAccesses) {
+    if (enableAccesses && !hasValue) {
       const values: AuthorizedMemberOption[] = [];
       if (owner) {
         values.push({
