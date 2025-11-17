@@ -354,9 +354,10 @@ describe('PIR resolver standard behavior', () => {
       'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88',
       { type: ENTITY_TYPE_MALWARE },
     );
-    expect(malwareAfterFlag.pir_information.length).toEqual(1);
-    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1).length).toEqual(1);
-    expect(malwareAfterFlag.pir_information.filter((s) => s.pir_id === pirInternalId1)[0].pir_score).toEqual(67);
+    expect(malwareAfterFlag.pir_information).toBeDefined();
+    expect(malwareAfterFlag.pir_information!.length).toEqual(1);
+    expect(malwareAfterFlag.pir_information!.filter((s) => s.pir_id === pirInternalId1).length).toEqual(1);
+    expect(malwareAfterFlag.pir_information!.filter((s) => s.pir_id === pirInternalId1)[0].pir_score).toEqual(67);
     // should fetch stix domain object pir information & refreshed_at
     const malwareQueryResult = await queryAsAdmin({
       query: MALWARE_QUERY,
