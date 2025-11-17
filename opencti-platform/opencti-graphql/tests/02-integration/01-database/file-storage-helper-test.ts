@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage-helper';
+import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage';
 import type { AuthContext } from '../../../src/types/user';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { MARKING_TLP_CLEAR } from '../../../src/schema/identifier';

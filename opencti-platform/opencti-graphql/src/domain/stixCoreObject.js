@@ -81,7 +81,7 @@ import { addFilter, findFiltersFromKey } from '../utils/filtering/filtering-util
 import { INSTANCE_REGARDING_OF } from '../utils/filtering/filtering-constants';
 import { getEntitiesMapFromCache } from '../database/cache';
 import { BYPASS, isBypassUser, isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER, validateUserAccessOperation } from '../utils/access';
-import { uploadToStorage } from '../database/file-storage-helper';
+import { uploadToStorage } from '../database/file-storage';
 import { connectorsForAnalysis } from '../database/repository';
 import { getDraftContext } from '../utils/draftContext';
 import { FilterOperator } from '../generated/graphql';

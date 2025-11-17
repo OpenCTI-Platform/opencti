@@ -2,7 +2,7 @@ import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { fileToReadStream } from '../../../src/database/file-storage-helper';
+import { fileToReadStream } from '../../../src/database/file-storage';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 
 const LIST_QUERY = gql`

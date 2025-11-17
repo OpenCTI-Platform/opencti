@@ -13,7 +13,7 @@ import { resolveUserByIdFromCache } from '../../domain/user';
 import { parseCsvMapper, sanitized, validateCsvMapper } from '../../modules/internal/csvMapper/csvMapper-utils';
 import { IMPORT_CSV_CONNECTOR } from './importCsv';
 import { FunctionalError } from '../../config/errors';
-import { uploadToStorage } from '../../database/file-storage-helper';
+import { uploadToStorage } from '../../database/file-storage';
 import { storeLoadByIdWithRefs } from '../../database/middleware';
 import type { ConnectorConfig } from '../internalConnector';
 import { addDraftWorkspace } from '../../modules/draftWorkspace/draftWorkspace-domain';

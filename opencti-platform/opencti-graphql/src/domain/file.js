@@ -11,7 +11,7 @@ import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfi
 import { isUserHasCapabilities, SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
 import { getStats } from '../database/engine';
-import { uploadToStorage } from '../database/file-storage-helper';
+import { uploadToStorage } from '../database/file-storage';
 import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
 import { getEntitiesMapFromCache } from '../database/cache';

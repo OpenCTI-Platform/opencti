@@ -6,7 +6,7 @@ import { utcDate } from '../../../src/utils/format';
 import { deleteElement, getElementsToDelete } from '../../../src/manager/retentionManager';
 import { allFilesForPaths } from '../../../src/modules/internal/document/document-domain';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
-import { uploadToStorage } from '../../../src/database/file-storage-helper';
+import { uploadToStorage } from '../../../src/database/file-storage';
 import { elLoadById, elRawUpdateByQuery } from '../../../src/database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
 import { DatabaseError } from '../../../src/config/errors';

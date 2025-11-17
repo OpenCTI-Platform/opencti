@@ -19,7 +19,7 @@ import { loadedFilesListing, streamConverter } from '../../database/file-storage
 import type { EditInput, QuerySupportPackagesArgs, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
-import { fileToReadStream, uploadToStorage } from '../../database/file-storage-helper';
+import { fileToReadStream, uploadToStorage } from '../../database/file-storage';
 import { wait } from '../../database/utils';
 import {
   notify,

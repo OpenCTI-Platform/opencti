@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
 import { downloadFile } from '../../../src/database/raw-file-storage';
 import { streamConverter } from '../../../src/database/file-storage';
-import { fileToReadStream } from '../../../src/database/file-storage-helper';
+import { fileToReadStream } from '../../../src/database/file-storage';
 import { elLoadById } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
