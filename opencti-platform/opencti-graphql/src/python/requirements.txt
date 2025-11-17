@@ -1,4 +1,4 @@
-pycti==6.8.11
+pycti==6.8.12
 parsuricata==0.4.1
 yara-python==4.5.2
 sigmatools==0.23.1
