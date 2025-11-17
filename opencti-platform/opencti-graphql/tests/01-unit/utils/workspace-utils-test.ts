@@ -55,7 +55,6 @@ describe('Workspace utils', () => {
           date_attribute: 'created_at',
           filters,
           dynamicFrom: emptyFilterGroup,
-          dynamicTo: undefined,
         }],
       }
     ];
@@ -93,7 +92,6 @@ describe('Workspace utils', () => {
           date_attribute: 'created_at',
           filters: convertedFilters,
           dynamicFrom: emptyFilterGroup,
-          dynamicTo: undefined,
         }],
       }
     ];
