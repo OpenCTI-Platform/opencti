@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useCallback, useContext, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { FileWithConnectors } from '@components/common/files/import_files/ImportFilesUploader';
 import { graphql, PreloadedQuery } from 'react-relay';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
@@ -157,6 +157,9 @@ export type UploadStatus = 'uploading' | 'success' | undefined;
 
 interface InitialValues {
   entityId?: string;
+  activeStep?: number;
+  importMode?: ImportMode;
+  initialFreeTextContent?: string;
 }
 
 type ImportFilesContextProps = InitialValues & {
@@ -187,8 +190,8 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT']); // Check capability to set connectors and validation mode
   const draftContext = useDraftContext();
 
-  const [activeStep, setActiveStep] = useState(canSelectImportMode ? 0 : 1);
-  const [importMode, setImportMode] = useState<ImportMode | undefined>(!canSelectImportMode ? 'auto' : undefined);
+  const [activeStep, setActiveStep] = useState(initialValue.activeStep ?? (canSelectImportMode ? 0 : 1));
+  const [importMode, setImportMode] = useState<ImportMode | undefined>(!canSelectImportMode ? 'auto' : initialValue.importMode);
   const [files, setFiles] = useState<FileWithConnectors[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | UploadStatus>();
   const [draftId, setDraftId] = useState<string | undefined>(draftContext?.id);
@@ -205,11 +208,15 @@ export const ImportFilesProvider = ({ children, initialValue }: {
 
     return result?.guessMimeType || null;
   }, []);
+  useEffect(() => {
+    setActiveStep(initialValue.activeStep ?? (canSelectImportMode ? 0 : 1));
+  }, [initialValue]);
 
   return queryRef && (
     <React.Suspense>
       <ImportFilesContext.Provider
         value={{
+          ...initialValue,
           canSelectImportMode,
           activeStep,
           setActiveStep,
@@ -226,7 +233,6 @@ export const ImportFilesProvider = ({ children, initialValue }: {
           inDraftContext: !!draftContext?.id,
           guessMimeType,
           queryRef,
-          ...initialValue,
         }}
       >
         {children}

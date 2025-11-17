@@ -838,18 +838,17 @@ class DataTableToolBar extends Component {
 
     const finalActions = taskScope === 'USER'
       ? this.getUserDatatableFinalActions(actions)
-      : R.map(
+      : actions.map(
         (n) => ({
           type: n.type,
           context: n.context
             ? {
               ...n.context,
-              values: R.map((o) => o.id || o.value || o, n.context.values),
+              values: n.context.values.map((o) => o.id || o.value || o),
             }
             : null,
           containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
         }),
-        actions,
       );
 
     if (selectAll) {
