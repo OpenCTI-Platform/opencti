@@ -514,7 +514,7 @@ export const generateFilterKeysSchema = async () => {
   }], [PIR_SCORE_FILTER, {
     filterKey: PIR_SCORE_FILTER,
     type: 'integer',
-    label: 'Pir Score',
+    label: 'PIR Score',
     multiple: false,
     subEntityTypes: [],
     elementsForFilterValuesSearch: [],
