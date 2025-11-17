@@ -106,17 +106,7 @@ import {
   isStixCyberObservable
 } from '../schema/stixCyberObservable';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-2-1-extensions';
-import {
-  INPUT_ASSIGNEE,
-  INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
-  INPUT_GRANTED_REFS,
-  INPUT_IN_PIR,
-  INPUT_KILLCHAIN,
-  INPUT_LABELS,
-  INPUT_MARKINGS,
-  INPUT_PARTICIPANT
-} from '../schema/general';
+import { INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_PARTICIPANT } from '../schema/general';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
