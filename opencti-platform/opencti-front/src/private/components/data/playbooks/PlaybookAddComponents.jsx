@@ -14,7 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
-import PlaybookSelectComponent from './playbookFlow/PlaybookSelectComponent';
+import PlaybookFlowSelectComponent from './playbookFlow/PlaybookFlowSelectComponent';
 import PirField from '../../common/form/PirField';
 import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
@@ -975,7 +975,7 @@ const PlaybookAddComponentsContent = ({
   return (
     <>
       {isEmptyField(componentId) && (
-        <PlaybookSelectComponent
+        <PlaybookFlowSelectComponent
           components={playbookComponents}
           onSelect={setComponentId}
           selectedNode={selectedNode}

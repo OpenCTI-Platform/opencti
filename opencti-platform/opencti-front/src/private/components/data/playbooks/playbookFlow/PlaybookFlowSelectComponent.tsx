@@ -31,7 +31,7 @@ interface PlaybookSelectComponentProps {
   onSelect: (componentId: string) => void
 }
 
-const PlaybookSelectComponent = ({
+const PlaybookFlowSelectComponent = ({
   components,
   selectedNode,
   onSelect,
@@ -69,4 +69,4 @@ const PlaybookSelectComponent = ({
   );
 };
 
-export default PlaybookSelectComponent;
+export default PlaybookFlowSelectComponent;
