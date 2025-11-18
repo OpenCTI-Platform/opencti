@@ -197,7 +197,7 @@ const DataTableLine = ({
               width: startColumnWidth,
             }}
           >
-            { startsWithAction && (
+            {startsWithAction && (
               <Checkbox
                 onClick={handleSelectLine}
                 sx={{
@@ -209,10 +209,10 @@ const DataTableLine = ({
                   },
                 }}
                 checked={
-                (selectAll
-                  && !((data.id || 'id') in (deSelectedElements || {})))
-                || (data.id || 'id') in (selectedElements || {})
-              }
+                  (selectAll
+                    && !((data.id || 'id') in (deSelectedElements || {})))
+                  || (data.id || 'id') in (selectedElements || {})
+                }
               />
             )}
             {(startsWithIcon && icon) && (
@@ -223,13 +223,16 @@ const DataTableLine = ({
           </div>
         )}
 
-        {columns.slice(columnsOffset, (actions || disableNavigation) ? undefined : -1).map((column) => (
-          <DataTableCell
-            key={column.id}
-            cell={column}
-            data={data}
-          />
-        ))}
+        {columns
+          .slice(columnsOffset, (actions || disableNavigation) ? undefined : -1)
+          .filter(({ visible }) => !!visible)
+          .map((column) => (
+            <DataTableCell
+              key={column.id}
+              cell={column}
+              data={data}
+            />
+          ))}
 
         {endsWithAction && (
           <div

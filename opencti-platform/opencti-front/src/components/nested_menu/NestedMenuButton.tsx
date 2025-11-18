@@ -41,6 +41,7 @@ type Option = {
   onClick?: () => void; // individual click handler
   selected?: boolean;
   nestedOptions? : Option[];
+  render?: () => React.ReactNode;
 };
 
 type NestedMenuProps = {
@@ -279,7 +280,7 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
                             alignItems: 'center',
                           }}
                         >
-                          <Typography>{option.label ?? option.value}</Typography>
+                          {option.render ? (option.render()) : (<Typography>{option.label ?? option.value}</Typography>)}
                           {option.nestedOptions ? (
                             <ChevronRight fontSize="small" />
                           ) : null}

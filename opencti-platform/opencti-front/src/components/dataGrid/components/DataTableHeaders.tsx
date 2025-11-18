@@ -170,6 +170,7 @@ const DataTableHeaders: FunctionComponent<DataTableHeadersProps> = ({
           )}
 
           {columns
+            .filter(({ visible }) => !!visible)
             .filter(({ id }) => !['select', 'navigate', 'icon'].includes(id))
             .map((column) => (
               <DataTableHeader
