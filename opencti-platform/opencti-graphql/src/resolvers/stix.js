@@ -24,6 +24,9 @@ const internalLoadThroughDenormalized = (context, user, element, inputName) => {
   }
   // If not, reload through denormalized relationships
   const ref = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputName);
+  if (!ref) {
+    return []; // Some refs on schema are not part of all entities
+  }
   return context.batch.relsBatchLoader.load({ element, definition: ref });
 };
 
