@@ -164,7 +164,6 @@
     "eslint-plugin-import-newlines": "1.4.0",
     "eslint-plugin-react": "7.37.5",
     "express": "5.1.0",
-    "fs-extra": "11.3.2",
     "http-proxy-middleware": "3.0.5",
     "i18n-auto-translation": "2.2.3",
     "jsdom": "27.2.0",

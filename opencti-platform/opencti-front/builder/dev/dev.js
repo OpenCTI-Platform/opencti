@@ -1,12 +1,11 @@
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
-const { readFileSync } = require("node:fs");
+const { cp, readFile } = require("node:fs/promises")
 const path = require("node:path");
 const esbuild = require("esbuild");
 const chokidar = require("chokidar");
 const compression = require("compression");
 const { RelayPlugin } = require("../plugin/esbuild-relay");
-const fsExtra = require("fs-extra");
 
 const basePath = "";
 const clients = [];
@@ -26,42 +25,44 @@ const middleware = (target, ws = false) => createProxyMiddleware({
   pathFilter: basePath + target,
   changeOrigin: true,
   ws,
-})
+});
 
-// Start with an initial build
-esbuild.context({
-  logLevel: "info",
-  plugins: [RelayPlugin],
-  entryPoints: ["src/front.tsx"],
-  publicPath: "/",
-  bundle: true,
-  banner: {
-    js: ` (() => new EventSource("http://localhost:${frontPort}/dev").onmessage = () => location.reload())();`,
-  },
-  loader: {
-    ".js": "jsx",
-    ".svg": "file",
-    ".png": "file",
-    ".woff": "dataurl",
-    ".woff2": "dataurl",
-    ".ttf": "dataurl",
-    ".eot": "dataurl",
-  },
-  assetNames: "[dir]/[name]-[hash]",
-  target: ["chrome58"],
-  minify: true,
-  keepNames: true,
-  sourcemap: true,
-  outdir: "builder/dev/build",
-}).then(async (builder) => {
+(async () => {
+  // Start with an initial build
+  const builder = await esbuild.context({
+      logLevel: "info",
+      plugins: [RelayPlugin],
+      entryPoints: ["src/front.tsx"],
+      publicPath: "/",
+      bundle: true,
+      banner: {
+        js: ` (() => new EventSource("http://localhost:${frontPort}/dev").onmessage = () => location.reload())();`,
+      },
+      loader: {
+        ".js": "jsx",
+        ".svg": "file",
+        ".png": "file",
+        ".woff": "dataurl",
+        ".woff2": "dataurl",
+        ".ttf": "dataurl",
+        ".eot": "dataurl",
+      },
+      assetNames: "[dir]/[name]-[hash]",
+      target: ["chrome58"],
+      minify: true,
+      keepNames: true,
+      sourcemap: true,
+      outdir: "builder/dev/build",
+    })
   await builder.rebuild();
-  // region Copy public files to build
-  fsExtra.copySync("./src/static/ext", buildPath + "/static/ext", {
+
+  // Copy public files to build
+  await cp("./src/static/ext", `${buildPath}/static/ext`, {
     recursive: true,
-    overwrite: true,
+    force: true,
   });
-  // endregion
-  // region Listen change for hot recompile
+
+  // Listen change for hot recompile
   if (!process.env.E2E_TEST) {
     chokidar.watch("src/**/*.{js,jsx,ts,tsx}", {
       awaitWriteFinish: true,
@@ -88,8 +89,8 @@ esbuild.context({
         })
       );
   }
-  // endregion
-  // region Start a dev web server
+
+  // Start a dev web server
   const app = express();
   app.get("/dev", (req, res) => {
     return clients.push(
@@ -116,8 +117,8 @@ esbuild.context({
   app.use(basePath + `/static`, express.static(path.join(__dirname, "./build/static")));
   app.use(`/css`, express.static(path.join(__dirname, "./build")));
   app.use(`/js`, express.static(path.join(__dirname, "./build")));
-  app.get("*any", (req, res) => {
-    const data = readFileSync(`${__dirname}/index.html`, "utf8");
+  app.get("*any", async (req, res) => {
+    const data = await readFile(`${__dirname}/index.html`, "utf8");
     const withOptionValued = data
       .replace(/%BASE_PATH%/g, basePath)
       .replace(/%APP_SCRIPT_SNIPPET%/g,  '')
@@ -136,5 +137,4 @@ esbuild.context({
     return res.send(withOptionValued);
   });
   app.listen(frontPort);
-  // endregion
-});
+})();
