@@ -60,6 +60,7 @@ const SearchBulkUnknownEntitiesContent = ({ queryRef, setNumberOfEntities, isDis
           dataColumns={dataColumns}
           storageKey={UNKNOWN_ENTITIES_LOCAL_STORAGE_KEY}
           taskScope="UNKNOWN_ENTITIES"
+          disableNavigation
           selectOnLineClick
            />}
     </>
