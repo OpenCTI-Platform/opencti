@@ -109,6 +109,7 @@
     }
   },
   "smtp": {
+    "allow_email_rewrite": true,
     "enabled": false
   }
 }
