@@ -199,7 +199,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, MAX_OPERATIONS_FOR_MESSAGE, MAX_PATCH_ELEMENTS_FOR_MESSAGE } from './generate-message';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyValuesFromPatchElements } from './generate-message';
 import {
   authorizedMembers,
   authorizedMembersActivationDate,
@@ -2021,13 +2021,7 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
 const computeDateFromEventId = (context) => {
   return utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
 };
-const getKeyValuesFromPatchElements = (patchElements, keyName) => {
-  return patchElements.slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).flatMap(([,operations]) => {
-    return operations.slice(0, MAX_OPERATIONS_FOR_MESSAGE).flatMap(({ key, value }) => {
-      return key === keyName ? (value ?? []) : [];
-    });
-  });
-};
+
 export const generateUpdateMessage = async (context, user, entityType, inputs) => {
   const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
   const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
