@@ -27,8 +27,8 @@ type DecayExclusionRuleEditionProps = {
 
 type DecayExclusionRuleEditionFormData = {
   name: string;
-  description?: string | null;
-  decay_exclusion_observable_types?: string[] | null;
+  description: string | null;
+  decay_exclusion_observable_types: string[];
 };
 
 const decayExclusionRuleEditionValidator = (t: (value: string) => string) => {
@@ -45,8 +45,6 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
   const [commitFieldPatch] = useApiMutation(decayExclusionRuleEditionFieldPatch);
 
   const handleSubmitField = (name: string, value: string | string[]) => {
-    console.log('name : ', name);
-    console.log('value : ', value);
     commitFieldPatch({
       variables: {
         id: data.id,
@@ -58,10 +56,10 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
     });
   };
 
-  const initialValues = {
+  const initialValues: DecayExclusionRuleEditionFormData = {
     name: data.name,
-    description: data.description,
-    decay_exclusion_observable_types: data.decay_exclusion_observable_types,
+    description: data.description ?? null,
+    decay_exclusion_observable_types: data.decay_exclusion_observable_types ?? [],
   };
 
   return (
