@@ -87,7 +87,7 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       format: 'flat'
     },
     {
-      name: "decay_exclusion_applied_rule",
+      name: 'decay_exclusion_applied_rule',
       type: 'object',
       mandatoryType: 'no',
       editDefault: false,
