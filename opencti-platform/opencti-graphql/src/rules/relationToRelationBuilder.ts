@@ -1,28 +1,46 @@
 /* eslint-disable camelcase */
 import { buildPeriodFromDates, computeRangeIntersection } from '../utils/format';
-import { createInferredRelation, deleteInferredRuleElement } from '../database/middleware';
+import { createInferredRelation, deleteInferredRuleElement, storeLoadByIdWithRefs } from '../database/middleware';
 import { createRuleContent } from './rules-utils';
 import { computeAverage } from '../database/utils';
 import { fullRelationsList } from '../database/middleware-loader';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
-import type { BasicStoreRelation, StoreObject } from '../types/store';
+import type { BasicStoreEntity, BasicStoreRelation, StoreObject } from '../types/store';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
+import type { AuthContext, AuthUser } from '../types/user';
+
+/**
+ *  When there is a toTypes in Rule definition scope, verify that it matches.
+ */
+const isTargetTypeValid = async (context: AuthContext, user: AuthUser, ruleDefinition: RuleDefinition, toId: string) => {
+  const { scopes } = ruleDefinition;
+  const allAllowedToTypes: string[] = [];
+  for (let i = 0; i < scopes.length; i += 1) {
+    if (scopes[i].filters.toTypes && Array.isArray(scopes[i].filters.toTypes)) {
+      const toTypes: string[] = scopes[i].filters.toTypes || [];
+      allAllowedToTypes.push(...toTypes);
+    }
+  }
+  // FIXME no need for ref here, find storeLoadByIdWithoutRef
+  const targetObject: BasicStoreEntity = await storeLoadByIdWithRefs(context, user, toId, {});
+  return (targetObject && allAllowedToTypes.some((entityType) => entityType === targetObject.entity_type));
+};
 
 const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {
   const { id } = ruleDefinition;
   const { leftType, rightType, creationType } = relationTypes;
   // Execution
-  const applyUpsert = async (data: StixRelation): Promise<void> => {
+  const applyUpsert = async (stixRelation: StixRelation): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
-    const { extensions } = data;
+    const { extensions } = stixRelation;
     const createdId = extensions[STIX_EXT_OCTI].id;
     const sourceRef = extensions[STIX_EXT_OCTI].source_ref;
     const targetRef = extensions[STIX_EXT_OCTI].target_ref;
-    const { object_marking_refs: markings, relationship_type } = data;
-    const { confidence: createdConfidence = 0, start_time: startTime, stop_time: stopTime } = data;
+    const { object_marking_refs: markings, relationship_type } = stixRelation;
+    const { confidence: createdConfidence = 0, start_time: startTime, stop_time: stopTime } = stixRelation;
     const creationRange = buildPeriodFromDates(startTime, stopTime);
     // Need to discover on the from and the to if attributed-to also exists
     // IN CREATION: (A) -> RightType -> (B)
@@ -79,7 +97,10 @@ const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTyp
             stop_time: range.end,
             objectMarking: elementMarkings,
           });
-          await createInferredRelation(context, input, ruleContent);
+
+          if (await isTargetTypeValid(context, RULE_MANAGER_USER, ruleDefinition, toId)) {
+            await createInferredRelation(context, input, ruleContent);
+          }
         }
       };
       const listToArgs = { fromId: targetRef, callback: listToCallback };
