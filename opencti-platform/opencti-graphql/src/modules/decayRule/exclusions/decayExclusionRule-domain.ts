@@ -30,6 +30,12 @@ export const checkDecayExclusionRules = async (context: AuthContext, user: AuthU
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
   const exclusionRuleList = activeDecayExclusionRuleList.filter((rule) => rule.decay_exclusion_observable_types.includes(observableType));
   const hasExclusionRuleMatching = exclusionRuleList.length > 0;
+  if (!isDecayExclusionRuleEnabled) {
+    return {
+      exclusionRule: [],
+      hasExclusionRuleMatching: false,
+    };
+  }
   return {
     exclusionRule: hasExclusionRuleMatching ? exclusionRuleList[0] : [],
     hasExclusionRuleMatching
