@@ -244,6 +244,7 @@
   "Decay applied rule": "Правило применения распада",
   "Decay base score": "Базовая оценка распада",
   "Decay base score date": "Дата оценки базы распада",
+  "Decay exclusion applied rule": "Применяемое правило исключения распада",
   "Decay factor": "Коэффициент распада",
   "Decay history": "История распада",
   "Decay next reaction date": "Дата следующей реакции Decay",
