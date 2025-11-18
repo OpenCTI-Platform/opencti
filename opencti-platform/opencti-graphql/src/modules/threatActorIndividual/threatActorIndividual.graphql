@@ -136,7 +136,7 @@ type ThreatActorIndividual implements BasicObject & StixObject & StixCoreObject 
   ethnicity: Country
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String

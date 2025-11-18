@@ -1,4 +1,4 @@
-import type { StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
+import type { StoreCommon, StoreEntity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
 import type * as S from '../types/stix-2-0-common';
 import type * as SDO from '../types/stix-2-0-sdo';
 import type * as SMO from '../types/stix-2-0-smo';
@@ -12,11 +12,12 @@ import {
   ENTITY_TYPE_DATA_COMPONENT,
   ENTITY_TYPE_DATA_SOURCE,
   ENTITY_TYPE_MALWARE,
+  isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   isStixDomainObjectThreatActor
 } from '../schema/stixDomainObject';
-import { assertType, cleanObject, convertObjectReferences, convertToStixDate } from './stix-converter-utils';
+import { assertType, cleanObject, convertObjectReferences, convertToStixDate, isValidStix } from './stix-converter-utils';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -25,6 +26,10 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../modules/case/case-incide
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../modules/case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../modules/case/feedback/feedback-types';
+import { isBasicObject } from '../schema/stixCoreObject';
+import { isBasicRelationship } from '../schema/stixRelationship';
+import { FunctionalError, UnsupportedError } from '../config/errors';
+import { isEmptyField } from './utils';
 
 const CUSTOM_ENTITY_TYPES = [
   ENTITY_TYPE_CONTAINER_TASK,
@@ -200,4 +205,47 @@ export const convertOpinionToStix = (instance: StoreEntity): SDO.StixOpinion => 
     opinion: instance.opinion,
     object_refs: convertObjectReferences(instance),
   };
+};
+
+// CONVERTERS
+export type ConvertFn<T extends StoreEntity, Z extends S.StixObject> = (instance: T) => Z;
+const stixDomainConverters = new Map<string, ConvertFn<any, any>>();
+// TODO add registerConverters for module converters
+
+const convertToStix_2_0 = (instance: StoreCommon): S.StixObject => {
+  const type = instance.entity_type;
+  if (!isBasicObject(type) && !isBasicRelationship(type)) {
+    throw UnsupportedError('Type cannot be converted to Stix', { type });
+  }
+  if (isStixDomainObject(type)) {
+    const basic = instance as StoreEntity;
+    // First try in registered converters
+    if (stixDomainConverters.has(type)) {
+      const externalConverter = stixDomainConverters.get(type);
+      if (!externalConverter) {
+        throw UnsupportedError('Converter was declared without a conversion function', { type });
+      }
+      return externalConverter(basic);
+    }
+    // TODO add Location, Identity, all SDOs
+    if (ENTITY_TYPE_MALWARE === type) {
+      return convertMalwareToStix(basic);
+    }
+    // No converter_2_0 found
+    throw UnsupportedError(`No entity stix 2.0 converter available for ${type}`);
+  }
+  // TODO add SRO (relations and sightings), InternalObject, MetaObject, StixCyberObservable :)
+  throw UnsupportedError(`No entity stix 2.0 converter available for ${type}`);
+};
+
+export const convertStoreToStix_2_0 = (instance: StoreCommon): S.StixObject => {
+  if (isEmptyField(instance.standard_id) || isEmptyField(instance.entity_type)) {
+    throw UnsupportedError('convertInstanceToStix must be used with opencti fully loaded instance');
+  }
+  const converted = convertToStix_2_0(instance);
+  const stix = cleanObject(converted);
+  if (!isValidStix(stix)) {
+    throw FunctionalError('Invalid stix data conversion', { id: instance.standard_id, type: instance.entity_type });
+  }
+  return stix;
 };

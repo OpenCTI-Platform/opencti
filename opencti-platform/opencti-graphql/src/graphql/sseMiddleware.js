@@ -28,7 +28,6 @@ import { BYPASS, computeUserMemberAccessIds, isUserCanAccessStixElement, isUserH
 import { FROM_START_STR, streamEventId, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, buildRefRelationKey, ENTITY_TYPE_CONTAINER, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { UnsupportedError } from '../config/errors';
 import { MARKING_FILTER } from '../utils/filtering/filtering-constants';
 import { findFiltersFromKey } from '../utils/filtering/filtering-utils';
@@ -46,6 +45,8 @@ import { asyncMap, uniqAsyncMap } from '../utils/data-processing';
 import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
 import { STIX_CORE_RELATIONSHIPS } from '../schema/stixCoreRelationship';
 import { createAuthenticatedContext } from '../http/httpAuthenticatedContext';
+
+import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -212,7 +213,7 @@ const createSseMiddleware = () => {
       return [];
     }
 
-    const allRefs = await uniqAsyncMap(missingElements, (r) => stixRefsExtractor(convertStoreToStix(r)), undefined, { flat: true });
+    const allRefs = await uniqAsyncMap(missingElements, (r) => stixRefsExtractor(convertStoreToStix_2_1(r)), undefined, { flat: true });
     if (allRefs.length === 0) {
       return missingElements;
     }
@@ -387,7 +388,7 @@ const createSseMiddleware = () => {
     for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
       const missingInstance = missingInstances[missingIndex];
       if (!cache.has(missingInstance.standard_id) && channel.connected()) {
-        const missingData = convertStoreToStix(missingInstance);
+        const missingData = convertStoreToStix_2_1(missingInstance);
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
         const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
@@ -410,7 +411,7 @@ const createSseMiddleware = () => {
         for (let relIndex = 0; relIndex < missingRelations.length; relIndex += 1) {
           const missingRelation = missingRelations[relIndex];
           if (channel.connected()) {
-            const stixRelation = convertStoreToStix(missingRelation);
+            const stixRelation = convertStoreToStix_2_1(missingRelation);
             // Resolve refs
             await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stixRelation);
             // Publish relations
@@ -674,7 +675,7 @@ const createSseMiddleware = () => {
           const instances = await storeLoadByIdsWithRefs(context, user, workingElementsIds);
           for (let index = 0; index < instances.length; index += 1) {
             const instance = instances[index];
-            const stixData = convertStoreToStix(instance);
+            const stixData = convertStoreToStix_2_1(instance);
             const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
             const eventId = streamEventId(stixUpdatedAt);
             if (channel.connected()) {
