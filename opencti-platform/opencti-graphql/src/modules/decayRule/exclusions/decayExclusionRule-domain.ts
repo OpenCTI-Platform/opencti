@@ -17,6 +17,7 @@ interface DecayExclusionRuleModel {
   id: string;
   name: string;
   description: string;
+  created_at: string;
   decay_exclusion_observable_types: string[];
   active: boolean;
 }
