@@ -31,6 +31,7 @@ import {
   ConnectorPriorityGroup,
   ConnectorType,
   type CurrentConnectorStatusInput,
+  type DraftWorkspaceAddInput,
   type EditContext,
   type EditInput,
   type EditManagedConnectorInput,
@@ -59,6 +60,7 @@ import { computeConnectorTargetContract, getSupportedContractsByImage } from '..
 import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
 import { createOnTheFlyUser } from '../modules/user/user-domain';
+import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
 
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
@@ -697,4 +699,45 @@ export const askJobImport = async (
     context_data: contextData,
   });
   return file;
+};
+
+export const createDraftAndAskJobImport = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: {
+    authorized_members?: DraftWorkspaceAddInput['authorized_members'];
+    entity_id?: string;
+    fileName: string;
+    connectorId?: string;
+    configuration?: string;
+    bypassEntityId?: string;
+    bypassValidation?: boolean;
+    validationMode?: ValidationMode;
+    forceValidation?: boolean;
+  },
+) => {
+  const {
+    authorized_members,
+    fileName,
+    connectorId,
+    configuration,
+    validationMode = defaultValidationMode,
+    entity_id,
+    bypassEntityId,
+  } = args;
+  const { id } = await addDraftWorkspace(context, user, { name: fileName, authorized_members, entity_id });
+
+  return askJobImport(
+    { ...context, draft_context: id },
+    user,
+    {
+      fileName,
+      connectorId,
+      configuration,
+      bypassEntityId,
+      validationMode,
+      bypassValidation: true,
+      forceValidation: false,
+    }
+  );
 };

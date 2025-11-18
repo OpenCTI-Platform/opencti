@@ -14676,6 +14676,7 @@ export type Mutation = {
   countryEdit?: Maybe<CountryEditMutations>;
   courseOfActionAdd?: Maybe<CourseOfAction>;
   courseOfActionEdit?: Maybe<CourseOfActionEditMutations>;
+  createDraftAndAskJobImport?: Maybe<File>;
   csvMapperAdd?: Maybe<CsvMapper>;
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
@@ -15418,6 +15419,18 @@ export type MutationCourseOfActionAddArgs = {
 
 export type MutationCourseOfActionEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationCreateDraftAndAskJobImportArgs = {
+  authorized_members?: InputMaybe<Array<MemberAccessInput>>;
+  bypassEntityId?: InputMaybe<Scalars['String']['input']>;
+  bypassValidation?: InputMaybe<Scalars['Boolean']['input']>;
+  configuration?: InputMaybe<Scalars['String']['input']>;
+  connectorId?: InputMaybe<Scalars['String']['input']>;
+  fileName: Scalars['ID']['input'];
+  forceValidation?: InputMaybe<Scalars['Boolean']['input']>;
+  validationMode?: InputMaybe<ValidationMode>;
 };
 
 
@@ -41739,6 +41752,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   countryEdit?: Resolver<Maybe<ResolversTypes['CountryEditMutations']>, ParentType, ContextType, RequireFields<MutationCountryEditArgs, 'id'>>;
   courseOfActionAdd?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<MutationCourseOfActionAddArgs, 'input'>>;
   courseOfActionEdit?: Resolver<Maybe<ResolversTypes['CourseOfActionEditMutations']>, ParentType, ContextType, RequireFields<MutationCourseOfActionEditArgs, 'id'>>;
+  createDraftAndAskJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationCreateDraftAndAskJobImportArgs, 'fileName'>>;
   csvMapperAdd?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperAddArgs, 'input'>>;
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;

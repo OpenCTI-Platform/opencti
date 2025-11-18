@@ -9,7 +9,7 @@ import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import ObjectMarkingField from '@components/common/form/ObjectMarkingField';
 import ManageImportConnectorMessage from '@components/data/import/ManageImportConnectorMessage';
-import { fileManagerAskJobImportMutation } from '@components/common/files/FileManager';
+import { fileManagerAskJobImportMutation, fileManagerCreateDraftAskJobImportMutation } from '@components/common/files/FileManager';
 import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ImportWorksDrawerQuery, ImportWorksDrawerQuery$data } from '@components/common/files/__generated__/ImportWorksDrawerQuery.graphql';
 import { fileWorksQuery } from '@components/common/files/ImportWorksDrawer';
@@ -47,7 +47,6 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const showAllMembersLine = !settings.platform_organization?.id;
   const { connectorsForImport: connectors } = usePreloadedQuery<ImportWorksDrawerQuery>(fileWorksQuery, queryRef);
   const [selectedConnector, setSelectedConnector] = React.useState<ConnectorType | null>(null);
-  const [selectedMode, setSelectedMode] = React.useState<'draft' | 'workbench' | null>(null);
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = React.useState(false);
 
   const handleSetCsvMapper = (_: UIEvent, csvMapper: string) => {
@@ -67,10 +66,6 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
   const handleSelectConnector = (_: UIEvent, value: string) => {
     const connector = connectors?.find((c) => c?.id === value);
     setSelectedConnector(connector);
-  };
-
-  const handleSelectMode = (_: UIEvent, value: 'draft' | 'workbench') => {
-    setSelectedMode(value);
   };
 
   const onSubmitImport = (
@@ -98,7 +93,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
 
     commitMutation({
       ...defaultCommitMutation,
-      mutation: fileManagerAskJobImportMutation,
+      mutation: validation_mode === 'draft' ? fileManagerCreateDraftAskJobImportMutation : fileManagerAskJobImportMutation,
       variables: {
         fileName: file.id,
         connectorId: connector_id,
@@ -156,7 +151,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
       onSubmit={onSubmitImport}
       onReset={onClose}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, isValid, values }) => (
         <Form>
           <Dialog
             open={open}
@@ -201,13 +196,12 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   fullWidth={true}
                   containerstyle={{ marginTop: 20, width: '100%' }}
                   setFieldValue={setFieldValue}
-                  onChange={handleSelectMode}
                 >
                   <MenuItem value="workbench">Workbench</MenuItem>
                   <MenuItem value="draft">Draft</MenuItem>
                 </Field>
               )}
-              {selectedMode === 'draft' && (
+              {values.validation_mode === 'draft' && (
                 <Field
                   name="authorizedMembers"
                   component={AuthorizedMembersField}
