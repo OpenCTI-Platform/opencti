@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ENTITY_TYPE_DECAY_EXCLUSION_RULE, StixDecayExclusionRule, StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
+import { ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StixDecayExclusionRule, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
 import convertDecayExclusionRuleToStix from './decayExclusionRule-converter';

@@ -12,6 +12,15 @@ import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RU
 import { createInternalObject } from '../../../domain/internalObject';
 
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
+
+interface DecayExclusionRuleModel {
+  id: string;
+  name: string;
+  description: string;
+  decay_exclusion_observable_types: string[];
+  active: boolean;
+}
+
 export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
   return storeLoadById<BasicStoreEntityDecayExclusionRule>(context, user, id, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
@@ -26,18 +35,23 @@ export const getActiveDecayExclusionRule = async (context: AuthContext, user: Au
   return decayExclusionRuleEdges.edges.map(({ node }) => node).filter((rule) => rule.active);
 };
 
-export const checkDecayExclusionRules = async (context: AuthContext, user: AuthUser, observableType: string) => {
+type CheckDecayExclusionRulesTypes = {
+  hasExclusionRuleMatching: boolean,
+  exclusionRule: DecayExclusionRuleModel | null,
+};
+
+export const checkDecayExclusionRules = async (context: AuthContext, user: AuthUser, observableType: string): Promise<CheckDecayExclusionRulesTypes> => {
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
   const exclusionRuleList = activeDecayExclusionRuleList.filter((rule) => rule.decay_exclusion_observable_types.includes(observableType));
   const hasExclusionRuleMatching = exclusionRuleList.length > 0;
   if (!isDecayExclusionRuleEnabled) {
     return {
-      exclusionRule: [],
+      exclusionRule: null,
       hasExclusionRuleMatching: false,
     };
   }
   return {
-    exclusionRule: hasExclusionRuleMatching ? exclusionRuleList[0] : [],
+    exclusionRule: hasExclusionRuleMatching ? exclusionRuleList[0] : null,
     hasExclusionRuleMatching
   };
 };
