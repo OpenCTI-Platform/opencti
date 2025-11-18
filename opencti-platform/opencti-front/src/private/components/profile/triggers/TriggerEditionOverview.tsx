@@ -291,15 +291,14 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     instanceTriggerFiltersHelpers.handleClearAllFilters();
     setInstanceTrigger(newInstanceTriggerValue);
 
-    if (newInstanceTriggerValue) {
-      const connectedToIdFilter = getDefaultFilterObject(
-        'connectedToId',
-        useFilterDefinition('connectedToId', ['Instance']),
-      );
-      helpers.handleAddFilterWithEmptyValue({
-        ...connectedToIdFilter,
-      });
-    }
+    const connectedToIdFilter = getDefaultFilterObject(
+      'connectedToId',
+      useFilterDefinition('connectedToId', ['Instance']),
+    );
+    helpers.handleAddFilterWithEmptyValue({
+      ...connectedToIdFilter,
+    });
+
     commitFieldPatch({
       variables: {
         id: trigger.id,
@@ -507,7 +506,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               {instanceTrigger
                 ? (
                   <FilterIconButton
-                    filters={filters}
+                    filters={instanceTriggerFilters}
                     helpers={{
                       ...helpers,
                       handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
