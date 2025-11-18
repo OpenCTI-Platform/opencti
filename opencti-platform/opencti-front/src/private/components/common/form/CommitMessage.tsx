@@ -124,6 +124,16 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           />
         </DialogContent>
         <DialogActions>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]}>
+            <Button
+              color="warning"
+              onClick={submitForm} // directly submit
+              disabled={disabled || validateReferences(values)}
+              classes={{ root: classes.button }}
+            >
+              {t_i18n('Update without references')}
+            </Button>
+          </Security>
           <Button
             color="primary"
             onClick={onSubmitFromDialog}

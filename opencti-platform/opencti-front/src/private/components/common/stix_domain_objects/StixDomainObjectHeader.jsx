@@ -40,9 +40,11 @@ import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import useGranted, {
   AUTOMATION,
+  BYPASS,
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,
   KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
   KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS,
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
@@ -311,6 +313,7 @@ const StixDomainObjectHeader = (props) => {
   const isKnowledgeUpdater = useGranted([KNOWLEDGE_KNUPDATE]);
   const isKnowledgeEnricher = useGranted([KNOWLEDGE_KNENRICHMENT]);
   const isKnowledgeDeleter = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const isBypassEnforcedRef = useGranted([BYPASS, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
 
   const [isEnrollPlaybookOpen, setEnrollPlaybookOpen] = useState(false);
   const [isSharingOpen, setIsSharingOpen] = useState(false);
@@ -565,7 +568,7 @@ const StixDomainObjectHeader = (props) => {
                   <Formik
                     initialValues={{ new_alias: '' }}
                     onSubmit={onSubmitCreateAlias}
-                    validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+                    validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
                   >
                     {({ submitForm, isSubmitting, setFieldValue, values }) => (
                       <Form>
@@ -593,7 +596,6 @@ const StixDomainObjectHeader = (props) => {
                         />
                         {enableReferences && (
                           <CommitMessage
-                            handleClose={openCommitCreate}
                             open={openCommitCreate}
                             submitForm={submitForm}
                             disabled={isSubmitting}
@@ -770,7 +772,7 @@ const StixDomainObjectHeader = (props) => {
             <Formik
               initialValues={{ new_alias: '' }}
               onSubmit={onSubmitCreateAlias}
-              validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+              validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
             >
               {({ submitForm, isSubmitting, setFieldValue, values }) => (
                 <Form style={{ float: 'right' }}>
@@ -851,7 +853,7 @@ const StixDomainObjectHeader = (props) => {
               <Formik
                 initialValues={{ new_alias: '' }}
                 onSubmit={onSubmitCreateAlias}
-                validationSchema={enableReferences ? aliasValidation(t_i18n) : null}
+                validationSchema={enableReferences && !isBypassEnforcedRef ? aliasValidation(t_i18n) : null}
               >
                 {({ submitForm, isSubmitting, setFieldValue, values }) => (
                   <Form>
@@ -905,7 +907,7 @@ const StixDomainObjectHeader = (props) => {
         <Formik
           initialValues={{}}
           onSubmit={onSubmitDeleteAlias}
-          validationSchema={aliasValidation(t_i18n)}
+          validationSchema={!isBypassEnforcedRef && aliasValidation(t_i18n)}
         >
           {({ submitForm, isSubmitting, setFieldValue, values }) => (
             <Form style={{ float: 'right' }}>
