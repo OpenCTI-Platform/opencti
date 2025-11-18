@@ -20506,6 +20506,8 @@ export type PlatformEe = {
   license_expiration_date: Scalars['DateTime']['output'];
   license_expiration_prevention: Scalars['Boolean']['output'];
   license_expired: Scalars['Boolean']['output'];
+  license_extra_expiration: Scalars['Boolean']['output'];
+  license_extra_expiration_days?: Maybe<Scalars['Int']['output']>;
   license_global: Scalars['Boolean']['output'];
   license_platform: Scalars['String']['output'];
   license_platform_match: Scalars['Boolean']['output'];
@@ -43420,6 +43422,8 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
   license_expiration_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   license_expiration_prevention?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_expired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_extra_expiration?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_extra_expiration_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   license_global?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_platform_match?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
