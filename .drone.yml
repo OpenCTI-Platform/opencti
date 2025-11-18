@@ -294,42 +294,6 @@ steps:
     depends_on:
       - client-test-312
 
-  - name: build-circleci
-    image: curlimages/curl
-    commands:
-      - curl -X POST --data "branch=$DRONE_COMMIT_BRANCH" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
-    environment:
-      CIRCLECI_TOKEN:
-        from_secret: circleci_token
-    when:
-      branch:
-        - master
-        - release/*
-      event:
-        exclude:
-          - pull_request
-          - tag
-    depends_on:
-      - api-tests
-      - frontend-tests
-      - frontend-e2e-tests
-
-  - name: build-circleci-release
-    image: curlimages/curl
-    commands:
-      - curl -X POST --data "tag=$DRONE_TAG" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
-    environment:
-      CIRCLECI_TOKEN:
-        from_secret: circleci_token
-    when:
-      event:
-        - tag
-    depends_on:
-      - api-tests
-      - frontend-tests
-      - frontend-e2e-tests
-      - pycti-example-tests
-
   - name: slack
     image: plugins/slack
     settings:
