@@ -7,8 +7,8 @@ import { pageEntitiesConnection, storeLoadById } from '../../../database/middlew
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { notify } from '../../../database/redis';
-import { DecayExclusionRuleAddInput, EditInput, QueryDecayExclusionRulesArgs } from '../../../generated/graphql';
-import { BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
+import type { DecayExclusionRuleAddInput, EditInput, QueryDecayExclusionRulesArgs } from '../../../generated/graphql';
+import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
 
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
