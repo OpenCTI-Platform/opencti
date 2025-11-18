@@ -32,7 +32,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = () => ({
   container: {
-    height: 60,
+    height: 40,
+    padding: 0,
   },
   line: {
     content: ' ',
@@ -50,6 +51,7 @@ const styles = () => ({
     margin: '7px 0 0 0',
   },
   content: {
+    flex: 1,
     width: 'auto',
     overflow: 'hidden',
   },
