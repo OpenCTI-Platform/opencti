@@ -26,7 +26,7 @@ import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
 import { CguStatus } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
-import {ALLOW_EMAIL_REWRITE, smtpConfiguredEmail} from '../database/smtp';
+import { ALLOW_EMAIL_REWRITE, smtpConfiguredEmail } from '../database/smtp';
 
 const settingsResolvers = {
   Query: {
