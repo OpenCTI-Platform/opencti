@@ -1436,7 +1436,7 @@ export const registerStixMetaConverter = <T extends StoreEntity, Z extends S.Sti
   stixMetaConverters.set(type, convertFn);
 };
 
-export const convertToStix_2_1 = (instance: StoreCommon): S.StixObject => {
+const convertToStix_2_1 = (instance: StoreCommon): S.StixObject => {
   const type = instance.entity_type;
   if (!isBasicObject(type) && !isBasicRelationship(type)) {
     throw UnsupportedError('Type cannot be converted to Stix', { type });
