@@ -913,7 +913,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
   },
   required: ['actions'],
 };
-const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
+export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
   id: 'PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT',
   name: 'Manipulate knowledge',
   description: 'Manipulate STIX data',
