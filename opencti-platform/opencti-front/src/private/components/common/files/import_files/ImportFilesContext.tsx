@@ -202,6 +202,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   const queryRef = useQueryLoading<ImportFilesContextQuery>(importFilesQuery, {
     id: initialValue.entityId || '',
   });
+  console.log('improt mode', importMode);
 
   const guessMimeType = useCallback(async (fileId: string): Promise<string | null> => {
     const result = await fetchQuery(
@@ -213,10 +214,8 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   }, []);
   useEffect(() => {
     setActiveStep(initalActiveStep);
-  }, [initialValue]);
-  useEffect(() => {
     setImportMode(initialImportMode);
-  }, [importMode]);
+  }, [initialValue]);
 
   return queryRef && (
     <React.Suspense>
