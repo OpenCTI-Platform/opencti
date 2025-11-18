@@ -90,7 +90,7 @@ interface IngestionCatalogConnectorCreationProps {
   open: boolean;
   onClose: () => void;
   catalogId: string;
-  hasRegisteredManagers: boolean
+  hasActiveManagers: boolean;
   deploymentCount?: number;
   onCreate?: (connectorId: string) => void;
 }
@@ -113,7 +113,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const IngestionCatalogConnectorCreation = ({
-  connector, open, onClose, catalogId, hasRegisteredManagers, deploymentCount = 0, onCreate,
+  connector, open, onClose, catalogId, hasActiveManagers, deploymentCount = 0, onCreate,
 }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -299,7 +299,7 @@ const IngestionCatalogConnectorCreation = ({
       }
     >
       <Stack gap={1}>
-        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
+        <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
 
         <Formik<ManagedConnectorValues>
           onReset={onClose}
@@ -322,11 +322,11 @@ const IngestionCatalogConnectorCreation = ({
             return (
               <Form>
                 <fieldset
-                  disabled={!hasRegisteredManagers}
+                  disabled={!hasActiveManagers}
                   style={{
                     border: 'none',
                     padding: 0,
-                    ...(!hasRegisteredManagers && { opacity: 0.5, pointerEvents: 'none' }),
+                    ...(!hasActiveManagers && { opacity: 0.5, pointerEvents: 'none' }),
                   }}
                 >
                   <Field
@@ -428,7 +428,7 @@ const IngestionCatalogConnectorCreation = ({
                     {t_i18n('Cancel')}
                   </Button>
                   {
-                    hasRegisteredManagers && (
+                    hasActiveManagers && (
                       <Button
                         variant="contained"
                         color="secondary"

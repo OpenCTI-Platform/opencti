@@ -31,7 +31,7 @@ import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 interface IngestionCatalogComponentProps {
   catalogsData: IngestionConnectorsCatalogsQuery['response'];
   deploymentData: IngestionConnectorsQuery['response'];
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean, deploymentCount: number) => void;
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void;
 }
 
 type IngestionTypeMap = {
@@ -136,7 +136,7 @@ const IngestionCatalogComponent = ({
   const { setTitle } = useConnectedDocumentModifier();
   const [searchParams] = useSearchParams();
 
-  const { hasRegisteredManagers } = useConnectorManagerStatus();
+  const { hasActiveManagers } = useConnectorManagerStatus();
 
   setTitle(t_i18n('Connector catalog | Ingestion | Data'));
 
@@ -168,7 +168,7 @@ const IngestionCatalogComponent = ({
       <IngestionMenu />
       <PageContainer withRightMenu withGap>
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('Connector catalog'), current: true }]} />
-        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
+        <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
         <Stack flexDirection="row">
           <IngestionCatalogFilters
             contracts={allContracts}
@@ -191,7 +191,7 @@ const IngestionCatalogComponent = ({
                     node={contract}
                     dataListId={catalog.id}
                     isEnterpriseEdition={isEnterpriseEdition}
-                    onClickDeploy={() => onClickDeploy(contract, catalog.id, hasRegisteredManagers, deploymentCount)}
+                    onClickDeploy={() => onClickDeploy(contract, catalog.id, hasActiveManagers, deploymentCount)}
                     deploymentCount={deploymentCount}
                   />
                 </Grid>
@@ -252,7 +252,7 @@ const IngestionCatalog = () => {
           connector={catalogState.selectedConnector}
           onClose={handleCloseDeployDialog}
           catalogId={catalogState.selectedCatalogId}
-          hasRegisteredManagers={catalogState.hasRegisteredManagers}
+          hasActiveManagers={catalogState.hasActiveManagers}
           onCreate={handleCreate}
           deploymentCount={catalogState.deploymentCount}
         />
