@@ -86,6 +86,17 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
       isFilterable: false,
       format: 'flat'
     },
+    {
+      name: "decay_exclusion_applied_rule",
+      type: 'object',
+      mandatoryType: 'no',
+      editDefault: false,
+      multiple: false,
+      upsert: true,
+      label: 'Decay exclusion applied rule',
+      isFilterable: false,
+      format: 'flat'
+    },
     { ...revoked, isFilterable: true },
   ],
   relations: [

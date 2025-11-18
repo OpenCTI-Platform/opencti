@@ -11021,6 +11021,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   decay_applied_rule?: Maybe<IndicatorDecayRule>;
   decay_base_score?: Maybe<Scalars['Int']['output']>;
   decay_base_score_date?: Maybe<Scalars['DateTime']['output']>;
+  decay_exclusion_applied_rule?: Maybe<IndicatorDecayExclusionRule>;
   decay_history?: Maybe<Array<DecayHistory>>;
   description?: Maybe<Scalars['String']['output']>;
   draftVersion?: Maybe<DraftVersion>;
@@ -11274,6 +11275,14 @@ export type IndicatorConnection = {
   __typename?: 'IndicatorConnection';
   edges?: Maybe<Array<Maybe<IndicatorEdge>>>;
   pageInfo: PageInfo;
+};
+
+export type IndicatorDecayExclusionRule = {
+  __typename?: 'IndicatorDecayExclusionRule';
+  decay_exclusion_created_at: Scalars['String']['output'];
+  decay_exclusion_id: Scalars['String']['output'];
+  decay_exclusion_name: Scalars['String']['output'];
+  decay_exclusion_observable_types: Array<Scalars['String']['output']>;
 };
 
 export type IndicatorDecayRule = {
@@ -36112,6 +36121,7 @@ export type ResolversTypes = ResolversObject<{
   Indicator: ResolverTypeWrapper<BasicStoreEntityIndicator>;
   IndicatorAddInput: IndicatorAddInput;
   IndicatorConnection: ResolverTypeWrapper<Omit<IndicatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IndicatorEdge']>>> }>;
+  IndicatorDecayExclusionRule: ResolverTypeWrapper<IndicatorDecayExclusionRule>;
   IndicatorDecayRule: ResolverTypeWrapper<IndicatorDecayRule>;
   IndicatorEdge: ResolverTypeWrapper<Omit<IndicatorEdge, 'node'> & { node: ResolversTypes['Indicator'] }>;
   IndicatorFormat: IndicatorFormat;
@@ -37082,6 +37092,7 @@ export type ResolversParentTypes = ResolversObject<{
   Indicator: BasicStoreEntityIndicator;
   IndicatorAddInput: IndicatorAddInput;
   IndicatorConnection: Omit<IndicatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IndicatorEdge']>>> };
+  IndicatorDecayExclusionRule: IndicatorDecayExclusionRule;
   IndicatorDecayRule: IndicatorDecayRule;
   IndicatorEdge: Omit<IndicatorEdge, 'node'> & { node: ResolversParentTypes['Indicator'] };
   Individual: Omit<Individual, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { avatar?: Maybe<ResolversParentTypes['OpenCtiFile']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, organizations?: Maybe<ResolversParentTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, status?: Maybe<ResolversParentTypes['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
@@ -41222,6 +41233,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   decay_applied_rule?: Resolver<Maybe<ResolversTypes['IndicatorDecayRule']>, ParentType, ContextType>;
   decay_base_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   decay_base_score_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  decay_exclusion_applied_rule?: Resolver<Maybe<ResolversTypes['IndicatorDecayExclusionRule']>, ParentType, ContextType>;
   decay_history?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
@@ -41286,6 +41298,14 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
 export type IndicatorConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorConnection'] = ResolversParentTypes['IndicatorConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['IndicatorEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type IndicatorDecayExclusionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorDecayExclusionRule'] = ResolversParentTypes['IndicatorDecayExclusionRule']> = ResolversObject<{
+  decay_exclusion_created_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  decay_exclusion_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  decay_exclusion_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  decay_exclusion_observable_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndicatorDecayRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorDecayRule'] = ResolversParentTypes['IndicatorDecayRule']> = ResolversObject<{
@@ -48284,6 +48304,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IndexingMetrics?: IndexingMetricsResolvers<ContextType>;
   Indicator?: IndicatorResolvers<ContextType>;
   IndicatorConnection?: IndicatorConnectionResolvers<ContextType>;
+  IndicatorDecayExclusionRule?: IndicatorDecayExclusionRuleResolvers<ContextType>;
   IndicatorDecayRule?: IndicatorDecayRuleResolvers<ContextType>;
   IndicatorEdge?: IndicatorEdgeResolvers<ContextType>;
   Individual?: IndividualResolvers<ContextType>;

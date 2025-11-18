@@ -12943,6 +12943,13 @@ type IndicatorDecayRule {
   decay_revoke_score: Int!
 }
 
+type IndicatorDecayExclusionRule {
+  decay_exclusion_id: String!
+  decay_exclusion_name: String!
+  decay_exclusion_created_at: String!
+  decay_exclusion_observable_types: [String!]!
+}
+
 type DecayLiveDetails {
   live_score: Int!
   live_points: [DecayHistory!]
@@ -13018,6 +13025,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   decay_base_score: Int
   decay_base_score_date: DateTime
   decay_applied_rule: IndicatorDecayRule
+  decay_exclusion_applied_rule: IndicatorDecayExclusionRule
   decay_history: [DecayHistory!]
   decayLiveDetails: DecayLiveDetails
   decayChartData: DecayChartData
