@@ -101,7 +101,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
-  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
+  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
+      ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
@@ -119,7 +120,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         },
       },
     });
-  }, [filters]);
+  }, [filters, instanceTriggerFilters]);
 
   const onSubmit: FormikConfig<TriggerEditionFormValues>['onSubmit'] = (
     values,
@@ -290,14 +291,6 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     helpers.handleClearAllFilters();
     instanceTriggerFiltersHelpers.handleClearAllFilters();
     setInstanceTrigger(newInstanceTriggerValue);
-
-    const connectedToIdFilter = getDefaultFilterObject(
-      'connectedToId',
-      useFilterDefinition('connectedToId', ['Instance']),
-    );
-    helpers.handleAddFilterWithEmptyValue({
-      ...connectedToIdFilter,
-    });
 
     commitFieldPatch({
       variables: {
@@ -489,7 +482,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
           {trigger.trigger_type === 'live' && (
             <span>
               <Box sx={{
-                paddingTop: 4,
+                marginTop: '20px',
                 display: 'flex',
                 gap: 1,
               }}
@@ -508,7 +501,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                   <FilterIconButton
                     filters={instanceTriggerFilters}
                     helpers={{
-                      ...helpers,
+                      ...instanceTriggerFiltersHelpers,
                       handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
                     }}
                     redirection
