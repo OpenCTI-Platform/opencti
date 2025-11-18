@@ -292,7 +292,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.assoc('revoked', revoked),
   )(indicator);
   let finalIndicatorToCreate;
-  if (!revoked && hasExclusionRuleMatching) {
+  if (!revoked && hasExclusionRuleMatching && exclusionRule) {
     finalIndicatorToCreate = {
       ...indicatorToCreate,
       decay_exclusion_applied_rule: {
