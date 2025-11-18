@@ -21,6 +21,21 @@ export const findDecayExclusionRulePaginated = (context: AuthContext, user: Auth
   return pageEntitiesConnection<BasicStoreEntityDecayExclusionRule>(context, user, [ENTITY_TYPE_DECAY_EXCLUSION_RULE], args);
 };
 
+export const getActiveDecayExclusionRule = async (context: AuthContext, user: AuthUser) => {
+  const decayExclusionRuleEdges = await findDecayExclusionRulePaginated(context, user, {});
+  return decayExclusionRuleEdges.edges.map(({ node }) => node).filter((rule) => rule.active);
+};
+
+export const checkDecayExclusionRules = async (context: AuthContext, user: AuthUser, observableType: string) => {
+  const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
+  const exclusionRuleList = activeDecayExclusionRuleList.filter((rule) => rule.decay_exclusion_observable_types.includes(observableType));
+  const hasExclusionRuleMatching = exclusionRuleList.length > 0;
+  return {
+    exclusionRule: hasExclusionRuleMatching ? exclusionRuleList[0] : [],
+    hasExclusionRuleMatching
+  };
+};
+
 export const addDecayExclusionRule = (context: AuthContext, user: AuthUser, input: DecayExclusionRuleAddInput) => {
   if (!isDecayExclusionRuleEnabled) throw UnsupportedError('Feature not yet available');
   const defaultOps = { created_at: now() };
