@@ -1,7 +1,7 @@
 import ejs from 'ejs';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
-import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
@@ -136,7 +136,6 @@ export async function handleUINotification(
 }
 
 export async function handleEmailNotification(
-  settings: BasicStoreSettings,
   user: NotificationUser,
   configurationString: string | undefined,
   templateData: object,
@@ -237,9 +236,9 @@ export const internalProcessNotification = async (
   triggerList: BasicStoreEntityTrigger[],
   usersMap: Map<string, AuthUser>,
   // eslint-disable-next-line consistent-return
-): Promise<{ error: string } | void> => {
+): Promise<void> => {
   if (notificationUser.user_service_account) {
-    return { error: 'Cannot send notification to service account user' };
+    throw UnsupportedError('Cannot send notification to service account user');
   }
   const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
   const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
@@ -258,7 +257,7 @@ export const internalProcessNotification = async (
       await handleUINotification(authContext, notificationName, triggerIds, notificationType, notificationUser, content);
       break;
     case NOTIFIER_CONNECTOR_EMAIL:
-      await handleEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
+      await handleEmailNotification(notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
       break;
     case NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL:
       await handleSimplifiedEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
