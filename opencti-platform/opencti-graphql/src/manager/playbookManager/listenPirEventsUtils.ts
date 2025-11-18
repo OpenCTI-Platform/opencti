@@ -93,7 +93,7 @@ export const isEventMatchesPir = async (
   return false;
 };
 
-export const formatFilters = (sourceFilters: string, inPirFilters?: { value: string; }[]) => {
+export const formatFiltersForPirPlaybookComponent = (sourceFilters: string, inPirFilters?: { value: string; }[]) => {
   const filtersOnSource: FilterGroup | undefined = sourceFilters ? JSON.parse(sourceFilters) : undefined;
   if (!filtersOnSource) return undefined;
 
@@ -122,7 +122,7 @@ export const listenPirEvents = async (
   const { id: eventId, data: { data, type } } = streamEvent;
   const configuration = JSON.parse(instance.configuration ?? '{}') as PirStreamConfiguration;
   const { filters: sourceFilters, inPirFilters } = configuration;
-  const filtersOnSource = formatFilters(sourceFilters, inPirFilters);
+  const filtersOnSource = formatFiltersForPirPlaybookComponent(sourceFilters, inPirFilters);
 
   if (isValidEventType(type, configuration)) {
     if (await isEventMatchesPir(context, streamEvent.data, inPirFilters)) {

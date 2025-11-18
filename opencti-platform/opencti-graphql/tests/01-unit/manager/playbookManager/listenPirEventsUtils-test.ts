@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildPirFilters, formatFilters, isEventMatchesPir, listenPirEvents } from '../../../../src/manager/playbookManager/listenPirEventsUtils';
+import { buildPirFilters, formatFiltersForPirPlaybookComponent, isEventMatchesPir, listenPirEvents } from '../../../../src/manager/playbookManager/listenPirEventsUtils';
 import type { AuthContext } from '../../../../src/types/user';
 import type { SseEvent, StreamDataEvent } from '../../../../src/types/event';
 import type { BasicStoreEntityPlaybook } from '../../../../src/modules/playbook/playbook-types';
@@ -203,7 +203,7 @@ describe('listenPirEventsUtils', () => {
         { label: 'PIR 2', value: 'pir--id-2', type: 'Pir' }
       ];
 
-      const formattedFilters = formatFilters(sourceFilters, inPirFilters);
+      const formattedFilters = formatFiltersForPirPlaybookComponent(sourceFilters, inPirFilters);
       const expectedFilters = {
         mode: 'and',
         filters: [
