@@ -34,7 +34,7 @@ import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
-import { deleteAllDraftFiles } from '../../database/file-storage-helper';
+import { deleteAllDraftFiles } from '../../database/file-storage';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { DRAFT_STATUS_OPEN, DRAFT_STATUS_VALIDATED } from './draftStatuses';
 import { notify } from '../../database/redis';

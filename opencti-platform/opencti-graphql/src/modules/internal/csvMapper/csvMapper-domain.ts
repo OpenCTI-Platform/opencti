@@ -26,7 +26,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRA
 import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from '../../ingestion/ingestion-types';
 import { FunctionalError } from '../../../config/errors';
 import { parseReadableToLines } from '../../../parser/csv-parser';
-import type { FileUploadData } from '../../../database/file-storage-helper';
+import type { FileUploadData } from '../../../database/file-storage';
 import pjson from '../../../../package.json';
 import { extractContentFrom } from '../../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../../utils/version';

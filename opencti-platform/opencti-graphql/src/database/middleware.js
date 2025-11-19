@@ -225,8 +225,8 @@ import {
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage } from './file-storage-helper';
-import { getFileContent, storeFileConverter } from './file-storage';
+import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage, storeFileConverter } from './file-storage';
+import { getFileContent } from './raw-file-storage';
 import { getDraftContext } from '../utils/draftContext';
 import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
 import { lockResources } from '../lock/master-lock';
