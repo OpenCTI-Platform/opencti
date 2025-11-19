@@ -202,7 +202,6 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   const queryRef = useQueryLoading<ImportFilesContextQuery>(importFilesQuery, {
     id: initialValue.entityId || '',
   });
-  console.log('improt mode', importMode);
 
   const guessMimeType = useCallback(async (fileId: string): Promise<string | null> => {
     const result = await fetchQuery(
