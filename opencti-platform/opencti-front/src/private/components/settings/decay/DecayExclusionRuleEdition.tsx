@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { graphql } from 'react-relay';
 import { useFormatter } from 'src/components/i18n';
 import Drawer from '@components/common/drawer/Drawer';
