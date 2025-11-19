@@ -607,17 +607,6 @@ const buildUserMemberAccessFilter = (user, opts) => {
     return [];
   }
   const userAccessIds = computeUserMemberAccessIds(user);
-  const shouldConditions = [];
-  // Handle authority-based access
-  if (includeAuthorities) {
-    const roleIds = user.roles.map((r) => r.id);
-    const owners = [...userAccessIds, ...capabilities, ...roleIds];
-    shouldConditions.push({ terms: { 'authorized_authorities.keyword': owners } });
-  }
-  // For service accounts, bypass authorized members restrictions (but not authorities if requested)
-  if (isServiceAccountUser(user)) {
-    return shouldConditions.length > 0 ? [{ bool: { should: shouldConditions } }] : [];
-  }
 
   // if access_users exists, it should have the user access ids
   const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
@@ -645,6 +634,12 @@ const buildUserMemberAccessFilter = (user, opts) => {
   const authorizedFilters = [
     { bool: { must: [authorizedMembersIdsTerms, groupRestrictionCondition] } }
   ];
+  const shouldConditions = [];
+  if (includeAuthorities) {
+    const roleIds = user.roles.map((r) => r.id);
+    const owners = [...userAccessIds, ...capabilities, ...roleIds];
+    shouldConditions.push({ terms: { 'authorized_authorities.keyword': owners } });
+  }
   if (!excludeEmptyAuthorizedMembers) {
     shouldConditions.push(emptyAuthorizedMembers);
   }
@@ -652,7 +647,7 @@ const buildUserMemberAccessFilter = (user, opts) => {
     nested: {
       path: authorizedMembers.name,
       query: {
-        bool: { should: authorizedFilters }
+        bool: { should: isServiceAccountUser(user) ? [] : authorizedFilters }
       }
     }
   };
