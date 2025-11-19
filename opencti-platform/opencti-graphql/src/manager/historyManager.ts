@@ -4,7 +4,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { createStreamProcessor, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
-import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
+import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -26,10 +26,20 @@ import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { getKeyName } from '../database/generate-message';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
 const SCHEDULE_TIME = 10000;
+
+interface Change {
+  field: string;
+  previous?: string;
+  new?: string;
+  added?: Array<string>;
+  removed?: Array<string>;
+}
 
 interface HistoryContext {
   id: string;
@@ -47,6 +57,7 @@ interface HistoryContext {
   pir_ids?: Array<string>;
   pir_score?: number;
   pir_match_from?: boolean;
+  changes?: Array<Change>
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -136,6 +147,41 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
+const buildChanges = (updateEventContext: UpdateEvent['context'], contextData: HistoryContext): Change[] => {
+  const changes: Change[] = [];
+  const entityType = contextData.entity_type;
+
+  updateEventContext.patch.forEach((patch, i) => {
+    const key = patch.path.split('/').filter(Boolean).pop() ?? ''; // TODO this doesn't work for arrays => path: '/object_refs/7' :(
+    if (!key) return;
+    const field = getKeyName(entityType, key); // TODO this does not work for auth members :(
+    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
+    const isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+    const previousValue = (updateEventContext.reverse_patch[i] as { value: any }).value;
+    const newValue = (patch as { value: any }).value;
+    if (isMultiple) {
+      if (patch.op === UPDATE_OPERATION_ADD) {
+        changes.push({
+          field,
+          added: [newValue],
+        });
+      } else if (patch.op === UPDATE_OPERATION_REMOVE) {
+        changes.push({
+          field,
+          removed: [newValue],
+        });
+      }
+    } else {
+      changes.push({
+        field,
+        previous: previousValue,
+        new: newValue,
+      });
+    }
+  });
+
+  return changes;
+};
 export const buildHistoryElementsFromEvents = async (context:AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   // load all markings to resolve object_marking_refs
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
@@ -180,6 +226,8 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
         eventMarkingRefs.push(...relatedMarkings);
       }
+      // add changes added/removed for multiple field or previous/new for simple field
+      contextData.changes = buildChanges(updateEvent.context, contextData);
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;

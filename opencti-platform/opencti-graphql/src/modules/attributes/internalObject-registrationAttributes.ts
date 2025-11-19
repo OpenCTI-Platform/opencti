@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import {
   type AttributeDefinition,
   authorizedMembers,
+  changes,
   createdAt,
   creators,
   draftChange,
@@ -154,6 +155,7 @@ const HistoryDefinition: AttributeDefinition[] = [
       { name: 'pir_ids', label: 'PIR IDS', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_PIR], editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: true },
       { name: 'pir_score', label: 'PIR Score', type: 'numeric', precision: 'integer', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: true },
       { name: 'pir_match_from', label: 'Match Pir with source of relationship', type: 'boolean', editDefault: false, mandatoryType: 'no', multiple: false, upsert: true, isFilterable: false },
+      changes
     ]
   },
   { ...creators, isFilterable: false },
