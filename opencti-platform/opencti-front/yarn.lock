@@ -4415,48 +4415,49 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rjsf/core@npm:5.24.13":
-  version: 5.24.13
-  resolution: "@rjsf/core@npm:5.24.13"
+"@rjsf/core@npm:6.1.1":
+  version: 6.1.1
+  resolution: "@rjsf/core@npm:6.1.1"
   dependencies:
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
-    markdown-to-jsx: "npm:^7.4.1"
+    markdown-to-jsx: "npm:^8.0.0"
     prop-types: "npm:^15.8.1"
   peerDependencies:
-    "@rjsf/utils": ^5.24.x
-    react: ^16.14.0 || >=17
-  checksum: 10c0/d97a034f9fdbd7d3663673a2a18fa463fce2333590c16ef2942142951facea9e03fdbd7a6bb0203b1803d21ba48fa328c8bfcfe845ffc94fc468c8d4a8008eef
+    "@rjsf/utils": ^6.x
+    react: ">=18"
+  checksum: 10c0/4a13ebea4d1779b82ed38123152623eaa203c3727e3473060a953bbf2a3b67bd6755956b88723ed1d786302baf11bee5de69555fc1f1aeddfbb45f45154ded4b
   languageName: node
   linkType: hard
 
-"@rjsf/mui@npm:5.24.13":
-  version: 5.24.13
-  resolution: "@rjsf/mui@npm:5.24.13"
+"@rjsf/mui@npm:6.1.1":
+  version: 6.1.1
+  resolution: "@rjsf/mui@npm:6.1.1"
   peerDependencies:
     "@emotion/react": ^11.7.0
     "@emotion/styled": ^11.6.0
-    "@mui/icons-material": ^5.2.0 || ^6.0.0
-    "@mui/material": ^5.2.2 || ^6.0.0
-    "@rjsf/core": ^5.24.x
-    "@rjsf/utils": ^5.24.x
-    react: ">=17"
-  checksum: 10c0/ec7a2e02685df446c41fdc431f81fad777103b35821eaabc6f1ddb125b78b8bf0bf469a19ee7fa9077135909c2b5149f94235146323c063ad12dcc770533a5f1
+    "@mui/icons-material": ^7.0.0
+    "@mui/material": ^7.0.0
+    "@rjsf/core": ^6.x
+    "@rjsf/utils": ^6.x
+    react: ">=18"
+  checksum: 10c0/1c9111946f092fbfcebed98ff1e580c09c16685724de379be5fc8d4a8232ac77d857aa4ef7e2563847d117e69098b4f7a5b371ca51335a4da443f28758cdfb63
   languageName: node
   linkType: hard
 
-"@rjsf/utils@npm:5.24.13":
-  version: 5.24.13
-  resolution: "@rjsf/utils@npm:5.24.13"
+"@rjsf/utils@npm:6.1.1":
+  version: 6.1.1
+  resolution: "@rjsf/utils@npm:6.1.1"
   dependencies:
+    fast-uri: "npm:^3.1.0"
     json-schema-merge-allof: "npm:^0.8.1"
     jsonpointer: "npm:^5.0.1"
     lodash: "npm:^4.17.21"
     lodash-es: "npm:^4.17.21"
-    react-is: "npm:^18.2.0"
+    react-is: "npm:^18.3.1"
   peerDependencies:
-    react: ^16.14.0 || >=17
-  checksum: 10c0/5e93081fb552094c633f0b71e6b162cfe3901f51cd60aa3e1cebcf2040a8dc80d9fa446abaf68d5eb5800bb125400ddc2cb002ed9ec826248668200049e6ceb2
+    react: ">=18"
+  checksum: 10c0/fdbc3e748d72a4ef866f656768651f74a4c86fd15eb74f36bd5a77f9ea69431b9d55d0a7e94dbd0fc190e51b2b57ec3b508d6760cad8493766fc42cbe24b1f5b
   languageName: node
   linkType: hard
 
@@ -9537,6 +9538,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-uri@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "fast-uri@npm:3.1.0"
+  checksum: 10c0/44364adca566f70f40d1e9b772c923138d47efeac2ae9732a872baafd77061f26b097ba2f68f0892885ad177becd065520412b8ffeec34b16c99433c5b9e2de7
+  languageName: node
+  linkType: hard
+
 "fastq@npm:^1.6.0":
   version: 1.17.1
   resolution: "fastq@npm:1.17.1"
@@ -12419,7 +12427,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"markdown-to-jsx@npm:8.0.0":
+"markdown-to-jsx@npm:8.0.0, markdown-to-jsx@npm:^8.0.0":
   version: 8.0.0
   resolution: "markdown-to-jsx@npm:8.0.0"
   peerDependencies:
@@ -12428,15 +12436,6 @@ __metadata:
     react:
       optional: true
   checksum: 10c0/54f60e41ac397ee00c2f8ff21b6c56303568b1581b76fc89b3c60f8d31a38cbbf543e83ada4e43d518ec322a0e5d89e06c5b81c2ead825f4b4e7d0d06f063c9a
-  languageName: node
-  linkType: hard
-
-"markdown-to-jsx@npm:^7.4.1":
-  version: 7.5.0
-  resolution: "markdown-to-jsx@npm:7.5.0"
-  peerDependencies:
-    react: ">= 0.14.0"
-  checksum: 10c0/88213e64afd41d6934fbb70bcea0e2ef1f9553db1ba4c6f423b17d6e9c2b99c82b0fcbed29036dd5b91704b170803d1fae730ab40ae27af5c7994e2717686ebc
   languageName: node
   linkType: hard
 
@@ -13782,9 +13781,9 @@ __metadata:
     "@mui/styles": "npm:6.5.0"
     "@mui/x-date-pickers": "npm:7.29.4"
     "@playwright/test": "npm:1.56.1"
-    "@rjsf/core": "npm:5.24.13"
-    "@rjsf/mui": "npm:5.24.13"
-    "@rjsf/utils": "npm:5.24.13"
+    "@rjsf/core": "npm:6.1.1"
+    "@rjsf/mui": "npm:6.1.1"
+    "@rjsf/utils": "npm:6.1.1"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:16.3.0"
@@ -14755,7 +14754,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-is@npm:^18.2.0, react-is@npm:^18.3.1":
+"react-is@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-is@npm:18.3.1"
   checksum: 10c0/f2f1e60010c683479e74c63f96b09fb41603527cd131a9959e2aee1e5a8b0caf270b365e5ca77d4a6b18aae659b60a86150bb3979073528877029b35aecd2072
