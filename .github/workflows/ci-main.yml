@@ -7,21 +7,21 @@ on:
 
 jobs:
   wf-build-image:
-      uses: ./.github/workflows/ci/docker-build.yml
+      uses: ./.github/workflows/ci-docker-build.yml
       with:
         image_tag: ${{ github.sha }}
       secrets: inherit
 
   wf-api-test:
-      uses: ./.github/workflows/ci/test-api.yml
+      uses: ./.github/workflows/ci-test-api.yml
       needs: wf-build-image
       secrets: inherit
 
   wf-frontend-test:
-      uses: ./.github/workflows/ci/test-frontend.yml
+      uses: ./.github/workflows/ci-test-frontend.yml
       secrets: inherit
 
 
   wf-license-check:
-      uses: ./.github/workflows/ci/license-check.yml
+      uses: ./.github/workflows/ci-license-check.yml
       secrets: inherit
