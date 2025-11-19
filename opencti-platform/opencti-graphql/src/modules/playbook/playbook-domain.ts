@@ -48,7 +48,6 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import type { BasicStoreObject } from '../../types/store';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
