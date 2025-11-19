@@ -191,7 +191,7 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   const draftContext = useDraftContext();
 
   const initalActiveStep = initialValue.activeStep ?? (canSelectImportMode ? 0 : 1);
-  const initialImportMode = !canSelectImportMode ? 'auto' : initialValue.importMode;
+  const initialImportMode = canSelectImportMode ? initialValue.importMode : 'auto';
 
   const [activeStep, setActiveStep] = useState(initalActiveStep);
   const [importMode, setImportMode] = useState<ImportMode | undefined>(initialImportMode);

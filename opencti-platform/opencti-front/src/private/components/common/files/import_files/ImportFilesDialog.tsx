@@ -544,8 +544,8 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
 };
 
 const ImportFilesDialog = ({ open, entityId, handleClose, initialFreeTextContent }: ImportFilesDialogProps) => {
-  const initialValue = initialFreeTextContent
-    ? { entityId, activeStep: 1, importMode: 'manual' as ImportMode, initialFreeTextContent }
+  const initialValue: InitialValues = initialFreeTextContent
+    ? { entityId, activeStep: 1, importMode: 'manual', initialFreeTextContent }
     : { entityId };
   return (
     <ImportFilesProvider initialValue={initialValue}>
