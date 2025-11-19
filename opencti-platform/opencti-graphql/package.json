@@ -128,7 +128,7 @@
     "license-checker-rseidelsohn": "4.4.2",
     "lru-cache": "11.2.2",
     "luxon": "3.7.2",
-    "marked": "16.4.2",
+    "marked": "17.0.0",
     "migrate": "2.1.0",
     "mime-types": "3.0.1",
     "moment": "2.30.1",
