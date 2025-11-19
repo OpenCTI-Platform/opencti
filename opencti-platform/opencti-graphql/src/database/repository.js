@@ -15,6 +15,7 @@ import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
+import { injectProxyConfiguration } from '../config/proxy-config';
 
 export const CONNECTOR_PRIORITY_GROUP_VALUES = Object.values(ConnectorPriorityGroup);
 
@@ -81,7 +82,11 @@ export const computeManagerConnectorConfiguration = async (context, _user, cn, h
   if (!hideEncryptedConfigs) {
     fullContractConfig.push({ key: 'OPENCTI_TOKEN', value: platformUsers.get(cn.connector_user_id)?.api_token });
   }
-  return fullContractConfig.sort();
+
+  // Inject proxy configuration dynamically
+  const configWithProxy = injectProxyConfiguration(fullContractConfig);
+
+  return configWithProxy.sort();
 };
 
 export const computeManagerConnectorImage = (cn) => {
