@@ -424,7 +424,7 @@ export const loadedFilesListing = async (
  * @param {Object} opts - Optional configuration
  * @param {boolean} opts.manual - Whether this is a manual import (default: false)
  * @param {string | null} opts.connectorId - Specific connector ID to use (default: null)
- * @param {Record<string, unknown>} opts.configuration - Custom connector configuration (default: null)
+ * @param {string} opts.configuration - Custom connector configuration (default: null)
  * @param {boolean} opts.bypassValidation - Whether to bypass validation (default: false)
  * @param {string} opts.validationMode - Validation mode to use (default: defaultValidationMode)
  * @param {boolean} opts.forceValidation - Whether to force validation (default: false)
@@ -438,7 +438,7 @@ export const uploadJobImport = async (
   opts: {
     manual?: boolean;
     connectorId?: string | null;
-    configuration?: Record<string, unknown>;
+    configuration?: string | null;
     bypassValidation?: boolean;
     validationMode?: string;
     forceValidation?: boolean;
@@ -470,7 +470,7 @@ export const uploadJobImport = async (
     };
     const actionList = await Promise.all(connectors.map((connector: BasicStoreEntityConnector) => createConnectorWork(connector)));
     // Send message to all correct connectors queues
-    const buildConnectorMessage = (data: { connector: BasicStoreEntityConnector; work: { id: string } }, connectorConfiguration: Record<string, unknown> | null) => {
+    const buildConnectorMessage = (data: { connector: BasicStoreEntityConnector; work: { id: string } }, connectorConfiguration: string | null) => {
       const { work } = data;
       return {
         internal: {

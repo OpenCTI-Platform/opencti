@@ -666,18 +666,17 @@ export const askJobImport = async (
   }
   logApp.info('[JOBS] ask import, file found:', file);
   const entityId = bypassEntityId || file?.metaData.entity_id || null;
-  const parsedConfiguration = configuration ? JSON.parse(configuration) : undefined;
   const opts: {
     manual: boolean;
     connectorId?: string | null;
-    configuration?: Record<string, unknown>;
+    configuration?: string | null;
     bypassValidation: boolean;
     validationMode: ValidationMode;
     forceValidation: boolean;
   } = {
     manual: true,
     connectorId,
-    configuration: parsedConfiguration,
+    configuration,
     bypassValidation,
     validationMode,
     forceValidation
