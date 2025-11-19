@@ -12,6 +12,8 @@ import { RootSecurityPlatformQuery } from '@components/entities/securityPlatform
 import SecurityPlatformKnowledge from '@components/entities/securityPlatforms/SecurityPlatformKnowledge';
 import SecurityPlatformEdition from '@components/entities/securityPlatforms/SecurityPlatformEdition';
 import SecurityPlatformAnalysis from '@components/entities/securityPlatforms/SecurityPlatformAnalysis';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import SecurityPlatform from './SecurityPlatform';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -58,6 +60,7 @@ const securityPlatformQuery = graphql`
       name
       x_opencti_aliases
       security_platform_type
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...SecurityPlatform_securityPlatform
       ...SecurityPlatformKnowledge_securityPlatform
@@ -105,7 +108,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
   const link = `/dashboard/entities/security_platforms/${securityPlatformId}/knowledge`;
   const paddingRight = getPaddingRight(location.pathname, securityPlatformId, '/dashboard/entities/security_platforms');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {securityPlatform ? (
         <>
           <Routes>
@@ -136,6 +139,13 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SecurityPlatformEdition securityPlatformId={securityPlatform.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={securityPlatform}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -264,7 +274,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {

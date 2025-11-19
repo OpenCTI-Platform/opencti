@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { Narrative_narrative$key } from '@components/techniques/narratives/__generated__/Narrative_narrative.graphql';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import NarrativeDetails from './NarrativeDetails';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -67,7 +68,11 @@ interface NarrativeProps {
   narrativeData: Narrative_narrative$key
 }
 
-const Narrative: React.FC<NarrativeProps> = ({ narrativeData }) => {
+const Narrative: React.FC<NarrativeProps> = ({
+  narrativeData,
+}) => {
+  useInitCreateRelationshipContext();
+
   const narrative = useFragment<Narrative_narrative$key>(narrativeFragment, narrativeData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(narrative.entity_type);
 

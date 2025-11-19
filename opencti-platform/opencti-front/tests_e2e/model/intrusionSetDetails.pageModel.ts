@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import SDOTabs from "./SDOTabs.pageModel";
+import SDOTabs from './SDOTabs.pageModel';
 
 export default class IntrusionSetDetailsPage {
   tabs = new SDOTabs(this.page);

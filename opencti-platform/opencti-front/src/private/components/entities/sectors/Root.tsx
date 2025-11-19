@@ -10,6 +10,8 @@ import { RootSectorSubscription } from '@components/entities/sectors/__generated
 import useQueryLoading from 'src/utils/hooks/useQueryLoading';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectContentRoot from '../../common/stix_core_objects/StixCoreObjectContentRoot';
 import Sector from './Sector';
 import SectorKnowledge from './SectorKnowledge';
@@ -57,6 +59,7 @@ const sectorQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Sector_sector
       ...SectorKnowledge_sector
@@ -102,7 +105,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
   const paddingRight = getPaddingRight(location.pathname, sectorId, '/dashboard/entities/sectors');
   const link = `/dashboard/entities/sectors/${sectorId}/knowledge`;
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {sector ? (
         <>
           <Routes>
@@ -144,6 +147,13 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <SectorEdition sectorId={sector.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={sector}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -210,9 +220,9 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={sector.id}/>
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={sector.id}/>
+                </div>
               )}
             </Box>
             <Routes>
@@ -301,7 +311,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 const Root = () => {

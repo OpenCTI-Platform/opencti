@@ -2,6 +2,7 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
+import { useInitCreateRelationshipContext } from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
@@ -74,7 +75,13 @@ const cityFragment = graphql`
   }
 `;
 
-const City = ({ cityData }: { cityData: City_city$key }) => {
+const City = ({
+  cityData,
+}: {
+  cityData: City_city$key
+}) => {
+  useInitCreateRelationshipContext();
+
   const classes = useStyles();
   const city = useFragment<City_city$key>(cityFragment, cityData);
   return (

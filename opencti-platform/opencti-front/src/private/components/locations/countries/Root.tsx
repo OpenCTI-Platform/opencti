@@ -11,6 +11,8 @@ import Tab from '@mui/material/Tab';
 import StixCoreObjectContentRoot from '@components/common/stix_core_objects/StixCoreObjectContentRoot';
 import useForceUpdate from '@components/common/bulk/useForceUpdate';
 import AIInsights from '@components/common/ai/AIInsights';
+import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
+import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import Country from './Country';
 import CountryKnowledge from './CountryKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -58,6 +60,7 @@ const countryQuery = graphql`
       name
       x_opencti_aliases
       x_opencti_graph_data
+      ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...StixCoreObjectKnowledgeBar_stixCoreObject
       ...Country_country
       ...CountryKnowledge_country
@@ -96,7 +99,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
   const isOverview = location.pathname === `/dashboard/locations/countries/${countryId}`;
   const paddingRight = getPaddingRight(location.pathname, country?.id, '/dashboard/locations/countries');
   return (
-    <>
+    <CreateRelationshipContextProvider>
       {country ? (
         <>
           <Routes>
@@ -139,6 +142,13 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               EditComponent={(
                 <Security needs={[KNOWLEDGE_KNUPDATE]}>
                   <CountryEdition countryId={country.id} />
+                </Security>
+              )}
+              RelateComponent={(
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixCoreRelationshipCreationFromEntityHeader
+                    data={country}
+                  />
                 </Security>
               )}
               DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
@@ -207,9 +217,9 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={country.id}/>
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={country.id}/>
+                </div>
               )}
             </Box>
             <Routes>
@@ -281,7 +291,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
       ) : (
         <ErrorNotFound />
       )}
-    </>
+    </CreateRelationshipContextProvider>
   );
 };
 
