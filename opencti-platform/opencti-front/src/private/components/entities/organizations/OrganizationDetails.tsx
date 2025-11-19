@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/material/styles';
-import { Organization_organization$data } from '@components/entities/organizations/__generated__/Organization_organization.graphql';
 import { OrganizationDetails_organization$key } from '@components/entities/organizations/__generated__/OrganizationDetails_organization.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -29,13 +28,13 @@ const organizationDetailsFragment = graphql`
 `;
 
 interface OrganizationDetailsComponentProps {
-  organizationData: Organization_organization$data;
+  organizationData: OrganizationDetails_organization$key;
 }
 
 const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> = ({ organizationData }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const organization = useFragment<OrganizationDetails_organization$key>(organizationDetailsFragment, organizationData);
+  const organization = useFragment(organizationDetailsFragment, organizationData);
 
   return (
     <div style={{ height: '100%' }}>
