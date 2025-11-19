@@ -26,7 +26,7 @@ jobs:
             npm install -g node-gyp
             npm install -g corepack
             cd /home/workspace/opencti-platform/opencti-front
-            cp /home/workspace/s/opencti-platform/.yarnrc.yml .
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
             yarn install
             yarn build
             yarn check-ts
@@ -197,7 +197,7 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Frontend tests
+    - name: Frontend verify translation
       run: |
         docker run  \
           --name frontend-verify-translation \
