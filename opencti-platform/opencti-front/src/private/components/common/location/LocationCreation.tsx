@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
@@ -87,12 +87,6 @@ const locations = [
   'Position',
 ];
 
-const locationValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().trim().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  type: Yup.string().trim().required(t('This field is required')),
-});
-
 const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
   inputValue,
   onlyAuthors,
@@ -104,6 +98,12 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
+
+  const locationValidation = Yup.object().shape({
+    name: Yup.string().trim().required(t_i18n('This field is required')),
+    description: Yup.string().nullable(),
+    type: Yup.string().trim().required(t_i18n('This field is required')),
+  });
 
   const [commit] = useApiMutation<LocationCreationMutation>(locationMutation);
 
@@ -150,7 +150,7 @@ const LocationCreationForm: FunctionComponent<LocationCreationFormProps> = ({
         description: '',
         type: '',
       }}
-      validationSchema={locationValidation(t_i18n)}
+      validationSchema={locationValidation}
       onSubmit={onSubmit}
       onReset={onReset}
     >

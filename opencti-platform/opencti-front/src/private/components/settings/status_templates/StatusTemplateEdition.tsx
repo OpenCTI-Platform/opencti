@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import { pick } from 'ramda';
@@ -38,11 +38,6 @@ const statusTemplateEditionFocus = graphql`
   }
 `;
 
-const statusTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
-});
-
 interface StatusTemplateEditionProps {
   handleClose: () => void;
   statusTemplate: StatusTemplateEdition_statusTemplate$key;
@@ -55,6 +50,11 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
 
   const { t_i18n } = useFormatter();
   const initialValues = pick(['name', 'color'], data);
+
+  const statusTemplateValidation = Yup.object().shape({
+    name: Yup.string().required(t_i18n('This field is required')),
+    color: Yup.string().required(t_i18n('This field is required')),
+  });
 
   const handleChangeFocus = (name: string) => {
     commitMutation({
@@ -75,7 +75,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
   };
 
   const handleSubmitField = (name: string, value: string) => {
-    statusTemplateValidation(t_i18n)
+    statusTemplateValidation
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
@@ -99,7 +99,7 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={statusTemplateValidation(t_i18n)}
+      validationSchema={statusTemplateValidation}
       onSubmit={() => {
       }}
     >
