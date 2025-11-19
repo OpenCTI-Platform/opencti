@@ -2178,7 +2178,7 @@ const buildFieldForQuery = (field: string) => {
     ? field
     : `${field}.keyword`;
 };
-export const buildLocalMustFilter = async (validFilter: any) => {
+export const buildLocalMustFilter = (validFilter: any) => {
   const valuesFiltering = [];
   const noValuesFiltering = [];
   const { key, values, nested, operator = 'eq', mode: localFilterMode = 'or' } = validFilter;
