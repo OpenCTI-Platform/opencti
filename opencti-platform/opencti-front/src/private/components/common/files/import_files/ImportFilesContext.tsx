@@ -155,7 +155,7 @@ const importFilesContextGuessMimeTypeQuery = graphql`
 export type ImportMode = 'auto' | 'manual' | 'form';
 export type UploadStatus = 'uploading' | 'success' | undefined;
 
-interface InitialValues {
+export interface InitialValues {
   entityId?: string;
   activeStep?: number;
   importMode?: ImportMode;

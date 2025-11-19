@@ -15,8 +15,7 @@ import { draftCreationMutation } from '@components/drafts/DraftCreation';
 import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
-import { ImportFilesProvider, importFilesQuery, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
-import type { ImportMode } from '@components/common/files/import_files/ImportFilesContext';
+import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import {
   ImportFilesDialogGlobalMutation,
