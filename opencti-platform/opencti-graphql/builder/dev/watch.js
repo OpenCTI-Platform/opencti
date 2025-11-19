@@ -1,8 +1,7 @@
-#!/usr/bin/env node
-
 const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { formatOutput } = require('./logsFormat');
 
 const CONFIG = {
   quickShutdown: process.argv.includes('--quick-shutdown'),
@@ -49,12 +48,14 @@ function setupNodemonOutputHandlers(process) {
   let lastOutputTime = Date.now();
   
   const handleOutput = (data) => {
-    const output = data.toString();
-    // Write directly to stdout/stderr to ensure logs are visible
-    console.log(output.trimEnd());
+    const rawOutput = data.toString();
+    const formattedOutput = formatOutput(data);
+    if (formattedOutput) {
+      console.log(formattedOutput);
+    }
     lastOutputTime = Date.now();
-    
-    if (platformShutdownResolve && output.includes('Platform stopped')) {
+
+    if (platformShutdownResolve && rawOutput.includes('Platform stopped')) {
       setTimeout(() => platformShutdownResolve(), 500);
     }
   };
@@ -165,7 +166,6 @@ async function waitForNodemonShutdown() {
   await Promise.race([shutdownPromise, exitPromise]);
 }
 
-// Display shutdown completion message
 function displayShutdownMessage() {
   if (CONFIG.quickShutdown) {
     console.log('[WATCH] OpenCTI process terminated');
@@ -175,7 +175,6 @@ function displayShutdownMessage() {
   }
 }
 
-// Main cleanup handler
 async function cleanup(signal) {
   console.log(`\n[WATCH] Received ${signal}, shutting down gracefully...`);
   
@@ -203,15 +202,12 @@ async function cleanup(signal) {
   process.exit(0);
 }
 
-// Main entry point
 function main() {
   displayStartupMessage();
   startEsbuild();
-  
-  // Handle Ctrl+C and other signals
+
   process.on('SIGINT', () => cleanup('SIGINT'));
   process.on('SIGTERM', () => cleanup('SIGTERM'));
 }
 
-// Start the watch process
 main();

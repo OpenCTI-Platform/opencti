@@ -13,7 +13,7 @@
   },
   "delay": 2000,
   "signal": "SIGTERM",
-  "verbose": true,
+  "verbose": false,
   "events": {
     "exit": "echo '[nodemon] child process exited'",
     "crash": "echo '[nodemon] script crashed'"
