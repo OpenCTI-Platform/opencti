@@ -7,8 +7,8 @@ import {
 } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLinesQuery.graphql';
 import { StixCoreObjectHistoryLines_data$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
 import List from '@mui/material/List';
+import StixCoreObjectHistoryLine from '@components/common/stix_core_objects/StixCoreObjectHistoryLine';
 import { useFormatter } from '../../../../components/i18n';
-import StixCoreObjectHistoryLine from './StixCoreObjectHistoryLine';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import useInterval from '../../../../utils/hooks/useInterval';
 
