@@ -20742,6 +20742,7 @@ __metadata:
     bluebird: "npm:3.7.2"
     body-parser: "npm:2.2.1"
     canonicalize: "npm:2.1.0"
+    chalk: "npm:4.1.2"
     compression: "npm:1.8.1"
     content-disposition: "npm:1.0.1"
     content-type: "npm:1.0.5"

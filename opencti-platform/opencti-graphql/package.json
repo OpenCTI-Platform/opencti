@@ -196,6 +196,7 @@
     "@types/xml2js": "0.4.14",
     "@vitest/coverage-v8": "3.2.4",
     "esbuild": "0.27.1",
+    "chalk": "4.1.2",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
     "eslint": "9.39.2",
