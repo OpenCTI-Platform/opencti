@@ -12,7 +12,7 @@ jobs:
 
     - name: Runner information
       continue-on-error: true
-      run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Frontend tests
       run: |
@@ -50,7 +50,7 @@ jobs:
 
     - name: Runner information
       continue-on-error: true
-      run: ./frontend-e2e-test/opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
+      run: ./frontend-e2e-test/scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Duplicate workspace
       run: |
@@ -60,7 +60,7 @@ jobs:
     - name: Set up Docker Compose for backends
       run: |
          set -ex
-         cd frontend-e2e-test/opencti-platform/opencti-ci
+         cd frontend-e2e-test/scripts/ci
          export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
@@ -129,7 +129,7 @@ jobs:
         '
 
     - name: Wait for OpenCTI e2e backend instances to start
-      run: ./frontend-e2e-test/opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
+      run: ./frontend-e2e-test/scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
 
     - name: Frontend e2e tests
       run: |
