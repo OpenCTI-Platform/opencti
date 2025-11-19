@@ -1,29 +1,29 @@
-import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
-import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
-import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { AuthContext, AuthUser, UserRole } from '../types/user';
-import type { BasicStoreCommon } from '../types/store';
-import type { StixObject } from '../types/stix-2-1-common';
-import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
-import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { telemetry } from '../config/tracing';
-import type { BasicStoreSettings } from '../types/settings';
+import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import * as R from 'ramda';
+import { v4 as uuidv4 } from 'uuid';
 import { ACCOUNT_STATUS_ACTIVE, isFeatureEnabled } from '../config/conf';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { FunctionalError, UnsupportedError } from '../config/errors';
+import { telemetry } from '../config/tracing';
+import { getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { extractIdsFromStoreObject, isNotEmptyField, REDACTED_INFORMATION, RESTRICTED_INFORMATION } from '../database/utils';
-import { isStixObject } from '../schema/stixCoreObject';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import type { UpdateEvent } from '../types/event';
-import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 import { type Creator, type FilterGroup, FilterMode, type Participant } from '../generated/graphql';
+import { OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, isInternalObject } from '../schema/internalObject';
+import { RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
+import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
+import { isStixObject } from '../schema/stixCoreObject';
+import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import type { UpdateEvent } from '../types/event';
+import type { BasicStoreSettings } from '../types/settings';
+import type { StixObject } from '../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import type { BasicStoreCommon } from '../types/store';
+import type { AuthContext, AuthUser, UserRole } from '../types/user';
 
 export const DEFAULT_INVALID_CONF_VALUE = 'ChangeMe';
 
@@ -568,6 +568,10 @@ export const isBypassUser = (user: AuthUser): boolean => {
   return R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
 };
 
+export const isServiceAccountUser = (user: AuthUser): boolean => {
+  return user.user_service_account === true;
+};
+
 export const isUserHasCapability = (user: AuthUser, capability: string): boolean => {
   return isBypassUser(user) || (user.capabilities || []).some((s) => capability !== BYPASS && s.name.includes(capability));
 };
@@ -633,6 +637,11 @@ export const getUserAccessRight = (user: AuthUser, element: { restricted_members
   if ((element.authorized_authorities ?? []).some((c: string) => userMemberAccessIds.includes(c) || isUserHasCapability(user, c))) {
     return MEMBER_ACCESS_RIGHT_ADMIN;
   }
+
+  if (isServiceAccountUser(user)) {
+    return MEMBER_ACCESS_RIGHT_EDIT;
+  }
+
   return getExplicitUserAccessRight(user, element);
 };
 

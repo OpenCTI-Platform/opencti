@@ -123,6 +123,7 @@ import {
   executionContext,
   INTERNAL_USERS,
   isBypassUser,
+  isServiceAccountUser,
   isUserHasCapability,
   MEMBER_ACCESS_ALL,
   PIRAPI,
@@ -641,11 +642,14 @@ const buildUserMemberAccessFilter = (user, opts) => {
   if (!excludeEmptyAuthorizedMembers) {
     shouldConditions.push(emptyAuthorizedMembers);
   }
+
+  const bypassAuthorizedMembers = isServiceAccountUser(user);
   const nestedQuery = {
     nested: {
       path: authorizedMembers.name,
       query: {
-        bool: { should: authorizedFilters }
+        // For service accounts, bypass authorized members restrictions
+        bool: { should: bypassAuthorizedMembers ? [] : authorizedFilters }
       }
     }
   };
