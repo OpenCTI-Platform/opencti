@@ -1262,15 +1262,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ckeditor/ckeditor5-react@npm:9.5.0":
-  version: 9.5.0
-  resolution: "@ckeditor/ckeditor5-react@npm:9.5.0"
+"@ckeditor/ckeditor5-react@npm:11.0.0":
+  version: 11.0.0
+  resolution: "@ckeditor/ckeditor5-react@npm:11.0.0"
   dependencies:
     "@ckeditor/ckeditor5-integrations-common": "npm:^2.2.2"
   peerDependencies:
-    ckeditor5: ">=42.0.0 || ^0.0.0-nightly"
+    ckeditor5: ">=46.0.0 || ^0.0.0-nightly"
     react: ^16.13.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/79cf0429b752efd90a9a3653803fd5658da3ffe7968eafaab96486eb6dc701524041d677f619792c31628d30b214aab41ac21c2cc17c43bb01305c4f90ff6900
+  checksum: 10c0/43429d062711385136d462ed79ea469a71e7fe8114fd098f582a7cc1ce0b9551fee2c8d306958adf298503b2a4f488f23618e06fe2d1f00c64d18928add7a1a0
   languageName: node
   linkType: hard
 
@@ -13767,7 +13767,7 @@ __metadata:
   dependencies:
     "@analytics/google-analytics": "npm:1.1.0"
     "@cfworker/json-schema": "npm:4.1.1"
-    "@ckeditor/ckeditor5-react": "npm:9.5.0"
+    "@ckeditor/ckeditor5-react": "npm:11.0.0"
     "@faker-js/faker": "npm:10.1.0"
     "@fontsource/geologica": "npm:5.2.8"
     "@fontsource/ibm-plex-sans": "npm:5.2.8"
