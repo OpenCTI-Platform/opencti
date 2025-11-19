@@ -19,7 +19,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-        
+
     - name: Set up Docker Compose for backends
       run: |
          set -ex
@@ -41,7 +41,7 @@ jobs:
           -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
          python:3.9 \
           sh -c 'set -ex;
-            cd client-python
+            cd /home/workspace/client-python
             pip3 install -r requirements.txt --user
             pip3 install -r test-requirements.txt --user
             sleep 180
