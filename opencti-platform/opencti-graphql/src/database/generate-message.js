@@ -85,7 +85,7 @@ const getValuesArray = (value) => {
   const valuesFromArray = Array.isArray(value) ? value : [value];
   return valuesFromArray.filter((v) => isNotEmptyField(v));
 };
-const getKeyName = (entityType, key, object_path) => {
+export const getKeyName = (entityType, key, object_path) => {
   let keyName;
   const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
   const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
