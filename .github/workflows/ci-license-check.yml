@@ -21,7 +21,7 @@ jobs:
           --name backend-verify-licenses \
           -v ${{ github.workspace }}:/home/workspace \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
-          sh -c 'set -x;
+          sh -c 'set -ex;
              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
              apk add build-base git libffi-dev cargo
              pip3 install --upgrade setuptools
@@ -41,7 +41,7 @@ jobs:
           --name frontend-verify-licenses \
           -v ${{ github.workspace }}:/home/workspace \
           node:22.21.0 \
-          sh -c 'set -x;
+          sh -c 'set -ex;
              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
              cd /home/workspace/opencti-platform/opencti-front
              npm install -g corepack
@@ -56,7 +56,7 @@ jobs:
           --name generate-licenses \
           -v ${{ github.workspace }}:/home/workspace \
           node:22.21.0 \
-          sh -c 'set -x;
+          sh -c 'set -ex;
              cd /home/workspace
              chmod 777 scripts/*
              ./scripts/generate-licenses.sh

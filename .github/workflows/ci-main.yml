@@ -21,6 +21,10 @@ jobs:
       uses: ./.github/workflows/ci-test-frontend.yml
       secrets: inherit
 
+  wf-client-python-test:
+      uses: ./.github/workflows/ci-test-client-python.yml
+      needs: wf-build-image
+      secrets: inherit
 
   wf-license-check:
       uses: ./.github/workflows/ci-license-check.yml

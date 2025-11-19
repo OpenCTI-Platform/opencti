@@ -202,7 +202,6 @@ jobs:
       run: |
          set -ex
          cd scripts/ci
-         export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 

@@ -117,6 +117,21 @@ services:
     ports:
       - 4400:4100
 
+  opencti-pycti-start:
+    container_name: opencti-pycti-start
+    profiles: ["ci-test-pycti"]
+    image: filigran/platform:${TAG}
+    restart: unless-stopped
+    environment:
+      - BASE_NAME=opencti-pycti-start
+    env_file:
+      - ci-common.env
+      - ci-sync.env
+    networks:
+      - runner-docker-network
+    ports:
+      - 4600:4100
+
   opencti-direct-worker:
     container_name: opencti-direct-worker
     profiles: ["ci-test-api-sync"]
