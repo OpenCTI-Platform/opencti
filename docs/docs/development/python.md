@@ -42,4 +42,4 @@ indicator = opencti_api_client.indicator.create(
 ```
 # Examples
 
-A suite of illustrative examples is available in the [PyCTI GitHub repository](https://github.com/OpenCTI-Platform/client-python/tree/master/examples) to aid in better understanding.
+A suite of illustrative examples is available in the [OpenCTI GitHub repository](https://github.com/OpenCTI-Platform/opencti/tree/master/client-python/examples) to aid in better understanding.

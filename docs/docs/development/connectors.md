@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A connector in OpenCTI is a service that runs next to the platform and can be implemented in almost any programming language that has STIX2 support. Connectors are used to extend the functionality of OpenCTI and allow operators to shift some of the processing workload to external services. To use the conveniently provided [OpenCTI connector SDK](https://github.com/OpenCTI-Platform/client-python) you need to use **Python3** at the moment.
+A connector in OpenCTI is a service that runs next to the platform and can be implemented in almost any programming language that has STIX 2.1 support. Connectors are used to extend the functionality of OpenCTI and allow operators to shift some of the processing workload to external services. To use the conveniently provided [OpenCTI connector SDK](https://github.com/OpenCTI-Platform/opencti/tree/master/client-python) you need to use **Python3** at the moment.
 
 We choose to have a very decentralized approach on connectors, in order to bring a maximum freedom to developers and vendors. So a connector on OpenCTI can be defined by **a standalone Python 3 process that pushes an understandable format of data to an ingestion queue of messages**.
 

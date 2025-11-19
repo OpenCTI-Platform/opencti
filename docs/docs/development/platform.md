@@ -6,9 +6,8 @@ necessary for developing on the OpenCTI platform, a client library or the connec
 This page document how to set up an "All-in-One" development **environment** for OpenCTI. 
 The devenv will contain data of 3 different repositories:
 
-- Platform: [https://github.com/OpenCTI-Platform/opencti](https://github.com/OpenCTI-Platform/opencti)
+- Platform and Client python: [https://github.com/OpenCTI-Platform/opencti](https://github.com/OpenCTI-Platform/opencti)
 - Connectors: [https://github.com/OpenCTI-Platform/connectors](https://github.com/OpenCTI-Platform/connectors)
-- Client python: [https://github.com/OpenCTI-Platform/client-python](https://github.com/OpenCTI-Platform/client-python)
 
 ### Platform
 Contains the platform OpenCTI project code base:
@@ -17,6 +16,7 @@ Contains the platform OpenCTI project code base:
 - Web frontend (nodejs / react) `~/opencti/opencti-platform/opencti-graphql`
 - Backend (nodejs) `~/opencti/opencti-platform/opencti-frontend`
 - Worker (nodejs / python) `~/opencti/opencti-worker`
+- Client python (python) `~/opencti/client-python`
 
 ### Connectors
 Contains a lot of developed connectors, as a source of inspiration for your new connector.
@@ -35,7 +35,6 @@ Fork and clone the git repositories
 - [https://github.com/OpenCTI-Platform/opencti/](https://github.com/OpenCTI-Platform/opencti/) - frontend / backend
 - [https://github.com/OpenCTI-Platform/connectors](https://github.com/OpenCTI-Platform/connectors) - connectors
 - [https://github.com/OpenCTI-Platform/docker](https://github.com/OpenCTI-Platform/docker) - docker stack
-- [https://github.com/OpenCTI-Platform/client-python/](https://github.com/OpenCTI-Platform/client-python/) - python client
 
 ## Dependencies containers
 
@@ -257,16 +256,12 @@ $ yarn serv
 
 ## Continuous Integration and features cross repository
 
-When a feature requires changes in two or more repositories in opencti, connectors and client-python; then some specific convention must be used to have the continuous integration build them all together.
+When a feature requires changes in two or more repositories in opencti, connectors then some specific convention must be used to have the continuous integration build them all together.
 
 ### Naming convention of branch
 
 The Pull Request on ***opencti*** repository should be (issue or bug)/number + optional, example: `issue/7062-contributing`
 
-The pull request on ***connector*** or ***client-python*** should refer to the opencti one by starting with "opencti/" and then the same name. Example: `opencti/issue/7062-contributing`
+The pull request on ***connector*** should refer to the opencti one by starting with "opencti/" and then the same name. Example: `opencti/issue/7062-contributing`
 
 Note that if there are several matches, the first one is taken. So for example having `issue/7062-contributing` and `issue/7062` that are both marked as "multi-repository" is not a good idea.
-
-### Labels
-
-All Pull Requests involved must have the label `multi-repository` added in GitHub.
