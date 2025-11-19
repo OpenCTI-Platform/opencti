@@ -8,6 +8,7 @@ import '../../../src/modules/index';
 // specific data object that are not covered by the basic set, all recorded from real stream events
 import stixReports from '../../data/stream-events/stream-event-stix2-reports.json';
 import stixIndicators from '../../data/stream-events/stream-event-stix2-indicators.json';
+import stixMalwares from '../../data/stream-events/stream-event-stix2-malwares.json';
 import stixIncidents from '../../data/stream-events/stream-event-stix2-incidents.json';
 import stixRfis from '../../data/stream-events/stream-event-stix2-rfis.json';
 import stixSightings from '../../data/stream-events/stream-event-stix2-sightings.json';
@@ -852,6 +853,60 @@ describe('Stix filter testers', () => {
       expect(testers.testRepresentative(stixRelationships[0], filter)).toEqual(true);
       expect(testers.testRepresentative(rfiEndingWithTest, filter)).toEqual(false);
       expect(testers.testRepresentative(observableEqualTest, filter)).toEqual(false);
+    });
+  });
+
+  describe('by PIR Score (key=x_opencti_score)', () => {
+    const stixWithoutPir = stixMalwares[0];
+    const stixWithNotMatchingPir = stixMalwares[1];
+    const stixWithMatchingPirButLowScore = stixMalwares[2];
+    const stixWithMatchingPirAndHighScore = stixMalwares[3];
+
+    it('should test positive for a stix object with matching pir and score, and false otherwise', () => {
+      const filter: Filter = {
+        key: ['pir_score'],
+        values: [
+          {
+            key: 'score',
+            values: ['50'],
+            operator: 'gt'
+          },
+          {
+            key: 'pir_ids',
+            values: [
+              '0481ef01-b2a5-4001-a3d1-6110dc579e2a',
+              '12345678-1234-1234-1234-123456789012'
+            ]
+          },
+        ],
+      } as Filter;
+
+      expect(testers.testPirScore(stixWithoutPir, filter)).toEqual(false);
+      expect(testers.testPirScore(stixWithNotMatchingPir, filter)).toEqual(false);
+      expect(testers.testPirScore(stixWithMatchingPirButLowScore, filter)).toEqual(false);
+      expect(testers.testPirScore(stixWithMatchingPirAndHighScore, filter)).toEqual(true);
+    });
+
+    it('should test positive for a stix object with matching score when no PIR is selected', () => {
+      const filter: Filter = {
+        key: ['pir_score'],
+        values: [
+          {
+            key: 'score',
+            values: ['50'],
+            operator: 'gt'
+          },
+          {
+            key: 'pir_ids',
+            values: []
+          },
+        ],
+      } as Filter;
+
+      expect(testers.testPirScore(stixWithoutPir, filter)).toEqual(false);
+      expect(testers.testPirScore(stixWithNotMatchingPir, filter)).toEqual(false);
+      expect(testers.testPirScore(stixWithMatchingPirButLowScore, filter)).toEqual(true);
+      expect(testers.testPirScore(stixWithMatchingPirAndHighScore, filter)).toEqual(true);
     });
   });
 });

@@ -570,6 +570,19 @@ const PlaybookAddComponentsContent = ({
       : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'];
     const searchContext = { entityTypes };
 
+    let availableFilterKeys = stixFilters;
+
+    switch (componentId) {
+      case 'PLAYBOOK_INTERNAL_DATA_CRON':
+        availableFilterKeys = availableQueryFilterKeys;
+        break;
+      case 'PLAYBOOK_DATA_STREAM_PIR':
+        availableFilterKeys = [...stixFilters, 'pir_score'];
+        break;
+      default:
+        break;
+    }
+
     return (
       <div className={classes.config}>
         <Formik
@@ -642,6 +655,7 @@ const PlaybookAddComponentsContent = ({
                         name="inPirFilters"
                         style={fieldSpacingContainerStyle}
                         multiple={true}
+                        helpertext={t_i18n('If no PIR is selected, the playbook will look for any PIR')}
                       />
                     );
                   }
@@ -680,7 +694,7 @@ const PlaybookAddComponentsContent = ({
                         >
                           <Filters
                             helpers={helpers}
-                            availableFilterKeys={componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? availableQueryFilterKeys : stixFilters}
+                            availableFilterKeys={availableFilterKeys}
                             searchContext={searchContext}
                           />
                         </Box>

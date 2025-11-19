@@ -3,6 +3,7 @@ import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from './stix-2-1-extensions';
 import type { StixRelation, StixSighting } from './stix-2-1-sro';
 import type { StixInternalExternalReference } from './stix-2-1-smo';
 import { AuthorizedMember } from '../utils/access';
+import type { PirInformation } from '../modules/pir/pir-types';
 
 export type StixDate = string | undefined;
 export type StixId = `${string}--${v4 | v5}`;
@@ -54,7 +55,7 @@ interface StixOpenctiExtension {
   aliases: Array<string>
   granted_refs: Array<StixId>
   granted_refs_ids: string[]
-  pir_refs_ids: string[]
+  pir_information: Array<PirInformation>
   stix_ids: Array<StixId>
   type: string
   created_at: StixDate

@@ -30,6 +30,7 @@ import {
   MEMBERS_ORGANIZATION_FILTER,
   MEMBERS_USER_FILTER,
   OBJECT_CONTAINS_FILTER,
+  PIR_SCORE_FILTER,
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_TO_FILTER,
   REPRESENTATIVE_FILTER,
@@ -502,12 +503,19 @@ export const generateFilterKeysSchema = async () => {
     subEntityTypes: [],
     elementsForFilterValuesSearch: [ABSTRACT_STIX_CORE_OBJECT],
   }]]));
-  // representative (for streams, triggers, playbooks)
+  // representative and pir score (for stix filtering)
   filterKeysSchema.set('Stix-Filtering', new Map([[REPRESENTATIVE_FILTER, {
     filterKey: REPRESENTATIVE_FILTER,
     type: 'string',
     label: 'Representation',
     multiple: true,
+    subEntityTypes: [],
+    elementsForFilterValuesSearch: [],
+  }], [PIR_SCORE_FILTER, {
+    filterKey: PIR_SCORE_FILTER,
+    type: 'integer',
+    label: 'PIR Score',
+    multiple: false,
     subEntityTypes: [],
     elementsForFilterValuesSearch: [],
   }]]));
