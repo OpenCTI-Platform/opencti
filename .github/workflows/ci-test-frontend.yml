@@ -186,3 +186,25 @@ jobs:
       if: always()
       continue-on-error: true
       run: cat runner_resource_stat.log
+
+
+  opencti-frontend-verify-translation:
+    runs-on: ubuntu-latest
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Frontend tests
+      run: |
+        docker run  \
+          --name frontend-verify-translation \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine \
+          sh -c 'set -x
+            cd opencti-platform/opencti-front
+            node script/verify-translation.js
+        
