@@ -1,6 +1,9 @@
 import nconf from 'nconf';
 import { booleanConf, loadCert, logApp } from './conf';
 
+// Default configuration constants
+const DEFAULT_HTTPS_PROXY_REJECT_UNAUTHORIZED = true;
+
 export type ConfigAdapter = {
   get(key: string): any;
   booleanConf(key: string, defaultValue: boolean): boolean;
@@ -93,11 +96,17 @@ const processProxyCACertificates = (
       errors.push({ cert: String(cert), reason: `Invalid type: ${typeof cert}` });
       return;
     }
-    const loadedCert = configAdapter.loadCert(cert);
-    if (loadedCert === undefined || loadedCert === null || loadedCert === '') {
-      errors.push({ cert, reason: 'Failed to load certificate (file not found or invalid format)' });
-    } else {
-      caCertificates.push(loadedCert);
+
+    try {
+      const loadedCert = configAdapter.loadCert(cert);
+      if (loadedCert === undefined || loadedCert === null || loadedCert === '') {
+        errors.push({ cert, reason: 'Failed to load certificate (empty result)' });
+      } else {
+        caCertificates.push(loadedCert);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      errors.push({ cert, reason: `Failed to load certificate: ${errorMessage}` });
     }
   });
 
@@ -134,8 +143,8 @@ export const getProxyConfigurationForContract = (
     return cached;
   }
 
-  const httpProxy = configAdapter.get('http_proxy') || '';
-  const httpsProxy = configAdapter.get('https_proxy') || '';
+  const httpProxy = configAdapter.get('http_proxy');
+  const httpsProxy = configAdapter.get('https_proxy');
 
   const httpProxyValid = validateProxyUrl(httpProxy, 'http_proxy');
   const httpsProxyValid = validateProxyUrl(httpsProxy, 'https_proxy');
@@ -176,7 +185,7 @@ export const getProxyConfigurationForContract = (
     config.HTTPS_CA_CERTIFICATES = caCertValue;
   }
 
-  const rejectUnauthorized = String(configAdapter.booleanConf('https_proxy_reject_unauthorized', false));
+  const rejectUnauthorized = String(configAdapter.booleanConf('https_proxy_reject_unauthorized', DEFAULT_HTTPS_PROXY_REJECT_UNAUTHORIZED));
   config.HTTPS_PROXY_REJECT_UNAUTHORIZED = rejectUnauthorized;
 
   proxyConfigCache.set(configAdapter, config);
