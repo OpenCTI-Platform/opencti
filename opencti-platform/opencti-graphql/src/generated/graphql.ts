@@ -6372,7 +6372,7 @@ export type DecayExclusionRule = BasicObject & InternalObject & {
   __typename?: 'DecayExclusionRule';
   active: Scalars['Boolean']['output'];
   created_at: Scalars['DateTime']['output'];
-  decay_exclusion_observable_types?: Maybe<Array<Scalars['String']['output']>>;
+  decay_exclusion_observable_types: Array<Scalars['String']['output']>;
   description?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
@@ -11279,7 +11279,7 @@ export type IndicatorConnection = {
 
 export type IndicatorDecayExclusionRule = {
   __typename?: 'IndicatorDecayExclusionRule';
-  decay_exclusion_created_at: Scalars['String']['output'];
+  decay_exclusion_created_at: Scalars['DateTime']['output'];
   decay_exclusion_id: Scalars['String']['output'];
   decay_exclusion_name: Scalars['String']['output'];
   decay_exclusion_observable_types: Array<Scalars['String']['output']>;
@@ -39672,7 +39672,7 @@ export type DecayDataResolvers<ContextType = any, ParentType extends ResolversPa
 export type DecayExclusionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayExclusionRule'] = ResolversParentTypes['DecayExclusionRule']> = ResolversObject<{
   active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  decay_exclusion_observable_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  decay_exclusion_observable_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -41301,7 +41301,7 @@ export type IndicatorConnectionResolvers<ContextType = any, ParentType extends R
 }>;
 
 export type IndicatorDecayExclusionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorDecayExclusionRule'] = ResolversParentTypes['IndicatorDecayExclusionRule']> = ResolversObject<{
-  decay_exclusion_created_at?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  decay_exclusion_created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   decay_exclusion_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   decay_exclusion_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   decay_exclusion_observable_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;

@@ -12946,7 +12946,7 @@ type IndicatorDecayRule {
 type IndicatorDecayExclusionRule {
   decay_exclusion_id: String!
   decay_exclusion_name: String!
-  decay_exclusion_created_at: String!
+  decay_exclusion_created_at: DateTime!
   decay_exclusion_observable_types: [String!]!
 }
 
@@ -13145,7 +13145,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   created_at: DateTime!
   name: String!
   description: String
-  decay_exclusion_observable_types: [String!]
+  decay_exclusion_observable_types: [String!]!
   active: Boolean!
 }
 

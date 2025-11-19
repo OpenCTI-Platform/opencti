@@ -8,7 +8,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   # DecayExclusionRule
   name: String!
   description: String
-  decay_exclusion_observable_types: [String!]
+  decay_exclusion_observable_types: [String!]!
   active: Boolean!
 }
 

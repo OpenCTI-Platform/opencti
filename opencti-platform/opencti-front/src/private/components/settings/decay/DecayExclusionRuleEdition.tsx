@@ -59,7 +59,7 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
   const initialValues: DecayExclusionRuleEditionFormData = {
     name: data.name,
     description: data.description ?? null,
-    decay_exclusion_observable_types: data.decay_exclusion_observable_types ?? [],
+    decay_exclusion_observable_types: [...data.decay_exclusion_observable_types],
   };
 
   return (
