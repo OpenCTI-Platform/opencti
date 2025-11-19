@@ -25,14 +25,7 @@ import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '..
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
-import {
-  isStrategyActivated, STRATEGY_AUTH0, STRATEGY_CERT, STRATEGY_FACEBOOK,
-  STRATEGY_GITHUB, STRATEGY_GOOGLE, STRATEGY_HEADER,
-  STRATEGY_LDAP,
-  STRATEGY_LOCAL,
-  STRATEGY_OPENID,
-  STRATEGY_SAML
-} from '../config/providers';
+import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -270,16 +263,16 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // endregion
 
     // region SSO providers configuration
-    manager.setSsoLocalStrategyEnabled(isStrategyActivated(STRATEGY_LOCAL) ? 1 : 0);
-    manager.setSsoOpenidStrategyEnabled(isStrategyActivated(STRATEGY_OPENID) ? 1 : 0);
-    manager.setSsoLDAPStrategyEnabled(isStrategyActivated(STRATEGY_LDAP) ? 1 : 0);
-    manager.setSsoSAMLStrategyEnabled(isStrategyActivated(STRATEGY_SAML) ? 1 : 0);
-    manager.setSsoAuthZeroStrategyEnabled(isStrategyActivated(STRATEGY_AUTH0) ? 1 : 0);
-    manager.setSsoCertStrategyEnabled(isStrategyActivated(STRATEGY_CERT) ? 1 : 0);
-    manager.setSsoHeaderStrategyEnabled(isStrategyActivated(STRATEGY_HEADER) ? 1 : 0);
-    manager.setSsoFacebookStrategyEnabled(isStrategyActivated(STRATEGY_FACEBOOK) ? 1 : 0);
-    manager.setSsoGoogleStrategyEnabled(isStrategyActivated(STRATEGY_GOOGLE) ? 1 : 0);
-    manager.setSsoGithubStrategyEnabled(isStrategyActivated(STRATEGY_GITHUB) ? 1 : 0);
+    manager.setSsoLocalStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LOCAL) ? 1 : 0);
+    manager.setSsoOpenidStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_OPENID) ? 1 : 0);
+    manager.setSsoLDAPStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LDAP) ? 1 : 0);
+    manager.setSsoSAMLStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_SAML) ? 1 : 0);
+    manager.setSsoAuthZeroStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_AUTH0) ? 1 : 0);
+    manager.setSsoCertStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_CERT) ? 1 : 0);
+    manager.setSsoHeaderStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_HEADER) ? 1 : 0);
+    manager.setSsoFacebookStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_FACEBOOK) ? 1 : 0);
+    manager.setSsoGoogleStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GOOGLE) ? 1 : 0);
+    manager.setSsoGithubStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GITHUB) ? 1 : 0);
     // endregion SSO providers
 
     // region Security Coverages

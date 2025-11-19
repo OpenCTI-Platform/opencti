@@ -15,7 +15,7 @@ import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
-import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
+import passport from '../config/providers-initialization';
 import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
 import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
 import { loadFile } from '../database/file-storage';
@@ -34,6 +34,7 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
+import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
 
 export const sanitizeReferer = (refererToSanitize) => {
   if (!refererToSanitize) return '/';
@@ -352,7 +353,7 @@ const createApp = async (app, schema) => {
     try {
       const context = executionContext('cert_strategy');
       const redirect = extractRefererPathFromReq(req) ?? '/';
-      const isActivated = isStrategyActivated(STRATEGY_CERT);
+      const isActivated = isStrategyActivated(StrategyType.STRATEGY_CERT);
       if (!isActivated) {
         setCookieError(res, 'Cert authentication is not available');
         res.redirect(redirect);
