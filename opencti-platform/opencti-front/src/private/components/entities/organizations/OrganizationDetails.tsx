@@ -1,24 +1,42 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import { OrganizationDetails_organization$data } from '@components/entities/organizations/__generated__/OrganizationDetails_organization.graphql';
 import { useTheme } from '@mui/material/styles';
+import { Organization_organization$data } from '@components/entities/organizations/__generated__/Organization_organization.graphql';
+import { OrganizationDetails_organization$key } from '@components/entities/organizations/__generated__/OrganizationDetails_organization.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ItemScore from '../../../../components/ItemScore';
 
+const organizationDetailsFragment = graphql`
+  fragment OrganizationDetails_organization on Organization {
+    id
+    description
+    contact_information
+    x_opencti_score
+    x_opencti_organization_type
+    objectLabel {
+      id
+      value
+      color
+    }
+  }
+`;
+
 interface OrganizationDetailsComponentProps {
-  organization: OrganizationDetails_organization$data;
+  organizationData: Organization_organization$data;
 }
 
-const OrganizationDetailsComponent: FunctionComponent<OrganizationDetailsComponentProps> = ({ organization }) => {
+const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> = ({ organizationData }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const organization = useFragment<OrganizationDetails_organization$key>(organizationDetailsFragment, organizationData);
+
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -89,25 +107,5 @@ const OrganizationDetailsComponent: FunctionComponent<OrganizationDetailsCompone
     </div>
   );
 };
-
-const OrganizationDetails = createFragmentContainer(
-  OrganizationDetailsComponent,
-  {
-    organization: graphql`
-        fragment OrganizationDetails_organization on Organization {
-            id
-            description
-            contact_information
-            x_opencti_score
-            x_opencti_organization_type
-            objectLabel {
-                id
-                value
-                color
-            }
-        }
-    `,
-  },
-);
 
 export default OrganizationDetails;
