@@ -13,7 +13,7 @@ jobs:
 
     - name: Runner information
       continue-on-error: true
-      run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Login to DockerHub
       uses: docker/login-action@v3
@@ -27,7 +27,7 @@ jobs:
     - name: Set up Docker Compose for backends and sync instances
       run: |
          set -ex
-         cd opencti-platform/opencti-ci
+         cd scripts/ci
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
          docker compose --profile "*" up -d
@@ -35,10 +35,10 @@ jobs:
     - name: Wait for OpenCTI sync instances to start
       run: |
           set -ex
-          ./opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
-          ./opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
-          ./opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
-          ./opencti-platform/opencti-ci/wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
+          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
 
     - name: Start api test
@@ -47,7 +47,7 @@ jobs:
           --name api-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
-          --env-file ${{ github.workspace }}/opencti-platform/opencti-ci/ci-common.env \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
@@ -126,7 +126,7 @@ jobs:
 
     - name: Runner information
       continue-on-error: true
-      run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Login to DockerHub
       uses: docker/login-action@v3
@@ -140,7 +140,7 @@ jobs:
     - name: Set up Docker Compose for backends and sync instances
       run: |
          set -ex
-         cd opencti-platform/opencti-ci
+         cd scripts/ci
          export TAG=${{ github.sha }}
          docker network create runner-docker-network
          docker compose --profile "backend" --profile ci-test-api up -d
@@ -151,7 +151,7 @@ jobs:
           --name api-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
-          --env-file ${{ github.workspace }}/opencti-platform/opencti-ci/ci-common.env \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
@@ -196,12 +196,12 @@ jobs:
 
     - name: Runner information
       continue-on-error: true
-      run: ./opencti-platform/opencti-ci/runner-info.sh # Display runner info and start resource monitoring in background
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
     - name: Set up Docker Compose for backends
       run: |
          set -ex
-         cd opencti-platform/opencti-ci
+         cd scripts/ci
          export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
@@ -212,7 +212,7 @@ jobs:
           --name unit-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
-          --env-file ${{ github.workspace }}/opencti-platform/opencti-ci/ci-common.env \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
           -e APP__BASE_URL=http://api-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
