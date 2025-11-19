@@ -1,0 +1,21 @@
+{
+  "watch": ["build"],
+  "ext": "js",
+  "ignore": [
+    "node_modules/**",
+    "tests/**",
+    "logs/**",
+    ".yarn/**"
+  ],
+  "exec": "node --enable-source-maps build/back.js",
+  "env": {
+    "NODE_ENV": "development"
+  },
+  "delay": 2000,
+  "signal": "SIGTERM",
+  "verbose": true,
+  "events": {
+    "exit": "echo '[nodemon] child process exited'",
+    "crash": "echo '[nodemon] script crashed'"
+  }
+}
