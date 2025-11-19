@@ -73,7 +73,7 @@
     "graphql-ws": "5.16.2",
     "html-react-parser": "5.2.8",
     "html-to-image": "1.11.13",
-    "html-to-pdfmake": "2.5.28",
+    "html-to-pdfmake": "2.5.32",
     "invert-color": "2.0.0",
     "is-svg": "6.1.0",
     "js-base64": "3.7.8",
