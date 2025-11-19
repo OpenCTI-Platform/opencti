@@ -34,7 +34,6 @@ import { loadFile } from './file-storage';
 import { EditOperation } from '../generated/graphql';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreRelation, InternalEditInput, StoreRelation } from '../types/store';
-import type { S3File } from './file-storage-helper';
 
 const completeDeleteElementsFromDraft = async (context: AuthContext, user: AuthUser, elements: BasicStoreCommon[]): Promise<void> => {
   const draftContext = getDraftContext(context, user);
@@ -280,17 +279,19 @@ export const resolveDraftUpdateFiles = async (context: AuthContext, user: AuthUs
     const loadedFileValues = [];
     for (let i = 0; i < fileIds.length; i += 1) {
       const currentFileId = fileIds[i];
-      const currentFile = await loadFile(context, user, currentFileId) as S3File;
+      const currentFile = await loadFile(context, user, currentFileId);
       const currentFileContent = toBase64(await getFileContent(currentFileId));
-      const currentFileObject = {
-        name: currentFile.name,
-        data: currentFileContent,
-        version: currentFile.metaData.version,
-        mime_type: currentFile.metaData.mimetype,
-        object_marking_refs: currentFile.metaData.file_markings ?? [],
-        no_trigger_import: true,
-      };
-      loadedFileValues.push(currentFileObject);
+      if (currentFile) {
+        const currentFileObject = {
+          name: currentFile.name,
+          data: currentFileContent,
+          version: currentFile.metaData.version,
+          mime_type: currentFile.metaData.mimetype,
+          object_marking_refs: currentFile.metaData.file_markings ?? [],
+          no_trigger_import: true,
+        };
+        loadedFileValues.push(currentFileObject);
+      }
     }
     const addInput = { key: FILES_UPDATE_KEY, value: loadedFileValues, operation: EditOperation.Add };
     resolvedDraftUpdatePatch.push(addInput);
