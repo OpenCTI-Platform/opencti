@@ -607,7 +607,6 @@ const buildUserMemberAccessFilter = (user, opts) => {
     return [];
   }
   const userAccessIds = computeUserMemberAccessIds(user);
-
   // if access_users exists, it should have the user access ids
   const emptyAuthorizedMembers = { bool: { must_not: { nested: { path: authorizedMembers.name, query: { match_all: { } } } } } };
   // condition on authorizedMembers id
@@ -643,11 +642,14 @@ const buildUserMemberAccessFilter = (user, opts) => {
   if (!excludeEmptyAuthorizedMembers) {
     shouldConditions.push(emptyAuthorizedMembers);
   }
+
+  const bypassAuthorizedMembers = isServiceAccountUser(user);
   const nestedQuery = {
     nested: {
       path: authorizedMembers.name,
       query: {
-        bool: { should: isServiceAccountUser(user) ? [] : authorizedFilters }
+        // For service accounts, bypass authorized members restrictions
+        bool: { should: bypassAuthorizedMembers ? [] : authorizedFilters }
       }
     }
   };
