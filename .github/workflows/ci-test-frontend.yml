@@ -20,7 +20,7 @@ jobs:
           --name frontend-tests \
           -v ${{ github.workspace }}:/home/workspace \
           node:22-alpine \
-          sh -c 'set -x
+          sh -c 'set -ex
             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
             apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
             npm install -g node-gyp
@@ -61,13 +61,12 @@ jobs:
       run: |
          set -ex
          cd frontend-e2e-test/scripts/ci
-         export TAG=${{ needs.build-opencti-platform.outputs.version }}
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 
     - name: Start e2e opencti and worker instance
       run: |
-        set -x;
+        set -ex;
         docker run -d --network runner-docker-network \
           --name opencti-e2e-start \
           -p 4500:4100 \
@@ -204,7 +203,7 @@ jobs:
           --name frontend-verify-translation \
           -v ${{ github.workspace }}:/home/workspace \
           node:22-alpine \
-          sh -c 'set -x
-            cd opencti-platform/opencti-front
+          sh -c 'set -ex
+            cd /home/workspace/opencti-platform/opencti-front
             node script/verify-translation.js
             '
