@@ -155,7 +155,7 @@ const importFilesContextGuessMimeTypeQuery = graphql`
 export type ImportMode = 'auto' | 'manual' | 'form';
 export type UploadStatus = 'uploading' | 'success' | undefined;
 
-interface InitialValues {
+export interface InitialValues {
   entityId?: string;
   activeStep?: number;
   importMode?: ImportMode;
@@ -190,8 +190,11 @@ export const ImportFilesProvider = ({ children, initialValue }: {
   const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT']); // Check capability to set connectors and validation mode
   const draftContext = useDraftContext();
 
-  const [activeStep, setActiveStep] = useState(initialValue.activeStep ?? (canSelectImportMode ? 0 : 1));
-  const [importMode, setImportMode] = useState<ImportMode | undefined>(!canSelectImportMode ? 'auto' : initialValue.importMode);
+  const initalActiveStep = initialValue.activeStep ?? (canSelectImportMode ? 0 : 1);
+  const initialImportMode = canSelectImportMode ? initialValue.importMode : 'auto';
+
+  const [activeStep, setActiveStep] = useState(initalActiveStep);
+  const [importMode, setImportMode] = useState<ImportMode | undefined>(initialImportMode);
   const [files, setFiles] = useState<FileWithConnectors[]>([]);
   const [uploadStatus, setUploadStatus] = useState<undefined | UploadStatus>();
   const [draftId, setDraftId] = useState<string | undefined>(draftContext?.id);
@@ -209,7 +212,8 @@ export const ImportFilesProvider = ({ children, initialValue }: {
     return result?.guessMimeType || null;
   }, []);
   useEffect(() => {
-    setActiveStep(initialValue.activeStep ?? (canSelectImportMode ? 0 : 1));
+    setActiveStep(initalActiveStep);
+    setImportMode(initialImportMode);
   }, [initialValue]);
 
   return queryRef && (

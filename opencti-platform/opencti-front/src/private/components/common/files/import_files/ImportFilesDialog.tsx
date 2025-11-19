@@ -15,7 +15,7 @@ import { draftCreationMutation } from '@components/drafts/DraftCreation';
 import { DraftCreationMutation, DraftCreationMutation$data } from '@components/drafts/__generated__/DraftCreationMutation.graphql';
 import { draftContextBannerMutation } from '@components/drafts/DraftContextBanner';
 import { DraftContextBannerMutation } from '@components/drafts/__generated__/DraftContextBannerMutation.graphql';
-import { ImportFilesProvider, importFilesQuery, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
+import { ImportFilesProvider, importFilesQuery, InitialValues, useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 import { ImportFilesContextQuery } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 import {
   ImportFilesDialogGlobalMutation,
@@ -543,8 +543,8 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
 };
 
 const ImportFilesDialog = ({ open, entityId, handleClose, initialFreeTextContent }: ImportFilesDialogProps) => {
-  const initialValue = initialFreeTextContent
-    ? { entityId, activeStep: 1, mode: 'manual', initialFreeTextContent }
+  const initialValue: InitialValues = initialFreeTextContent
+    ? { entityId, activeStep: 1, importMode: 'manual', initialFreeTextContent }
     : { entityId };
   return (
     <ImportFilesProvider initialValue={initialValue}>
