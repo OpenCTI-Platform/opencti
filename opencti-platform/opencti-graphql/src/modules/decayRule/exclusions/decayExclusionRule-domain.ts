@@ -13,7 +13,7 @@ import { createInternalObject } from '../../../domain/internalObject';
 
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
 
-interface DecayExclusionRuleModel {
+export interface DecayExclusionRuleModel {
   id: string;
   name: string;
   description: string;
@@ -41,8 +41,12 @@ type CheckDecayExclusionRulesTypes = {
   exclusionRule: DecayExclusionRuleModel | null,
 };
 
-export const checkDecayExclusionRules = async (context: AuthContext, user: AuthUser, observableType: string): Promise<CheckDecayExclusionRulesTypes> => {
-  const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
+export const checkDecayExclusionRules = async (
+  context: AuthContext,
+  user: AuthUser,
+  observableType: string,
+  activeDecayExclusionRuleList: DecayExclusionRuleModel[]
+): Promise<CheckDecayExclusionRulesTypes> => {
   const exclusionRuleList = activeDecayExclusionRuleList.filter((rule) => rule.decay_exclusion_observable_types.includes(observableType));
   const hasExclusionRuleMatching = exclusionRuleList.length > 0;
   if (!isDecayExclusionRuleEnabled) {

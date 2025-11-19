@@ -56,7 +56,7 @@ import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
-import { checkDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
+import {checkDecayExclusionRules, getActiveDecayExclusionRule} from '../decayRule/exclusions/decayExclusionRule-domain';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -274,7 +274,8 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   const isDecayActivated: boolean = await isDecayEnabled();
 
-  const { exclusionRule, hasExclusionRuleMatching } = await checkDecayExclusionRules(context, user, observableType);
+  const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
+  const { exclusionRule, hasExclusionRuleMatching } = await checkDecayExclusionRules(context, user, observableType, activeDecayExclusionRuleList);
 
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
