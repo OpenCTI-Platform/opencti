@@ -258,6 +258,9 @@ class OpenCTIApiClient:
         self.user = User(self)
         self.settings = Settings(self)
 
+        # Keep track of draft context
+        self.draft_id = ""
+
         # Check if openCTI is available
         if perform_health_check and not self.health_check():
             raise ValueError(
@@ -414,7 +417,11 @@ class OpenCTIApiClient:
     def set_event_id(self, event_id):
         self.request_headers["opencti-event-id"] = event_id
 
+    def get_draft_id(self):
+        return self.draft_id
+
     def set_draft_id(self, draft_id):
+        self.draft_id = draft_id
         self.request_headers["opencti-draft-id"] = draft_id
 
     def set_synchronized_upsert_header(self, synchronized):
