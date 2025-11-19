@@ -94,7 +94,7 @@ const DecayExclusionRules = () => {
   const {
     viewStorage,
     paginationOptions,
-  } = usePaginationLocalStorage(
+  } = usePaginationLocalStorage<DecayExclusionRulesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     initialValues,
   );
