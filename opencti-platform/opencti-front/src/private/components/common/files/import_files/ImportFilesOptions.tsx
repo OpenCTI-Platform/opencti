@@ -65,8 +65,19 @@ const ImportFilesOptions = ({
                 component={SelectField}
                 variant="standard"
                 name="validationMode"
-                label={t_i18n('Validation mode')}
-                containerstyle={{ marginTop: 16, width: '100%' }}
+                containerstyle={{ marginTop: 16, width: '100%', marginRight: 10 }}
+                label={<>
+                  {t_i18n('Validation mode')}
+                  <Tooltip
+                    title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
+                  >
+                    <InformationOutline
+                      style={{ display: 'flex', marginTop: -22, marginLeft: 115 }}
+                      fontSize="small"
+                      color="primary"
+                    />
+                  </Tooltip>
+                </>}
               >
                 <MenuItem
                   key={'draft'}
@@ -82,15 +93,6 @@ const ImportFilesOptions = ({
                   {t_i18n('Workbench')}
                 </MenuItem>
               </Field>
-              <Tooltip
-                title={t_i18n('Import all data into a new draft or an analyst workbench, to validate the data before ingestion. Note that creating a workbench is not possible when several files are selected.')}
-              >
-                <InformationOutline
-                  style={{ position: 'absolute', marginLeft: 16, marginTop: 40 }}
-                  fontSize="small"
-                  color="primary"
-                />
-              </Tooltip>
             </div>
             {optionsFormikContext.values.validationMode === 'draft' && (
               <>
