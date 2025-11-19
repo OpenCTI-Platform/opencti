@@ -69,6 +69,30 @@ export const fileManagerAskJobImportMutation = graphql`
   }
 `;
 
+export const fileManagerCreateDraftAskJobImportMutation = graphql`
+  mutation FileManagerCreateDraftAskJobImportMutation(
+    $fileName: ID!
+    $connectorId: String
+    $configuration: String
+    $bypassValidation: Boolean
+    $forceValidation: Boolean
+    $validationMode: ValidationMode
+    $authorized_members: [MemberAccessInput!]
+  ) {
+    createDraftAndAskJobImport(
+      fileName: $fileName
+      connectorId: $connectorId
+      configuration: $configuration
+      bypassValidation: $bypassValidation
+      forceValidation: $forceValidation
+      validationMode: $validationMode
+      authorized_members: $authorized_members
+    ) {
+      ...FileLine_file
+    }
+  }
+`;
+
 export const fileManagerExportMutation = graphql`
   mutation FileManagerExportMutation(
     $id: ID!
