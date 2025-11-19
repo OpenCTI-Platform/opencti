@@ -56,7 +56,6 @@ export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
 export const TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT = 'userIntoServiceAccountCount';
 export const TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER = 'serviceAccountIntoUserCount';
 export const TELEMETRY_GAUGE_USER_EMAIL_SEND = 'userEmailSendCount';
-export const TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND = 'onboardingEmailSendCount';
 export const TELEMETRY_BACKGROUND_TASK_USER = 'userBackgroundTaskCount';
 export const TELEMETRY_EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount';
 export const TELEMETRY_FORGOT_PASSWORD = 'forgotPasswordCount';
@@ -101,10 +100,6 @@ export const addServiceAccountIntoUserCount = async () => {
 
 export const addUserEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_EMAIL_SEND, 1);
-};
-
-export const addOnboardingEmailSendCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND, 1);
 };
 
 export const addFormIntakeCreatedCount = async () => {
@@ -305,8 +300,6 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setServiceAccountIntoUserCount(serviceAccountIntoUserCountInRedis);
     const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_EMAIL_SEND);
     manager.setUserEmailSendCount(emailSendCountInRedis);
-    const onboardingEmailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND);
-    manager.setOnboardingEmailSendCount(onboardingEmailSendCountInRedis);
     const userBackgroundTaskCountInRedis = await redisGetTelemetry(TELEMETRY_BACKGROUND_TASK_USER);
     manager.setUserBackgroundTaskCount(userBackgroundTaskCountInRedis);
     const emailTemplateCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_EMAIL_TEMPLATE_CREATED);
