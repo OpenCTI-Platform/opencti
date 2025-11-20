@@ -986,7 +986,11 @@ const PublicStixRelationshipsTimelineComponent = ({
         },
       };
     });
-    return <WidgetTimeline data={data} />;
+    const selection = dataSelection[0];
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
+    return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
   }
   return <WidgetNoData />;
 };

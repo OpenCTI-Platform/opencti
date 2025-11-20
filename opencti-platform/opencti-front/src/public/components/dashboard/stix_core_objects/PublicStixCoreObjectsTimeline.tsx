@@ -66,10 +66,12 @@ const publicStixCoreObjectsTimelineQuery = graphql`
 
 interface PublicStixCoreObjectsTimelineComponentProps {
   queryRef: PreloadedQuery<PublicStixCoreObjectsTimelineQuery>
+  dateAttribute?: string
 }
 
 const PublicStixCoreObjectsTimelineComponent = ({
   queryRef,
+  dateAttribute,
 }: PublicStixCoreObjectsTimelineComponentProps) => {
   const { publicStixCoreObjects } = usePreloadedQuery(
     publicStixCoreObjectsTimelineQuery,
@@ -89,7 +91,7 @@ const PublicStixCoreObjectsTimelineComponent = ({
         value: stixCoreObject,
       };
     });
-    return <WidgetTimeline data={data} />;
+    return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
   }
   return <WidgetNoData />;
 };
@@ -102,7 +104,7 @@ const PublicStixCoreObjectsTimeline = ({
   title,
 }: PublicWidgetContainerProps) => {
   const { t_i18n } = useFormatter();
-  const { id, parameters } = widget;
+  const { id, parameters, dataSelection } = widget;
   const queryRef = useQueryLoading<PublicStixCoreObjectsTimelineQuery>(
     publicStixCoreObjectsTimelineQuery,
     {
@@ -112,6 +114,10 @@ const PublicStixCoreObjectsTimeline = ({
       endDate,
     },
   );
+  const selection = dataSelection[0];
+  const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+    ? selection.date_attribute
+    : 'created_at';
 
   return (
     <WidgetContainer
@@ -120,7 +126,7 @@ const PublicStixCoreObjectsTimeline = ({
     >
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <PublicStixCoreObjectsTimelineComponent queryRef={queryRef} />
+          <PublicStixCoreObjectsTimelineComponent queryRef={queryRef} dateAttribute={dateAttribute} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />
