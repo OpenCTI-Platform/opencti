@@ -115,7 +115,7 @@
     "graphql-scalars": "1.25.0",
     "graphql-subscriptions": "3.0.0",
     "graphql-upload": "17.0.0",
-    "graphql-ws": "5.16.2",
+    "graphql-ws": "6.0.6",
     "helmet": "8.1.0",
     "http-proxy-agent": "7.0.2",
     "https-proxy-agent": "7.0.6",
