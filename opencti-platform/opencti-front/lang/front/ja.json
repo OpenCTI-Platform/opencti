@@ -3896,7 +3896,7 @@
   "Threat landscape": "脅威ランドスケープ",
   "Threat landscape description ...": "脅威が標的とする場所やセクターに基づいて脅威を追跡する専用の PIR を作成する。この PIR は、対応するマルウェア、攻撃パターン、脆弱性、優先的に調査すべきコンテナを特定するのに役立つはずです。",
   "Threat map": "脅威マップ",
-  "Threat map explanations...": "脅威マップは、先月更新されたエンティティを表示します。",
+  "Threat map explanations...": "脅威マップは、先週更新されたエンティティを表示します。",
   "Threat origin (coming soon)": "脅威の起源（近日公開）",
   "Threat origin description ...": "脅威の発生源に基づいて脅威を追跡する専用の PIR を作成する。この PIR は、優先的に調査すべきマルウェア、攻撃パターン、脆弱性、コンテナを特定するのに役立つはずです。",
   "Threat with full customization (coming soon)": "フルカスタマイズ可能な脅威（近日公開予定）",

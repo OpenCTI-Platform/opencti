@@ -3896,7 +3896,7 @@
   "Threat landscape": "Threat landscape",
   "Threat landscape description ...": "Create a PIR dedicated to tracking threats based on locations and sectors that they target. This PIR should help you identify corresponding malware, attack patterns, vulnerabilities, and containers that you should examine as a priority.",
   "Threat map": "Threat map",
-  "Threat map explanations...": "Threat map displays the entities which have been updated during last month",
+  "Threat map explanations...": "Threat map displays the entities which have been updated during last week",
   "Threat origin (coming soon)": "Threat origin (coming soon)",
   "Threat origin description ...": "Create a PIR dedicated to tracking threats based on their origins. This PIR should help you identify corresponding malware, attack patterns, vulnerabilities, and containers that you should examine as a priority.",
   "Threat with full customization (coming soon)": "Threat with full customization (coming soon)",

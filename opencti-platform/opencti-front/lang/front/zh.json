@@ -3896,7 +3896,7 @@
   "Threat landscape": "威胁景观",
   "Threat landscape description ...": "创建一个 PIR，专门用于根据威胁所针对的位置和部门跟踪威胁。该 PIR 应帮助您识别相应的恶意软件、攻击模式、漏洞和容器，并将其作为优先事项进行检查。",
   "Threat map": "威胁地图",
-  "Threat map explanations...": "威胁地图显示上个月更新的实体",
+  "Threat map explanations...": "威胁地图显示上周更新过的实体",
   "Threat origin (coming soon)": "威胁来源（即将推出）",
   "Threat origin description ...": "创建一个 PIR，专门用于根据威胁来源跟踪威胁。该 PIR 可帮助您确定应优先检查的相应恶意软件、攻击模式、漏洞和容器。",
   "Threat with full customization (coming soon)": "完全自定义威胁（即将推出）",

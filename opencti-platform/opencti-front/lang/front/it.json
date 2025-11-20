@@ -3896,7 +3896,7 @@
   "Threat landscape": "Paesaggio di minaccia",
   "Threat landscape description ...": "Creare un PIR dedicato al monitoraggio delle minacce in base ai luoghi e ai settori che prendono di mira. Questo PIR dovrebbe aiutarvi a identificare le minacce informatiche, i modelli di attacco, le vulnerabilità e i contenitori corrispondenti che dovreste esaminare in via prioritaria.",
   "Threat map": "Mappa delle minacce",
-  "Threat map explanations...": "La mappa delle minacce visualizza le entità che sono state aggiornate nell'ultimo mese",
+  "Threat map explanations...": "La mappa delle minacce visualizza le entità che sono state aggiornate nell'ultima settimana",
   "Threat origin (coming soon)": "Origine delle minacce (in arrivo)",
   "Threat origin description ...": "Creare un PIR dedicato al monitoraggio delle minacce in base alla loro origine. Questo PIR dovrebbe aiutarvi a identificare il malware, i modelli di attacco, le vulnerabilità e i contenitori corrispondenti che dovreste esaminare in via prioritaria.",
   "Threat with full customization (coming soon)": "Minaccia con personalizzazione completa (in arrivo)",
