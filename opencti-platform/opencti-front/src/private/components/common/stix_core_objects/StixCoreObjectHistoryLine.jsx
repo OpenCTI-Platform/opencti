@@ -104,7 +104,7 @@ export const StixCoreObjectHistoryFragment = graphql`
   }
 `;
 
-export const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
+const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
   const classes = useStyles();
   const theme = useTheme();
   const { t_i18n, nsdt } = useFormatter();
