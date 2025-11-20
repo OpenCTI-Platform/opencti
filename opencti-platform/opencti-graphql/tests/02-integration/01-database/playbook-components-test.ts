@@ -57,6 +57,14 @@ describe('playbook sharing component', () => {
               extension_type: 'property-extension',
               granted_refs: [externalOrganizationEntity.standard_id],
               id: '82e80255-9793-4283-b34b-872b30f23f57',
+              opencti_operation: 'patch',
+              opencti_field_patch: [
+                {
+                  operation: 'add',
+                  key: 'objectOrganization',
+                  value: [externalOrganizationEntity.standard_id]
+                }
+              ],
               type: 'Report',
               updated_at: '2025-03-25T09:59:44.832Z',
               workflow_id: 'a4b90e6f-06ae-461a-8dac-666cdb4a5ae7'
@@ -88,17 +96,6 @@ describe('playbook sharing component', () => {
               creator_ids: [
                 '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
               ],
-              granted_refs: [externalOrganizationEntity.standard_id],
-              opencti_operation: 'patch',
-              opencti_field_patch: [
-                [
-                  {
-                    operation: 'add',
-                    key: 'objectOrganization',
-                    value: [externalOrganizationEntity.standard_id]
-                  }
-                ]
-              ]
             }
           },
           created: '2020-02-29T14:48:31.601Z',
@@ -128,6 +125,7 @@ describe('playbook sharing component', () => {
       playbookNode,
       bundle: sharing_component_bundle
     });
+    console.log(result.bundle);
     expect(result.bundle).toEqual(bundleToIngest);
   });
 });
