@@ -1,10 +1,10 @@
 // Admin user initialization
 import { v4 as uuidv4 } from 'uuid';
 import semver from 'semver';
-import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { elUpdateIndicesMappings, ES_INIT_MAPPING_MIGRATION, ES_IS_INIT_MIGRATION, initializeSchema } from './database/engine';
 import { initializeBucket } from './database/raw-file-storage';
 import { enforceQueuesConsistency, initializeInternalQueues } from './database/rabbitmq';
+import { ENABLED_FEATURE_FLAGS, logApp, PLATFORM_VERSION } from './config/conf';
 import { initDefaultNotifiers } from './modules/notifier/notifier-domain';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
@@ -67,7 +67,8 @@ const isCompatiblePlatform = async (context: AuthContext) => {
 const platformInit = async (withMarkings = true) => {
   let lock;
   try {
-    lock = await lockResources([PLATFORM_LOCK_ID]);
+    const lockOptions = process.env.HOT_RELOAD_WATCH === 'true' ? { retryCount: 30 } : {};
+    lock = await lockResources([PLATFORM_LOCK_ID], lockOptions);
     const context = executionContext('platform_initialization');
     logApp.info('[INIT] Starting platform initialization');
     const alreadyExists = await isExistingPlatform(context);

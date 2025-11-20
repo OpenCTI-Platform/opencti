@@ -88,10 +88,23 @@ if (isWatch) {
         const duration = Date.now() - startTime;
         if (result.errors.length > 0) {
           console.error(`❌ Build failed with ${result.errors.length} error(s)`);
+          // Notify the parent so it can cancel any pending restart
+          if (process.send && buildCount > 1) {
+            process.send({ type: 'rebuild-failed' });
+          }
         } else if (buildCount === 1) {
           console.log('✅ Initial build complete');
+          // Signal the parent (builder/dev/watch.js) via IPC that the initial
+          // build is done so it can start the app process.
+          if (process.send) {
+            process.send({ type: 'initial-build-complete' });
+          }
         } else {
           console.log(`✅ Rebuild complete in ${duration}ms`);
+          // Signal the parent to restart the app process.
+          if (process.send) {
+            process.send({ type: 'rebuild-complete' });
+          }
         }
       });
     },
