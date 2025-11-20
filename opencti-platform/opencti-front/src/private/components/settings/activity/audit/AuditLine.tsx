@@ -58,28 +58,28 @@ interface AuditLineProps {
 }
 
 const AuditLineFragment = graphql`
-    fragment AuditLine_node on Log {
-        id
-        entity_type
-        event_type
-        event_scope
-        event_status
-        timestamp
-        context_uri
-        user {
-            id
-            name
-        }
-        raw_data
-        context_data {
-            entity_id
-            entity_type
-            entity_name
-            message
-            from_id
-            to_id
-        }
+  fragment AuditLine_node on Log {
+    id
+    entity_type
+    event_type
+    event_scope
+    event_status
+    timestamp
+    context_uri
+    user {
+      id
+      name
     }
+    raw_data
+    context_data {
+      entity_id
+      entity_type
+      entity_name
+      message
+      from_id
+      to_id
+    }
+  }
 `;
 
 export const AuditLine: FunctionComponent<AuditLineProps> = ({
@@ -93,7 +93,8 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const data = useFragment(AuditLineFragment, node);
   const message = useGenerateAuditMessage<AuditLine_node$data>(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
-
+  // console.log('message', message);
+  // console.log('data', JSON.parse(data.raw_data));
   function createData(name: string, PreviousValue:string, NewValue:string) {
     return { name, PreviousValue, NewValue };
   }
