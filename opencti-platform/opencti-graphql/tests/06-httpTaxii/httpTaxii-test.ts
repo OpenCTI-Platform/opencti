@@ -5,7 +5,6 @@ import type { EditInput, IngestionTaxiiCollectionAddInput, TaxiiCollectionAddInp
 import { getGroupEntityByName } from '../utils/domainQueryHelper';
 import { getBaseUrl } from '../../src/config/conf';
 import { createTaxiiCollection, taxiiCollectionDelete } from '../../src/domain/taxii';
-import axios from 'axios';
 
 describe('Taxii push Feed coverage', () => {
   let taxiiPushIngestionId: string;
@@ -65,7 +64,7 @@ describe('Taxii push Feed coverage', () => {
     ]
   };
 
-  it.skip.each([
+  it.each([
     { contentType: 'application/taxii+json;version=2.1', name: 'TAXII content type and authentication header' },
     { contentType: 'application/taxii+json; version=2.1', name: 'TAXII content type including space and authentication header' },
     { contentType: 'application/vnd.oasis.stix+json; version=2.1', name: 'STIX content type including space and authentication header' },
@@ -85,20 +84,27 @@ describe('Taxii push Feed coverage', () => {
     // We do not check entity from bundleObject in database since it requires the worker to process it.
   });
 
-  it('AXIOS should taxii post be refused without authenticated user', async () => {
-    await expect(async () => {
-      await fetch(`${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`, {
-        method: 'POST',
-        headers: {},
-        body: JSON.stringify(bundleObject),
-      });
-    }).rejects.toThrowError('Request failed with status code 401');
+  it('should taxii post be refused without authenticated user', async () => {
+    const result = await fetch(`${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/taxii+json;version=2.1',
+      },
+      body: JSON.stringify(bundleObject),
+    });
+    expect(result.status).toBe(401);
   });
 
-  it('FETCH should taxii post be refused without authenticated user', async () => {
-    await expect(async () => {
-      await axios.post(`${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`, bundleObject, {});
-    }).rejects.toThrowError('Request failed with status code 401');
+  it('should taxii post be refused with wrong content type', async () => {
+    const result = await fetch(`${getBaseUrl()}/taxii2/root/collections/${taxiiPushIngestionId}/objects`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/taxiiiii+json;version=2.1',
+        Authorization: `Bearer ${ADMIN_API_TOKEN}`
+      },
+      body: JSON.stringify(bundleObject),
+    });
+    expect(result.status).toBe(400);
   });
 });
 
@@ -112,9 +118,13 @@ describe('Should taxii collection coverage', () => {
       taxii_public: true,
       include_inferences: true,
       score_to_confidence: false,
-      filters: '{\'mode\':\'and\',\'filters\':[{\'key\':[\'entity_type\'],\'operator\':\'eq\',\'values\':[\'Indicator\'],\'mode\':\'or\'}],\'filterGroups\':[]}'
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [{ key: ['entity_type'], operator: 'eq', values: ['Indicator'], mode: 'or' }],
+        filterGroups: [] })
     };
     const taxiiCollection = await createTaxiiCollection(testContext, ADMIN_USER, dataSharingTaxii);
+
     expect(taxiiCollection.id).toBeDefined();
     taxiiCollectionId = taxiiCollection.id;
     expect(taxiiCollection.name).toBe('Testing coverage on Taxii collection');
@@ -134,12 +144,20 @@ describe('Should taxii collection coverage', () => {
     expect(data.versions).toStrictEqual(['application/taxii+json;version=2.1']);
   });
 
-  // This one is not working yet, to be investigated
-  it.skip('should taxii collection without content type return error', async () => {
-    const headers = {
-      Authorization: `Bearer ${ADMIN_API_TOKEN}`
-    };
-    const taxiiCollectionResponse = await fetch(`${getBaseUrl()}/taxii2/root/collections/${taxiiCollectionId}/objects/`, { headers });
+  it('should public taxii collection without user works', async () => {
+    const taxiiCollectionResponse = await fetch(
+      `${getBaseUrl()}/taxii2/root/collections/${taxiiCollectionId}/objects/`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/taxii+json;version=2.1',
+          Accept: 'application/taxii+json;version=2.1'
+        }
+      }
+    );
     expect(taxiiCollectionResponse.status).toBe(200);
+    const content = await taxiiCollectionResponse.json() as { more: boolean, next: string };
+    expect(content.more).toBeFalsy();
+    expect(content.next.length).toBeGreaterThan(0);
   });
 });
