@@ -1,11 +1,12 @@
 import * as R from 'ramda';
-import getFilterFromEntityTypeAndNodeType, { DiamondEntityType, DiamondNodeType } from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
+import getFilterFromEntityTypeAndNodeType from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
 import { emptyFilled } from '../../../../../../../../utils/String';
+import { DiamondEntityEnum, DiamondNodeEnum } from '../diamondEnums';
 
-interface UseNodeAdversaryProps {
+export interface UseNodeAdversaryProps {
   data: {
     stixDomainObject: {
-      entity_type: DiamondEntityType;
+      entity_type: DiamondEntityEnum;
       aliases?: string[];
       attributedTo?: {
         edges: {
@@ -49,8 +50,8 @@ export interface UseNodeAdversaryReturns {
 export const useNodeAdversary = ({ data }: UseNodeAdversaryProps):UseNodeAdversaryReturns => {
   const { stixDomainObject, entityLink } = data;
 
-  const isArsenal = ['Malware', 'Tool', 'Channel'].includes(stixDomainObject.entity_type);
-  const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'].includes(stixDomainObject.entity_type);
+  const isArsenal = [DiamondEntityEnum.malware, DiamondEntityEnum.tool, DiamondEntityEnum.channel].includes(stixDomainObject.entity_type);
+  const isThreat = [DiamondEntityEnum.threatActorGroup, DiamondEntityEnum.threatActorIndividual, DiamondEntityEnum.intrusionSet].includes(stixDomainObject.entity_type);
 
   const aliases = stixDomainObject.aliases?.slice(0, 5).join(', ');
 
@@ -75,7 +76,8 @@ export const useNodeAdversary = ({ data }: UseNodeAdversaryProps):UseNodeAdversa
     lastAttributions = emptyFilled(attributedTo);
   }
 
-  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.adversary);
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeEnum.adversary);
+
   return {
     entityLink,
     generatedFilters,
