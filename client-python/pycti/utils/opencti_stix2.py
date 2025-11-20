@@ -96,6 +96,17 @@ class OpenCTIStix2:
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
 
+    def get_in_cache(self, data_id):
+        api_draft_id = self.opencti.get_draft_id()
+        if data_id + api_draft_id in self.mapping_cache:
+            return self.mapping_cache[data_id + api_draft_id]
+        return None
+
+    def set_in_cache(self, data_id, data):
+        api_draft_id = self.opencti.get_draft_id()
+        self.mapping_cache[data_id + api_draft_id] = data
+
+
     ######### UTILS
     # region utils
     def unknown_type(self, stix_object: Dict) -> None:
