@@ -154,12 +154,12 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                   }}
                   >
                     <TableContainer component={Paper}>
-                      <Table sx={{ minWidth: 650 }}>
+                      <Table sx={{ minWidth: 650 }} size="small">
                         <TableHead>
                           <TableRow>
                             <TableCell></TableCell>
-                            <TableCell align="center">Previous value</TableCell>
-                            <TableCell align="center">New value</TableCell>
+                            <TableCell align="left">Previous value</TableCell>
+                            <TableCell align="left">New value</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
@@ -171,8 +171,8 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                               <TableCell component="th" scope="row">
                                 {row.name}
                               </TableCell>
-                              <TableCell align="center">{row.PreviousValue}</TableCell>
-                              <TableCell align="center">{row.NewValue}</TableCell>
+                              <TableCell align="left">{row.PreviousValue}</TableCell>
+                              <TableCell align="left">{row.NewValue}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
