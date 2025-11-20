@@ -14,112 +14,41 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import React from 'react';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, useFragment, usePreloadedQuery } from 'react-relay';
 import 'reactflow/dist/style.css';
-import ReactFlow, { ReactFlowProvider } from 'reactflow';
+import { ReactFlowProvider } from 'reactflow';
+import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { ErrorBoundary } from '../../Error';
 import PlaybookHeader from './PlaybookHeader';
-import useLayout from './hooks/useLayout';
-import nodeTypes from './types/nodes';
-import edgeTypes from './types/edges';
-import { addPlaceholders, computeEdges, computeNodes } from './utils/playbook';
-import useManipulateComponents from './hooks/useManipulateComponents';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import { useFormatter } from '../../../../components/i18n';
+import PlaybookFlow from './playbookFlow/PlaybookFlow';
 import { Playbook_playbook$key } from './__generated__/Playbook_playbook.graphql';
-import { Playbook_playbookComponents$key } from './__generated__/Playbook_playbookComponents.graphql';
-
-const defaultViewport = { x: 0, y: 0, zoom: 1.5 };
-const proOptions = { account: 'paid-pro', hideAttribution: true };
-const fitViewOptions = { padding: 0.8 };
+import { PlaybookComponentsQuery } from './__generated__/PlaybookComponentsQuery.graphql';
 
 const playbookFragment = graphql`
   fragment Playbook_playbook on Playbook {
-    id
-    entity_type
     name
-    description
-    playbook_definition
-    playbook_running
     ...PlaybookHeader_playbook
+    ...PlaybookFlow_playbook
   }
 `;
 
-const playbookComponentsFragment = graphql`
-  fragment Playbook_playbookComponents on Query {
-    playbookComponents {
-      id
-      name
-      description
-      icon
-      is_entry_point
-      is_internal
-      configuration_schema
-      ports {
-        id
-        type
-      }
-    }
+export const playbookComponentsQuery = graphql`
+  query PlaybookComponentsQuery {
+    ...PlaybookFlow_playbookComponents
   }
 `;
 
 interface PlaybookProps {
-  dataPlaybook: Playbook_playbook$key;
-  dataPlaybookComponents: Playbook_playbookComponents$key;
+  dataPlaybook: Playbook_playbook$key
+  playbookComponentsQueryRef: PreloadedQuery<PlaybookComponentsQuery>
 }
 
-const Playbook = ({ dataPlaybook, dataPlaybookComponents }: PlaybookProps) => {
+const Playbook = ({ dataPlaybook, playbookComponentsQueryRef }: PlaybookProps) => {
   const { t_i18n } = useFormatter();
   const playbook = useFragment(playbookFragment, dataPlaybook);
-  const { playbookComponents } = useFragment(playbookComponentsFragment, dataPlaybookComponents);
-  const definition = JSON.parse(playbook.playbook_definition ?? '{}');
-
-  const Flow = () => {
-    const {
-      setAction,
-      setSelectedNode,
-      setSelectedEdge,
-      renderManipulateComponents,
-    } = useManipulateComponents(playbook, playbookComponents);
-    const initialNodes = computeNodes(
-      definition.nodes,
-      playbookComponents,
-      setAction,
-      setSelectedNode,
-    );
-    const initialEdges = computeEdges(
-      definition.links,
-      setAction,
-      setSelectedEdge,
-    );
-    const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
-      initialNodes,
-      initialEdges,
-      setAction,
-      setSelectedNode,
-    );
-    useLayout(playbook.id);
-
-    return (
-      <>
-        <ReactFlow
-          defaultNodes={flowNodes}
-          defaultEdges={flowEdges}
-          nodeTypes={nodeTypes}
-          edgeTypes={edgeTypes}
-          defaultViewport={defaultViewport}
-          minZoom={0.2}
-          fitView={true}
-          fitViewOptions={fitViewOptions}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          zoomOnDoubleClick={false}
-          proOptions={proOptions}
-        />
-        {renderManipulateComponents()}
-      </>
-    );
-  };
+  const dataPlaybookComponents = usePreloadedQuery(playbookComponentsQuery, playbookComponentsQueryRef);
 
   return (
     <>
@@ -133,11 +62,12 @@ const Playbook = ({ dataPlaybook, dataPlaybookComponents }: PlaybookProps) => {
       />
       <PlaybookHeader playbook={playbook} />
       <ErrorBoundary>
-        <div style={{ width: '100%', height: '100%', margin: 0, overflow: 'hidden' }}>
-          <ReactFlowProvider>
-            <Flow />
-          </ReactFlowProvider>
-        </div>
+        <ReactFlowProvider>
+          <PlaybookFlow
+            dataPlaybook={playbook}
+            dataPlaybookComponents={dataPlaybookComponents}
+          />
+        </ReactFlowProvider>
       </ErrorBoundary>
     </>
   );

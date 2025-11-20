@@ -2,13 +2,10 @@ import React, { useState } from 'react';
 import IconButton from '@mui/material/IconButton';
 import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import List from '@mui/material/List';
-import ListItemText from '@mui/material/ListItemText';
 import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import Grid from '@mui/material/Grid';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -17,7 +14,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
-import { ListItemButton } from '@mui/material';
+import PlaybookFlowSelectComponent from './playbookFlow/PlaybookFlowSelectComponent';
 import PirField from '../../common/form/PirField';
 import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
@@ -40,7 +37,6 @@ import {
   stixFilters,
   useAvailableFilterKeysForEntityTypes,
 } from '../../../../utils/filters/filtersUtils';
-import ItemIcon from '../../../../components/ItemIcon';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/fields/SwitchField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -59,11 +55,6 @@ import { parse } from '../../../../utils/Time';
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles((theme) => ({
-  lines: {
-    padding: 0,
-    height: '100%',
-    width: '100%',
-  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',
@@ -106,7 +97,6 @@ const addComponentValidation = (t) => Yup.object().shape({
 });
 
 const PlaybookAddComponentsContent = ({
-  searchTerm,
   action,
   selectedNode,
   playbookComponents,
@@ -508,42 +498,7 @@ const PlaybookAddComponentsContent = ({
       onConfigAdd(selectedComponent, name, finalConfig);
     }
   };
-  const renderLines = () => {
-    const filterByKeyword = (n) => searchTerm === ''
-            || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-            || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
-    const components = R.pipe(
-      R.filter(
-        (n) => n.is_entry_point
-                    === (selectedNode?.data?.component?.is_entry_point ?? false),
-      ),
-      R.filter(filterByKeyword),
-    )(playbookComponents);
 
-    return (
-      <div className={classes.lines}>
-        <List>
-          {components.map((component) => {
-            return (
-              <ListItemButton
-                key={component.id}
-                divider={true}
-                onClick={() => setComponentId(component.id)}
-              >
-                <ListItemIcon>
-                  <ItemIcon type={component.icon}/>
-                </ListItemIcon>
-                <ListItemText
-                  primary={t_i18n(component.name)}
-                  secondary={t_i18n(component.description)}
-                />
-              </ListItemButton>
-            );
-          })}
-        </List>
-      </div>
-    );
-  };
   const renderConfig = () => {
     const selectedComponent = playbookComponents
       .filter((n) => n.id === componentId)
@@ -1016,9 +971,16 @@ const PlaybookAddComponentsContent = ({
       </div>
     );
   };
+
   return (
     <>
-      {isEmptyField(componentId) && renderLines()}
+      {isEmptyField(componentId) && (
+        <PlaybookFlowSelectComponent
+          components={playbookComponents}
+          onSelect={setComponentId}
+          selectedNode={selectedNode}
+        />
+      )}
       {isNotEmptyField(componentId) && renderConfig()}
     </>
   );
@@ -1035,9 +997,7 @@ const PlaybookAddComponents = ({
   onConfigReplace,
 }) => {
   const { t_i18n } = useFormatter();
-  const [searchTerm, setSearchTerm] = useState('');
   const handleClose = () => {
-    setSearchTerm('');
     setSelectedNode(null);
     setSelectedEdge(null);
   };
@@ -1055,7 +1015,6 @@ const PlaybookAddComponents = ({
         <>
           {(selectedNode || selectedEdge) && (
           <PlaybookAddComponentsContent
-            searchTerm={searchTerm}
             playbookComponents={playbookComponents}
             action={action}
             selectedNode={selectedNode}
