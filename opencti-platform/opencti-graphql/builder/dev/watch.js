@@ -76,6 +76,20 @@ function setupNodemonOutputHandlers(process) {
   });
 }
 
+function runGraphQLBuild() {
+  console.log('[WATCH] Running GraphQL schema build...');
+  try {
+    spawn('yarn', ['build:schema'], {
+      cwd: CONFIG.projectRoot,
+      stdio: ['inherit', 'inherit', 'inherit'],
+      shell: false,
+      env: { ...process.env }
+    });
+  } catch (err) {
+    console.error('[WATCH] GraphQL build failed:', err);
+  }
+}
+
 function startNodemon() {
   console.log('Starting nodemon...\n');
   
@@ -107,6 +121,7 @@ function handleEsbuildOutput(data) {
     initialBuildDone = true;
     startNodemon();
   }
+  runGraphQLBuild();
 }
 
 function startEsbuild() {

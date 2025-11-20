@@ -1,6 +1,8 @@
-import { createLogger, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { exec } from 'node:child_process';
 import * as path from 'node:path';
+import { promisify } from 'node:util';
+import { createLogger, defineConfig } from 'vite';
 import relay from 'vite-plugin-relay';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 import $monacoEditorPlugin from 'vite-plugin-monaco-editor';
@@ -8,6 +10,8 @@ import $monacoEditorPlugin from 'vite-plugin-monaco-editor';
 // Handle ESM/CJS interop for vite-plugin-monaco-editor
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const monacoEditorPlugin = ((($monacoEditorPlugin as any).default ?? $monacoEditorPlugin) as typeof $monacoEditorPlugin);
+
+const execAsync = promisify(exec);
 
 // to avoid multiple reload when discovering new dependencies after a going on a lazy (not precedently) loaded route we pre optmize these dependencies
 const depsToOptimize = [
@@ -256,6 +260,52 @@ export default defineConfig({
           .replace(/%APP_FAVICON%/g, `${basePath}/static/ext/favicon.png`)
           .replace(/%APP_MANIFEST%/g, `${basePath}/static/ext/manifest.json`)
       }
+    },
+    {
+      name: 'relay-schema-watcher',
+      apply: 'serve',
+      configureServer(server) {
+        const schemaPath = path.resolve(__dirname, './src/schema/relay.schema.graphql');
+        
+        // Watch the schema file
+        server.watcher.add(schemaPath);
+        
+        let relayTimeout: NodeJS.Timeout | null = null;
+        let isRelayRunning = false;
+        
+        server.watcher.on('change', async (file) => {
+          if (file === schemaPath) {
+            // Skip if relay is already running
+            if (isRelayRunning) {
+              console.log('⏳ Relay compiler already running, skipping...');
+              return;
+            }
+            
+            // Debounce to avoid multiple rapid runs
+            if (relayTimeout) clearTimeout(relayTimeout);
+            
+            relayTimeout = setTimeout(async () => {
+              console.log('\n🔄 GraphQL schema changed, running relay compiler...');
+              isRelayRunning = true;
+              try {
+                const { stdout, stderr } = await execAsync('yarn relay', { cwd: __dirname });
+                if (stdout) console.log(stdout);
+                if (stderr) console.error(stderr);
+                console.log('✅ Relay compiler finished successfully');
+                
+                // Only trigger reload after successful completion
+                console.log('🔄 Triggering full reload...\n');
+                server.ws.send({ type: 'full-reload', path: '*' });
+              } catch (error) {
+                console.error('❌ Relay compiler error:', error);
+                console.log('⚠️  Skipping reload due to error\n');
+              } finally {
+                isRelayRunning = false;
+              }
+            }, 300);
+          }
+        });
+      },
     },
     react(),
     relay,
