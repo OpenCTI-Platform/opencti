@@ -66,7 +66,7 @@ interface Representative {
 interface InternalEditInput {
   key: string;
   operation?: EditOperation | null;
-  value: any[];
+  value: (string | Record<string, any> | null)[];
   previous?: any[];
 }
 

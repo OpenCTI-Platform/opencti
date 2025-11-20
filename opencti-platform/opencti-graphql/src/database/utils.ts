@@ -361,7 +361,7 @@ export const extractObjectsPirsFromInputs = (inputs: InternalEditInput[], entity
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
-        const pirIds = input.value.flatMap((value) => value[RELATION_IN_PIR] ?? []);
+        const pirIds = input.value.flatMap((value) => (value as Record<string, any>)[RELATION_IN_PIR] ?? []);
         pir_ids.push(...pirIds);
       }
     });
@@ -374,7 +374,7 @@ export const extractObjectsRestrictionsFromInputs = (inputs: InternalEditInput[]
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
-        const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
+        const objectMarking = input.value.flatMap((value) => (value as Record<string, any>)[RELATION_OBJECT_MARKING] ?? []);
         markings.push(...objectMarking);
       }
     });
