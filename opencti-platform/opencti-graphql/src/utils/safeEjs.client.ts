@@ -6,6 +6,7 @@ import type { WorkerReply } from './safeEjs.worker';
 
 export type WorkerOptions = {
   timeout?: number,
+  useJsonEscape?: boolean,
   resourceLimits?: {
     maxOldGenerationSizeMb?: number
     maxYoungGenerationSizeMb: number,
@@ -91,8 +92,14 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
     workerPath = path.join(__dirname, '..', '..', 'build', 'safeEjs.worker.js');
   }
 
+  // Handle escape function - remove it from options if it exists (can't be serialized)
+  const workerOptions = { ...options };
+  if (workerOptions.escape) {
+    delete workerOptions.escape;
+  }
+
   const worker = new Worker(workerPath, {
-    workerData: { template, data: serializedData, options },
+    workerData: { template, data: serializedData, options: workerOptions, useJsonEscape: options?.useJsonEscape },
     resourceLimits: {
       maxOldGenerationSizeMb: options?.resourceLimits?.maxOldGenerationSizeMb ?? 50, // 50 MB heap
       maxYoungGenerationSizeMb: options?.resourceLimits?.maxYoungGenerationSizeMb ?? 10, // 10 MB new space

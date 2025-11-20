@@ -151,8 +151,20 @@ export async function handleEmailNotification(
     octi: new NotificationTool(),
   };
 
-  const renderedTitle = await safeRender(title, sanitizedData);
-  const renderedEmail = await safeRender(template, sanitizedData);
+  let renderedTitle: string;
+  let renderedEmail: string;
+
+  try {
+    renderedTitle = await safeRender(title, sanitizedData);
+    renderedEmail = await safeRender(template, sanitizedData);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Publisher manager email rendering error', {
+      cause: error,
+      manager: 'PUBLISHER_MANAGER',
+      triggerIds
+    });
+    throw new Error('Failed to render email template');
+  }
 
   const emailPayload = {
     from: await smtpComputeFrom(),
@@ -194,8 +206,20 @@ export async function handleSimplifiedEmailNotification(
     url_suffix,
   };
 
-  const renderedTitle = await safeRender(title, sanitizedData);
-  const renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData);
+  let renderedTitle: string;
+  let renderedEmail: string;
+
+  try {
+    renderedTitle = await safeRender(title, sanitizedData);
+    renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Publisher manager simplified email rendering error', {
+      cause: error,
+      manager: 'PUBLISHER_MANAGER',
+      triggerIds
+    });
+    throw new Error('Failed to render simplified email template');
+  }
 
   const emailPayload = {
     from: await smtpComputeFrom(),
@@ -218,13 +242,23 @@ export async function handleSimplifiedEmailNotification(
 export async function handleWebhookNotification(configurationString: string | undefined, templateData: object) {
   const { url, template, verb, params, headers } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
 
-  // Use ejs.render with escape function that uses JSON.stringify
-  const renderedWebhookTemplate = await safeRender(template, sanitizeNotificationData(templateData), {
-    escape: (value: any) => {
-      const result = JSON.stringify(value);
-      return result.startsWith('"') && result.endsWith('"') ? result.slice(1, -1) : result;
-    } });
-  const webhookPayload = JSON.parse(renderedWebhookTemplate);
+  let renderedWebhookTemplate: string;
+  let webhookPayload: any;
+
+  try {
+    // Use safeRender with JSON escape option for webhook templates
+    renderedWebhookTemplate = await safeRender(template, sanitizeNotificationData(templateData), {
+      useJsonEscape: true
+    });
+    webhookPayload = JSON.parse(renderedWebhookTemplate);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Publisher manager webhook rendering error', {
+      cause: error,
+      manager: 'PUBLISHER_MANAGER',
+      url
+    });
+    throw new Error('Failed to render webhook template');
+  }
 
   const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
   const paramsObject = Object.fromEntries((params ?? []).map((param) => [param.attribute, param.value]));

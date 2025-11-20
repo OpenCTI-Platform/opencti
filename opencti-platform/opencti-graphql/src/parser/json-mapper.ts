@@ -46,7 +46,7 @@ import { logApp } from '../config/conf';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { fromRef, toRef } from '../schema/stixRefRelationship';
-import { safeRender } from '../utils/safeEjs.client';
+import { safeRender } from '../utils/safeEjs';
 
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
@@ -106,7 +106,12 @@ const extractComplexPathFromJson = async (
     }
     return defaultValue;
   };
-  const val = await safeRender(`<?- ${formula} ?>`, data, { delimiter: '?', async: true });
+  const val = await safeRender(`<?- ${formula} ?>`, data, {
+    delimiter: '?',
+    async: true,
+    maxExecutedStatementCount: 10000,
+    maxExecutionDuration: 5000
+  });
   return attrDef ? format(val, attrDef, attribute) : val;
 };
 
