@@ -153,7 +153,7 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
   };
   const handleSubmitTime = (_: string, value: string) => {
     const time = value && value.length > 0
-      ? `${parse(value).utc().format('HH:mm:00.000')}Z`
+      ? `${format(parse(value), 'HH:mm:00.000')}Z`
       : `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`;
     const currentTime = trigger?.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,

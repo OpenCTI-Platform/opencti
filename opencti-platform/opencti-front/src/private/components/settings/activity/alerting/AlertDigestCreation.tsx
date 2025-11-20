@@ -13,6 +13,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
+import { format } from 'date-fns';
 import makeStyles from '@mui/styles/makeStyles';
 import MarkdownField from '../../../../../components/fields/MarkdownField';
 import { handleErrorInForm } from '../../../../../relay/environment';
@@ -137,7 +138,7 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     }: FormikHelpers<TriggerDigestActivityAddInput>,
   ) => {
     // Important to translate to UTC before formatting
-    let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
+    let triggerTime = `${format(parse(values.time), 'HH:mm:00.000')}Z`;
     if (values.period !== 'hour' && values.period !== 'day') {
       const day = values.day && values.day.length > 0 ? values.day : '1';
       triggerTime = `${day}-${triggerTime}`;

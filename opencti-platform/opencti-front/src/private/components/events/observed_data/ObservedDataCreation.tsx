@@ -14,7 +14,7 @@ import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/store';
@@ -122,8 +122,8 @@ ObservedDataFormProps
   ) => {
     const input: ObservedDataCreationMutation$variables['input'] = {
       objects: values.objects.map((v) => v.value),
-      first_observed: parse(values.first_observed).format(),
-      last_observed: parse(values.last_observed).format(),
+      first_observed: formatDate(values.first_observed),
+      last_observed: formatDate(values.last_observed),
       number_observed: parseInt(String(values.number_observed), 10),
       confidence: parseInt(String(values.confidence), 10),
       createdBy: values.createdBy?.value,

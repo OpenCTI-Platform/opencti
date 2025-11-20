@@ -14,6 +14,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql } from 'react-relay';
 import * as Yup from 'yup';
+import { format } from 'date-fns';
 import { useFormatter } from '../../../../components/i18n';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import SelectField from '../../../../components/fields/SelectField';
@@ -140,7 +141,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     }: FormikHelpers<TriggerDigestAddInput>,
   ) => {
     // Important to translate to UTC before formatting
-    let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
+    let triggerTime = `${format(parse(values.time), 'HH:mm:00.000')}Z`;
     if (values.period !== 'hour' && values.period !== 'day') {
       const day = values.day && values.day.length > 0 ? values.day : '1';
       triggerTime = `${day}-${triggerTime}`;

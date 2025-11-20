@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { isEmpty } from 'ramda';
-import moment from 'moment';
+import { formatDuration, intervalToDuration } from 'date-fns';
 import Alert from '@mui/material/Alert';
 import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
@@ -146,9 +146,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const history = [];
 
   if (isOutdated) {
-    const time = moment
-      .duration(file.lastModifiedSinceMin, 'minutes')
-      .humanize();
+    const minutes = file.lastModifiedSinceMin ?? 0;
+    const duration = intervalToDuration({ start: 0, end: minutes * 60 * 1000 });
+    const time = formatDuration(duration, { format: ['years', 'months', 'weeks', 'days', 'hours', 'minutes'] });
     history.push({
       message: `Connector execution timeout, no activity for ${time}`,
     });
@@ -260,7 +260,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   if (isFail) {
     status = t_i18n('Failed');
   }
-  const lastModifiedDate = fld(file?.lastModified ?? moment());
+  const lastModifiedDate = fld(file?.lastModified ?? new Date());
 
   return (
     <>

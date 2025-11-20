@@ -13,7 +13,7 @@ import { isNone, useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -165,9 +165,9 @@ ThreatActorIndividualEditionDetailsProps
     const inputValues = Object.entries({
       ...otherValues,
       first_seen: values.first_seen
-        ? parse(values.first_seen).format()
+        ? formatDate(values.first_seen)
         : null,
-      last_seen: values.last_seen ? parse(values.last_seen).format() : null,
+      last_seen: values.last_seen ? formatDate(values.last_seen) : null,
       goals:
           values.goals && values.goals.length ? values.goals.split('\n') : [],
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));

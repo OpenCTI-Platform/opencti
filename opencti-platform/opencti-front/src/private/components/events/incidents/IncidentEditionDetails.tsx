@@ -14,7 +14,7 @@ import { IncidentEditionDetailsFieldPatchMutation } from './__generated__/Incide
 import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEditionDetailsFocusMutation.graphql';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -135,8 +135,8 @@ IncidentEditionDetailsProps
 
     const inputValues = Object.entries({
       ...otherValues,
-      first_seen: values.first_seen ? parse(values.first_seen).format() : null,
-      last_seen: values.last_seen ? parse(values.last_seen).format() : null,
+      first_seen: values.first_seen ? formatDate(values.first_seen) : null,
+      last_seen: values.last_seen ? formatDate(values.last_seen) : null,
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
 
     commitFieldPatch({
