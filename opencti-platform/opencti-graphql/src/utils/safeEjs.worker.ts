@@ -7,6 +7,7 @@ export interface WorkerRequest {
   template: string;
   data: Data;
   options?: SafeRenderOptions;
+  useJsonEscape?: boolean;
 }
 
 export interface WorkerReply {
@@ -42,14 +43,23 @@ const reconstructData = (obj: any): any => {
 
 // Main worker execution
 const executeWorker = async () => {
-  const { template, data, options } = workerData as WorkerRequest;
+  const { template, data, options, useJsonEscape } = workerData as WorkerRequest;
 
   // Reconstruct functions from serialized data
   const reconstructedData = reconstructData(data);
 
-  // Use the core logic from safeEjs (await in case it returns a Promise)
-  const result = await safeRender(template, reconstructedData, options);
+  // Add escape function if needed
+  const safeEjsOptions = { ...options };
+  if (useJsonEscape) {
+    // Recreate the escape function for JSON stringification
+    safeEjsOptions.escape = (value: any) => {
+      const result = JSON.stringify(value);
+      return result.startsWith('"') && result.endsWith('"') ? result.slice(1, -1) : result;
+    };
+  }
 
+  // Use the core logic from safeEjs (await in case it returns a Promise)
+  const result = await safeRender(template, reconstructedData, safeEjsOptions);
   // Send result back to main thread
   const message: WorkerReply = {
     success: true,
