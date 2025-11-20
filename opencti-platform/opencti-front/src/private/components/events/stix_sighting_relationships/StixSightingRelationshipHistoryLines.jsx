@@ -5,8 +5,7 @@ import withStyles from '@mui/styles/withStyles';
 import { graphql, createRefetchContainer } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import inject18n from '../../../../components/i18n';
-// eslint-disable-next-line import/no-named-as-default
-import StixCoreObjectHistoryLine from '../../common/stix_core_objects/StixCoreObjectHistoryLine';
+import { StixCoreObjectHistoryLine } from '../../common/stix_core_objects/StixCoreObjectHistoryLine';
 
 const styles = (theme) => ({
   paperHistory: {
