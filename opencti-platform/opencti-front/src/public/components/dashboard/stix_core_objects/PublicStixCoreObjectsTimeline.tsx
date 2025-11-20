@@ -27,6 +27,7 @@ const publicStixCoreObjectsTimelineQuery = graphql`
           id
           entity_type
           created_at
+          updated_at
           createdBy {
             ... on Identity {
               id
@@ -54,6 +55,10 @@ const publicStixCoreObjectsTimelineQuery = graphql`
           ... on StixDomainObject {
             created
             modified
+          }
+          ... on Event {
+            start_time
+            stop_time
           }
           ... on StixCyberObservable {
             observable_value

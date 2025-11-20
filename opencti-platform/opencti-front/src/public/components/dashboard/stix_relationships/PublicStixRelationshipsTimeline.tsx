@@ -32,6 +32,9 @@ const publicStixRelationshipsTimelineQuery = graphql`
           confidence
           is_inferred
           created
+          created_at
+          updated_at
+          modified
           x_opencti_inferences {
             rule {
               id
