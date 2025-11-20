@@ -2823,242 +2823,244 @@ class OpenCTIStix2:
         item,
         update: bool = False,
         types: List = None,
-        processing_count: int = 0,
         work_id: str = None,
     ):
-        worker_logger = self.opencti.logger_class("worker")
-        # Ultimate protection to avoid infinite retry
-        if processing_count > MAX_PROCESSING_COUNT:
-            if work_id is not None:
-                item_str = json.dumps(item)
-                self.opencti.work.report_expectation(
-                    work_id,
-                    {
-                        "error": "Max number of retries reached, please see error logs of workers for more details",
-                        "source": (
-                            item_str if len(item_str) < 50000 else "Bundle too large"
-                        ),
-                    },
-                )
-                return False
-        try:
-            self.opencti.set_retry_number(processing_count)
-            opencti_operation = self.opencti.get_attribute_in_extension(
-                "opencti_operation", item
-            )
-            if opencti_operation is not None:
-                self.apply_opencti_operation(item, opencti_operation)
-            elif "opencti_operation" in item:
-                self.apply_opencti_operation(item, item["opencti_operation"])
-            elif item["type"] == "relationship":
-                # Import relationship
-                self.import_relationship(item, update, types)
-            elif item["type"] == "sighting":
-                # region Resolve the to
-                to_ids = []
-                if "x_opencti_where_sighted_refs" in item:
-                    for where_sighted_ref in item["x_opencti_where_sighted_refs"]:
-                        to_ids.append(where_sighted_ref)
-                elif "where_sighted_refs" in item:
-                    for where_sighted_ref in item["where_sighted_refs"]:
-                        to_ids.append(where_sighted_ref)
-                # endregion
-                # region Resolve the from
-                from_id = None
-                if "x_opencti_sighting_of_ref" in item:
-                    from_id = item["x_opencti_sighting_of_ref"]
-                elif "sighting_of_ref" in item:
-                    from_id = item["sighting_of_ref"]
-                # endregion
-                # region create the sightings
-                if len(to_ids) > 0:
-                    if from_id:
+        opencti_operation = self.opencti.get_attribute_in_extension(
+            "opencti_operation", item
+        )
+        if opencti_operation is not None:
+            self.apply_opencti_operation(item, opencti_operation)
+        elif "opencti_operation" in item:
+            self.apply_opencti_operation(item, item["opencti_operation"])
+        elif item["type"] == "relationship":
+            # Import relationship
+            self.import_relationship(item, update, types)
+        elif item["type"] == "sighting":
+            # region Resolve the to
+            to_ids = []
+            if "x_opencti_where_sighted_refs" in item:
+                for where_sighted_ref in item["x_opencti_where_sighted_refs"]:
+                    to_ids.append(where_sighted_ref)
+            elif "where_sighted_refs" in item:
+                for where_sighted_ref in item["where_sighted_refs"]:
+                    to_ids.append(where_sighted_ref)
+            # endregion
+            # region Resolve the from
+            from_id = None
+            if "x_opencti_sighting_of_ref" in item:
+                from_id = item["x_opencti_sighting_of_ref"]
+            elif "sighting_of_ref" in item:
+                from_id = item["sighting_of_ref"]
+            # endregion
+            # region create the sightings
+            if len(to_ids) > 0:
+                if from_id:
+                    for to_id in to_ids:
+                        self.import_sighting(item, from_id, to_id, update)
+                # Import observed_data_refs
+                if "observed_data_refs" in item:
+                    for observed_data_ref in item["observed_data_refs"]:
                         for to_id in to_ids:
-                            self.import_sighting(item, from_id, to_id, update)
-                    # Import observed_data_refs
-                    if "observed_data_refs" in item:
-                        for observed_data_ref in item["observed_data_refs"]:
-                            for to_id in to_ids:
-                                self.import_sighting(
-                                    item, observed_data_ref, to_id, update
-                                )
-                # endregion
-            elif item["type"] == "label":
-                stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
-                self.opencti.label.create(
-                    stix_id=item["id"],
-                    value=item["value"],
-                    color=item["color"],
-                    x_opencti_stix_ids=stix_ids,
-                    update=update,
-                )
-            elif item["type"] == "vocabulary":
-                stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
-                self.opencti.vocabulary.create(
-                    stix_id=item["id"],
-                    name=item["name"],
-                    category=item["category"],
-                    description=(
-                        item["description"] if "description" in item else None
-                    ),
-                    aliases=item["aliases"] if "aliases" in item else None,
-                    x_opencti_stix_ids=stix_ids,
-                    update=update,
-                )
-            elif item["type"] == "external-reference":
-                stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
-                self.opencti.external_reference.create(
-                    stix_id=item["id"],
-                    source_name=(
-                        item["source_name"] if "source_name" in item else None
-                    ),
-                    url=item["url"] if "url" in item else None,
-                    external_id=(
-                        item["external_id"] if "external_id" in item else None
-                    ),
-                    description=(
-                        item["description"] if "description" in item else None
-                    ),
-                    x_opencti_stix_ids=stix_ids,
-                    update=update,
-                )
-            elif item["type"] == "kill-chain-phase":
-                stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
-                self.opencti.kill_chain_phase.create(
-                    stix_id=item["id"],
-                    kill_chain_name=item["kill_chain_name"],
-                    phase_name=item["phase_name"],
-                    x_opencti_order=item["order"] if "order" in item else 0,
-                    x_opencti_stix_ids=stix_ids,
-                    update=update,
-                )
-            elif StixCyberObservableTypes.has_value(item["type"]):
-                if types is None or len(types) == 0:
-                    self.import_observable(item, update, types)
-                elif item["type"] in types or "observable" in types:
-                    self.import_observable(item, update, types)
+                            self.import_sighting(
+                                item, observed_data_ref, to_id, update
+                            )
+            # endregion
+        elif item["type"] == "label":
+            stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+            self.opencti.label.create(
+                stix_id=item["id"],
+                value=item["value"],
+                color=item["color"],
+                x_opencti_stix_ids=stix_ids,
+                update=update,
+            )
+        elif item["type"] == "vocabulary":
+            stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+            self.opencti.vocabulary.create(
+                stix_id=item["id"],
+                name=item["name"],
+                category=item["category"],
+                description=(
+                    item["description"] if "description" in item else None
+                ),
+                aliases=item["aliases"] if "aliases" in item else None,
+                x_opencti_stix_ids=stix_ids,
+                update=update,
+            )
+        elif item["type"] == "external-reference":
+            stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+            self.opencti.external_reference.create(
+                stix_id=item["id"],
+                source_name=(
+                    item["source_name"] if "source_name" in item else None
+                ),
+                url=item["url"] if "url" in item else None,
+                external_id=(
+                    item["external_id"] if "external_id" in item else None
+                ),
+                description=(
+                    item["description"] if "description" in item else None
+                ),
+                x_opencti_stix_ids=stix_ids,
+                update=update,
+            )
+        elif item["type"] == "kill-chain-phase":
+            stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
+            self.opencti.kill_chain_phase.create(
+                stix_id=item["id"],
+                kill_chain_name=item["kill_chain_name"],
+                phase_name=item["phase_name"],
+                x_opencti_order=item["order"] if "order" in item else 0,
+                x_opencti_stix_ids=stix_ids,
+                update=update,
+            )
+        elif StixCyberObservableTypes.has_value(item["type"]):
+            if types is None or len(types) == 0:
+                self.import_observable(item, update, types)
+            elif item["type"] in types or "observable" in types:
+                self.import_observable(item, update, types)
+        else:
+            # Check the scope
+            if (
+                item["type"] == "marking-definition"
+                or types is None
+                or len(types) == 0
+            ):
+                self.import_object(item, update, types)
+            # Handle identity & location if part of the scope
+            elif item["type"] in types:
+                self.import_object(item, update, types)
             else:
-                # Check the scope
-                if (
-                    item["type"] == "marking-definition"
-                    or types is None
-                    or len(types) == 0
-                ):
-                    self.import_object(item, update, types)
-                # Handle identity & location if part of the scope
-                elif item["type"] in types:
-                    self.import_object(item, update, types)
-                else:
-                    # Specific OpenCTI scopes
-                    if item["type"] == "identity":
-                        if "identity_class" in item:
-                            if ("class" in types or "sector" in types) and item[
-                                "identity_class"
-                            ] == "class":
-                                self.import_object(item, update, types)
-                            elif item["identity_class"] in types:
-                                self.import_object(item, update, types)
-                    elif item["type"] == "location":
-                        if "x_opencti_location_type" in item:
-                            if item["x_opencti_location_type"].lower() in types:
-                                self.import_object(item, update, types)
-                        elif (
+                # Specific OpenCTI scopes
+                if item["type"] == "identity":
+                    if "identity_class" in item:
+                        if ("class" in types or "sector" in types) and item[
+                            "identity_class"
+                        ] == "class":
+                            self.import_object(item, update, types)
+                        elif item["identity_class"] in types:
+                            self.import_object(item, update, types)
+                elif item["type"] == "location":
+                    if "x_opencti_location_type" in item:
+                        if item["x_opencti_location_type"].lower() in types:
+                            self.import_object(item, update, types)
+                    elif (
+                        self.opencti.get_attribute_in_extension(
+                            "location_type", item
+                        )
+                        is not None
+                    ):
+                        if (
                             self.opencti.get_attribute_in_extension(
                                 "location_type", item
-                            )
-                            is not None
+                            ).lower()
+                            in types
                         ):
-                            if (
-                                self.opencti.get_attribute_in_extension(
-                                    "location_type", item
-                                ).lower()
-                                in types
-                            ):
-                                self.import_object(item, update, types)
-            if work_id is not None:
-                self.opencti.work.report_expectation(work_id, None)
-            bundles_success_counter.add(1)
-            return True
-        except (RequestException, Timeout):
-            bundles_timeout_error_counter.add(1)
-            worker_logger.warning("A connection error or timeout occurred")
-            # Platform is under heavy load: wait for unlock & retry almost indefinitely.
-            sleep_jitter = round(random.uniform(10, 30), 2)
-            time.sleep(sleep_jitter)
-            return self.import_item(item, update, types, processing_count + 1, work_id)
-        except Exception as ex:  # pylint: disable=broad-except
-            error = str(ex)
-            error_msg = traceback.format_exc()
-            in_retry = processing_count < PROCESSING_COUNT
-            # Platform is under heavy load, wait for unlock & retry indefinitely.
-            if ERROR_TYPE_LOCK in error_msg:
-                bundles_lock_error_counter.add(1)
-                sleep_jitter = round(random.uniform(1, 3), 2)
+                            self.import_object(item, update, types)
+        if work_id is not None:
+            self.opencti.work.report_expectation(work_id, None)
+        bundles_success_counter.add(1)
+        return True
+
+    def import_item_with_retries(
+        self,
+        item,
+        update: bool = False,
+        types: List = None,
+        work_id: str = None,
+    ):
+        processing_count = 0
+        worker_logger = self.opencti.logger_class("worker")
+        while processing_count <= MAX_PROCESSING_COUNT:
+            try:
+                self.opencti.set_retry_number(processing_count)
+                self.import_item(item, update, types, work_id)
+                return True
+            except (RequestException, Timeout):
+                bundles_timeout_error_counter.add(1)
+                worker_logger.warning("A connection error or timeout occurred")
+                # Platform is under heavy load: wait for unlock & retry almost indefinitely.
+                sleep_jitter = round(random.uniform(10, 30), 2)
                 time.sleep(sleep_jitter)
-                return self.import_item(
-                    item, update, types, processing_count + 1, work_id
-                )
-            # Platform detects a missing reference and have to retry
-            elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
-                bundles_missing_reference_error_counter.add(1)
-                sleep_jitter = round(random.uniform(1, 3), 2)
-                time.sleep(sleep_jitter)
-                return self.import_item(
-                    item, update, types, processing_count + 1, work_id
-                )
-            # A bad gateway error occurs
-            elif ERROR_TYPE_BAD_GATEWAY in error_msg:
-                worker_logger.error(
-                    "Message reprocess for bad gateway",
-                    {"count": processing_count},
-                )
-                bundles_bad_gateway_error_counter.add(1)
-                time.sleep(60)
-                return self.import_item(
-                    item, update, types, processing_count + 1, work_id
-                )
-            # Request timeout error occurs
-            elif ERROR_TYPE_TIMEOUT in error_msg:
-                worker_logger.error(
-                    "Message reprocess for request timed out",
-                    {"count": processing_count},
-                )
-                bundles_timed_out_error_counter.add(1)
-                time.sleep(60)
-                return self.import_item(
-                    item, update, types, processing_count + 1, work_id
-                )
-            # A draft lock error occurs
-            elif ERROR_TYPE_DRAFT_LOCK in error_msg:
-                bundles_technical_error_counter.add(1)
-                if work_id is not None:
-                    self.opencti.work.api.set_draft_id("")
-                    self.opencti.work.report_expectation(
-                        work_id,
-                        {
-                            "error": error,
-                            "source": "Draft in read only",
-                        },
+                processing_count += 1
+            except Exception as ex:  # pylint: disable=broad-except
+                error = str(ex)
+                error_msg = traceback.format_exc()
+                in_retry = processing_count < PROCESSING_COUNT
+                # Platform is under heavy load, wait for unlock & retry indefinitely.
+                if ERROR_TYPE_LOCK in error_msg:
+                    bundles_lock_error_counter.add(1)
+                    sleep_jitter = round(random.uniform(1, 3), 2)
+                    time.sleep(sleep_jitter)
+                    processing_count += 1
+                # Platform detects a missing reference and have to retry
+                elif ERROR_TYPE_MISSING_REFERENCE in error_msg and in_retry:
+                    bundles_missing_reference_error_counter.add(1)
+                    sleep_jitter = round(random.uniform(1, 3), 2)
+                    time.sleep(sleep_jitter)
+                    processing_count += 1
+                # A bad gateway error occurs
+                elif ERROR_TYPE_BAD_GATEWAY in error_msg:
+                    worker_logger.error(
+                        "Message reprocess for bad gateway",
+                        {"count": processing_count},
                     )
-                return False
-            # Platform does not know what to do and raises an error:
-            # That also works for missing reference with too much execution
-            else:
-                bundles_technical_error_counter.add(1)
-                if work_id is not None:
-                    item_str = json.dumps(item)
-                    self.opencti.work.report_expectation(
-                        work_id,
-                        {
-                            "error": error,
-                            "source": (
-                                item_str
-                                if len(item_str) < 50000
-                                else "Bundle too large"
-                            ),
-                        },
+                    bundles_bad_gateway_error_counter.add(1)
+                    time.sleep(60)
+                    processing_count += 1
+                # Request timeout error occurs
+                elif ERROR_TYPE_TIMEOUT in error_msg:
+                    worker_logger.error(
+                        "Message reprocess for request timed out",
+                        {"count": processing_count},
                     )
-                return False
+                    bundles_timed_out_error_counter.add(1)
+                    time.sleep(60)
+                    processing_count += 1
+                # A draft lock error occurs
+                elif ERROR_TYPE_DRAFT_LOCK in error_msg:
+                    bundles_technical_error_counter.add(1)
+                    if work_id is not None:
+                        self.opencti.work.api.set_draft_id("")
+                        self.opencti.work.report_expectation(
+                            work_id,
+                            {
+                                "error": error,
+                                "source": "Draft in read only",
+                            },
+                        )
+                    return False
+                # Platform does not know what to do and raises an error:
+                # That also works for missing reference with too much execution
+                else:
+                    bundles_technical_error_counter.add(1)
+                    if work_id is not None:
+                        item_str = json.dumps(item)
+                        self.opencti.work.report_expectation(
+                            work_id,
+                            {
+                                "error": error,
+                                "source": (
+                                    item_str
+                                    if len(item_str) < 50000
+                                    else "Bundle too large"
+                                ),
+                            },
+                        )
+                    return False
+
+        if work_id is not None:
+            item_str = json.dumps(item)
+            self.opencti.work.report_expectation(
+                work_id,
+                {
+                    "error": "Max number of retries reached, please see error logs of workers for more details",
+                    "source": (
+                        item_str if len(item_str) < 50000 else "Bundle too large"
+                    ),
+                },
+            )
+        return False
 
     def import_bundle(
         self,
@@ -3118,7 +3120,7 @@ class OpenCTIStix2:
                     )
                     too_large_elements_bundles.append(item)
                 else:
-                    self.import_item(item, update, types, 0, work_id)
+                    self.import_item_with_retries(item, update, types, work_id)
                     imported_elements.append({"id": item["id"], "type": item["type"]})
 
         return imported_elements, too_large_elements_bundles
