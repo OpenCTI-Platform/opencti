@@ -405,41 +405,47 @@ class OpenCTIStix2:
             )
         if "labels" in stix_object:
             for label in stix_object["labels"]:
-                if "label_" + label in self.mapping_cache:
-                    label_data = self.mapping_cache["label_" + label]
+                label_key = "label_" + label
+                label_in_cache = self.get_in_cache(label_key)
+                if label_in_cache is not None:
+                    label_data = label_in_cache
                 else:
                     # Fail in label creation is allowed
                     label_data = self.opencti.label.read_or_create_unchecked(
                         value=label
                     )
                 if label_data is not None:
-                    self.mapping_cache["label_" + label] = label_data
+                    self.set_in_cache(label_key, label_data)
                     object_label_ids.append(label_data["id"])
         elif "x_opencti_labels" in stix_object:
             for label in stix_object["x_opencti_labels"]:
-                if "label_" + label in self.mapping_cache:
-                    label_data = self.mapping_cache["label_" + label]
+                label_key = "label_" + label
+                label_in_cache = self.get_in_cache(label_key)
+                if label_in_cache is not None:
+                    label_data = label_in_cache
                 else:
                     # Fail in label creation is allowed
                     label_data = self.opencti.label.read_or_create_unchecked(
                         value=label
                     )
                 if label_data is not None:
-                    self.mapping_cache["label_" + label] = label_data
+                    self.set_in_cache(label_key, label_data)
                     object_label_ids.append(label_data["id"])
         elif "x_opencti_tags" in stix_object:
             for tag in stix_object["x_opencti_tags"]:
                 label = tag["value"]
                 color = tag["color"] if "color" in tag else None
-                if "label_" + label in self.mapping_cache:
-                    label_data = self.mapping_cache["label_" + label]
+                label_key = "label_" + label
+                label_in_cache = self.get_in_cache(label_key)
+                if label_in_cache is not None:
+                    label_data = label_in_cache
                 else:
                     # Fail in label creation is allowed
                     label_data = self.opencti.label.read_or_create_unchecked(
                         value=label, color=color
                     )
                 if label_data is not None:
-                    self.mapping_cache["label_" + label] = label_data
+                    self.set_in_cache(label_key, label_data)
                     object_label_ids.append(label_data["id"])
         # Kill Chain Phases
         kill_chain_phases_ids = []
