@@ -106,7 +106,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
   const { t_i18n } = useFormatter();
   const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
   const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
+    name: Yup.string().trim().min(1), // only sdo with allowed 1-character-length name
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
