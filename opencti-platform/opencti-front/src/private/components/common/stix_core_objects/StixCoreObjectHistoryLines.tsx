@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
 import {
@@ -8,9 +8,15 @@ import {
 import { StixCoreObjectHistoryLines_data$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLines_data.graphql';
 import List from '@mui/material/List';
 import StixCoreObjectHistoryLine from '@components/common/stix_core_objects/StixCoreObjectHistoryLine';
-import { useFormatter } from '../../../../components/i18n';
-import { FIVE_SECONDS } from '../../../../utils/Time';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import ListItem from '@mui/material/ListItem';
+import { ListItemButton } from '@mui/material';
+import Typography from '@mui/material/Typography';
+import Drawer from '../drawer/Drawer';
 import useInterval from '../../../../utils/hooks/useInterval';
+import { FIVE_SECONDS } from '../../../../utils/Time';
+import { useFormatter } from '../../../../components/i18n';
 
 export const stixCoreObjectHistoryLinesQuery = graphql`
   query StixCoreObjectHistoryLinesQuery(
@@ -61,59 +67,99 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
     StixCoreObjectHistoryLinesFragment,
     queryData,
   );
-
+  const [open, setOpen] = useState(false);
   useInterval(() => {
     // Refresh the history every interval
     refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, FIVE_SECONDS);
-
   const logs = data?.logs?.edges ?? [];
 
   return (
     <Paper
       style={{
-        marginTop: 6,
-        padding: '0 15px',
         borderRadius: 4,
       }}
       className={'paper-for-grid'}
       variant="outlined"
     >
       {logs.length > 0 ? (
-        <List>
+        <List style={{ margin: 0 }}>
           {logs.filter((l) => !!l).map((logEdge) => {
             const log = logEdge.node;
             return (
-              <StixCoreObjectHistoryLine
-                key={log.id}
-                node={log}
-                isRelation={isRelationLog}
-              />
+              <React.Fragment key={log.id}>
+                <ListItem
+                  dense={true}
+                  divider={true}
+                  disablePadding
+                  secondaryAction={
+                    <>
+                      <Tooltip title={t_i18n('Browse the link')}>
+                        <IconButton
+                          onClick={() => setOpen(true)
+                          }
+                          size="large"
+                          color="primary"
+                        >
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  }
+                >
+                  <ListItemButton
+                    style={{ margin: 0, height: 60 }}
+                    onClick={() => setOpen(true)}
+                  >
+                    <StixCoreObjectHistoryLine
+                      key={log.id}
+                      node={log}
+                      isRelation={isRelationLog}
+                    />
+
+                  </ListItemButton>
+                  <Drawer
+                    open={open}
+                    title={('Knowledge log detail')}
+                    onClose={() => setOpen(false)}
+                  >
+                    <>
+                      <div>
+                        <Typography variant="h4" gutterBottom={true}>
+                          {('Message')}
+                        </Typography>
+                      </div>
+                      <Typography variant="h4" gutterBottom={true}>
+                        {('Details')}
+                      </Typography>
+                    </>
+                  </Drawer>
+                </ListItem>
+              </React.Fragment>
             );
-          })}
+          })
+          }
         </List>
-      )
-        : (
-          <div
+      ) : (
+        <div
+          style={{
+            display: 'table',
+            height: '100%',
+            width: '100%',
+          }}
+        >
+          <span
             style={{
-              display: 'table',
-              height: '100%',
-              width: '100%',
+              display: 'table-cell',
+              verticalAlign: 'middle',
+              textAlign: 'center',
             }}
           >
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {isRelationLog
-                ? t_i18n('No relations history about this entity.')
-                : t_i18n('No history about this entity.')}
-            </span>
-          </div>
-        )}
+            {isRelationLog
+              ? t_i18n('No relations history about this entity.')
+              : t_i18n('No history about this entity.')}
+          </span>
+        </div>
+      )}
     </Paper>
   );
 };
