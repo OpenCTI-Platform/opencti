@@ -13,6 +13,7 @@ const NodeAdversary = ({ data }: NodeProps) => {
   const { stixDomainObject, entityLink } = data;
 
   const isArsenal = ['Malware', 'Tool', 'Channel'].includes(stixDomainObject.entity_type);
+  const isThreat = ['Threat-Actor-Group', 'Threat-Actor-Individual', 'Intrusion-Set'].includes(stixDomainObject.entity_type);
 
   const aliases = stixDomainObject.aliases?.slice(0, 5).join(', ');
 
@@ -20,9 +21,22 @@ const NodeAdversary = ({ data }: NodeProps) => {
     .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
 
+  const attributedFrom = R.uniq((stixDomainObject.attributedFrom?.edges ?? [])
+    .map((n: { node: { from: { name: string } } }) => n?.node?.from?.name))
+    .join(', ');
+
   const usedBy = R.uniq((stixDomainObject.usedBy?.edges ?? [])
     .map((n: { node: { from: { name: string } } }) => n?.node?.from?.name))
     .join(', ');
+
+  let lastAttributions;
+  if (isArsenal === true) {
+    lastAttributions = emptyFilled(usedBy);
+  } else if (isThreat === true) {
+    lastAttributions = emptyFilled(attributedFrom);
+  } else {
+    lastAttributions = emptyFilled(attributedTo);
+  }
 
   const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.adversary);
 
@@ -36,7 +50,7 @@ const NodeAdversary = ({ data }: NodeProps) => {
         <Typography variant="h3" gutterBottom sx={{ marginTop: '20px' }}>
           {isArsenal ? t_i18n('Last used by') : t_i18n('Last attributions')}
         </Typography>
-        {isArsenal ? emptyFilled(usedBy) : emptyFilled(attributedTo)}
+        {lastAttributions}
       </>
     </NodeContainer>
   );
