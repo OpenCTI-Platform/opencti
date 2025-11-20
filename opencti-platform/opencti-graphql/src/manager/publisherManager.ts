@@ -3,6 +3,7 @@ import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor } from '../database/stream/stream-handler';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import { sendMail, smtpComputeFrom, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
@@ -46,6 +47,7 @@ const DOC_URI = 'https://docs.opencti.io';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
 const PUBLISHER_ENABLE_BUFFERING = conf.get('publisher_manager:enable_buffering');
 const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_seconds');
+const PUBLISHER_MANAGER_NAME = 'publisher_manager';
 const STREAM_SCHEDULE_TIME = 10000;
 
 export async function processNotificationData(
@@ -443,7 +445,7 @@ const processBufferedEvents = async (
 
 const handleEntityNotificationBuffer = async (forceSend = false) => {
   const dateNow = Date.now();
-  const context = executionContext('publisher_manager');
+  const context = executionContext(PUBLISHER_MANAGER_NAME);
   const bufferKeys = Object.keys(liveNotificationBufferPerEntity);
   // Iterate on all buffers to check if they need to be sent
   for (let i = 0; i < bufferKeys.length; i += 1) {
@@ -470,7 +472,7 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
     if (streamEvents.length === 0) {
       return;
     }
-    const context = executionContext('publisher_manager');
+    const context = executionContext(PUBLISHER_MANAGER_NAME);
     const notifications = await getNotifications(context);
     const notificationMap = new Map(notifications.map((n) => [n.trigger.internal_id, n.trigger]));
     for (let index = 0; index < streamEvents.length; index += 1) {
@@ -500,6 +502,7 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
         }
         await processDigestNotificationEvent(context, notificationMap, digestEvent.data);
       }
+      await redisSetManagerEventState(PUBLISHER_MANAGER_NAME, streamEvent.id);
     }
   } catch (e) {
     logApp.error('[OPENCTI-MODULE] Publisher manager stream error', { cause: e, manager: 'PUBLISHER_MANAGER' });
@@ -527,7 +530,8 @@ const initPublisherManager = () => {
       logApp.info('[OPENCTI-PUBLISHER] Running publisher manager');
       const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME, bufferTime: 5000 };
       streamProcessor = createStreamProcessor('Publisher manager', publisherStreamHandler, opts);
-      await streamProcessor.start('live');
+      const lastEventState = await redisGetManagerEventState(PUBLISHER_MANAGER_NAME);
+      await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
         if (PUBLISHER_ENABLE_BUFFERING) {

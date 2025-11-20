@@ -689,6 +689,18 @@ export const redisClearTelemetry = async () => {
 };
 // endregion - telemetry gauges
 
+// region - manager stream state
+const MANAGER_EVENT_STATE_KEY = 'manager_stream_state_';
+export const redisSetManagerEventState = async (managerName: string, event_state_id: string) => {
+  const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
+  await getClientBase().set(managerEventStateKey, event_state_id);
+};
+export const redisGetManagerEventState = async (managerName: string) => {
+  const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
+  return getClientBase().get(managerEventStateKey);
+};
+// endregion
+
 // region connector logs
 export const redisSetConnectorLogs = async (connectorId: string, logs: string[]) => {
   const data = JSON.stringify(logs);

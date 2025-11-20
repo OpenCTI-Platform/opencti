@@ -18,6 +18,7 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import type { Moment } from 'moment/moment';
 import { createStreamProcessor } from '../../database/stream/stream-handler';
 import { type StreamProcessor } from '../../database/stream/stream-utils';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { lockResources } from '../../lock/master-lock';
 import conf, { booleanConf, logApp } from '../../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR } from '../../config/errors';
@@ -50,6 +51,7 @@ import type { BasicConnection, BasicStoreBase } from '../../types/store';
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
 const PLAYBOOK_CRON_MAX_SIZE = conf.get('playbook_manager:cron_max_size') || 500;
+const PLAYBOOK_MANAGER_NAME = 'playbook_manager';
 const STREAM_SCHEDULE_TIME = 10000;
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 
@@ -58,7 +60,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
     if (streamEvents.length === 0) {
       return;
     }
-    const context = executionContext('playbook_manager');
+    const context = executionContext(PLAYBOOK_MANAGER_NAME);
     const isEE = await isEnterpriseEdition(context);
     if (!isEE) {
       return;
@@ -122,6 +124,7 @@ const playbookStreamHandler = async (streamEvents: Array<SseEvent<StreamDataEven
           }
         }
       }
+      await redisSetManagerEventState(PLAYBOOK_MANAGER_NAME, streamEvent.id);
     }
   } catch (e) {
     logApp.error('[OPENCTI-MODULE] Playbook manager stream error', { cause: e, manager: 'PLAYBOOK_MANAGER' });
@@ -201,7 +204,8 @@ const initPlaybookManager = () => {
       running = true;
       logApp.info('[OPENCTI-MODULE] Running playbook manager');
       streamProcessor = createStreamProcessor('Playbook manager', playbookStreamHandler, { withInternal: true });
-      await streamProcessor.start('live');
+      const lastEventState = await redisGetManagerEventState(PLAYBOOK_MANAGER_NAME);
+      await streamProcessor.start(lastEventState ?? 'live');
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
@@ -356,7 +360,7 @@ const initPlaybookManager = () => {
     }
   };
   const PlaybookCronHandler = async () => {
-    const context = executionContext('playbook_manager');
+    const context = executionContext(PLAYBOOK_MANAGER_NAME);
     let lock;
     try {
       // Lock the manager
