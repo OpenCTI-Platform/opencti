@@ -865,6 +865,7 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const { all } = playbookNode.configuration;
+    const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
@@ -876,9 +877,35 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
           entityType: internalType,
           busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
         };
+        if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS') && element.id) {
+          const restrictedMembers = await buildRestrictedMembers(context, AUTOMATION_MANAGER_USER, args);
+          const patchValue = {
+            op: EditOperation.Remove,
+            path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
+            value: restrictedMembers,
+          };
+          const patchOperation = {
+            operation: EditOperation.Remove,
+            key: INPUT_AUTHORIZED_MEMBERS,
+            value: restrictedMembers,
+          };
+          element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+          element.extensions[STIX_EXT_OCTI].opencti_field_patch = [
+            ...(element.extensions[STIX_EXT_OCTI].opencti_field_patch ?? []),
+            patchOperation
+          ];
+          patchOperations.push(patchValue);
+        }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
+      }
+    }
+    if (patchOperations.length > 0) {
+      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+      const diff = jsonpatch.compare(bundle, patchedBundle);
+      if (isNotEmptyField(diff)) {
+        return { output_port: 'out', bundle: patchedBundle };
       }
     }
     return { output_port: 'out', bundle };
