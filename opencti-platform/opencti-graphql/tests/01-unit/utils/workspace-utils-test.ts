@@ -15,6 +15,8 @@ describe('Workspace utils', () => {
     const softwareId = 'software--b0debdba-74e7-4463-ad2a-34334ee66d8d';
     const resolveOpts = { baseData: true, mapWithAllIds: true };
     const objects = await internalFindByIds(testContext, ADMIN_USER, [reportId, malwareId, softwareId], resolveOpts);
+    expect(objects).toEqual('test');
+    expect(objects.length).toEqual(3);
     const reportInternalId = objects.find((o) => o.entity_type === ENTITY_TYPE_CONTAINER_REPORT)?.internal_id;
     const reportStandardId = objects.find((o) => o.entity_type === ENTITY_TYPE_CONTAINER_REPORT)?.standard_id;
     const malwareInternalId = objects.find((o) => o.entity_type === ENTITY_TYPE_MALWARE)?.internal_id;
