@@ -156,7 +156,7 @@
     "chokidar": "4.0.3",
     "compression": "1.8.1",
     "esbuild": "0.27.0",
-    "eslint": "8.57.1",
+    "eslint": "9.39.1",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "18.0.0",
     "eslint-plugin-custom-rules": "workspace:*",
