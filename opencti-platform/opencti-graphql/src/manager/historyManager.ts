@@ -1,10 +1,11 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
+import type { AddOperation, ReplaceOperation } from 'fast-json-patch';
 import { createStreamProcessor, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
-import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -26,8 +27,6 @@ import { extractStixRepresentative } from '../database/stix-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { RELATION_IN_PIR } from '../schema/internalRelationship';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
-import { getKeyName } from '../database/generate-message';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
@@ -147,33 +146,38 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
   };
 };
 
-const buildChanges = (updateEventContext: UpdateEvent['context'], contextData: HistoryContext): Change[] => {
+const buildChanges = (updateEventContext: UpdateEvent['context']): Change[] => {
   const changes: Change[] = [];
-  const entityType = contextData.entity_type;
 
   updateEventContext.patch.forEach((patch, i) => {
-    const key = patch.path.split('/').filter(Boolean).pop() ?? ''; // TODO this doesn't work for arrays => path: '/object_refs/7' :(
-    if (!key) return;
-    const field = getKeyName(entityType, key); // TODO this does not work for auth members :(
-    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
-    const isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
-    const previousValue = (updateEventContext.reverse_patch[i] as { value: any }).value;
-    const newValue = (patch as { value: any }).value;
-    if (isMultiple) {
-      if (patch.op === UPDATE_OPERATION_ADD) {
+    // const segment = patch.path.split('/').filter(Boolean);
+    // const key = segment[0]; // traduire le path en attribut elastic
+    // if (!key) return;
+    // const field = getKeyName(entityType, key); // this does not work for auth members :(
+    // const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
+    // const isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+
+    if (patch.op === UPDATE_OPERATION_ADD) {
+      const newValue = (patch as AddOperation<any>).value;
+      if (Array.isArray(newValue)) { // TODO this is to avoid crash with auth members when newValue === {"access_right":"view","id":"79b4813f-e7bf-427d-b11c-061fd8059d92"}
         changes.push({
-          field,
-          added: [newValue],
-        });
-      } else if (patch.op === UPDATE_OPERATION_REMOVE) {
-        changes.push({
-          field,
-          removed: [newValue],
+          field: patch.path, // TODO discuss how to resolve path
+          added: newValue,
         });
       }
-    } else {
+    } else if (patch.op === UPDATE_OPERATION_REMOVE) {
+      const previousValue = (updateEventContext.reverse_patch[i] as AddOperation<any>).value;
+      if (Array.isArray(previousValue)) {
+        changes.push({
+          field: patch.path,
+          removed: previousValue,
+        });
+      }
+    } else if (patch.op === UPDATE_OPERATION_REPLACE) {
+      const previousValue = (updateEventContext.reverse_patch[i] as ReplaceOperation<any>).value;
+      const newValue = (patch as ReplaceOperation<any>).value;
       changes.push({
-        field,
+        field: patch.path,
         previous: previousValue,
         new: newValue,
       });
@@ -226,8 +230,9 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
         eventMarkingRefs.push(...relatedMarkings);
       }
-      // add changes added/removed for multiple field or previous/new for simple field
-      contextData.changes = buildChanges(updateEvent.context, contextData);
+      // add changes added/removed for add and remove or previous/new for replace op
+      contextData.changes = buildChanges(updateEvent.context);
+      logApp.info('contextData', { contextData });
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;
