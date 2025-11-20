@@ -12,31 +12,17 @@ import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
-import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import PlaybookFlowSelectComponent from './playbookFlow/PlaybookFlowSelectComponent';
-import PirField from '../../common/form/PirField';
-import AuthorizedMembersField from '../../common/form/AuthorizedMembersField';
-import CaseTemplateField from '../../common/form/CaseTemplateField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectParticipantField from '../../common/form/ObjectParticipantField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import Drawer from '../../common/drawer/Drawer';
-import ObjectMembersField from '../../common/form/ObjectMembersField';
-import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import CreatedByField from '../../common/form/CreatedByField';
-import Filters from '../../common/lists/Filters';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  deserializeFilterGroupForFrontend,
-  emptyFilterGroup,
-  serializeFilterGroupForBackend,
-  stixFilters,
-  useAvailableFilterKeysForEntityTypes,
-} from '../../../../utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
 import SwitchField from '../../../../components/fields/SwitchField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -51,6 +37,13 @@ import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TimePickerField from '../../../../components/TimePickerField';
 import { parse } from '../../../../utils/Time';
+import PlaybookFlowFieldInPirFilters from './playbookFlow/playbookFlowFields/PlaybookFlowFieldInPirFilters';
+import PlaybookFlowFieldTargets from './playbookFlow/playbookFlowFields/PlaybookFlowFieldTargets';
+import PlaybookFlowFieldCaseTemplates from './playbookFlow/playbookFlowFields/PlaybookFlowFieldCaseTemplates';
+import PlaybookFlowFieldFilters from './playbookFlow/playbookFlowFields/PlaybookFlowFieldFilters';
+import PlaybookFlowFieldAccessRestrictions from './playbookFlow/playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
+import PlaybookFlowFieldAuthorizedMembers from './playbookFlow/playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
+import PlaybookFlowFieldOrganizations from './playbookFlow/playbookFlowFields/PlaybookFlowFieldOrganizations';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -110,8 +103,7 @@ const PlaybookAddComponentsContent = ({
   const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
-  const availableQueryFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Core-Object', 'stix-core-relationship']);
-  const [filters, helpers] = useFiltersState(initialFilters);
+  const filtersState = useFiltersState(initialFilters);
   const [actionsInputs, setActionsInputs] = useState(
     currentConfig?.actions ? currentConfig.actions : [],
   );
@@ -473,7 +465,7 @@ const PlaybookAddComponentsContent = ({
     const { name, ...config } = values;
     let finalConfig = config;
     if (configurationSchema?.properties?.filters) {
-      const jsonFilters = serializeFilterGroupForBackend(filters);
+      const jsonFilters = serializeFilterGroupForBackend(filtersState[0]);
       finalConfig = { ...finalConfig, filters: jsonFilters };
     }
     if (configurationSchema?.properties?.triggerTime) {
@@ -520,24 +512,6 @@ const PlaybookAddComponentsContent = ({
         ...defaultConfig,
       };
 
-    const entityTypes = componentId === 'PLAYBOOK_INTERNAL_DATA_CRON'
-      ? ['Stix-Core-Object', 'stix-core-relationship']
-      : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'];
-    const searchContext = { entityTypes };
-
-    let availableFilterKeys = stixFilters;
-
-    switch (componentId) {
-      case 'PLAYBOOK_INTERNAL_DATA_CRON':
-        availableFilterKeys = availableQueryFilterKeys;
-        break;
-      case 'PLAYBOOK_DATA_STREAM_PIR':
-        availableFilterKeys = [...stixFilters, 'pir_score'];
-        break;
-      default:
-        break;
-    }
-
     return (
       <div className={classes.config}>
         <Formik
@@ -566,104 +540,30 @@ const PlaybookAddComponentsContent = ({
               {Object.entries(configurationSchema?.properties ?? {}).map(
                 ([k, v]) => {
                   if (k === 'access_restrictions') {
-                    return (
-                      <Field
-                        key={k}
-                        name="access_restrictions"
-                        label={t_i18n('Access restrictions')}
-                        component={AuthorizedMembersField}
-                        showAllMembersLine={true}
-                        enableAccesses={true}
-                        hideInfo={true}
-                        adminDefault={true}
-                        dynamicKeysForPlaybooks={true}
-                      />
-                    );
+                    return <PlaybookFlowFieldAccessRestrictions key={k} />;
                   }
                   if (k === 'authorized_members') {
-                    return (
-                      <ObjectMembersField
-                        key={k}
-                        label={t_i18n('Targets')}
-                        style={{ marginTop: 20 }}
-                        multiple={true}
-                        name="authorized_members"
-                      />
-                    );
+                    return <PlaybookFlowFieldAuthorizedMembers key={k} />;
                   }
                   if (k === 'organizations') {
-                    return (
-                      <ObjectOrganizationField
-                        key={k}
-                        name="organizations"
-                        style={fieldSpacingContainerStyle}
-                        label={'Target organizations'}
-                        multiple={true}
-                        alert={false}
-                      />
-                    );
+                    return <PlaybookFlowFieldOrganizations key={k} />;
                   }
                   if (k === 'inPirFilters') {
-                    return (
-                      <PirField
-                        key={k}
-                        name="inPirFilters"
-                        style={fieldSpacingContainerStyle}
-                        multiple={true}
-                        helpertext={t_i18n('If no PIR is selected, the playbook will look for any PIR')}
-                      />
-                    );
+                    return <PlaybookFlowFieldInPirFilters key={k} />;
                   }
                   if (k === 'targets') {
-                    return (
-                      <ObjectMembersField
-                        key={k}
-                        label={t_i18n('Targets')}
-                        style={{ marginTop: 20 }}
-                        multiple={true}
-                        name="targets"
-                        dynamicKeysForPlaybooks={true}
-                      />
-                    );
+                    return <PlaybookFlowFieldTargets key={k} />;
                   }
                   if (k === 'caseTemplates') {
-                    const isCaseContainer = values?.container_type && ['Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(values?.container_type);
-                    if (values?.caseTemplates && values?.caseTemplates.length > 0 && !isCaseContainer) {
-                      setFieldValue('caseTemplates', []);
-                    }
-                    return (
-                      <Box key={k} sx={{ marginTop: '20px' }}>
-                        <CaseTemplateField label='Case templates' isDisabled={!isCaseContainer} />
-                      </Box>
-                    );
+                    return <PlaybookFlowFieldCaseTemplates key={k} />;
                   }
                   if (k === 'filters') {
                     return (
-                      <div key={k}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            gap: 1,
-                            marginTop: '35px',
-                          }}
-                        >
-                          <Filters
-                            helpers={helpers}
-                            availableFilterKeys={availableFilterKeys}
-                            searchContext={searchContext}
-                          />
-                        </Box>
-                        <div className="clearfix" />
-                        <FilterIconButton
-                          filters={filters}
-                          helpers={helpers}
-                          entityTypes={entityTypes}
-                          searchContext={searchContext}
-                          styleNumber={2}
-                          redirection
-                        />
-                        <div className="clearfix" />
-                      </div>
+                      <PlaybookFlowFieldFilters
+                        key={k}
+                        componentId={componentId}
+                        filtersState={filtersState}
+                      />
                     );
                   }
                   if (k === 'period') {
