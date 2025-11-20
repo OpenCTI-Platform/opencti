@@ -138,7 +138,7 @@ export const sanitizeAuthorizedMembers = (input: MemberAccessInput[]) => {
   });
 };
 
-export const editAuthorizedMembers = async (
+export const buildRestrictedMembers = async (
   context: AuthContext,
   user: AuthUser,
   args: {
@@ -146,10 +146,9 @@ export const editAuthorizedMembers = async (
     input: MemberAccessInput[] | undefined | null,
     requiredCapabilities: string[],
     entityType: string,
-    busTopicKey?: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
-  },
+  }
 ) => {
-  const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
+  const { entityId, input, requiredCapabilities, entityType } = args;
 
   // Allow authorized members edition only on draft type but not for other entity types in draft
   const draftId = getDraftContext(context, user);
@@ -183,6 +182,28 @@ export const editAuthorizedMembers = async (
       return member;
     });
   }
+  return restricted_members;
+};
+
+export const editAuthorizedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: {
+    entityId: string,
+    input: MemberAccessInput[] | undefined | null,
+    requiredCapabilities: string[],
+    entityType: string,
+    busTopicKey?: keyof typeof BUS_TOPICS, // TODO improve busTopicKey types
+  },
+) => {
+  const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
+
+  const restricted_members = await buildRestrictedMembers(context, user, {
+    entityId,
+    input,
+    requiredCapabilities,
+    entityType,
+  });
 
   const patch = { restricted_members };
   const { element } = await patchAttribute(context, user, entityId, entityType, patch);

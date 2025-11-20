@@ -27,6 +27,7 @@ import {
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_THREAT_ACTOR,
   INPUT_ASSIGNEE,
+  INPUT_AUTHORIZED_MEMBERS,
   INPUT_CREATED_BY,
   INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
@@ -84,7 +85,7 @@ import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
-import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
+import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
@@ -795,6 +796,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
       access_right: n.accessRight,
       groups_restriction_ids: n.groupsRestriction.map((o) => o.value),
     }));
+    const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
@@ -806,9 +808,35 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
           entityType: internalType,
           busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
         };
+        if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS') && element.id) {
+          const restrictedMembers = await buildRestrictedMembers(context, AUTOMATION_MANAGER_USER, args);
+          const patchValue = {
+            op: EditOperation.Replace,
+            path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
+            value: restrictedMembers,
+          };
+          const patchOperation = {
+            operation: EditOperation.Replace,
+            key: INPUT_AUTHORIZED_MEMBERS,
+            value: restrictedMembers,
+          };
+          element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+          element.extensions[STIX_EXT_OCTI].opencti_field_patch = [
+            ...(element.extensions[STIX_EXT_OCTI].opencti_field_patch ?? []),
+            patchOperation
+          ];
+          patchOperations.push(patchValue);
+        }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
+      }
+    }
+    if (patchOperations.length > 0) {
+      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+      const diff = jsonpatch.compare(bundle, patchedBundle);
+      if (isNotEmptyField(diff)) {
+        return { output_port: 'out', bundle: patchedBundle };
       }
     }
     return { output_port: 'out', bundle };
