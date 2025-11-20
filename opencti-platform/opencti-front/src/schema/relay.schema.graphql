@@ -1552,6 +1552,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_title: String
   platform_favicon: String
   platform_email: String
+  platform_type: String!
   platform_email_configurable: Boolean!
   platform_cluster: Cluster!
   platform_modules: [Module!]
@@ -2011,6 +2012,13 @@ input UserLoginInput {
 
 input UserOTPLoginInput {
   code: String!
+}
+
+input LicenseActivationInput {
+  settingId: ID!
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  license: String!
 }
 
 input UserOTPActivationInput {
@@ -9543,6 +9551,7 @@ type Mutation {
   otpUserDeactivation(id: ID!): MeUser
   otpLogin(input: UserOTPLoginInput): Boolean
   settingsEdit(id: ID!): SettingsEditMutations
+  setupEnterpriseLicense(input: LicenseActivationInput!): Settings
   subTypeEdit(id: ID!): SubTypeEditMutations
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate!
   statusTemplateDelete(id: ID!): ID!

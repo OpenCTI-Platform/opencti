@@ -13103,6 +13103,11 @@ export enum LanguagesOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type LicenseActivationInput = {
+  license: Scalars['String']['input'];
+  settingId: Scalars['ID']['input'];
+};
+
 export type ListTask = BackgroundTask & {
   __typename?: 'ListTask';
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
@@ -15155,6 +15160,7 @@ export type Mutation = {
   sendUserMail?: Maybe<Scalars['Boolean']['output']>;
   sessionKill?: Maybe<Scalars['ID']['output']>;
   settingsEdit?: Maybe<SettingsEditMutations>;
+  setupEnterpriseLicense?: Maybe<Settings>;
   statusTemplateAdd: StatusTemplate;
   statusTemplateContextClean: StatusTemplate;
   statusTemplateContextPatch: StatusTemplate;
@@ -17057,6 +17063,11 @@ export type MutationSessionKillArgs = {
 
 export type MutationSettingsEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSetupEnterpriseLicenseArgs = {
+  input: LicenseActivationInput;
 };
 
 
@@ -27090,6 +27101,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_title?: Maybe<Scalars['String']['output']>;
   platform_translations?: Maybe<Scalars['String']['output']>;
   platform_trash_enabled: Scalars['Boolean']['output'];
+  platform_type: Scalars['String']['output'];
   platform_url?: Maybe<Scalars['String']['output']>;
   platform_user_statuses: Array<UserStatus>;
   platform_whitemark?: Maybe<Scalars['Boolean']['output']>;
@@ -36028,6 +36040,7 @@ export type ResolversTypes = ResolversObject<{
   LanguageConnection: ResolverTypeWrapper<Omit<LanguageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LanguageEdge']>>> }>;
   LanguageEdge: ResolverTypeWrapper<Omit<LanguageEdge, 'node'> & { node: ResolversTypes['Language'] }>;
   LanguagesOrdering: LanguagesOrdering;
+  LicenseActivationInput: LicenseActivationInput;
   ListTask: ResolverTypeWrapper<Omit<ListTask, 'work'> & { work?: Maybe<ResolversTypes['Work']> }>;
   ListTaskAddInput: ListTaskAddInput;
   Location: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Location']>;
@@ -36971,6 +36984,7 @@ export type ResolversParentTypes = ResolversObject<{
   LanguageAddInput: LanguageAddInput;
   LanguageConnection: Omit<LanguageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LanguageEdge']>>> };
   LanguageEdge: Omit<LanguageEdge, 'node'> & { node: ResolversParentTypes['Language'] };
+  LicenseActivationInput: LicenseActivationInput;
   ListTask: Omit<ListTask, 'work'> & { work?: Maybe<ResolversParentTypes['Work']> };
   ListTaskAddInput: ListTaskAddInput;
   Location: ResolversInterfaceTypes<ResolversParentTypes>['Location'];
@@ -42799,6 +42813,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendUserMail?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendUserMailArgs, 'input'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;
   settingsEdit?: Resolver<Maybe<ResolversTypes['SettingsEditMutations']>, ParentType, ContextType, RequireFields<MutationSettingsEditArgs, 'id'>>;
+  setupEnterpriseLicense?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<MutationSetupEnterpriseLicenseArgs, 'input'>>;
   statusTemplateAdd?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateAddArgs, 'input'>>;
   statusTemplateContextClean?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextCleanArgs, 'id'>>;
   statusTemplateContextPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextPatchArgs, 'id' | 'input'>>;
@@ -45392,6 +45407,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_translations?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_trash_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  platform_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   platform_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_user_statuses?: Resolver<Array<ResolversTypes['UserStatus']>, ParentType, ContextType>;
   platform_whitemark?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

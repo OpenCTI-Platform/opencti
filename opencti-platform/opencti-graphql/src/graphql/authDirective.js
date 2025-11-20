@@ -3,7 +3,7 @@ import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import { filter, includes, map } from 'ramda';
 // eslint-disable-next-line import/extensions
 import { defaultFieldResolver } from 'graphql/index.js';
-import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
+import { AuthRequired, ForbiddenAccess, LtsRequiredActivation, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { BYPASS, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
 
@@ -35,10 +35,11 @@ export const authDirectiveBuilder = (directiveName) => {
             const { resolve = defaultFieldResolver } = fieldConfig;
             fieldConfig.resolve = (source, args, context, info) => {
               // Get user from the session
-              const { user, otp_mandatory, user_otp_validated } = context;
+              const { user, otp_mandatory, user_otp_validated, blocked_for_lts_validation } = context;
+              // User must be authenticated.
               if (!user) {
                 throw AuthRequired();
-              } // User must be authenticated.
+              }
               const isProtectedMethod = info.fieldName !== 'logout'
                 && info.fieldName !== 'otpLogin' && info.fieldName !== 'otpActivation' && info.fieldName !== 'otpGeneration';
               if (isProtectedMethod) {
@@ -58,6 +59,10 @@ export const authDirectiveBuilder = (directiveName) => {
                   // If user self activate OTP, session must be validated
                   throw OtpRequired();
                 }
+              }
+              // LTS version must be validated
+              if (info.fieldName !== 'setupEnterpriseLicense' && info.fieldName !== 'settings' && blocked_for_lts_validation) {
+                throw LtsRequiredActivation();
               }
               // Start checking capabilities
               if (requiredCapabilities.length === 0) {

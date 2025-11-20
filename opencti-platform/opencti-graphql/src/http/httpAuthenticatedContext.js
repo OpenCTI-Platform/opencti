@@ -2,7 +2,7 @@ import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { authenticateUserFromRequest, userWithOrigin, batchCreator, batchCreators, batchRolesForUsers, batchUserEffectiveConfidenceLevel } from '../domain/user';
 import { isNotEmptyField } from '../database/utils';
-import { logApp } from '../config/conf';
+import { logApp, PLATFORM_VERSION } from '../config/conf';
 import { batchLoader } from '../database/middleware';
 import { batchInternalRels, batchMarkingDefinitions } from '../domain/stixCoreObject';
 import { elBatchIds, elBatchIdsWithRelCount } from '../database/engine';
@@ -12,6 +12,7 @@ import { batchGlobalStatusesByType, batchRequestAccessStatusesByType } from '../
 import { batchEntitySettingsByType } from '../modules/entitySetting/entitySetting-domain';
 import { batchIsSubAttackPattern } from '../domain/attackPattern';
 import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
+import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -60,6 +61,8 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
         executeContext.user_otp_validated = req.session?.user.otp_validated ?? false;
       }
       executeContext.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+      const licenseInfo = getEnterpriseEditionInfo(settings);
+      executeContext.blocked_for_lts_validation = PLATFORM_VERSION.endsWith('lts') && !licenseInfo.license_validated;
     }
   } catch (error) {
     logApp.error('Fail to authenticate the user in graphql context hook', { cause: error });

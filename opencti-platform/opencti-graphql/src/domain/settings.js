@@ -230,6 +230,10 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
 
+export const setupEnterpriseLicense = (context, user, { settingId, license }) => {
+  return settingsEditField(context, user, settingId, [{ key: 'enterprise_license', value: [license] }]);
+};
+
 export const getMessagesFilteredByRecipients = (user, settings) => {
   const messages = JSON.parse(settings.platform_messages ?? '[]');
   return messages.filter(({ recipients }) => {

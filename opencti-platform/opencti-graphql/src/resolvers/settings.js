@@ -1,6 +1,7 @@
 import nconf from 'nconf';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
 import {
+  setupEnterpriseLicense,
   getApplicationDependencies,
   getApplicationInfo,
   getCriticalAlerts,
@@ -39,6 +40,7 @@ const settingsResolvers = {
     relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
   },
   Settings: {
+    platform_type: () => (PLATFORM_VERSION.endsWith('lts') ? 'lts' : 'standard'),
     platform_session_idle_timeout: () => Number(nconf.get('app:session_idle_timeout')),
     platform_session_timeout: () => Number(nconf.get('app:session_timeout')),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
@@ -72,6 +74,7 @@ const settingsResolvers = {
     recipients: (message, _, context) => internalFindByIds(context, context.user, message.recipients),
   },
   Mutation: {
+    setupEnterpriseLicense: (_, { input }, context) => setupEnterpriseLicense(context, context.user, input),
     settingsEdit: (_, { id }, context) => ({
       fieldPatch: ({ input }) => settingsEditField(context, context.user, id, input),
       contextPatch: ({ input }) => settingsEditContext(context, context.user, id, input),

@@ -18,6 +18,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Alert from '@mui/material/Alert';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
+import { SettingsFieldPatchMutation$data } from '@components/settings/__generated__/SettingsFieldPatchMutation.graphql';
+import getEEWarningMessage from '@components/settings/EEActivation';
 import DangerZoneBlock from '../common/danger_zone/DangerZoneBlock';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
@@ -53,6 +55,7 @@ const settingsQuery = graphql`
       platform_email_configurable
       platform_theme
       platform_language
+      platform_type
       platform_whitemark
       platform_login_message
       platform_banner_text
@@ -291,6 +294,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       },
     });
   };
+  const isLtsPlatform = settings.platform_type === 'lts';
   const handleSubmitField = (name: string, value: string | boolean) => {
     let finalValue = value;
     if (
@@ -325,6 +329,13 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       .then(() => {
         commitField({
           variables: { id, input: { key: name, value: finalValue || '' } },
+          onCompleted: (response) => {
+            const data = response as SettingsFieldPatchMutation$data;
+            // If platform is LTS but license is no longer valid, need to refresh to force the license.
+            if (isLtsPlatform && !data.settingsEdit?.fieldPatch?.platform_enterprise_edition.license_validated) {
+              window.location.reload();
+            }
+          },
         });
       })
       .catch(() => false);
@@ -348,64 +359,66 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
                 }}
               >
-                {({ disabled }) => (
-                  <>
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color='dangerZone'
-                      onClick={() => setOpenEEChanges(true)}
-                      disabled={disabled}
-                      style={{
-                        color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
-                        borderColor: theme.palette.dangerZone.main,
-                      }}
-                    >
-                      {t_i18n('Disable Enterprise Edition')}
-                    </Button>
-                    <Dialog
-                      slotProps={{ paper: { elevation: 1 } }}
-                      open={openEEChanges}
-                      keepMounted
-                      slots={{ transition: Transition }}
-                      onClose={() => setOpenEEChanges(false)}
-                    >
-                      <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
-                      <DialogContent>
-                        <DialogContentText component="div">
-                          <Alert
-                            severity="warning"
-                            variant="outlined"
-                            color="dangerZone"
-                            style={{ borderColor: theme.palette.dangerZone.main }}
+                {({ disabled }) => {
+                  return (
+                    <>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color='dangerZone'
+                        onClick={() => setOpenEEChanges(true)}
+                        disabled={disabled}
+                        style={{
+                          color: isAllowed ? theme.palette.dangerZone.text?.primary : theme.palette.dangerZone.text?.disabled,
+                          borderColor: theme.palette.dangerZone.main,
+                        }}
+                      >
+                        {t_i18n('Disable Enterprise Edition')}
+                      </Button>
+                      <Dialog
+                        slotProps={{ paper: { elevation: 1 } }}
+                        open={openEEChanges}
+                        keepMounted
+                        slots={{ transition: Transition }}
+                        onClose={() => setOpenEEChanges(false)}
+                      >
+                        <DialogTitle>{t_i18n('Disable Enterprise Edition')}</DialogTitle>
+                        <DialogContent>
+                          <DialogContentText component="div">
+                            <Alert
+                              severity="warning"
+                              variant="outlined"
+                              color="dangerZone"
+                              style={{ borderColor: theme.palette.dangerZone.main }}
+                            >
+                              {t_i18n(getEEWarningMessage(isLtsPlatform))}
+                              <br/><br/>
+                              <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
+                            </Alert>
+                          </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button
+                            onClick={() => {
+                              setOpenEEChanges(false);
+                            }}
                           >
-                            {t_i18n('You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (organization segregation, automation, file indexing etc.).')}
-                            <br /><br />
-                            <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
-                          </Alert>
-                        </DialogContentText>
-                      </DialogContent>
-                      <DialogActions>
-                        <Button
-                          onClick={() => {
-                            setOpenEEChanges(false);
-                          }}
-                        >
-                          {t_i18n('Cancel')}
-                        </Button>
-                        <Button
-                          color="secondary"
-                          onClick={() => {
-                            setOpenEEChanges(false);
-                            handleSubmitField('enterprise_license', '');
-                          }}
-                        >
-                          {t_i18n('Validate')}
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-                  </>
-                )}
+                            {t_i18n('Cancel')}
+                          </Button>
+                          <Button
+                            color="secondary"
+                            onClick={() => {
+                              setOpenEEChanges(false);
+                              handleSubmitField('enterprise_license', '');
+                            }}
+                          >
+                            {t_i18n('Validate')}
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
+                    </>
+                  );
+                }}
               </DangerZoneBlock>
             </div>
             )}
