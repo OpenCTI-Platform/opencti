@@ -58,7 +58,6 @@ import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichm
 import PopoverMenu from '../../../../components/PopoverMenu';
 import { resolveLink } from '../../../../utils/Entity';
 import { authorizedMembersToOptions, CAN_USE_ENTITY_TYPES, useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
-import useHelper from '../../../../utils/hooks/useHelper';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 export const stixDomainObjectMutation = graphql`
@@ -302,7 +301,6 @@ const StixDomainObjectHeader = (props) => {
   } = props;
   const currentAccessRight = useGetCurrentUserAccessRight(stixDomainObject.currentUserAccessRight);
   const enableManageAuthorizedMembers = currentAccessRight.canManage && enableAuthorizedMembers;
-  const { isFeatureEnable } = useHelper();
 
   // Remove CRUD button in Draft context without the minimal right access "canEdit"
   const draftContext = useDraftContext();
@@ -761,7 +759,7 @@ const StixDomainObjectHeader = (props) => {
                 )}
               </PopoverMenu>
             ) : null}
-            {isFeatureEnable('FAB_RELATIONSHIP') && RelateComponent}
+            {RelateComponent}
             {EditComponent}
             <DeleteComponent isOpen={openDelete} onClose={handleCloseDelete} />
           </div>
