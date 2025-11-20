@@ -21,6 +21,8 @@
     "exports-last": "off",
     "typescript/consistent-type-definitions":"off",
     "consistent-type-import": "off",
+    "no-ternary": "off",
+    "sort-keys": "off",
     "no-unassigned-import": [
       "warn",
       {
