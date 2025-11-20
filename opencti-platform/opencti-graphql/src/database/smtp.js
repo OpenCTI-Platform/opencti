@@ -4,8 +4,10 @@ import { meterManager } from '../config/tracing';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
+import { isEmptyField } from './utils';
 
-export const ALLOW_EMAIL_REWRITE = booleanConf('smtp:allow_email_rewrite', false);
+const SMTP_FORCED_EMAIL = conf.get('smtp:forced_sender_email');
+export const ALLOW_EMAIL_REWRITE = isEmptyField(SMTP_FORCED_EMAIL);
 const USE_SSL = booleanConf('smtp:use_ssl', false);
 const REJECT_UNAUTHORIZED = booleanConf('smtp:reject_unauthorized', false);
 const SMTP_ENABLE = booleanConf('smtp:enabled', true);
@@ -32,7 +34,7 @@ if (conf.get('smtp:username') && conf.get('smtp:username').length > 0) {
 export const transporter = nodemailer.createTransport(smtpOptions);
 
 export const smtpConfiguredEmail = (settings) => {
-  return ALLOW_EMAIL_REWRITE ? settings.platform_email : conf.get('smtp:username');
+  return isEmptyField(SMTP_FORCED_EMAIL) ? settings.platform_email : SMTP_FORCED_EMAIL;
 };
 
 export const smtpComputeFrom = async (from) => {

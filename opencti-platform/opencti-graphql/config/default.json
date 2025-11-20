@@ -414,13 +414,13 @@
     "queue_type": "classic"
   },
   "smtp": {
-    "allow_email_rewrite": false,
     "hostname": "localhost",
     "use_ssl": false,
     "reject_unauthorized": false,
     "port": 25,
     "username": "",
     "password": "",
+    "forced_sender_email": "",
     "email_max_cc_size": 500
   },
   "providers": {
