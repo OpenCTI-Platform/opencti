@@ -2,7 +2,7 @@ import { NodeTypes } from 'reactflow';
 
 import NodeDiamond from './NodeDiamond';
 import NodeCard from './NodeCard';
-import NodeAdversary from './NodeAdversary';
+import NodeAdversary from './NodeAdversary/NodeAdversary';
 import NodeVictimology from './NodeVictimology';
 import NodeInfrastructure from './NodeInfrastructure';
 import NodeCapabilities from './NodeCapabilities';
