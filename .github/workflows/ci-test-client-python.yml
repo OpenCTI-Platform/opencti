@@ -37,7 +37,7 @@ jobs:
         docker run --network runner-docker-network \
           --name client-test-39 \
           -v ${{ github.workspace }}:/home/workspace \
-          -e BACK_END_URL=http://opencti-pycti-start:4100 \
+          -e OPENCTI_API_URL=http://opencti-pycti-start:4100 \
           -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
          python:3.9 \
           sh -c 'set -ex;
