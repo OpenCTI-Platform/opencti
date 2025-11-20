@@ -145,7 +145,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
             />
           </div>
           <div style={xStyle}>
-            <span>{t_i18n('One month ago')}</span>
+            <span>{t_i18n('One week ago')}</span>
             <span>{t_i18n('Today')}</span>
           </div>
           <div style={yStyle}>
