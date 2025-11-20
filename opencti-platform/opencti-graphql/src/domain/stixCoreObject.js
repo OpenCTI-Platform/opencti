@@ -107,6 +107,7 @@ import { FILES_UPDATE_KEY, getDraftChanges, isDraftFile } from '../database/draf
 import { askJobImport } from './connector';
 import { authorizedMembers } from '../schema/attribute-definition';
 import { cleanHtmlTags } from '../utils/ai/cleanHtmlTags';
+import { cleanAllEntityInconsistencies } from '../database/inconsistencyCleaner';
 
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
@@ -177,6 +178,10 @@ export const findStixCoreObjectRestrictedPaginated = async (context, user, args)
   };
 
   return pageEntitiesConnection(context, user, types, finalArgs);
+};
+
+export const cleanInconsistency = async (context, user, stixCoreObjectId) => {
+  return cleanAllEntityInconsistencies(context, user, stixCoreObjectId);
 };
 
 export const findById = async (context, user, stixCoreObjectId) => {
