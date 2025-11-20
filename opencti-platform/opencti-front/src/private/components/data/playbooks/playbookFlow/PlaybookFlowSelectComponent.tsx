@@ -17,7 +17,6 @@ import List from '@mui/material/List';
 import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import React from 'react';
 import { Node } from 'reactflow';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../components/i18n';
@@ -45,27 +44,25 @@ const PlaybookFlowSelectComponent = ({
   });
 
   return (
-    <div>
-      <List>
-        {entryComponents.map((component) => {
-          return (
-            <ListItemButton
-              divider
-              key={component.id}
-              onClick={() => onSelect(component.id)}
-            >
-              <ListItemIcon>
-                <ItemIcon type={component.icon}/>
-              </ListItemIcon>
-              <ListItemText
-                primary={t_i18n(component.name)}
-                secondary={t_i18n(component.description)}
-              />
-            </ListItemButton>
-          );
-        })}
-      </List>
-    </div>
+    <List>
+      {entryComponents.map((component) => {
+        return (
+          <ListItemButton
+            divider
+            key={component.id}
+            onClick={() => onSelect(component.id)}
+          >
+            <ListItemIcon>
+              <ItemIcon type={component.icon}/>
+            </ListItemIcon>
+            <ListItemText
+              primary={t_i18n(component.name)}
+              secondary={t_i18n(component.description)}
+            />
+          </ListItemButton>
+        );
+      })}
+    </List>
   );
 };
 

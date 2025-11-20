@@ -14,7 +14,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import ReactFlow from 'reactflow';
-import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import PlaybookAddComponents from '@components/data/playbooks/PlaybookAddComponents';
 import PlaybookFlowDeleteNode from '@components/data/playbooks/playbookFlow/PlaybookFlowDeleteNode';
@@ -63,7 +62,7 @@ interface PlaybookFlowProps {
 const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProps) => {
   const playbook = useFragment(playbookFragment, dataPlaybook);
   const { playbookComponents } = useFragment(playbookComponentsFragment, dataPlaybookComponents);
-  const definition = JSON.parse(playbook.playbook_definition ?? '{}');
+  const definition = JSON.parse(playbook.playbook_definition || '{}');
 
   const {
     action,
@@ -78,13 +77,13 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   } = useManipulateComponents(playbook);
 
   const initialNodes = computeNodes(
-    definition.nodes,
+    definition.nodes ?? [],
     playbookComponents,
     setAction,
     setSelectedNode,
   );
   const initialEdges = computeEdges(
-    definition.links,
+    definition.links ?? [],
     setAction,
     setSelectedEdge,
   );
