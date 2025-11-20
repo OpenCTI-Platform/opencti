@@ -195,7 +195,7 @@
     "esbuild": "0.27.0",
     "esbuild-plugin-copy": "2.1.1",
     "esbuild-plugin-import-glob": "0.1.1",
-    "eslint": "8.57.1",
+    "eslint": "9.39.1",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-config-airbnb-typescript": "18.0.0",
