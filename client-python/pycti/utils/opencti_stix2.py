@@ -2861,9 +2861,7 @@ class OpenCTIStix2:
                 if "observed_data_refs" in item:
                     for observed_data_ref in item["observed_data_refs"]:
                         for to_id in to_ids:
-                            self.import_sighting(
-                                item, observed_data_ref, to_id, update
-                            )
+                            self.import_sighting(item, observed_data_ref, to_id, update)
             # endregion
         elif item["type"] == "label":
             stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
@@ -2880,9 +2878,7 @@ class OpenCTIStix2:
                 stix_id=item["id"],
                 name=item["name"],
                 category=item["category"],
-                description=(
-                    item["description"] if "description" in item else None
-                ),
+                description=(item["description"] if "description" in item else None),
                 aliases=item["aliases"] if "aliases" in item else None,
                 x_opencti_stix_ids=stix_ids,
                 update=update,
@@ -2891,16 +2887,10 @@ class OpenCTIStix2:
             stix_ids = self.opencti.get_attribute_in_extension("stix_ids", item)
             self.opencti.external_reference.create(
                 stix_id=item["id"],
-                source_name=(
-                    item["source_name"] if "source_name" in item else None
-                ),
+                source_name=(item["source_name"] if "source_name" in item else None),
                 url=item["url"] if "url" in item else None,
-                external_id=(
-                    item["external_id"] if "external_id" in item else None
-                ),
-                description=(
-                    item["description"] if "description" in item else None
-                ),
+                external_id=(item["external_id"] if "external_id" in item else None),
+                description=(item["description"] if "description" in item else None),
                 x_opencti_stix_ids=stix_ids,
                 update=update,
             )
@@ -2921,11 +2911,7 @@ class OpenCTIStix2:
                 self.import_observable(item, update, types)
         else:
             # Check the scope
-            if (
-                item["type"] == "marking-definition"
-                or types is None
-                or len(types) == 0
-            ):
+            if item["type"] == "marking-definition" or types is None or len(types) == 0:
                 self.import_object(item, update, types)
             # Handle identity & location if part of the scope
             elif item["type"] in types:
@@ -2945,9 +2931,7 @@ class OpenCTIStix2:
                         if item["x_opencti_location_type"].lower() in types:
                             self.import_object(item, update, types)
                     elif (
-                        self.opencti.get_attribute_in_extension(
-                            "location_type", item
-                        )
+                        self.opencti.get_attribute_in_extension("location_type", item)
                         is not None
                     ):
                         if (
