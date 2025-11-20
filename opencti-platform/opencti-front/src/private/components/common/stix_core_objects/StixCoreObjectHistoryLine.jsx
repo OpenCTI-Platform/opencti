@@ -53,7 +53,6 @@ export const StixCoreObjectHistoryFragment = graphql`
 `;
 
 const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
-  const classes = useStyles();
   const theme = useTheme();
   const { t_i18n, nsdt } = useFormatter();
   const [open, setOpen] = useState(false);
