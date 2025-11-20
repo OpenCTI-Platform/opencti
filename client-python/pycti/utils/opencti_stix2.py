@@ -294,15 +294,16 @@ class OpenCTIStix2:
         return None
 
     def get_author(self, name: str) -> Identity:
-        if name in self.mapping_cache:
-            return self.mapping_cache[name]
+        name_in_cache = self.get_in_cache(name)
+        if name_in_cache is not None:
+            return name_in_cache
         else:
             author = self.opencti.identity.create(
                 type="Organization",
                 name=name,
                 description="",
             )
-            self.mapping_cache[name] = author
+            self.set_in_cache(name, author)
             return author
 
     def extract_embedded_relationships(
