@@ -34,7 +34,7 @@ if (conf.get('smtp:username') && conf.get('smtp:username').length > 0) {
 export const transporter = nodemailer.createTransport(smtpOptions);
 
 export const smtpConfiguredEmail = (settings) => {
-  return isEmptyField(SMTP_FORCED_EMAIL) ? settings.platform_email : SMTP_FORCED_EMAIL;
+  return ALLOW_EMAIL_REWRITE ? settings.platform_email : SMTP_FORCED_EMAIL;
 };
 
 export const smtpComputeFrom = async (from) => {
