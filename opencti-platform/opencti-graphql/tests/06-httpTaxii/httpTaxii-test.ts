@@ -109,9 +109,11 @@ describe('Taxii push Feed coverage', () => {
 });
 
 describe('Should taxii collection coverage', () => {
-  let taxiiCollectionId: string;
+  let taxiiCollectionPublicId: string;
+  let taxiiCollectionWithAuthId: string;
+
   beforeAll(async () => {
-    const dataSharingTaxii: TaxiiCollectionAddInput = {
+    const dataSharingTaxiiPublic: TaxiiCollectionAddInput = {
       name: 'Testing coverage on Taxii collection',
       description: '',
       authorized_members: [],
@@ -123,15 +125,34 @@ describe('Should taxii collection coverage', () => {
         filters: [{ key: ['entity_type'], operator: 'eq', values: ['Indicator'], mode: 'or' }],
         filterGroups: [] })
     };
-    const taxiiCollection = await createTaxiiCollection(testContext, ADMIN_USER, dataSharingTaxii);
+    const taxiiCollection = await createTaxiiCollection(testContext, ADMIN_USER, dataSharingTaxiiPublic);
 
     expect(taxiiCollection.id).toBeDefined();
-    taxiiCollectionId = taxiiCollection.id;
+    taxiiCollectionPublicId = taxiiCollection.id;
     expect(taxiiCollection.name).toBe('Testing coverage on Taxii collection');
+
+    const dataSharingTaxiiAuth: TaxiiCollectionAddInput = {
+      name: 'Testing coverage on Taxii collection not public',
+      description: '',
+      authorized_members: [],
+      taxii_public: false,
+      include_inferences: true,
+      score_to_confidence: false,
+      filters: JSON.stringify({
+        mode: 'and',
+        filters: [{ key: ['entity_type'], operator: 'eq', values: ['Malware'], mode: 'or' }],
+        filterGroups: [] })
+    };
+    const taxiiCollectionWithauth = await createTaxiiCollection(testContext, ADMIN_USER, dataSharingTaxiiAuth);
+
+    expect(taxiiCollectionWithauth.id).toBeDefined();
+    taxiiCollectionWithAuthId = taxiiCollectionWithauth.id;
+    expect(taxiiCollectionWithauth.name).toBe('Testing coverage on Taxii collection not public');
   });
 
   afterAll(async () => {
-    await taxiiCollectionDelete(testContext, ADMIN_USER, taxiiCollectionId);
+    await taxiiCollectionDelete(testContext, ADMIN_USER, taxiiCollectionPublicId);
+    await taxiiCollectionDelete(testContext, ADMIN_USER, taxiiCollectionWithAuthId);
   });
 
   it('should taxii root works', async () => {
@@ -146,7 +167,7 @@ describe('Should taxii collection coverage', () => {
 
   it('should public taxii collection without user works', async () => {
     const taxiiCollectionResponse = await fetch(
-      `${getBaseUrl()}/taxii2/root/collections/${taxiiCollectionId}/objects/`,
+      `${getBaseUrl()}/taxii2/root/collections/${taxiiCollectionPublicId}/objects/`,
       {
         method: 'GET',
         headers: {
@@ -159,5 +180,19 @@ describe('Should taxii collection coverage', () => {
     const content = await taxiiCollectionResponse.json() as { more: boolean, next: string };
     expect(content.more).toBeFalsy();
     expect(content.next.length).toBeGreaterThan(0);
+  });
+
+  it('should restricted taxii collection without user be forbidden', async () => {
+    const taxiiCollectionResponse = await fetch(
+      `${getBaseUrl()}/taxii2/root/collections/${taxiiCollectionWithAuthId}/objects/`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/taxii+json;version=2.1',
+          Accept: 'application/taxii+json;version=2.1'
+        }
+      }
+    );
+    expect(taxiiCollectionResponse.status).toBe(401);
   });
 });
