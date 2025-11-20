@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useRef, useState, Suspense } from 'react';
+import React, { FunctionComponent, Suspense, useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import IconButton from '@mui/material/IconButton';
@@ -23,7 +23,6 @@ import Drawer from '@components/common/drawer/Drawer';
 import { getMainRepresentative } from 'src/utils/defaultRepresentatives';
 import Loader, { LoaderVariant } from 'src/components/Loader';
 import { Button } from '@mui/material';
-import { useLocation } from 'react-router-dom';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { formatDate } from '../../../../utils/Time';
@@ -44,17 +43,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableVariant } from '../../../../components/dataGrid/dataTableTypes';
 import { FieldOption } from '../../../../utils/field';
-import useHelper from '../../../../utils/hooks/useHelper';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
 const useStyles = makeStyles<Theme>(() => ({
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1001,
-  },
   continue: {
     position: 'fixed',
     bottom: 40,
@@ -503,7 +495,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   const {
     targetEntities: targetEntitiesProps = [],
     entityId,
-    paddingRight,
     paginationOptions,
     isRelationReversed,
     connectionKey,
@@ -515,7 +506,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     targetStixCyberObservableTypes = [],
     variant = undefined,
     onCreate = undefined,
-    openExports = false,
     handleReverseRelation = undefined,
     currentView,
     isCoverage = false,
@@ -573,13 +563,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   }, [targetEntitiesProps]);
   const [sortBy, setSortBy] = useState('_score');
   const [orderAsc, setOrderAsc] = useState(false);
-
-  // TODO: Remove once Create Relationship FAB is removed everywhere
-  const location = useLocation();
-  const { isFeatureEnable } = useHelper();
-  const categoriesWithRelateComponent = ['threats', 'events', 'observations', 'arsenal', 'techniques', 'entities', 'locations', 'analyses'];
-  const showFAB = !isFeatureEnable('FAB_RELATIONSHIP')
-      || !categoriesWithRelateComponent.some((category) => location.pathname.includes(`/dashboard/${category}`));
 
   const containerRef = useRef(null);
 
@@ -946,7 +929,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
   return (
     <>
       {/* eslint-disable-next-line no-nested-ternary */}
-      {variant === 'inLine' ? (
+      {variant === 'inLine' && (
         <IconButton
           color="primary"
           aria-label="Label"
@@ -956,19 +939,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         >
           <Add fontSize="small" />
         </IconButton>
-      // TODO: Remove showFAB once Create Relationship FAB is removed everywhere
-      ) : (showFAB && !openExports) ? (
-        <Fab
-          onClick={() => setOpen(true)}
-          color="primary"
-          aria-label="Add"
-          className={classes.createButton}
-          style={{ right: paddingRight || 30 }}
-        >
-          <Add />
-        </Fab>
-      ) : (
-        ''
       )}
       <Drawer
         open={open}
