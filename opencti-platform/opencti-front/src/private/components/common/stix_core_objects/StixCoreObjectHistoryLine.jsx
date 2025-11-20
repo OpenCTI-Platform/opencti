@@ -18,7 +18,6 @@ import DialogContentText from '@mui/material/DialogContentText';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
-import makeStyles from '@mui/styles/makeStyles';
 import { ListItemButton } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import { useTheme } from '@mui/styles';
@@ -27,57 +26,6 @@ import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import Transition from '../../../../components/Transition';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    height: 40,
-    padding: 0,
-  },
-  line: {
-    content: ' ',
-    display: 'block',
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    width: 1,
-    height: 18,
-  },
-  avatar: {
-    float: 'left',
-    width: 30,
-    height: 30,
-    margin: '7px 0 0 0',
-  },
-  content: {
-    flex: 1,
-    width: 'auto',
-    overflow: 'hidden',
-  },
-  tooltip: {
-    maxWidth: '80%',
-    lineHeight: 2,
-    padding: 10,
-  },
-  paper: {
-    width: '100%',
-    height: '100%',
-    padding: '8px 15px 0 15px',
-    background: 0,
-  },
-  description: {
-    height: '100%',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  date: {
-    float: 'right',
-    textAlign: 'right',
-    width: 180,
-    paddingTop: 4,
-    fontSize: 11,
-  },
-}));
 
 export const StixCoreObjectHistoryFragment = graphql`
   fragment StixCoreObjectHistoryLine_node on Log {
@@ -187,8 +135,17 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
   };
 
   return (
-    <ListItem className={classes.container}>
-      <div className={classes.avatar}>
+    <ListItem style={{
+      height: 40,
+      padding: 0 }}
+    >
+      <div style={{
+        float: 'left',
+        width: 30,
+        height: 30,
+        margin: '7px 0 0 0',
+      }}
+      >
         <Badge
           color="secondary"
           overlap="circular"
@@ -203,19 +160,38 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
         </Badge>
       </div>
       <div
-        className={classes.content}
         style={{
+          flex: 1,
+          width: 'auto',
+          overflow: 'hidden',
           height:
-            data.context_data.external_references
-            && data.context_data.external_references.length > 0
-              ? 'auto'
-              : 40,
+          data.context_data.external_references
+          && data.context_data.external_references.length > 0
+            ? 'auto'
+            : 40,
         }}
       >
-        <Paper classes={{ root: classes.paper }}>
-          <div className={classes.date}>{nsdt(data.timestamp)}</div>
+        <Paper sx={{
+          width: '100%',
+          height: '100%',
+          padding: '8px 15px 0 15px',
+          background: 0,
+        }}
+        >
+          <div style={{
+            float: 'right',
+            textAlign: 'right',
+            width: 180,
+            paddingTop: 4,
+            fontSize: 11,
+          }}
+          >{nsdt(data.timestamp)}</div>
           <Tooltip
-            classes={{ tooltip: classes.tooltip }}
+            sx={{
+              maxWidth: '80%',
+              lineHeight: 2,
+              padding: 10,
+            }}
             title={
               <MarkdownDisplay
                 content={`\`${data.user.name}\` ${data.context_data.message}`}
@@ -224,7 +200,13 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
               />
             }
           >
-            <div className={classes.description}>
+            <div style={{
+              height: '100%',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+            >
               <MarkdownDisplay
                 content={`\`${data.user.name}\` ${data.context_data.message}`}
                 remarkGfmPlugin={true}
@@ -315,7 +297,15 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
           )}
         </Paper>
       </div>
-      <div className={classes.line} />
+      <div style={{
+        display: 'block',
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        width: 1,
+        height: 18,
+      }}
+      />
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={open}
