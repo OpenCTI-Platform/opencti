@@ -418,6 +418,8 @@ class OpenCTIApiClient:
         self.request_headers["opencti-event-id"] = event_id
 
     def get_draft_id(self):
+        if self.draft_id is None:
+            return ""
         return self.draft_id
 
     def set_draft_id(self, draft_id):
