@@ -14,7 +14,7 @@ import { handleErrorInForm } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';

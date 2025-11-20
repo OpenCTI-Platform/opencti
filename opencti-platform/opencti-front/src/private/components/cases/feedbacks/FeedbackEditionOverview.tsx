@@ -15,7 +15,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEditor';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import RatingField from '../../../../components/fields/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';

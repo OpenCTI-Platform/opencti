@@ -10,7 +10,7 @@ import Drawer from '../../common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';

@@ -5,7 +5,7 @@ import { Button, useTheme } from '@mui/material';
 import * as Yup from 'yup';
 import { ConnectionHandler, graphql } from 'react-relay';
 import { DataID, RecordProxy, RecordSourceSelectorProxy } from 'relay-runtime';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { commitMutation, defaultCommitMutation } from '../../../../relay/environment';
 import { PaginationOptions } from '../../../../components/list_lines';
 import Drawer, { DrawerControlledDialProps } from '../../common/drawer/Drawer';

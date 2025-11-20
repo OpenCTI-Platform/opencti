@@ -9,7 +9,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/fields/SwitchField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';

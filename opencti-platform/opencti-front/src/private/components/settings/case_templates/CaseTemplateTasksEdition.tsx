@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 import React from 'react';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';

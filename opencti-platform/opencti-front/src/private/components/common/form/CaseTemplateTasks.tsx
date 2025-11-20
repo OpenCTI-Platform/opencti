@@ -11,7 +11,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import TextField from '../../../../components/TextField';
 import { fetchQuery, handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';

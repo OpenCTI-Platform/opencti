@@ -17,7 +17,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';

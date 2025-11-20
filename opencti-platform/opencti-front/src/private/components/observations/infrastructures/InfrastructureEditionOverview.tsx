@@ -8,7 +8,7 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';

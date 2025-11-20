@@ -13,7 +13,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { stixCyberObservablesLinesAttributesQuery } from './StixCyberObservablesLines';
 import { buildDate } from '../../../../utils/Time';
 import SwitchField from '../../../../components/fields/SwitchField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ArtifactField from '../../common/form/ArtifactField';

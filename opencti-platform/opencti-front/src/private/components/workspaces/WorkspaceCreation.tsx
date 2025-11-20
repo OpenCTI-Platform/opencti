@@ -15,7 +15,7 @@ import Drawer from '../common/drawer/Drawer';
 import { useFormatter } from '../../../components/i18n';
 import { handleError, handleErrorInForm } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
-import MarkdownField from '../../../components/fields/MarkdownField';
+import MarkdownField from '../../../components/fields/MarkdownField/MarkdownField';
 import { resolveLink } from '../../../utils/Entity';
 import { insertNode } from '../../../utils/store';
 import useApiMutation from '../../../utils/hooks/useApiMutation';

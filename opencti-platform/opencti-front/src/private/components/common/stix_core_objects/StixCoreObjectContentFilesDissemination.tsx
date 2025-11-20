@@ -13,7 +13,7 @@ import Switch from '@mui/material/Switch';
 import DisseminationListField from '../../../../components/fields/DisseminationListField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';

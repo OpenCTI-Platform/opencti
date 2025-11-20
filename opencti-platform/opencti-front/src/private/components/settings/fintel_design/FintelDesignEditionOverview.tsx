@@ -4,7 +4,7 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { FieldOption } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { FintelDesignEditionOverview_fintelDesign$key } from './__generated__/FintelDesignEditionOverview_fintelDesign.graphql';

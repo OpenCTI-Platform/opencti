@@ -6,7 +6,7 @@ import { TextField } from 'formik-mui';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import type { Theme } from '../../../../components/Theme';
 import { handleErrorInForm } from '../../../../relay/environment';

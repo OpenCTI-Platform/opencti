@@ -9,7 +9,7 @@ import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../form/CreatedByField';

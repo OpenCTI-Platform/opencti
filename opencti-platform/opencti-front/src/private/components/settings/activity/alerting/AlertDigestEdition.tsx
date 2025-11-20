@@ -8,7 +8,7 @@ import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../../components/i18n';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/MarkdownField/MarkdownField';
 import SelectField from '../../../../../components/fields/SelectField';
 import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
