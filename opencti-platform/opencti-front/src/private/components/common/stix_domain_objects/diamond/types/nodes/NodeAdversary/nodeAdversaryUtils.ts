@@ -47,7 +47,7 @@ export interface UseNodeAdversaryReturns {
   lastAttributions: React.ReactNode;
 }
 
-export const useNodeAdversary = ({ data }: UseNodeAdversaryProps):UseNodeAdversaryReturns => {
+export const nodeAdversaryUtils = ({ data }: UseNodeAdversaryProps):UseNodeAdversaryReturns => {
   const { stixDomainObject, entityLink } = data;
 
   const isArsenal = [DiamondEntityEnum.malware, DiamondEntityEnum.tool, DiamondEntityEnum.channel].includes(stixDomainObject.entity_type);

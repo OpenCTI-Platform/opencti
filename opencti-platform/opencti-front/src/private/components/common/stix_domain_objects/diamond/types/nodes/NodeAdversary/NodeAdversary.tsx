@@ -4,11 +4,11 @@ import Typography from '@mui/material/Typography';
 
 import NodeContainer from '@components/common/stix_domain_objects/diamond/types/nodes/NodeContainer';
 import { useFormatter } from '../../../../../../../../components/i18n';
-import { useNodeAdversary } from './useNodeAdversary';
+import { nodeAdversaryUtils } from './nodeAdversaryUtils';
 import { emptyFilled } from '../../../../../../../../utils/String';
 
 const NodeAdversary = ({ data }: NodeProps) => {
-  const { entityLink, generatedFilters, aliases, isArsenal, lastAttributions } = useNodeAdversary({ data });
+  const { entityLink, generatedFilters, aliases, isArsenal, lastAttributions } = nodeAdversaryUtils({ data });
   const { t_i18n } = useFormatter();
   return (
     <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}&view=entities`} position={Position.Bottom} height={200}>

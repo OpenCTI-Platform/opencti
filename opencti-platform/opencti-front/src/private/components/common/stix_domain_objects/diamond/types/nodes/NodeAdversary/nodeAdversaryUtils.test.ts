@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as getFilterFromEntityTypeAndNodeType from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
-import { useNodeAdversary, UseNodeAdversaryProps } from './useNodeAdversary';
+import { nodeAdversaryUtils, UseNodeAdversaryProps } from './nodeAdversaryUtils';
 
 import { DiamondEntityEnum } from '../diamondEnums';
 
@@ -24,7 +24,7 @@ describe('useNodeAdversary', () => {
       entityLink: '/dashboard/entities/threat-actor-group',
     };
 
-    const result = useNodeAdversary({ data });
+    const result = nodeAdversaryUtils({ data });
     expect(result.entityLink).toBe('/dashboard/entities/threat-actor-group');
     expect(result.isArsenal).toBe(false);
     expect(result.aliases).toBe('Alias');
@@ -46,7 +46,7 @@ describe('useNodeAdversary', () => {
       entityLink: '/dashboard/entities/threat-actor-group',
     };
 
-    const result = useNodeAdversary({ data });
+    const result = nodeAdversaryUtils({ data });
     expect(result.isArsenal).toBe(true);
     expect(result.lastAttributions).toBe('Malware test');
   });
@@ -74,7 +74,7 @@ describe('useNodeAdversary', () => {
       },
       entityLink: '/dashboard/entities/threat-actor-group',
     };
-    const result = useNodeAdversary({ data });
+    const result = nodeAdversaryUtils({ data });
     expect(result.isArsenal).toBe(false);
     expect(result.lastAttributions).toBe('Threat Actor test');
   });
