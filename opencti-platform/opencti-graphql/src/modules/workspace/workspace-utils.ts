@@ -1,12 +1,12 @@
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { isNotEmptyField } from '../../database/utils';
 import type { Filter, FilterGroup } from '../../generated/graphql';
 import type { BasicStoreObject } from '../../types/store';
 import { internalFindByIds } from '../../database/middleware-loader';
 import { INSTANCE_REGARDING_OF } from '../../utils/filtering/filtering-constants';
 import { isInternalId, isStixId } from '../../schema/schemaUtils';
 import { idsValuesRemap } from '../../database/stix-2-1-converter';
+import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 
 // workspace ids converter_2_1
 // Export => Dashboard filter ids must be converted to standard id
@@ -48,7 +48,7 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
         idInnerFilter.values = filterValuesRemap(idInnerFilter, resolvedMap, from);
         regardingOfValues.push(idInnerFilter);
       }
-      const typeInnerFilter = f.values.find((v) => toKeys(v.key).includes('type'));
+      const typeInnerFilter = f.values.find((v) => toKeys(v.key).includes('relationship_type'));
       if (typeInnerFilter) { // Type is not mandatory
         regardingOfValues.push(typeInnerFilter);
       }
@@ -65,37 +65,37 @@ const replaceFiltersIds = (filter: FilterGroup, resolvedMap: { [k: string]: Basi
 };
 
 export const convertWidgetsIds = async (context: AuthContext, user: AuthUser, widgetDefinitions: any[], from: 'internal' | 'stix') => {
-  // First iteration to resolve all ids to translate
+  // First iteration: resolve all the ids to translate
   const resolvingIds: string[] = [];
   widgetDefinitions.forEach((widgetDefinition: any) => {
     widgetDefinition.dataSelection.forEach((selection: any) => {
-      if (isNotEmptyField(selection.filters)) {
+      if (isFilterGroupNotEmpty(selection.filters)) {
         const filterIds = extractFiltersIds(selection.filters as FilterGroup, from);
         resolvingIds.push(...filterIds);
       }
-      if (isNotEmptyField(selection.dynamicFrom)) {
+      if (isFilterGroupNotEmpty(selection.dynamicFrom)) {
         const dynamicFromIds = extractFiltersIds(selection.dynamicFrom as FilterGroup, from);
         resolvingIds.push(...dynamicFromIds);
       }
-      if (isNotEmptyField(selection.dynamicTo)) {
+      if (isFilterGroupNotEmpty(selection.dynamicTo)) {
         const dynamicToIds = extractFiltersIds(selection.dynamicTo as FilterGroup, from);
         resolvingIds.push(...dynamicToIds);
       }
     });
   });
-  // Resolve then second iteration to replace the ids
+  // Second iteration: replace the ids
   const resolveOpts = { baseData: true, toMap: true, mapWithAllIds: true };
   const resolvedMap = await internalFindByIds(context, user, resolvingIds, resolveOpts);
   const idsMap = resolvedMap as unknown as { [k: string]: BasicStoreObject };
   widgetDefinitions.forEach((widgetDefinition: any) => {
     widgetDefinition.dataSelection.forEach((selection: any) => {
-      if (isNotEmptyField(selection.filters)) {
+      if (isFilterGroupNotEmpty(selection.filters)) {
         replaceFiltersIds(selection.filters as FilterGroup, idsMap, from);
       }
-      if (isNotEmptyField(selection.dynamicFrom)) {
+      if (isFilterGroupNotEmpty(selection.dynamicFrom)) {
         replaceFiltersIds(selection.dynamicFrom as FilterGroup, idsMap, from);
       }
-      if (isNotEmptyField(selection.dynamicTo)) {
+      if (isFilterGroupNotEmpty(selection.dynamicTo)) {
         replaceFiltersIds(selection.dynamicTo as FilterGroup, idsMap, from);
       }
     });
