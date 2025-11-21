@@ -475,7 +475,7 @@ describe('PIR resolver standard behavior', () => {
       filters: [{
         key: [LAST_PIR_SCORE_DATE_FILTER],
         values: [
-          { key: 'score', values: [now().toString()], operator: 'lt' },
+          { key: 'date', values: [now().toString()], operator: 'lt' },
           { key: 'pir_ids', values: ['fakeId'] },
         ],
       }],
@@ -490,7 +490,7 @@ describe('PIR resolver standard behavior', () => {
       filters: [{
         key: [LAST_PIR_SCORE_DATE_FILTER],
         values: [
-          { key: 'score', values: [now().toString()], operator: 'lt' },
+          { key: 'date', values: [now().toString()], operator: 'lt' },
         ],
       }],
       filterGroups: [],
@@ -504,7 +504,7 @@ describe('PIR resolver standard behavior', () => {
       filters: [{
         key: [LAST_PIR_SCORE_DATE_FILTER],
         values: [
-          { key: 'score', values: [now().toString()], operator: 'lt' },
+          { key: 'date', values: [now().toString()], operator: 'lt' },
           { key: 'pir_ids', values: [pirInternalId1] },
         ],
       }],
@@ -533,7 +533,7 @@ describe('PIR resolver standard behavior', () => {
       filters: [{
         key: [LAST_PIR_SCORE_DATE_FILTER],
         values: [
-          { key: 'score', values: ['now-1d', 'now'], operator: 'within' },
+          { key: 'date', values: ['now-1d', 'now'], operator: 'within' },
           { key: 'pir_ids', values: [pirInternalId1] },
         ],
       }],
@@ -548,7 +548,7 @@ describe('PIR resolver standard behavior', () => {
       filters: [{
         key: [LAST_PIR_SCORE_DATE_FILTER],
         values: [
-          { key: 'score', values: ['now', 'now+1d'], operator: 'within' },
+          { key: 'date', values: ['now', 'now+1d'], operator: 'within' },
           { key: 'pir_ids', values: [pirInternalId1] },
         ],
       }],
