@@ -1,6 +1,5 @@
 import React, { FunctionComponent, ReactNode, useContext } from 'react';
 import { IntlProvider } from 'react-intl';
-import moment from 'moment';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { createFragmentContainer, graphql } from 'react-relay';
@@ -29,6 +28,7 @@ import messages_zh_back from '../../lang/back/zh.json';
 import messages_ru_back from '../../lang/back/ru.json';
 
 import { useDocumentLangModifier } from '../utils/hooks/useDocumentModifier';
+import { setDateFormatLocale } from '../utils/Time';
 
 type PlatformLang =
   | 'de-de'
@@ -100,7 +100,7 @@ const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, ch
   const messages = { ...baseMessages, ...(translation[lang] ?? {}) };
   const supportedLocales: PlatformLang[] = availableLanguage.map(({ value }) => value);
   const selectedLocale = supportedLocales.includes(lang) ? lang : 'en-us';
-  moment.locale(selectedLocale);
+  setDateFormatLocale(selectedLocale);
   useDocumentLangModifier(lang.split('-')[0]);
   return (
     <IntlProvider

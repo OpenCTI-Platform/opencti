@@ -1,5 +1,4 @@
-import { isDateStringNone } from '../../i18n';
-import { dayEndDate, daysAfter, daysAgo, jsDate, minutesBefore, minutesBetweenDates, timestamp } from '../../../utils/Time';
+import { dayEndDate, daysAfter, daysAgo, isDateStringNone, jsDate, minutesBefore, minutesBetweenDates, timestamp } from '../../../utils/Time';
 import { GraphLink } from '../graph.types';
 
 export interface GraphTimeRange {

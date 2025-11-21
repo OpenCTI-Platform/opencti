@@ -4,7 +4,8 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useTheme } from '@mui/styles';
-import { isNone, useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
+import { isNone, parse } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -14,7 +15,6 @@ import { IncidentEditionDetailsFieldPatchMutation } from './__generated__/Incide
 import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEditionDetailsFocusMutation.graphql';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
 import { useDynamicSchemaCreationValidation, useIsMandatoryAttribute, yupShapeConditionalRequired } from '../../../../utils/hooks/useEntitySettings';
-import { parse } from '../../../../utils/Time';
 import { GenericContext } from '../../common/model/GenericContextModel';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';

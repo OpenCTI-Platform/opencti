@@ -1,6 +1,5 @@
 import Tooltip from '@mui/material/Tooltip';
 import { IconButton, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import moment from 'moment/moment';
 import { MoreVert, SendOutlined } from '@mui/icons-material';
 import React, { Fragment, MouseEvent, useState } from 'react';
 import { FileOutline, FilePdfBox, LanguageHtml5, LanguageMarkdownOutline, NoteTextOutline } from 'mdi-material-ui';
@@ -17,6 +16,7 @@ import { useTheme } from '@mui/styles';
 import Drawer from '@components/common/drawer/Drawer';
 import StixCoreObjectContentFilesDissemination from '@components/common/stix_core_objects/StixCoreObjectContentFilesDissemination';
 import { useFormatter } from '../../../../components/i18n';
+import { now } from '../../../../utils/Time';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
@@ -191,7 +191,7 @@ const StixCoreObjectContentFilesList = ({
                     secondary={(
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ paddingBottom: theme.spacing(0.5) }}>
-                          {fld(file.lastModified ?? moment())}
+                          {fld(file.lastModified ?? now())}
                         </span>
                         <ItemMarkings
                           markingDefinitions={file.objectMarking ?? []}
