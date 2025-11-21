@@ -4,8 +4,8 @@ import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
 import { compareUnsorted } from 'js-deep-equals';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import * as jsonpatch from 'fast-json-patch';
 import nconf from 'nconf';
+import * as jsonpatch from '../utils/jsonpatch';
 import {
   AccessRequiredError,
   ALREADY_DELETED_ERROR,
@@ -1074,7 +1074,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       if (isObjectAttribute(key)) {
         const path = object_path ?? key;
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
-        const instanceKeyValues = jsonpatch.getValueByPointer(instance, preparedPath);
+        const instanceKeyValues = jsonpatch.getValueByPath(instance, preparedPath);
         let patch;
         if (instanceKeyValues === undefined) {
           // if the instance has not yet this key, we need to add the full key as a new array
@@ -1086,7 +1086,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
             return { op: operation, path: `${preparedPath}/${afterIndex}`, value: v };
           });
         }
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+        const patchedInstance = jsonpatch.applyPatch(instance, patch);
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.uniq([...currentValues, value].flat().filter((v) => isNotEmptyField(v)));
@@ -1097,7 +1097,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
         const path = object_path ?? key;
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
         const patch = [{ op: operation, path: preparedPath }];
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+        const patchedInstance = jsonpatch.applyPatch(instance, patch);
         finalVal = patchedInstance[key];
       } else {
         finalVal = R.filter((n) => !R.includes(n, value), currentValues);
@@ -1109,7 +1109,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
         const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
         const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
-        const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
+        const patchedInstance = jsonpatch.applyPatch(instance, patch);
         finalVal = patchedInstance[key];
       } else { // Replace general
         finalVal = value;
@@ -1125,7 +1125,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
     const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
     const clonedInstance = structuredClone(instance);
     clonedInstance[key] = clonedInstance[key] ?? {}; // Patch on complete empty value is not supported by jsonpatch
-    const patchedInstance = jsonpatch.applyPatch(clonedInstance, patch).newDocument;
+    const patchedInstance = jsonpatch.applyPatch(clonedInstance, patch, true);
     if (compareUnsorted(patchedInstance[key], instance[key])) {
       return {}; // No need to update the attribute
     }

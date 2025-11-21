@@ -15,9 +15,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import * as jsonpatch from 'fast-json-patch';
 import moment from 'moment';
 import type { Moment } from 'moment/moment';
+import * as jsonpatch from '../utils/jsonpatch';
 import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';

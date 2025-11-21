@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
-import * as jsonpatch from 'fast-json-patch';
+import * as jsonpatch from '../../utils/jsonpatch';
 import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
 import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
@@ -980,7 +980,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           // Map actions to data patches
           .map(({ action, path, multiple, attributeType }) => {
             if (multiple) {
-              const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
+              const currentValues = jsonpatch.getValueByPath(bundle, path) ?? [];
               const actionValues = action.value.map((o) => {
                 // If value is an id, must be converted to standard_id has we work on stix bundle
                 if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
@@ -1006,7 +1006,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     }
     // Apply operations if needed
     if (patchOperations.length > 0) {
-      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+      const patchedBundle = jsonpatch.applyPatch(bundle, patchOperations);
       const diff = jsonpatch.compare(bundle, patchedBundle);
       if (isNotEmptyField(diff)) {
         return { output_port: 'out', bundle: patchedBundle };

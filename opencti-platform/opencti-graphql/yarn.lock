@@ -1819,6 +1819,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dmsnell/diff-match-patch@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@dmsnell/diff-match-patch@npm:1.1.0"
+  checksum: 10c0/8547bf4a62dfca0a61b9c6490ea0ea468ec108879892f2e1ebe14dc12e9e6c50ad91b184a186ab5119f47baf631ab4f1f152372b8b89ba4d8d42a8ae5dcb6e44
+  languageName: node
+  linkType: hard
+
 "@elastic/elasticsearch@npm:8.19.1":
   version: 8.19.1
   resolution: "@elastic/elasticsearch@npm:8.19.1"
@@ -8910,13 +8917,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fast-json-patch@npm:3.1.1":
-  version: 3.1.1
-  resolution: "fast-json-patch@npm:3.1.1"
-  checksum: 10c0/8a0438b4818bb53153275fe5b38033610e8c9d9eb11869e6a7dc05eb92fa70f3caa57015e344eb3ae1e71c7a75ad4cc6bc2dc9e0ff281d6ed8ecd44505210ca8
-  languageName: node
-  linkType: hard
-
 "fast-json-stable-stringify@npm:^2.0.0":
   version: 2.1.0
   resolution: "fast-json-stable-stringify@npm:2.1.0"
@@ -10876,6 +10876,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsondiffpatch@npm:0.7.3":
+  version: 0.7.3
+  resolution: "jsondiffpatch@npm:0.7.3"
+  dependencies:
+    "@dmsnell/diff-match-patch": "npm:^1.1.0"
+  bin:
+    jsondiffpatch: bin/jsondiffpatch.js
+  checksum: 10c0/fae49073e5cacef98a4700bf6c46d1a946549bb526597f57ad52a0ca4ac7f510be256386577ff39a966e227f132fc667bef4c547be7b68a69c2a5e7db9cc2d4f
+  languageName: node
+  linkType: hard
+
 "jsonfile@npm:^6.0.1":
   version: 6.1.0
   resolution: "jsonfile@npm:6.1.0"
@@ -12229,7 +12240,6 @@ __metadata:
     express: "npm:5.1.0"
     express-rate-limit: "npm:8.2.1"
     express-session: "npm:1.18.2"
-    fast-json-patch: "npm:3.1.1"
     file-type: "npm:21.1.0"
     github-api: "npm:3.4.0"
     graphql: "npm:16.12.0"
@@ -12249,6 +12259,7 @@ __metadata:
     ipaddr.js: "npm:2.2.0"
     js-deep-equals: "npm:2.1.1"
     json-to-plain-text: "npm:1.2.0"
+    jsondiffpatch: "npm:0.7.3"
     jsonpath-plus: "npm:10.3.0"
     jwt-decode: "npm:4.0.0"
     license-checker-rseidelsohn: "npm:4.4.2"

@@ -1,7 +1,7 @@
-import * as jsonpatch from 'fast-json-patch';
 import { Promise } from 'bluebird';
 import { LRUCache } from 'lru-cache';
 import { now } from 'moment';
+import * as jsonpatch from '../utils/jsonpatch';
 import conf, { basePath, logApp } from '../config/conf';
 import { TAXIIAPI } from '../domain/user';
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
@@ -594,7 +594,7 @@ const createSseMiddleware = () => {
               if (!isInferredData || (isInferredData && withInferences)) {
                 const isCurrentlyVisible = await isStixMatchFilterGroup(context, user, stix, streamFilters);
                 if (type === EVENT_TYPE_UPDATE) {
-                  const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), evenContext.reverse_patch);
+                  const previous = jsonpatch.applyPatch(stix, evenContext.reverse_patch);
                   const isPreviouslyVisible = await isStixMatchFilterGroup(context, user, previous, streamFilters);
                   if (isPreviouslyVisible && !isCurrentlyVisible && publishDeletion) { // No longer visible
                     client.sendEvent(eventId, EVENT_TYPE_DELETE, eventData);

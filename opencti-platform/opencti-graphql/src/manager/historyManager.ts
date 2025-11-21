@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import * as jsonpatch from 'fast-json-patch';
+import * as jsonpatch from '../utils/jsonpatch';
 import { createStreamProcessor, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, ENABLED_DEMO_MODE, logApp } from '../config/conf';
@@ -170,7 +170,7 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
       contextData.commit = updateEvent.commit?.message;
       contextData.external_references = updateEvent.commit?.external_references ?? [];
       // Previous markings must be kept to ensure data visibility restrictions
-      const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(stix), updateEvent.context.reverse_patch);
+      const previous = jsonpatch.applyPatch(stix, updateEvent.context.reverse_patch);
       const previousMarkingRefs = (previous.object_marking_refs ?? [])
         .map((stixId) => markingsById.get(stixId)?.internal_id)
         .filter((o) => isNotEmptyField(o)) as string[];

@@ -1,4 +1,4 @@
-import type { Operation } from 'fast-json-patch';
+import type { Operation } from '../utils/jsonpatch';
 import type { StixBundle } from './stix-2-1-common';
 
 export interface ExecutionEnvelopStep {
