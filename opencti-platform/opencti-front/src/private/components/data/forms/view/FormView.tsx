@@ -760,6 +760,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                           }
                           if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
                             const groupsFieldName = `additional_${additionalEntity.id}_groups`;
+                            const minAmount = additionalEntity.minAmount ?? 0;
                             return (
                               // Multi mode - field groups with add/remove
                               <FieldArray name={groupsFieldName}>
@@ -767,7 +768,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                   <>
                                     {(values[groupsFieldName] as unknown as Record<string, unknown>[])?.map((group, index) => (
                                       <div key={index} className={classes.fieldGroup}>
-                                        {index > 0 && (
+                                        {index >= minAmount && (
                                           <IconButton
                                             className={classes.deleteButton}
                                             onClick={() => remove(index)}
