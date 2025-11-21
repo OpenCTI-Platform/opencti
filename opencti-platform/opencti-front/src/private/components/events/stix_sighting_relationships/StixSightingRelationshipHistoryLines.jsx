@@ -4,8 +4,8 @@ import { compose, pathOr } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { graphql, createRefetchContainer } from 'react-relay';
 import Paper from '@mui/material/Paper';
-import StixCoreObjectHistoryLine from '../../common/stix_core_objects/StixCoreObjectHistoryLine';
 import inject18n from '../../../../components/i18n';
+import StixCoreObjectHistoryLine from '../../common/stix_core_objects/StixCoreObjectHistoryLine';
 
 const styles = (theme) => ({
   paperHistory: {
