@@ -36,27 +36,16 @@ export const getActiveDecayExclusionRule = async (context: AuthContext, user: Au
   return decayExclusionRuleEdges.edges.map(({ node }) => node).filter((rule) => rule.active);
 };
 
-type CheckDecayExclusionRulesTypes = {
-  hasExclusionRuleMatching: boolean,
-  exclusionRule: DecayExclusionRuleModel | null,
-};
-
 export const checkDecayExclusionRules = (
   observableType: string,
   activeDecayExclusionRuleList: DecayExclusionRuleModel[]
-): CheckDecayExclusionRulesTypes => {
-  const exclusionRuleList = activeDecayExclusionRuleList.filter((rule) => rule.decay_exclusion_observable_types.includes(observableType));
-  const hasExclusionRuleMatching = exclusionRuleList.length > 0;
-  if (!isDecayExclusionRuleEnabled) {
-    return {
-      exclusionRule: null,
-      hasExclusionRuleMatching: false,
-    };
-  }
-  return {
-    exclusionRule: hasExclusionRuleMatching ? exclusionRuleList[0] : null,
-    hasExclusionRuleMatching
-  };
+): DecayExclusionRuleModel | null => {
+  const exclusionRuleList = activeDecayExclusionRuleList.filter((rule) => {
+    return rule.decay_exclusion_observable_types.length === 0 || rule.decay_exclusion_observable_types.includes(observableType);
+  });
+
+  if (!isDecayExclusionRuleEnabled) return null;
+  return exclusionRuleList.length > 0 ? exclusionRuleList[0] : null;
 };
 
 export const addDecayExclusionRule = (context: AuthContext, user: AuthUser, input: DecayExclusionRuleAddInput) => {

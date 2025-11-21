@@ -275,7 +275,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const isDecayActivated: boolean = await isDecayEnabled();
 
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
-  const { exclusionRule, hasExclusionRuleMatching } = checkDecayExclusionRules(observableType, activeDecayExclusionRuleList);
+  const exclusionRule = checkDecayExclusionRules(observableType, activeDecayExclusionRuleList);
 
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
@@ -293,7 +293,8 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.assoc('revoked', revoked),
   )(indicator);
   let finalIndicatorToCreate;
-  if (!revoked && hasExclusionRuleMatching && exclusionRule) {
+
+  if (isDecayActivated && exclusionRule) {
     finalIndicatorToCreate = {
       ...indicatorToCreate,
       decay_exclusion_applied_rule: {
@@ -331,6 +332,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   } else {
     finalIndicatorToCreate = { ...indicatorToCreate };
   }
+  console.log('finalIndicatorToCreate : ', finalIndicatorToCreate);
   // create the linked observables
   let observablesToLink: string[] = [];
   if (indicator.basedOn) {
