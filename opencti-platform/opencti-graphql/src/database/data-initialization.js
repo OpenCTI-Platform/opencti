@@ -23,8 +23,8 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elRawDelete, elRawGet, elRawIndex } from './engine';
 import { ConfigurationError } from '../config/errors';
 import { initDefaultTheme } from '../modules/theme/theme-domain';
-import {addEmailTemplate} from "../modules/emailTemplate/emailTemplate-domain";
-import {DEFAULT_EMAIL_TEMPLATE_INPUT} from "./default-email-template-input";
+import { addEmailTemplate } from '../modules/emailTemplate/emailTemplate-domain';
+import { DEFAULT_EMAIL_TEMPLATE_INPUT } from './default-email-template-input';
 
 // region Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
