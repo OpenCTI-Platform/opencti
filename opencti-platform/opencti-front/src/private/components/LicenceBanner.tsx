@@ -44,7 +44,7 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
         bannerColor,
         message: (
           <>
-            {t_i18n('Your Trial platform activated: ')}
+            {t_i18n('Your OpenCTI Enterprise Edition free trial is active: ')}
             <strong> {remainingDays} {remainingDays === 1 ? t_i18n('Day remaining') : t_i18n('Days remaining')}</strong>
           </>
         ),
