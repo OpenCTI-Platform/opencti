@@ -791,7 +791,7 @@ const PlaybookAddComponentsContent = ({
                               )}
                               {(actionsInputs[i]?.op === 'remove') && (
                                 <Alert severity="warning" style={{ marginBottom: 20 }}>
-                                  {t_i18n('The remove operation will now permanently delete the selected attribute from the entity, including attributes that already exist in the platform (not just those added during playbook execution). This action cannot be undone through the playbook.')}
+                                  {t_i18n('Remove operation will only apply on field values added in the context of this playbook such as enrichment or other knowledge manipulations but not if values are already written in the platform.')}
                                 </Alert>
                               )}
                               <div key={i} className={classes.step}>
