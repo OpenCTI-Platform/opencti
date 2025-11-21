@@ -3774,23 +3774,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:0.3.59":
-  version: 0.3.59
-  resolution: "@langchain/core@npm:0.3.59"
+"@langchain/core@npm:1.0.6":
+  version: 1.0.6
+  resolution: "@langchain/core@npm:1.0.6"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     ansi-styles: "npm:^5.0.0"
     camelcase: "npm:6"
     decamelize: "npm:1.2.0"
     js-tiktoken: "npm:^1.0.12"
-    langsmith: "npm:^0.3.33"
+    langsmith: "npm:^0.3.64"
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     p-retry: "npm:4"
     uuid: "npm:^10.0.0"
-    zod: "npm:^3.25.32"
-    zod-to-json-schema: "npm:^3.22.3"
-  checksum: 10c0/14bb426231208409bf2b93a12f80ff370194644105a66f12096ef56469e8b827e9d2ab959fb3a7accf75e952a79a27e189835da5b22a33524f7bbaeb6f4282df
+    zod: "npm:^3.25.76 || ^4"
+  checksum: 10c0/5b8c9728a03a6d40c0684aa30bd3fcb2a99e57bb8c6c2370113f0bb6ef622f3f3be5b12eec5d71afeed611795ce8c65a386d4b3c6becc766e48dccba9be42ed9
   languageName: node
   linkType: hard
 
@@ -10926,9 +10925,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langsmith@npm:^0.3.33":
-  version: 0.3.33
-  resolution: "langsmith@npm:0.3.33"
+"langsmith@npm:^0.3.64":
+  version: 0.3.79
+  resolution: "langsmith@npm:0.3.79"
   dependencies:
     "@types/uuid": "npm:^10.0.0"
     chalk: "npm:^4.1.2"
@@ -10938,11 +10937,20 @@ __metadata:
     semver: "npm:^7.6.3"
     uuid: "npm:^10.0.0"
   peerDependencies:
+    "@opentelemetry/api": "*"
+    "@opentelemetry/exporter-trace-otlp-proto": "*"
+    "@opentelemetry/sdk-trace-base": "*"
     openai: "*"
   peerDependenciesMeta:
+    "@opentelemetry/api":
+      optional: true
+    "@opentelemetry/exporter-trace-otlp-proto":
+      optional: true
+    "@opentelemetry/sdk-trace-base":
+      optional: true
     openai:
       optional: true
-  checksum: 10c0/3d18a7b1273a71c8b6057c3fa3de886416c0d964a19535d032cef009e2c6a6adec0af7eb61a5e4e41725b4b2d1990c0fe5f3ca4d09e95f5a5a97dbebb0fc577e
+  checksum: 10c0/5449d4bedc548e6656b9a51b1fc12d527c6ed49642e954530e4436a564ad9d806cda3f9f25a27e36d5908fd541d57e8e2b3e73b63069286d4ca90ed58b22b61e
   languageName: node
   linkType: hard
 
@@ -12155,7 +12163,7 @@ __metadata:
     "@graphql-tools/schema": "npm:10.0.29"
     "@graphql-tools/utils": "npm:10.10.3"
     "@jorgeferrero/stream-to-buffer": "npm:2.0.6"
-    "@langchain/core": "npm:0.3.59"
+    "@langchain/core": "npm:1.0.6"
     "@langchain/mistralai": "npm:0.2.0"
     "@langchain/openai": "npm:0.5.5"
     "@luckycatfactory/esbuild-graphql-loader": "npm:3.8.1"
@@ -15721,9 +15729,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.25.32":
-  version: 3.25.67
-  resolution: "zod@npm:3.25.67"
-  checksum: 10c0/80a0cab3033272c4ab9312198081f0c4ea88e9673c059aa36dc32024906363729db54bdb78f3dc9d5529bd1601f74974d5a56c0a23e40c6f04a9270c9ff22336
+"zod@npm:^3.25.76 || ^4":
+  version: 4.1.12
+  resolution: "zod@npm:4.1.12"
+  checksum: 10c0/b64c1feb19e99d77075261eaf613e0b2be4dfcd3551eff65ad8b4f2a079b61e379854d066f7d447491fcf193f45babd8095551a9d47973d30b46b6d8e2c46774
   languageName: node
   linkType: hard
