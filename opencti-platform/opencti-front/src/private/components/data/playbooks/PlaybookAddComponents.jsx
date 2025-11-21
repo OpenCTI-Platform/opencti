@@ -44,6 +44,7 @@ import PlaybookFlowFieldPeriod from './playbookFlow/playbookFlowFields/PlaybookF
 import PlaybookFlowFieldTriggerTime from './playbookFlow/playbookFlowFields/PlaybookFlowFieldTriggerTime';
 import PlaybookFlowFieldNumber from './playbookFlow/playbookFlowFields/PlaybookFlowFieldNumber';
 import PlaybookFlowFieldBoolean from './playbookFlow/playbookFlowFields/PlaybookFlowFieldBoolean';
+import PlaybookFlowFieldString from './playbookFlow/playbookFlowFields/PlaybookFlowFieldString';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -697,14 +698,10 @@ const PlaybookAddComponentsContent = ({
                     );
                   }
                   return (
-                    <Field
+                    <PlaybookFlowFieldString
                       key={k}
-                      component={TextField}
-                      style={{ marginTop: 20, width: '100%' }}
-                      variant="standard"
                       name={k}
                       label={t_i18n(v.$ref ?? k)}
-                      fullWidth={true}
                     />
                   );
                 },
