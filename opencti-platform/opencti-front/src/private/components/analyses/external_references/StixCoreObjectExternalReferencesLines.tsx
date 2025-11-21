@@ -133,6 +133,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const externalReferencesEdges = data.stixCoreObject
     ? data.stixCoreObject.externalReferences?.edges
     : [];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const firstExternalReferenceEdge = externalReferencesEdges?.map((o) => o)[0];
   type externalReferenceEdge_type = typeof firstExternalReferenceEdge;
   const expandable = externalReferencesEdges
