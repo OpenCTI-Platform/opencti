@@ -57,12 +57,12 @@ def start_loop(loop):
 
 
 def get_config_variable(
-        env_var: str,
-        yaml_path: List,
-        config: Dict = {},
-        isNumber: Optional[bool] = False,
-        default=None,
-        required=False,
+    env_var: str,
+    yaml_path: List,
+    config: Dict = {},
+    isNumber: Optional[bool] = False,
+    default=None,
+    required=False,
 ) -> Union[bool, int, None, str]:
     """[summary]
 
@@ -91,9 +91,9 @@ def get_config_variable(
         return int(result)
 
     if (
-            required
-            and default is None
-            and (result is None or (isinstance(result, str) and len(result) == 0))
+        required
+        and default is None
+        and (result is None or (isinstance(result, str) and len(result) == 0))
     ):
         raise ValueError("The configuration " + env_var + " is required")
 
@@ -273,17 +273,17 @@ class ListenQueue(threading.Thread):
     """
 
     def __init__(
-            self,
-            helper,
-            opencti_token,
-            config: Dict,
-            connector_config: Dict,
-            applicant_id,
-            listen_protocol,
-            listen_protocol_api_ssl,
-            listen_protocol_api_path,
-            listen_protocol_api_port,
-            callback,
+        self,
+        helper,
+        opencti_token,
+        config: Dict,
+        connector_config: Dict,
+        applicant_id,
+        listen_protocol,
+        listen_protocol_api_ssl,
+        listen_protocol_api_path,
+        listen_protocol_api_port,
+        callback,
     ) -> None:
         threading.Thread.__init__(self)
         self.pika_credentials = None
@@ -337,7 +337,7 @@ class ListenQueue(threading.Thread):
         while self.thread.is_alive():  # Loop while the thread is processing
             self.pika_connection.sleep(0.05)
             if (
-                    self.helper.work_id is not None and time_wait > five_minutes
+                self.helper.work_id is not None and time_wait > five_minutes
             ):  # Ping every 5 minutes
                 self.helper.api.work.ping(self.helper.work_id)
                 time_wait = 0
@@ -450,7 +450,7 @@ class ListenQueue(threading.Thread):
                             e
                             for e in stix_objects
                             if e["id"] == opencti_entity["standard_id"]
-                               or e["id"] == "x-opencti-" + opencti_entity["standard_id"]
+                            or e["id"] == "x-opencti-" + opencti_entity["standard_id"]
                         ][0]
                     event_data["stix_objects"] = stix_objects
                     event_data["stix_entity"] = stix_entity
@@ -507,9 +507,9 @@ class ListenQueue(threading.Thread):
         authorization: str = request.headers.get("Authorization", "")
         items = authorization.split() if isinstance(authorization, str) else []
         if (
-                len(items) != 2
-                or items[0].lower() != "bearer"
-                or items[1] != self.opencti_token
+            len(items) != 2
+            or items[0].lower() != "bearer"
+            or items[1] != self.opencti_token
         ):
             return JSONResponse(
                 status_code=401, content={"error": "Invalid credentials"}
@@ -634,14 +634,14 @@ class ListenQueue(threading.Thread):
 
 class PingAlive(threading.Thread):
     def __init__(
-            self,
-            connector_logger,
-            connector_id,
-            api,
-            get_state,
-            set_state,
-            metric,
-            connector_info,
+        self,
+        connector_logger,
+        connector_id,
+        api,
+        get_state,
+        set_state,
+        metric,
+        connector_info,
     ) -> None:
         threading.Thread.__init__(self, daemon=True)
         self.connector_logger = connector_logger
@@ -669,7 +669,7 @@ class PingAlive(threading.Thread):
                 remote_state = (
                     json.loads(result["connector_state"])
                     if result["connector_state"] is not None
-                       and len(result["connector_state"]) > 0
+                    and len(result["connector_state"]) > 0
                     else None
                 )
                 if initial_state != remote_state:
@@ -739,21 +739,21 @@ class StreamAlive(threading.Thread):
 
 class ListenStreamBatch(threading.Thread):
     def __init__(
-            self,
-            helper,
-            callback,
-            url,
-            token,
-            verify_ssl,
-            start_timestamp,
-            live_stream_id,
-            listen_delete,
-            no_dependencies,
-            recover_iso_date,
-            with_inferences,
-            batch_size,
-            batch_timeout,
-            max_batches_per_minute,
+        self,
+        helper,
+        callback,
+        url,
+        token,
+        verify_ssl,
+        start_timestamp,
+        live_stream_id,
+        listen_delete,
+        no_dependencies,
+        recover_iso_date,
+        with_inferences,
+        batch_size,
+        batch_timeout,
+        max_batches_per_minute,
     ) -> None:
         threading.Thread.__init__(self)
         self.helper = helper
@@ -782,7 +782,7 @@ class ListenStreamBatch(threading.Thread):
             self.batch_timestamps = None
 
     def _process_batch_and_update_state(
-            self, batch, last_msg_id, trigger_reason="unknown"
+        self, batch, last_msg_id, trigger_reason="unknown"
     ):
         """Process a batch of messages and update connector state.
 
@@ -1062,18 +1062,18 @@ class ListenStreamBatch(threading.Thread):
 
 class ListenStream(threading.Thread):
     def __init__(
-            self,
-            helper,
-            callback,
-            url,
-            token,
-            verify_ssl,
-            start_timestamp,
-            live_stream_id,
-            listen_delete,
-            no_dependencies,
-            recover_iso_date,
-            with_inferences,
+        self,
+        helper,
+        callback,
+        url,
+        token,
+        verify_ssl,
+        start_timestamp,
+        live_stream_id,
+        listen_delete,
+        no_dependencies,
+        recover_iso_date,
+        with_inferences,
     ) -> None:
         threading.Thread.__init__(self)
         self.helper = helper
@@ -1206,13 +1206,13 @@ class ListenStream(threading.Thread):
 
 class ConnectorInfo:
     def __init__(
-            self,
-            run_and_terminate: bool = False,
-            buffering: bool = False,
-            queue_threshold: float = 500.0,
-            queue_messages_size: float = 0.0,
-            next_run_datetime: datetime = None,
-            last_run_datetime: datetime = None,
+        self,
+        run_and_terminate: bool = False,
+        buffering: bool = False,
+        queue_threshold: float = 500.0,
+        queue_messages_size: float = 0.0,
+        next_run_datetime: datetime = None,
+        last_run_datetime: datetime = None,
     ):
         self._run_and_terminate = run_and_terminate
         self._buffering = buffering
@@ -1826,7 +1826,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             remote_state = (
                 json.loads(result["connector_state"])
                 if result["connector_state"] is not None
-                   and len(result["connector_state"]) > 0
+                and len(result["connector_state"]) > 0
                 else None
             )
             if initial_state != remote_state:
@@ -1944,10 +1944,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_unit(
-            self,
-            message_callback: Callable[[], None],
-            duration_period: Union[int, float, str],
-            time_unit: TimeUnit,
+        self,
+        message_callback: Callable[[], None],
+        duration_period: Union[int, float, str],
+        time_unit: TimeUnit,
     ) -> None:
         """
         This (deprecated) method is there to manage backward compatibility of intervals on connectors,
@@ -1978,7 +1978,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_iso(
-            self, message_callback: Callable[[], None], duration_period: str
+        self, message_callback: Callable[[], None], duration_period: str
     ) -> None:
         """
         This method allows you to calculate the duration period of connectors in seconds from ISO 8601 format
@@ -2009,10 +2009,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def _schedule_process(
-            self,
-            scheduler: sched.scheduler,
-            message_callback: Callable[[], None],
-            duration_period: Union[int, float],
+        self,
+        scheduler: sched.scheduler,
+        message_callback: Callable[[], None],
+        duration_period: Union[int, float],
     ) -> None:
         """
         When scheduling, the function retrieves the details of the connector queue,
@@ -2054,7 +2054,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
 
     def schedule_process(
-            self, message_callback: Callable[[], None], duration_period: Union[int, float]
+        self, message_callback: Callable[[], None], duration_period: Union[int, float]
     ) -> None:
         """
         This method schedules the execution of a connector process.
@@ -2117,8 +2117,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def listen(
-            self,
-            message_callback: Callable[[Dict], str],
+        self,
+        message_callback: Callable[[Dict], str],
     ) -> None:
         """listen for messages and register callback function
 
@@ -2142,16 +2142,16 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.listen_queue.join()
 
     def _resolve_stream_parameters(
-            self,
-            url=None,
-            token=None,
-            verify_ssl=None,
-            start_timestamp=None,
-            live_stream_id=None,
-            listen_delete=None,
-            no_dependencies=None,
-            recover_iso_date=None,
-            with_inferences=None,
+        self,
+        url=None,
+        token=None,
+        verify_ssl=None,
+        start_timestamp=None,
+        live_stream_id=None,
+        listen_delete=None,
+        no_dependencies=None,
+        recover_iso_date=None,
+        with_inferences=None,
     ) -> dict:
         """Resolve stream connection parameters from arguments or configuration.
 
@@ -2189,32 +2189,32 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             listen_delete = False
         # No deps
         if (
-                no_dependencies is None
-                and self.connect_live_stream_no_dependencies is not None
+            no_dependencies is None
+            and self.connect_live_stream_no_dependencies is not None
         ):
             no_dependencies = self.connect_live_stream_no_dependencies
         elif no_dependencies is None:
             no_dependencies = False
         # With inferences
         if (
-                with_inferences is None
-                and self.connect_live_stream_with_inferences is not None
+            with_inferences is None
+            and self.connect_live_stream_with_inferences is not None
         ):
             with_inferences = self.connect_live_stream_with_inferences
         elif with_inferences is None:
             with_inferences = False
         # Start timestamp
         if (
-                start_timestamp is None
-                and self.connect_live_stream_start_timestamp is not None
+            start_timestamp is None
+            and self.connect_live_stream_start_timestamp is not None
         ):
             start_timestamp = str(self.connect_live_stream_start_timestamp) + "-0"
         elif start_timestamp is not None:
             start_timestamp = str(start_timestamp) + "-0"
         # Recover ISO date
         if (
-                recover_iso_date is None
-                and self.connect_live_stream_recover_iso_date is not None
+            recover_iso_date is None
+            and self.connect_live_stream_recover_iso_date is not None
         ):
             recover_iso_date = self.connect_live_stream_recover_iso_date
         # Generate the stream URL
@@ -2235,17 +2235,17 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         }
 
     def listen_stream(
-            self,
-            message_callback,
-            url=None,
-            token=None,
-            verify_ssl=None,
-            start_timestamp=None,
-            live_stream_id=None,
-            listen_delete=None,
-            no_dependencies=None,
-            recover_iso_date=None,
-            with_inferences=None,
+        self,
+        message_callback,
+        url=None,
+        token=None,
+        verify_ssl=None,
+        start_timestamp=None,
+        live_stream_id=None,
+        listen_delete=None,
+        no_dependencies=None,
+        recover_iso_date=None,
+        with_inferences=None,
     ) -> ListenStream:
         """listen for messages and register callback function
 
@@ -2281,20 +2281,20 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         return self.listen_stream
 
     def listen_stream_batch(
-            self,
-            message_callback,
-            batch_size=None,
-            batch_timeout=None,
-            max_batches_per_minute=None,
-            url=None,
-            token=None,
-            verify_ssl=None,
-            start_timestamp=None,
-            live_stream_id=None,
-            listen_delete=None,
-            no_dependencies=None,
-            recover_iso_date=None,
-            with_inferences=None,
+        self,
+        message_callback,
+        batch_size=None,
+        batch_timeout=None,
+        max_batches_per_minute=None,
+        url=None,
+        token=None,
+        verify_ssl=None,
+        start_timestamp=None,
+        live_stream_id=None,
+        listen_delete=None,
+        no_dependencies=None,
+        recover_iso_date=None,
+        with_inferences=None,
     ) -> ListenStreamBatch:
         """Listen for stream messages and process them in batches.
 
@@ -2474,9 +2474,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             bundle_data = json.loads(bundle)
             for item in bundle_data["objects"]:
                 if (
-                        "extensions" in item
-                        and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-                        in item["extensions"]
+                    "extensions" in item
+                    and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+                    in item["extensions"]
                 ):
                     octi_extensions = item["extensions"][
                         "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -2516,9 +2516,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             file_name = f"{work_id}.json"
 
         if (
-                (self.connect_validate_before_import or force_validation)
-                and not bypass_validation
-                and file_name
+            (self.connect_validate_before_import or force_validation)
+            and not bypass_validation
+            and file_name
         ):
             if validation_mode == "workbench":
                 self.api.upload_pending_file(
@@ -2550,11 +2550,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 },
             )
             bundle_file = (
-                    self.connect_name.lower().replace(" ", "_")
-                    + "-"
-                    + time.strftime("%Y%m%d-%H%M%S-")
-                    + str(time.time())
-                    + ".json"
+                self.connect_name.lower().replace(" ", "_")
+                + "-"
+                + time.strftime("%Y%m%d-%H%M%S-")
+                + str(time.time())
+                + ".json"
             )
             write_file = os.path.join(
                 bundle_send_to_directory_path, bundle_file + ".tmp"
@@ -2582,8 +2582,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                         file_location = os.path.join(bundle_send_to_directory_path, f)
                         file_time = os.stat(file_location).st_mtime
                         is_expired_file = (
-                                file_time
-                                < current_time - 86400 * bundle_send_to_directory_retention
+                            file_time
+                            < current_time - 86400 * bundle_send_to_directory_retention
                         )  # 86400 = 1 day
                         if is_expired_file:
                             os.remove(file_location)
@@ -2907,25 +2907,25 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     @staticmethod
     def get_attribute_in_extension(key, object) -> any:
         if (
-                "extensions" in object
-                and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-                in object["extensions"]
-                and key
-                in object["extensions"][
-            "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
-        ]
+            "extensions" in object
+            and "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            in object["extensions"]
+            and key
+            in object["extensions"][
+                "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
+            ]
         ):
             return object["extensions"][
                 "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
             ][key]
         elif (
-                "extensions" in object
-                and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-                in object["extensions"]
-                and key
-                in object["extensions"][
-                    "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
-                ]
+            "extensions" in object
+            and "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            in object["extensions"]
+            and key
+            in object["extensions"][
+                "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
+            ]
         ):
             return object["extensions"][
                 "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd566a82"
@@ -2937,13 +2937,13 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     @staticmethod
     def get_attribute_in_mitre_extension(key, object) -> any:
         if (
-                "extensions" in object
-                and "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
-                in object["extensions"]
-                and key
-                in object["extensions"][
-            "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
-        ]
+            "extensions" in object
+            and "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+            in object["extensions"]
+            and key
+            in object["extensions"][
+                "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
+            ]
         ):
             return object["extensions"][
                 "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
