@@ -55,8 +55,6 @@ export class TelemetryMeterManager {
   // Number of email sent
   userEmailSendCount = 0;
 
-  onboardingEmailSendCount = 0;
-
   // Number of background task with scope User
   userBackgroundTaskCount = 0;
 
@@ -90,6 +88,30 @@ export class TelemetryMeterManager {
   // Number security coverages
   securityCoveragesCount = 0;
 
+  // Region Telemetry on SSO providers usage
+  // True when the strategy is configured and enabled. False if not.
+  ssoLocalStrategyEnabled = 0;
+
+  ssoOpenidStrategyEnabled = 0;
+
+  ssoLDAPStrategyEnabled = 0;
+
+  ssoSAMLStrategyEnabled = 0;
+
+  ssoAuthZeroStrategyEnabled = 0;
+
+  ssoCertStrategyEnabled = 0;
+
+  ssoHeaderStrategyEnabled = 0;
+
+  ssoFacebookStrategyEnabled = 0;
+
+  ssoGoogleStrategyEnabled = 0;
+
+  ssoGithubStrategyEnabled = 0;
+
+  // endregion providers usage
+
   constructor(meterProvider: MeterProvider) {
     this.meterProvider = meterProvider;
   }
@@ -100,6 +122,46 @@ export class TelemetryMeterManager {
 
   setIsEEActivated(EE: number) {
     this.isEEActivated = EE;
+  }
+
+  setSsoLocalStrategyEnabled(enabled: number) {
+    this.ssoLocalStrategyEnabled = enabled;
+  }
+
+  setSsoOpenidStrategyEnabled(enabled: number) {
+    this.ssoOpenidStrategyEnabled = enabled;
+  }
+
+  setSsoLDAPStrategyEnabled(enabled: number) {
+    this.ssoLDAPStrategyEnabled = enabled;
+  }
+
+  setSsoSAMLStrategyEnabled(enabled: number) {
+    this.ssoSAMLStrategyEnabled = enabled;
+  }
+
+  setSsoAuthZeroStrategyEnabled(enabled: number) {
+    this.ssoAuthZeroStrategyEnabled = enabled;
+  }
+
+  setSsoCertStrategyEnabled(enabled: number) {
+    this.ssoCertStrategyEnabled = enabled;
+  }
+
+  setSsoHeaderStrategyEnabled(enabled: number) {
+    this.ssoHeaderStrategyEnabled = enabled;
+  }
+
+  setSsoFacebookStrategyEnabled(enabled: number) {
+    this.ssoFacebookStrategyEnabled = enabled;
+  }
+
+  setSsoGoogleStrategyEnabled(enabled: number) {
+    this.ssoGoogleStrategyEnabled = enabled;
+  }
+
+  setSsoGithubStrategyEnabled(enabled: number) {
+    this.ssoGithubStrategyEnabled = enabled;
   }
 
   setInstancesCount(n: number) {
@@ -170,10 +232,6 @@ export class TelemetryMeterManager {
     this.userEmailSendCount = n;
   }
 
-  setOnboardingEmailSendCount(n: number) {
-    this.onboardingEmailSendCount = n;
-  }
-
   setUserBackgroundTaskCount(n: number) {
     this.userBackgroundTaskCount = n;
   }
@@ -218,7 +276,10 @@ export class TelemetryMeterManager {
     this.securityCoveragesCount = n;
   }
 
-  registerGauge(name: string, description: string, observer: string, opts: { unit?: string, valueType?: ValueType } = {}) {
+  registerGauge(name: string, description: string, observer: string, opts: {
+    unit?: string,
+    valueType?: ValueType
+  } = {}) {
     const meter = this.meterProvider.getMeter(TELEMETRY_SERVICE_NAME);
     const gaugeOptions = { description, unit: opts.unit ?? 'count', valueType: opts.valueType ?? ValueType.INT };
     const activeUsersCountGauge = meter.createObservableGauge(`opencti_${name}`, gaugeOptions,);
@@ -250,7 +311,6 @@ export class TelemetryMeterManager {
     this.registerGauge('user_into_service_account_count', 'Number of User turned into Service Account', 'userIntoServiceAccountCount');
     this.registerGauge('service_account_into_user_count', 'Number of Service Account turned into User', 'serviceAccountIntoUserCount');
     this.registerGauge('user_email_send_count', 'Number of emails sent from the platform', 'userEmailSendCount');
-    this.registerGauge('onboarding_email_send_count', 'Number of onboarding emails sent', 'onboardingEmailSendCount');
     this.registerGauge('user_background_task_count', 'Number of background tasks on User scope', 'userBackgroundTaskCount');
     this.registerGauge('email_template_created_count', 'Number of email templates created', 'emailTemplateCreatedCount');
     this.registerGauge('forgot_password_count', 'Number of clicks on Forgot Password', 'forgotPasswordCount');
@@ -262,5 +322,15 @@ export class TelemetryMeterManager {
     this.registerGauge('form_intake_deleted_count', 'Number of form intakes deleted', 'formIntakeDeletedCount');
     this.registerGauge('form_intake_submitted_count', 'Number of form intakes submitted', 'formIntakeSubmittedCount');
     this.registerGauge('security_coverages_count', 'Number of security coverages', 'securityCoveragesCount');
+    this.registerGauge('is_sso_local_strategy_enabled', 'LocalStrategy is configured and enabled', 'ssoLocalStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_openid_strategy_enabled', 'OpenidStrategy is configured and enabled', 'ssoOpenidStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_ldap_strategy_enabled', 'LDAPStrategy is configured and enabled', 'ssoLDAPStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_saml_strategy_enabled', 'SAMLStrategy is configured and enabled', 'ssoSAMLStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_authzero_strategy_enabled', 'AuthZeroStrategy is configured and enabled', 'ssoAuthZeroStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_cert_strategy_enabled', 'CertStrategy is configured and enabled', 'ssoCertStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_header_strategy_enabled', 'HeaderStrategy is configured and enabled', 'ssoHeaderStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_facebook_strategy_enabled', 'FacebookStrategy is configured and enabled', 'ssoFacebookStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_google_strategy_enabled', 'GoogleStrategy is configured and enabled', 'ssoGoogleStrategyEnabled', { unit: 'boolean' });
+    this.registerGauge('is_sso_github_strategy_enabled', 'GithubStrategy is configured and enabled', 'ssoGithubStrategyEnabled', { unit: 'boolean' });
   }
 }

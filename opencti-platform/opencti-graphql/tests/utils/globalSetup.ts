@@ -11,7 +11,7 @@ import { wait } from '../../src/database/utils';
 import { createRedisClient, initializeRedisClients, shutdownRedisClients } from '../../src/database/redis';
 import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
-import { initializeAdminUser } from '../../src/config/providers';
+import { initializeAdminUser } from '../../src/config/providers-initialization';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
 import { initializeInternalQueues } from '../../src/database/rabbitmq';
 import { executionContext } from '../../src/utils/access';
