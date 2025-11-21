@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { OrganizationEditionOverview_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionOverview_organization.graphql';
-import { OrganizationEditionContainer_organization$data } from '@components/entities/organizations/__generated__/OrganizationEditionContainer_organization.graphql';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
+import { GenericContext } from '@components/common/model/GenericContextModel';
+import { OrganizationEditionOverview_organization$key } from './__generated__/OrganizationEditionOverview_organization.graphql';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -22,6 +22,43 @@ import useFormEditor, { GenericData } from '../../../../utils/hooks/useFormEdito
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
 import AlertConfidenceForEntity from '../../../../components/AlertConfidenceForEntity';
+
+export const organizationEditionOverviewFragment = graphql`
+  fragment OrganizationEditionOverview_organization on Organization {
+    id
+    name
+    description
+    confidence
+    entity_type
+    contact_information
+    x_opencti_organization_type
+    x_opencti_reliability
+    x_opencti_score
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
+      }
+    }
+    objectMarking {
+      id
+      definition_type
+      definition
+      x_opencti_order
+      x_opencti_color
+    }
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+  }
+`;
 
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
@@ -80,12 +117,10 @@ const organizationMutationRelationDelete = graphql`
 
 const ORGANIZATION_TYPE = 'Organization';
 
-type OrganizationGenericData = OrganizationEditionOverview_organization$data & GenericData;
-
 interface OrganizationEditionOverviewComponentProps {
-  organization: OrganizationGenericData;
+  organizationRef: OrganizationEditionOverview_organization$key;
   enableReferences: boolean;
-  context: OrganizationEditionContainer_organization$data['editContext'];
+  context?: readonly (GenericContext | null)[] | null;
   handleClose: () => void;
 }
 
@@ -97,16 +132,17 @@ interface OrganizationEditionFormValues {
   references: ExternalReferencesValues | undefined;
 }
 
-const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditionOverviewComponentProps> = ({
-  organization,
+const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverviewComponentProps> = ({
+  organizationRef,
   enableReferences,
   context,
   handleClose,
 }) => {
   const { t_i18n } = useFormatter();
+  const organization = useFragment(organizationEditionOverviewFragment, organizationRef);
   const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
   const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().trim().min(2),
+    name: Yup.string().trim().min(1), // only sdo with allowed 1-character-length name
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     contact_information: Yup.string().nullable(),
@@ -129,7 +165,7 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
     relationDelete: organizationMutationRelationDelete,
     editionFocus: organizationEditionOverviewFocus,
   };
-  const editor = useFormEditor(organization, enableReferences, queries, organizationValidator);
+  const editor = useFormEditor(organization as GenericData, enableReferences, queries, organizationValidator);
 
   const onSubmit: FormikConfig<OrganizationEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
@@ -356,41 +392,4 @@ const OrganizationEditionOverviewComponent: FunctionComponent<OrganizationEditio
   );
 };
 
-export default createFragmentContainer(OrganizationEditionOverviewComponent, {
-  organization: graphql`
-      fragment OrganizationEditionOverview_organization on Organization {
-        id
-        name
-        description
-        confidence
-        entity_type
-        contact_information
-        x_opencti_organization_type
-        x_opencti_reliability
-        x_opencti_score
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-        status {
-          id
-          order
-          template {
-            name
-            color
-          }
-        }
-        workflowEnabled
-      }
-    `,
-});
+export default OrganizationEditionOverview;

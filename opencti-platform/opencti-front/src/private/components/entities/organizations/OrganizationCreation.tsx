@@ -92,7 +92,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
 
   const { mandatoryAttributes } = useIsMandatoryAttribute(ORGANIZATION_TYPE);
   const basicShape = yupShapeConditionalRequired({
-    name: Yup.string().min(2),
+    name: Yup.string().min(1), // only sdo with allowed 1-character-length name
     description: Yup.string()
       .nullable(),
     confidence: Yup.number().nullable(),
