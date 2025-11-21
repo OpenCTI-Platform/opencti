@@ -10,6 +10,14 @@ import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@components/common/drawer/Drawer';
 import { ListItemButton } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import { DataColumns } from '../../../../../components/list_lines';
 import { AuditLine_node$data, AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import type { Theme } from '../../../../../components/Theme';
@@ -50,28 +58,28 @@ interface AuditLineProps {
 }
 
 const AuditLineFragment = graphql`
-  fragment AuditLine_node on Log {
-    id
-    entity_type
-    event_type
-    event_scope
-    event_status
-    timestamp
-    context_uri
-    user {
-      id
-      name
+    fragment AuditLine_node on Log {
+        id
+        entity_type
+        event_type
+        event_scope
+        event_status
+        timestamp
+        context_uri
+        user {
+            id
+            name
+        }
+        raw_data
+        context_data {
+            entity_id
+            entity_type
+            entity_name
+            message
+            from_id
+            to_id
+        }
     }
-    raw_data
-    context_data {
-      entity_id
-      entity_type
-      entity_name
-      message
-      from_id
-      to_id
-    }
-  }
 `;
 
 export const AuditLine: FunctionComponent<AuditLineProps> = ({
@@ -85,6 +93,15 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const data = useFragment(AuditLineFragment, node);
   const message = useGenerateAuditMessage<AuditLine_node$data>(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
+
+  function createData(name: string, PreviousValue:string, NewValue:string) {
+    return { name, PreviousValue, NewValue };
+  }
+  const rows = [
+    createData('Report type', 'Threat report', 'APT'),
+    createData('Markings', 'TLP:RED', 'TLP:AMBER'),
+    createData('Description', 'lzal', ''),
+  ];
   return (
     <>
       <Drawer
@@ -111,6 +128,61 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
               <Link to={data.context_uri}>View the element</Link>
             </div>
           )}
+          <div style={{ marginTop: 16 }}>
+            <Grid item xs={6}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t_i18n('Details')}
+              </Typography>
+              <Paper
+                variant="outlined"
+                className="paper-for-grid"
+                style={{
+                  marginTop: theme.spacing(1),
+                  padding: theme.spacing(2),
+                  borderRadius: theme.spacing(0.5),
+                  position: 'relative',
+                  height: '235px',
+                }}
+              >
+                <div style={{ height: '100%', width: '100%' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                    textAlign: 'center',
+                  }}
+                  >
+                    <TableContainer component={Paper}>
+                      <Table sx={{ minWidth: 650 }} size="small">
+                        <TableHead>
+                          <TableRow>
+                            <TableCell></TableCell>
+                            <TableCell align="left">Previous value</TableCell>
+                            <TableCell align="left">New value</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {rows.map((row) => (
+                            <TableRow
+                              key={row.name}
+                              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                            >
+                              <TableCell component="th" scope="row">
+                                {row.name}
+                              </TableCell>
+                              <TableCell align="left">{row.PreviousValue}</TableCell>
+                              <TableCell align="left">{row.NewValue}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </div>
+                </div>
+              </Paper>
+            </Grid>
+          </div>
           <div style={{ marginTop: 16 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Raw data')}
