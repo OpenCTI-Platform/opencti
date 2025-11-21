@@ -81,13 +81,13 @@ describe('Decay Exclusion Rule', () => {
     });
 
     it('should create a decay exclusion rule', () => {
-      expect(createdDecayExclusionRule_1.id).toBeDefined();
-      expect(createdDecayExclusionRule_1.name).toBe('test name 1');
+      expect(createdDecayExclusionRule_1?.id).toBeDefined();
+      expect(createdDecayExclusionRule_1?.name).toBe('test name 1');
     });
 
     it('should create another decay exclusion rule', () => {
-      expect(createdDecayExclusionRule_2.id).toBeDefined();
-      expect(createdDecayExclusionRule_2.name).toBe('test name 2');
+      expect(createdDecayExclusionRule_2?.id).toBeDefined();
+      expect(createdDecayExclusionRule_2?.name).toBe('test name 2');
     });
   });
 
