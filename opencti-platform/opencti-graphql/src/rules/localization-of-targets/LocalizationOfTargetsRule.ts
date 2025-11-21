@@ -11,10 +11,14 @@ import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../ty
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import { internalLoadById } from '../../database/middleware-loader';
+import type { CreateInferredRelationCallbackFunction, RuleRuntime } from '../../types/rules';
 
 const ruleLocalizationOfTargetsBuilder = () => {
   // Execution
-  const applyUpsert = async (data: StixRelation): Promise<void> => {
+  const applyUpsert = async (
+    data: StixRelation,
+    createInferredRelationCallback: CreateInferredRelationCallbackFunction
+  ): Promise<void> => {
     const context = executionContext(def.name, RULE_MANAGER_USER);
     const { extensions } = data;
     const createdId = extensions[STIX_EXT_OCTI].id;
@@ -43,18 +47,22 @@ const ruleLocalizationOfTargetsBuilder = () => {
         stop_time: range.end,
         objectMarking: elementMarkings,
       });
-      await createInferredRelation(context, input, ruleContent);
+      await createInferredRelationCallback(context, input, ruleContent);
     }
   };
   // Contract
   const clean = async (element: StoreObject, deletedDependencies: Array<string>): Promise<void> => {
     await deleteInferredRuleElement(def.id, element, deletedDependencies);
   };
-  const insert = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+  const insert: RuleRuntime['insert'] = async (
+    element,
+    _createInferredEntityCallback,
+    createInferredRelationCallback
+  ) => {
+    return applyUpsert(element, createInferredRelationCallback);
   };
   const update = async (element: StixRelation): Promise<void> => {
-    return applyUpsert(element);
+    return applyUpsert(element, createInferredRelation);
   };
   return { ...def, insert, update, clean };
 };
