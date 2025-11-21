@@ -1,30 +1,7 @@
 import React, { Component } from 'react';
 import { injectIntl, useIntl } from 'react-intl';
-import moment from 'moment-timezone';
 import { bytesFormat, numberFormat } from '../utils/Number';
-
-const FROM_START = 0;
-const UNTIL_END = 100000000000000;
-
-export const isDateStringNone = (dateString) => {
-  if (!dateString) return true;
-  if (dateString === (new Date(FROM_START).toISOString())) return true;
-  if (dateString === (new Date(UNTIL_END).toISOString())) return true;
-  return (
-    dateString.startsWith('Invalid')
-    || dateString.startsWith('1970')
-    || dateString.startsWith('5138')
-  );
-};
-
-export const isNone = (date) => {
-  if (!date) return true;
-  if (date.length === 0) return true;
-  if (date === (new Date(FROM_START).toISOString())) return true;
-  if (date === (new Date(UNTIL_END).toISOString())) return true;
-  const parsedDate = moment(date).format();
-  return isDateStringNone(parsedDate);
-};
+import { isNone } from '../utils/Time';
 
 const inject18n = (WrappedComponent) => {
   class InjectIntl extends Component {

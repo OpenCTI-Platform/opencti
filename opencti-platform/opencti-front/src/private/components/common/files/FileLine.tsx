@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
 import { isEmpty } from 'ramda';
-import moment from 'moment';
 import Alert from '@mui/material/Alert';
 import { createFragmentContainer, graphql, GraphQLTaggedNode } from 'react-relay';
 import IconButton from '@mui/material/IconButton';
@@ -40,6 +39,7 @@ import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import DeleteDialog from '../../../../components/DeleteDialog';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
+import { humanizeDateDuration, now } from '../../../../utils/Time';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
@@ -146,9 +146,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   const history = [];
 
   if (isOutdated) {
-    const time = moment
-      .duration(file.lastModifiedSinceMin, 'minutes')
-      .humanize();
+    const time = humanizeDateDuration(file.lastModifiedSinceMin, 'minutes');
     history.push({
       message: `Connector execution timeout, no activity for ${time}`,
     });
@@ -260,7 +258,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   if (isFail) {
     status = t_i18n('Failed');
   }
-  const lastModifiedDate = fld(file?.lastModified ?? moment());
+  const lastModifiedDate = fld(file?.lastModified ?? now());
 
   return (
     <>

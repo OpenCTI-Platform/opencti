@@ -1,6 +1,6 @@
 import * as R from 'ramda';
-import { dateFormat, jsDate } from '../../../utils/Time';
-import { isNone, useFormatter } from '../../i18n';
+import { dateFormat, jsDate, isNone } from '../../../utils/Time';
+import { useFormatter } from '../../i18n';
 import { defaultDate, getMainRepresentative } from '../../../utils/defaultRepresentatives';
 import type { OctiGraphPositions, GraphLink, GraphNode } from '../graph.types';
 import { truncate } from '../../../utils/String';

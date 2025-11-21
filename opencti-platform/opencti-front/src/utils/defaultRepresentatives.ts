@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import * as R from 'ramda';
-import { isDateStringNone } from '../components/i18n';
 import { truncate } from './String';
-import { dateFormat } from './Time';
+import { isDateStringNone, dateFormat } from './Time';
 
 export const isFieldForIdentifier = (fieldName?: string) => {
   if (!fieldName) {

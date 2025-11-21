@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import Chart from '@components/common/charts/Chart';
 import { ApexOptions } from 'apexcharts';
-import moment from 'moment';
 import { useTheme } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../../components/i18n';
+import { parseDate } from '../../../../utils/Time';
 
 export interface DecayHistory {
   score: number,
@@ -36,7 +36,7 @@ const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCu
   // Time in millisecond cannot be set as number in GraphQL because it's too long
   // So the time in data is stored as Date and must be converted to time in ms to be drawn on the chart.
   const convertTimeForChart = (time: Date) => {
-    return moment(time).valueOf();
+    return parseDate(time).valueOf();
   };
 
   // This is the chart serie data, aka the curve.

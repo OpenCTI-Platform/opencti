@@ -15,14 +15,14 @@ import { hasKillChainPhase } from '../../../../utils/Relation';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import { isNone, useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
+import { isNone, minutesBefore, now } from '../../../../utils/Time';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
-import { minutesBefore, now } from '../../../../utils/Time';
 import { CoverageInformationFieldAdd } from '../form/CoverageInformationField';
 
 // Deprecated - https://mui.com/system/styles/basics/
