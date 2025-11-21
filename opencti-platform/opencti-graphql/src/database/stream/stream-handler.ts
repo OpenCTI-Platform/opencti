@@ -1,4 +1,3 @@
-import nconf from 'nconf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject, StoreRelation } from '../../types/store';
 import type { ActivityStreamEvent, BaseEvent, CreateEventOpts, DataEvent, EventOpts, SseEvent, StreamDataEvent, UpdateEventOpts } from '../../types/event';
@@ -18,17 +17,10 @@ import {
 } from './stream-utils';
 import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
-import { rawRedisStreamClient } from '../redis-stream';
-import { rawRabbitMQStreamClient2 } from '../rabbitmq-stream-2';
+import { rawJoinedRedisRabbitStreamClient } from './joined-redis-rabbit-stream';
 
-enum StreamMode {
-  RabbitMQ,
-  Redis
-}
+const streamClient: RawStreamClient = rawJoinedRedisRabbitStreamClient;
 
-const STREAM_STACK_MODE = nconf.get('app:live_stream:mode') === 'rabbitmq' ? StreamMode.RabbitMQ : StreamMode.Redis;
-
-const streamClient: RawStreamClient = STREAM_STACK_MODE === StreamMode.Redis ? rawRedisStreamClient : rawRabbitMQStreamClient2;
 export const initializeStreamStack = async () => {
   if (streamClient.initializeStreams) {
     await streamClient.initializeStreams();
