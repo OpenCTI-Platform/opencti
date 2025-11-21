@@ -163,7 +163,6 @@ export async function handleEmailNotification(
 }
 
 export async function handleSimplifiedEmailNotification(
-  settings: BasicStoreSettings,
   user: NotificationUser,
   configurationString: string | undefined,
   templateData: object,
@@ -260,7 +259,7 @@ export const internalProcessNotification = async (
       await handleEmailNotification(notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
       break;
     case NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL:
-      await handleSimplifiedEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
+      await handleSimplifiedEmailNotification(notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
       break;
     case NOTIFIER_CONNECTOR_WEBHOOK:
       await handleWebhookNotification(notifierConfigurationString, assembledTemplateData);
