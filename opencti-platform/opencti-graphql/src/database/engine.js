@@ -2819,7 +2819,7 @@ const adaptFilterToFromOrToFilterKeys = (filter) => {
 };
 
 const adaptFilterToPirFilterKeys = async (context, user, filterKey, filter) => {
-  const pirIds = filter.values.find((v) => v.key === 'pir_ids').values ?? [];
+  const pirIds = filter.values.find((v) => v.key === 'pir_ids')?.values ?? [];
   if (pirIds.length === 0) {
     throw FunctionalError('This filter should be related to at least 1 Pir', { filter });
   }
