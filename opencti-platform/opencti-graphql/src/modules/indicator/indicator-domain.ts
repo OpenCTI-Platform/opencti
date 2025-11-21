@@ -56,6 +56,7 @@ import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
+import { checkDecayExclusionRules, getActiveDecayExclusionRule } from '../decayRule/exclusions/decayExclusionRule-domain';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -272,8 +273,13 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   checkScore(indicatorBaseScore);
 
   const isDecayActivated: boolean = await isDecayEnabled();
+
+  const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
+  const exclusionRule = checkDecayExclusionRules(observableType, activeDecayExclusionRuleList);
+
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
+
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
   const indicatorToCreate = R.pipe(
     R.dissoc('createObservables'),
@@ -287,7 +293,18 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     R.assoc('revoked', revoked),
   )(indicator);
   let finalIndicatorToCreate;
-  if (isDecayActivated && !revoked) {
+
+  if (isDecayActivated && exclusionRule) {
+    finalIndicatorToCreate = {
+      ...indicatorToCreate,
+      decay_exclusion_applied_rule: {
+        decay_exclusion_id: exclusionRule.id,
+        decay_exclusion_name: exclusionRule.name,
+        decay_exclusion_created_at: exclusionRule.created_at,
+        decay_exclusion_observable_types: exclusionRule.decay_exclusion_observable_types,
+      }
+    };
+  } else if (isDecayActivated && !revoked) {
     const indicatorDecayRule = {
       decay_rule_id: decayRule.id,
       decay_lifetime: decayRule.decay_lifetime,
@@ -315,6 +332,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   } else {
     finalIndicatorToCreate = { ...indicatorToCreate };
   }
+  console.log('finalIndicatorToCreate : ', finalIndicatorToCreate);
   // create the linked observables
   let observablesToLink: string[] = [];
   if (indicator.basedOn) {
