@@ -507,7 +507,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
   }
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
-    throw FunctionalError('Cannot add the relation, User cannot be found.');
+    throw FunctionalError('Cannot add the relation, User cannot be found.', { userId });
   }
   const input = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   const created = await createRelation(context, user, input);
@@ -532,7 +532,7 @@ export const assignOrganizationNameToUser = async (context, user, userId, organi
 export const assignGroupToUser = async (context, user, userId, groupName) => {
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
-    throw FunctionalError('Cannot add the relation, User cannot be found.');
+    throw FunctionalError('Cannot add the relation, User cannot be found.', { userId });
   }
   // No need for audit log here, only use for provider login
   const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
@@ -824,7 +824,7 @@ export const roleEditField = async (context, user, roleId, input) => {
 export const roleAddRelation = async (context, user, roleId, input) => {
   const role = await storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
-    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`);
+    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`, { id: roleId });
   }
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
@@ -846,10 +846,10 @@ export const roleAddRelation = async (context, user, roleId, input) => {
 export const roleDeleteRelation = async (context, user, roleId, toId, relationshipType) => {
   const role = await storeLoadById(context, user, roleId, ENTITY_TYPE_ROLE);
   if (!role) {
-    throw FunctionalError('Cannot delete the relation, Role cannot be found.');
+    throw FunctionalError('Cannot delete the relation, Role cannot be found.', { id: roleId });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
   const deleted = await deleteRelationsByFromAndTo(context, user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   const input = { fromId: roleId, toId, relationship_type: relationshipType };
@@ -880,10 +880,10 @@ export const userEditField = async (context, user, userId, rawInputs) => {
   for (let index = 0; index < rawInputs.length; index += 1) {
     const input = rawInputs[index];
     if (userToUpdate.external && input.key === 'name') {
-      throw FunctionalError('Name cannot be updated for external user');
+      throw FunctionalError('Name cannot be updated for external user', { userId });
     }
     if (userToUpdate.external && input.key === 'user_email') {
-      throw FunctionalError('Email cannot be updated for external user');
+      throw FunctionalError('Email cannot be updated for external user', { userId });
     }
     if (input.key === 'password') {
       const userServiceAccountInput = rawInputs.find((x) => x.key === 'user_service_account');
@@ -896,7 +896,7 @@ export const userEditField = async (context, user, userId, rawInputs) => {
         await checkPasswordFromPolicy(context, userPassword);
         input.value = [bcrypt.hashSync(userPassword)];
       } else {
-        throw FunctionalError('Cannot update password for Service account');
+        throw FunctionalError('Cannot update password for Service account', { userId });
       }
     }
     if (input.key === 'account_status') {
@@ -1184,7 +1184,7 @@ export const userDelete = async (context, user, userId) => {
 export const userAddRelation = async (context, user, userId, input) => {
   const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!userData) {
-    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`);
+    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`, { userId });
   }
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method, got ${input.relationship_type}.`);
@@ -1231,10 +1231,10 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
 export const userIdDeleteRelation = async (context, user, userId, toId, relationshipType) => {
   const userData = await storeLoadById(context, user, userId, ENTITY_TYPE_USER);
   if (!userData) {
-    throw FunctionalError('Cannot delete the relation, User cannot be found.');
+    throw FunctionalError('Cannot delete the relation, User cannot be found.', { userId });
   }
   if (!isInternalRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method, got ${relationshipType}.`);
   }
   return userDeleteRelation(context, user, userData, toId, relationshipType);
 };
@@ -1248,7 +1248,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   }
   const targetUser = await findById(context, user, userId);
   if (!targetUser) {
-    throw FunctionalError('Cannot delete the relation, User cannot be found.');
+    throw FunctionalError('Cannot delete the relation, User cannot be found.', { userId });
   }
 
   const { to } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);

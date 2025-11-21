@@ -164,7 +164,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess();
       }
     } else {
-      throw UnsupportedError('A background task should be of type query or list.');
+      throw UnsupportedError('A background task should be of type query or list.', { taskType });
     }
   } else if (scope === BackgroundTaskScope.User) { // 04. Background task of scope User
     // 2.1. The user should have the capability SETTINGS_SET_ACCESSES
@@ -187,7 +187,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
         throw ForbiddenAccess('The targeted ids are not users.');
       }
     } else {
-      throw UnsupportedError('A background task should be of type query or list.');
+      throw UnsupportedError('A background task should be of type query or list.', { taskType });
     }
   } else if (scope === BackgroundTaskScope.Import) { // 05. Background task of scope Import (i.e. on files and workbenches in Data/import)
     // The user should have the capability KNOWLEDGE_KNASKIMPORT
@@ -308,7 +308,7 @@ export const checkActionValidity = async (context, user, input, scope, taskType)
       }
     }
   } else { // Background task with an invalid scope
-    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT, DASHBOARD, PUBLIC_DASHBOARD.');
+    throw UnsupportedError('A background task should be of scope: SETTINGS, KNOWLEDGE, USER, IMPORT, DASHBOARD, PUBLIC_DASHBOARD.', { scope });
   }
 };
 

@@ -397,7 +397,7 @@ export const formSubmit = async (
 ): Promise<any> => {
   const form = await findById(context, user, input.formId);
   if (!form) {
-    throw FunctionalError('Form not found');
+    throw FunctionalError('Form not found', { id: input.formId });
   }
 
   let values = {} as Record<string, any>;

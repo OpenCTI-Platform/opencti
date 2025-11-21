@@ -33,7 +33,7 @@ export const isIndividualAssociatedToUser = async (context: AuthContext, individ
 export const verifyCanDeleteIndividual = async (context: AuthContext, user: AuthUser, individual: BasicStoreEntity, throwErrors = true) => {
   const isAssociatedToUser = await isIndividualAssociatedToUser(context, individual);
   if (isAssociatedToUser) {
-    if (throwErrors) throw FunctionalError('Cannot delete an individual corresponding to a user');
+    if (throwErrors) throw FunctionalError('Cannot delete an individual corresponding to a user', { id: individual.id });
     return false;
   }
   return true;
@@ -47,11 +47,11 @@ export const verifyCanDeleteOrganization = async (context: AuthContext, user: Au
   }
   if (organization.authorized_authorities && organization.authorized_authorities.length > 0) {
     if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-      if (throwErrors) throw FunctionalError('Cannot delete an organization that has an administrator.');
+      if (throwErrors) throw FunctionalError('Cannot delete an organization that has an administrator.', { id: organization.id });
       return false;
     }
     // no information leakage about the organization administrators or members
-    if (throwErrors) throw FunctionalError('Cannot delete the organization.');
+    if (throwErrors) throw FunctionalError('Cannot delete the organization.', { id: organization.id });
     return false;
   }
   // organizationMembersPaginated
@@ -66,11 +66,11 @@ export const verifyCanDeleteOrganization = async (context: AuthContext, user: Au
   );
   if (members.pageInfo.globalCount > 0) {
     if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
-      if (throwErrors) throw FunctionalError('Cannot delete an organization that has members.');
+      if (throwErrors) throw FunctionalError('Cannot delete an organization that has members.', { id: organization.id });
       return false;
     }
     // no information leakage about the organization administrators or members
-    if (throwErrors) throw FunctionalError('Cannot delete the organization.');
+    if (throwErrors) throw FunctionalError('Cannot delete the organization.', { id: organization.id });
     return false;
   }
   return true;

@@ -265,9 +265,9 @@ const initTaxiiApi = (app) => {
     try {
       const context = await extractContextFromRequest(req, res);
       const work = await findWorkById(context, context.user, status_id);
-      if (!work) throw UnsupportedError('Work not found');
+      if (!work) throw UnsupportedError('Work not found', { status_id });
       const stats = await computeWorkStatus(work);
-      if (!stats) throw UnsupportedError('Work not found');
+      if (!stats) throw UnsupportedError('Work not found', { status_id });
       const failure_count = (work.errors ?? []).length;
       const total_count = parseInt(stats.import_expected_number, 10);
       const processed_number = stats.import_processed_number ? parseInt(stats.import_processed_number, 10) : 0;
