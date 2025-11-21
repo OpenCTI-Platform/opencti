@@ -26,7 +26,7 @@
     "test:dev:init": "INIT_TEST_PLATFORM=true vitest run --config vitest.config.dev.ts --testNamePattern=\"Should import creation succeed\" tests/02-integration/00-inject/loader-test.ts",
     "test:dev:resume": "SKIP_CLEANUP_PLATFORM=true vitest run --config vitest.config.dev.ts",
     "test:dev": "vitest run --config vitest.config.dev.ts",
-    "test:ci-unit": "vitest run --config vitest.config.ci-unit.ts",
+    "test:ci-unit-and-others": "vitest run --config vitest.config.ci-unit-and-others.ts",
     "test:ci-integration": "vitest run --config vitest.config.ci-integration.ts",
     "test:ci-rules": "vitest run --config vitest.config.ci-rules.ts",
     "test:watch:resume": "SKIP_CLEANUP_PLATFORM=true vitest watch --config vitest.config.dev.ts",

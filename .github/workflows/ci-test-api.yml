@@ -205,10 +205,10 @@ jobs:
          docker network create runner-docker-network
          docker compose --profile "backend" up -d
 
-    - name: Start unit test
+    - name: Start unit and other tests
       run: |
         docker run --network runner-docker-network \
-          --name unit-tests \
+          --name unit-and-other-tests \
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
@@ -227,7 +227,7 @@ jobs:
             yarn build
             yarn check-ts
             yarn lint
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit-and-others
         '
 
     # Output all logs used during the job
