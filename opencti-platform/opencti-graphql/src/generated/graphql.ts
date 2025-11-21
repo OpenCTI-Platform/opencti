@@ -4033,6 +4033,7 @@ export type Connector = BasicObject & InternalObject & {
   connector_type?: Maybe<Scalars['String']['output']>;
   connector_user?: Maybe<User>;
   connector_user_id?: Maybe<Scalars['ID']['output']>;
+  container_name: Scalars['String']['output'];
   created_at?: Maybe<Scalars['DateTime']['output']>;
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
@@ -4055,7 +4056,6 @@ export type Connector = BasicObject & InternalObject & {
   playbook_compatible?: Maybe<Scalars['Boolean']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
   standard_id: Scalars['String']['output'];
-  title: Scalars['String']['output'];
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   works?: Maybe<Array<Maybe<Work>>>;
 };
@@ -14273,6 +14273,7 @@ export type ManagedConnector = BasicObject & InternalObject & {
   connector_state_timestamp?: Maybe<Scalars['DateTime']['output']>;
   connector_user?: Maybe<User>;
   connector_user_id?: Maybe<Scalars['ID']['output']>;
+  container_name: Scalars['String']['output'];
   entity_type: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   manager?: Maybe<ConnectorManager>;
@@ -38701,6 +38702,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   connector_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   connector_user_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  container_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -38723,7 +38725,6 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   playbook_compatible?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<ConnectorWorksArgs>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -42169,6 +42170,7 @@ export type ManagedConnectorResolvers<ContextType = any, ParentType extends Reso
   connector_state_timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector_user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   connector_user_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  container_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   manager?: Resolver<Maybe<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
