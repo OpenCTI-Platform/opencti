@@ -7,7 +7,7 @@ const message = '[MIGRATION] Add built in onboarding email template';
 export const up = async (next) => {
   logApp.info(`${message} > started`);
   const context = executionContext('migration');
-  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT);
+  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false);
   logApp.info(`${message} > done.`);
   next();
 };

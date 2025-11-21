@@ -425,7 +425,7 @@ export const initializeData = async (context, withMarkings = true) => {
   await createInitialRequestAccessFlow(context);
   await createBasicRolesAndCapabilities(context);
   await createVocabularies(context);
-  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT);
+  await addEmailTemplate(context, SYSTEM_USER, DEFAULT_EMAIL_TEMPLATE_INPUT, false);
   if (withMarkings) {
     await createMarkingDefinitions(context);
   }
