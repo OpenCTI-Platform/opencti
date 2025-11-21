@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable @typescript-eslint/no-explicit-any */
 import * as R from 'ramda';
 import { isDateStringNone } from '../components/i18n';
 import { truncate } from './String';
@@ -53,7 +53,7 @@ export const defaultValueMarking = (n: any) => {
     const definition = R.toPairs(n.definition);
     if (definition[0]) {
       if (definition[0][1].includes(':')) {
-        // eslint-disable-next-line prefer-destructuring
+        // oxlint-disable-next-line prefer-destructuring
         def = definition[0][1];
       } else {
         def = `${definition[0][0]}:${definition[0][1]}`;

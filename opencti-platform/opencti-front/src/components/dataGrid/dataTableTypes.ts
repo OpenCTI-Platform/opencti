@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* oxlint-disable @typescript-eslint/no-explicit-any */
 import type { Dispatch, MutableRefObject, ReactNode, SetStateAction } from 'react';
 import React from 'react';
 import { GraphQLTaggedNode } from 'react-relay';

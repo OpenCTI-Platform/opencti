@@ -1,0 +1,109 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "oxc",
+    "react",
+    "typescript",
+    "import",
+    "jest",
+    "vitest",
+    "jsx-a11y"
+  ],
+  "categories": {
+    "correctness": "warn",
+    "pedantic": "warn",
+    "perf": "warn",
+    "restriction": "warn",
+    "style": "warn",
+    "suspicious": "warn"
+  },
+  "rules": {
+    "exports-last": "off",
+    "typescript/consistent-type-definitions":"off",
+    "consistent-type-import": "off",
+    "no-ternary": "off",
+    "sort-keys": "off",
+    "no-unassigned-import": [
+      "warn",
+      {
+        "allow": ["**/*.css", "**/*.scss", "**/*.less"]
+      }
+    ],
+    "jsx-filename-extension": [
+      "error",
+      {
+        "extensions": [".jsx", ".tsx"]
+      }
+    ],
+    "no-const-enums": "off",
+    "only-export-components": "off",
+    "no-async-await": "off",
+    "import/no-named-export": "off",
+    "no-undefined": "off",
+    "no-rest-spread-properties": "off",
+    "no-optional-chaining": "off",
+    "no-warning-comments": "off",
+    "max-lines-per-function": "off",
+    "max-dependencies": "off",
+    "max-classes-per-file": [
+      "error",
+      {
+        "max": 2
+      }
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "settings": {
+    "jsx-a11y": {
+      "polymorphicPropName": null,
+      "components": {},
+      "attributes": {}
+    },
+    "next": {
+      "rootDir": []
+    },
+    "react": {
+      "formComponents": [],
+      "linkComponents": []
+    },
+    "jsdoc": {
+      "ignorePrivate": false,
+      "ignoreInternal": false,
+      "ignoreReplacesDocs": true,
+      "overrideReplacesDocs": true,
+      "augmentsExtendsReplacesDocs": false,
+      "implementsReplacesDocs": false,
+      "exemptDestructuredRootsFromChecks": false,
+      "tagNamePreference": {}
+    },
+    "vitest": {
+      "typecheck": true
+    }
+  },
+  "env": {
+    "browser": true,
+    "jest": true
+  },
+  "globals": {},
+  "ignorePatterns": [
+    "**/builder/**",
+    "**/coverage/**",
+    "**/node_module/**",
+    "**/packages/**",
+    "**/src/generated/**",
+    "**/__generated__/**",
+    "**/src/static/ext/**",
+    "extract-i18n-keyword.js",
+    "playwright.config.ts",
+    "vite.config.mts",
+    "vitest.config.ts",
+    "setup-vitest.ts",
+  ]
+}

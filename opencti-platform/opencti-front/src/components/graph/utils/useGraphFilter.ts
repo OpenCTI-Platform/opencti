@@ -13,7 +13,7 @@ const useGraphFilter = () => {
 
   const filterNodes = (disabledTargets: string[]) => {
     graphData?.nodes.forEach((node) => {
-      // eslint-disable-next-line no-param-reassign
+      // oxlint-disable-next-line no-param-reassign
       node.disabled = disabledEntityTypes.includes(node.entity_type)
         || disabledCreators.includes(node.createdBy.id)
         || disabledTargets.includes(node.id)
@@ -24,7 +24,7 @@ const useGraphFilter = () => {
   const filterLinks = () => {
     const targets: string[] = [];
     graphData?.links.forEach((link) => {
-      // eslint-disable-next-line no-param-reassign
+      // oxlint-disable-next-line no-param-reassign
       link.disabled = disabledCreators.includes(link.createdBy.id)
         || link.markedBy.some((marking) => disabledMarkings.includes(marking.id))
         || (isNotEmptyField(link.defaultDate)
