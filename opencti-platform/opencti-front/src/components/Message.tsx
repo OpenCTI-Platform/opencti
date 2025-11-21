@@ -41,7 +41,7 @@ const Message = () => {
     isEnterpriseEdition = useEnterpriseEdition();
     const { isRequestAccessEnabled } = useHelper();
     isRequestAccessFeatureEnabled = isRequestAccessEnabled() && isEnterpriseEdition;
-  } catch (e) {
+  } catch (_e) {
     // When called being unauthenticated there is no useAuth()
   }
 

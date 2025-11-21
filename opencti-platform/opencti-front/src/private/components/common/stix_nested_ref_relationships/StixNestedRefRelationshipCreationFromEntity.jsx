@@ -472,7 +472,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
       try {
         // eslint-disable-next-line no-await-in-loop
         await commit(finalValues);
-      } catch (error) {
+      } catch (_error) {
         setSubmitting(false);
       }
       setSubmitting(false);
