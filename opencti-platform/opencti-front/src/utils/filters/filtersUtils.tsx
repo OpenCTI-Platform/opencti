@@ -45,32 +45,45 @@ export const ME_FILTER_VALUE = '@me';
 // 'within' operator filter constants
 export const DEFAULT_WITHIN_FILTER_VALUES = ['now-1d', 'now'];
 
+const PIR_SCORE_FILTER = 'pir_score';
+const LAST_PIR_SCORE_DATE_FILTER = 'last_pir_score_date';
+
 export const FiltersVariant = {
   list: 'list',
   dialog: 'dialog',
 };
 
-const NOT_CLEANABLE_FILTER_KEYS = ['entity_type', 'authorized_members.id', 'user_id', 'internal_id', 'entity_id', 'ids', 'bulkSearchKeywords'];
+const NOT_CLEANABLE_FILTER_KEYS = [
+  'entity_type',
+  'authorized_members.id',
+  'user_id',
+  'internal_id',
+  'entity_id',
+  'ids',
+  'bulkSearchKeywords',
+  PIR_SCORE_FILTER,
+  LAST_PIR_SCORE_DATE_FILTER,
+];
 
-const pirScoreFilterDefinition = (pirId: string) => ({
-  filterKey: `pir_score.${pirId}`,
+const pirScoreFilterDefinition = {
+  filterKey: PIR_SCORE_FILTER,
   label: 'PIR Score',
   multiple: false,
   type: 'integer',
   subFilters: [],
   subEntityTypes: [],
   elementsForFilterValuesSearch: [],
-});
+};
 
-const lastPirScoreDateFilterDefinition = (pirId: string) => ({
-  filterKey: `last_pir_score_date.${pirId}`,
+const lastPirScoreDateFilterDefinition = {
+  filterKey: LAST_PIR_SCORE_DATE_FILTER,
   label: 'Last PIR Score date',
   multiple: false,
   type: 'date',
   subFilters: [],
   subEntityTypes: [],
   elementsForFilterValuesSearch: [],
-});
+};
 
 // filters which possible values are entity types or relationship types
 export const entityTypesFilters = [
@@ -815,7 +828,7 @@ export const useAvailableFilterKeysForEntityTypes = (entityTypes: string[]) => {
 
 const isFilterKeyAvailable = (key: string, availableFilterKeys: string[]) => {
   const completedAvailableFilterKeys = availableFilterKeys.concat(NOT_CLEANABLE_FILTER_KEYS);
-  return completedAvailableFilterKeys.includes(key) || key.startsWith('pir_score') || key.startsWith('last_pir_score_date');
+  return completedAvailableFilterKeys.includes(key);
 };
 
 export const removeIdFromFilterGroupObject = (filters?: FilterGroup | null): FilterGroup | undefined => {
@@ -906,13 +919,11 @@ export const getFilterDefinitionFromFilterKeysMap = (
   filterKeysMap: Map<string, FilterDefinition>,
 ): FilterDefinition | undefined => {
   const filterKey = getStringFilterKey(key);
-  if (filterKey.startsWith('pir_score.')) {
-    const pirId = filterKey.split('.')[1];
-    return pirScoreFilterDefinition(pirId);
+  if (filterKey === PIR_SCORE_FILTER) {
+    return pirScoreFilterDefinition;
   }
-  if (filterKey.startsWith('last_pir_score_date.')) {
-    const pirId = filterKey.split('.')[1];
-    return lastPirScoreDateFilterDefinition(pirId);
+  if (filterKey === LAST_PIR_SCORE_DATE_FILTER) {
+    return lastPirScoreDateFilterDefinition;
   }
   return filterKeysMap.get(filterKey);
 };
@@ -923,13 +934,11 @@ export const useFilterDefinition = (
   subKey?: string,
 ): FilterDefinition | undefined => {
   const filterKey = getStringFilterKey(key);
-  if (filterKey.startsWith('pir_score.')) {
-    const pirId = filterKey.split('.')[1];
-    return pirScoreFilterDefinition(pirId);
+  if (filterKey === PIR_SCORE_FILTER) {
+    return pirScoreFilterDefinition;
   }
-  if (filterKey.startsWith('last_pir_score_date.')) {
-    const pirId = filterKey.split('.')[1];
-    return lastPirScoreDateFilterDefinition(pirId);
+  if (filterKey === LAST_PIR_SCORE_DATE_FILTER) {
+    return lastPirScoreDateFilterDefinition;
   }
   const filterDefinition = useBuildFilterKeysMapFromEntityType(entityTypes).get(filterKey);
   if (subKey) {
@@ -1112,4 +1121,31 @@ export const getFilterKeyValues = (filterKey: string, filterGroup: FilterGroup) 
     values.push(...vals);
   });
   return values;
+};
+
+// add pirId to pir filters
+export const formatFiltersInPirContext = (f: FilterGroup, pirId: string): FilterGroup => {
+  const formattedFilters = [];
+  for (const filter of f.filters) {
+    const filterKey = filter.key;
+    if (filterKey === PIR_SCORE_FILTER || filterKey === LAST_PIR_SCORE_DATE_FILTER) {
+      const subKey = filterKey === PIR_SCORE_FILTER ? 'score' : 'date';
+      formattedFilters.push({
+        key: filterKey,
+        values: [
+          { ...filter, key: subKey },
+          { key: 'pir_ids', values: [pirId] },
+        ],
+      });
+    } else {
+      formattedFilters.push(filter);
+    }
+  }
+  return {
+    mode: f.mode,
+    filters: formattedFilters,
+    filterGroups: f.filterGroups.length > 0
+      ? f.filterGroups.map((fg) => formatFiltersInPirContext(fg, pirId))
+      : [],
+  };
 };

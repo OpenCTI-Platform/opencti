@@ -101,9 +101,8 @@ export const ALIAS_FILTER = 'alias'; // handle both 'aliases' and 'x_opencti_ali
 export const IS_INFERRED_FILTER = 'is_inferred'; // if an entity or relationship is inferred
 
 // for PIR
-export const PIR_SCORE_FILTER = 'pir_score'; // used in stix filtering
-export const PIR_SCORE_FILTER_PREFIX = 'pir_score'; // used in dynamic filtering
-export const LAST_PIR_SCORE_DATE_FILTER_PREFIX = 'last_pir_score_date';
+export const PIR_SCORE_FILTER = 'pir_score';
+export const LAST_PIR_SCORE_DATE_FILTER = 'last_pir_score_date';
 
 // for users
 export const USER_SERVICE_ACCOUNT_FILTER = 'user_service_account';
@@ -136,12 +135,12 @@ const COMPLEX_CONVERSION_FILTER_KEYS = [
   'authorized_members.id', // nested filter on restricted members => kept for retro compatibility (TODO remove after renaming)
   'restricted_members.id', // nested filter on restricted members
   BULK_SEARCH_KEYWORDS_FILTER, // set of keywords used in bulk search
+  PIR_SCORE_FILTER, // should be associated to Pir Ids
+  LAST_PIR_SCORE_DATE_FILTER, // should be associated to Pir Ids
 ];
 
 export const isComplexConversionFilterKey = (filterKey: string) => {
   return COMPLEX_CONVERSION_FILTER_KEYS.includes(filterKey)
-    || filterKey.startsWith(PIR_SCORE_FILTER_PREFIX)
-    || filterKey.startsWith(LAST_PIR_SCORE_DATE_FILTER_PREFIX)
     || isMetricsName(filterKey);
 };
 
