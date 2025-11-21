@@ -11,7 +11,7 @@ interface OrganizationEditionProps {
   organizationId: string
 }
 
-export const OrganizationEdition = ({ organizationId }: OrganizationEditionProps) => {
+const OrganizationEdition = ({ organizationId }: OrganizationEditionProps) => {
   const [commit] = useApiMutation(organizationEditionOverviewFocus);
 
   const handleClose = () => {
