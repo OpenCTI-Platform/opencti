@@ -3,10 +3,7 @@ import {
   format,
   subDays,
   subMonths,
-  subYears,
   addDays,
-  addMonths,
-  addYears,
   subMinutes,
   getUnixTime,
   differenceInMinutes,
@@ -83,7 +80,7 @@ const normalizeDurationUnit = (unit: string): DurationUnit => {
   }
 };
 
-// Unified duration subtraction using date-fns functions
+// Unified duration subtraction using UTC-based arithmetic to avoid DST issues
 const subtractDuration = (date: Date, value: number, unit: DurationUnit): Date => {
   switch (unit) {
     case 'minute':
@@ -92,16 +89,52 @@ const subtractDuration = (date: Date, value: number, unit: DurationUnit): Date =
       return subMinutes(date, value * 60);
     case 'day':
       return subDays(date, value);
-    case 'month':
-      return subMonths(date, value);
-    case 'year':
-      return subYears(date, value);
+    case 'month': {
+      // Use UTC methods to avoid DST issues
+      const utcYear = date.getUTCFullYear();
+      const utcMonth = date.getUTCMonth();
+      const utcDate = date.getUTCDate();
+      const utcHours = date.getUTCHours();
+      const utcMinutes = date.getUTCMinutes();
+      const utcSeconds = date.getUTCSeconds();
+      const utcMilliseconds = date.getUTCMilliseconds();
+
+      return new Date(Date.UTC(
+        utcYear,
+        utcMonth - value,
+        utcDate,
+        utcHours,
+        utcMinutes,
+        utcSeconds,
+        utcMilliseconds,
+      ));
+    }
+    case 'year': {
+      // Use UTC methods to avoid DST issues
+      const utcYear = date.getUTCFullYear();
+      const utcMonth = date.getUTCMonth();
+      const utcDate = date.getUTCDate();
+      const utcHours = date.getUTCHours();
+      const utcMinutes = date.getUTCMinutes();
+      const utcSeconds = date.getUTCSeconds();
+      const utcMilliseconds = date.getUTCMilliseconds();
+
+      return new Date(Date.UTC(
+        utcYear - value,
+        utcMonth,
+        utcDate,
+        utcHours,
+        utcMinutes,
+        utcSeconds,
+        utcMilliseconds,
+      ));
+    }
     default:
       return subDays(date, value);
   }
 };
 
-// Unified duration addition using date-fns functions
+// Unified duration addition using UTC-based arithmetic to avoid DST issues
 const addDuration = (date: Date, value: number, unit: DurationUnit): Date => {
   switch (unit) {
     case 'minute':
@@ -110,10 +143,46 @@ const addDuration = (date: Date, value: number, unit: DurationUnit): Date => {
       return subMinutes(date, -value * 60);
     case 'day':
       return addDays(date, value);
-    case 'month':
-      return addMonths(date, value);
-    case 'year':
-      return addYears(date, value);
+    case 'month': {
+      // Use UTC methods to avoid DST issues
+      const utcYear = date.getUTCFullYear();
+      const utcMonth = date.getUTCMonth();
+      const utcDate = date.getUTCDate();
+      const utcHours = date.getUTCHours();
+      const utcMinutes = date.getUTCMinutes();
+      const utcSeconds = date.getUTCSeconds();
+      const utcMilliseconds = date.getUTCMilliseconds();
+
+      return new Date(Date.UTC(
+        utcYear,
+        utcMonth + value,
+        utcDate,
+        utcHours,
+        utcMinutes,
+        utcSeconds,
+        utcMilliseconds,
+      ));
+    }
+    case 'year': {
+      // Use UTC methods to avoid DST issues
+      const utcYear = date.getUTCFullYear();
+      const utcMonth = date.getUTCMonth();
+      const utcDate = date.getUTCDate();
+      const utcHours = date.getUTCHours();
+      const utcMinutes = date.getUTCMinutes();
+      const utcSeconds = date.getUTCSeconds();
+      const utcMilliseconds = date.getUTCMilliseconds();
+
+      return new Date(Date.UTC(
+        utcYear + value,
+        utcMonth,
+        utcDate,
+        utcHours,
+        utcMinutes,
+        utcSeconds,
+        utcMilliseconds,
+      ));
+    }
     default:
       return addDays(date, value);
   }
@@ -323,7 +392,13 @@ export const parseDate = (date?: DateInput): MomentLike => {
   const parsed = parseToUTC(date === undefined ? new Date() : date);
   return {
     toDate: () => parsed,
-    format: (formatStr?: string) => (!formatStr ? formatUtcWithPattern(parsed, momentCompatibleFormat) : format(parsed, convertMomentFormatToDateFns(formatStr))),
+    format: (formatStr?: string) => {
+      if (!formatStr) {
+        return formatUtcWithPattern(parsed, momentCompatibleFormat);
+      }
+      const convertedFormat = convertMomentFormatToDateFns(formatStr);
+      return formatInTimeZone(parsed, 'UTC', convertedFormat);
+    },
     unix: () => getUnixTime(parsed),
     valueOf: () => parsed.getTime(),
     diff: (otherDate: MomentLike | DateInput, unit: string) => dateDifference(parseToUTC(otherDate as DateInput), parsed, unit as 'minutes' | 'seconds'),
