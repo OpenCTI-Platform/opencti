@@ -289,19 +289,27 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
         initialValues[`additional_${entity.id}_fields`] = fieldsObj;
       } else if (entity.multiple && entity.fieldMode === 'multiple') {
         // Multi mode
-        const fieldGroup: Record<string, unknown> = {};
-        entityFields.forEach((field) => {
-          if (field.type === 'checkbox' || field.type === 'toggle') {
-            fieldGroup[field.name] = false;
-          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
-            fieldGroup[field.name] = field.defaultValue || [];
-          } else if (field.type === 'datetime') {
-            fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
-          } else {
-            fieldGroup[field.name] = field.defaultValue || '';
-          }
-        });
-        initialValues[`additional_${entity.id}_groups`] = [fieldGroup];
+        // Initialize with the minimum amount of field groups
+        const minAmount = entity.minAmount ?? 0;
+        const initialGroups: Record<string, unknown>[] = [];
+
+        for (let i = 0; i < minAmount; i += 1) {
+          const fieldGroup: Record<string, unknown> = {};
+          entityFields.forEach((field) => {
+            if (field.type === 'checkbox' || field.type === 'toggle') {
+              fieldGroup[field.name] = false;
+            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'externalReferences' || field.type === 'files') {
+              fieldGroup[field.name] = field.defaultValue || [];
+            } else if (field.type === 'datetime') {
+              fieldGroup[field.name] = field.defaultValue || new Date().toISOString();
+            } else {
+              fieldGroup[field.name] = field.defaultValue || '';
+            }
+          });
+          initialGroups.push(fieldGroup);
+        }
+
+        initialValues[`additional_${entity.id}_groups`] = initialGroups;
       } else if (!entity.required) {
         // Single entity mode - optional entities
         // For optional entities, only initialize if there are default values
