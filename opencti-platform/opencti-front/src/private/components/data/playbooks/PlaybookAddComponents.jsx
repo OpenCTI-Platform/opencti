@@ -11,7 +11,6 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import Tooltip from '@mui/material/Tooltip';
 import Alert from '@mui/material/Alert';
 import PlaybookFlowSelectComponent from './playbookFlow/PlaybookFlowSelectComponent';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
@@ -29,13 +28,9 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import StatusField from '../../common/form/StatusField';
 import { capitalizeFirstLetter } from '../../../../utils/String';
-import AutocompleteField from '../../../../components/AutocompleteField';
 import useAttributes from '../../../../utils/hooks/useAttributes';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import useEntityTranslation from '../../../../utils/hooks/useEntityTranslation';
-import SelectField from '../../../../components/fields/SelectField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import TimePickerField from '../../../../components/TimePickerField';
 import { parse } from '../../../../utils/Time';
 import PlaybookFlowFieldInPirFilters from './playbookFlow/playbookFlowFields/PlaybookFlowFieldInPirFilters';
 import PlaybookFlowFieldTargets from './playbookFlow/playbookFlowFields/PlaybookFlowFieldTargets';
@@ -44,6 +39,11 @@ import PlaybookFlowFieldFilters from './playbookFlow/playbookFlowFields/Playbook
 import PlaybookFlowFieldAccessRestrictions from './playbookFlow/playbookFlowFields/PlaybookFlowFieldAccessRestrictions';
 import PlaybookFlowFieldAuthorizedMembers from './playbookFlow/playbookFlowFields/PlaybookFlowFieldAuthorizedMembers';
 import PlaybookFlowFieldOrganizations from './playbookFlow/playbookFlowFields/PlaybookFlowFieldOrganizations';
+import PlaybookFlowFieldArray from './playbookFlow/playbookFlowFields/PlaybookFlowFieldArray';
+import PlaybookFlowFieldPeriod from './playbookFlow/playbookFlowFields/PlaybookFlowFieldPeriod';
+import PlaybookFlowFieldTriggerTime from './playbookFlow/playbookFlowFields/PlaybookFlowFieldTriggerTime';
+import PlaybookFlowFieldNumber from './playbookFlow/playbookFlowFields/PlaybookFlowFieldNumber';
+import PlaybookFlowFieldBoolean from './playbookFlow/playbookFlowFields/PlaybookFlowFieldBoolean';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -99,7 +99,6 @@ const PlaybookAddComponentsContent = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { translateEntityType } = useEntityTranslation();
   const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
@@ -567,75 +566,10 @@ const PlaybookAddComponentsContent = ({
                     );
                   }
                   if (k === 'period') {
-                    return (
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        key={k}
-                        name={k}
-                        label={t_i18n('Period')}
-                        fullWidth={true}
-                        containerstyle={fieldSpacingContainerStyle}
-                      >
-                        <MenuItem value="hour">{t_i18n('hour')}</MenuItem>
-                        <MenuItem value="day">{t_i18n('day')}</MenuItem>
-                        <MenuItem value="week">{t_i18n('week')}</MenuItem>
-                        <MenuItem value="month">{t_i18n('month')}</MenuItem>
-                      </Field>
-                    );
+                    return <PlaybookFlowFieldPeriod key={k} />;
                   }
                   if (k === 'triggerTime') {
-                    return (
-                      <div key={k}>
-                        {values.period === 'week' && (
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="day"
-                            label={t_i18n('Week day')}
-                            fullWidth={true}
-                            containerstyle={fieldSpacingContainerStyle}
-                          >
-                            <MenuItem value="1">{t_i18n('Monday')}</MenuItem>
-                            <MenuItem value="2">{t_i18n('Tuesday')}</MenuItem>
-                            <MenuItem value="3">{t_i18n('Wednesday')}</MenuItem>
-                            <MenuItem value="4">{t_i18n('Thursday')}</MenuItem>
-                            <MenuItem value="5">{t_i18n('Friday')}</MenuItem>
-                            <MenuItem value="6">{t_i18n('Saturday')}</MenuItem>
-                            <MenuItem value="7">{t_i18n('Sunday')}</MenuItem>
-                          </Field>
-                        )}
-                        {values.period === 'month' && (
-                          <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="day"
-                            label={t_i18n('Month day')}
-                            fullWidth={true}
-                            containerstyle={fieldSpacingContainerStyle}
-                          >
-                            {Array.from(Array(31).keys()).map((idx) => (
-                              <MenuItem key={idx} value={(idx + 1).toString()}>
-                                {(idx + 1).toString()}
-                              </MenuItem>
-                            ))}
-                          </Field>
-                        )}
-                        {values.period !== 'minute' && values.period !== 'hour' && (
-                          <Field
-                            component={TimePickerField}
-                            name="time"
-                            withMinutes={true}
-                            textFieldProps={{
-                              label: t_i18n('Time'),
-                              variant: 'standard',
-                              fullWidth: true,
-                              style: { marginTop: 20 },
-                            }}
-                          />
-                        )}
-                      </div>
-                    );
+                    return <PlaybookFlowFieldTriggerTime key={k} />;
                   }
                   if (k === 'actions') {
                     return (
@@ -725,105 +659,40 @@ const PlaybookAddComponentsContent = ({
                   }
                   if (v.type === 'number') {
                     return (
-                      <Field
+                      <PlaybookFlowFieldNumber
                         key={k}
-                        component={TextField}
-                        variant="standard"
-                        type="number"
                         name={k}
                         label={t_i18n(v.$ref ?? k)}
-                        fullWidth={true}
-                        style={{ marginTop: 20, width: '100%' }}
                       />
                     );
                   }
                   if (v.type === 'boolean') {
                     return (
-                      <Field
+                      <PlaybookFlowFieldBoolean
                         key={k}
-                        component={SwitchField}
-                        type="checkbox"
                         name={k}
                         label={t_i18n(v.$ref ?? k)}
-                        containerstyle={{ marginTop: 20 }}
                       />
                     );
                   }
                   if (v.type === 'string' && v.oneOf) {
                     return (
-                      <Field
+                      <PlaybookFlowFieldArray
                         key={k}
-                        component={AutocompleteField}
                         name={k}
-                        fullWidth={true}
-                        multiple={false}
-                        style={{ marginTop: 20, width: '100%' }}
-                        renderOption={(optionProps, value) => (
-                          <Tooltip
-                            {...optionProps}
-                            key={value.const}
-                            title={value.title}
-                            placement="bottom-start"
-                          >
-                            <MenuItem value={value.const}>
-                              {/* value might be an entity type, we try to translate it */}
-                              {translateEntityType(value.title)}
-                            </MenuItem>
-                          </Tooltip>
-                        )}
-                        isOptionEqualToValue={(option, value) => option.const === value }
-                        onInternalChange={(name, value) => setFieldValue(name, value.const ? value.const : value) }
+                        label={t_i18n(v.$ref ?? k)}
                         options={v.oneOf}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t_i18n(v.$ref ?? k),
-                        }}
-                        getOptionLabel={(option) => translateEntityType(option.title
-                          ? option.title
-                          : v.oneOf?.filter((n) => n.const === option)?.at(0)
-                            ?.title ?? option)
-                        }
                       />
                     );
                   }
                   if (v.type === 'array') {
                     return (
-                      <Field
+                      <PlaybookFlowFieldArray
                         key={k}
-                        component={AutocompleteField}
                         name={k}
-                        fullWidth={true}
-                        multiple={true}
-                        style={{ marginTop: 20, width: '100%' }}
-                        renderOption={(optionProps, value) => (
-                          <Tooltip
-                            {...optionProps}
-                            key={value.const}
-                            title={t_i18n(value.title)}
-                            placement="bottom-start"
-                          >
-                            <MenuItem value={value.const}>
-                              {t_i18n(value.title)}
-                            </MenuItem>
-                          </Tooltip>
-                        )}
-                        isOptionEqualToValue={(option, value) => option.const === value}
-                        onInternalChange={(name, value) => setFieldValue(
-                          name,
-                          value.map((n) => (n.const ? n.const : n)),
-                        )}
-                        noFieldUpdate={true}
+                        label={t_i18n(v.$ref ?? k)}
                         options={v.items.oneOf}
-                        textfieldprops={{
-                          variant: 'standard',
-                          label: t_i18n(v.$ref ?? k),
-                        }}
-                        getOptionLabel={(option) => (option.title
-                          ? option.title
-                          : v.items.oneOf
-                            ?.filter((n) => n.const === option)
-                            ?.at(0)?.title ?? option)
-                        }
+                        multiple
                       />
                     );
                   }
