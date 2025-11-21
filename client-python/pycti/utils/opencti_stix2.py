@@ -96,6 +96,16 @@ class OpenCTIStix2:
         self.mapping_cache = LRUCache(maxsize=50000)
         self.mapping_cache_permanent = {}
 
+    def get_in_cache(self, data_id):
+        api_draft_id = self.opencti.get_draft_id()
+        if data_id + api_draft_id in self.mapping_cache:
+            return self.mapping_cache[data_id + api_draft_id]
+        return None
+
+    def set_in_cache(self, data_id, data):
+        api_draft_id = self.opencti.get_draft_id()
+        self.mapping_cache[data_id + api_draft_id] = data
+
     ######### UTILS
     # region utils
     def unknown_type(self, stix_object: Dict) -> None:
@@ -283,15 +293,16 @@ class OpenCTIStix2:
         return None
 
     def get_author(self, name: str) -> Identity:
-        if name in self.mapping_cache:
-            return self.mapping_cache[name]
+        name_in_cache = self.get_in_cache(name)
+        if name_in_cache is not None:
+            return name_in_cache
         else:
             author = self.opencti.identity.create(
                 type="Organization",
                 name=name,
                 description="",
             )
-            self.mapping_cache[name] = author
+            self.set_in_cache(name, author)
             return author
 
     def extract_embedded_relationships(
@@ -394,41 +405,47 @@ class OpenCTIStix2:
             )
         if "labels" in stix_object:
             for label in stix_object["labels"]:
-                if "label_" + label in self.mapping_cache:
-                    label_data = self.mapping_cache["label_" + label]
+                label_key = "label_" + label
+                label_in_cache = self.get_in_cache(label_key)
+                if label_in_cache is not None:
+                    label_data = label_in_cache
                 else:
                     # Fail in label creation is allowed
                     label_data = self.opencti.label.read_or_create_unchecked(
                         value=label
                     )
                 if label_data is not None:
-                    self.mapping_cache["label_" + label] = label_data
+                    self.set_in_cache(label_key, label_data)
                     object_label_ids.append(label_data["id"])
         elif "x_opencti_labels" in stix_object:
             for label in stix_object["x_opencti_labels"]:
-                if "label_" + label in self.mapping_cache:
-                    label_data = self.mapping_cache["label_" + label]
+                label_key = "label_" + label
+                label_in_cache = self.get_in_cache(label_key)
+                if label_in_cache is not None:
+                    label_data = label_in_cache
                 else:
                     # Fail in label creation is allowed
                     label_data = self.opencti.label.read_or_create_unchecked(
                         value=label
                     )
                 if label_data is not None:
-                    self.mapping_cache["label_" + label] = label_data
+                    self.set_in_cache(label_key, label_data)
                     object_label_ids.append(label_data["id"])
         elif "x_opencti_tags" in stix_object:
             for tag in stix_object["x_opencti_tags"]:
                 label = tag["value"]
                 color = tag["color"] if "color" in tag else None
-                if "label_" + label in self.mapping_cache:
-                    label_data = self.mapping_cache["label_" + label]
+                label_key = "label_" + label
+                label_in_cache = self.get_in_cache(label_key)
+                if label_in_cache is not None:
+                    label_data = label_in_cache
                 else:
                     # Fail in label creation is allowed
                     label_data = self.opencti.label.read_or_create_unchecked(
                         value=label, color=color
                     )
                 if label_data is not None:
-                    self.mapping_cache["label_" + label] = label_data
+                    self.set_in_cache(label_key, label_data)
                     object_label_ids.append(label_data["id"])
         # Kill Chain Phases
         kill_chain_phases_ids = []
@@ -447,14 +464,12 @@ class OpenCTIStix2:
             and stix_object["kill_chain_phases"] is not None
         ):
             for kill_chain_phase in stix_object["kill_chain_phases"]:
-                if (
+                kill_chain_phase_key = (
                     kill_chain_phase["kill_chain_name"] + kill_chain_phase["phase_name"]
-                    in self.mapping_cache
-                ):
-                    kill_chain_phase = self.mapping_cache[
-                        kill_chain_phase["kill_chain_name"]
-                        + kill_chain_phase["phase_name"]
-                    ]
+                )
+                kill_chain_phase_in_cache = self.get_in_cache(kill_chain_phase_key)
+                if kill_chain_phase_in_cache is not None:
+                    kill_chain_phase = kill_chain_phase_in_cache
                 else:
                     if (
                         "x_opencti_order" not in kill_chain_phase
@@ -480,27 +495,23 @@ class OpenCTIStix2:
                             kill_chain_phase["id"] if "id" in kill_chain_phase else None
                         ),
                     )
-                    self.mapping_cache[
-                        kill_chain_phase["kill_chain_name"]
-                        + kill_chain_phase["phase_name"]
-                    ] = {
+                    kill_chain_phase_cache_data = {
                         "id": kill_chain_phase["id"],
                         "type": kill_chain_phase["entity_type"],
                     }
+                    self.set_in_cache(kill_chain_phase_key, kill_chain_phase_cache_data)
                 kill_chain_phases_ids.append(kill_chain_phase["id"])
         elif (
             "x_opencti_kill_chain_phases" in stix_object
             and stix_object["x_opencti_kill_chain_phases"] is not None
         ):
             for kill_chain_phase in stix_object["x_opencti_kill_chain_phases"]:
-                if (
+                kill_chain_phase_key = (
                     kill_chain_phase["kill_chain_name"] + kill_chain_phase["phase_name"]
-                    in self.mapping_cache
-                ):
-                    kill_chain_phase = self.mapping_cache[
-                        kill_chain_phase["kill_chain_name"]
-                        + kill_chain_phase["phase_name"]
-                    ]
+                )
+                kill_chain_phase_in_cache = self.get_in_cache(kill_chain_phase_key)
+                if kill_chain_phase_in_cache is not None:
+                    kill_chain_phase = kill_chain_phase_in_cache
                 else:
                     if (
                         "x_opencti_order" not in kill_chain_phase
@@ -526,13 +537,11 @@ class OpenCTIStix2:
                             kill_chain_phase["id"] if "id" in kill_chain_phase else None
                         ),
                     )
-                    self.mapping_cache[
-                        kill_chain_phase["kill_chain_name"]
-                        + kill_chain_phase["phase_name"]
-                    ] = {
+                    kill_chain_phase_cache_data = {
                         "id": kill_chain_phase["id"],
                         "type": kill_chain_phase["entity_type"],
                     }
+                    self.set_in_cache(kill_chain_phase_key, kill_chain_phase_cache_data)
                 kill_chain_phases_ids.append(kill_chain_phase["id"])
         # Object refs
         object_refs_ids = (
@@ -686,11 +695,9 @@ class OpenCTIStix2:
                                 + str(external_reference["external_id"])
                                 + ")"
                             )
-
-                        if "marking_tlpclear" in self.mapping_cache:
-                            object_marking_ref_result = self.mapping_cache[
-                                "marking_tlpclear"
-                            ]
+                        marking_tlp_clear = self.get_in_cache("marking_tlpclear")
+                        if marking_tlp_clear is not None:
+                            object_marking_ref_result = marking_tlp_clear
                         else:
                             object_marking_ref_result = (
                                 self.opencti.marking_definition.read(
@@ -710,9 +717,10 @@ class OpenCTIStix2:
                                     }
                                 )
                             )
-                            self.mapping_cache["marking_tlpclear"] = {
-                                "id": object_marking_ref_result["id"]
-                            }
+                            self.set_in_cache(
+                                "marking_tlpclear",
+                                {"id": object_marking_ref_result["id"]},
+                            )
 
                         author = self.resolve_author(title)
                         report = self.opencti.report.create(
@@ -1068,24 +1076,30 @@ class OpenCTIStix2:
             stix_object_results = [stix_object_results]
 
         for stix_object_result in stix_object_results:
-            self.mapping_cache[stix_object["id"]] = {
-                "id": stix_object_result["id"],
-                "type": stix_object_result["entity_type"],
-                "observables": (
-                    stix_object_result["observables"]
-                    if "observables" in stix_object_result
-                    else []
-                ),
-            }
-            self.mapping_cache[stix_object_result["id"]] = {
-                "id": stix_object_result["id"],
-                "type": stix_object_result["entity_type"],
-                "observables": (
-                    stix_object_result["observables"]
-                    if "observables" in stix_object_result
-                    else []
-                ),
-            }
+            self.set_in_cache(
+                stix_object["id"],
+                {
+                    "id": stix_object_result["id"],
+                    "type": stix_object_result["entity_type"],
+                    "observables": (
+                        stix_object_result["observables"]
+                        if "observables" in stix_object_result
+                        else []
+                    ),
+                },
+            )
+            self.set_in_cache(
+                stix_object_result["id"],
+                {
+                    "id": stix_object_result["id"],
+                    "type": stix_object_result["entity_type"],
+                    "observables": (
+                        stix_object_result["observables"]
+                        if "observables" in stix_object_result
+                        else []
+                    ),
+                },
+            )
             # Add reports from external references
             for external_reference_id in external_references_ids:
                 if external_reference_id in reports:
@@ -1257,14 +1271,20 @@ class OpenCTIStix2:
                             embedded=file.get("embedded", False),
                         )
             if "id" in stix_object:
-                self.mapping_cache[stix_object["id"]] = {
+                self.set_in_cache(
+                    stix_object["id"],
+                    {
+                        "id": stix_observable_result["id"],
+                        "type": stix_observable_result["entity_type"],
+                    },
+                )
+            self.set_in_cache(
+                stix_observable_result["id"],
+                {
                     "id": stix_observable_result["id"],
                     "type": stix_observable_result["entity_type"],
-                }
-            self.mapping_cache[stix_observable_result["id"]] = {
-                "id": stix_observable_result["id"],
-                "type": stix_observable_result["entity_type"],
-            }
+                },
+            )
             # Iterate over refs to create appropriate relationships
             for key in stix_object.keys():
                 if key not in [
@@ -1376,10 +1396,13 @@ class OpenCTIStix2:
             stixRelation=stix_relation, extras=extras, update=update, defaultDate=date
         )
         if stix_relation_result is not None:
-            self.mapping_cache[stix_relation["id"]] = {
-                "id": stix_relation_result["id"],
-                "type": stix_relation_result["entity_type"],
-            }
+            self.set_in_cache(
+                stix_relation["id"],
+                {
+                    "id": stix_relation_result["id"],
+                    "type": stix_relation_result["entity_type"],
+                },
+            )
         else:
             return None
 
@@ -1509,10 +1532,13 @@ class OpenCTIStix2:
             ),
         )
         if stix_sighting_result is not None:
-            self.mapping_cache[stix_sighting["id"]] = {
-                "id": stix_sighting_result["id"],
-                "type": stix_sighting_result["entity_type"],
-            }
+            self.set_in_cache(
+                stix_sighting["id"],
+                {
+                    "id": stix_sighting_result["id"],
+                    "type": stix_sighting_result["entity_type"],
+                },
+            )
         else:
             return None
 
