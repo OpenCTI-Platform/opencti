@@ -4,8 +4,8 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { ExternalReferencesValues } from '@components/common/form/ExternalReferencesField';
+import { GenericContext } from '@components/common/model/GenericContextModel';
 import { OrganizationEditionOverview_organization$key } from './__generated__/OrganizationEditionOverview_organization.graphql';
-import { OrganizationEditionContainer_organization$data } from './__generated__/OrganizationEditionContainer_organization.graphql';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -120,7 +120,7 @@ const ORGANIZATION_TYPE = 'Organization';
 interface OrganizationEditionOverviewComponentProps {
   organizationRef: OrganizationEditionOverview_organization$key;
   enableReferences: boolean;
-  context: OrganizationEditionContainer_organization$data['editContext'];
+  context?: readonly (GenericContext | null)[] | null;
   handleClose: () => void;
 }
 
