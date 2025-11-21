@@ -39,7 +39,7 @@ const decayExclusionRuleModelList: DecayExclusionRuleModel[] = [
 describe('Decay Exclusion Rule', () => {
   describe('checkDecayExclusionRules', () => {
     describe('If there is an active with a matching observable type and an inactive rule on the list', async () => {
-      const { exclusionRule, hasExclusionRuleMatching, } = await checkDecayExclusionRules(testContext, ADMIN_USER, observableType, decayExclusionRuleModelList);
+      const { exclusionRule, hasExclusionRuleMatching, } = checkDecayExclusionRules(observableType, decayExclusionRuleModelList);
 
       it('should have hasExclusionRuleMatching to be true ', () => {
         expect(hasExclusionRuleMatching).toBe(true);
@@ -51,7 +51,7 @@ describe('Decay Exclusion Rule', () => {
     });
 
     describe('If there is only an inactive rule on the list', async () => {
-      const { exclusionRule, hasExclusionRuleMatching, } = await checkDecayExclusionRules(testContext, ADMIN_USER, observableType, [decayExclusionRuleInactiveModel]);
+      const { exclusionRule, hasExclusionRuleMatching, } = checkDecayExclusionRules(observableType, [decayExclusionRuleInactiveModel]);
 
       it('should have hasExclusionRuleMatching to be false ', () => {
         expect(hasExclusionRuleMatching).toBe(false);
@@ -62,7 +62,7 @@ describe('Decay Exclusion Rule', () => {
       });
     });
     describe('If these is an active list but with no matching observable type', async () => {
-      const { exclusionRule, hasExclusionRuleMatching, } = await checkDecayExclusionRules(testContext, ADMIN_USER, observableType, [decayExclusionRuleActiveModel2]);
+      const { exclusionRule, hasExclusionRuleMatching, } = checkDecayExclusionRules(observableType, [decayExclusionRuleActiveModel2]);
 
       it('should have hasExclusionRuleMatching to be false ', () => {
         expect(hasExclusionRuleMatching).toBe(false);
