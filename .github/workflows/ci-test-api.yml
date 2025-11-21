@@ -212,7 +212,7 @@ jobs:
           -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
-          -e APP__BASE_URL=http://api-tests:4010/ \
+          -e APP__BASE_URL=http://unit-and-other-tests:4010/ \
           -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
