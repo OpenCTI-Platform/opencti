@@ -1,7 +1,0 @@
-/node_modules
-/coverage
-/public
-/builder/dev/build
-/builder/prod/build
-/src/static/ext/*
-__generated__
