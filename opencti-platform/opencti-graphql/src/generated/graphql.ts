@@ -20822,6 +20822,11 @@ export type PlatformProtectedSubConfig = {
   protected_ids: Array<Scalars['String']['output']>;
 };
 
+export enum PlatformType {
+  Lts = 'LTS',
+  Standard = 'STANDARD'
+}
+
 export type PlayBookExecution = {
   __typename?: 'PlayBookExecution';
   execution_start?: Maybe<Scalars['String']['output']>;
@@ -27101,7 +27106,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_title?: Maybe<Scalars['String']['output']>;
   platform_translations?: Maybe<Scalars['String']['output']>;
   platform_trash_enabled: Scalars['Boolean']['output'];
-  platform_type: Scalars['String']['output'];
+  platform_type: PlatformType;
   platform_url?: Maybe<Scalars['String']['output']>;
   platform_user_statuses: Array<UserStatus>;
   platform_whitemark?: Maybe<Scalars['Boolean']['output']>;
@@ -36206,6 +36211,7 @@ export type ResolversTypes = ResolversObject<{
   PlatformEE: ResolverTypeWrapper<PlatformEe>;
   PlatformProtectedSensitiveConfig: ResolverTypeWrapper<PlatformProtectedSensitiveConfig>;
   PlatformProtectedSubConfig: ResolverTypeWrapper<PlatformProtectedSubConfig>;
+  PlatformType: PlatformType;
   PlayBookExecution: ResolverTypeWrapper<PlayBookExecution>;
   PlayBookExecutionStep: ResolverTypeWrapper<PlayBookExecutionStep>;
   Playbook: ResolverTypeWrapper<BasicStoreEntityPlaybook>;
@@ -45407,7 +45413,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_translations?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_trash_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  platform_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  platform_type?: Resolver<ResolversTypes['PlatformType'], ParentType, ContextType>;
   platform_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_user_statuses?: Resolver<Array<ResolversTypes['UserStatus']>, ParentType, ContextType>;
   platform_whitemark?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

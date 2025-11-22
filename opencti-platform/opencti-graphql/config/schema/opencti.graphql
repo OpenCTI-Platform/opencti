@@ -1451,6 +1451,11 @@ type MetricDefinition {
     metrics: [MetricAttributes!]
 }
 
+enum PlatformType {
+    LTS
+    STANDARD
+}
+
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
   standard_id: String!
@@ -1463,7 +1468,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_title: String
   platform_favicon: String
   platform_email: String
-  platform_type: String!
+  platform_type: PlatformType!
   platform_email_configurable: Boolean!
   platform_cluster: Cluster!
   platform_modules: [Module!]
