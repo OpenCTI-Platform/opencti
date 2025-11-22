@@ -292,7 +292,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
       },
     });
   };
-  const isLtsPlatform = settings.platform_type === 'lts';
+  const isLtsPlatform = settings.platform_type === 'LTS';
   const handleSubmitField = (name: string, value: string | boolean) => {
     let finalValue = value;
     if (

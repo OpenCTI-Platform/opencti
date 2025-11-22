@@ -130,7 +130,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([CGUStatus.enabled, CGUStatus.disabled, CGUStatus.pending]),
     platform_ai_enabled: Yup.boolean(),
   });
-  const isLtsPlatform = settings.platform_type === 'lts';
+  const isLtsPlatform = settings.platform_type === 'LTS';
   const [commitField] = useApiMutation(experienceFieldPatch);
   const handleSubmitField = (name: string, value: string | string[] | FieldOption | null | boolean) => {
     experienceValidation()
