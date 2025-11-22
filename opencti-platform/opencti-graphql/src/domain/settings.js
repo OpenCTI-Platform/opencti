@@ -11,12 +11,12 @@ import { storeLoadById } from '../database/middleware-loader';
 import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers-configuration';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
-import { now, utcDate } from '../utils/format';
+import { now } from '../utils/format';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { UnsupportedError } from '../config/errors';
 import { isEmptyField, isNotEmptyField } from '../database/utils';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { getEnterpriseEditionInfo, getEnterpriseEditionInfoFromPem, LICENSE_OPTION_TRIAL } from '../modules/settings/licensing';
+import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 import { getClusterInformation } from '../database/cluster-module';
 import { completeXTMHubDataForRegistration } from '../utils/settings.helper';
 import { XTM_ONE_CHATBOT_URL } from '../http/httpChatbotProxy';
@@ -230,30 +230,8 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };
 
-const buildEEMessageHeader = (message, error = true) => {
-  return {
-    id: 'license-message',
-    message,
-    activated: true,
-    dismissible: false,
-    updated_at: now(),
-    color: error ? '#d0021b' : undefined,
-    recipients: []
-  };
-};
-
 export const getMessagesFilteredByRecipients = (user, settings) => {
   const messages = JSON.parse(settings.platform_messages ?? '[]');
-  const ee = getEnterpriseEditionInfo(settings);
-  if (ee.license_enterprise) {
-    if (!ee.license_validated) {
-      messages.unshift(buildEEMessageHeader(`The current ${ee.license_type} license has expired, Enterprise Edition is disabled.`));
-    } else if (ee.license_extra_expiration) {
-      messages.unshift(buildEEMessageHeader(`The current ${ee.license_type} license has expired, Enterprise Edition will be disabled in ${ee.license_extra_expiration_days} days.`));
-    } else if (ee.license_type === LICENSE_OPTION_TRIAL) {
-      messages.unshift(buildEEMessageHeader(`This is a trial Enterprise Edition version, valid until ${utcDate(ee.license_expiration_date).format('YYYY-MM-DD')}.`, false));
-    }
-  }
   return messages.filter(({ recipients }) => {
     // eslint-disable-next-line max-len
     return isEmptyField(recipients) || recipients.some((recipientId) => [user.id, ...user.groups.map(({ id }) => id), ...user.organizations.map(({ id }) => id)].includes(recipientId));

@@ -39,7 +39,7 @@ export interface ModuleHelper {
   isChatbotAiEnabled: () => boolean;
 }
 
-const isFeatureEnable = (
+export const isFeatureEnable = (
   settings: RootSettings$data,
   id: string,
 ) => {

@@ -107,6 +107,12 @@ export const secondsBetweenDates = (startDate, endDate) => {
   return end.diff(start, 'seconds') + 1;
 };
 
+export const daysBetweenDates = (startDate, endDate) => {
+  const start = parse(startDate);
+  const end = parse(endDate);
+  return end.diff(start, 'days') + 1;
+};
+
 /**
  * Returns a string of the format "hh:MM:ss" from a given number of seconds.
  *
