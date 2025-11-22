@@ -2,10 +2,11 @@ import React, { memo } from 'react';
 import * as R from 'ramda';
 import { NodeProps, Position } from 'reactflow';
 import Typography from '@mui/material/Typography';
-import getFilterFromEntityTypeAndNodeType, { DiamondNodeType } from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
+import getFilterFromEntityTypeAndNodeType from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
 import NodeContainer from './NodeContainer';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { emptyFilled } from '../../../../../../../utils/String';
+import { DiamondNodeEnum } from './diamondEnums';
 
 const NodeCapabilities = ({ data }: NodeProps) => {
   const { t_i18n } = useFormatter();
@@ -22,7 +23,7 @@ const NodeCapabilities = ({ data }: NodeProps) => {
     .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
     .join(', ');
 
-  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeType.capabilities);
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeEnum.capabilities);
 
   return (
     <NodeContainer link={`${entityLink}/all?filters=${generatedFilters}&view=entities`} position={Position.Right}>

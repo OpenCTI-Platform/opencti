@@ -1,151 +1,135 @@
-export enum DiamondNodeType {
-  adversary = 'adversary',
-  infrastructure = 'infrastructure',
-  capabilities = 'capabilities',
-}
-
-export enum DiamondEntityType {
-  threatActorGroup = 'Threat-Actor-Group',
-  threatActorIndividual = 'Threat-Actor-Individual',
-  intrusionSet = 'Intrusion-Set',
-  campaign = 'Campaign',
-  malware = 'Malware',
-  channel = 'Channel',
-  tool = 'Tool',
-  incident = 'Incident',
-  infrastructure = 'Infrastructure',
-}
+import { DiamondEntityEnum, DiamondNodeEnum } from './types/nodes/diamondEnums';
 
 const filterContentFromEntityTypeAndNodeType = {
-  [DiamondEntityType.threatActorGroup]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.threatActorGroup]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Campaign', 'Intrusion-Set', 'Incident'],
       relationships: ['attributed-to'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['uses', 'hosts', 'owns', 'related-to'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Attack-Pattern', 'Malware', 'Tool', 'Channel'],
       relationships: ['uses'],
     },
   },
-  [DiamondEntityType.threatActorIndividual]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.threatActorIndividual]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Campaign', 'Intrusion-Set', 'Incident'],
       relationships: ['attributed-to'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['uses', 'hosts', 'owns', 'related-to'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Attack-Pattern', 'Malware', 'Tool', 'Channel'],
       relationships: ['uses'],
     },
   },
-  [DiamondEntityType.intrusionSet]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.intrusionSet]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Intrusion-Set', 'Campaign', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
       relationships: ['attributed-to'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['uses', 'hosts', 'owns', 'related-to'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Attack-Pattern', 'Malware', 'Tool', 'Channel'],
       relationships: ['uses'],
     },
   },
-  [DiamondEntityType.campaign]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.campaign]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Incident'],
       relationships: ['attributed-to'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['uses', 'hosts', 'owns', 'related-to'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Attack-Pattern', 'Malware', 'Tool', 'Channel'],
       relationships: ['uses'],
     },
   },
-  [DiamondEntityType.malware]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.malware]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual'],
       relationships: ['authored-by'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['uses', 'exfiltrates-to', 'beacons-to', 'communicates-to'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Attack-Pattern', 'Tool'],
       relationships: ['uses', 'downloads', 'drops'],
     },
   },
-  [DiamondEntityType.channel]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.channel]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Incident'],
       relationships: ['uses'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['uses', 'related-to'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Attack-Pattern', 'Malware'],
       relationships: ['uses', 'delivers', 'drops'],
     },
   },
-  [DiamondEntityType.tool]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.tool]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Incident'],
       relationships: ['uses'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['uses', 'related-to'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Attack-Pattern', 'Malware'],
       relationships: ['uses', 'delivers', 'drops'],
     },
   },
-  [DiamondEntityType.incident]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.incident]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Campaign'],
       relationships: ['attributed-to'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['related-to', 'uses'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Attack-Pattern', 'Malware', 'Tool', 'Channel'],
       relationships: ['uses'],
     },
   },
-  [DiamondEntityType.infrastructure]: {
-    [DiamondNodeType.adversary]: {
+  [DiamondEntityEnum.infrastructure]: {
+    [DiamondNodeEnum.adversary]: {
       entityType: ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Campaign', 'Incident'],
       relationships: ['uses', 'hosts', 'owns'],
     },
-    [DiamondNodeType.infrastructure]: {
+    [DiamondNodeEnum.infrastructure]: {
       entityType: ['IPv4-Addr', 'IPv6-Addr', 'Infrastructure', 'Domain-Name'],
       relationships: ['with', 'consists'],
     },
-    [DiamondNodeType.capabilities]: {
+    [DiamondNodeEnum.capabilities]: {
       entityType: ['Malware', 'Tool'],
       relationships: ['controls', 'hosts', 'delivers'],
     },
   },
 };
 
-const getFilterFromEntityTypeAndNodeType = (entity_type: DiamondEntityType, nodeType: DiamondNodeType) => {
+export const getFilterFromEntityTypeAndNodeType = (entity_type: DiamondEntityEnum, nodeType: DiamondNodeEnum) => {
   const filterContent = filterContentFromEntityTypeAndNodeType[entity_type][nodeType];
 
   const filterGroups = {
