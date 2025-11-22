@@ -1449,6 +1449,11 @@ type MetricDefinition {
     metrics: [MetricAttributes!]
 }
 
+enum PlatformType {
+    LTS
+    STANDARD
+}
+
 type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSettings {
   id: ID!
   standard_id: String!
@@ -1461,6 +1466,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_title: String
   platform_favicon: String
   platform_email: String
+  platform_type: PlatformType!
   platform_cluster: Cluster!
   platform_modules: [Module!]
   platform_url: String
@@ -1921,6 +1927,11 @@ input UserLoginInput {
 
 input UserOTPLoginInput {
   code: String!
+}
+
+input LicenseActivationInput {
+    settingId: ID!
+    license: String! @constraint(minLength: 2, format: "not-blank")
 }
 
 input UserOTPActivationInput {
@@ -15235,6 +15246,7 @@ type Mutation {
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
   otpLogin(input: UserOTPLoginInput): Boolean @auth @rateLimit(limit: 1, duration: 1)
   settingsEdit(id: ID!): SettingsEditMutations @auth
+  setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB])
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
   statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
