@@ -123,6 +123,7 @@
       "extension_threshold": 5000
     },
     "live_stream": {
+      "mode": "redis",
       "cache_max_size": 5000,
       "cache_max_time": 2
     },
