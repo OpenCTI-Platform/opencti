@@ -1,0 +1,31 @@
+name: OpenCTI CI
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - oob/ci-migrate-to-gh
+
+jobs:
+  wf-build-image:
+      uses: ./.github/workflows/ci-docker-build.yml
+      with:
+        image_tag: ${{ github.sha }}
+      secrets: inherit
+
+  wf-api-test:
+      uses: ./.github/workflows/ci-test-api.yml
+      needs: wf-build-image
+      secrets: inherit
+
+  wf-frontend-test:
+      uses: ./.github/workflows/ci-test-frontend.yml
+      secrets: inherit
+
+  wf-client-python-test:
+      uses: ./.github/workflows/ci-test-client-python.yml
+      needs: wf-build-image
+      secrets: inherit
+
+  wf-license-check:
+      uses: ./.github/workflows/ci-license-check.yml
+      secrets: inherit

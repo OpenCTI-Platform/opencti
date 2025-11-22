@@ -1,0 +1,161 @@
+services:
+  redis:
+    container_name: redis
+    profiles: ["backend"]
+    image: redis:8.0.3
+    restart: unless-stopped
+    networks:
+      - runner-docker-network
+    ports:
+      - 6379:6379
+  elasticsearch:
+    container_name: elasticsearch
+    profiles: ["backend"]
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2G -Xmx2G"
+    restart: unless-stopped
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    networks:
+      - runner-docker-network
+    ports:
+      - 9200:9200
+      - 9300:9300
+  minio:
+    container_name: minio
+    profiles: ["backend"]
+    image: minio/minio:latest
+    networks:
+      - runner-docker-network
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+      - "35300:35300"
+    environment:
+      MINIO_ROOT_USER: ChangeMe
+      MINIO_ROOT_PASSWORD: ChangeMe
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    restart: unless-stopped
+  rabbitmq:
+    profiles: ["backend"]
+    container_name: rabbitmq
+    image: rabbitmq:4.1-management
+    restart: unless-stopped
+    networks:
+      - runner-docker-network
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  opencti-raw-start:
+    container_name: opencti-raw-start
+    profiles: ["ci-test-api-sync"]
+    image: filigran/platform:${TAG}
+    restart: unless-stopped
+    environment:
+      - BASE_NAME=opencti-raw-start
+    env_file:
+      - ci-common.env
+      - ci-sync.env
+    networks:
+      - runner-docker-network
+    ports:
+      - 4100:4100
+  opencti-live-start:
+    container_name: opencti-live-start
+    profiles: ["ci-test-api-sync"]
+    image: filigran/platform:${TAG}
+    restart: unless-stopped
+    environment:
+      - BASE_NAME=opencti-live-start
+    env_file:
+      - ci-common.env
+      - ci-sync.env
+    networks:
+      - runner-docker-network
+    ports:
+      - 4200:4100
+  opencti-direct-start:
+    container_name: opencti-direct-start
+    profiles: ["ci-test-api-sync"]
+    image: filigran/platform:${TAG}
+    restart: unless-stopped
+    environment:
+      - BASE_NAME=opencti-direct-start
+    env_file:
+      - ci-common.env
+      - ci-sync.env
+    networks:
+      - runner-docker-network
+    ports:
+      - 4300:4100
+  opencti-restore-start:
+    container_name: opencti-restore-start
+    profiles: ["ci-test-api-sync"]
+    image: filigran/platform:${TAG}
+    restart: unless-stopped
+    environment:
+      - BASE_NAME=opencti-restore-start
+    env_file:
+      - ci-common.env
+      - ci-sync.env
+    networks:
+      - runner-docker-network
+    ports:
+      - 4400:4100
+
+  opencti-pycti-start:
+    container_name: opencti-pycti-start
+    profiles: ["ci-test-pycti"]
+    image: filigran/platform:${TAG}
+    restart: unless-stopped
+    environment:
+      - BASE_NAME=opencti-pycti-start
+    env_file:
+      - ci-common.env
+      - ci-sync.env
+    networks:
+      - runner-docker-network
+    ports:
+      - 4600:4100
+
+  opencti-direct-worker:
+    container_name: opencti-direct-worker
+    profiles: ["ci-test-api-sync"]
+    image: filigran/worker:${TAG}
+    restart: unless-stopped
+    environment:
+      - OPENCTI_URL=http://opencti-direct-start:4100
+      - OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      - WORKER_LOG_LEVEL=info
+    networks:
+      - runner-docker-network
+
+  opencti-test-worker:
+    container_name: opencti-test-worker
+    profiles: ["ci-test-api-sync","ci-test-api"]
+    image: filigran/worker:${TAG}
+    restart: unless-stopped
+    environment:
+      - OPENCTI_URL=http://api-tests:4010
+      - OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      - WORKER_LOG_LEVEL=info
+    networks:
+      - runner-docker-network
+
+networks:
+  runner-docker-network:
+    external: true
