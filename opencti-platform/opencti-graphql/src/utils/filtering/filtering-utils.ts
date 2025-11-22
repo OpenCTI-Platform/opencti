@@ -498,6 +498,7 @@ const computeFilterLabelMap = async (
   return resolvedLabels;
 };
 
+export type FiltersIdsFinder = (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>;
 /**
  * Go through all keys in a filter group to:
  * - check that the key is available with respect to the schema, throws an Error if not
@@ -508,7 +509,7 @@ export const checkAndConvertFilters = async (
   user: AuthUser,
   inputFilterGroup: FilterGroup | null | undefined,
   userId: string,
-  idsFinder: (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>,
+  idsFinder: FiltersIdsFinder,
   opts: { noFiltersChecking?: boolean, noFiltersConvert?: boolean } = {}
 ) => {
   if (!inputFilterGroup) {

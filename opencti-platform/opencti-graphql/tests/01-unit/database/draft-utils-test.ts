@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildUpdateFieldPatch, getConsolidatedUpdatePatch } from '../../../src/database/draft-utils';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from '../../../src/database/utils';
 import { EditOperation } from '../../../src/generated/graphql';
+import type { InternalEditInput } from '../../../src/types/store';
 
 describe('draft-utils', () => {
   let currentUpdatePatch: any = {};
@@ -11,14 +11,14 @@ describe('draft-utils', () => {
   const valueB = 'valueB';
 
   it('should getConsolidatedUpdatePatch consolidate updates correctly', () => {
-    const newUpdateAAddA = [{ key: keyA, value: [valueA], operation: UPDATE_OPERATION_ADD }];
-    const newUpdateARemoveA = [{ key: keyA, value: [valueA], operation: UPDATE_OPERATION_REMOVE }];
-    const newUpdateAReplaceAB = [{ key: keyA, value: [valueA, valueB], operation: UPDATE_OPERATION_REPLACE }];
+    const newUpdateAAddA = [{ key: keyA, value: [valueA], operation: EditOperation.Add }];
+    const newUpdateARemoveA = [{ key: keyA, value: [valueA], operation: EditOperation.Remove }];
+    const newUpdateAReplaceAB = [{ key: keyA, value: [valueA, valueB], operation: EditOperation.Replace }];
 
-    const newUpdateBAddA = [{ key: keyB, value: [valueA], operation: UPDATE_OPERATION_ADD }];
-    const newUpdateBRemoveB = [{ key: keyB, value: [valueB], operation: UPDATE_OPERATION_REMOVE }];
+    const newUpdateBAddA = [{ key: keyB, value: [valueA], operation: EditOperation.Add }];
+    const newUpdateBRemoveB = [{ key: keyB, value: [valueB], operation: EditOperation.Remove }];
 
-    currentUpdatePatch = getConsolidatedUpdatePatch(currentUpdatePatch, newUpdateAAddA);
+    currentUpdatePatch = getConsolidatedUpdatePatch(currentUpdatePatch, newUpdateAAddA as InternalEditInput[]);
     expect(currentUpdatePatch.keyA.replaced_value.length).toBe(0);
     expect(currentUpdatePatch.keyA.added_value.length).toBe(1);
     expect(currentUpdatePatch.keyA.added_value[0]).toBe(valueA);

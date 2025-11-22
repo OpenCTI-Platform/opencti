@@ -27,6 +27,7 @@ import {
   type RepresentationAttribute,
   type SimpleAttributePath
 } from '../modules/internal/jsonMapper/jsonMapper-types';
+import type { StixObject } from '../types/stix-2-1-common';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateStandardId } from '../schema/identifier';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -202,24 +203,24 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'simple' && attribute.attr_path) {
-    const computedValue = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
+    const computedValue: InputType | null | undefined = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
         input.hashes = { ...values, [attribute.key]: computedValue };
       } else {
-        input[attribute.key] = computedValue;
+        input[attribute.key] = computedValue as InputType;
       }
     }
   }
   if (attribute.mode === 'complex' && attribute.complex_path) {
-    const computedValue = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
+    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
         input.hashes = { ...values, [attribute.key]: computedValue };
       } else {
-        input[attribute.key] = computedValue;
+        input[attribute.key] = computedValue as InputType;
       }
     }
   }
@@ -443,7 +444,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
       logApp.error('JSON mapper convert error', { cause: e });
     }
     return null;
-  }).filter((elem) => isNotEmptyField(elem));
+  }).filter((elem) => isNotEmptyField(elem)) as StixObject[];
   const bundleBuilder = new BundleBuilder();
   bundleBuilder.addObjects(stixObjects);
   return bundleBuilder.build();

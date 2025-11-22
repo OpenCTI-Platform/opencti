@@ -23,17 +23,7 @@ import {
 } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
-import type {
-  BasicStoreBase,
-  BasicStoreCommon,
-  BasicStoreEntity,
-  BasicStoreObject,
-  BasicStoreRelation,
-  StoreCommonConnection,
-  StoreEntityConnection,
-  StoreProxyRelation,
-  StoreRelationConnection
-} from '../types/store';
+import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, BasicStoreObject, BasicStoreRelation, BasicConnection, StoreProxyRelation } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator, type InputMaybe, OrderingMode } from '../generated/graphql';
 import {
@@ -301,15 +291,15 @@ export const topRelationsList = async <T extends StoreProxyRelation>(context: Au
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, type);
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: false });
+  return await elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: false }) as T[];
 };
 
 export const pageRelationsConnection = async <T extends BasicStoreRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
-  args: RelationOptions<T> = {}): Promise<StoreRelationConnection<T>> => {
+  args: RelationOptions<T> = {}): Promise<BasicConnection<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, type);
   const paginateArgs = buildRelationsFilter(type, args);
-  return elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: true });
+  return await elPaginate(context, user, computedIndices, { ...paginateArgs, connectionFormat: true }) as BasicConnection<T>;
 };
 
 export const fullRelationsList = async <T extends StoreProxyRelation>(context: AuthContext, user: AuthUser, type: string | Array<string>,
@@ -449,14 +439,15 @@ export const fullEntitiesThroughRelationsFromList = async <T extends BasicStoreE
 };
 
 export const pageEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: Array<string>,
-  args: EntityOptions<T> = {}): Promise<StoreEntityConnection<T>> => {
+  args: EntityOptions<T> = {}): Promise<BasicConnection<T>> => {
   const { indices } = args;
   const computedIndices = computeQueryIndices(indices, entityTypes);
   const first = args.first ?? ES_DEFAULT_PAGINATION;
   // maxSize MUST be aligned with first in this method.
   // As using elConnection is repaginate, removing maxSize will lead to major api breaking
   const paginateArgs = { ...buildEntityFilters(entityTypes, args), first, maxSize: first };
-  return elConnection(context, user, computedIndices, paginateArgs);
+  const connection = await elConnection(context, user, computedIndices, paginateArgs);
+  return connection as BasicConnection<T>;
 };
 
 export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, entityTypes: string[], args: EntityOptions<T> = {}) => {
@@ -465,7 +456,7 @@ export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthC
 };
 
 export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, connectedEntityId: string,
-  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<StoreCommonConnection<T>> => {
+  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<BasicConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
     throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
@@ -574,8 +565,7 @@ export const internalLoadById = async <T extends BasicStoreBase>(
   id: string | undefined,
   opts?: { type?: string | string[], baseData?: boolean, indices?: string[] },
 ): Promise<T> => {
-  // TODO Remove when all Typescript
-  return await elLoadById(context, user, id, opts) as unknown as T;
+  return await elLoadById<T>(context, user, id ?? '', opts) as unknown as T;
 };
 
 export const storeLoadById = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, id: string, type: string | string[], opts = {}): Promise<T> => {

@@ -1,6 +1,7 @@
 import * as R from 'ramda';
-import moment from 'moment';
-import { Promise } from 'bluebird';
+import { Promise as BluePromise } from 'bluebird';
+import moment, { type DurationInputArg2 } from 'moment/moment';
+import type { SortResults } from '@elastic/elasticsearch/lib/api/types';
 import { DatabaseError, UnsupportedError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
@@ -16,6 +17,9 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { getDraftContext } from '../utils/draftContext';
 import { INPUT_OBJECTS } from '../schema/general';
 import { doYield } from '../utils/eventloop-utils';
+import type { AuthContext, AuthUser } from '../types/user';
+import type { BasicNodeEdge, BasicStoreCommon, InternalEditInput, StoreCommon, BasicConnection } from '../types/store';
+import type { AttributeDefinition, BasicObjectDefinition } from '../schema/attribute-definition';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -72,8 +76,10 @@ export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS
 export const INDEX_DRAFT_OBJECTS = `${ES_INDEX_PREFIX}_draft_objects`;
 export const READ_INDEX_DRAFT_OBJECTS = `${INDEX_DRAFT_OBJECTS}*`;
 
-export const isInferredIndex = (index) => index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS);
-export const isDraftIndex = (index) => index && index.startsWith(INDEX_DRAFT_OBJECTS);
+export const isInferredIndex = (
+  index: string | undefined | null
+): boolean => !!index && (index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS));
+export const isDraftIndex = (index: string | undefined | null): boolean => !!index && index.startsWith(INDEX_DRAFT_OBJECTS);
 
 // indices that we only use as read only, not created anymore on new platforms
 export const DEPRECATED_INDICES = [
@@ -153,21 +159,21 @@ export const READ_RELATIONSHIPS_INDICES = [
   READ_INDEX_INFERRED_RELATIONSHIPS,
 ];
 
-export const isNotEmptyField = (field) => !R.isEmpty(field) && !R.isNil(field);
-export const isEmptyField = (field) => !isNotEmptyField(field);
+export const isNotEmptyField = (field: any): boolean => !R.isEmpty(field) && !R.isNil(field);
+export const isEmptyField = (field: any): boolean => !isNotEmptyField(field);
 
-export const getIndicesToQuery = (context, user, index) => {
+export const getIndicesToQuery = (context: AuthContext, user: AuthUser, index: string | string[] | undefined | null): string => {
   const draftContext = getDraftContext(context, user);
   return index + (!draftContext ? '' : (`,${READ_INDEX_DRAFT_OBJECTS}`));
 };
 
-const getMonday = (d) => {
+const getMonday = (d: Date): Date => {
   const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
   return new Date(d.setDate(diff));
 };
 
-export const fillTimeSeries = (startDate, endDate, interval, data) => {
+export const fillTimeSeries = (startDate: Date, endDate: Date, interval: string, data: any[]) => {
   let startDateParsed = moment.parseZone(startDate);
   let endDateParsed = moment.parseZone(endDate ?? now());
   let dateFormat;
@@ -193,10 +199,11 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   }
   const startFormatDate = new Date(endDateParsed.format(dateFormat));
   const endFormatDate = new Date(startDateParsed.format(dateFormat));
-  const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), `${interval}s`);
+  const duration: DurationInputArg2 = `${interval}s` as DurationInputArg2;
+  const elementsOfInterval = moment(startFormatDate).diff(moment(endFormatDate), duration);
   const newData = [];
   for (let i = 0; i <= elementsOfInterval; i += 1) {
-    const workDate = moment(startDateParsed).add(i, `${interval}s`);
+    const workDate = moment(startDateParsed).add(i, duration);
     // Looking for the value
     let dataValue = 0;
     for (let j = 0; j < data.length; j += 1) {
@@ -204,7 +211,7 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
         dataValue = data[j].value;
       }
     }
-    const intervalDate = moment(workDate).startOf(interval).utc().toISOString();
+    const intervalDate = moment(workDate).startOf(interval as moment.unitOfTime.StartOf).utc().toISOString();
     newData[i] = {
       date: intervalDate,
       value: dataValue,
@@ -213,30 +220,30 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   return newData;
 };
 
-export const offsetToCursor = (sort) => {
+export const offsetToCursor = (sort: SortResults): string => {
   const objJsonStr = JSON.stringify(sort);
   return Buffer.from(objJsonStr, 'utf-8').toString('base64');
 };
 
-export const cursorToOffset = (cursor) => {
+export const cursorToOffset = (cursor: string): SortResults => {
   const buff = Buffer.from(cursor, 'base64');
   const str = buff.toString('utf-8');
   return JSON.parse(str);
 };
 
-export const toBase64 = (utf8String) => {
+export const toBase64 = (utf8String: string | null | undefined): string | undefined => {
   if (isEmptyField(utf8String)) return undefined;
-  const buff = Buffer.from(utf8String, 'utf-8');
+  const buff = Buffer.from(utf8String as string, 'utf-8');
   return buff.toString('base64');
 };
 
-export const fromBase64 = (base64String) => {
+export const fromBase64 = (base64String: string | null | undefined): string | undefined => {
   if (isEmptyField(base64String)) return undefined;
-  const buff = Buffer.from(base64String, 'base64');
+  const buff = Buffer.from(base64String as string, 'base64');
   return buff.toString('utf-8');
 };
 
-export const emptyPaginationResult = () => {
+export const emptyPaginationResult = <T extends BasicStoreCommon>() : BasicConnection<T> => {
   return {
     edges: [],
     pageInfo: {
@@ -249,15 +256,21 @@ export const emptyPaginationResult = () => {
   };
 };
 
-export const buildPaginationFromEdges = (limit, searchAfter, edges, globalCount, filteredCount = 0) => {
+export const buildPaginationFromEdges = <T>(
+  limit: number | undefined,
+  searchAfter: string | undefined | null,
+  edges: BasicNodeEdge<T>[],
+  globalCount: number,
+  filteredCount = 0
+): BasicConnection<T> => {
   // Because of stateless approach its difficult to know if its finish
   // this test could lead to an extra round trip sometimes
   const hasNextPage = (edges.length + filteredCount) === limit;
   // For same reason its difficult to know if a previous page exists.
   // Considering for now that if user specific an offset, it should exists a previous page.
   const hasPreviousPage = searchAfter !== undefined && searchAfter !== null;
-  const startCursor = edges.length > 0 ? R.head(edges).cursor : '';
-  const endCursor = edges.length > 0 ? R.last(edges).cursor : '';
+  const startCursor = edges.length > 0 ? edges[0].cursor : '';
+  const endCursor = edges.length > 0 ? edges[edges.length - 1].cursor : '';
   const pageInfo = {
     startCursor,
     endCursor,
@@ -268,17 +281,23 @@ export const buildPaginationFromEdges = (limit, searchAfter, edges, globalCount,
   return { edges, pageInfo };
 };
 
-export const buildPagination = (limit, searchAfter, instances, globalCount, filteredCount = 0) => {
+export const buildPagination = <T> (
+  limit: number,
+  searchAfter: string | undefined | null,
+  instances: { node: T, sort?: SortResults, types?: string[] }[],
+  globalCount: number,
+  filteredCount = 0
+): BasicConnection<T> => {
   // TODO Make this transformation async
   const edges = instances.map((record) => {
     const { node, sort, types } = record;
     const cursor = sort ? offsetToCursor(sort) : '';
     return { node, cursor, types };
   });
-  return buildPaginationFromEdges(limit, searchAfter, edges, globalCount, filteredCount);
+  return buildPaginationFromEdges<T>(limit, searchAfter, edges, globalCount, filteredCount);
 };
 
-export const inferIndexFromConceptType = (conceptType, inferred = false) => {
+export const inferIndexFromConceptType = (conceptType: string, inferred = false): string => {
   // Inferred support
   if (inferred) {
     if (isStixDomainObject(conceptType)) return INDEX_INFERRED_ENTITIES;
@@ -306,30 +325,30 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   throw DatabaseError('Cant find index', { type: conceptType });
 };
 
-export const pascalize = (s) => {
+export const pascalize = (s: string): string => {
   return s.replace(/(\w)(\w*)/g, (g0, g1, g2) => {
     return g1.toUpperCase() + g2.toLowerCase();
   });
 };
 
-export const computeSumOfList = (numbers) => {
+export const computeSumOfList = (numbers: number[]): number => {
   return numbers.reduce((a, b) => a + b, 0);
 };
 
-export const computeAverage = (numbers) => {
+export const computeAverage = (numbers: number[]): number => {
   const sum = computeSumOfList(numbers);
   return Math.round(sum / numbers.length || 0);
 };
 
-export const wait = (ms) => {
-  return new Promise((resolve) => {
+export const wait = (ms: number): Promise<void> => {
+  return new BluePromise((resolve) => {
     setTimeout(resolve, ms);
   });
 };
 
-export const waitInSec = (sec) => wait(sec * 1000);
+export const waitInSec = (sec: number): Promise<void> => wait(sec * 1000);
 
-export const extractIdsFromStoreObject = (instance) => {
+export const extractIdsFromStoreObject = (instance: BasicStoreCommon): string[] => {
   const ids = [instance.internal_id, ...(instance.x_opencti_stix_ids ?? [])];
   if (instance.standard_id) {
     ids.push(instance.standard_id);
@@ -337,12 +356,12 @@ export const extractIdsFromStoreObject = (instance) => {
   return ids;
 };
 
-export const extractObjectsPirsFromInputs = (inputs, entityType) => {
-  const pir_ids = [];
+export const extractObjectsPirsFromInputs = (inputs: InternalEditInput[], entityType: string): { pir_ids: string[] } => {
+  const pir_ids: string[] = [];
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
-        const pirIds = input.value.flatMap((value) => value[RELATION_IN_PIR] ?? []);
+        const pirIds = input.value.flatMap((value) => (value as Record<string, any>)[RELATION_IN_PIR] ?? []);
         pir_ids.push(...pirIds);
       }
     });
@@ -350,12 +369,12 @@ export const extractObjectsPirsFromInputs = (inputs, entityType) => {
   return { pir_ids };
 };
 
-export const extractObjectsRestrictionsFromInputs = (inputs, entityType) => {
-  const markings = [];
+export const extractObjectsRestrictionsFromInputs = (inputs: InternalEditInput[], entityType: string): { markings: string [] } => {
+  const markings: string[] = [];
   if (isStixDomainObjectContainer(entityType)) {
     inputs.forEach((input) => {
       if (input && input.key === INPUT_OBJECTS && input.value?.length > 0) {
-        const objectMarking = input.value.flatMap((value) => value[RELATION_OBJECT_MARKING] ?? []);
+        const objectMarking = input.value.flatMap((value) => (value as Record<string, any>)[RELATION_OBJECT_MARKING] ?? []);
         markings.push(...objectMarking);
       }
     });
@@ -365,34 +384,40 @@ export const extractObjectsRestrictionsFromInputs = (inputs, entityType) => {
   };
 };
 
-export const isObjectPathTargetMultipleAttribute = (instance, object_path) => {
+export const isObjectPathTargetMultipleAttribute = (instance: BasicStoreCommon, object_path: string): boolean => {
   const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
   const pathArray = preparedPath.split('/').filter((p) => isNotEmptyField(p));
-  let currentAttr;
+  let currentAttr: AttributeDefinition | undefined;
   for (let i = 0; i < pathArray.length; i += 1) {
     const arrElement = pathArray[i];
     if (!currentAttr) {
       currentAttr = schemaAttributesDefinition.getAttribute(instance.entity_type, arrElement);
     } else {
-      const mappings = currentAttr.mappings ?? [];
+      let mappings: BasicObjectDefinition['mappings'] = [];
+      if ('mappings' in currentAttr) {
+        mappings = currentAttr.mappings;
+      }
       const newAttributeMapping = mappings.find((m) => m.name === arrElement);
       currentAttr = newAttributeMapping || currentAttr;
     }
   }
   if (currentAttr) {
     // If the last element of the path is a number, this is cancelling the multiple effect
-    const noMultipleRestriction = Number.isNaN(Number(R.last(pathArray)));
+    const noMultipleRestriction = Number.isNaN(Number(pathArray[pathArray.length - 1]));
     return currentAttr.multiple && noMultipleRestriction;
   }
   throw UnsupportedError('Invalid schema pointer for partial update', { path: object_path });
 };
 
-export const asyncListTransformation = async (elements, preparatoryFunction, opts = {}) => {
+export const asyncListTransformation = async <T> (
+  elements: StoreCommon[],
+  preparatoryFunction: (instance: StoreCommon) => T)
+: Promise<T[]> => {
   const preparedElements = [];
   for (let n = 0; n < elements.length; n += 1) {
     await doYield();
     const element = elements[n];
-    const preparedElement = await preparatoryFunction(element, opts);
+    const preparedElement = preparatoryFunction(element);
     preparedElements.push(preparedElement);
   }
   return preparedElements;

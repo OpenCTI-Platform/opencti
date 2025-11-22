@@ -11,9 +11,9 @@ import {
 } from '../../../src/modules/decayRule/decayRule-domain';
 import type { AuthContext } from '../../../src/types/user';
 import { queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
-import type { BasicStoreEntityEdge } from '../../../src/types/store';
 import type { BasicStoreEntityDecayRule } from '../../../src/modules/decayRule/decayRule-types';
 import { logApp } from '../../../src/config/conf';
+import type { BasicNodeEdge } from '../../../src/types/store';
 
 export const INDICATOR_WITH_DECAY_RULE_READ_QUERY = gql`
   query indicator($id: String!) {
@@ -129,7 +129,7 @@ describe('DecayRule resolver standard behavior', () => {
     const allRules: [] = getAllBuiltInDecayRules.data?.decayRules.edges;
     expect(allRules, 'Built-in decay rules not found').toBeDefined();
     if (allRules) {
-      allRules.forEach((rule: BasicStoreEntityEdge<BasicStoreEntityDecayRule>) => {
+      allRules.forEach((rule: BasicNodeEdge<BasicStoreEntityDecayRule>) => {
         const decayRule: DecayRuleConfiguration = rule.node;
         expect(decayRule.id).toBeDefined();
         expect(decayRule.name).toBeDefined();

@@ -30,7 +30,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { findAllWorkspaces } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import type { BasicStoreRelation, NumberResult, StoreEntityConnection, StoreMarkingDefinition, StoreRelationConnection } from '../../types/store';
+import type { BasicStoreRelation, NumberResult, BasicConnection, StoreEntity, StoreMarkingDefinition } from '../../types/store';
 import { checkUserIsAdminOnDashboard, getWidgetArguments } from './publicDashboard-utils';
 import {
   findStixCoreObjectPaginated,
@@ -67,7 +67,7 @@ export const findPublicDashboardPaginated = async (
   context: AuthContext,
   user: AuthUser,
   args: QueryPublicDashboardsArgs,
-): Promise<StoreEntityConnection<BasicStoreEntityPublicDashboard>> => {
+): Promise<BasicConnection<BasicStoreEntityPublicDashboard>> => {
   const dashboards = await findAllWorkspaces(
     context,
     user,
@@ -577,7 +577,7 @@ export const publicBookmarks = async (
   };
 
   // Use standard API
-  return bookmarks(context, user, parameters);
+  return bookmarks(context, user, parameters) as unknown as BasicConnection<StoreEntity>;
 };
 
 // list & timeline
@@ -627,6 +627,6 @@ export const publicStixRelationships = async (
   };
 
   // Use standard API
-  return (await findStixRelationPaginated(context, user, parameters) as unknown as StoreRelationConnection<BasicStoreRelation>);
+  return (await findStixRelationPaginated(context, user, parameters) as unknown as BasicConnection<BasicStoreRelation>);
 };
 // endregion
