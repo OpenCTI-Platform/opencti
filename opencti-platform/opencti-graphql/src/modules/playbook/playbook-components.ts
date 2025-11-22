@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 import * as R from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
 import { type PlaybookComponent } from './playbook-types';
@@ -28,7 +27,9 @@ import {
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_THREAT_ACTOR,
   INPUT_ASSIGNEE,
+  INPUT_AUTHORIZED_MEMBERS,
   INPUT_CREATED_BY,
+  INPUT_GRANTED_REFS,
   INPUT_KILLCHAIN,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -55,7 +56,7 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, fullEntitiesList, fullRelationsList } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
@@ -84,12 +85,11 @@ import { schemaTypesDefinition } from '../../schema/schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
-import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, editAuthorizedMembers } from '../../utils/authorizedMembers';
-import { removeOrganizationRestriction } from '../../domain/stix';
+import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers, editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { extractBundleBaseElement } from './playbook-utils';
+import { applyOperationFieldPatch, extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
 import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
 
@@ -473,7 +473,7 @@ export const buildStixTaskFromTaskTemplate = (taskTemplate: BasicStoreEntityTask
   return task;
 };
 
-export const addTaskFromCaseTemplates = async (
+export const createTaskFromCaseTemplates = async (
   caseTemplates: { label: string, value: string }[],
   container: StixContainer,
 ) => {
@@ -530,7 +530,6 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
       }
       const standardId = generateStandardId(container_type, containerData);
       const storeContainer = {
-        internal_id: uuidv4(),
         standard_id: standardId,
         entity_type: container_type,
         parent_types: getParentTypes(container_type),
@@ -574,7 +573,7 @@ export const PLAYBOOK_CONTAINER_WRAPPER_COMPONENT: PlaybookComponent<ContainerWr
         (<StixCaseIncident>container).severity = (<StixIncident>baseData).severity;
       }
       if (STIX_DOMAIN_OBJECT_CONTAINER_CASES.includes(container_type) && caseTemplates.length > 0) {
-        const tasks = await addTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
+        const tasks = await createTaskFromCaseTemplates(caseTemplates, (container as StixContainer));
         bundle.objects.push(...tasks);
       }
       bundle.objects.push(container);
@@ -621,13 +620,32 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
       baseFields: ['standard_id']
     });
     if (organizationsByIds.length === 0) {
-      return { output_port: 'out', bundle }; // nothing to do since organizations are empty
+      return { output_port: 'out', bundle };
     }
     const organizationIds = organizationsByIds.map((o) => o.standard_id);
+    const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
-        element.extensions[STIX_EXT_OCTI].granted_refs = [...(element.extensions[STIX_EXT_OCTI].granted_refs ?? []), ...organizationIds];
+        const patchValue = {
+          op: EditOperation.Add,
+          path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
+          value: organizationIds,
+        };
+        const patchOperation = {
+          operation: patchValue.op,
+          key: INPUT_GRANTED_REFS,
+          value: patchValue.value,
+        };
+        applyOperationFieldPatch(element, [patchOperation]);
+        patchOperations.push(patchValue);
+      }
+      if (patchOperations.length > 0) {
+        const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+        const diff = jsonpatch.compare(bundle, patchedBundle);
+        if (isNotEmptyField(diff)) {
+          return { output_port: 'out', bundle: patchedBundle };
+        }
       }
     }
     return { output_port: 'out', bundle };
@@ -675,13 +693,29 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
     }
     const organizationIds = organizationsByIds.map((o) => o.standard_id);
+    const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
-        for (let index2 = 0; index2 < organizationsValues.length; index2 += 1) {
-          await removeOrganizationRestriction(context, AUTOMATION_MANAGER_USER, element.extensions[STIX_EXT_OCTI].id, organizationsValues[index2]);
+        const patchValue = {
+          op: EditOperation.Remove,
+          path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/granted_refs`,
+          value: organizationIds,
+        };
+        const patchOperation = {
+          operation: patchValue.op,
+          key: INPUT_GRANTED_REFS,
+          value: patchValue.value,
+        };
+        applyOperationFieldPatch(element, [patchOperation]);
+        patchOperations.push(patchValue);
+      }
+      if (patchOperations.length > 0) {
+        const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+        const diff = jsonpatch.compare(bundle, patchedBundle);
+        if (isNotEmptyField(diff)) {
+          return { output_port: 'out', bundle: patchedBundle };
         }
-        element.extensions[STIX_EXT_OCTI].granted_refs = (element.extensions[STIX_EXT_OCTI].granted_refs ?? []).filter((o) => !organizationIds.includes(o));
       }
     }
     return { output_port: 'out', bundle };
@@ -762,6 +796,7 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
       access_right: n.accessRight,
       groups_restriction_ids: n.groupsRestriction.map((o) => o.value),
     }));
+    const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
@@ -773,9 +808,35 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
           entityType: internalType,
           busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
         };
+        if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS') && element.id) {
+          const restrictedMembers = await buildRestrictedMembers(context, AUTOMATION_MANAGER_USER, args);
+          const patchValue = {
+            op: EditOperation.Replace,
+            path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
+            value: restrictedMembers,
+          };
+          const patchOperation = {
+            operation: EditOperation.Replace,
+            key: INPUT_AUTHORIZED_MEMBERS,
+            value: restrictedMembers,
+          };
+          element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+          element.extensions[STIX_EXT_OCTI].opencti_field_patch = [
+            ...(element.extensions[STIX_EXT_OCTI].opencti_field_patch ?? []),
+            patchOperation
+          ];
+          patchOperations.push(patchValue);
+        }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
+      }
+    }
+    if (patchOperations.length > 0) {
+      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+      const diff = jsonpatch.compare(bundle, patchedBundle);
+      if (isNotEmptyField(diff)) {
+        return { output_port: 'out', bundle: patchedBundle };
       }
     }
     return { output_port: 'out', bundle };
@@ -804,6 +865,7 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
   executor: async ({ dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const { all } = playbookNode.configuration;
+    const patchOperations = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       const internalType = generateInternalType(element);
@@ -815,9 +877,35 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
           entityType: internalType,
           busTopicKey: ABSTRACT_STIX_DOMAIN_OBJECT,
         };
+        if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS') && element.id) {
+          const restrictedMembers = await buildRestrictedMembers(context, AUTOMATION_MANAGER_USER, args);
+          const patchValue = {
+            op: EditOperation.Remove,
+            path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
+            value: restrictedMembers,
+          };
+          const patchOperation = {
+            operation: EditOperation.Remove,
+            key: INPUT_AUTHORIZED_MEMBERS,
+            value: restrictedMembers,
+          };
+          element.extensions[STIX_EXT_OCTI].opencti_operation = 'patch';
+          element.extensions[STIX_EXT_OCTI].opencti_field_patch = [
+            ...(element.extensions[STIX_EXT_OCTI].opencti_field_patch ?? []),
+            patchOperation
+          ];
+          patchOperations.push(patchValue);
+        }
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
+      }
+    }
+    if (patchOperations.length > 0) {
+      const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
+      const diff = jsonpatch.compare(bundle, patchedBundle);
+      if (isNotEmptyField(diff)) {
+        return { output_port: 'out', bundle: patchedBundle };
       }
     }
     return { output_port: 'out', bundle };
@@ -915,7 +1003,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
   },
   required: ['actions'],
 };
-const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
+export const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration> = {
   id: 'PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT',
   name: 'Manipulate knowledge',
   description: 'Manipulate STIX data',
@@ -963,7 +1051,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
     for (let index = 0; index < bundle.objects.length; index += 1) {
       const element = bundle.objects[index];
       if (all || element.id === dataInstanceId) {
-        const { type } = element.extensions[STIX_EXT_OCTI];
+        const { type, id } = element.extensions[STIX_EXT_OCTI];
         const elementOperations = actions
           .map((action) => {
             const attrPath = computeAttributePath(type, action.attribute);
@@ -977,27 +1065,64 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT: PlaybookComponent<UpdateConfiguration
           .map(({ action, path, multiple, attributeType }) => {
             if (multiple) {
               const currentValues = jsonpatch.getValueByPointer(bundle, path) ?? [];
-              const actionValues = action.value.map((o) => {
+              // the patch value can be the "label" instead of id (for ex: markings ids / labels ids)
+              const actionPatchValues = action.value.map((o) => {
                 // If value is an id, must be converted to standard_id has we work on stix bundle
                 if (cacheIds.has(o.patch_value)) return (cacheIds.get(o.patch_value) as BasicStoreCommon).standard_id;
                 // Else, just return the value
                 return convertValue(attributeType, o.patch_value);
               });
+              // the value is always the id
+              const actionValues = action.value.map((o) => {
+                // If value is an id, must be converted to standard_id has we work on stix bundle
+                if (cacheIds.has(o.value)) return (cacheIds.get(o.value) as BasicStoreCommon).standard_id;
+                // Else, just return the value
+                return convertValue(attributeType, o.value);
+              });
               if (action.op === EditOperation.Add) {
-                return { op: EditOperation.Replace, path, value: R.uniq([...currentValues, ...actionValues]) };
+                return {
+                  op: action.op,
+                  attribute: action.attribute,
+                  value: R.uniq([...currentValues, ...actionValues]),
+                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues }
+                };
               }
               if (action.op === EditOperation.Replace) {
-                return { op: EditOperation.Replace, path, value: actionValues };
+                return {
+                  op: action.op,
+                  attribute: action.attribute,
+                  value: actionValues,
+                  patchOperation: { op: EditOperation.Replace, path, value: actionPatchValues }
+                };
               }
               if (action.op === EditOperation.Remove) {
-                return { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionValues.includes(c)) };
+                return {
+                  op: action.op,
+                  attribute: action.attribute,
+                  value: actionValues,
+                  patchOperation: { op: EditOperation.Replace, path, value: currentValues.filter((c: any) => !actionPatchValues.includes(c)) }
+                };
               }
             }
-            const currentValue = R.head(action.value)?.patch_value;
-            return { op: action.op, path, value: convertValue(attributeType, currentValue) };
+            const currentPatchValue = R.head(action.value)?.patch_value;
+            const currentValue = R.head(action.value)?.value;
+            return {
+              op: action.op,
+              attribute: action.attribute,
+              value: currentValue,
+              patchOperation: { op: action.op, path, value: convertValue(attributeType, currentPatchValue) }
+            };
           });
         // Enlist operations to execute
-        patchOperations.push(...elementOperations);
+        if (elementOperations.length > 0) {
+          const operationObject = elementOperations.map((op) => {
+            return { key: op.attribute, value: Array.isArray(op.value) ? op.value : [op.value], operation: op.op };
+          });
+          if (id) {
+            applyOperationFieldPatch(element, operationObject);
+          }
+          patchOperations.push(...elementOperations.map((e) => e.patchOperation));
+        }
       }
     }
     // Apply operations if needed
@@ -1259,12 +1384,11 @@ const PLAYBOOK_CREATE_INDICATOR_COMPONENT: PlaybookComponent<CreateIndicatorConf
           };
           const indicatorStandardId = generateStandardId(ENTITY_TYPE_INDICATOR, indicatorData);
           const storeIndicator = {
-            internal_id: generateInternalId(),
             standard_id: indicatorStandardId,
             entity_type: ENTITY_TYPE_INDICATOR,
             parent_types: getParentTypes(ENTITY_TYPE_INDICATOR),
             ...indicatorData
-          } as StoreCommon;
+          } as unknown as StoreCommon;
           const indicator = convertStoreToStix(storeIndicator) as StixIndicator;
           if (observable.object_marking_refs) {
             indicator.object_marking_refs = observable.object_marking_refs;
@@ -1472,12 +1596,11 @@ const PLAYBOOK_CREATE_OBSERVABLE_COMPONENT: PlaybookComponent<CreateObservableCo
           };
           const observableStandardId = generateStandardId(observable.type, observableData);
           const storeObservable = {
-            internal_id: generateInternalId(),
             standard_id: observableStandardId,
             entity_type: observable.type,
             parent_types: getParentTypes(observable.type),
             ...observableData
-          } as StoreCommon;
+          } as unknown as StoreCommon;
           const stixObservable = convertStoreToStix(storeObservable) as StixCyberObject;
           if (indicator.object_marking_refs) {
             stixObservable.object_marking_refs = indicator.object_marking_refs;
