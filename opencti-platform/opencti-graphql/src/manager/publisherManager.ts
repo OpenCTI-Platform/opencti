@@ -1,11 +1,11 @@
 import ejs from 'ejs';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
-import { FunctionalError, TYPE_LOCK_ERROR } from '../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor, NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
-import { sendMail, smtpIsAlive } from '../database/smtp';
+import { sendMail, smtpComputeFrom, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
 import { addNotification } from '../modules/notification/notification-domain';
 import type { BasicStoreEntityTrigger, NotificationContentEvent, NotificationAddInput } from '../modules/notification/notification-types';
@@ -136,7 +136,6 @@ export async function handleUINotification(
 }
 
 export async function handleEmailNotification(
-  settings: BasicStoreSettings,
   user: NotificationUser,
   configurationString: string | undefined,
   templateData: object,
@@ -149,7 +148,7 @@ export async function handleEmailNotification(
   const renderedEmail = ejs.render(template, { ...templateData, url_suffix: urlSuffix, octi: octiTool });
 
   const emailPayload = {
-    from: `${settings.platform_title} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(),
     to: user.user_email,
     subject: renderedTitle,
     html: renderedEmail
@@ -164,7 +163,6 @@ export async function handleEmailNotification(
 }
 
 export async function handleSimplifiedEmailNotification(
-  settings: BasicStoreSettings,
   user: NotificationUser,
   configurationString: string | undefined,
   templateData: object,
@@ -184,7 +182,7 @@ export async function handleSimplifiedEmailNotification(
   const renderedEmail = ejs.render(SIMPLIFIED_EMAIL_TEMPLATE, finalTemplateData);
 
   const emailPayload = {
-    from: `${settings.platform_title} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(),
     to: user.user_email,
     subject: renderedTitle,
     html: renderedEmail
@@ -237,9 +235,9 @@ export const internalProcessNotification = async (
   triggerList: BasicStoreEntityTrigger[],
   usersMap: Map<string, AuthUser>,
   // eslint-disable-next-line consistent-return
-): Promise<{ error: string } | void> => {
+): Promise<void> => {
   if (notificationUser.user_service_account) {
-    return { error: 'Cannot send notification to service account user' };
+    throw UnsupportedError('Cannot send notification to service account user');
   }
   const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
   const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
@@ -258,10 +256,10 @@ export const internalProcessNotification = async (
       await handleUINotification(authContext, notificationName, triggerIds, notificationType, notificationUser, content);
       break;
     case NOTIFIER_CONNECTOR_EMAIL:
-      await handleEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
+      await handleEmailNotification(notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
       break;
     case NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL:
-      await handleSimplifiedEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
+      await handleSimplifiedEmailNotification(notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
       break;
     case NOTIFIER_CONNECTOR_WEBHOOK:
       await handleWebhookNotification(notifierConfigurationString, assembledTemplateData);
@@ -412,7 +410,11 @@ const processBufferedEvents = async (
             dataToSend,
             triggersInDataToSend as BasicStoreEntityTrigger[],
             usersFromCache,
-          ).catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+          ).catch((reason) => {
+            logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason });
+          });
+        } else {
+          logApp.error('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
         }
       }
     }
@@ -446,7 +448,7 @@ const handleEntityNotificationBuffer = async (forceSend = false) => {
 const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEvent>>) => {
   try {
     if (streamEvents.length === 0) {
-      // return;
+      return;
     }
     const context = executionContext('publisher_manager');
     const notifications = await getNotifications(context);

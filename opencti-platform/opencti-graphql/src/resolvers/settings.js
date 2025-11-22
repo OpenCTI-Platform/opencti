@@ -26,6 +26,7 @@ import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
 import { CguStatus } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
+import { ALLOW_EMAIL_REWRITE, smtpConfiguredEmail } from '../database/smtp';
 
 const settingsResolvers = {
   Query: {
@@ -45,6 +46,8 @@ const settingsResolvers = {
     platform_protected_sensitive_config: (_, __, context) => getProtectedSensitiveConfig(context, context.user),
     activity_listeners: (settings, __, context) => internalFindByIds(context, context.user, settings.activity_listeners_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
+    platform_email: (settings) => smtpConfiguredEmail(settings),
+    platform_email_configurable: () => ALLOW_EMAIL_REWRITE,
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
     password_policy_max_length: (settings) => settings.password_policy_max_length ?? 0,
     password_policy_min_symbols: (settings) => settings.password_policy_min_symbols ?? 0,

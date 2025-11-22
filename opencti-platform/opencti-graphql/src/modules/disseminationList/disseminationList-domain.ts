@@ -28,7 +28,7 @@ import { loadFile } from '../../database/file-storage';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { sendMail } from '../../database/smtp';
+import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { BasicStoreSettings } from '../../types/settings';
 import { emailChecker } from '../../utils/syntax';
 import type { BasicStoreCommon } from '../../types/store';
@@ -112,7 +112,7 @@ export const sendDisseminationEmail = async (
   }
 
   const sendMailArgs: SendMailArgs = {
-    from: `${settings.platform_title} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(),
     to: toEmail,
     bcc: [...opts.emails, user.user_email],
     subject: opts.object,

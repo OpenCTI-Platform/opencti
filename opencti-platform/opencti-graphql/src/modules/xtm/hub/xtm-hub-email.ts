@@ -6,7 +6,7 @@ import { BYPASS, HUB_REGISTRATION_MANAGER_USER, SETTINGS_SETMANAGEXTMHUB } from 
 import type { BasicStoreSettings } from '../../../types/settings';
 import { OCTI_EMAIL_TEMPLATE } from '../../../utils/emailTemplates/octiEmailTemplate';
 import type { SendMailArgs } from '../../../types/smtp';
-import { sendMail } from '../../../database/smtp';
+import { sendMail, smtpComputeFrom } from '../../../database/smtp';
 
 const MAX_EMAIL_LIST_SIZE = conf.get('smtp:email_max_cc_size') || 500;
 const TO_EMAIL = conf.get('xtm:xtmhub_to_email') || 'no-reply@filigran.io';
@@ -37,7 +37,7 @@ export const sendAdministratorsLostConnectivityEmail = async (context: AuthConte
   const html = ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body: EMAIL_BODY });
 
   const sendMailArgs: SendMailArgs = {
-    from: `${settings.platform_title} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(),
     to: TO_EMAIL,
     bcc: administrators.map((administrator) => administrator.user_email),
     subject,
