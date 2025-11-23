@@ -310,7 +310,7 @@ steps:
 
 services:
   - name: redis
-    image: redis:8.2.3
+    image: redis:8.4.0
   - name: elastic
     image: elasticsearch:8.19.7
     environment:
