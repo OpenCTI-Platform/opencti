@@ -11,6 +11,8 @@
   "commitMessagePrefix": "[deps]",
   "minimumReleaseAge": "3 days",
   "prHourlyLimit": 2,
+  "prConcurrentLimit": 100,
+  "branchConcurrentLimit": 100,
   "timezone": "Europe/Paris",
   "schedule": [
     "* 0-4,22-23 * * 1-5",
@@ -38,13 +40,13 @@
         "monorepo:aws-sdk-js-v3"
       ],
       "description": "Update aws-sdk-js-v3 only once a week (Sunday 01:00)",
-      "schedule": "* 1 * * 0"
+      "schedule": ["* 1 * * 0"]
     },
     {
       "groupName": "devDependencies (non-major)",
       "groupSlug": "dev-dependencies-non-major",
       "description": "Batch auto merge and batch on sunday morning, non-major update of dev dependencies once a week (Sunday 03:00)",
-      "schedule": "* 3 * * 0",
+      "schedule": ["* 3 * * 0"],
       "matchDepTypes": [
         "devDependencies"
       ],
@@ -59,7 +61,7 @@
     }
   ],
   "lockFileMaintenance": {
-    "schedule": "* 5 * * 0",
+    "schedule": ["* 5 * * 0"],
     "rebaseWhen": "always",
     "automerge": false,
     "enabled": true
