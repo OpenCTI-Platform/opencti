@@ -94,7 +94,7 @@
     "body-parser": "2.2.0",
     "canonicalize": "2.1.0",
     "compression": "1.8.1",
-    "content-disposition": "0.5.4",
+    "content-disposition": "1.0.1",
     "content-type": "1.0.5",
     "cors": "2.8.5",
     "csv-parse": "6.1.0",
