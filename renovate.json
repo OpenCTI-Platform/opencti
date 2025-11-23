@@ -32,7 +32,7 @@
       "matchPackageNames": [
         "python"
       ],
-      "matchCurrentVersion": "^3\\.(9|10|11|12)$",
+      "matchCurrentVersion": "<=3.12",
       "enabled": false
     },
     {
