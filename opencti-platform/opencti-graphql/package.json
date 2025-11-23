@@ -130,7 +130,7 @@
     "luxon": "3.7.2",
     "marked": "17.0.0",
     "migrate": "2.1.0",
-    "mime-types": "3.0.1",
+    "mime-types": "3.0.2",
     "moment": "2.30.1",
     "moment-range": "4.0.2",
     "nconf": "0.13.0",
