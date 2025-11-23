@@ -24,7 +24,7 @@
     {
       "description": "Disable updates of images intentionally pinned to older versions for compatibility testing",
       "matchFileNames": [
-        "^\\.drone\\.yml$"
+        ".drone.yml"
       ],
       "matchDatasources": [
         "docker"
