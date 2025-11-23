@@ -18,6 +18,7 @@ import { DEFAULT_INVALID_CONF_VALUE, SYSTEM_USER } from '../utils/access';
 import { enrichWithRemoteCredentials } from './credentials';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { addUserLoginCount } from '../manager/telemetryManager';
+import { AuthType, INTERNAL_SECURITY_PROVIDER, PROVIDERS, StrategyType } from './providers-configuration';
 
 // Admin user initialization
 export const initializeAdminUser = async (context) => {
@@ -103,23 +104,6 @@ const configRemapping = (config) => {
   return config;
 };
 
-// Providers definition
-export const INTERNAL_SECURITY_PROVIDER = '__internal_security_local_provider__';
-const STRATEGY_LOCAL = 'LocalStrategy';
-export const STRATEGY_CERT = 'ClientCertStrategy';
-const STRATEGY_HEADER = 'HeaderStrategy';
-const STRATEGY_LDAP = 'LdapStrategy';
-const STRATEGY_OPENID = 'OpenIDConnectStrategy';
-const STRATEGY_FACEBOOK = 'FacebookStrategy';
-const STRATEGY_SAML = 'SamlStrategy';
-const STRATEGY_GOOGLE = 'GoogleStrategy';
-const STRATEGY_GITHUB = 'GithubStrategy';
-const STRATEGY_AUTH0 = 'Auth0Strategy';
-const AUTH_SSO = 'SSO';
-const AUTH_REQ = 'REQ';
-const AUTH_FORM = 'FORM';
-
-const providers = [];
 const providerLoginHandler = (userInfo, done, opts = {}) => {
   loginFromProvider(userInfo, opts)
     .then((user) => {
@@ -150,7 +134,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   if (config === undefined || !config.disabled) {
     const providerName = config?.label || providerIdent;
     // FORM Strategies
-    if (strategy === STRATEGY_LOCAL) {
+    if (strategy === StrategyType.STRATEGY_LOCAL) {
       const localStrategy = new LocalStrategy({}, (username, password, done) => {
         return login(username, password)
           .then((info) => {
@@ -163,9 +147,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           });
       });
       passport.use('local', localStrategy);
-      providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'local' });
+      PROVIDERS.push({ name: providerName, type: AuthType.AUTH_FORM, strategy, provider: 'local' });
     }
-    if (strategy === STRATEGY_LDAP) {
+    if (strategy === StrategyType.STRATEGY_LDAP) {
       const providerRef = identifier || 'ldapauth';
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
       // Force bindCredentials to be a String
@@ -226,10 +210,10 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         }
       });
       passport.use(providerRef, ldapStrategy);
-      providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: providerRef });
+      PROVIDERS.push({ name: providerName, type: AuthType.AUTH_FORM, strategy, provider: providerRef });
     }
     // SSO Strategies
-    if (strategy === STRATEGY_SAML) {
+    if (strategy === StrategyType.STRATEGY_SAML) {
       const providerRef = identifier || 'saml';
       const samlOptions = { ...mappedConfig };
       const samlStrategy = new SamlStrategy(samlOptions, (profile, done) => {
@@ -297,9 +281,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       });
       samlStrategy.logout_remote = samlOptions.logout_remote;
       passport.use(providerRef, samlStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+      PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
     }
-    if (strategy === STRATEGY_OPENID) {
+    if (strategy === StrategyType.STRATEGY_OPENID) {
       const providerRef = identifier || 'oic';
       // Here we use directly the config and not the mapped one.
       // All config of openid lib use snake case.
@@ -406,13 +390,13 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             }
           };
           passport.use(providerRef, openIDStrategy);
-          providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+          PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
         }).catch((err) => {
           logApp.error('[OPENID] Error initializing authentication provider', { cause: err, provider: providerRef });
         });
       }).catch((reason) => logApp.error('[OPENID] Error when enrich with remote credentials', { cause: reason }));
     }
-    if (strategy === STRATEGY_FACEBOOK) {
+    if (strategy === StrategyType.STRATEGY_FACEBOOK) {
       const providerRef = identifier || 'facebook';
       const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
       const facebookOptions = { passReqToCallback: true, ...mappedConfig, ...specificConfig };
@@ -427,9 +411,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         }
       );
       passport.use(providerRef, facebookStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+      PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
     }
-    if (strategy === STRATEGY_GOOGLE) {
+    if (strategy === StrategyType.STRATEGY_GOOGLE) {
       const providerRef = identifier || 'google';
       const domains = mappedConfig.domains || [];
       const specificConfig = { scope: ['email', 'profile'] };
@@ -451,9 +435,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         }
       });
       passport.use(providerRef, googleStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+      PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
     }
-    if (strategy === STRATEGY_GITHUB) {
+    if (strategy === StrategyType.STRATEGY_GITHUB) {
       const providerRef = identifier || 'github';
       const organizations = mappedConfig.organizations || [];
       const scope = organizations.length > 0 ? 'user:email,read:org' : 'user:email';
@@ -482,9 +466,9 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         }
       });
       passport.use(providerRef, githubStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+      PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
     }
-    if (strategy === STRATEGY_AUTH0) {
+    if (strategy === StrategyType.STRATEGY_AUTH0) {
       // Auth0 is a specific implementation of OpenID
       // note maybe one day it will be removed to keep only STRATEGY_OPENID.
       const providerRef = identifier || 'auth0';
@@ -534,17 +518,17 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           callback(null, endpointUri);
         };
         passport.use(providerRef, auth0Strategy);
-        providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+        PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
       }).catch((reason) => logApp.error('[AUTH0] Error when enrich with remote credentials', { cause: reason }));
     }
     // CERT Strategies
-    if (strategy === STRATEGY_CERT) {
+    if (strategy === StrategyType.STRATEGY_CERT) {
       const providerRef = identifier || 'cert';
       // This strategy is directly handled by express
-      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: providerRef });
+      PROVIDERS.push({ name: providerName, type: AuthType.AUTH_SSO, strategy, provider: providerRef });
     }
     // HEADER Strategies
-    if (strategy === STRATEGY_HEADER) {
+    if (strategy === StrategyType.STRATEGY_HEADER) {
       // This strategy is directly handled on the fly on graphql
       const providerRef = identifier || 'header';
       const reqLoginHandler = async (req) => {
@@ -593,17 +577,17 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const headerProvider = {
         name: providerName,
         reqLoginHandler,
-        type: AUTH_REQ,
+        type: AuthType.AUTH_REQ,
         strategy,
         logout_uri: mappedConfig.logout_uri,
         provider: providerRef
       };
-      providers.push(headerProvider);
+      PROVIDERS.push(headerProvider);
       HEADERS_AUTHENTICATORS.push(headerProvider);
     }
   }
   // In case of disable local strategy, setup protected fallback for the admin user
-  const hasLocal = providers.find((p) => p.strategy === STRATEGY_LOCAL);
+  const hasLocal = PROVIDERS.find((p) => p.strategy === StrategyType.STRATEGY_LOCAL);
   if (!hasLocal) {
     const adminLocalStrategy = new LocalStrategy({}, (username, password, done) => {
       const adminEmail = conf.get('app:admin:email');
@@ -620,11 +604,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         });
     });
     passport.use('local', adminLocalStrategy);
-    providers.push({ name: INTERNAL_SECURITY_PROVIDER, type: AUTH_FORM, strategy, provider: 'local' });
+    PROVIDERS.push({ name: INTERNAL_SECURITY_PROVIDER, type: AuthType.AUTH_FORM, strategy, provider: 'local' });
   }
 }
-
-export const PROVIDERS = providers;
-export const isStrategyActivated = (strategy) => providers.map((p) => p.strategy).includes(strategy);
 
 export default passport;

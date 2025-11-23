@@ -99,6 +99,8 @@ const READ_QUERY = gql`
       description
       published
       toStix
+      updated_at
+      modified
     }
   }
 `;
@@ -489,6 +491,51 @@ describe('Report resolver standard behavior', () => {
       expect(investigationId).toBeDefined();
     });
   });
+
+  describe('When adding an observable to a report', () => {
+    it('should add the observable and update updated_at and modified', async () => {
+      const RELATION_ADD_OBSERVABLE_QUERY = gql`
+      mutation ReportEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
+        reportEdit(id: $id) {
+          relationAdd(input: $input) {
+            id
+            from {
+            ... on Report {
+                  id
+                  }
+            }
+            to {
+            ... on Software {
+                  id
+                }
+            }
+          }
+        }
+      }
+    `;
+
+      const readQueryResultBefore = await queryAsAdmin({ query: READ_QUERY, variables: { id: reportInternalId } });
+
+      const queryResult = await queryAsAdmin({
+        query: RELATION_ADD_OBSERVABLE_QUERY,
+        variables: {
+          id: reportInternalId,
+          input: {
+            toId: 'software--b0debdba-74e7-4463-ad2a-34334ee66d8d', // id of a software in DATA-TEST-STIX2_v2.json
+            relationship_type: 'object',
+          },
+        },
+      });
+
+      const readQueryResultAfter = await queryAsAdmin({ query: READ_QUERY, variables: { id: reportInternalId } });
+
+      expect(queryResult.data.reportEdit.relationAdd.from.id).toEqual(reportInternalId);
+
+      expect(readQueryResultBefore.data.report.updated_at < readQueryResultAfter.data.report.updated_at).toBeTruthy();
+      expect(readQueryResultBefore.data.report.modified < readQueryResultAfter.data.report.modified).toBeTruthy();
+    });
+  });
+
   it('should report deleted', async () => {
     const DELETE_QUERY = gql`
       mutation reportDelete($id: ID!) {

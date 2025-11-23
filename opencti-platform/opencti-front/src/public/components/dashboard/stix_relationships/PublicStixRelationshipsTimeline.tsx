@@ -32,6 +32,9 @@ const publicStixRelationshipsTimelineQuery = graphql`
           confidence
           is_inferred
           created
+          created_at
+          updated_at
+          modified
           x_opencti_inferences {
             rule {
               id
@@ -986,7 +989,11 @@ const PublicStixRelationshipsTimelineComponent = ({
         },
       };
     });
-    return <WidgetTimeline data={data} />;
+    const selection = dataSelection[0];
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
+    return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
   }
   return <WidgetNoData />;
 };

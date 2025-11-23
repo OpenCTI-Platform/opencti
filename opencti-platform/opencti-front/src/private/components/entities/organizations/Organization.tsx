@@ -85,7 +85,7 @@ const Organization: React.FC<OrganizationProps> = ({ organizationData, viewAs })
         style={{ marginBottom: 20 }}
       >
         <Grid item xs={6}>
-          <OrganizationDetails organization={organization} />
+          <OrganizationDetails organizationData={organization} />
         </Grid>
         <Grid item xs={6}>
           <StixDomainObjectOverview

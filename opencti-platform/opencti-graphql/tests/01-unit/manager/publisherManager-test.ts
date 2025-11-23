@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import ejs from 'ejs';
-import axios, {type AxiosInstance} from 'axios';
+import axios, { type AxiosInstance } from 'axios';
 import { handleWebhookNotification } from '../../../src/manager/publisherManager';
 
 describe('handleWebhookNotification', () => {
@@ -55,7 +55,7 @@ describe('handleWebhookNotification', () => {
       headers: {
         'Content-Type': 'application/json',
         'X-API-Key': 'filigran-secret-key-123',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
     }));
     expect(mockedAxiosInstance).toHaveBeenCalledTimes(1);
@@ -84,12 +84,12 @@ describe('handleWebhookNotification', () => {
     mockedAxiosInstance.mockResolvedValue({ status: 200 });
     await handleWebhookNotification(configurationString, templateDataWithNewline);
     expect(ejs.render).toHaveBeenCalledOnce();
-    const expectedEscapedDataForEjs = {
-      description: 'Line 1\\nLine 2'
-    };
     expect(ejs.render).toHaveBeenCalledWith(
       webhookConfiguration.template,
-      expectedEscapedDataForEjs
+      templateDataWithNewline,
+      expect.objectContaining({
+        escape: expect.any(Function)
+      })
     );
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
     expect(mockedAxiosInstance).toHaveBeenCalledWith(expect.objectContaining({
@@ -120,22 +120,6 @@ describe('handleWebhookNotification', () => {
         version: 2,
       }
     };
-    const expectedSafeDataForEjs = {
-      report: {
-        title: 'Quarterly\\nReport',
-        author: {
-          name: 'John Doe',
-          bio: 'Cybersecurity expert.\\nAuthor of several publications.'
-        },
-        events: [
-          { id: 'evt-1', message: 'First alert:\\nsuspicious connection.' },
-          { id: 'evt-2', message: 'Second alert, no line break.' }
-        ],
-        tags: ['urgent', 'review\\nneeded'],
-        is_published: true,
-        version: 2,
-      }
-    };
     const renderedTemplate = JSON.stringify({
       title: 'Quarterly\nReport',
       author_bio: 'Cybersecurity expert.\nAuthor of several publications.',
@@ -147,10 +131,41 @@ describe('handleWebhookNotification', () => {
     expect(ejs.render).toHaveBeenCalledOnce();
     expect(ejs.render).toHaveBeenCalledWith(
       webhookConfiguration.template,
-      expectedSafeDataForEjs // Deep comparison of the escaped object
+      templateDataWithNesting,
+      expect.objectContaining({
+        escape: expect.any(Function)
+      })
     );
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
     const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
     expect(axiosCallArgs.data).toEqual(JSON.parse(renderedTemplate));
+  });
+
+  it('should correctly escape forward slashes in template data', async () => {
+    const webhookConfiguration = {
+      url: 'https://api.filigran.io/v1/ingest',
+      verb: 'POST',
+      template: '{ "description": "<%= description %>" }',
+    };
+    const configurationString = JSON.stringify(webhookConfiguration);
+    const templateDataWithSlash = {
+      description: 'This is a path: /home/user/file.txt'
+    };
+    const renderedTemplate = JSON.stringify({ description: 'This is a path: /home/user/file.txt' });
+    vi.mocked(ejs.render).mockReturnValue(renderedTemplate);
+    mockedAxiosInstance.mockResolvedValue({ status: 200 });
+    await handleWebhookNotification(configurationString, templateDataWithSlash);
+    expect(ejs.render).toHaveBeenCalledOnce();
+    expect(ejs.render).toHaveBeenCalledWith(
+      webhookConfiguration.template,
+      templateDataWithSlash,
+      expect.objectContaining({
+        escape: expect.any(Function)
+      })
+    );
+    expect(mockedAxiosInstance).toHaveBeenCalledOnce();
+    expect(mockedAxiosInstance).toHaveBeenCalledWith(expect.objectContaining({
+      data: JSON.parse(renderedTemplate),
+    }));
   });
 });

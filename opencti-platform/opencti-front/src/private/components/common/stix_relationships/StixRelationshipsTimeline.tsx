@@ -48,7 +48,10 @@ const stixRelationshipsTimelineStixRelationshipQuery = graphql`
           relationship_type
           confidence
           is_inferred
+          created_at
           created
+          modified
+          updated_at
           x_opencti_inferences {
             rule {
               id
@@ -1035,7 +1038,7 @@ const StixRelationshipsTimeline = ({
                 link,
               };
             });
-            return <WidgetTimeline data={data} />;
+            return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
           }
           if (props) {
             return <WidgetNoData />;

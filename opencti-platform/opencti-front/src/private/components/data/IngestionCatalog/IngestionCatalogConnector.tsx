@@ -37,7 +37,7 @@ const ingestionCatalogConnectorQuery = graphql`
 
 interface IngestionCatalogConnectorComponentProps {
   queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>;
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasRegisteredManagers: boolean, deploymentCount: number) => void;
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void;
   openConfig?: boolean;
 }
 
@@ -50,7 +50,7 @@ const IngestionCatalogConnectorComponent = ({
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
 
-  const { hasRegisteredManagers } = useConnectorManagerStatus();
+  const { hasActiveManagers } = useConnectorManagerStatus();
 
   const { contract, connectors } = usePreloadedQuery(
     ingestionCatalogConnectorQuery,
@@ -66,7 +66,7 @@ const IngestionCatalogConnectorComponent = ({
 
   useEffect(() => {
     if (openConfig && contract && connector) {
-      onClickDeploy(connector, contract.catalog_id, hasRegisteredManagers, deploymentCount);
+      onClickDeploy(connector, contract.catalog_id, hasActiveManagers, deploymentCount);
     }
   }, [openConfig, contract]);
 
@@ -84,13 +84,13 @@ const IngestionCatalogConnectorComponent = ({
       />
 
       <Stack gap={2}>
-        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
+        <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
 
         <Stack gap={4}>
           <IngestionCatalogConnectorHeader
             connector={connector}
             isEnterpriseEdition={isEnterpriseEdition}
-            onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasRegisteredManagers, deploymentCount)}
+            onClickDeploy={() => onClickDeploy(connector, contract?.catalog_id, hasActiveManagers, deploymentCount)}
           />
           <IngestionCatalogConnectorOverview connector={connector} />
         </Stack>
@@ -131,7 +131,7 @@ const IngestionCatalogConnector = () => {
             connector={catalogState.selectedConnector}
             onClose={handleCloseDeployDialog}
             catalogId={catalogState.selectedCatalogId}
-            hasRegisteredManagers={catalogState.hasRegisteredManagers}
+            hasActiveManagers={catalogState.hasActiveManagers}
             onCreate={handleCreate}
             deploymentCount={catalogState.deploymentCount}
           />

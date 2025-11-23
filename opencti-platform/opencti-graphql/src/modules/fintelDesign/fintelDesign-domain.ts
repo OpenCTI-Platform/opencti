@@ -7,7 +7,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../config/conf';
 import { notify, setEditContext } from '../../database/redis';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
+import { type FileUploadData, uploadToStorage } from '../../database/file-storage';
 import { guessMimeType } from '../../database/file-storage';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';

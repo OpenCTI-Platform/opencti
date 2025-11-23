@@ -33,6 +33,6 @@ export const convertTaskToStix_2_0 = (instance: StoreEntityTask): Stix2Task => {
     description: instance.description,
     due_date: convertToStixDate(instance.due_date),
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
-    object_refs: convertObjectReferences(instance),
+    object_refs: convertObjectReferences(instance)
   };
 };

@@ -53,7 +53,6 @@ import { defaultValidationMode, loadFile, uploadJobImport } from '../database/fi
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon } from '../types/store';
-import type { Connector } from '../connector/internalConnector';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -516,7 +515,7 @@ export const patchSync = async (context: AuthContext, user: AuthUser, id: string
 export const findSyncById = async (context: AuthContext, user: AuthUser, syncId: string, removeCredentials = false) => {
   const basicIngestion = await storeLoadById<BasicStoreEntitySynchronizer>(context, user, syncId, ENTITY_TYPE_SYNC);
   if (removeCredentials) {
-    basicIngestion.token = removeAuthenticationCredentials(IngestionAuthType.Bearer, basicIngestion.token);
+    basicIngestion.token = removeAuthenticationCredentials(IngestionAuthType.Bearer, basicIngestion.token) ?? null;
   }
   return basicIngestion;
 };
@@ -655,6 +654,10 @@ export const askJobImport = async (
     validationMode = defaultValidationMode,
     forceValidation = false,
   } = args;
+  if (!fileName) {
+    logApp.error('[JOBS] ask import, fileName is required');
+    return null;
+  }
   logApp.info(`[JOBS] ask import for file ${fileName} by ${user.user_email}`);
   const file = await loadFile(context, user, fileName);
   if (!file) {
@@ -662,14 +665,28 @@ export const askJobImport = async (
     return null;
   }
   logApp.info('[JOBS] ask import, file found:', file);
-  const entityId = bypassEntityId || file?.metaData.entity_id;
-  const opts = { manual: true, connectorId, configuration, bypassValidation, validationMode, forceValidation };
-  const entity = await internalLoadById(context, user, entityId) as BasicStoreCommon;
+  const entityId = bypassEntityId || file?.metaData.entity_id || null;
+  const opts: {
+    manual: boolean;
+    connectorId?: string | null;
+    configuration?: string | null;
+    bypassValidation: boolean;
+    validationMode: ValidationMode;
+    forceValidation: boolean;
+  } = {
+    manual: true,
+    connectorId,
+    configuration,
+    bypassValidation,
+    validationMode,
+    forceValidation
+  };
+  const entity = await internalLoadById(context, user, entityId ?? undefined) as BasicStoreCommon;
   // This is a manual request for import, we have to check confidence and throw on error
   if (entity) {
     controlUserConfidenceAgainstElement(user, entity);
   }
-  const connectorsForFile = await uploadJobImport(context, user, file, entityId, opts);
+  const connectorsForFile = await uploadJobImport(context, user, file, entityId ?? undefined, opts);
   if (file.id.startsWith('import/pending')) {
     if (args.forceValidation && args.validationMode === 'draft') {
       await addWorkbenchDraftConvertionCount();
@@ -683,8 +700,8 @@ export const askJobImport = async (
     id: entityId || file.id,
     file_id: file.id,
     file_name: file.name,
-    file_mime: file.metaData.mimetype,
-    connectors: connectorsForFile.map((c: Connector) => c.name),
+    file_mime: file.metaData.mimetype ?? 'application/octet-stream',
+    connectors: connectorsForFile.map((c: BasicStoreEntityConnector) => c.name),
     entity_name: entityName,
     entity_type: entityType
   };

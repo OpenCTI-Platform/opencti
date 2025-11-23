@@ -8,7 +8,7 @@ import { getRabbitMQVersion } from '../database/rabbitmq';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETMANAGEXTMHUB, SETTINGS_SETPARAMETERS, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
-import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers';
+import { INTERNAL_SECURITY_PROVIDER, PROVIDERS } from '../config/providers-configuration';
 import { publishUserAction } from '../listener/UserActionListener';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { now, utcDate } from '../utils/format';

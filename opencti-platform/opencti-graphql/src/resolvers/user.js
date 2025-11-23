@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp } from '../config/conf';
 import { AuthenticationFailure } from '../config/errors';
-import passport, { PROVIDERS } from '../config/providers';
+import passport from '../config/providers-initialization';
 import { internalLoadById } from '../database/middleware-loader';
 import { fetchEditContext } from '../database/redis';
 import { applicationSession, findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
@@ -61,6 +61,7 @@ import { findById as findWorskpaceById } from '../modules/workspace/workspace-do
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
 import { getNotifiers } from '../modules/notifier/notifier-domain';
+import { PROVIDERS } from '../config/providers-configuration';
 
 const userResolvers = {
   Query: {

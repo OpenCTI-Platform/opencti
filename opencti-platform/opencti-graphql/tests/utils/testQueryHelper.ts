@@ -15,11 +15,12 @@ import {
   queryAsAdmin,
   testContext
 } from './testQuery';
-import { downloadFile, streamConverter } from '../../src/database/file-storage';
+import { downloadFile } from '../../src/database/raw-file-storage';
+import { streamConverter } from '../../src/database/file-storage';
 import conf, { logApp } from '../../src/config/conf';
 import { AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../../src/config/errors';
 import { getSettings, settingsEditField } from '../../src/domain/settings';
-import { fileToReadStream } from '../../src/database/file-storage-helper';
+import { fileToReadStream } from '../../src/database/file-storage';
 import { resetCacheForEntity } from '../../src/database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../src/schema/internalObject';
 
@@ -152,7 +153,7 @@ export const requestFileFromStorageAsAdmin = async (storageId: string) => {
   logApp.info(`[TEST] request on storage file ${storageId}`);
   const stream = await downloadFile(storageId);
   expect(stream, `No stream mean no file found in storage or error for ${storageId}`).not.toBeNull();
-  return streamConverter(stream);
+  return streamConverter(stream!);
 };
 
 export const readCsvFromFileStream = async (filePath: string, fileName: string) => {
