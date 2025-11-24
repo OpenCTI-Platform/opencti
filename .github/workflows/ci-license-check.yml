@@ -1,0 +1,65 @@
+name: Verify licenses
+
+on:
+  workflow_call:
+
+jobs:
+  license-check:
+    name: License check
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Backend verify license
+      run: |
+        docker run  \
+          --name backend-verify-licenses \
+          -v ${{ github.workspace }}:/home/workspace \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -ex;
+             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+             apk add build-base git libffi-dev cargo
+             pip3 install --upgrade setuptools
+             cd /home/workspace/client-python
+             pip install -r requirements.txt
+             pip install -e .[dev,doc]
+             cd /home/workspace/opencti-platform/opencti-graphql
+             npm install -g corepack
+             cp /home/workspace/opencti-platform/.yarnrc.yml .
+             yarn install
+             yarn verify-licenses
+            '
+
+    - name: Frontend verify license
+      run: |
+        docker run  \
+          --name frontend-verify-licenses \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22.21.0 \
+          sh -c 'set -ex;
+             echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+             cd /home/workspace/opencti-platform/opencti-front
+             npm install -g corepack
+             cp /home/workspace/opencti-platform/.yarnrc.yml .
+             yarn install
+             yarn verify-licenses
+            '
+
+    - name: Generate license
+      run: |
+        docker run  \
+          --name generate-licenses \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22.21.0 \
+          sh -c 'set -ex;
+             cd /home/workspace
+             chmod 777 scripts/*
+             ./scripts/generate-licenses.sh
+             test -f ./licenses/third-party-licenses.txt
+            '

@@ -1,0 +1,212 @@
+name: Run OpenCTI frontend tests
+
+on:
+  workflow_call:
+
+jobs:
+  opencti-frontend-test:
+    name: Frontend tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Frontend tests
+      run: |
+        docker run  \
+          --name frontend-tests \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine \
+          sh -c 'set -ex
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+            apk add git tini gcc g++ make musl-dev cargo python3 python3-dev postfix postfix-pcre
+            npm install -g node-gyp
+            npm install -g corepack
+            cd /home/workspace/opencti-platform/opencti-front
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn build
+            yarn check-ts
+            yarn lint
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:coverage
+            '
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log
+
+
+  opencti-frontend-e2e-test:
+    name: Frontend e2e tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+      with:
+        path: frontend-e2e-test
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./frontend-e2e-test/scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Duplicate workspace
+      run: |
+         cp -pr ${{ github.workspace }}/frontend-e2e-test ${{ github.workspace }}/frontend-e2e-start
+         cp -pr ${{ github.workspace }}/frontend-e2e-test ${{ github.workspace }}/frontend-e2e-worker
+
+    - name: Set up Docker Compose for backends
+      run: |
+         set -ex
+         cd frontend-e2e-test/scripts/ci
+         docker network create runner-docker-network
+         docker compose --profile "backend" up -d
+
+    - name: Start e2e opencti and worker instance
+      run: |
+        set -ex;
+        docker run -d --network runner-docker-network \
+          --name opencti-e2e-start \
+          -p 4500:4100 \
+          -v ${{ github.workspace }}/frontend-e2e-start:/home/workspace \
+          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
+          -e APP__PORT=4100 \
+          -e APP__ENABLED_DEV_FEATURES='["*"]' \
+          -e APP__ADMIN__PASSWORD=admin \
+          -e APP__CHILD_LOCKING_PROCESS__ENABLED=true \
+          -e APP__ADMIN__TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+          -e APP__APP_LOG__EXTENDED_ERROR_MESSAGE=true \
+          -e APP__HEALTH_ACCESS_KEY=cihealthkey \
+          -e REDIS__HOSTNAME=redis \
+          -e REDIS__NAMESPACE=e2e-start \
+          -e ELASTICSEARCH__URL=http://elasticsearch:9200 \
+          -e ELASTICSEARCH__INDEX_PREFIX=e2e-start \
+          -e MINIO__ENDPOINT=minio \
+          -e MINIO__BUCKET_NAME=e2e-start-bucket \
+          -e RABBITMQ__HOSTNAME=rabbitmq \
+          -e RABBITMQ__QUEUE_PREFIX=e2e-start \
+          -e EXPIRATION_SCHEDULER__ENABLED=false \
+          -e SUBSCRIPTION_SCHEDULER__ENABLED=false \
+          -e PUBLISHER_MANAGER__ENABLED=false \
+          -e SMTP__ENABLED=false \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -ex
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+            apk add build-base git libffi-dev cargo
+            cd /home/workspace/client-python
+            pip install -r requirements.txt
+            pip install -e .[dev,doc]
+            cd /home/workspace/opencti-platform/opencti-graphql
+            npm install -g corepack
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn install:python
+            yarn build:dev
+            yarn wait-api && node build/script-insert-dataset.js --datasets=DATA-TEST-STIX2_v2,data-test-stix-e2e,poisonivy &
+            NODE_OPTIONS=--max_old_space_size=8192 yarn start
+            ';
+
+        docker run -d --network runner-docker-network \
+          --name opencti-e2e-worker \
+          -v ${{ github.workspace }}/frontend-e2e-worker:/home/workspace \
+          -e OPENCTI_URL=http://opencti-e2e-start:4100 \
+          -e OPENCTI_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+          -e WORKER_LOG_LEVEL=info \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -x
+            apk add build-base git libffi-dev cargo
+            cd /home/workspace/client-python
+            echo "[INFO] using client-python on branch $(git branch --show-current)"
+            pip install -r requirements.txt
+            pip install -e .[dev,doc]
+            while ! nc -z opencti-e2e-start 4100 ; do sleep 1 ; done
+            cd /home/workspace/opencti-worker
+            pip install -r src/requirements.txt
+            python3 src/worker.py
+        '
+
+    - name: Wait for OpenCTI e2e backend instances to start
+      run: ./frontend-e2e-test/scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4500/health?health_access_key=cihealthkey 300 10
+
+    - name: Frontend e2e tests
+      run: |
+        docker run --network runner-docker-network \
+          --name frontend-e2e-tests \
+          -v ${{ github.workspace }}/frontend-e2e-test:/home/workspace \
+          -e BACK_END_URL=http://opencti-e2e-start:4100 \
+          -e E2E_TEST=true \
+          -e TEAMS_WEBHOOK="teams-webhook-url" \
+          node:22.21.0 \
+          sh -c 'set -ex;
+              echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+              apt-get update
+              apt-get -y install netcat-traditional
+              cd /home/workspace/opencti-platform/opencti-front
+              npm install -g corepack
+              cp /home/workspace/opencti-platform/.yarnrc.yml .
+              yarn install
+              npx playwright install --with-deps chromium
+              yarn build
+              yarn test:e2e
+            '
+
+    - name: Upload front e2e test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      continue-on-error: true
+      with:
+        name: frontend-test-results
+        path: ${{ github.workspace }}/frontend-e2e-test/opencti-platform/opencti-front/test-results
+        retention-days: 15
+
+
+    - name: Logs opencti-e2e-start
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-e2e-start
+
+    - name: Logs opencti-e2e-worker
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-e2e-worker
+
+    # Output all logs used during the job
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      continue-on-error: true
+      run: |
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log
+
+
+  opencti-frontend-verify-translation:
+    name: Verify translation
+    runs-on: ubuntu-latest
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Frontend verify translation
+      run: |
+        docker run  \
+          --name frontend-verify-translation \
+          -v ${{ github.workspace }}:/home/workspace \
+          node:22-alpine \
+          sh -c 'set -ex
+            cd /home/workspace/opencti-platform/opencti-front
+            node script/verify-translation.js
+            '

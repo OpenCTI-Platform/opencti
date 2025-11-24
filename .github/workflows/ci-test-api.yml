@@ -1,0 +1,248 @@
+name: Run OpenCTI api tests
+
+on:
+  workflow_call:
+
+jobs:
+  run-opencti-integration-test:
+    name: Integration tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Collect Workflow Telemetry
+      uses: catchpoint/workflow-telemetry-action@v2
+
+    - name: Set up Docker Compose for backends and sync instances
+      run: |
+         set -ex
+         cd scripts/ci
+         export TAG=${{ github.sha }}
+         docker network create runner-docker-network
+         docker compose --profile "*" up -d
+
+    - name: Wait for OpenCTI sync instances to start
+      run: |
+          set -ex
+          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4100/health?health_access_key=cihealthkey 300 10
+          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4200/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4300/health?health_access_key=cihealthkey 180 10
+          ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
+
+
+    - name: Start api test
+      run: |
+        docker run --network runner-docker-network \
+          --name api-tests \
+          -p 4010:4100 \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e APP__BASE_URL=http://api-tests:4010/ \
+          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
+          -e APP__SYNC_RAW_START_REMOTE_URI=http://opencti-raw-start:4100/graphql \
+          -e APP__SYNC_LIVE_START_REMOTE_URI=http://opencti-live-start:4100/graphql \
+          -e APP__SYNC_DIRECT_START_REMOTE_URI=http://opencti-direct-start:4100/graphql \
+          -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
+          -e PYTHONUNBUFFERED=1  \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -ex
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+            apk add build-base git libffi-dev cargo
+            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
+            cd /home/workspace/opencti-platform/opencti-graphql
+            npm install -g corepack
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn build
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration
+        '
+
+    - name: Upload backend test result
+      uses: actions/upload-artifact@v4
+      if: always()
+      continue-on-error: true
+      with:
+        name: backend-test-results-integration
+        path: ${{ github.workspace }}/opencti-platform/opencti-graphql/test-results
+        retention-days: 15
+
+    # Output all logs used during the job
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      continue-on-error: true
+      run: |
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
+
+
+    - name: Logs opencti-direct-start
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-direct-start
+    - name: Logs opencti-live-start
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-live-start
+    - name: Logs opencti-raw-start
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-raw-start
+    - name: Logs opencti-restore-start
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-restore-start
+    - name: Logs opencti-direct-worker
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-direct-worker
+    - name: Logs opencti-test-worker
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-test-worker
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log
+
+  run-opencti-rules-test:
+    name: Rules and Taxii tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Collect Workflow Telemetry
+      uses: catchpoint/workflow-telemetry-action@v2
+
+    - name: Set up Docker Compose for backends and sync instances
+      run: |
+         set -ex
+         cd scripts/ci
+         export TAG=${{ github.sha }}
+         docker network create runner-docker-network
+         docker compose --profile "backend" --profile ci-test-api up -d
+
+    - name: Start rules test
+      run: |
+        docker run --network runner-docker-network \
+          --name api-tests \
+          -p 4010:4100 \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e APP__BASE_URL=http://api-tests:4010/ \
+          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
+          -e PYTHONUNBUFFERED=1  \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -ex;
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
+            apk add build-base git libffi-dev cargo;
+            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
+            cd /home/workspace/opencti-platform/opencti-graphql
+            npm install -g corepack
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn build
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-rules
+        '
+
+    # Output all logs used during the job
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      continue-on-error: true
+      run: |
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
+
+    - name: Logs opencti-test-worker
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-test-worker
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log
+
+  run-opencti-api-non-integration-test:
+    name: Unit and others tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Set up Docker Compose for backends
+      run: |
+         set -ex
+         cd scripts/ci
+         docker network create runner-docker-network
+         docker compose --profile "backend" up -d
+
+    - name: Start unit and other tests
+      run: |
+        docker run --network runner-docker-network \
+          --name unit-and-other-tests \
+          -p 4010:4100 \
+          -v ${{ github.workspace }}:/home/workspace \
+          --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
+          -e APP__BASE_URL=http://unit-and-other-tests:4010/ \
+          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
+          -e PYTHONUNBUFFERED=1  \
+          nikolaik/python-nodejs:python3.11-nodejs22-alpine \
+          sh -c 'set -ex;
+            echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache";
+            apk add build-base git libffi-dev cargo;
+            git clone https://github.com/OpenCTI-Platform/connectors.git /home/workspace/opencti-connectors  # TODO Remove when not anymore needed to run integration test
+            cd /home/workspace/opencti-platform/opencti-graphql
+            npm install -g corepack
+            cp /home/workspace/opencti-platform/.yarnrc.yml .
+            yarn install
+            yarn build
+            yarn check-ts
+            yarn lint
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit-and-others
+        '
+
+    # Output all logs used during the job
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      continue-on-error: true
+      run: |
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log

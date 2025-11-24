@@ -1,0 +1,92 @@
+name: Build OpenCTI Platform and worker images
+
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        description: "Image Tag"
+        type: string
+        required: true
+
+jobs:
+  build-opencti-platform:
+    name: Build OpenCTI Platform image
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        name: gha-builder-platform
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: filigran/platform
+        tags: type=raw,value=${{ inputs.image_tag }}
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        context: opencti-platform
+        # Using Dockerfile_featurebranch waiting for the merge of all dockerfile
+        file: opencti-platform/Dockerfile_featurebranch
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=registry,ref=filigran/platform:buildcache
+        cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
+
+  build-opencti-worker:
+    name: Build OpenCTI Worker image
+    runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        name: gha-builder-worker
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Login to GHCR
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: filigran/worker
+        tags: type=raw,value=${{ inputs.image_tag }}
+    - name: Build and push
+      uses: docker/build-push-action@v6
+      with:
+        context: opencti-worker
+        file: opencti-worker/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=registry,ref=filigran/worker:buildcache
+        cache-to: type=registry,ref=filigran/worker:buildcache,mode=max

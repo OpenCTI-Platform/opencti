@@ -1,0 +1,75 @@
+name: Run Client Python - PyCti tests
+
+on:
+  workflow_call:
+
+jobs:
+  client-python-test:
+    runs-on: ubuntu-latest
+    name: pycti test - python ${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+    steps:
+    - name: OpenCTI checkout
+      uses: actions/checkout@v4
+
+    - name: Runner information
+      continue-on-error: true
+      run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Set up Docker Compose for backends
+      run: |
+         set -ex
+         cd scripts/ci
+         export TAG=${{ github.sha }}
+         docker network create runner-docker-network
+         docker compose --profile "backend" --profile "ci-test-pycti" up -d
+
+
+    - name: Wait for OpenCTI e2e backend instances to start
+      run: ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4600/health?health_access_key=cihealthkey 300 10
+
+    - name: Test Client Python ${{ matrix.python-version }}
+      run: |
+        docker run --network runner-docker-network \
+          --name client-test \
+          -v ${{ github.workspace }}:/home/workspace \
+          -e OPENCTI_API_URL=http://opencti-pycti-start:4100 \
+          -e OPENCTI_API_TOKEN=bfa014e0-e02e-4aa6-a42b-603b19dcf159 \
+         python:${{ matrix.python-version }} \
+          sh -c 'set -ex;
+            cd /home/workspace/client-python
+            pip3 install -r requirements.txt --user
+            pip3 install -r test-requirements.txt --user
+            sleep 180
+            python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+            '
+
+
+    - name: Logs opencti-pycti-start
+      if: always()
+      continue-on-error: true
+      run: docker logs opencti-pycti-start
+
+    # Output all logs used during the job
+    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
+      continue-on-error: true
+      run: |
+          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
+          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
+          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
+          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
+
+    - name: Print resources stats
+      if: always()
+      continue-on-error: true
+      run: cat runner_resource_stat.log
+
