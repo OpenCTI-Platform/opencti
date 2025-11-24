@@ -5,6 +5,7 @@ on:
     branches:
       - oob/ci-migrate-to-gh
 
+# Test stability 1
 jobs:
   wf-build-image:
       uses: ./.github/workflows/ci-docker-build.yml
