@@ -29,7 +29,7 @@ const useStyles = makeStyles({
 });
 
 interface ObjectLabelFieldProps {
-  style: React.CSSProperties;
+  style?: React.CSSProperties;
   name: string;
   helpertext?: string;
   dryrun?: boolean;
@@ -37,6 +37,7 @@ interface ObjectLabelFieldProps {
   setFieldValue?: (name: string, value: FieldOption[]) => void;
   values?: FieldOption[];
   onChange?: (name: string, value: FieldOption[]) => void;
+  disabled?: boolean
 }
 
 const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
@@ -48,6 +49,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
   setFieldValue,
   values,
   onChange,
+  disabled,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -81,6 +83,7 @@ const ObjectLabelField: FunctionComponent<ObjectLabelFieldProps> = ({
     <>
       <Field
         component={AutocompleteField}
+        disabled={disabled}
         style={style}
         name={name}
         required={required}
