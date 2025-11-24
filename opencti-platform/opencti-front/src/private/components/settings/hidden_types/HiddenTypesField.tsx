@@ -15,7 +15,7 @@ import HiddenTypesIndicator from './HiddenTypesIndicator';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 export const groups = new Map<string, string[]>([
-  ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Note', 'External-Reference']],
+  ['Analysis', ['Report', 'Grouping', 'Malware-Analysis', 'Security-Coverage', 'Note', 'External-Reference']],
   ['Cases', ['Case-Incident', 'Case-Rfi', 'Case-Rft', 'Task', 'Feedback']],
   ['Events', ['Incident', 'stix-sighting-relationship', 'Observed-Data']],
   ['Observations', ['Stix-Cyber-Observable', 'Artifact', 'Indicator', 'Infrastructure']],
