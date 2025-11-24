@@ -207,7 +207,7 @@
     "chokidar": "4.0.3",
     "cookie": "1.0.2",
     "cross-fetch": "4.1.0",
-    "jose": "5.10.0",
+    "jose": "6.1.2",
     "json5": "2.2.3",
     "@datadog/pprof": "patch:@datadog/pprof@5.12.0#./patch/@datadog-pprof.patch",
     "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
