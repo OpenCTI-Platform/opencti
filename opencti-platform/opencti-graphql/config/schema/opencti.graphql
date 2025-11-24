@@ -1327,6 +1327,8 @@ type PlatformEE {
   license_platform_match: Boolean!
   license_creator: String!
   license_global: Boolean!
+  license_extra_expiration: Boolean!
+  license_extra_expiration_days: Int
 }
 
 enum PlatformCriticalAlertType {
