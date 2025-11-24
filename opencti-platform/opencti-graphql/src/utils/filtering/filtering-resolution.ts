@@ -103,8 +103,7 @@ const resolveFilter = async (
   // 3. handle the special case of dynamic @me value
   if (key.some((k) => FILTER_KEYS_WITH_ME_VALUE.includes(k))) {
     if (filter.values.includes(ME_FILTER_VALUE)) {
-      // eslint-disable-next-line no-param-reassign
-      filter.values = filter.values.map((v) => (v === ME_FILTER_VALUE ? user.id : v));
+      newFilterValues = filter.values.map((v) => (v === ME_FILTER_VALUE ? user.id : v));
     }
   }
 
