@@ -367,6 +367,9 @@ const getConvertedRelationsNames = (relationNames: string[]) => {
   return convertedRelationsNames;
 };
 
+/**
+ * Extract the filter keys values of a FilterGroup
+ */
 export const extractFilterKeyValues = (filterKey: string, filterGroup: FilterGroup) => {
   const values: string[] = [];
   const filtersResult = { ...filterGroup };
@@ -455,21 +458,26 @@ const checkFilterKeys = (filterGroup: FilterGroup) => {
     ));
 
   if (incorrectKeys.length > 0) {
-    throw UnsupportedError('incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
+    throw UnsupportedError('Incorrect filter keys not existing in any schema definition', { keys: incorrectKeys });
   }
 };
 
-export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking = false) => {
+export const checkFiltersFormat = (filterGroup: FilterGroup) => {
   // detect filters in the old format or in a bad format
   if (!isFilterGroupFormatCorrect(filterGroup)) {
     throw UnsupportedError('Incorrect filters format', { filter: JSON.stringify(filterGroup) });
   }
+  // check values are in a correct syntax
+  checkFilterGroupValuesSyntax(filterGroup);
+};
+
+export const checkFiltersValidity = (filterGroup: FilterGroup, noFiltersChecking = false) => {
+  // check filters syntax
+  checkFiltersFormat(filterGroup);
   // check filters keys exist in schema
   if (!noFiltersChecking && isFilterGroupNotEmpty(filterGroup)) {
     checkFilterKeys(filterGroup);
   }
-  // check values are in a correct syntax
-  checkFilterGroupValuesSyntax(filterGroup);
 };
 
 const BASE_FORCE_LABEL = '{{byName}}=';

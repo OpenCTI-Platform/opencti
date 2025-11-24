@@ -5,39 +5,41 @@ import type { AuthContext, AuthUser } from '../../../types/user';
 import { getEntitiesMapFromCache } from '../../../database/cache';
 import type { StixObject } from '../../../types/stix-2-1-common';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../../../schema/stixDomainObject';
-import { type Filter, type FilterGroup } from '../../../generated/graphql';
+import { type FilterGroup } from '../../../generated/graphql';
 import type { FilterResolutionMap } from '../filtering-resolution';
 import { buildResolutionMapForFilterGroup, resolveFilterGroup } from '../filtering-resolution';
 import { UnsupportedError } from '../../../config/errors';
+import { checkFiltersFormat } from '../filtering-utils';
 
 //----------------------------------------------------------------------------------------------------------------------
 
 /**
- * Pass through all individual filters and throws an error if it cannot be handled properly.
- * This is very aggressive but will allow us to detect rapidly any corner-case.
+ * check a FilterGroup's keys validity in stix filtering
  */
-export const validateFilterForStixMatch = (filter: Filter) => {
-  if (!Array.isArray(filter.key)) {
-    throw UnsupportedError('The provided filter key is not an array', { key: JSON.stringify(filter.key) });
-  }
-  if (filter.key.length !== 1) {
-    throw UnsupportedError('Stix filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
-  }
-  if (FILTER_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
-    const availableFilters = JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP));
-    throw UnsupportedError('Stix filtering is not compatible with the provided filter key', { key: JSON.stringify(filter.key), availableFilters });
-  }
+const checkFiltersKeysForStixMatch = (filterGroup: FilterGroup) => {
+  filterGroup.filters.forEach((filter) => {
+    if (!Array.isArray(filter.key)) {
+      throw UnsupportedError('The provided filter key is not an array', { key: JSON.stringify(filter.key) });
+    }
+    if (filter.key.length !== 1) {
+      throw UnsupportedError('Stix filtering can only be executed on a unique filter key', { key: JSON.stringify(filter.key) });
+    }
+    if (FILTER_KEY_TESTERS_MAP[filter.key[0]] === undefined) {
+      const availableFilters = JSON.stringify(Object.keys(FILTER_KEY_TESTERS_MAP));
+      throw UnsupportedError('Stix filtering is not compatible with the provided filter key', { key: JSON.stringify(filter.key), availableFilters });
+    }
+  });
+  filterGroup.filterGroups.forEach((fg) => checkFiltersKeysForStixMatch(fg));
 };
 
 /**
- * Recursively call validateFilter inside a FilterGroup
+ * validate a FilterGroup in stix filtering: check the filters format and the filter keys validity
  */
 export const validateFilterGroupForStixMatch = (filterGroup: FilterGroup) => {
-  if (!filterGroup?.filterGroups || !filterGroup?.filters) {
-    throw UnsupportedError('Unrecognized filter format; expecting FilterGroup');
-  }
-  filterGroup.filters.forEach((f) => validateFilterForStixMatch(f));
-  filterGroup.filterGroups.forEach((fg) => validateFilterGroupForStixMatch(fg));
+  // check filters format
+  checkFiltersFormat(filterGroup);
+  // check filters keys validity
+  checkFiltersKeysForStixMatch(filterGroup);
 };
 
 //----------------------------------------------------------------------------------------------------------------------
