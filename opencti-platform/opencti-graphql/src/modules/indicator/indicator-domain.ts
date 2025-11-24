@@ -332,7 +332,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   } else {
     finalIndicatorToCreate = { ...indicatorToCreate };
   }
-  console.log('finalIndicatorToCreate : ', finalIndicatorToCreate);
+
   // create the linked observables
   let observablesToLink: string[] = [];
   if (indicator.basedOn) {
