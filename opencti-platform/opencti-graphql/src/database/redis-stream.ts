@@ -1,6 +1,5 @@
 import { Cluster, Redis } from 'ioredis';
 import * as R from 'ramda';
-import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import conf, { logApp, REDIS_PREFIX } from '../config/conf';
 import type { BaseEvent, DataEvent, SseEvent } from '../types/event';
 import {
@@ -14,10 +13,8 @@ import {
   type StreamProcessor
 } from './stream/stream-utils';
 import { createRedisClient, getClientBase } from './redis';
-import type { AuthContext, AuthUser } from '../types/user';
 import { isEmptyField, wait, waitInSec } from './utils';
 import { utcDate } from '../utils/format';
-import { telemetry } from '../config/tracing';
 import { UnsupportedError } from '../config/errors';
 
 // region opencti data stream
@@ -39,18 +36,13 @@ const convertStreamName = (streamName = LIVE_STREAM_NAME) => {
   }
 };
 
-const rawPushToStream = async (context: AuthContext, user: AuthUser, eventMessage: string[]) => {
+const rawPushToStream = async (eventMessage: string[]) => {
   const redisClient = getClientBase();
-  const pushToStreamFn = async () => {
-    if (streamTrimming) {
-      await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventMessage);
-    } else {
-      await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, '*', ...eventMessage);
-    }
-  };
-  await telemetry(context, user, 'INSERT STREAM', {
-    [SEMATTRS_DB_NAME]: 'stream_engine',
-  }, pushToStreamFn);
+  if (streamTrimming) {
+    await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventMessage);
+  } else {
+    await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, '*', ...eventMessage);
+  }
 };
 
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
@@ -218,6 +210,7 @@ const rawStoreActivityEvent = async (event: string[]) => {
 // endregion
 
 export const rawRedisStreamClient: RawStreamClient = {
+  initializeStreams: async () => {},
   rawPushToStream,
   rawFetchStreamInfo,
   rawCreateStreamProcessor,

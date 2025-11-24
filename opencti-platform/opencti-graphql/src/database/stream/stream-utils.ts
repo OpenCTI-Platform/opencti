@@ -1,6 +1,6 @@
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
-import type { AuthContext, AuthUser } from '../../types/user';
+import type { AuthUser } from '../../types/user';
 import type { StoreObject } from '../../types/store';
 import { generateMergeMessage } from '../generate-message';
 import { convertStoreToStix_2_1 } from '../stix-2-1-converter';
@@ -43,8 +43,8 @@ export type StreamInfo = {
 };
 
 export interface RawStreamClient {
-  initializeStreams?: () => Promise<void>;
-  rawPushToStream: (context: AuthContext, user: AuthUser, rawEvent: string[]) => Promise<void>;
+  initializeStreams: () => Promise<void>;
+  rawPushToStream: (rawEvents: string[]) => Promise<void>;
   rawFetchStreamInfo: (streamName?: string) => Promise<StreamInfo>;
   rawCreateStreamProcessor: <T extends BaseEvent> (
     provider: string,
