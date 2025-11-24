@@ -20,6 +20,7 @@ export interface CvssConfig {
   fullToCode: Record<string, Record<string, string>>;
   ordered: string[];
   prefix?: string;
+  alternatePrefixes?: string[];
   baseVectorKey: string;
   baseScoreKey: string;
   temporalScoreKey?: string;
@@ -159,6 +160,7 @@ const cvssMappings: Record<CvssVersion, CvssConfig> = {
     },
     ordered: ['AV', 'AC', 'PR', 'UI', 'S', 'C', 'I', 'A', 'E', 'RL', 'RC'],
     prefix: 'CVSS:3.1/',
+    alternatePrefixes: ['CVSS:3.0/'],
     baseVectorKey: 'x_opencti_cvss_vector_string',
     baseScoreKey: 'x_opencti_cvss_base_score',
     temporalScoreKey: 'x_opencti_cvss_temporal_score',
@@ -260,6 +262,14 @@ const cvss2OutputKeyCase: Record<string, string> = {
   RC: 'RC',
 };
 
+const stripVectorPrefix = (vector: string, config: CvssConfig): string => {
+  if (!config.prefix) return vector;
+  const prefixes = [config.prefix, ...(config.alternatePrefixes ?? [])];
+  const matchedPrefix = prefixes.find((pref) => vector.startsWith(pref));
+  if (!matchedPrefix) return vector;
+  return vector.slice(matchedPrefix.length);
+};
+
 // --- Helpers ---
 
 export const getFullValue = (
@@ -359,7 +369,7 @@ export const isValidCvssVector = (
   if (version === 'cvss4' && !vector.startsWith('CVSS:4.0/')) return false;
   if (version === 'cvss2' && !vector.toUpperCase().includes('AV:')) return false;
   const seen = new Set<string>();
-  const body = config.prefix ? vector.replace(config.prefix, '') : vector;
+  const body = stripVectorPrefix(vector, config);
   return body.split('/').every((entry) => {
     const [rawKey, rawValue] = entry.split(':');
     const key = rawKey && rawKey.toUpperCase();
@@ -402,7 +412,7 @@ export const parseCvssVector = (
     return asObject ? Object.fromEntries(result.map((e) => [e.key, e.value[0]])) : result;
   }
   const seen = new Set<string>();
-  const parts = (config.prefix ? vector!.replace(config.prefix, '') : vector!).split('/');
+  const parts = stripVectorPrefix(vector!, config).split('/');
   const parsedVector: CvssFieldUpdate[] = parts
     .map((part): CvssFieldUpdate | null => {
       const [rawKey, rawValue] = part.split(':');
@@ -474,8 +484,7 @@ export const updateCvssVector = (
   }
   const config = cvssMappings[version];
   const { openctiToCode, ordered, prefix, baseVectorKey, baseScoreKey, temporalScoreKey, severityKey } = config;
-  const initialParts: [string, string | undefined][] = (existingVector || '')
-    .replace(prefix || '', '')
+  const initialParts: [string, string | undefined][] = stripVectorPrefix(existingVector || '', config)
     .split('/')
     .filter((s) => s.includes(':'))
     .map((part) => {
