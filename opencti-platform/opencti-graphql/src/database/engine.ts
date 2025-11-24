@@ -149,7 +149,7 @@ import {
 import { convertTypeToStixType } from './stix-2-1-converter';
 import { extractEntityRepresentativeName, extractRepresentative } from './entity-representative';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
-import { addFilter, checkAndConvertFilters, emptyFilterGroup, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
   ALIAS_FILTER,
   COMPUTED_RELIABILITY_FILTER,
@@ -188,6 +188,7 @@ import {
   authorizedMembers,
   baseType,
   booleanMapping,
+  type ComplexAttribute,
   dateMapping,
   entityType as entityTypeAttribute,
   iAliasedIds,
@@ -2565,7 +2566,7 @@ const adaptFilterToEntityTypeFilterKey = (filter: any) => {
 
   // we'll build these new filters or filterGroup, depending on the situation
   let newFilter: Filter | undefined;
-  let newFilterGroup: FilterGroup = emptyFilterGroup;
+  let newFilterGroup: FilterGroup | undefined;
 
   if (operator === 'nil' || operator === 'not_nil') { // nil and not_nil operators must have a single key
     newFilterGroup = {
@@ -2635,7 +2636,7 @@ export const adaptFilterToIdsFilterKey = (filter: Filter) => {
   // at this point arrayKey === ['ids'], and mode is always 'or'
 
   // we'll build these new filters or filterGroup, depending on the situation
-  let newFilterGroup: FilterGroup = emptyFilterGroup;
+  let newFilterGroup: FilterGroup | undefined;
 
   const idsArray = [...ids_attributes]; // the keys to handle additionally
 
@@ -3235,7 +3236,7 @@ const adaptFilterToWorkflowFilterKey = async (context: AuthContext, user: AuthUs
   if (![WORKFLOW_FILTER, X_OPENCTI_WORKFLOW_ID].includes(arrayKeys[0])) {
     throw UnsupportedError('The key is not correct', { keys: arrayKeys });
   }
-  let newFilterGroup: FilterGroup = emptyFilterGroup;
+  let newFilterGroup: FilterGroup | undefined;
   let newFilter;
   if (operator === 'nil' || operator === 'not_nil') { // no status template <-> no status // at least a status template <-> at least a status
     newFilter = {
@@ -3295,7 +3296,7 @@ const adaptFilterToSourceReliabilityFilterKey = async (context: AuthContext, use
   // at this point arrayKey === ['source_reliability']
 
   let newFilter: Filter | undefined;
-  let newFilterGroup: FilterGroup = emptyFilterGroup;
+  let newFilterGroup: FilterGroup | undefined;
 
   // in case we want to filter by source reliability (reliability of author)
   // we need to find all authors filtered by reliability and filter on these authors
@@ -3364,7 +3365,7 @@ const adaptFilterToFromOrToFilterKeys = (filter: Filter) => {
     throw UnsupportedError('A related relations filter with this key is not supported', { key: arrayKeys[0] });
   }
 
-  let newFilterGroup: FilterGroup = emptyFilterGroup;
+  let newFilterGroup: FilterGroup | undefined;
   // define mode for the filter group
   let globalMode = FilterMode.Or;
   if (operator === 'eq' || operator === 'not_nil') {
@@ -3514,7 +3515,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
             mode: FilterMode.Or,
           }
         ],
-        filterGroups: [sourceReliabilityFilterGroup],
+        filterGroups: sourceReliabilityFilterGroup ? [sourceReliabilityFilterGroup] : [],
       }],
     };
   } else {
@@ -3536,7 +3537,7 @@ const adaptFilterToComputedReliabilityFilterKey = async (context: AuthContext, u
         ...filter,
         key: ['x_opencti_reliability'],
       }],
-      filterGroups: [sourceReliabilityFilterGroup],
+      filterGroups: sourceReliabilityFilterGroup ? [sourceReliabilityFilterGroup] : [],
     };
   }
 
@@ -3640,14 +3641,14 @@ const completeSpecialFilterKeys = async (
         const mode = (filter.operator === 'eq' || isEmptyField(filter.operator)) ? FilterMode.Or : FilterMode.And;
         if (isEmptyField(ids)) {
           const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
-            : types.map((t: any) => buildRefRelationKey(t, '*'));
-          keys.forEach((relKey: any) => {
+            : types.map((t: string) => buildRefRelationKey(t, '*'));
+          keys.forEach((relKey: string) => {
             regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'] });
           });
         } else {
           const keys = isEmptyField(types)
             ? buildRefRelationKey('*', '*')
-            : types.flatMap((t: any) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
+            : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
           regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
         }
         finalFilterGroups.push({ mode, filters: regardingFilters, filterGroups: [] });
@@ -3836,7 +3837,7 @@ const completeSpecialFilterKeys = async (
       if (arrayKeys.length > 1) {
         throw UnsupportedError('A filter with these multiple keys is not supported', { keys: arrayKeys });
       }
-      const definition: any = schemaAttributesDefinition.getAttributeByName(key[0]);
+      const definition = schemaAttributesDefinition.getAttributeByName(key[0]) as ComplexAttribute;
       if (definition.format === 'standard') {
         finalFilterGroups.push({
           mode: filter.mode ?? FilterMode.And,
