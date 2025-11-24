@@ -1,3 +1,4 @@
+import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject, StoreRelation } from '../../types/store';
 import type { ActivityStreamEvent, BaseEvent, CreateEventOpts, DataEvent, EventOpts, SseEvent, StreamDataEvent, UpdateEventOpts } from '../../types/event';
@@ -18,6 +19,7 @@ import {
 import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawRedisStreamClient } from '../redis-stream';
+import { telemetry } from '../../config/tracing';
 
 const streamClient: RawStreamClient = rawRedisStreamClient;
 export const initializeStreamStack = async () => {
@@ -31,7 +33,12 @@ const pushToStream = async (context: AuthContext, user: AuthUser, event: BaseEve
   const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
     const streamMessage = mapJSToStream(eventToPush);
-    await streamClient.rawPushToStream(context, user, streamMessage);
+    const pushToStreamFn = async () => {
+      await streamClient.rawPushToStream(streamMessage);
+    };
+    await telemetry(context, user, 'INSERT STREAM', {
+      [SEMATTRS_DB_NAME]: 'stream_engine',
+    }, pushToStreamFn);
   }
 };
 
@@ -133,7 +140,7 @@ export const fetchStreamEventsRangeFromEventId = async (
 };
 
 // region opencti notification stream
-export const storeNotificationEvent = async (context: AuthContext, event: any) => {
+export const storeNotificationEvent = async (_context: AuthContext, event: any) => {
   const eventMessage = mapJSToStream(event);
   await streamClient.rawStoreNotificationEvent(eventMessage);
 };
