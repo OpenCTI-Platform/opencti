@@ -2,8 +2,6 @@ name: OpenCTI CI
 on:
   workflow_dispatch:
   push:
-    branches:
-      - oob/ci-migrate-to-gh
 
 # Test stability 6
 jobs:
