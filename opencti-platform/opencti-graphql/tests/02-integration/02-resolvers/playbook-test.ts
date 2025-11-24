@@ -248,7 +248,7 @@ describe('Playbook resolver standard behavior', () => {
           input: addNodeInput,
         }
       },
-      'incorrect filter keys not existing in any schema definition',
+      'Incorrect filter keys not existing in any schema definition',
       UNSUPPORTED_ERROR
     );
   });
