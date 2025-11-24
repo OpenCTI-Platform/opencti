@@ -23,7 +23,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_MALWARE, data);
-    expect(message).toEqual('replaces `initial` with `updated` in `Description`');
+    expect(message).toEqual('replaces `updated` in `Description`');
   });
   it('should generate message for simple field update if no previous value', () => {
     const data = { creators: [], members: [] };
@@ -42,7 +42,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_MALWARE, data);
-    expect(message).toEqual('replaces `nothing` with `initial` in `Description`');
+    expect(message).toEqual('replaces `initial` in `Description`');
   });
   it('should generate message for simple field update if no value', () => {
     const data = { creators: [], members: [] };
@@ -59,7 +59,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_MALWARE, data);
-    expect(message).toEqual('replaces `initial` with `nothing` in `Description`');
+    expect(message).toEqual('replaces `nothing` in `Description`');
   });
   it('should generate message for simple field update with multiple values', () => {
     const data = { creators: [], members: [] };
@@ -76,7 +76,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_MALWARE, data);
-    expect(message).toEqual('replaces `initial1, initial2, initial3` with `updated1, updated2, updated3` in `Description` and 1 more items');
+    expect(message).toEqual('replaces `updated1, updated2, updated3` in `Description` and 1 more items');
   });
   it('should generate message for field update with multiple operations', () => {
     const data = { creators: [], members: [] };
@@ -99,7 +99,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_MALWARE, data);
-    expect(message).toEqual('replaces `initial description` with `updated description` in `Description` - `initial name` with `updated name` in `Name`');
+    expect(message).toEqual('replaces `updated description` in `Description` - `updated name` in `Name`');
   });
   it('should generate message for Authorized members update', () => {
     const data = {
@@ -140,7 +140,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
-    expect(message).toEqual('replaces `User1 (admin)` with `User1 (admin), User2 (edit)` in `Authorized members`');
+    expect(message).toEqual('replaces `User1 (admin), User2 (edit)` in `Authorized members`');
   });
   it('should generate message for Workflow status update', () => {
     const data = { creators: [], members: [] };
@@ -161,7 +161,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
-    expect(message).toEqual('replaces `NEW` with `ANALYZED` in `Workflow status`');
+    expect(message).toEqual('replaces `ANALYZED` in `Workflow status`');
   });
   it('should generate message for Workflow status update with request access', () => {
     const data = { creators: [], members: [] };
@@ -189,7 +189,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_CONTAINER_REPORT, data);
-    expect(message).toEqual('replaces `NEW` with `ANALYZED (request access APPROVED)` in `Workflow status`');
+    expect(message).toEqual('replaces `ANALYZED (request access APPROVED)` in `Workflow status`');
   });
   it('should generate message for Creators update', () => {
     const data = { creators: [{
@@ -241,7 +241,7 @@ describe('generateUpdatePatchMessage tests', () => {
       ]
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_INDICATOR, data);
-    expect(message).toEqual('replaces `2025-10-28T16:26:27.168Z` with `2025-10-21T15:26:27.168Z` in `Valid from`');
+    expect(message).toEqual('replaces `2025-10-21T15:26:27.168Z` in `Valid from`');
   });
   it('should generate message for attribute with object type update', () => {
     const data = { creators: [], members: [] };
@@ -282,11 +282,6 @@ describe('generateUpdatePatchMessage tests', () => {
     ];
     const message = generateUpdatePatchMessage(patchElements, ENTITY_TYPE_INDICATOR, data);
     expect(message).toEqual('replaces `\n'
-      + 'file_markings : []\n'
-      + 'id : import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file1.json\n'
-      + 'mime_type : application/json\n'
-      + 'name : file1.json\n'
-      + 'version : 2025-11-12T15:28:21.073Z` with `\n'
       + 'file_markings : []\n'
       + 'id : import/Report/c4224642-afe4-47e6-94d2-d944d6d75beb/file1.json\n'
       + 'mime_type : application/json\n'
