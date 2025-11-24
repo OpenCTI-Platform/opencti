@@ -71,11 +71,13 @@ interface ActionsForm {
 
 interface PlaybookFlowFieldActionsProps {
   actions: UpdateAction[]
+  onChange: (actions: UpdateAction[]) => void
   operations?: string[]
 }
 
 const PlaybookFlowFieldActions = ({
   actions,
+  onChange,
   operations = ['add, replace, remove'],
 }: PlaybookFlowFieldActionsProps) => {
   const theme = useTheme<Theme>();
@@ -93,21 +95,31 @@ const PlaybookFlowFieldActions = ({
   };
 
   const addAction = () => {
-    setActionsInputs((inputs) => [...inputs, {}]);
+    setActionsInputs((inputs) => {
+      const newActions = [...inputs, {}];
+      onChange(newActions);
+      return newActions;
+    });
   };
 
   const removeAction = (index: number) => {
-    setActionsInputs((inputs) => inputs.splice(index, 1));
+    setActionsInputs((inputs) => {
+      const newActions = inputs.splice(index - 1, 1);
+      onChange(newActions);
+      return newActions;
+    });
     removeFormikValue(index);
   };
 
   const changeAction = (index: number, action: UpdateAction) => {
-    setActionsInputs((inputs) => (
-      inputs.map((input, i) => {
+    setActionsInputs((inputs) => {
+      const newActions = inputs.map((input, i) => {
         if (index === i) return action;
         return input;
-      })
-    ));
+      });
+      onChange(newActions);
+      return newActions;
+    });
   };
 
   const changeActionOp = (index: number, op: UpdateAction['op']) => {
@@ -485,12 +497,12 @@ const PlaybookFlowFieldActions = ({
       })}
       <div>
         <Button
-          disabled={actionsAreValid}
+          disabled={!actionsAreValid}
           variant="contained"
           color="secondary"
           size="small"
           onClick={addAction}
-          style={fieldSpacingContainerStyle}
+          style={{ width: '100%', height: 20 }}
         >
           <AddOutlined fontSize="small" />
         </Button>

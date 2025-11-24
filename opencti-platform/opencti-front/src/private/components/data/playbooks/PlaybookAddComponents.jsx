@@ -1,36 +1,15 @@
 import React, { useState } from 'react';
-import IconButton from '@mui/material/IconButton';
-import { AddOutlined, CancelOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
-import Grid from '@mui/material/Grid';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import Alert from '@mui/material/Alert';
 import PlaybookFlowSelectComponent from './playbookFlow/PlaybookFlowSelectComponent';
-import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import ObjectParticipantField from '../../common/form/ObjectParticipantField';
-import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import Drawer from '../../common/drawer/Drawer';
-import CreatedByField from '../../common/form/CreatedByField';
 import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { isEmptyField, isNotEmptyField } from '../../../../utils/utils';
-import SwitchField from '../../../../components/fields/SwitchField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import StatusField from '../../common/form/StatusField';
-import { capitalizeFirstLetter } from '../../../../utils/String';
-import useAttributes from '../../../../utils/hooks/useAttributes';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { parse } from '../../../../utils/Time';
 import PlaybookFlowFieldInPirFilters from './playbookFlow/playbookFlowFields/PlaybookFlowFieldInPirFilters';
 import PlaybookFlowFieldTargets from './playbookFlow/playbookFlowFields/PlaybookFlowFieldTargets';
@@ -45,6 +24,7 @@ import PlaybookFlowFieldTriggerTime from './playbookFlow/playbookFlowFields/Play
 import PlaybookFlowFieldNumber from './playbookFlow/playbookFlowFields/PlaybookFlowFieldNumber';
 import PlaybookFlowFieldBoolean from './playbookFlow/playbookFlowFields/PlaybookFlowFieldBoolean';
 import PlaybookFlowFieldString from './playbookFlow/playbookFlowFields/PlaybookFlowFieldString';
+import PlaybookFlowFieldActions from './playbookFlow/playbookFlowFields/PlaybookFlowFieldActions';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -58,31 +38,6 @@ const useStyles = makeStyles((theme) => ({
   },
   config: {
     padding: '0px 0px 20px 0px',
-  },
-  container: {
-    marginTop: 40,
-  },
-  step: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.primary.main}`,
-    borderRadius: 4,
-    display: 'flex',
-  },
-  formControl: {
-    width: '100%',
-  },
-  buttonAdd: {
-    width: '100%',
-    height: 20,
-  },
-  stepCloseButton: {
-    position: 'absolute',
-    top: -18,
-    right: -18,
   },
 }));
 
@@ -100,7 +55,6 @@ const PlaybookAddComponentsContent = ({
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
-  const { numberAttributes } = useAttributes();
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
   const filtersState = useFiltersState(initialFilters);
@@ -111,45 +65,6 @@ const PlaybookAddComponentsContent = ({
     action === 'config' ? selectedNode?.data?.component?.id ?? null : null,
   );
 
-  const handleAddStep = () => {
-    setActionsInputs(R.append({}, actionsInputs));
-  };
-  const handleRemoveStep = (i) => {
-    setActionsInputs(R.remove(i, 1, actionsInputs));
-  };
-  const handleChangeActionInput = (i, key, value) => {
-    // extract currentValue value
-    const currentValue = R.head(actionsInputs.map((v, k) => (k === i && v[key] ? v[key] : null)).filter((n) => n !== null));
-    // Change operation
-    if (key === 'op' && currentValue !== value) {
-      setActionsInputs(
-        actionsInputs.map((v, k) => {
-          if (k === i) {
-            return { ...v, [key]: value };
-          }
-          return v;
-        }),
-      );
-    } else if (key === 'attribute' && currentValue !== value) {
-      setActionsInputs(
-        actionsInputs.map((v, k) => {
-          if (k === i) {
-            return { ...v, [key]: value, value: null };
-          }
-          return v;
-        }),
-      );
-    } else {
-      setActionsInputs(
-        actionsInputs.map((v, k) => {
-          if (k === i) {
-            return { ...v, [key]: value };
-          }
-          return v;
-        }),
-      );
-    }
-  };
   const areStepsValid = () => {
     for (const n of actionsInputs) {
       if (n && n.attribute === 'x_opencti_detection') {
@@ -161,300 +76,7 @@ const PlaybookAddComponentsContent = ({
     }
     return true;
   };
-  const renderFieldOptions = (i, values, setValues) => {
-    const disabled = isEmptyField(actionsInputs[i]?.op);
-    let options = [];
-    if (actionsInputs[i]?.op === 'add') {
-      options = [
-        {
-          label: t_i18n('Marking definitions'),
-          value: 'objectMarking',
-          isMultiple: true,
-        },
-        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
-        { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
-        { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
-        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
-        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
-        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
-      ];
-    } else if (actionsInputs[i]?.op === 'replace') {
-      options = [
-        {
-          label: t_i18n('Marking definitions'),
-          value: 'objectMarking',
-          isMultiple: true,
-        },
-        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
-        { label: t_i18n('Author'), value: 'createdBy', isMultiple: false },
-        { label: t_i18n('Confidence'), value: 'confidence', isMultiple: false },
-        { label: t_i18n('Score'), value: 'x_opencti_score', isMultiple: false },
-        { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
-        { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
-        { label: t_i18n('Severity'), value: 'severity', isMultiple: false },
-        { label: t_i18n('Priority'), value: 'priority', isMultiple: false },
-        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
-        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
-        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
-        {
-          label: t_i18n('Detection'),
-          value: 'x_opencti_detection',
-          isMultiple: false,
-        },
-        {
-          label: t_i18n('Status'),
-          value: 'x_opencti_workflow_id',
-          isMultiple: false,
-        },
-      ];
-    } else if (actionsInputs[i]?.op === 'remove') {
-      options = [
-        {
-          label: t_i18n('Marking definitions'),
-          value: 'objectMarking',
-          isMultiple: true,
-        },
-        { label: t_i18n('Labels'), value: 'objectLabel', isMultiple: true },
-        { label: t_i18n('Assignees'), value: 'objectAssignee', isMultiple: true },
-        { label: t_i18n('Participants'), value: 'objectParticipant', isMultiple: true },
-        { label: t_i18n('Kill chains'), value: 'killChainPhases', isMultiple: true },
-        { label: t_i18n('Indicator types'), value: 'indicator_types', isMultiple: true },
-        { label: t_i18n('Platforms'), value: 'x_mitre_platforms', isMultiple: true },
-      ];
-    }
-    return (
-      <Select
-        variant="standard"
-        disabled={disabled}
-        value={actionsInputs[i]?.attribute}
-        onChange={(event) => {
-          handleChangeActionInput(i, 'attribute', event.target.value);
-          setValues(R.omit([`actions-${i}-value`], values));
-        }}
-      >
-        {options.length > 0 ? (
-          R.map(
-            (n) => (
-              <MenuItem key={n.value} value={n.value}>
-                {n.label}
-              </MenuItem>
-            ),
-            options,
-          )
-        ) : (
-          <MenuItem value="none">{t_i18n('None')}</MenuItem>
-        )}
-      </Select>
-    );
-  };
-  const renderValuesOptions = (i, setFieldValue) => {
-    const disabled = isEmptyField(actionsInputs[i]?.attribute);
-    switch (actionsInputs[i]?.attribute) {
-      case 'objectMarking':
-        return (
-          <ObjectMarkingField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            setFieldValue={setFieldValue}
-            onChange={(_, value) => handleChangeActionInput(
-              i,
-              'value',
-              value.map((n) => ({
-                label: n.label,
-                value: n.value,
-                patch_value: n.value,
-              })),
-            )}
-          />
-        );
-      case 'objectLabel':
-        return (
-          <ObjectLabelField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(
-              i,
-              'value',
-              value.map((n) => ({
-                label: n.label,
-                value: n.value,
-                patch_value: n.label,
-              })),
-            )}
-          />
-        );
-      case 'createdBy':
-        return (
-          <CreatedByField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              {
-                label: value.label,
-                value: value.value,
-                patch_value: value.value,
-              },
-            ])}
-          />
-        );
-      case 'objectAssignee':
-        return (
-          <ObjectAssigneeField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => {
-              handleChangeActionInput(
-                i,
-                'value',
-                value.map((n) => ({
-                  label: n.label,
-                  value: n.value,
-                  patch_value: n.value,
-                })),
-              );
-            }}
-          />
-        );
-      case 'objectParticipant':
-        return (
-          <ObjectParticipantField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => {
-              handleChangeActionInput(
-                i,
-                'value',
-                value.map((n) => ({
-                  label: n.label,
-                  value: n.value,
-                  patch_value: n.value,
-                })),
-              );
-            }}
-          />
-        );
-      case 'x_opencti_workflow_id':
-        return (
-          <StatusField
-            name={`actions-${i}-value`}
-            disabled={disabled}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              {
-                label: value.label,
-                value: value.value,
-                patch_value: value.value,
-              },
-            ])}
-          />
-        );
-      case 'x_opencti_detection':
-        return (
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name={`actions-${i}-value`}
-            label={t_i18n('Value')}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              { label: value, value, patch_value: value },
-            ])}
-          />
-        );
-      case 'severity':
-        return (
-          <OpenVocabField
-            name={`actions-${i}-value`}
-            type={'case_severity_ov'}
-            containerStyle={fieldSpacingContainerStyle}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              { label: value, value, patch_value: value },
-            ])}
-          />
-        );
-      case 'indicator_types':
-        return (
-          <OpenVocabField
-            name={`actions-${i}-value`}
-            type={'indicator_type_ov'}
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={true}
-            onChange={(_, value) => {
-              handleChangeActionInput(
-                i,
-                'value',
-                value.map((n) => ({
-                  label: n,
-                  value: n,
-                  patch_value: n,
-                })),
-              );
-            }}
-          />
-        );
-      case 'x_mitre_platforms':
-        return (
-          <OpenVocabField
-            name={`actions-${i}-value`}
-            type={'platforms_ov'}
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={true}
-            onChange={(_, value) => {
-              handleChangeActionInput(
-                i,
-                'value',
-                value.map((n) => ({
-                  label: n,
-                  value: n,
-                  patch_value: n,
-                })),
-              );
-            }}
-          />
-        );
-      case 'priority':
-        return (
-          <OpenVocabField
-            name={`actions-${i}-value`}
-            type={'case_priority_ov'}
-            containerStyle={fieldSpacingContainerStyle}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              { label: value, value, patch_value: value },
-            ])}
-          />
-        );
-      case 'killChainPhases':
-        return (
-          <KillChainPhasesField
-            name={`actions-${i}-value`}
-            onChange={(_, value) => {
-              handleChangeActionInput(
-                i,
-                'value',
-                value.map((n) => ({
-                  label: n.label,
-                  value: n.value,
-                  patch_value: { kill_chain_name: n.kill_chain_name, phase_name: n.phase_name },
-                })),
-              );
-            }}
-          />
-        );
-      default:
-        return (
-          <Field
-            component={TextField}
-            disabled={disabled}
-            type={numberAttributes.includes(actionsInputs[i]?.attribute) ? 'number' : 'text'}
-            variant="standard"
-            name={`actions-${i}-value`}
-            label={t_i18n('Value')}
-            fullWidth={true}
-            onChange={(_, value) => handleChangeActionInput(i, 'value', [
-              { label: value, value, patch_value: value },
-            ])}
-          />
-        );
-    }
-  };
+
   const onSubmit = (values, { resetForm }) => {
     const selectedComponent = playbookComponents
       .filter((n) => n.id === componentId)
@@ -524,9 +146,7 @@ const PlaybookAddComponentsContent = ({
             submitForm,
             handleReset,
             isSubmitting,
-            setValues,
             values,
-            setFieldValue,
           }) => (
             <Form>
               <Field
@@ -574,88 +194,12 @@ const PlaybookAddComponentsContent = ({
                   }
                   if (k === 'actions') {
                     return (
-                      <div
+                      <PlaybookFlowFieldActions
                         key={k}
-                        className={classes.container}
-                        style={{ marginTop: 20 }}
-                      >
-                        {Array(actionsInputs.length)
-                          .fill(0)
-                          .map((_, i) => (
-                            <React.Fragment key={i}>
-                              {(actionsInputs[i]?.op === 'replace' && ['objectMarking', 'objectLabel', 'objectAssignee', 'objectParticipant'].includes(actionsInputs[i]?.attribute)) && (
-                                <Alert severity="warning" style={{ marginBottom: 20 }}>
-                                  {t_i18n('Replace operation will effectively replace this field values added in the context of this playbook such as enrichment or other knowledge manipulations but it will only append them if values are already written in the platform.')}
-                                </Alert>
-                              )}
-                              {(actionsInputs[i]?.op === 'replace' && actionsInputs[i]?.attribute === 'createdBy') && (
-                                <Alert severity="warning" style={{ marginBottom: 20 }}>
-                                  {t_i18n('Replace operation will effectively replace the author if the confidence level of the entity with the new author is superior to the one of the entity with the old author.')}
-                                </Alert>
-                              )}
-                              {(actionsInputs[i]?.op === 'remove') && (
-                                <Alert severity="warning" style={{ marginBottom: 20 }}>
-                                  {t_i18n('Remove operation will only apply on field values added in the context of this playbook such as enrichment or other knowledge manipulations but not if values are already written in the platform.')}
-                                </Alert>
-                              )}
-                              <div key={i} className={classes.step}>
-                                <IconButton
-                                  disabled={actionsInputs.length === 1}
-                                  aria-label="Delete"
-                                  className={classes.stepCloseButton}
-                                  onClick={() => {
-                                    handleRemoveStep(i);
-                                    setValues(
-                                      R.omit([`actions-${i}-value`], values),
-                                    );
-                                  }}
-                                  size="small"
-                                >
-                                  <CancelOutlined fontSize="small" />
-                                </IconButton>
-                                <Grid container={true} spacing={3}>
-                                  <Grid item xs={3}>
-                                    <FormControl className={classes.formControl}>
-                                      <InputLabel>{t_i18n('Action type')}</InputLabel>
-                                      <Select
-                                        variant="standard"
-                                        value={actionsInputs[i]?.op}
-                                        onChange={(event) => handleChangeActionInput(i, 'op', event.target.value)}
-                                      >
-                                        {(v.items?.properties?.op?.enum ?? ['add, replace, remove']).map((op) => (
-                                          <MenuItem key={op} value={op}>
-                                            {t_i18n(capitalizeFirstLetter(op))}
-                                          </MenuItem>
-                                        ))}
-                                      </Select>
-                                    </FormControl>
-                                  </Grid>
-                                  <Grid item xs={3}>
-                                    <FormControl className={classes.formControl}>
-                                      <InputLabel>{t_i18n('Field')}</InputLabel>
-                                      {renderFieldOptions(i, values, setValues)}
-                                    </FormControl>
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    {renderValuesOptions(i, setFieldValue)}
-                                  </Grid>
-                                </Grid>
-                              </div>
-                            </React.Fragment>
-                          ))}
-                        <div className={classes.add}>
-                          <Button
-                            disabled={!areStepsValid()}
-                            variant="contained"
-                            color="secondary"
-                            size="small"
-                            onClick={handleAddStep}
-                            classes={{ root: classes.buttonAdd }}
-                          >
-                            <AddOutlined fontSize="small" />
-                          </Button>
-                        </div>
-                      </div>
+                        actions={actionsInputs}
+                        onChange={setActionsInputs}
+                        operations={v.items?.properties?.op?.enum}
+                      />
                     );
                   }
                   if (v.type === 'number') {
