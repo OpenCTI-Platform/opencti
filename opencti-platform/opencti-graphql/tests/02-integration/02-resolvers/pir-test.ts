@@ -519,7 +519,7 @@ describe('PIR resolver standard behavior', () => {
       filters: [{
         key: [LAST_PIR_SCORE_DATE_FILTER],
         values: [
-          { key: 'score', values: [now().toString()], operator: 'gt' },
+          { key: 'date', values: [now().toString()], operator: 'gt' },
           { key: 'pir_ids', values: [pirInternalId1] },
         ],
       }],
