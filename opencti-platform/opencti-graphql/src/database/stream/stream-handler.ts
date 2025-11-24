@@ -144,7 +144,7 @@ export const storeNotificationEvent = async (_context: AuthContext, event: any) 
   const eventMessage = mapJSToStream(event);
   await streamClient.rawStoreNotificationEvent(eventMessage);
 };
-export const fetchRangeNotifications = async <T extends BaseEvent> (start: Date, end: Date): Promise<Array<T>> => {
+export const fetchRangeNotifications = async <T extends BaseEvent>(start: Date, end: Date): Promise<Array<T>> => {
   return streamClient.rawFetchRangeNotifications(start, end);
 };
 // endregion

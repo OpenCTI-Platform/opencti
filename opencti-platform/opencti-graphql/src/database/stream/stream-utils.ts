@@ -44,7 +44,7 @@ export type StreamInfo = {
 
 export interface RawStreamClient {
   initializeStreams: () => Promise<void>;
-  rawPushToStream: (rawEvents: string[]) => Promise<void>;
+  rawPushToStream: (rawEvent: string[]) => Promise<void>;
   rawFetchStreamInfo: (streamName?: string) => Promise<StreamInfo>;
   rawCreateStreamProcessor: <T extends BaseEvent> (
     provider: string,
