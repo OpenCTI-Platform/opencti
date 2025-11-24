@@ -43,7 +43,6 @@ export const addForm = async (
   try {
     parsedSchema = JSON.parse(input.form_schema);
   } catch (error) {
-    // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw FunctionalError(`Invalid JSON in form_schema: ${error}`);
   }
 
@@ -160,7 +159,6 @@ export const formEditField = async (
           throw FunctionalError(`Invalid form schema: ${JSON.stringify(validateSchema.errors)}`);
         }
       } catch (error) {
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         if (error instanceof FunctionalError) throw error;
         throw FunctionalError(`Invalid JSON in form_schema: ${error}`);
       }

@@ -45,7 +45,7 @@ export const platformStart = async () => {
       logApp.error('[OPENCTI] Modules startup failed', { cause: modulesError });
       throw modulesError;
     }
-  } catch (mainError) {
+  } catch (_mainError) {
     process.exit(1);
   }
 };

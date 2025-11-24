@@ -160,7 +160,7 @@ const decodeSearch = (search) => {
   let decodedSearch;
   try {
     decodedSearch = decodeURIComponent(search).trim();
-  } catch (e) {
+  } catch (_e) {
     decodedSearch = search.trim();
   }
   return decodedSearch;

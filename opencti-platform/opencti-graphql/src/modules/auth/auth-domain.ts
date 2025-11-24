@@ -191,7 +191,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
     };
     await sendMail(sendMailArgs, { identifier: userId, category: 'password-change' });
     return true;
-  } catch (error) {
+  } catch (_error) {
     throw UnsupportedError('Password change failed, please try again.');
   }
 };

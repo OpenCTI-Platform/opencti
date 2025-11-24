@@ -225,7 +225,7 @@ export const playbookExecutor = async ({
         previousStepBundle,
         bundle
       });
-    } catch (notifyError) {
+    } catch (_notifyError) {
       // For now any problem sending in notification will not be tracked
     }
   }

@@ -616,7 +616,7 @@ export const deleteQueues = async (context: AuthContext, user: AuthUser) => {
     const conn = platformConnectors[index];
     await unregisterConnector(conn.id);
   }
-  try { await unregisterExchanges(); } catch (e) { /* nothing */ }
+  try { await unregisterExchanges(); } catch (_e) { /* nothing */ }
 };
 // endregion
 

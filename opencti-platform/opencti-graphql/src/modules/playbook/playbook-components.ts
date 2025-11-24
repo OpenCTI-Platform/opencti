@@ -225,6 +225,7 @@ export const PLAYBOOK_INTERNAL_DATA_CRON: PlaybookComponent<CronConfiguration> =
   }
 };
 
+// eslint-disable-next-line  @typescript-eslint/no-empty-object-type
 interface IngestionConfiguration {}
 const PLAYBOOK_INGESTION_COMPONENT: PlaybookComponent<IngestionConfiguration> = {
   id: 'PLAYBOOK_INGESTION_COMPONENT',
