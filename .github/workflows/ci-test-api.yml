@@ -5,6 +5,7 @@ on:
 
 jobs:
   run-opencti-integration-test:
+    name: Integration tests
     runs-on: ubuntu-latest
 
     steps:
@@ -118,6 +119,7 @@ jobs:
       run: cat runner_resource_stat.log
 
   run-opencti-rules-test:
+    name: Rules and Taxii tests
     runs-on: ubuntu-latest
 
     steps:
@@ -188,6 +190,7 @@ jobs:
       run: cat runner_resource_stat.log
 
   run-opencti-api-non-integration-test:
+    name: Unit and others tests
     runs-on: ubuntu-latest
 
     steps:

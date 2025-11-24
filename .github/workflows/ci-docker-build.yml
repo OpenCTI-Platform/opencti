@@ -10,7 +10,7 @@ on:
 
 jobs:
   build-opencti-platform:
-    name: build-opencti-platform
+    name: Build OpenCTI Platform image
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v5
@@ -50,7 +50,7 @@ jobs:
         cache-to: type=registry,ref=filigran/platform:buildcache,mode=max
 
   build-opencti-worker:
-    name: build-opencti-worker
+    name: Build OpenCTI Worker image
     runs-on: ubuntu-latest
     outputs:
       tags: ${{ steps.meta.outputs.tags }}

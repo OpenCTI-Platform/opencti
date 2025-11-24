@@ -5,6 +5,7 @@ on:
 
 jobs:
   license-check:
+    name: License check
     runs-on: ubuntu-latest
     steps:
 

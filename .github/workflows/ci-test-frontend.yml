@@ -5,6 +5,7 @@ on:
 
 jobs:
   opencti-frontend-test:
+    name: Frontend tests
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
@@ -41,6 +42,7 @@ jobs:
 
 
   opencti-frontend-e2e-test:
+    name: Frontend e2e tests
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout
@@ -188,6 +190,7 @@ jobs:
 
 
   opencti-frontend-verify-translation:
+    name: Verify translation
     runs-on: ubuntu-latest
     steps:
     - name: OpenCTI checkout

@@ -4,8 +4,9 @@ on:
   workflow_call:
 
 jobs:
-  opencti-client-python-test:
+  client-python-test:
     runs-on: ubuntu-latest
+    name: pycti test - python ${{ matrix.python-version }}
     strategy:
       fail-fast: false
       matrix:
