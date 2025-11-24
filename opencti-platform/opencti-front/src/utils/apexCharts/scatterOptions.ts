@@ -1,5 +1,5 @@
 import { ApexOptions } from 'apexcharts';
-import { monthsAgo, now } from '../Time';
+import { daysAgo, now } from '../Time';
 import { colors } from '../Charts';
 import type { Theme } from '../../components/Theme';
 import type { ApexChartEvents, ApexChartLabels } from './apex';
@@ -72,7 +72,7 @@ export const scatterChartOptions = ({
   },
   xaxis: {
     type: 'datetime',
-    min: new Date(monthsAgo(2)).getTime(),
+    min: new Date(daysAgo(7)).getTime(),
     max: new Date(now()).getTime(),
     labels: {
       show: false,
