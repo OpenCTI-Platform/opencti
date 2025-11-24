@@ -8,6 +8,7 @@ import stixIndicators from '../../data/stream-events/stream-event-stix2-indicato
 import stixBundle from '../../data/filters/DATA-TEST-FILTERS.json';
 import type { FilterGroup } from '../../../src/generated/graphql';
 import { relationsCounter } from '../../utils/entityCountHelper';
+import { ME_FILTER_VALUE } from '../../../src/utils/filtering/filtering-constants';
 
 const stixReport = stixReports[0]; //  confidence 3, revoked=false, labels=report, TLP:TEST
 const stixIndicator = stixIndicators[0]; // confidence 75, revoked=true, no label
@@ -137,6 +138,30 @@ describe('Stix Filtering', () => {
 
     expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, filterGroup, MOCK_RESOLUTION_MAP)).toEqual(true);
     expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixIndicator, filterGroup, MOCK_RESOLUTION_MAP)).toEqual(true);
+  });
+
+  it('matches stix object with filters with @me value in filters', async () => {
+    const filterGroup = {
+      mode: 'and',
+      filters: [{
+        key: ['entity_type'],
+        mode: 'or',
+        operator: 'eq',
+        values: ['Report']
+      }, {
+        key: ['creator_id'],
+        mode: 'or',
+        operator: 'eq',
+        values: [ME_FILTER_VALUE]
+      }],
+      filterGroups: [],
+    } as FilterGroup;
+
+    // ADMIN_USER is the creator of the stixReport
+    expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixReport, filterGroup, MOCK_RESOLUTION_MAP)).toEqual(true);
+    // WHITE_USER is not a creator of the stixReport
+    const WHITE_USER = buildStandardUser([WHITE_TLP]);
+    expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, WHITE_USER, stixReport, filterGroup, MOCK_RESOLUTION_MAP)).toEqual(false);
   });
 
   //--------------------------------------------------------------------------------------------------------------------
