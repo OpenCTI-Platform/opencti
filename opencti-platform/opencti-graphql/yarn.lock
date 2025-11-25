@@ -12304,6 +12304,7 @@ __metadata:
     passport-ldapauth: "npm:3.0.1"
     passport-local: "npm:1.0.0"
     python-shell: "npm:5.0.0"
+    rabbitmq-stream-js-client: "npm:0.6.2"
     ramda: "npm:0.32.0"
     rate-limiter-flexible: "npm:8.2.1"
     semver: "npm:7.7.3"
@@ -12956,6 +12957,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rabbitmq-stream-js-client@npm:0.6.2":
+  version: 0.6.2
+  resolution: "rabbitmq-stream-js-client@npm:0.6.2"
+  dependencies:
+    semver: "npm:^7.5.4"
+  checksum: 10c0/ef06884367050bd90ee4e5897a4bcd8773beb94029723d9d418cc935a47f50fd6ab6283484f0632650bb428b7a746b1330d776a69c83972446e60e69c76e43ff
+  languageName: node
+  linkType: hard
+
 "ramda@npm:0.32.0":
   version: 0.32.0
   resolution: "ramda@npm:0.32.0"
@@ -13519,7 +13529,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:7.7.3, semver@npm:^7.6.0":
+"semver@npm:7.7.3, semver@npm:^7.5.4, semver@npm:^7.6.0":
   version: 7.7.3
   resolution: "semver@npm:7.7.3"
   bin:
