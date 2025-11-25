@@ -31,6 +31,15 @@ const stixCoreObjectsTimelineQuery = graphql`
           id
           entity_type
           created_at
+          updated_at
+          ... on StixDomainObject  {
+            modified
+            created
+          }
+          ... on Event {
+            start_time
+            stop_time
+          }
           createdBy {
             ... on Identity {
               id
@@ -105,7 +114,7 @@ const StixCoreObjectsTimeline = ({
                 link,
               };
             });
-            return <WidgetTimeline data={data} />;
+            return <WidgetTimeline data={data} dateAttribute={dateAttribute} />;
           }
           if (props) {
             return <WidgetNoData />;

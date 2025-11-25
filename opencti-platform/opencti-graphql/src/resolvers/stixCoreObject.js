@@ -106,7 +106,7 @@ const stixCoreObjectResolvers = {
       /* v8 ignore next */
       return 'Unknown';
     },
-    toStix: (stixCoreObject, _, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id),
+    toStix: (stixCoreObject, args, context) => stixLoadByIdStringify(context, context.user, stixCoreObject.id, args),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     // region batch loaded through rel de-normalization. Cant be ordered of filtered
     createdBy: (stixCoreObject, _, context) => loadThroughDenormalized(context, context.user, stixCoreObject, INPUT_CREATED_BY),

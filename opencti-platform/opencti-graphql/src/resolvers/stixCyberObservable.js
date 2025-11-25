@@ -67,7 +67,7 @@ const stixCyberObservableResolvers = {
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
     stixCoreRelationships: (rel, args, context) => stixCoreRelationshipsPaginated(context, context.user, rel.id, args),
-    toStix: (stixCyberObservable, _, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id),
+    toStix: (stixCyberObservable, args, context) => stixLoadByIdStringify(context, context.user, stixCyberObservable.id, args),
     importFiles: (stixCyberObservable, { first }, context) => {
       const path = `import/${stixCyberObservable.entity_type}/${stixCyberObservable.id}`;
       const opts = { first, entity_type: stixCyberObservable.entity_type };

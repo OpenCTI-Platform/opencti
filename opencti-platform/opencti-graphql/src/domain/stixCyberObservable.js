@@ -43,7 +43,7 @@ import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteR
 import { addFilter } from '../utils/filtering/filtering-utils';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
-import { uploadToStorage } from '../database/file-storage-helper';
+import { uploadToStorage } from '../database/file-storage';
 import { isNumericAttribute } from '../schema/schema-attributes';
 
 export const findById = (context, user, stixCyberObservableId) => {

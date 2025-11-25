@@ -334,6 +334,8 @@ export const publicStixRelationshipsMultiTimeSeries = async (
     return {
       field: selection.date_attribute,
       filters,
+      dynamicFrom: selection.dynamicFrom,
+      dynamicTo: selection.dynamicTo,
     };
   });
 

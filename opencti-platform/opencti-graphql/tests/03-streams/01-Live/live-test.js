@@ -4,7 +4,7 @@ import { ADMIN_USER, FIVE_MINUTES, SYNC_LIVE_EVENTS_SIZE, testContext } from '..
 import { checkInstanceDiff, checkStreamGenericContent, fetchStreamEvents } from '../../utils/testStream';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { elAggregationCount } from '../../../src/database/engine';
-import { convertStoreToStix, convertTypeToStixType } from '../../../src/database/stix-2-1-converter';
+import { convertStoreToStix_2_1, convertTypeToStixType } from '../../../src/database/stix-2-1-converter';
 import { utcDate } from '../../../src/utils/format';
 import { PORT } from '../../../src/config/conf';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
@@ -47,7 +47,7 @@ describe('Live streams tests', () => {
     async () => {
       // Check the stream rebuild
       const report = await storeLoadByIdWithRefs(testContext, ADMIN_USER, 'report--f2b63e80-b523-4747-a069-35c002c690db');
-      const stixReport = convertStoreToStix(report);
+      const stixReport = convertStoreToStix_2_1(report);
       const now = utcDate().toISOString();
       const events = await fetchStreamEvents(`http://127.0.0.1:${PORT}/stream/live?from=0&recover=${now}`);
       writeTestDataToFile(JSON.stringify(events), 'live-test-all-event.json');

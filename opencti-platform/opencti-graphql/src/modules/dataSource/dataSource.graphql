@@ -101,7 +101,7 @@ type DataSource implements BasicObject & StixObject & StixCoreObject & StixDomai
     avatar: OpenCtiFile
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(version: Version): String
     importFiles(
     first: Int
     prefixMimeType: String

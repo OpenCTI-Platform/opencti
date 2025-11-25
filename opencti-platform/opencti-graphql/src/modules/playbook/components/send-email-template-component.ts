@@ -54,7 +54,7 @@ export const PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT: PlaybookComponent<SendEmail
     const emailSend = async (user_id: string) => {
       try {
         await sendEmailToUser(context, AUTOMATION_MANAGER_USER, { target_user_id: user_id, email_template_id: email_template });
-      } catch (err) {
+      } catch (_err) {
         logApp.warn('Could not send email to user', { user_id });
       }
     };

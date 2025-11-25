@@ -37,7 +37,7 @@ const subscription = graphql`
     stixDomainObject(id: $id) {
       ... on Organization {
         ...Organization_organization
-        ...OrganizationEditionContainer_organization
+        ...OrganizationEditionOverview_organization
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity

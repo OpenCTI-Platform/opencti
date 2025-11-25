@@ -696,7 +696,7 @@ describe('buildFiltersAndOptionsForWidgets', () => {
     };
     const expectedFilters = {
       mode: 'and',
-      filters: [{ key: 'entity_type', values: ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object'], operator: 'eq', mode: 'or' }],
+      filters: [{ key: 'entity_type', values: ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object', 'object-label'], operator: 'eq', mode: 'or' }],
       filterGroups: [inputFilters],
     };
     const { filters } = buildFiltersAndOptionsForWidgets(inputFilters, { isKnowledgeRelationshipWidget: true });

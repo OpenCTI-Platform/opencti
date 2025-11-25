@@ -115,7 +115,7 @@ const SettingsOrganizationEdition = ({
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const basicShape = {
-    name: Yup.string().trim().min(2).required(t_i18n('This field is required')),
+    name: Yup.string().trim().min(1).required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),

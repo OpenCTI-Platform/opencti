@@ -33,6 +33,16 @@ import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/st
 import { isStixRefRelationship } from '../../schema/stixRefRelationship';
 import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
 import { isStixSightingRelationship, STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
+import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { deleteAllDraftFiles } from '../../database/file-storage-helper';
+import { isStixRelationshipExceptRef } from '../../schema/stixRelationship';
+import { isStixDomainObject, isStixDomainObjectContainer } from '../../schema/stixDomainObject';
+import { isStixCyberObservable } from '../../schema/stixCyberObservable';
+import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
+import { deleteAllDraftFiles } from '../../database/file-storage';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import type { AuthContext, AuthUser } from '../../types/user';

@@ -5,8 +5,9 @@ import { SEMRESATTRS_SERVICE_NAME, SEMRESATTRS_SERVICE_VERSION } from '@opentele
 import { SEMRESATTRS_SERVICE_INSTANCE_ID } from '@opentelemetry/semantic-conventions/build/src/resource/SemanticResourceAttributes';
 import { TELEMETRY_SERVICE_NAME, TelemetryMeterManager } from '../../../src/telemetry/TelemetryMeterManager';
 import { PLATFORM_VERSION } from '../../../src/config/conf';
-import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATION } from '../../../src/manager/telemetryManager';
-import { redisClearTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
+import { addDisseminationCount, fetchTelemetryData, TELEMETRY_GAUGE_DISSEMINATION, TELEMETRY_GAUGE_DRAFT_CREATION } from '../../../src/manager/telemetryManager';
+import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../../../src/database/redis';
+import { waitInSec } from '../../../src/database/utils';
 
 describe('Telemetry manager test coverage', () => {
   test('Verify that metrics get collected from both elastic and redis', async () => {
@@ -25,6 +26,10 @@ describe('Telemetry manager test coverage', () => {
     filigranTelemetryMeterManager.registerFiligranTelemetry();
     // AND Given starting from clean state in redis
     await redisClearTelemetry();
+    const disseminationGaugeValueReset = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
+    expect(disseminationGaugeValueReset).toBe(0);
+    const draftGaugeValue = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_CREATION);
+    expect(draftGaugeValue).toBe(0);
 
     // AND GIVEN some "user event" from this node
     const DISSEMINATION_EVENT_NODE1 = 5;
@@ -34,6 +39,20 @@ describe('Telemetry manager test coverage', () => {
     }
     // AND GIVEN some "user event" from another node (simulated by a direct redis update)
     await redisSetTelemetryAdd(TELEMETRY_GAUGE_DISSEMINATION, DISSEMINATION_EVENT_NODE2);
+
+    const loopCount = 3; // 3' max
+    let loopCurrent = 0;
+
+    const isRedisUpdatedCallback = async () => {
+      const disseminationGaugeValue = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
+      return disseminationGaugeValue === (DISSEMINATION_EVENT_NODE1 + DISSEMINATION_EVENT_NODE2);
+    };
+    let isRedisUpdated = await isRedisUpdatedCallback();
+    while (!isRedisUpdated && loopCurrent < loopCount) {
+      await waitInSec(1);
+      isRedisUpdated = await isRedisUpdatedCallback();
+      loopCurrent += 1;
+    }
 
     // WHEN data is fetched from elastic (platform wide gauges) and redis (user event gauge)
     await fetchTelemetryData(filigranTelemetryMeterManager);

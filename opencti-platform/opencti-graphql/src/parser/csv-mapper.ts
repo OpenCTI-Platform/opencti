@@ -46,7 +46,7 @@ export const formatValue = (value: string | boolean, type: AttrType, column: Att
         return DateTime.fromFormat(value, pattern_date).toUTC().toISO();
       }
       return DateTime.fromISO(value).toUTC().toISO();
-    } catch (error: any) {
+    } catch (_error: any) {
       return null;
     }
   }

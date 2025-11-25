@@ -1,9 +1,10 @@
+import functools
 import os
 import signal
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List
 
 import pika
 import yaml
@@ -21,6 +22,7 @@ from pycti.connector.opencti_connector_helper import (
 from message_queue_consumer import MessageQueueConsumer
 from listen_handler import ListenHandler
 from push_handler import PushHandler
+from thread_pool_selector import ThreadPoolSelector
 
 # Telemetry variables definition
 meter = metrics.get_meter(__name__)
@@ -81,14 +83,14 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             ["opencti", "execution_pool_size"],
             config,
             True,
-            default=5,
+            default=2,
         )
         self.opencti_realtime_pool_size = get_config_variable(
             "OPENCTI_REALTIME_EXECUTION_POOL_SIZE",
             ["opencti", "realtime_execution_pool_size"],
             config,
             True,
-            default=5,
+            default=3,
         )
         self.listen_pool_size = get_config_variable(
             "WORKER_LISTEN_POOL_SIZE",
@@ -220,13 +222,26 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
         realtime_push_execution_pool = ThreadPoolExecutor(
             max_workers=self.opencti_realtime_pool_size
         )
+
+        push_thread_pool_selector = ThreadPoolSelector(
+            self.opencti_pool_size,
+            push_execution_pool,
+            self.opencti_realtime_pool_size,
+            realtime_push_execution_pool,
+        )
+
         listen_execution_pool = ThreadPoolExecutor(max_workers=self.listen_pool_size)
+        def listen_execution_pool_submit(task: Callable[[], None]):
+            return listen_execution_pool.submit(task)
 
         while not self.exit_event.is_set():
             try:
                 # Telemetry
                 max_ingestion_units_count.set(self.opencti_pool_size)
-                running_ingestion_units_gauge.set(len(push_execution_pool._threads))
+                running_ingestion_units_gauge.set(
+                    len(push_execution_pool._threads)
+                    + len(realtime_push_execution_pool._threads)
+                )
 
                 # Fetch queue configuration from API
                 queues: List[Any] = []
@@ -264,16 +279,16 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             bundles_processing_time_gauge,
                             self.objects_max_refs,
                         )
-                        execution_pool = push_execution_pool
-                        # TODO to be reactivate until global thread pool size remain the same, so we avoid unexpected platform overloading
-                        # if is_priority_connector(connector["connector_priority_group"]):
-                        #     execution_pool = realtime_push_execution_pool
+                        is_realtime = is_priority_connector(
+                            connector["connector_priority_group"]
+                        )
+
                         self.consumers[push_queue] = MessageQueueConsumer(
                             self.worker_logger,
                             "push",
                             push_queue,
                             pika_parameters,
-                            execution_pool,
+                            functools.partial(push_thread_pool_selector.submit, is_realtime),
                             push_handler.handle_message,
                         )
 
@@ -297,7 +312,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                                 "listen",
                                 listen_queue,
                                 self.build_pika_parameters(connector_config),
-                                listen_execution_pool,
+                                listen_execution_pool_submit,
                                 listen_handler.handle_message,
                             )
 

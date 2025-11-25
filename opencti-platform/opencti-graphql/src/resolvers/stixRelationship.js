@@ -47,7 +47,7 @@ const stixRelationshipResolvers = {
       return filterMembersWithUsersOrgs(context, context.user, creators);
     },
     createdBy: (rel, _, context) => loadThroughDenormalized(context, context.user, rel, INPUT_CREATED_BY),
-    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
+    toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),
     objectMarking: (rel, _, context) => context.batch.markingsBatchLoader.load(rel, context, context.user),
     // eslint-disable-next-line
     __resolveType(obj) {

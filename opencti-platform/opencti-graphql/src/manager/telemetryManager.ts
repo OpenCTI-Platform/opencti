@@ -19,11 +19,13 @@ import { getHttpClient } from '../utils/http-client';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { elCount } from '../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { FilterMode } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
+import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -54,7 +56,6 @@ export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
 export const TELEMETRY_GAUGE_USER_INTO_SERVICE_ACCOUNT = 'userIntoServiceAccountCount';
 export const TELEMETRY_GAUGE_SERVICE_ACCOUNT_INTO_USER = 'serviceAccountIntoUserCount';
 export const TELEMETRY_GAUGE_USER_EMAIL_SEND = 'userEmailSendCount';
-export const TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND = 'onboardingEmailSendCount';
 export const TELEMETRY_BACKGROUND_TASK_USER = 'userBackgroundTaskCount';
 export const TELEMETRY_EMAIL_TEMPLATE_CREATED = 'emailTemplateCreatedCount';
 export const TELEMETRY_FORGOT_PASSWORD = 'forgotPasswordCount';
@@ -100,9 +101,6 @@ export const addServiceAccountIntoUserCount = async () => {
 export const addUserEmailSendCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_USER_EMAIL_SEND, 1);
 };
-export const addOnboardingEmailSendCount = async () => {
-  await redisSetTelemetryAdd(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND, 1);
-};
 
 export const addFormIntakeCreatedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_CREATED, 1);
@@ -119,12 +117,15 @@ export const addFormIntakeDeletedCount = async () => {
 export const addFormIntakeSubmittedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORM_INTAKE_SUBMITTED, 1);
 };
+
 export const addUserBackgroundTaskCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_BACKGROUND_TASK_USER, 1);
 };
+
 export const addEmailTemplateCreatedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_EMAIL_TEMPLATE_CREATED, 1);
 };
+
 export const addForgotPasswordCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_FORGOT_PASSWORD, 1);
 };
@@ -256,6 +257,26 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setPirCount(pirs.length);
     // endregion
 
+    // region SSO providers configuration
+    manager.setSsoLocalStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LOCAL) ? 1 : 0);
+    manager.setSsoOpenidStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_OPENID) ? 1 : 0);
+    manager.setSsoLDAPStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_LDAP) ? 1 : 0);
+    manager.setSsoSAMLStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_SAML) ? 1 : 0);
+    manager.setSsoAuthZeroStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_AUTH0) ? 1 : 0);
+    manager.setSsoCertStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_CERT) ? 1 : 0);
+    manager.setSsoHeaderStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_HEADER) ? 1 : 0);
+    manager.setSsoFacebookStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_FACEBOOK) ? 1 : 0);
+    manager.setSsoGoogleStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GOOGLE) ? 1 : 0);
+    manager.setSsoGithubStrategyEnabled(isStrategyActivated(StrategyType.STRATEGY_GITHUB) ? 1 : 0);
+    // endregion SSO providers
+
+    // region Security Coverages
+    const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
+      types: [ENTITY_TYPE_SECURITY_COVERAGE]
+    });
+    manager.setSecurityCoveragesCount(securityCoveragesCount);
+    // endregion
+
     // region Telemetry user events
     const disseminationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DISSEMINATION);
     manager.setDisseminationCount(disseminationCountInRedis);
@@ -279,8 +300,6 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setServiceAccountIntoUserCount(serviceAccountIntoUserCountInRedis);
     const emailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_USER_EMAIL_SEND);
     manager.setUserEmailSendCount(emailSendCountInRedis);
-    const onboardingEmailSendCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_ONBOARDING_EMAIL_SEND);
-    manager.setOnboardingEmailSendCount(onboardingEmailSendCountInRedis);
     const userBackgroundTaskCountInRedis = await redisGetTelemetry(TELEMETRY_BACKGROUND_TASK_USER);
     manager.setUserBackgroundTaskCount(userBackgroundTaskCountInRedis);
     const emailTemplateCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_EMAIL_TEMPLATE_CREATED);
@@ -291,6 +310,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setConnectorDeployedCount(connectorDeployedCountInRedis);
     const userLoginCountInRedis = await redisGetTelemetry(TELEMETRY_USER_LOGIN);
     manager.setUserLoginCount(userLoginCountInRedis);
+    const formIntakeCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_CREATED);
+    manager.setFormIntakeCreatedCount(formIntakeCreatedCountInRedis);
+    const formIntakeUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_UPDATED);
+    manager.setFormIntakeUpdatedCount(formIntakeUpdatedCountInRedis);
+    const formIntakeDeletedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_DELETED);
+    manager.setFormIntakeDeletedCount(formIntakeDeletedCountInRedis);
+    const formIntakeSubmittedCountInRedis = await redisGetTelemetry(TELEMETRY_FORM_INTAKE_SUBMITTED);
+    manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     // end region Telemetry user events
 
     logApp.debug('[TELEMETRY] Fetching telemetry data successfully');

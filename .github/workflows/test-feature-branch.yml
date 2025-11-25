@@ -22,7 +22,7 @@ jobs:
     name: build-worker
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -51,7 +51,7 @@ jobs:
     name: build-platform
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Docker meta
         id: meta

@@ -99,7 +99,7 @@ export function refang(input) {
 
         // Replace original URL in output with rebuilt URL
         output = output.replace(matchedUrl, rebuilturl);
-      } catch (e) {
+      } catch (_e) {
         // Skip malformed match, continue processing the rest
         // Do NOT reset output or lose prior replacements
       }

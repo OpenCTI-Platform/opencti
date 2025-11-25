@@ -132,7 +132,7 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     x_opencti_aliases: [String]
     # Technical
     creators: [Creator!]
-    toStix: String
+    toStix(version: Version): String
     importFiles(
     first: Int
     prefixMimeType: String

@@ -301,6 +301,11 @@ export type AdministrativeAreaStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type AdministrativeAreaToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type AdministrativeAreaAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -635,6 +640,11 @@ export type ArtifactStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type ArtifactToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type ArtifactAddInput = {
   decryption_key?: InputMaybe<Scalars['String']['input']>;
   encryption_algorithm?: InputMaybe<Scalars['String']['input']>;
@@ -911,6 +921,11 @@ export type AttackPatternSubAttackPatternsArgs = {
   orderBy?: InputMaybe<AttackPatternsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type AttackPatternToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type AttackPatternAddInput = {
@@ -1324,6 +1339,11 @@ export type AutonomousSystemStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type AutonomousSystemToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type AutonomousSystemAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
@@ -1649,6 +1669,11 @@ export type BankAccountStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type BankAccountToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type BankAccountAddInput = {
   account_number?: InputMaybe<Scalars['String']['input']>;
   bic?: InputMaybe<Scalars['String']['input']>;
@@ -1903,6 +1928,11 @@ export type CampaignStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type CampaignToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type CampaignAddInput = {
@@ -2318,6 +2348,11 @@ export type CaseStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type CaseToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type CaseConnection = {
   __typename?: 'CaseConnection';
   edges?: Maybe<Array<Maybe<CaseEdge>>>;
@@ -2581,6 +2616,11 @@ export type CaseIncidentStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type CaseIncidentToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type CaseIncidentAddInput = {
@@ -2898,6 +2938,11 @@ export type CaseRfiStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type CaseRfiToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type CaseRfiAddInput = {
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   caseTemplates?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -3208,6 +3253,11 @@ export type CaseRftStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type CaseRftToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type CaseRftAddInput = {
@@ -3566,6 +3616,11 @@ export type ChannelStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type ChannelToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type ChannelAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   channel_types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -3840,6 +3895,11 @@ export type CityStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type CityToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type CityAddInput = {
@@ -4621,6 +4681,11 @@ export type CountryStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type CountryToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type CountryAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -4896,6 +4961,11 @@ export type CourseOfActionStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type CourseOfActionToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type CourseOfActionAddInput = {
@@ -5202,6 +5272,11 @@ export type CredentialStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type CredentialToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type CredentialAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
@@ -5401,6 +5476,11 @@ export type CryptocurrencyWalletStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type CryptocurrencyWalletToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type CryptocurrencyWalletAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
@@ -5598,6 +5678,11 @@ export type CryptographicKeyStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type CryptographicKeyToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type CryptographicKeyAddInput = {
@@ -5961,6 +6046,11 @@ export type DataComponentStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type DataComponentToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type DataComponentAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -6212,6 +6302,11 @@ export type DataSourceStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type DataSourceToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type DataSourceAddInput = {
@@ -6636,6 +6731,11 @@ export type DirectoryStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type DirectoryToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type DirectoryAddInput = {
   atime?: InputMaybe<Scalars['DateTime']['input']>;
   ctime?: InputMaybe<Scalars['DateTime']['input']>;
@@ -6914,6 +7014,11 @@ export type DomainNameStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type DomainNameToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type DomainNameAddInput = {
@@ -7262,6 +7367,11 @@ export type EmailAddrStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type EmailAddrToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type EmailAddrAddInput = {
   display_name?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
@@ -7466,6 +7576,11 @@ export type EmailMessageStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type EmailMessageToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type EmailMessageAddInput = {
@@ -7673,6 +7788,11 @@ export type EmailMimePartTypeStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type EmailMimePartTypeToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type EmailMimePartTypeAddInput = {
@@ -7977,6 +8097,11 @@ export type EventStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type EventToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type EventAddInput = {
@@ -8586,6 +8711,11 @@ export type FeedbackStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type FeedbackToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type FeedbackAddInput = {
@@ -9290,6 +9420,11 @@ export type GroupingStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type GroupingToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type GroupingAddInput = {
   authorized_members?: InputMaybe<Array<MemberAccessInput>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -9558,6 +9693,11 @@ export type HashedObservableStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type HashedObservableToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type HeaderInput = {
   name: Scalars['String']['input'];
   value: Scalars['String']['input'];
@@ -9764,6 +9904,11 @@ export type HostnameStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type HostnameToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type HostnameAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
@@ -9962,6 +10107,11 @@ export type IPv4AddrStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type IPv4AddrToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type IPv4AddrAddInput = {
@@ -10164,6 +10314,11 @@ export type IPv6AddrStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type IPv6AddrToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type IPv6AddrAddInput = {
@@ -10378,6 +10533,11 @@ export type IdentityStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type IdentityToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type IdentityAddInput = {
@@ -10675,6 +10835,11 @@ export type IncidentStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type IncidentToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type IncidentAddInput = {
@@ -11026,6 +11191,11 @@ export type IndicatorStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type IndicatorToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type IndicatorAddInput = {
   basedOn?: InputMaybe<Array<Scalars['String']['input']>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -11319,6 +11489,11 @@ export type IndividualStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type IndividualToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type IndividualAddInput = {
@@ -11623,6 +11798,11 @@ export type InfrastructureStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type InfrastructureToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type InfrastructureAddInput = {
@@ -12297,6 +12477,11 @@ export type IntrusionSetStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type IntrusionSetToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type IntrusionSetAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -12614,6 +12799,11 @@ export type Label = BasicObject & StixMetaObject & StixObject & {
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
+
+export type LabelToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type LabelAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   color?: InputMaybe<Scalars['String']['input']>;
@@ -12866,6 +13056,11 @@ export type LanguageStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type LanguageToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type LanguageAddInput = {
@@ -13135,6 +13330,11 @@ export type LocationStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type LocationToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type LocationAddInput = {
@@ -13466,6 +13666,11 @@ export type MacAddrStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type MacAddrToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type MacAddrAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
@@ -13682,6 +13887,11 @@ export type MalwareStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MalwareToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type MalwareAddInput = {
@@ -13947,6 +14157,11 @@ export type MalwareAnalysisStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type MalwareAnalysisToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type MalwareAnalysisAddInput = {
   analysisSample?: InputMaybe<Scalars['String']['input']>;
   analysisSco?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -14154,6 +14369,11 @@ export type MarkingDefinition = BasicObject & StixMetaObject & StixObject & {
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_order: Scalars['Int']['output'];
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
+};
+
+
+export type MarkingDefinitionToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type MarkingDefinitionAddInput = {
@@ -14502,6 +14722,11 @@ export type MediaContentStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MediaContentToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type MediaContentAddInput = {
@@ -17716,6 +17941,11 @@ export type MutexStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type MutexToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type MutexAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
@@ -17933,6 +18163,11 @@ export type NarrativeStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type NarrativeToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type NarrativeAddInput = {
@@ -18187,6 +18422,11 @@ export type NetworkTrafficStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type NetworkTrafficToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type NetworkTrafficAddInput = {
@@ -18451,6 +18691,11 @@ export type NoteStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type NoteToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type NoteAddInput = {
@@ -18946,6 +19191,11 @@ export type ObservedDataStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type ObservedDataToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type ObservedDataAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -19283,6 +19533,11 @@ export type OpinionStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type OpinionToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type OpinionAddInput = {
@@ -19632,6 +19887,11 @@ export type OrganizationStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type OrganizationToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type OrganizationAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -19941,6 +20201,11 @@ export type PaymentCardStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type PaymentCardToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type PaymentCardAddInput = {
   card_number: Scalars['String']['input'];
   cvv?: InputMaybe<Scalars['Int']['input']>;
@@ -20144,6 +20409,11 @@ export type PersonaStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type PersonaToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type PersonaAddInput = {
   persona_name: Scalars['String']['input'];
   persona_type: Scalars['String']['input'];
@@ -20341,6 +20611,11 @@ export type PhoneNumberStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type PhoneNumberToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type PhoneNumberAddInput = {
@@ -20555,6 +20830,8 @@ export type PlatformEe = {
   license_expiration_date: Scalars['DateTime']['output'];
   license_expiration_prevention: Scalars['Boolean']['output'];
   license_expired: Scalars['Boolean']['output'];
+  license_extra_expiration: Scalars['Boolean']['output'];
+  license_extra_expiration_days?: Maybe<Scalars['Int']['output']>;
   license_global: Scalars['Boolean']['output'];
   license_platform: Scalars['String']['output'];
   license_platform_match: Scalars['Boolean']['output'];
@@ -20889,6 +21166,11 @@ export type PositionStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type PositionToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type PositionAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -21190,6 +21472,11 @@ export type ProcessStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type ProcessToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type ProcessAddInput = {
@@ -24964,6 +25251,11 @@ export type RegionStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type RegionToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type RegionAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -25320,6 +25612,11 @@ export type ReportStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type ReportToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type ReportAddInput = {
@@ -25881,6 +26178,11 @@ export type SshKeyStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type SshKeyToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type SshKeyAddInput = {
   comment?: InputMaybe<Scalars['String']['input']>;
   created?: InputMaybe<Scalars['DateTime']['input']>;
@@ -26149,6 +26451,11 @@ export type SectorStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type SectorToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type SectorAddInput = {
@@ -26449,6 +26756,11 @@ export type SecurityCoverageStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type SecurityCoverageToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type SecurityCoverageAddInput = {
   auto_enrichment_disable: Scalars['Boolean']['input'];
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -26711,6 +27023,11 @@ export type SecurityPlatformStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type SecurityPlatformToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type SecurityPlatformAddInput = {
@@ -27091,6 +27408,11 @@ export type SoftwareStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type SoftwareToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type SoftwareAddInput = {
   cpe?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
@@ -27377,6 +27699,11 @@ export type StixCoreObjectStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type StixCoreObjectToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type StixCoreObjectConnection = {
@@ -27685,6 +28012,11 @@ export type StixCoreRelationshipStixCoreRelationshipsArgs = {
   stopTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
   toId?: InputMaybe<Scalars['StixRef']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type StixCoreRelationshipToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type StixCoreRelationshipAddInput = {
@@ -28054,6 +28386,11 @@ export type StixCyberObservableStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type StixCyberObservableToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type StixCyberObservableConnection = {
   __typename?: 'StixCyberObservableConnection';
   edges: Array<StixCyberObservableEdge>;
@@ -28353,6 +28690,11 @@ export type StixDomainObjectStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type StixDomainObjectToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type StixDomainObjectAddInput = {
@@ -28748,6 +29090,11 @@ export type StixFileStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type StixFileToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type StixFileAddInput = {
   atime?: InputMaybe<Scalars['DateTime']['input']>;
   ctime?: InputMaybe<Scalars['DateTime']['input']>;
@@ -28950,6 +29297,11 @@ export type StixRefRelationshipReportsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
+export type StixRefRelationshipToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type StixRefRelationshipAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -29050,6 +29402,11 @@ export type StixRelationship = {
   updated_at: Scalars['DateTime']['output'];
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
+};
+
+
+export type StixRelationshipToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type StixRelationshipConnection = {
@@ -29215,6 +29572,11 @@ export type StixSightingRelationshipOpinionsArgs = {
 
 export type StixSightingRelationshipReportsArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type StixSightingRelationshipToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type StixSightingRelationshipAddInput = {
@@ -29908,6 +30270,11 @@ export type SystemStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type SystemToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type SystemAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -30236,6 +30603,11 @@ export type TaskStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type TaskToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type TaskAddInput = {
@@ -30575,6 +30947,11 @@ export type TextStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type TextToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type TextAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
@@ -30856,6 +31233,11 @@ export type ThreatActorStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type ThreatActorToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type ThreatActorConnection = {
   __typename?: 'ThreatActorConnection';
   edges?: Maybe<Array<Maybe<ThreatActorEdge>>>;
@@ -31082,6 +31464,11 @@ export type ThreatActorGroupStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type ThreatActorGroupToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type ThreatActorGroupAddInput = {
@@ -31389,6 +31776,11 @@ export type ThreatActorIndividualStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type ThreatActorIndividualToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type ThreatActorIndividualAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   bornIn?: InputMaybe<Scalars['String']['input']>;
@@ -31693,6 +32085,11 @@ export type ToolStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type ToolToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type ToolAddInput = {
   aliases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
@@ -31970,6 +32367,11 @@ export type TrackingNumberStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type TrackingNumberToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type TrackingNumberAddInput = {
@@ -32306,6 +32708,11 @@ export type UrlStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type UrlToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type UrlAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
@@ -32593,6 +33000,11 @@ export type UserAccountStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type UserAccountToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type UserAccountAddInput = {
   account_created?: InputMaybe<Scalars['DateTime']['input']>;
   account_expires?: InputMaybe<Scalars['DateTime']['input']>;
@@ -32828,6 +33240,11 @@ export type UserAgentStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type UserAgentToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type UserAgentAddInput = {
   file?: InputMaybe<Scalars['Upload']['input']>;
   value?: InputMaybe<Scalars['String']['input']>;
@@ -32946,6 +33363,11 @@ export type VerifyOtpInput = {
   otp: Scalars['String']['input'];
   transactionId: Scalars['String']['input'];
 };
+
+export enum Version {
+  Stix_2_0 = 'stix_2_0',
+  Stix_2_1 = 'stix_2_1'
+}
 
 export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'Vocabulary';
@@ -33352,6 +33774,11 @@ export type VulnerabilityStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type VulnerabilityToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type VulnerabilityAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   confidence?: InputMaybe<Scalars['Int']['input']>;
@@ -33728,6 +34155,11 @@ export type WindowsRegistryKeyStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type WindowsRegistryKeyToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type WindowsRegistryKeyAddInput = {
   attribute_key?: InputMaybe<Scalars['String']['input']>;
   file?: InputMaybe<Scalars['Upload']['input']>;
@@ -33929,6 +34361,11 @@ export type WindowsRegistryValueTypeStixCoreRelationshipsDistributionArgs = {
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   toRole?: InputMaybe<Scalars['String']['input']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type WindowsRegistryValueTypeToStixArgs = {
+  version?: InputMaybe<Version>;
 };
 
 export type WindowsRegistryValueTypeAddInput = {
@@ -34336,6 +34773,11 @@ export type X509CertificateStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
 };
 
+
+export type X509CertificateToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
 export type X509CertificateAddInput = {
   authority_key_identifier?: InputMaybe<Scalars['String']['input']>;
   basic_constraints?: InputMaybe<Scalars['String']['input']>;
@@ -34383,7 +34825,7 @@ export type ResolverTypeWrapper<T> = Promise<T> | T;
 export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
   resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
 };
-export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> = ResolverFn<TResult, TParent, TContext, TArgs> | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
+export type Resolver<TResult, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> = ResolverFn<TResult, TParent, TContext, TArgs> | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -34420,27 +34862,29 @@ export type SubscriptionObject<TResult, TKey extends string, TParent, TContext, 
   | SubscriptionSubscriberObject<TResult, TKey, TParent, TContext, TArgs>
   | SubscriptionResolverObject<TResult, TParent, TContext, TArgs>;
 
-export type SubscriptionResolver<TResult, TKey extends string, TParent = {}, TContext = {}, TArgs = {}> =
+export type SubscriptionResolver<TResult, TKey extends string, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> =
   | ((...args: any[]) => SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>)
   | SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>;
 
-export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
+export type TypeResolveFn<TTypes, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>> = (
   parent: TParent,
   context: TContext,
   info: GraphQLResolveInfo
 ) => Maybe<TTypes> | Promise<Maybe<TTypes>>;
 
-export type IsTypeOfResolverFn<T = {}, TContext = {}> = (obj: T, context: TContext, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
+export type IsTypeOfResolverFn<T = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>> = (obj: T, context: TContext, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
 
 export type NextResolverFn<T> = () => Promise<T>;
 
-export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs = {}> = (
+export type DirectiveResolverFn<TResult = Record<PropertyKey, never>, TParent = Record<PropertyKey, never>, TContext = Record<PropertyKey, never>, TArgs = Record<PropertyKey, never>> = (
   next: NextResolverFn<TResult>,
   parent: TParent,
   args: TArgs,
   context: TContext,
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>;
+
+
 
 /** Mapping of union types */
 export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = ResolversObject<{
@@ -35030,7 +35474,7 @@ export type ResolversTypes = ResolversObject<{
   Module: ResolverTypeWrapper<Module>;
   MultiDistribution: ResolverTypeWrapper<Omit<MultiDistribution, 'data'> & { data?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>> }>;
   MultiTimeSeries: ResolverTypeWrapper<MultiTimeSeries>;
-  Mutation: ResolverTypeWrapper<{}>;
+  Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
   Mutex: ResolverTypeWrapper<Omit<Mutex, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   MutexAddInput: MutexAddInput;
   NLQResponse: ResolverTypeWrapper<NlqResponse>;
@@ -35160,7 +35604,7 @@ export type ResolversTypes = ResolversObject<{
   PublicDistribution: ResolverTypeWrapper<Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   PublicProvider: ResolverTypeWrapper<PublicProvider>;
   PublicSettings: ResolverTypeWrapper<Omit<PublicSettings, 'platform_theme'> & { platform_theme?: Maybe<ResolversTypes['Theme']> }>;
-  Query: ResolverTypeWrapper<{}>;
+  Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   QueryAttribute: QueryAttribute;
   QueryTask: ResolverTypeWrapper<Omit<QueryTask, 'work'> & { work?: Maybe<ResolversTypes['Work']> }>;
   QueryTaskAddInput: QueryTaskAddInput;
@@ -35350,7 +35794,7 @@ export type ResolversTypes = ResolversObject<{
   SubTypeEdge: ResolverTypeWrapper<Omit<SubTypeEdge, 'node'> & { node: ResolversTypes['SubType'] }>;
   SubTypeEditMutations: ResolverTypeWrapper<Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversTypes['SubType']>, statusDelete?: Maybe<ResolversTypes['SubType']>, statusFieldPatch?: Maybe<ResolversTypes['SubType']> }>;
   SubTypesOrdering: SubTypesOrdering;
-  Subscription: ResolverTypeWrapper<{}>;
+  Subscription: ResolverTypeWrapper<Record<PropertyKey, never>>;
   Success: ResolverTypeWrapper<Success>;
   SupportPackage: ResolverTypeWrapper<BasicStoreEntitySupportPackage>;
   SupportPackageAddInput: SupportPackageAddInput;
@@ -35457,6 +35901,7 @@ export type ResolversTypes = ResolversObject<{
   VerifyMfaInput: VerifyMfaInput;
   VerifyOtp: ResolverTypeWrapper<VerifyOtp>;
   VerifyOtpInput: VerifyOtpInput;
+  Version: Version;
   Vocabulary: ResolverTypeWrapper<BasicStoreEntityVocabulary>;
   VocabularyAddInput: VocabularyAddInput;
   VocabularyCategory: VocabularyCategory;
@@ -35972,7 +36417,7 @@ export type ResolversParentTypes = ResolversObject<{
   Module: Module;
   MultiDistribution: Omit<MultiDistribution, 'data'> & { data?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>> };
   MultiTimeSeries: MultiTimeSeries;
-  Mutation: {};
+  Mutation: Record<PropertyKey, never>;
   Mutex: Omit<Mutex, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   MutexAddInput: MutexAddInput;
   NLQResponse: NlqResponse;
@@ -36086,7 +36531,7 @@ export type ResolversParentTypes = ResolversObject<{
   PublicDistribution: Omit<PublicDistribution, 'breakdownDistribution' | 'entity'> & { breakdownDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   PublicProvider: PublicProvider;
   PublicSettings: Omit<PublicSettings, 'platform_theme'> & { platform_theme?: Maybe<ResolversParentTypes['Theme']> };
-  Query: {};
+  Query: Record<PropertyKey, never>;
   QueryAttribute: QueryAttribute;
   QueryTask: Omit<QueryTask, 'work'> & { work?: Maybe<ResolversParentTypes['Work']> };
   QueryTaskAddInput: QueryTaskAddInput;
@@ -36249,7 +36694,7 @@ export type ResolversParentTypes = ResolversObject<{
   SubTypeConnection: Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversParentTypes['SubTypeEdge']> };
   SubTypeEdge: Omit<SubTypeEdge, 'node'> & { node: ResolversParentTypes['SubType'] };
   SubTypeEditMutations: Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversParentTypes['SubType']>, statusDelete?: Maybe<ResolversParentTypes['SubType']>, statusFieldPatch?: Maybe<ResolversParentTypes['SubType']> };
-  Subscription: {};
+  Subscription: Record<PropertyKey, never>;
   Success: Success;
   SupportPackage: BasicStoreEntitySupportPackage;
   SupportPackageAddInput: SupportPackageAddInput;
@@ -36403,12 +36848,10 @@ export type PublicDirectiveResolver<Result, Parent, ContextType = any, Args = Pu
 export type AiBusResolvers<ContextType = any, ParentType extends ResolversParentTypes['AIBus'] = ResolversParentTypes['AIBus']> = ResolversObject<{
   bus_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AckDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AckDetails'] = ResolversParentTypes['AckDetails']> = ResolversObject<{
   rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AdministrativeAreaResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeArea'] = ResolversParentTypes['AdministrativeArea']> = ResolversObject<{
@@ -36464,7 +36907,7 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AdministrativeAreaStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<AdministrativeAreaStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AdministrativeAreaStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<AdministrativeAreaToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -36477,13 +36920,11 @@ export type AdministrativeAreaResolvers<ContextType = any, ParentType extends Re
 export type AdministrativeAreaConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeAreaConnection'] = ResolversParentTypes['AdministrativeAreaConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AdministrativeAreaEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AdministrativeAreaEdge'] = ResolversParentTypes['AdministrativeAreaEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['AdministrativeArea'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AiActivityResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiActivity'] = ResolversParentTypes['AiActivity']> = ResolversObject<{
@@ -36491,7 +36932,6 @@ export type AiActivityResolvers<ContextType = any, ParentType extends ResolversP
   result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   trend?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AiForecastResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiForecast'] = ResolversParentTypes['AiForecast']> = ResolversObject<{
@@ -36499,14 +36939,12 @@ export type AiForecastResolvers<ContextType = any, ParentType extends ResolversP
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AiHistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiHistory'] = ResolversParentTypes['AiHistory']> = ResolversObject<{
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AiSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AiSummary'] = ResolversParentTypes['AiSummary']> = ResolversObject<{
@@ -36514,7 +36952,6 @@ export type AiSummaryResolvers<ContextType = any, ParentType extends ResolversPa
   result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   topics?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AnalysisResolvers<ContextType = any, ParentType extends ResolversParentTypes['Analysis'] = ResolversParentTypes['Analysis']> = ResolversObject<{
@@ -36528,13 +36965,11 @@ export interface AnyScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes[
 export type AppDebugDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppDebugDistribution'] = ResolversParentTypes['AppDebugDistribution']> = ResolversObject<{
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AppDebugStatisticsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppDebugStatistics'] = ResolversParentTypes['AppDebugStatistics']> = ResolversObject<{
   objects?: Resolver<Maybe<Array<Maybe<ResolversTypes['AppDebugDistribution']>>>, ParentType, ContextType>;
   relationships?: Resolver<Maybe<Array<Maybe<ResolversTypes['AppDebugDistribution']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AppInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppInfo'] = ResolversParentTypes['AppInfo']> = ResolversObject<{
@@ -36542,7 +36977,6 @@ export type AppInfoResolvers<ContextType = any, ParentType extends ResolversPare
   dependencies?: Resolver<Array<ResolversTypes['DependencyVersion']>, ParentType, ContextType>;
   memory?: Resolver<Maybe<ResolversTypes['AppMemory']>, ParentType, ContextType>;
   version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AppMemoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['AppMemory'] = ResolversParentTypes['AppMemory']> = ResolversObject<{
@@ -36560,7 +36994,6 @@ export type AppMemoryResolvers<ContextType = any, ParentType extends ResolversPa
   total_heap_size_executable?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   total_physical_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   used_heap_size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ArtifactResolvers<ContextType = any, ParentType extends ResolversParentTypes['Artifact'] = ResolversParentTypes['Artifact']> = ResolversObject<{
@@ -36607,7 +37040,7 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ArtifactStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ArtifactStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ArtifactStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ArtifactToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_additional_names?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -36622,19 +37055,16 @@ export type AssigneeResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AssigneeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AssigneeConnection'] = ResolversParentTypes['AssigneeConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['AssigneeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AssigneeEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AssigneeEdge'] = ResolversParentTypes['AssigneeEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Assignee'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttackPatternResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPattern'] = ResolversParentTypes['AttackPattern']> = ResolversObject<{
@@ -36693,7 +37123,7 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<AttackPatternStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AttackPatternStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subAttackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<AttackPatternSubAttackPatternsArgs>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<AttackPatternToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_mitre_detection?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -36709,13 +37139,11 @@ export type AttackPatternResolvers<ContextType = any, ParentType extends Resolve
 export type AttackPatternConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternConnection'] = ResolversParentTypes['AttackPatternConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['AttackPatternEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttackPatternEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternEdge'] = ResolversParentTypes['AttackPatternEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['AttackPattern'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttackPatternEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternEditMutations'] = ResolversParentTypes['AttackPatternEditMutations']> = ResolversObject<{
@@ -36725,7 +37153,6 @@ export type AttackPatternEditMutationsResolvers<ContextType = any, ParentType ex
   fieldPatch?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttackPatternForMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternForMatrix'] = ResolversParentTypes['AttackPatternForMatrix']> = ResolversObject<{
@@ -36736,7 +37163,6 @@ export type AttackPatternForMatrixResolvers<ContextType = any, ParentType extend
   subAttackPatterns?: Resolver<Maybe<Array<ResolversTypes['SubAttackPatternForMatrix']>>, ParentType, ContextType>;
   subAttackPatternsSearchText?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttackPatternsByKillChainResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternsByKillChain'] = ResolversParentTypes['AttackPatternsByKillChain']> = ResolversObject<{
@@ -36745,76 +37171,64 @@ export type AttackPatternsByKillChainResolvers<ContextType = any, ParentType ext
   kill_chain_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   phase_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   x_opencti_order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttackPatternsMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttackPatternsMatrix'] = ResolversParentTypes['AttackPatternsMatrix']> = ResolversObject<{
   attackPatternsOfPhases?: Resolver<Maybe<Array<ResolversTypes['AttackPatternsByKillChain']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Attribute'] = ResolversParentTypes['Attribute']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributeBasedOnResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeBasedOn'] = ResolversParentTypes['AttributeBasedOn']> = ResolversObject<{
   identifier?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   representations?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributeColumnResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeColumn'] = ResolversParentTypes['AttributeColumn']> = ResolversObject<{
   column_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   configuration?: Resolver<Maybe<ResolversTypes['AttributeColumnConfiguration']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributeColumnConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeColumnConfiguration'] = ResolversParentTypes['AttributeColumnConfiguration']> = ResolversObject<{
   pattern_date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   separator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timezone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeConnection'] = ResolversParentTypes['AttributeConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['AttributeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributeEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeEdge'] = ResolversParentTypes['AttributeEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Attribute'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributeEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeEditMutations'] = ResolversParentTypes['AttributeEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Attribute']>, ParentType, ContextType, RequireFields<AttributeEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributePathResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributePath'] = ResolversParentTypes['AttributePath']> = ResolversObject<{
   configuration?: Resolver<Maybe<ResolversTypes['AttributeColumnConfiguration']>, ParentType, ContextType>;
   independent?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributeRefResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeRef'] = ResolversParentTypes['AttributeRef']> = ResolversObject<{
   id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   multiple?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AttributesMapResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributesMap'] = ResolversParentTypes['AttributesMap']> = ResolversObject<{
   attributes?: Resolver<Array<ResolversTypes['TypeAttribute']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type AutonomousSystemResolvers<ContextType = any, ParentType extends ResolversParentTypes['AutonomousSystem'] = ResolversParentTypes['AutonomousSystem']> = ResolversObject<{
@@ -36859,7 +37273,7 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AutonomousSystemStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<AutonomousSystemStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AutonomousSystemStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<AutonomousSystemToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -36887,33 +37301,28 @@ export type BackgroundTaskResolvers<ContextType = any, ParentType extends Resolv
 export type BackgroundTaskActionResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskAction'] = ResolversParentTypes['BackgroundTaskAction']> = ResolversObject<{
   context?: Resolver<Maybe<ResolversTypes['BackgroundTaskContext']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['BackgroundTaskActionType']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type BackgroundTaskConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskConnection'] = ResolversParentTypes['BackgroundTaskConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['BackgroundTaskConnectionEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type BackgroundTaskConnectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskConnectionEdge'] = ResolversParentTypes['BackgroundTaskConnectionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type BackgroundTaskContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskContext'] = ResolversParentTypes['BackgroundTaskContext']> = ResolversObject<{
   field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['BackgroundTaskContextType']>, ParentType, ContextType>;
   values?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type BackgroundTaskErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['BackgroundTaskError'] = ResolversParentTypes['BackgroundTaskError']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type BankAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['BankAccount'] = ResolversParentTypes['BankAccount']> = ResolversObject<{
@@ -36958,7 +37367,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<BankAccountStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<BankAccountStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<BankAccountStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<BankAccountToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -37001,7 +37410,6 @@ export type CsvFeedAddInputFromImportResolvers<ContextType = any, ParentType ext
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scheduling_period?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CampaignResolvers<ContextType = any, ParentType extends ResolversParentTypes['Campaign'] = ResolversParentTypes['Campaign']> = ResolversObject<{
@@ -37058,7 +37466,7 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CampaignStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CampaignStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CampaignStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CampaignToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -37070,13 +37478,11 @@ export type CampaignResolvers<ContextType = any, ParentType extends ResolversPar
 export type CampaignConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CampaignConnection'] = ResolversParentTypes['CampaignConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CampaignEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CampaignEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CampaignEdge'] = ResolversParentTypes['CampaignEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Campaign'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CampaignEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CampaignEditMutations'] = ResolversParentTypes['CampaignEditMutations']> = ResolversObject<{
@@ -37086,7 +37492,6 @@ export type CampaignEditMutationsResolvers<ContextType = any, ParentType extends
   fieldPatch?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, RequireFields<CampaignEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<CampaignEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, RequireFields<CampaignEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CapabilityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Capability'] = ResolversParentTypes['Capability']> = ResolversObject<{
@@ -37108,13 +37513,11 @@ export type CapabilityResolvers<ContextType = any, ParentType extends ResolversP
 export type CapabilityConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CapabilityConnection'] = ResolversParentTypes['CapabilityConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CapabilityEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CapabilityEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CapabilityEdge'] = ResolversParentTypes['CapabilityEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Capability'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseResolvers<ContextType = any, ParentType extends ResolversParentTypes['Case'] = ResolversParentTypes['Case']> = ResolversObject<{
@@ -37177,7 +37580,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CaseToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -37188,13 +37591,11 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
 export type CaseConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseConnection'] = ResolversParentTypes['CaseConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CaseEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseEdge'] = ResolversParentTypes['CaseEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Case'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseIncidentResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseIncident'] = ResolversParentTypes['CaseIncident']> = ResolversObject<{
@@ -37261,7 +37662,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseIncidentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseIncidentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CaseIncidentToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -37273,13 +37674,11 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
 export type CaseIncidentConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseIncidentConnection'] = ResolversParentTypes['CaseIncidentConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CaseIncidentEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseIncidentEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseIncidentEdge'] = ResolversParentTypes['CaseIncidentEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['CaseIncident'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRfi'] = ResolversParentTypes['CaseRfi']> = ResolversObject<{
@@ -37345,7 +37744,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseRfiStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseRfiStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CaseRfiToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -37359,13 +37758,11 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
 export type CaseRfiConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRfiConnection'] = ResolversParentTypes['CaseRfiConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CaseRfiEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseRfiEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRfiEdge'] = ResolversParentTypes['CaseRfiEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['CaseRfi'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseRftResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRft'] = ResolversParentTypes['CaseRft']> = ResolversObject<{
@@ -37430,7 +37827,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseRftStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   takedown_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CaseRftToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -37442,13 +37839,11 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
 export type CaseRftConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRftConnection'] = ResolversParentTypes['CaseRftConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CaseRftEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseRftEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseRftEdge'] = ResolversParentTypes['CaseRftEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['CaseRft'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseTemplate'] = ResolversParentTypes['CaseTemplate']> = ResolversObject<{
@@ -37468,13 +37863,11 @@ export type CaseTemplateResolvers<ContextType = any, ParentType extends Resolver
 export type CaseTemplateConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseTemplateConnection'] = ResolversParentTypes['CaseTemplateConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['CaseTemplateEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CaseTemplateEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CaseTemplateEdge'] = ResolversParentTypes['CaseTemplateEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['CaseTemplate'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CatalogResolvers<ContextType = any, ParentType extends ResolversParentTypes['Catalog'] = ResolversParentTypes['Catalog']> = ResolversObject<{
@@ -37492,13 +37885,11 @@ export type CatalogResolvers<ContextType = any, ParentType extends ResolversPare
 export type CatalogConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogConnection'] = ResolversParentTypes['CatalogConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['CatalogEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CatalogEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CatalogEdge'] = ResolversParentTypes['CatalogEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Catalog'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = ResolversObject<{
@@ -37552,7 +37943,7 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ChannelStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ChannelStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ChannelStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ChannelToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -37564,18 +37955,15 @@ export type ChannelResolvers<ContextType = any, ParentType extends ResolversPare
 export type ChannelConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ChannelConnection'] = ResolversParentTypes['ChannelConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ChannelEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ChannelEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ChannelEdge'] = ResolversParentTypes['ChannelEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Channel'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CheckXtmHubConnectivityResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['CheckXTMHubConnectivityResponse'] = ResolversParentTypes['CheckXTMHubConnectivityResponse']> = ResolversObject<{
   status?: Resolver<Maybe<ResolversTypes['XTMHubRegistrationStatus']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CityResolvers<ContextType = any, ParentType extends ResolversParentTypes['City'] = ResolversParentTypes['City']> = ResolversObject<{
@@ -37632,7 +38020,7 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CityStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CityStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CityStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CityToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -37645,13 +38033,11 @@ export type CityResolvers<ContextType = any, ParentType extends ResolversParentT
 export type CityConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CityConnection'] = ResolversParentTypes['CityConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CityEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CityEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CityEdge'] = ResolversParentTypes['CityEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['City'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CityEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CityEditMutations'] = ResolversParentTypes['CityEditMutations']> = ResolversObject<{
@@ -37661,38 +38047,32 @@ export type CityEditMutationsResolvers<ContextType = any, ParentType extends Res
   fieldPatch?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<CityEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<CityEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<CityEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ClusterResolvers<ContextType = any, ParentType extends ResolversParentTypes['Cluster'] = ResolversParentTypes['Cluster']> = ResolversObject<{
   instances_number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ComplexPathResolvers<ContextType = any, ParentType extends ResolversParentTypes['ComplexPath'] = ResolversParentTypes['ComplexPath']> = ResolversObject<{
   configuration?: Resolver<Maybe<ResolversTypes['AttributeColumnConfiguration']>, ParentType, ContextType>;
   formula?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   variables?: Resolver<Maybe<Array<ResolversTypes['ComplexVariable']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ComplexVariableResolvers<ContextType = any, ParentType extends ResolversParentTypes['ComplexVariable'] = ResolversParentTypes['ComplexVariable']> = ResolversObject<{
   independent?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   variable?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConfidenceLevelResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfidenceLevel'] = ResolversParentTypes['ConfidenceLevel']> = ResolversObject<{
   max_confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   overrides?: Resolver<Array<ResolversTypes['ConfidenceLevelOverride']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConfidenceLevelOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConfidenceLevelOverride'] = ResolversParentTypes['ConfidenceLevelOverride']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Connector'] = ResolversParentTypes['Connector']> = ResolversObject<{
@@ -37753,21 +38133,18 @@ export type ConnectorConfigResolvers<ContextType = any, ParentType extends Resol
   push?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   push_exchange?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   push_routing?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConnectorConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorConfiguration'] = ResolversParentTypes['ConnectorConfiguration']> = ResolversObject<{
   configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConnectorContractConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorContractConfiguration'] = ResolversParentTypes['ConnectorContractConfiguration']> = ResolversObject<{
   encrypted?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConnectorHealthMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorHealthMetrics'] = ResolversParentTypes['ConnectorHealthMetrics']> = ResolversObject<{
@@ -37775,7 +38152,6 @@ export type ConnectorHealthMetricsResolvers<ContextType = any, ParentType extend
   last_update?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   restart_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   started_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConnectorInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorInfo'] = ResolversParentTypes['ConnectorInfo']> = ResolversObject<{
@@ -37785,7 +38161,6 @@ export type ConnectorInfoResolvers<ContextType = any, ParentType extends Resolve
   queue_messages_size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   queue_threshold?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   run_and_terminate?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConnectorManagerResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorManager'] = ResolversParentTypes['ConnectorManager']> = ResolversObject<{
@@ -37804,13 +38179,11 @@ export type ConnectorManagerResolvers<ContextType = any, ParentType extends Reso
 
 export type ConnectorMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorMetadata'] = ResolversParentTypes['ConnectorMetadata']> = ResolversObject<{
   configuration?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ConnectorQueueDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorQueueDetails'] = ResolversParentTypes['ConnectorQueueDetails']> = ResolversObject<{
   messages_number?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   messages_size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export interface ConstraintNumberScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['ConstraintNumber'], any> {
@@ -37877,13 +38250,11 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
 export type ContainerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContainerConnection'] = ResolversParentTypes['ContainerConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['ContainerEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ContainerEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContainerEdge'] = ResolversParentTypes['ContainerEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Container'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ContainerEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContainerEditMutations'] = ResolversParentTypes['ContainerEditMutations']> = ResolversObject<{
@@ -37896,7 +38267,6 @@ export type ContainerEditMutationsResolvers<ContextType = any, ParentType extend
   knowledgeAddFromInvestigation?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, RequireFields<ContainerEditMutationsKnowledgeAddFromInvestigationArgs, 'workspaceId'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ContainerEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, RequireFields<ContainerEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ContextDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContextData'] = ResolversParentTypes['ContextData']> = ResolversObject<{
@@ -37912,7 +38282,6 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   pir_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workspace_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CountryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Country'] = ResolversParentTypes['Country']> = ResolversObject<{
@@ -37968,7 +38337,7 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CountryStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CountryStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CountryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CountryToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -37981,13 +38350,11 @@ export type CountryResolvers<ContextType = any, ParentType extends ResolversPare
 export type CountryConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CountryConnection'] = ResolversParentTypes['CountryConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['CountryEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CountryEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CountryEdge'] = ResolversParentTypes['CountryEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Country'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CountryEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CountryEditMutations'] = ResolversParentTypes['CountryEditMutations']> = ResolversObject<{
@@ -37997,7 +38364,6 @@ export type CountryEditMutationsResolvers<ContextType = any, ParentType extends 
   fieldPatch?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<CountryEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<CountryEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<CountryEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CourseOfActionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CourseOfAction'] = ResolversParentTypes['CourseOfAction']> = ResolversObject<{
@@ -38050,7 +38416,7 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CourseOfActionStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CourseOfActionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CourseOfActionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CourseOfActionToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38066,13 +38432,11 @@ export type CourseOfActionResolvers<ContextType = any, ParentType extends Resolv
 export type CourseOfActionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CourseOfActionConnection'] = ResolversParentTypes['CourseOfActionConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CourseOfActionEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CourseOfActionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CourseOfActionEdge'] = ResolversParentTypes['CourseOfActionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['CourseOfAction'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CourseOfActionEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CourseOfActionEditMutations'] = ResolversParentTypes['CourseOfActionEditMutations']> = ResolversObject<{
@@ -38082,13 +38446,11 @@ export type CourseOfActionEditMutationsResolvers<ContextType = any, ParentType e
   fieldPatch?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CoverageResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['CoverageResult'] = ResolversParentTypes['CoverageResult']> = ResolversObject<{
   coverage_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   coverage_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Creator'] = ResolversParentTypes['Creator']> = ResolversObject<{
@@ -38102,13 +38464,11 @@ export type CreatorResolvers<ContextType = any, ParentType extends ResolversPare
 export type CreatorConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatorConnection'] = ResolversParentTypes['CreatorConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['CreatorEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CreatorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CreatorEdge'] = ResolversParentTypes['CreatorEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Creator'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CredentialResolvers<ContextType = any, ParentType extends ResolversParentTypes['Credential'] = ResolversParentTypes['Credential']> = ResolversObject<{
@@ -38150,7 +38510,7 @@ export type CredentialResolvers<ContextType = any, ParentType extends ResolversP
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CredentialStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CredentialStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CredentialStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CredentialToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38199,7 +38559,7 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptocurrencyWalletStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptocurrencyWalletStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CryptocurrencyWalletToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38248,7 +38608,7 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptographicKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CryptographicKeyStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptographicKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<CryptographicKeyToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38280,19 +38640,16 @@ export type CsvMapperAddInputFromImportResolvers<ContextType = any, ParentType e
   representations?: Resolver<Array<ResolversTypes['CsvMapperRepresentation']>, ParentType, ContextType>;
   separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   skipLineChar?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperConnection'] = ResolversParentTypes['CsvMapperConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['CsvMapperEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperEdge'] = ResolversParentTypes['CsvMapperEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['CsvMapper'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperRepresentationResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperRepresentation'] = ResolversParentTypes['CsvMapperRepresentation']> = ResolversObject<{
@@ -38302,7 +38659,6 @@ export type CsvMapperRepresentationResolvers<ContextType = any, ParentType exten
   target?: Resolver<ResolversTypes['CsvMapperRepresentationTarget'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['CsvMapperRepresentationType'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperRepresentationAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperRepresentationAttribute'] = ResolversParentTypes['CsvMapperRepresentationAttribute']> = ResolversObject<{
@@ -38311,20 +38667,17 @@ export type CsvMapperRepresentationAttributeResolvers<ContextType = any, ParentT
   default_values?: Resolver<Maybe<Array<ResolversTypes['DefaultValue']>>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   ref?: Resolver<Maybe<ResolversTypes['AttributeRef']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperRepresentationTargetResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperRepresentationTarget'] = ResolversParentTypes['CsvMapperRepresentationTarget']> = ResolversObject<{
   column_based?: Resolver<Maybe<ResolversTypes['CsvMapperRepresentationTargetColumn']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperRepresentationTargetColumnResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperRepresentationTargetColumn'] = ResolversParentTypes['CsvMapperRepresentationTargetColumn']> = ResolversObject<{
   column_reference?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   operator?: Resolver<Maybe<ResolversTypes['CsvMapperOperator']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperSchemaAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperSchemaAttribute'] = ResolversParentTypes['CsvMapperSchemaAttribute']> = ResolversObject<{
@@ -38337,20 +38690,17 @@ export type CsvMapperSchemaAttributeResolvers<ContextType = any, ParentType exte
   multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperSchemaAttributesResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperSchemaAttributes'] = ResolversParentTypes['CsvMapperSchemaAttributes']> = ResolversObject<{
   attributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttribute']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['CsvMapperTestResult'] = ResolversParentTypes['CsvMapperTestResult']> = ResolversObject<{
   nbEntities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   nbRelationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objects?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DataComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponent'] = ResolversParentTypes['DataComponent']> = ResolversObject<{
@@ -38405,7 +38755,7 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DataComponentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<DataComponentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DataComponentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<DataComponentToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38417,13 +38767,11 @@ export type DataComponentResolvers<ContextType = any, ParentType extends Resolve
 export type DataComponentConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponentConnection'] = ResolversParentTypes['DataComponentConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DataComponentEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponentEdge'] = ResolversParentTypes['DataComponentEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['DataComponent'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DataSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSource'] = ResolversParentTypes['DataSource']> = ResolversObject<{
@@ -38478,7 +38826,7 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DataSourceStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<DataSourceStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DataSourceStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<DataSourceToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -38491,13 +38839,11 @@ export type DataSourceResolvers<ContextType = any, ParentType extends ResolversP
 export type DataSourceConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSourceConnection'] = ResolversParentTypes['DataSourceConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['DataSourceEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DataSourceEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataSourceEdge'] = ResolversParentTypes['DataSourceEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['DataSource'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
@@ -38506,25 +38852,21 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 
 export type DecayChartDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayChartData'] = ResolversParentTypes['DecayChartData']> = ResolversObject<{
   live_score_serie?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DecayDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayData'] = ResolversParentTypes['DecayData']> = ResolversObject<{
   live_score_serie?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DecayHistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayHistory'] = ResolversParentTypes['DecayHistory']> = ResolversObject<{
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DecayLiveDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayLiveDetails'] = ResolversParentTypes['DecayLiveDetails']> = ResolversObject<{
   live_points?: Resolver<Maybe<Array<ResolversTypes['DecayHistory']>>, ParentType, ContextType>;
   live_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayRule'] = ResolversParentTypes['DecayRule']> = ResolversObject<{
@@ -38554,39 +38896,33 @@ export type DecayRuleResolvers<ContextType = any, ParentType extends ResolversPa
 export type DecayRuleConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayRuleConnection'] = ResolversParentTypes['DecayRuleConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['DecayRuleEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DecayRuleEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayRuleEdge'] = ResolversParentTypes['DecayRuleEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['DecayRule'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DefaultMarkingResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultMarking'] = ResolversParentTypes['DefaultMarking']> = ResolversObject<{
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   values?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DefaultValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultValue'] = ResolversParentTypes['DefaultValue']> = ResolversObject<{
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DefaultValueAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultValueAttribute'] = ResolversParentTypes['DefaultValueAttribute']> = ResolversObject<{
   defaultValues?: Resolver<Array<ResolversTypes['DefaultValue']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DefinitionRefRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefinitionRefRelationship'] = ResolversParentTypes['DefinitionRefRelationship']> = ResolversObject<{
   entity?: Resolver<ResolversTypes['StixObjectOrStixRelationshipOrCreator'], ParentType, ContextType>;
   from?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   to?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DeleteOperationResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteOperation'] = ResolversParentTypes['DeleteOperation']> = ResolversObject<{
@@ -38609,31 +38945,26 @@ export type DeleteOperationResolvers<ContextType = any, ParentType extends Resol
 export type DeleteOperationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteOperationConnection'] = ResolversParentTypes['DeleteOperationConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['DeleteOperationEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DeleteOperationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeleteOperationEdge'] = ResolversParentTypes['DeleteOperationEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['DeleteOperation'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DeletedElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeletedElement'] = ResolversParentTypes['DeletedElement']> = ResolversObject<{
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   source_index?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DependencyVersionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DependencyVersion'] = ResolversParentTypes['DependencyVersion']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DictionaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Dictionary'] = ResolversParentTypes['Dictionary']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DirectoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Directory'] = ResolversParentTypes['Directory']> = ResolversObject<{
@@ -38680,7 +39011,7 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DirectoryStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<DirectoryStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DirectoryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<DirectoryToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -38692,7 +39023,6 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
 export type DisplayResolvers<ContextType = any, ParentType extends ResolversParentTypes['Display'] = ResolversParentTypes['Display']> = ResolversObject<{
   if?: Resolver<Maybe<Array<Maybe<ResolversTypes['DisplayStep']>>>, ParentType, ContextType>;
   then?: Resolver<Maybe<Array<Maybe<ResolversTypes['DisplayStep']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DisplayStepResolvers<ContextType = any, ParentType extends ResolversParentTypes['DisplayStep'] = ResolversParentTypes['DisplayStep']> = ResolversObject<{
@@ -38704,7 +39034,6 @@ export type DisplayStepResolvers<ContextType = any, ParentType extends Resolvers
   source_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   target?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   target_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DisseminationListResolvers<ContextType = any, ParentType extends ResolversParentTypes['DisseminationList'] = ResolversParentTypes['DisseminationList']> = ResolversObject<{
@@ -38725,25 +39054,21 @@ export type DisseminationListResolvers<ContextType = any, ParentType extends Res
 export type DisseminationListConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DisseminationListConnection'] = ResolversParentTypes['DisseminationListConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['DisseminationListEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DisseminationListEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DisseminationListEdge'] = ResolversParentTypes['DisseminationListEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['DisseminationList'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Distribution'] = ResolversParentTypes['Distribution']> = ResolversObject<{
   entity?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DocsMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['DocsMetrics'] = ResolversParentTypes['DocsMetrics']> = ResolversObject<{
   count?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DomainNameResolvers<ContextType = any, ParentType extends ResolversParentTypes['DomainName'] = ResolversParentTypes['DomainName']> = ResolversObject<{
@@ -38785,7 +39110,7 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DomainNameStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<DomainNameStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DomainNameStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<DomainNameToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38802,13 +39127,11 @@ export type DraftObjectsCountResolvers<ContextType = any, ParentType extends Res
   relationshipsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   sightingsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DraftVersionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftVersion'] = ResolversParentTypes['DraftVersion']> = ResolversObject<{
   draft_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   draft_operation?: Resolver<ResolversTypes['DraftOperation'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DraftWorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspace'] = ResolversParentTypes['DraftWorkspace']> = ResolversObject<{
@@ -38834,39 +39157,33 @@ export type DraftWorkspaceResolvers<ContextType = any, ParentType extends Resolv
 export type DraftWorkspaceConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspaceConnection'] = ResolversParentTypes['DraftWorkspaceConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['DraftWorkspaceEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DraftWorkspaceEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DraftWorkspaceEdge'] = ResolversParentTypes['DraftWorkspaceEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['DraftWorkspace'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EditUserContextResolvers<ContextType = any, ParentType extends ResolversParentTypes['EditUserContext'] = ResolversParentTypes['EditUserContext']> = ResolversObject<{
   focusOn?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EffectiveConfidenceLevelResolvers<ContextType = any, ParentType extends ResolversParentTypes['EffectiveConfidenceLevel'] = ResolversParentTypes['EffectiveConfidenceLevel']> = ResolversObject<{
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   overrides?: Resolver<Array<ResolversTypes['EffectiveConfidenceLevelOverride']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevelSource']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EffectiveConfidenceLevelOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['EffectiveConfidenceLevelOverride'] = ResolversParentTypes['EffectiveConfidenceLevelOverride']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   max_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevelSource']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EffectiveConfidenceLevelSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['EffectiveConfidenceLevelSource'] = ResolversParentTypes['EffectiveConfidenceLevelSource']> = ResolversObject<{
   object?: Resolver<Maybe<ResolversTypes['EffectiveConfidenceLevelSourceObject']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['EffectiveConfidenceLevelSourceType'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EffectiveConfidenceLevelSourceObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['EffectiveConfidenceLevelSourceObject'] = ResolversParentTypes['EffectiveConfidenceLevelSourceObject']> = ResolversObject<{
@@ -38878,7 +39195,6 @@ export type ElasticSearchMetricsResolvers<ContextType = any, ParentType extends 
   get?: Resolver<Maybe<ResolversTypes['GetMetrics']>, ParentType, ContextType>;
   indexing?: Resolver<Maybe<ResolversTypes['IndexingMetrics']>, ParentType, ContextType>;
   search?: Resolver<Maybe<ResolversTypes['SearchMetrics']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversParentTypes['EmailAddr'] = ResolversParentTypes['EmailAddr']> = ResolversObject<{
@@ -38921,7 +39237,7 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailAddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailAddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailAddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<EmailAddrToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -38977,7 +39293,7 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailMessageStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMessageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subject?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<EmailMessageToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -39028,7 +39344,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMimePartTypeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMimePartTypeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<EmailMimePartTypeToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -39054,13 +39370,11 @@ export type EmailTemplateResolvers<ContextType = any, ParentType extends Resolve
 export type EmailTemplateConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['EmailTemplateConnection'] = ResolversParentTypes['EmailTemplateConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['EmailTemplateEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EmailTemplateEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EmailTemplateEdge'] = ResolversParentTypes['EmailTemplateEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['EmailTemplate'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EntitySettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySetting'] = ResolversParentTypes['EntitySetting']> = ResolversObject<{
@@ -39091,13 +39405,11 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
 export type EntitySettingConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySettingConnection'] = ResolversParentTypes['EntitySettingConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['EntitySettingEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EntitySettingEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySettingEdge'] = ResolversParentTypes['EntitySettingEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['EntitySetting'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EventResolvers<ContextType = any, ParentType extends ResolversParentTypes['Event'] = ResolversParentTypes['Event']> = ResolversObject<{
@@ -39153,7 +39465,7 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EventStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EventStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stop_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<EventToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39165,13 +39477,11 @@ export type EventResolvers<ContextType = any, ParentType extends ResolversParent
 export type EventConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventConnection'] = ResolversParentTypes['EventConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['EventEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type EventEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['EventEdge'] = ResolversParentTypes['EventEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Event'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ExclusionListResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionList'] = ResolversParentTypes['ExclusionList']> = ResolversObject<{
@@ -39195,25 +39505,21 @@ export type ExclusionListCacheStatusResolvers<ContextType = any, ParentType exte
   cacheVersion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   isCacheRebuildInProgress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   refreshVersion?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ExclusionListConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListConnection'] = ResolversParentTypes['ExclusionListConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<ResolversTypes['ExclusionListEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ExclusionListEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExclusionListEdge'] = ResolversParentTypes['ExclusionListEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['ExclusionList'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ExtendedContractResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExtendedContract'] = ResolversParentTypes['ExtendedContract']> = ResolversObject<{
   catalog_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   contract?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ExternalReferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalReference'] = ResolversParentTypes['ExternalReference']> = ResolversObject<{
@@ -39253,13 +39559,11 @@ export type ExternalReferenceResolvers<ContextType = any, ParentType extends Res
 export type ExternalReferenceConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalReferenceConnection'] = ResolversParentTypes['ExternalReferenceConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['ExternalReferenceEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ExternalReferenceEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalReferenceEdge'] = ResolversParentTypes['ExternalReferenceEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['ExternalReference'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ExternalReferenceEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ExternalReferenceEditMutations'] = ResolversParentTypes['ExternalReferenceEditMutations']> = ResolversObject<{
@@ -39272,7 +39576,6 @@ export type ExternalReferenceEditMutationsResolvers<ContextType = any, ParentTyp
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<ExternalReferenceEditMutationsImportPushArgs, 'file'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ExternalReferenceEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<ExternalReferenceEditMutationsRelationDeleteArgs, 'fromId' | 'relationship_type'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FeedResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feed'] = ResolversParentTypes['Feed']> = ResolversObject<{
@@ -39289,31 +39592,26 @@ export type FeedResolvers<ContextType = any, ParentType extends ResolversParentT
   rolling_time?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   separator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FeedAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedAttribute'] = ResolversParentTypes['FeedAttribute']> = ResolversObject<{
   attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mappings?: Resolver<Array<ResolversTypes['FeedMapping']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FeedConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedConnection'] = ResolversParentTypes['FeedConnection']> = ResolversObject<{
   edges?: Resolver<Array<Maybe<ResolversTypes['FeedEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FeedEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedEdge'] = ResolversParentTypes['FeedEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Feed'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FeedMappingResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedMapping'] = ResolversParentTypes['FeedMapping']> = ResolversObject<{
   attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FeedbackResolvers<ContextType = any, ParentType extends ResolversParentTypes['Feedback'] = ResolversParentTypes['Feedback']> = ResolversObject<{
@@ -39376,7 +39674,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<FeedbackStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<FeedbackStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   tasks?: Resolver<ResolversTypes['TaskConnection'], ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<FeedbackToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39388,13 +39686,11 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
 export type FeedbackConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedbackConnection'] = ResolversParentTypes['FeedbackConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['FeedbackEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FeedbackEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FeedbackEdge'] = ResolversParentTypes['FeedbackEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Feedback'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FileResolvers<ContextType = any, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = ResolversObject<{
@@ -39409,19 +39705,16 @@ export type FileResolvers<ContextType = any, ParentType extends ResolversParentT
   size?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   uploadStatus?: Resolver<ResolversTypes['State'], ParentType, ContextType>;
   works?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FileConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileConnection'] = ResolversParentTypes['FileConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['FileEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FileEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileEdge'] = ResolversParentTypes['FileEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['File'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FileMetadataResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileMetadata'] = ResolversParentTypes['FileMetadata']> = ResolversObject<{
@@ -39445,14 +39738,12 @@ export type FileMetadataResolvers<ContextType = any, ParentType extends Resolver
   mimetype?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FilesMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilesMetrics'] = ResolversParentTypes['FilesMetrics']> = ResolversObject<{
   globalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   globalSize?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   metricsByMimeType?: Resolver<Maybe<Array<ResolversTypes['MetricsByMimeType']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FilterDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilterDefinition'] = ResolversParentTypes['FilterDefinition']> = ResolversObject<{
@@ -39463,19 +39754,16 @@ export type FilterDefinitionResolvers<ContextType = any, ParentType extends Reso
   subEntityTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   subFilters?: Resolver<Maybe<Array<ResolversTypes['FilterDefinition']>>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FilterDefinitionSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilterDefinitionSchema'] = ResolversParentTypes['FilterDefinitionSchema']> = ResolversObject<{
   filterDefinition?: Resolver<ResolversTypes['FilterDefinition'], ParentType, ContextType>;
   filterKey?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FilterKeysSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['FilterKeysSchema'] = ResolversParentTypes['FilterKeysSchema']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   filters_schema?: Resolver<Array<ResolversTypes['FilterDefinitionSchema']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FintelDesignResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelDesign'] = ResolversParentTypes['FintelDesign']> = ResolversObject<{
@@ -39496,13 +39784,11 @@ export type FintelDesignResolvers<ContextType = any, ParentType extends Resolver
 export type FintelDesignConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelDesignConnection'] = ResolversParentTypes['FintelDesignConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['FintelDesignEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FintelDesignEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelDesignEdge'] = ResolversParentTypes['FintelDesignEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<Maybe<ResolversTypes['FintelDesign']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FintelTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplate'] = ResolversParentTypes['FintelTemplate']> = ResolversObject<{
@@ -39525,19 +39811,16 @@ export type FintelTemplateResolvers<ContextType = any, ParentType extends Resolv
 export type FintelTemplateConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplateConnection'] = ResolversParentTypes['FintelTemplateConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['FintelTemplateEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FintelTemplateEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplateEdge'] = ResolversParentTypes['FintelTemplateEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['FintelTemplate'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FintelTemplateWidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['FintelTemplateWidget'] = ResolversParentTypes['FintelTemplateWidget']> = ResolversObject<{
   variable_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   widget?: Resolver<ResolversTypes['Widget'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FormResolvers<ContextType = any, ParentType extends ResolversParentTypes['Form'] = ResolversParentTypes['Form']> = ResolversObject<{
@@ -39560,13 +39843,11 @@ export type FormResolvers<ContextType = any, ParentType extends ResolversParentT
 export type FormConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FormConnection'] = ResolversParentTypes['FormConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['FormEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FormEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['FormEdge'] = ResolversParentTypes['FormEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Form'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type FormSubmissionResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['FormSubmissionResponse'] = ResolversParentTypes['FormSubmissionResponse']> = ResolversObject<{
@@ -39574,12 +39855,10 @@ export type FormSubmissionResponseResolvers<ContextType = any, ParentType extend
   entityId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type GetMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['GetMetrics'] = ResolversParentTypes['GetMetrics']> = ResolversObject<{
   total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = ResolversObject<{
@@ -39614,13 +39893,11 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
 export type GroupConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupConnection'] = ResolversParentTypes['GroupConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type GroupEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupEdge'] = ResolversParentTypes['GroupEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Group'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type GroupEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupEditMutations'] = ResolversParentTypes['GroupEditMutations']> = ResolversObject<{
@@ -39631,7 +39908,6 @@ export type GroupEditMutationsResolvers<ContextType = any, ParentType extends Re
   fieldPatch?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<GroupEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<GroupEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<GroupEditMutationsRelationDeleteArgs, 'relationship_type'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type GroupingResolvers<ContextType = any, ParentType extends ResolversParentTypes['Grouping'] = ResolversParentTypes['Grouping']> = ResolversObject<{
@@ -39694,7 +39970,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<GroupingStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<GroupingStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<GroupingStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<GroupingToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -39707,19 +39983,16 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
 export type GroupingConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupingConnection'] = ResolversParentTypes['GroupingConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['GroupingEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type GroupingEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['GroupingEdge'] = ResolversParentTypes['GroupingEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Grouping'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type HashResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hash'] = ResolversParentTypes['Hash']> = ResolversObject<{
   algorithm?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type HashedObservableResolvers<ContextType = any, ParentType extends ResolversParentTypes['HashedObservable'] = ResolversParentTypes['HashedObservable']> = ResolversObject<{
@@ -39763,7 +40036,7 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HashedObservableStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HashedObservableStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HashedObservableStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<HashedObservableToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -39809,7 +40082,7 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HostnameStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HostnameStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HostnameStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<HostnameToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39859,7 +40132,7 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv4AddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IPv4AddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv4AddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IPv4AddrToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39909,7 +40182,7 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv6AddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IPv6AddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv6AddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IPv6AddrToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -39970,7 +40243,7 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IdentityStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IdentityStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IdentityStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IdentityToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -39982,13 +40255,11 @@ export type IdentityResolvers<ContextType = any, ParentType extends ResolversPar
 export type IdentityConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdentityConnection'] = ResolversParentTypes['IdentityConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['IdentityEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IdentityEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdentityEdge'] = ResolversParentTypes['IdentityEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Identity'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IdentityEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IdentityEditMutations'] = ResolversParentTypes['IdentityEditMutations']> = ResolversObject<{
@@ -39998,7 +40269,6 @@ export type IdentityEditMutationsResolvers<ContextType = any, ParentType extends
   fieldPatch?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<IdentityEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IdentityEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<IdentityEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IncidentResolvers<ContextType = any, ParentType extends ResolversParentTypes['Incident'] = ResolversParentTypes['Incident']> = ResolversObject<{
@@ -40058,7 +40328,7 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IncidentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IncidentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IncidentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IncidentToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -40070,13 +40340,11 @@ export type IncidentResolvers<ContextType = any, ParentType extends ResolversPar
 export type IncidentConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IncidentConnection'] = ResolversParentTypes['IncidentConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['IncidentEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IncidentEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IncidentEdge'] = ResolversParentTypes['IncidentEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Incident'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IncidentEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IncidentEditMutations'] = ResolversParentTypes['IncidentEditMutations']> = ResolversObject<{
@@ -40086,7 +40354,6 @@ export type IncidentEditMutationsResolvers<ContextType = any, ParentType extends
   fieldPatch?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<IncidentEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IncidentEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<IncidentEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndexedFileResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndexedFile'] = ResolversParentTypes['IndexedFile']> = ResolversObject<{
@@ -40096,25 +40363,21 @@ export type IndexedFileResolvers<ContextType = any, ParentType extends Resolvers
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   searchOccurrences?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   uploaded_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndexedFileConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndexedFileConnection'] = ResolversParentTypes['IndexedFileConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['IndexedFileEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndexedFileEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndexedFileEdge'] = ResolversParentTypes['IndexedFileEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['IndexedFile'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndexingMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndexingMetrics'] = ResolversParentTypes['IndexingMetrics']> = ResolversObject<{
   delete_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   index_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndicatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Indicator'] = ResolversParentTypes['Indicator']> = ResolversObject<{
@@ -40178,7 +40441,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IndicatorStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IndicatorStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IndicatorStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IndicatorToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -40197,7 +40460,6 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
 export type IndicatorConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorConnection'] = ResolversParentTypes['IndicatorConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['IndicatorEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndicatorDecayRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorDecayRule'] = ResolversParentTypes['IndicatorDecayRule']> = ResolversObject<{
@@ -40206,13 +40468,11 @@ export type IndicatorDecayRuleResolvers<ContextType = any, ParentType extends Re
   decay_pound?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   decay_revoke_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   decay_rule_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndicatorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorEdge'] = ResolversParentTypes['IndicatorEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Indicator'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['Individual'] = ResolversParentTypes['Individual']> = ResolversObject<{
@@ -40269,7 +40529,7 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IndividualStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IndividualStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IndividualStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IndividualToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -40285,13 +40545,11 @@ export type IndividualResolvers<ContextType = any, ParentType extends ResolversP
 export type IndividualConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndividualConnection'] = ResolversParentTypes['IndividualConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['IndividualEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndividualEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndividualEdge'] = ResolversParentTypes['IndividualEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Individual'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndividualEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndividualEditMutations'] = ResolversParentTypes['IndividualEditMutations']> = ResolversObject<{
@@ -40301,20 +40559,17 @@ export type IndividualEditMutationsResolvers<ContextType = any, ParentType exten
   fieldPatch?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, RequireFields<IndividualEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IndividualEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, RequireFields<IndividualEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type InferenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Inference'] = ResolversParentTypes['Inference']> = ResolversObject<{
   attributes?: Resolver<Maybe<Array<Maybe<ResolversTypes['InferenceAttribute']>>>, ParentType, ContextType>;
   explanation?: Resolver<Array<Maybe<ResolversTypes['StixObjectOrStixRelationship']>>, ParentType, ContextType>;
   rule?: Resolver<ResolversTypes['Rule'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type InferenceAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['InferenceAttribute'] = ResolversParentTypes['InferenceAttribute']> = ResolversObject<{
   field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type InfrastructureResolvers<ContextType = any, ParentType extends ResolversParentTypes['Infrastructure'] = ResolversParentTypes['Infrastructure']> = ResolversObject<{
@@ -40371,7 +40626,7 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<InfrastructureStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<InfrastructureStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<InfrastructureStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<InfrastructureToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -40383,13 +40638,11 @@ export type InfrastructureResolvers<ContextType = any, ParentType extends Resolv
 export type InfrastructureConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['InfrastructureConnection'] = ResolversParentTypes['InfrastructureConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['InfrastructureEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type InfrastructureEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['InfrastructureEdge'] = ResolversParentTypes['InfrastructureEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Infrastructure'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['InfrastructureEditMutations'] = ResolversParentTypes['InfrastructureEditMutations']> = ResolversObject<{
@@ -40399,7 +40652,6 @@ export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType e
   fieldPatch?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<InfrastructureEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<InfrastructureEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<InfrastructureEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionCsvResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionCsv'] = ResolversParentTypes['IngestionCsv']> = ResolversObject<{
@@ -40434,19 +40686,16 @@ export type IngestionCsvResolvers<ContextType = any, ParentType extends Resolver
 export type IngestionCsvConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionCsvConnection'] = ResolversParentTypes['IngestionCsvConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['IngestionCsvEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionCsvEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionCsvEdge'] = ResolversParentTypes['IngestionCsvEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['IngestionCsv'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionHeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionHeader'] = ResolversParentTypes['IngestionHeader']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionJsonResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJson'] = ResolversParentTypes['IngestionJson']> = ResolversObject<{
@@ -40484,13 +40733,11 @@ export type IngestionJsonResolvers<ContextType = any, ParentType extends Resolve
 export type IngestionJsonConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJsonConnection'] = ResolversParentTypes['IngestionJsonConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['IngestionJsonEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionJsonEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionJsonEdge'] = ResolversParentTypes['IngestionJsonEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['IngestionJson'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionQueryAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionQueryAttribute'] = ResolversParentTypes['IngestionQueryAttribute']> = ResolversObject<{
@@ -40501,7 +40748,6 @@ export type IngestionQueryAttributeResolvers<ContextType = any, ParentType exten
   state_operation?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionRssResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRss'] = ResolversParentTypes['IngestionRss']> = ResolversObject<{
@@ -40530,13 +40776,11 @@ export type IngestionRssResolvers<ContextType = any, ParentType extends Resolver
 export type IngestionRssConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRssConnection'] = ResolversParentTypes['IngestionRssConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['IngestionRssEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionRssEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionRssEdge'] = ResolversParentTypes['IngestionRssEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['IngestionRss'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionTaxiiResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionTaxii'] = ResolversParentTypes['IngestionTaxii']> = ResolversObject<{
@@ -40587,25 +40831,21 @@ export type IngestionTaxiiCollectionResolvers<ContextType = any, ParentType exte
 export type IngestionTaxiiCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionTaxiiCollectionConnection'] = ResolversParentTypes['IngestionTaxiiCollectionConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['IngestionTaxiiCollectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionTaxiiCollectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionTaxiiCollectionEdge'] = ResolversParentTypes['IngestionTaxiiCollectionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['IngestionTaxiiCollection'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionTaxiiConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionTaxiiConnection'] = ResolversParentTypes['IngestionTaxiiConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['IngestionTaxiiEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IngestionTaxiiEdge'] = ResolversParentTypes['IngestionTaxiiEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['IngestionTaxii'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
@@ -40695,7 +40935,7 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IntrusionSetStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IntrusionSetStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IntrusionSetStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<IntrusionSetToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -40707,13 +40947,11 @@ export type IntrusionSetResolvers<ContextType = any, ParentType extends Resolver
 export type IntrusionSetConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntrusionSetConnection'] = ResolversParentTypes['IntrusionSetConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['IntrusionSetEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IntrusionSetEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntrusionSetEdge'] = ResolversParentTypes['IntrusionSetEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['IntrusionSet'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IntrusionSetEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['IntrusionSetEditMutations'] = ResolversParentTypes['IntrusionSetEditMutations']> = ResolversObject<{
@@ -40723,7 +40961,6 @@ export type IntrusionSetEditMutationsResolvers<ContextType = any, ParentType ext
   fieldPatch?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
@@ -40740,20 +40977,17 @@ export type JsonAttributeColumnConfigurationResolvers<ContextType = any, ParentT
 export type JsonComplexPathResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonComplexPath'] = ResolversParentTypes['JsonComplexPath']> = ResolversObject<{
   complex?: Resolver<Maybe<ResolversTypes['JsonComplexPathConfiguration']>, ParentType, ContextType>;
   configuration?: Resolver<Maybe<ResolversTypes['JsonAttributeColumnConfiguration']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonComplexPathConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonComplexPathConfiguration'] = ResolversParentTypes['JsonComplexPathConfiguration']> = ResolversObject<{
   complex?: Resolver<Maybe<ResolversTypes['JsonComplexPathConfiguration']>, ParentType, ContextType>;
   formula?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonComplexPathVariableResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonComplexPathVariable'] = ResolversParentTypes['JsonComplexPathVariable']> = ResolversObject<{
   independent?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   path?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   variable?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonMapperResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapper'] = ResolversParentTypes['JsonMapper']> = ResolversObject<{
@@ -40773,19 +41007,16 @@ export type JsonMapperResolvers<ContextType = any, ParentType extends ResolversP
 export type JsonMapperAddInputFromImportResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperAddInputFromImport'] = ResolversParentTypes['JsonMapperAddInputFromImport']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   representations?: Resolver<Array<ResolversTypes['JsonMapperRepresentation']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonMapperConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperConnection'] = ResolversParentTypes['JsonMapperConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['JsonMapperEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonMapperEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperEdge'] = ResolversParentTypes['JsonMapperEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['JsonMapper'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonMapperRepresentationResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperRepresentation'] = ResolversParentTypes['JsonMapperRepresentation']> = ResolversObject<{
@@ -40796,7 +41027,6 @@ export type JsonMapperRepresentationResolvers<ContextType = any, ParentType exte
   target?: Resolver<ResolversTypes['JsonMapperRepresentationTarget'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['JsonMapperRepresentationType'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonMapperRepresentationAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperRepresentationAttribute'] = ResolversParentTypes['JsonMapperRepresentationAttribute']> = ResolversObject<{
@@ -40806,13 +41036,11 @@ export type JsonMapperRepresentationAttributeResolvers<ContextType = any, Parent
   default_values?: Resolver<Maybe<Array<ResolversTypes['DefaultValue']>>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mode?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonMapperRepresentationTargetResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperRepresentationTarget'] = ResolversParentTypes['JsonMapperRepresentationTarget']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonMapperTestResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperTestResult'] = ResolversParentTypes['JsonMapperTestResult']> = ResolversObject<{
@@ -40820,13 +41048,11 @@ export type JsonMapperTestResultResolvers<ContextType = any, ParentType extends 
   nbRelationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objects?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   state?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type JsonMapperVariableResolvers<ContextType = any, ParentType extends ResolversParentTypes['JsonMapperVariable'] = ResolversParentTypes['JsonMapperVariable']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   path?: Resolver<Maybe<ResolversTypes['JsonComplexPath']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type KillChainPhaseResolvers<ContextType = any, ParentType extends ResolversParentTypes['KillChainPhase'] = ResolversParentTypes['KillChainPhase']> = ResolversObject<{
@@ -40857,13 +41083,11 @@ export type KillChainPhaseResolvers<ContextType = any, ParentType extends Resolv
 export type KillChainPhaseConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['KillChainPhaseConnection'] = ResolversParentTypes['KillChainPhaseConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['KillChainPhaseEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type KillChainPhaseEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['KillChainPhaseEdge'] = ResolversParentTypes['KillChainPhaseEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['KillChainPhase'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type KillChainPhaseEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['KillChainPhaseEditMutations'] = ResolversParentTypes['KillChainPhaseEditMutations']> = ResolversObject<{
@@ -40873,7 +41097,6 @@ export type KillChainPhaseEditMutationsResolvers<ContextType = any, ParentType e
   fieldPatch?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LabelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Label'] = ResolversParentTypes['Label']> = ResolversObject<{
@@ -40893,7 +41116,7 @@ export type LabelResolvers<ContextType = any, ParentType extends ResolversParent
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<LabelToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -40904,13 +41127,11 @@ export type LabelResolvers<ContextType = any, ParentType extends ResolversParent
 export type LabelConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LabelConnection'] = ResolversParentTypes['LabelConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['LabelEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LabelEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['LabelEdge'] = ResolversParentTypes['LabelEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Label'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LabelEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['LabelEditMutations'] = ResolversParentTypes['LabelEditMutations']> = ResolversObject<{
@@ -40918,7 +41139,6 @@ export type LabelEditMutationsResolvers<ContextType = any, ParentType extends Re
   contextPatch?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, Partial<LabelEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<LabelEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LanguageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Language'] = ResolversParentTypes['Language']> = ResolversObject<{
@@ -40970,7 +41190,7 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<LanguageStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<LanguageStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<LanguageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<LanguageToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -40982,13 +41202,11 @@ export type LanguageResolvers<ContextType = any, ParentType extends ResolversPar
 export type LanguageConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LanguageConnection'] = ResolversParentTypes['LanguageConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['LanguageEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LanguageEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['LanguageEdge'] = ResolversParentTypes['LanguageEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Language'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ListTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['ListTask'] = ResolversParentTypes['ListTask']> = ResolversObject<{
@@ -41062,7 +41280,7 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<LocationStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<LocationStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<LocationStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<LocationToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -41073,14 +41291,12 @@ export type LocationResolvers<ContextType = any, ParentType extends ResolversPar
 export type LocationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LocationConnection'] = ResolversParentTypes['LocationConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['LocationEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LocationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['LocationEdge'] = ResolversParentTypes['LocationEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Location'], ParentType, ContextType>;
   types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LocationEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['LocationEditMutations'] = ResolversParentTypes['LocationEditMutations']> = ResolversObject<{
@@ -41090,7 +41306,6 @@ export type LocationEditMutationsResolvers<ContextType = any, ParentType extends
   fieldPatch?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<LocationEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<LocationEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<LocationEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LogResolvers<ContextType = any, ParentType extends ResolversParentTypes['Log'] = ResolversParentTypes['Log']> = ResolversObject<{
@@ -41106,19 +41321,16 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user_metadata?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LogConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['LogConnection'] = ResolversParentTypes['LogConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['LogEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LogEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['LogEdge'] = ResolversParentTypes['LogEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Log'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type LogsWorkerConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['LogsWorkerConfig'] = ResolversParentTypes['LogsWorkerConfig']> = ResolversObject<{
@@ -41129,7 +41341,6 @@ export type LogsWorkerConfigResolvers<ContextType = any, ParentType extends Reso
   elasticsearch_ssl_reject_unauthorized?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   elasticsearch_url?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   elasticsearch_username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MacAddrResolvers<ContextType = any, ParentType extends ResolversParentTypes['MacAddr'] = ResolversParentTypes['MacAddr']> = ResolversObject<{
@@ -41171,7 +41382,7 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MacAddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MacAddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MacAddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MacAddrToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -41240,7 +41451,7 @@ export type MalwareResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MalwareStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MalwareStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MalwareStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MalwareToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -41311,7 +41522,7 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MalwareAnalysisStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MalwareAnalysisStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   submitted?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MalwareAnalysisToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -41324,25 +41535,21 @@ export type MalwareAnalysisResolvers<ContextType = any, ParentType extends Resol
 export type MalwareAnalysisConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MalwareAnalysisConnection'] = ResolversParentTypes['MalwareAnalysisConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<ResolversTypes['MalwareAnalysisEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MalwareAnalysisEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MalwareAnalysisEdge'] = ResolversParentTypes['MalwareAnalysisEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['MalwareAnalysis'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MalwareConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MalwareConnection'] = ResolversParentTypes['MalwareConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['MalwareEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MalwareEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MalwareEdge'] = ResolversParentTypes['MalwareEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Malware'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MalwareEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MalwareEditMutations'] = ResolversParentTypes['MalwareEditMutations']> = ResolversObject<{
@@ -41352,7 +41559,6 @@ export type MalwareEditMutationsResolvers<ContextType = any, ParentType extends 
   fieldPatch?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, RequireFields<MalwareEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MalwareEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, RequireFields<MalwareEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ManagedConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagedConnector'] = ResolversParentTypes['ManagedConnector']> = ResolversObject<{
@@ -41394,20 +41600,17 @@ export type ManagerConfigurationResolvers<ContextType = any, ParentType extends 
 export type ManagerContractConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerContractConfiguration'] = ResolversParentTypes['ManagerContractConfiguration']> = ResolversObject<{
   key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ManagerContractExcerptResolvers<ContextType = any, ParentType extends ResolversParentTypes['ManagerContractExcerpt'] = ResolversParentTypes['ManagerContractExcerpt']> = ResolversObject<{
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MappedEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['MappedEntity'] = ResolversParentTypes['MappedEntity']> = ResolversObject<{
   isEntityInContainer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   matchedEntity?: Resolver<ResolversTypes['StixCoreObject'], ParentType, ContextType>;
   matchedString?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MappingAnalysisResolvers<ContextType = any, ParentType extends ResolversParentTypes['MappingAnalysis'] = ResolversParentTypes['MappingAnalysis']> = ResolversObject<{
@@ -41436,7 +41639,7 @@ export type MarkingDefinitionResolvers<ContextType = any, ParentType extends Res
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MarkingDefinitionToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -41448,13 +41651,11 @@ export type MarkingDefinitionResolvers<ContextType = any, ParentType extends Res
 export type MarkingDefinitionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkingDefinitionConnection'] = ResolversParentTypes['MarkingDefinitionConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['MarkingDefinitionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MarkingDefinitionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkingDefinitionEdge'] = ResolversParentTypes['MarkingDefinitionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['MarkingDefinition'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MarkingDefinitionEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkingDefinitionEditMutations'] = ResolversParentTypes['MarkingDefinitionEditMutations']> = ResolversObject<{
@@ -41462,7 +41663,6 @@ export type MarkingDefinitionEditMutationsResolvers<ContextType = any, ParentTyp
   contextPatch?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, Partial<MarkingDefinitionEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<MarkingDefinitionEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MarkingDefinitionShortResolvers<ContextType = any, ParentType extends ResolversParentTypes['MarkingDefinitionShort'] = ResolversParentTypes['MarkingDefinitionShort']> = ResolversObject<{
@@ -41474,25 +41674,21 @@ export type MarkingDefinitionShortResolvers<ContextType = any, ParentType extend
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   x_opencti_color?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_order?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MeOrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeOrganization'] = ResolversParentTypes['MeOrganization']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MeOrganizationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeOrganizationConnection'] = ResolversParentTypes['MeOrganizationConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['MeOrganizationEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MeOrganizationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeOrganizationEdge'] = ResolversParentTypes['MeOrganizationEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['MeOrganization'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MeUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeUser'] = ResolversParentTypes['MeUser']> = ResolversObject<{
@@ -41545,7 +41741,6 @@ export type MeasureResolvers<ContextType = any, ParentType extends ResolversPare
   date_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   index?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   measure?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MediaContentResolvers<ContextType = any, ParentType extends ResolversParentTypes['MediaContent'] = ResolversParentTypes['MediaContent']> = ResolversObject<{
@@ -41592,7 +41787,7 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MediaContentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MediaContentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MediaContentToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -41608,7 +41803,6 @@ export type MemberResolvers<ContextType = any, ParentType extends ResolversParen
   group_confidence_level?: Resolver<Maybe<ResolversTypes['ConfidenceLevel']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MemberAccessResolvers<ContextType = any, ParentType extends ResolversParentTypes['MemberAccess'] = ResolversParentTypes['MemberAccess']> = ResolversObject<{
@@ -41618,57 +41812,48 @@ export type MemberAccessResolvers<ContextType = any, ParentType extends Resolver
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   member_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MemberConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MemberConnection'] = ResolversParentTypes['MemberConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['MemberEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MemberEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MemberEdge'] = ResolversParentTypes['MemberEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Member'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MemberGroupRestrictionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MemberGroupRestriction'] = ResolversParentTypes['MemberGroupRestriction']> = ResolversObject<{
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MessagesStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesStats'] = ResolversParentTypes['MessagesStats']> = ResolversObject<{
   ack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ack_details?: Resolver<Maybe<ResolversTypes['AckDetails']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MetricResolvers<ContextType = any, ParentType extends ResolversParentTypes['Metric'] = ResolversParentTypes['Metric']> = ResolversObject<{
   name?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MetricAttributesResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricAttributes'] = ResolversParentTypes['MetricAttributes']> = ResolversObject<{
   attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MetricDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricDefinition'] = ResolversParentTypes['MetricDefinition']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<ResolversTypes['MetricAttributes']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MetricsByMimeTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MetricsByMimeType'] = ResolversParentTypes['MetricsByMimeType']> = ResolversObject<{
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   mimeType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ModuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Module'] = ResolversParentTypes['Module']> = ResolversObject<{
@@ -41676,17 +41861,14 @@ export type ModuleResolvers<ContextType = any, ParentType extends ResolversParen
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   warning?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MultiDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MultiDistribution'] = ResolversParentTypes['MultiDistribution']> = ResolversObject<{
   data?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MultiTimeSeriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['MultiTimeSeries'] = ResolversParentTypes['MultiTimeSeries']> = ResolversObject<{
   data?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
@@ -42163,7 +42345,7 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MutexStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MutexStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MutexStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutexToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -42175,7 +42357,6 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
 export type NlqResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['NLQResponse'] = ResolversParentTypes['NLQResponse']> = ResolversObject<{
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   notResolvedValues?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NarrativeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Narrative'] = ResolversParentTypes['Narrative']> = ResolversObject<{
@@ -42232,7 +42413,7 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NarrativeStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NarrativeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subNarratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<NarrativeToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42244,13 +42425,11 @@ export type NarrativeResolvers<ContextType = any, ParentType extends ResolversPa
 export type NarrativeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NarrativeConnection'] = ResolversParentTypes['NarrativeConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['NarrativeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NarrativeEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NarrativeEdge'] = ResolversParentTypes['NarrativeEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Narrative'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NetworkTrafficResolvers<ContextType = any, ParentType extends ResolversParentTypes['NetworkTraffic'] = ResolversParentTypes['NetworkTraffic']> = ResolversObject<{
@@ -42305,7 +42484,7 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NetworkTrafficStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NetworkTrafficStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NetworkTrafficStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<NetworkTrafficToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -42373,7 +42552,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NoteStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NoteStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NoteStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<NoteToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42385,13 +42564,11 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
 export type NoteConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NoteConnection'] = ResolversParentTypes['NoteConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['NoteEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NoteEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NoteEdge'] = ResolversParentTypes['NoteEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Note'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NoteEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['NoteEditMutations'] = ResolversParentTypes['NoteEditMutations']> = ResolversObject<{
@@ -42401,7 +42578,6 @@ export type NoteEditMutationsResolvers<ContextType = any, ParentType extends Res
   fieldPatch?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<NoteEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<NoteEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<NoteEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotificationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notification'] = ResolversParentTypes['Notification']> = ResolversObject<{
@@ -42425,32 +42601,27 @@ export type NotificationResolvers<ContextType = any, ParentType extends Resolver
 export type NotificationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationConnection'] = ResolversParentTypes['NotificationConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['NotificationEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotificationContentResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationContent'] = ResolversParentTypes['NotificationContent']> = ResolversObject<{
   events?: Resolver<Array<ResolversTypes['NotificationEvent']>, ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotificationCountResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationCount'] = ResolversParentTypes['NotificationCount']> = ResolversObject<{
   count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotificationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationEdge'] = ResolversParentTypes['NotificationEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Notification'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotificationEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotificationEvent'] = ResolversParentTypes['NotificationEvent']> = ResolversObject<{
   instance_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   operation?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotifierResolvers<ContextType = any, ParentType extends ResolversParentTypes['Notifier'] = ResolversParentTypes['Notifier']> = ResolversObject<{
@@ -42473,7 +42644,6 @@ export type NotifierResolvers<ContextType = any, ParentType extends ResolversPar
 export type NotifierConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotifierConnection'] = ResolversParentTypes['NotifierConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['NotifierEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotifierConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotifierConnector'] = ResolversParentTypes['NotifierConnector']> = ResolversObject<{
@@ -42483,39 +42653,33 @@ export type NotifierConnectorResolvers<ContextType = any, ParentType extends Res
   connector_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotifierEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotifierEdge'] = ResolversParentTypes['NotifierEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Notifier'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NotifierParameterResolvers<ContextType = any, ParentType extends ResolversParentTypes['NotifierParameter'] = ResolversParentTypes['NotifierParameter']> = ResolversObject<{
   key?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NumberResolvers<ContextType = any, ParentType extends ResolversParentTypes['Number'] = ResolversParentTypes['Number']> = ResolversObject<{
   count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ObjectTotalsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObjectTotals'] = ResolversParentTypes['ObjectTotals']> = ResolversObject<{
   channels?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   consumers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   queues?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ObservablesValuesResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservablesValues'] = ResolversParentTypes['ObservablesValues']> = ResolversObject<{
   hashes?: Resolver<Maybe<Array<ResolversTypes['Hash']>>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ObservedDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservedData'] = ResolversParentTypes['ObservedData']> = ResolversObject<{
@@ -42576,7 +42740,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ObservedDataStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ObservedDataStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ObservedDataStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ObservedDataToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42588,13 +42752,11 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
 export type ObservedDataConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservedDataConnection'] = ResolversParentTypes['ObservedDataConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ObservedDataEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ObservedDataEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservedDataEdge'] = ResolversParentTypes['ObservedDataEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['ObservedData'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ObservedDataEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ObservedDataEditMutations'] = ResolversParentTypes['ObservedDataEditMutations']> = ResolversObject<{
@@ -42604,7 +42766,6 @@ export type ObservedDataEditMutationsResolvers<ContextType = any, ParentType ext
   fieldPatch?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OpenCtiFileResolvers<ContextType = any, ParentType extends ResolversParentTypes['OpenCtiFile'] = ResolversParentTypes['OpenCtiFile']> = ResolversObject<{
@@ -42614,7 +42775,6 @@ export type OpenCtiFileResolvers<ContextType = any, ParentType extends Resolvers
   mime_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OpinionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Opinion'] = ResolversParentTypes['Opinion']> = ResolversObject<{
@@ -42674,7 +42834,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OpinionStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<OpinionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OpinionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<OpinionToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -42686,13 +42846,11 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
 export type OpinionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['OpinionConnection'] = ResolversParentTypes['OpinionConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['OpinionEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OpinionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['OpinionEdge'] = ResolversParentTypes['OpinionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Opinion'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OpinionEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OpinionEditMutations'] = ResolversParentTypes['OpinionEditMutations']> = ResolversObject<{
@@ -42702,7 +42860,6 @@ export type OpinionEditMutationsResolvers<ContextType = any, ParentType extends 
   fieldPatch?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<OpinionEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<OpinionEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<OpinionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OpinionsMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OpinionsMetrics'] = ResolversParentTypes['OpinionsMetrics']> = ResolversObject<{
@@ -42710,7 +42867,6 @@ export type OpinionsMetricsResolvers<ContextType = any, ParentType extends Resol
   mean?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   min?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   total?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OrganizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Organization'] = ResolversParentTypes['Organization']> = ResolversObject<{
@@ -42777,7 +42933,7 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<OrganizationStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<OrganizationStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subOrganizations?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<OrganizationToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -42793,13 +42949,11 @@ export type OrganizationResolvers<ContextType = any, ParentType extends Resolver
 export type OrganizationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationConnection'] = ResolversParentTypes['OrganizationConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['OrganizationEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OrganizationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationEdge'] = ResolversParentTypes['OrganizationEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Organization'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OrganizationOrIndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['OrganizationOrIndividual'] = ResolversParentTypes['OrganizationOrIndividual']> = ResolversObject<{
@@ -42809,21 +42963,18 @@ export type OrganizationOrIndividualResolvers<ContextType = any, ParentType exte
 export type OtpElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['OtpElement'] = ResolversParentTypes['OtpElement']> = ResolversObject<{
   secret?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OverviewMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewMetrics'] = ResolversParentTypes['OverviewMetrics']> = ResolversObject<{
   message_stats?: Resolver<Maybe<ResolversTypes['MessagesStats']>, ParentType, ContextType>;
   object_totals?: Resolver<Maybe<ResolversTypes['ObjectTotals']>, ParentType, ContextType>;
   queue_totals?: Resolver<Maybe<ResolversTypes['QueueTotals']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type OverviewWidgetCustomizationResolvers<ContextType = any, ParentType extends ResolversParentTypes['OverviewWidgetCustomization'] = ResolversParentTypes['OverviewWidgetCustomization']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   width?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PageInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = ResolversObject<{
@@ -42832,26 +42983,22 @@ export type PageInfoResolvers<ContextType = any, ParentType extends ResolversPar
   hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   startCursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ParticipantResolvers<ContextType = any, ParentType extends ResolversParentTypes['Participant'] = ResolversParentTypes['Participant']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ParticipantConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ParticipantConnection'] = ResolversParentTypes['ParticipantConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['ParticipantEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ParticipantEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ParticipantEdge'] = ResolversParentTypes['ParticipantEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Participant'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PaymentCardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PaymentCard'] = ResolversParentTypes['PaymentCard']> = ResolversObject<{
@@ -42897,7 +43044,7 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PaymentCardStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PaymentCardStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PaymentCardStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<PaymentCardToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -42947,7 +43094,7 @@ export type PersonaResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PersonaStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PersonaStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PersonaStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<PersonaToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -42995,7 +43142,7 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PhoneNumberStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PhoneNumberStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PhoneNumberStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<PhoneNumberToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -43032,38 +43179,32 @@ export type PirResolvers<ContextType = any, ParentType extends ResolversParentTy
 export type PirConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirConnection'] = ResolversParentTypes['PirConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['PirEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PirCriterionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirCriterion'] = ResolversParentTypes['PirCriterion']> = ResolversObject<{
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   weight?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PirDependencyResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirDependency'] = ResolversParentTypes['PirDependency']> = ResolversObject<{
   author_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   element_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PirEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirEdge'] = ResolversParentTypes['PirEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Pir'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PirExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirExplanation'] = ResolversParentTypes['PirExplanation']> = ResolversObject<{
   criterion?: Resolver<ResolversTypes['PirCriterion'], ParentType, ContextType>;
   dependencies?: Resolver<Array<ResolversTypes['PirDependency']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PirInformationResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirInformation'] = ResolversParentTypes['PirInformation']> = ResolversObject<{
   last_pir_score_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   pir_explanation?: Resolver<Array<ResolversTypes['PirExplanation']>, ParentType, ContextType>;
   pir_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PirRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirRelationship'] = ResolversParentTypes['PirRelationship']> = ResolversObject<{
@@ -43092,31 +43233,26 @@ export type PirRelationshipResolvers<ContextType = any, ParentType extends Resol
 export type PirRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirRelationshipConnection'] = ResolversParentTypes['PirRelationshipConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['PirRelationshipEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PirRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirRelationshipEdge'] = ResolversParentTypes['PirRelationshipEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['PirRelationship'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PirScoreResolvers<ContextType = any, ParentType extends ResolversParentTypes['PirScore'] = ResolversParentTypes['PirScore']> = ResolversObject<{
   pir_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   pir_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlatformCriticalAlertResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformCriticalAlert'] = ResolversParentTypes['PlatformCriticalAlert']> = ResolversObject<{
   details?: Resolver<Maybe<ResolversTypes['PlatformCriticalAlertDetails']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['PlatformCriticalAlertType'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlatformCriticalAlertDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformCriticalAlertDetails'] = ResolversParentTypes['PlatformCriticalAlertDetails']> = ResolversObject<{
   groups?: Resolver<Array<ResolversTypes['Group']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformEE'] = ResolversParentTypes['PlatformEE']> = ResolversObject<{
@@ -43127,6 +43263,8 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
   license_expiration_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   license_expiration_prevention?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_expired?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_extra_expiration?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  license_extra_expiration_days?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   license_global?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_platform_match?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -43134,7 +43272,6 @@ export type PlatformEeResolvers<ContextType = any, ParentType extends ResolversP
   license_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   license_valid_cert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   license_validated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlatformProtectedSensitiveConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformProtectedSensitiveConfig'] = ResolversParentTypes['PlatformProtectedSensitiveConfig']> = ResolversObject<{
@@ -43147,13 +43284,11 @@ export type PlatformProtectedSensitiveConfigResolvers<ContextType = any, ParentT
   platform_organization?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
   roles?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
   rules?: Resolver<ResolversTypes['PlatformProtectedSubConfig'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlatformProtectedSubConfigResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlatformProtectedSubConfig'] = ResolversParentTypes['PlatformProtectedSubConfig']> = ResolversObject<{
   enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   protected_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlayBookExecutionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlayBookExecution'] = ResolversParentTypes['PlayBookExecution']> = ResolversObject<{
@@ -43161,7 +43296,6 @@ export type PlayBookExecutionResolvers<ContextType = any, ParentType extends Res
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   playbook_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   steps?: Resolver<Maybe<Array<ResolversTypes['PlayBookExecutionStep']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlayBookExecutionStepResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlayBookExecutionStep'] = ResolversParentTypes['PlayBookExecutionStep']> = ResolversObject<{
@@ -43173,7 +43307,6 @@ export type PlayBookExecutionStepResolvers<ContextType = any, ParentType extends
   message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   out_timestamp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlaybookResolvers<ContextType = any, ParentType extends ResolversParentTypes['Playbook'] = ResolversParentTypes['Playbook']> = ResolversObject<{
@@ -43201,31 +43334,26 @@ export type PlaybookComponentResolvers<ContextType = any, ParentType extends Res
   is_internal?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   ports?: Resolver<Array<ResolversTypes['PlaybookComponentPort']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlaybookComponentPortResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookComponentPort'] = ResolversParentTypes['PlaybookComponentPort']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlaybookConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookConnection'] = ResolversParentTypes['PlaybookConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['PlaybookEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlaybookEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookEdge'] = ResolversParentTypes['PlaybookEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Playbook'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PlaybookInsertResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlaybookInsertResult'] = ResolversParentTypes['PlaybookInsertResult']> = ResolversObject<{
   linkId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   nodeId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PositionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Position'] = ResolversParentTypes['Position']> = ResolversObject<{
@@ -43283,7 +43411,7 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PositionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PositionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   street_address?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<PositionToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -43296,13 +43424,11 @@ export type PositionResolvers<ContextType = any, ParentType extends ResolversPar
 export type PositionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PositionConnection'] = ResolversParentTypes['PositionConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['PositionEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PositionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PositionEdge'] = ResolversParentTypes['PositionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Position'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PositionEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PositionEditMutations'] = ResolversParentTypes['PositionEditMutations']> = ResolversObject<{
@@ -43312,7 +43438,6 @@ export type PositionEditMutationsResolvers<ContextType = any, ParentType extends
   fieldPatch?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<PositionEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<PositionEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<PositionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ProcessResolvers<ContextType = any, ParentType extends ResolversParentTypes['Process'] = ResolversParentTypes['Process']> = ResolversObject<{
@@ -43375,7 +43500,7 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ProcessStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ProcessStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ProcessStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ProcessToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   window_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -43390,7 +43515,6 @@ export type ProviderResolvers<ContextType = any, ParentType extends ResolversPar
   provider?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   strategy?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PublicDashboardResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDashboard'] = ResolversParentTypes['PublicDashboard']> = ResolversObject<{
@@ -43420,13 +43544,11 @@ export type PublicDashboardResolvers<ContextType = any, ParentType extends Resol
 export type PublicDashboardConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDashboardConnection'] = ResolversParentTypes['PublicDashboardConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['PublicDashboardEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PublicDashboardEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDashboardEdge'] = ResolversParentTypes['PublicDashboardEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['PublicDashboard'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PublicDistributionResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicDistribution'] = ResolversParentTypes['PublicDistribution']> = ResolversObject<{
@@ -43434,14 +43556,12 @@ export type PublicDistributionResolvers<ContextType = any, ParentType extends Re
   entity?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PublicProviderResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicProvider'] = ResolversParentTypes['PublicProvider']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   provider?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type PublicSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PublicSettings'] = ResolversParentTypes['PublicSettings']> = ResolversObject<{
@@ -43870,7 +43990,6 @@ export type QueryTaskResolvers<ContextType = any, ParentType extends ResolversPa
 
 export type QueueArgumentsResolvers<ContextType = any, ParentType extends ResolversParentTypes['QueueArguments'] = ResolversParentTypes['QueueArguments']> = ResolversObject<{
   config?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type QueueMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['QueueMetrics'] = ResolversParentTypes['QueueMetrics']> = ResolversObject<{
@@ -43882,14 +44001,12 @@ export type QueueMetricsResolvers<ContextType = any, ParentType extends Resolver
   messages_ready?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages_unacknowledged?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type QueueTotalsResolvers<ContextType = any, ParentType extends ResolversParentTypes['QueueTotals'] = ResolversParentTypes['QueueTotals']> = ResolversObject<{
   messages?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages_ready?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   messages_unacknowledged?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RabbitMqConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RabbitMQConnection'] = ResolversParentTypes['RabbitMQConnection']> = ResolversObject<{
@@ -43899,14 +44016,12 @@ export type RabbitMqConnectionResolvers<ContextType = any, ParentType extends Re
   use_ssl?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   vhost?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RabbitMqMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['RabbitMQMetrics'] = ResolversParentTypes['RabbitMQMetrics']> = ResolversObject<{
   consumers?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   overview?: Resolver<Maybe<ResolversTypes['OverviewMetrics']>, ParentType, ContextType>;
   queues?: Resolver<Maybe<Array<Maybe<ResolversTypes['QueueMetrics']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RedisStreamInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['RedisStreamInfo'] = ResolversParentTypes['RedisStreamInfo']> = ResolversObject<{
@@ -43915,7 +44030,6 @@ export type RedisStreamInfoResolvers<ContextType = any, ParentType extends Resol
   lastEventDate?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   lastEventId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   streamSize?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RegionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Region'] = ResolversParentTypes['Region']> = ResolversObject<{
@@ -43973,7 +44087,7 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<RegionStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<RegionStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subRegions?: Resolver<Maybe<ResolversTypes['RegionConnection']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<RegionToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -43986,13 +44100,11 @@ export type RegionResolvers<ContextType = any, ParentType extends ResolversParen
 export type RegionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RegionConnection'] = ResolversParentTypes['RegionConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['RegionEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RegionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['RegionEdge'] = ResolversParentTypes['RegionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Region'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RegionEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['RegionEditMutations'] = ResolversParentTypes['RegionEditMutations']> = ResolversObject<{
@@ -44002,7 +44114,6 @@ export type RegionEditMutationsResolvers<ContextType = any, ParentType extends R
   fieldPatch?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<RegionEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<RegionEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<RegionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RemoteStreamCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RemoteStreamCollection'] = ResolversParentTypes['RemoteStreamCollection']> = ResolversObject<{
@@ -44010,7 +44121,6 @@ export type RemoteStreamCollectionResolvers<ContextType = any, ParentType extend
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ReportResolvers<ContextType = any, ParentType extends ResolversParentTypes['Report'] = ResolversParentTypes['Report']> = ResolversObject<{
@@ -44075,7 +44185,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ReportStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ReportStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ReportStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ReportToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -44088,13 +44198,11 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
 export type ReportConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReportConnection'] = ResolversParentTypes['ReportConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ReportEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ReportEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReportEdge'] = ResolversParentTypes['ReportEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Report'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ReportEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ReportEditMutations'] = ResolversParentTypes['ReportEditMutations']> = ResolversObject<{
@@ -44104,13 +44212,11 @@ export type ReportEditMutationsResolvers<ContextType = any, ParentType extends R
   fieldPatch?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<ReportEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ReportEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<ReportEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RepresentativeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Representative'] = ResolversParentTypes['Representative']> = ResolversObject<{
   main?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   secondary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RepresentativeWithIdResolvers<ContextType = any, ParentType extends ResolversParentTypes['RepresentativeWithId'] = ResolversParentTypes['RepresentativeWithId']> = ResolversObject<{
@@ -44118,7 +44224,6 @@ export type RepresentativeWithIdResolvers<ContextType = any, ParentType extends 
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RequestAccessConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessConfiguration'] = ResolversParentTypes['RequestAccessConfiguration']> = ResolversObject<{
@@ -44126,34 +44231,29 @@ export type RequestAccessConfigurationResolvers<ContextType = any, ParentType ex
   approved_status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   declined_status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RequestAccessMemberResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessMember'] = ResolversParentTypes['RequestAccessMember']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RequestAccessStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessStatus'] = ResolversParentTypes['RequestAccessStatus']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   statusTemplate?: Resolver<Maybe<Array<Maybe<ResolversTypes['StatusTemplate']>>>, ParentType, ContextType>;
   template_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RequestAccessWorkflowResolvers<ContextType = any, ParentType extends ResolversParentTypes['RequestAccessWorkflow'] = ResolversParentTypes['RequestAccessWorkflow']> = ResolversObject<{
   approval_admin?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType>;
   approved_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   declined_workflow_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResolvedInstanceFilter'] = ResolversParentTypes['ResolvedInstanceFilter']> = ResolversObject<{
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RetentionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRule'] = ResolversParentTypes['RetentionRule']> = ResolversObject<{
@@ -44167,31 +44267,26 @@ export type RetentionRuleResolvers<ContextType = any, ParentType extends Resolve
   retention_unit?: Resolver<ResolversTypes['RetentionUnit'], ParentType, ContextType>;
   scope?: Resolver<ResolversTypes['RetentionRuleScope'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RetentionRuleConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRuleConnection'] = ResolversParentTypes['RetentionRuleConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['RetentionRuleEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RetentionRuleEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRuleEdge'] = ResolversParentTypes['RetentionRuleEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRuleEditMutations'] = ResolversParentTypes['RetentionRuleEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['RetentionRule']>, ParentType, ContextType, RequireFields<RetentionRuleEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RfiRequestAccessConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['RfiRequestAccessConfiguration'] = ResolversParentTypes['RfiRequestAccessConfiguration']> = ResolversObject<{
   configuration?: Resolver<Maybe<ResolversTypes['RequestAccessConfiguration']>, ParentType, ContextType>;
   isUserCanAction?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{
@@ -44214,13 +44309,11 @@ export type RoleResolvers<ContextType = any, ParentType extends ResolversParentT
 export type RoleConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RoleConnection'] = ResolversParentTypes['RoleConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<ResolversTypes['RoleEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RoleEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['RoleEdge'] = ResolversParentTypes['RoleEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Role'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RoleEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['RoleEditMutations'] = ResolversParentTypes['RoleEditMutations']> = ResolversObject<{
@@ -44230,7 +44323,6 @@ export type RoleEditMutationsResolvers<ContextType = any, ParentType extends Res
   fieldPatch?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<RoleEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<RoleEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<RoleEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Rule'] = ResolversParentTypes['Rule']> = ResolversObject<{
@@ -44240,14 +44332,12 @@ export type RuleResolvers<ContextType = any, ParentType extends ResolversParentT
   display?: Resolver<Maybe<ResolversTypes['Display']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RuleExecutionErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['RuleExecutionError'] = ResolversParentTypes['RuleExecutionError']> = ResolversObject<{
   error?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RuleManagerResolvers<ContextType = any, ParentType extends ResolversParentTypes['RuleManager'] = ResolversParentTypes['RuleManager']> = ResolversObject<{
@@ -44255,7 +44345,6 @@ export type RuleManagerResolvers<ContextType = any, ParentType extends Resolvers
   errors?: Resolver<Maybe<Array<Maybe<ResolversTypes['RuleExecutionError']>>>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastEventId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type RuleTaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['RuleTask'] = ResolversParentTypes['RuleTask']> = ResolversObject<{
@@ -44323,7 +44412,7 @@ export type SshKeyResolvers<ContextType = any, ParentType extends ResolversParen
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SshKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SshKeyStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SshKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SshKeyToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -44347,25 +44436,21 @@ export type SavedFilterResolvers<ContextType = any, ParentType extends Resolvers
 export type SavedFilterConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SavedFilterConnection'] = ResolversParentTypes['SavedFilterConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<ResolversTypes['SavedFilterEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SavedFilterEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SavedFilterEdge'] = ResolversParentTypes['SavedFilterEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['SavedFilter'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ScaleAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ScaleAttribute'] = ResolversParentTypes['ScaleAttribute']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SearchMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchMetrics'] = ResolversParentTypes['SearchMetrics']> = ResolversObject<{
   fetch_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   query_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['Sector'] = ResolversParentTypes['Sector']> = ResolversObject<{
@@ -44424,7 +44509,7 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SectorStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   subSectors?: Resolver<Maybe<ResolversTypes['SectorConnection']>, ParentType, ContextType>;
   targetedOrganizations?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SectorToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -44438,14 +44523,12 @@ export type SectorResolvers<ContextType = any, ParentType extends ResolversParen
 export type SectorConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SectorConnection'] = ResolversParentTypes['SectorConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SectorEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SectorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SectorEdge'] = ResolversParentTypes['SectorEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Sector'], ParentType, ContextType>;
   types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SectorEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SectorEditMutations'] = ResolversParentTypes['SectorEditMutations']> = ResolversObject<{
@@ -44455,7 +44538,6 @@ export type SectorEditMutationsResolvers<ContextType = any, ParentType extends R
   fieldPatch?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<SectorEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<SectorEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<SectorEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SecurityCoverageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityCoverage'] = ResolversParentTypes['SecurityCoverage']> = ResolversObject<{
@@ -44519,7 +44601,7 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SecurityCoverageStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityCoverageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SecurityCoverageToStixArgs>>;
   toStixBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -44534,13 +44616,11 @@ export type SecurityCoverageResolvers<ContextType = any, ParentType extends Reso
 export type SecurityCoverageConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityCoverageConnection'] = ResolversParentTypes['SecurityCoverageConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['SecurityCoverageEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SecurityCoverageEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityCoverageEdge'] = ResolversParentTypes['SecurityCoverageEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['SecurityCoverage'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SecurityPlatformResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityPlatform'] = ResolversParentTypes['SecurityPlatform']> = ResolversObject<{
@@ -44596,7 +44676,7 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityPlatformStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SecurityPlatformStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SecurityPlatformStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SecurityPlatformToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -44610,13 +44690,11 @@ export type SecurityPlatformResolvers<ContextType = any, ParentType extends Reso
 export type SecurityPlatformConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityPlatformConnection'] = ResolversParentTypes['SecurityPlatformConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['SecurityPlatformEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SecurityPlatformEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SecurityPlatformEdge'] = ResolversParentTypes['SecurityPlatformEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['SecurityPlatform'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SessionDetailResolvers<ContextType = any, ParentType extends ResolversParentTypes['SessionDetail'] = ResolversParentTypes['SessionDetail']> = ResolversObject<{
@@ -44624,7 +44702,6 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   originalMaxAge?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   ttl?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
@@ -44706,7 +44783,6 @@ export type SettingsEditMutationsResolvers<ContextType = any, ParentType extends
   deleteMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsDeleteMessageArgs, 'input'>>;
   editMessage?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsEditMessageArgs, 'input'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<SettingsEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SettingsMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SettingsMessage'] = ResolversParentTypes['SettingsMessage']> = ResolversObject<{
@@ -44718,7 +44794,6 @@ export type SettingsMessageResolvers<ContextType = any, ParentType extends Resol
   recipients?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SoftwareResolvers<ContextType = any, ParentType extends ResolversParentTypes['Software'] = ResolversParentTypes['Software']> = ResolversObject<{
@@ -44764,7 +44839,7 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SoftwareStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SoftwareStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   swid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SoftwareToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   vendor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -44780,13 +44855,11 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
 export type SoftwareConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SoftwareConnection'] = ResolversParentTypes['SoftwareConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['SoftwareEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SoftwareEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SoftwareEdge'] = ResolversParentTypes['SoftwareEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Software'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['Status'] = ResolversParentTypes['Status']> = ResolversObject<{
@@ -44803,13 +44876,11 @@ export type StatusResolvers<ContextType = any, ParentType extends ResolversParen
 export type StatusConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatusConnection'] = ResolversParentTypes['StatusConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['StatusEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StatusEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatusEdge'] = ResolversParentTypes['StatusEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Status'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StatusTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatusTemplate'] = ResolversParentTypes['StatusTemplate']> = ResolversObject<{
@@ -44818,19 +44889,16 @@ export type StatusTemplateResolvers<ContextType = any, ParentType extends Resolv
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   usages?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StatusTemplateConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatusTemplateConnection'] = ResolversParentTypes['StatusTemplateConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StatusTemplateEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StatusTemplateEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StatusTemplateEdge'] = ResolversParentTypes['StatusTemplateEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCoreObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObject'] = ResolversParentTypes['StixCoreObject']> = ResolversObject<{
@@ -44871,7 +44939,7 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCoreObjectStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixCoreObjectStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCoreObjectStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixCoreObjectToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
@@ -44879,13 +44947,11 @@ export type StixCoreObjectResolvers<ContextType = any, ParentType extends Resolv
 export type StixCoreObjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectConnection'] = ResolversParentTypes['StixCoreObjectConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['StixCoreObjectEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCoreObjectEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectEdge'] = ResolversParentTypes['StixCoreObjectEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixCoreObject'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectEditMutations'] = ResolversParentTypes['StixCoreObjectEditMutations']> = ResolversObject<{
@@ -44906,7 +44972,6 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
   uploadAndAskJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsUploadAndAskJobImportArgs, 'file'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCoreObjectOrStixCoreRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObjectOrStixCoreRelationship'] = ResolversParentTypes['StixCoreObjectOrStixCoreRelationship']> = ResolversObject<{
@@ -44959,7 +45024,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   toId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixCoreRelationshipToStixArgs>>;
   toType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -44971,13 +45036,11 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
 export type StixCoreRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreRelationshipConnection'] = ResolversParentTypes['StixCoreRelationshipConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['StixCoreRelationshipEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCoreRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreRelationshipEdge'] = ResolversParentTypes['StixCoreRelationshipEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixCoreRelationship'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCoreRelationshipEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreRelationshipEditMutations'] = ResolversParentTypes['StixCoreRelationshipEditMutations']> = ResolversObject<{
@@ -44991,7 +45054,6 @@ export type StixCoreRelationshipEditMutationsResolvers<ContextType = any, Parent
   removeFromDraft?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCyberObservableResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservable'] = ResolversParentTypes['StixCyberObservable']> = ResolversObject<{
@@ -45034,7 +45096,7 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCyberObservableStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixCyberObservableStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCyberObservableStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixCyberObservableToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -45044,13 +45106,11 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
 export type StixCyberObservableConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservableConnection'] = ResolversParentTypes['StixCyberObservableConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['StixCyberObservableEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCyberObservableEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservableEdge'] = ResolversParentTypes['StixCyberObservableEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixCyberObservable'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixCyberObservableEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservableEditMutations'] = ResolversParentTypes['StixCyberObservableEditMutations']> = ResolversObject<{
@@ -45066,7 +45126,6 @@ export type StixCyberObservableEditMutationsResolvers<ContextType = any, ParentT
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixCyberObservableEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<StixCyberObservableEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   relationsAdd?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<StixCyberObservableEditMutationsRelationsAddArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixDomainObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixDomainObject'] = ResolversParentTypes['StixDomainObject']> = ResolversObject<{
@@ -45117,7 +45176,7 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixDomainObjectStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixDomainObjectStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixDomainObjectStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixDomainObjectToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45127,13 +45186,11 @@ export type StixDomainObjectResolvers<ContextType = any, ParentType extends Reso
 export type StixDomainObjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixDomainObjectConnection'] = ResolversParentTypes['StixDomainObjectConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixDomainObjectEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixDomainObjectEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixDomainObjectEdge'] = ResolversParentTypes['StixDomainObjectEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixDomainObject'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixDomainObjectEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixDomainObjectEditMutations'] = ResolversParentTypes['StixDomainObjectEditMutations']> = ResolversObject<{
@@ -45150,13 +45207,11 @@ export type StixDomainObjectEditMutationsResolvers<ContextType = any, ParentType
   relationDelete?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsRelationDeleteArgs, 'toId'>>;
   relationsAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsRelationsAddArgs, 'input'>>;
   stixDomainObjectFileEdit?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, Partial<StixDomainObjectEditMutationsStixDomainObjectFileEditArgs>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixEditMutations'] = ResolversParentTypes['StixEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, Partial<StixEditMutationsDeleteArgs>>;
   merge?: Resolver<Maybe<ResolversTypes['StixObject']>, ParentType, ContextType, RequireFields<StixEditMutationsMergeArgs, 'stixObjectsIds'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixFileResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixFile'] = ResolversParentTypes['StixFile']> = ResolversObject<{
@@ -45209,7 +45264,7 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixFileStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixFileStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixFileStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixFileToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_additional_names?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45222,13 +45277,11 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
 export type StixFileConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixFileConnection'] = ResolversParentTypes['StixFileConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixFileEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixFileEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixFileEdge'] = ResolversParentTypes['StixFileEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixFile'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export interface StixIdScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['StixId'], any> {
@@ -45256,13 +45309,11 @@ export type StixMetaObjectResolvers<ContextType = any, ParentType extends Resolv
 export type StixMetaObjectConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaObjectConnection'] = ResolversParentTypes['StixMetaObjectConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixMetaObjectEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixMetaObjectEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaObjectEdge'] = ResolversParentTypes['StixMetaObjectEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixMetaObject'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObject'] = ResolversParentTypes['StixObject']> = ResolversObject<{
@@ -45291,13 +45342,11 @@ export type StixObjectOrStixRelationshipResolvers<ContextType = any, ParentType 
 export type StixObjectOrStixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixObjectOrStixRelationshipEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipEdge'] = ResolversParentTypes['StixObjectOrStixRelationshipEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipOrCreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipOrCreator'] = ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> = ResolversObject<{
@@ -45307,14 +45356,12 @@ export type StixObjectOrStixRelationshipOrCreatorResolvers<ContextType = any, Pa
 export type StixObjectOrStixRelationshipRefConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipRefConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipRefConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixObjectOrStixRelationshipRefEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipRefEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipRefEdge'] = ResolversParentTypes['StixObjectOrStixRelationshipRefEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
   types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export interface StixRefScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['StixRef'], any> {
@@ -45355,7 +45402,7 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
   stop_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixRefRelationshipToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -45365,20 +45412,17 @@ export type StixRefRelationshipResolvers<ContextType = any, ParentType extends R
 export type StixRefRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationshipConnection'] = ResolversParentTypes['StixRefRelationshipConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['StixRefRelationshipEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixRefRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationshipEdge'] = ResolversParentTypes['StixRefRelationshipEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixRefRelationship'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixRefRelationshipEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationshipEditMutations'] = ResolversParentTypes['StixRefRelationshipEditMutations']> = ResolversObject<{
   contextPatch?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, Partial<StixRefRelationshipEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixRefRelationshipEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationship'] = ResolversParentTypes['StixRelationship']> = ResolversObject<{
@@ -45405,7 +45449,7 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixRelationshipToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -45414,36 +45458,30 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
 export type StixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipConnection'] = ResolversParentTypes['StixRelationshipConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['StixRelationshipEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipEdge'] = ResolversParentTypes['StixRelationshipEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixRelationship'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixRelationshipEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipEditMutations'] = ResolversParentTypes['StixRelationshipEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixRelationshipRefSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipRefSchema'] = ResolversParentTypes['StixRelationshipRefSchema']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   values?: Resolver<Array<ResolversTypes['StixRelationshipRefSchemaValue']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixRelationshipRefSchemaValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipRefSchemaValue'] = ResolversParentTypes['StixRelationshipRefSchemaValue']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toTypes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixRelationshipSchemaResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationshipSchema'] = ResolversParentTypes['StixRelationshipSchema']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   values?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixSightingRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixSightingRelationship'] = ResolversParentTypes['StixSightingRelationship']> = ResolversObject<{
@@ -45488,7 +45526,7 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']>, ParentType, ContextType>;
   toId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<StixSightingRelationshipToStixArgs>>;
   toType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -45501,7 +45539,6 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
 export type StixSightingRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixSightingRelationshipConnection'] = ResolversParentTypes['StixSightingRelationshipConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixSightingRelationshipsEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixSightingRelationshipEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixSightingRelationshipEditMutations'] = ResolversParentTypes['StixSightingRelationshipEditMutations']> = ResolversObject<{
@@ -45515,13 +45552,11 @@ export type StixSightingRelationshipEditMutationsResolvers<ContextType = any, Pa
   removeFromDraft?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StixSightingRelationshipsEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixSightingRelationshipsEdge'] = ResolversParentTypes['StixSightingRelationshipsEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StixSightingRelationship'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StreamCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollection'] = ResolversParentTypes['StreamCollection']> = ResolversObject<{
@@ -45532,19 +45567,16 @@ export type StreamCollectionResolvers<ContextType = any, ParentType extends Reso
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   stream_live?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stream_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StreamCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionConnection'] = ResolversParentTypes['StreamCollectionConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['StreamCollectionEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StreamCollectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionEdge'] = ResolversParentTypes['StreamCollectionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['StreamCollection'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type StreamCollectionEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StreamCollectionEditMutations'] = ResolversParentTypes['StreamCollectionEditMutations']> = ResolversObject<{
@@ -45552,14 +45584,12 @@ export type StreamCollectionEditMutationsResolvers<ContextType = any, ParentType
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   deleteGroup?: Resolver<Maybe<ResolversTypes['StreamCollection']>, ParentType, ContextType, RequireFields<StreamCollectionEditMutationsDeleteGroupArgs, 'id'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['StreamCollection']>, ParentType, ContextType, RequireFields<StreamCollectionEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SubAttackPatternForMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubAttackPatternForMatrix'] = ResolversParentTypes['SubAttackPatternForMatrix']> = ResolversObject<{
   attack_pattern_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SubTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubType'] = ResolversParentTypes['SubType']> = ResolversObject<{
@@ -45569,26 +45599,22 @@ export type SubTypeResolvers<ContextType = any, ParentType extends ResolversPare
   statuses?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType>;
   statusesRequestAccess?: Resolver<Array<ResolversTypes['Status']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SubTypeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubTypeConnection'] = ResolversParentTypes['SubTypeConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['SubTypeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SubTypeEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubTypeEdge'] = ResolversParentTypes['SubTypeEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['SubType'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SubTypeEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubTypeEditMutations'] = ResolversParentTypes['SubTypeEditMutations']> = ResolversObject<{
   statusAdd?: Resolver<Maybe<ResolversTypes['SubType']>, ParentType, ContextType, RequireFields<SubTypeEditMutationsStatusAddArgs, 'input'>>;
   statusDelete?: Resolver<Maybe<ResolversTypes['SubType']>, ParentType, ContextType, RequireFields<SubTypeEditMutationsStatusDeleteArgs, 'statusId'>>;
   statusFieldPatch?: Resolver<Maybe<ResolversTypes['SubType']>, ParentType, ContextType, RequireFields<SubTypeEditMutationsStatusFieldPatchArgs, 'input' | 'statusId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = ResolversObject<{
@@ -45619,7 +45645,6 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
 
 export type SuccessResolvers<ContextType = any, ParentType extends ResolversParentTypes['Success'] = ResolversParentTypes['Success']> = ResolversObject<{
   success?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SupportPackageResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportPackage'] = ResolversParentTypes['SupportPackage']> = ResolversObject<{
@@ -45642,13 +45667,11 @@ export type SupportPackageResolvers<ContextType = any, ParentType extends Resolv
 export type SupportPackageConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportPackageConnection'] = ResolversParentTypes['SupportPackageConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['SupportPackageEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SupportPackageEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SupportPackageEdge'] = ResolversParentTypes['SupportPackageEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['SupportPackage'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SynchronizerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Synchronizer'] = ResolversParentTypes['Synchronizer']> = ResolversObject<{
@@ -45665,25 +45688,21 @@ export type SynchronizerResolvers<ContextType = any, ParentType extends Resolver
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   uri?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SynchronizerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SynchronizerConnection'] = ResolversParentTypes['SynchronizerConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SynchronizerEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SynchronizerEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SynchronizerEdge'] = ResolversParentTypes['SynchronizerEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Synchronizer'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SynchronizerEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SynchronizerEditMutations'] = ResolversParentTypes['SynchronizerEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<SynchronizerEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SystemResolvers<ContextType = any, ParentType extends ResolversParentTypes['System'] = ResolversParentTypes['System']> = ResolversObject<{
@@ -45739,7 +45758,7 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SystemStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SystemStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SystemStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<SystemToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -45755,13 +45774,11 @@ export type SystemResolvers<ContextType = any, ParentType extends ResolversParen
 export type SystemConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SystemConnection'] = ResolversParentTypes['SystemConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['SystemEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SystemEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SystemEdge'] = ResolversParentTypes['SystemEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['System'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type SystemEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SystemEditMutations'] = ResolversParentTypes['SystemEditMutations']> = ResolversObject<{
@@ -45771,7 +45788,6 @@ export type SystemEditMutationsResolvers<ContextType = any, ParentType extends R
   fieldPatch?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, RequireFields<SystemEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<SystemEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, RequireFields<SystemEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaskResolvers<ContextType = any, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = ResolversObject<{
@@ -45832,7 +45848,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TaskStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<TaskStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TaskStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<TaskToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -45844,13 +45860,11 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
 export type TaskConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaskConnection'] = ResolversParentTypes['TaskConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['TaskEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaskEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaskEdge'] = ResolversParentTypes['TaskEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Task'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaskTemplateResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaskTemplate'] = ResolversParentTypes['TaskTemplate']> = ResolversObject<{
@@ -45869,13 +45883,11 @@ export type TaskTemplateResolvers<ContextType = any, ParentType extends Resolver
 export type TaskTemplateConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaskTemplateConnection'] = ResolversParentTypes['TaskTemplateConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['TaskTemplateEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaskTemplateEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaskTemplateEdge'] = ResolversParentTypes['TaskTemplateEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['TaskTemplate'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaxiiCollectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollection'] = ResolversParentTypes['TaxiiCollection']> = ResolversObject<{
@@ -45887,25 +45899,21 @@ export type TaxiiCollectionResolvers<ContextType = any, ParentType extends Resol
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   score_to_confidence?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   taxii_public?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaxiiCollectionConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollectionConnection'] = ResolversParentTypes['TaxiiCollectionConnection']> = ResolversObject<{
   edges?: Resolver<Array<Maybe<ResolversTypes['TaxiiCollectionEdge']>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaxiiCollectionEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollectionEdge'] = ResolversParentTypes['TaxiiCollectionEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['TaxiiCollection'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TaxiiCollectionEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaxiiCollectionEditMutations'] = ResolversParentTypes['TaxiiCollectionEditMutations']> = ResolversObject<{
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<TaxiiCollectionEditMutationsFieldPatchArgs, 'input'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TextResolvers<ContextType = any, ParentType extends ResolversParentTypes['Text'] = ResolversParentTypes['Text']> = ResolversObject<{
@@ -45947,7 +45955,7 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TextStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<TextStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TextStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<TextToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -46061,7 +46069,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ThreatActorToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -46072,13 +46080,11 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
 export type ThreatActorConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorConnection'] = ResolversParentTypes['ThreatActorConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ThreatActorEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ThreatActorEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorEdge'] = ResolversParentTypes['ThreatActorEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['ThreatActor'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ThreatActorGroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorGroup'] = ResolversParentTypes['ThreatActorGroup']> = ResolversObject<{
@@ -46143,7 +46149,7 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorGroupStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorGroupStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ThreatActorGroupToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -46155,13 +46161,11 @@ export type ThreatActorGroupResolvers<ContextType = any, ParentType extends Reso
 export type ThreatActorGroupConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorGroupConnection'] = ResolversParentTypes['ThreatActorGroupConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ThreatActorGroupEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ThreatActorGroupEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorGroupEdge'] = ResolversParentTypes['ThreatActorGroupEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['ThreatActorGroup'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ThreatActorGroupEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorGroupEditMutations'] = ResolversParentTypes['ThreatActorGroupEditMutations']> = ResolversObject<{
@@ -46171,7 +46175,6 @@ export type ThreatActorGroupEditMutationsResolvers<ContextType = any, ParentType
   fieldPatch?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, RequireFields<ThreatActorGroupEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ThreatActorGroupEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['ThreatActorGroup']>, ParentType, ContextType, RequireFields<ThreatActorGroupEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorIndividual'] = ResolversParentTypes['ThreatActorIndividual']> = ResolversObject<{
@@ -46246,7 +46249,7 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ThreatActorIndividualStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ThreatActorIndividualStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
   threat_actor_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ThreatActorIndividualToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   weight?: Resolver<Maybe<Array<ResolversTypes['Measure']>>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -46259,19 +46262,16 @@ export type ThreatActorIndividualResolvers<ContextType = any, ParentType extends
 export type ThreatActorIndividualConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorIndividualConnection'] = ResolversParentTypes['ThreatActorIndividualConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ThreatActorIndividualEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ThreatActorIndividualEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ThreatActorIndividualEdge'] = ResolversParentTypes['ThreatActorIndividualEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['ThreatActorIndividual'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TimeSeriesResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimeSeries'] = ResolversParentTypes['TimeSeries']> = ResolversObject<{
   date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ToolResolvers<ContextType = any, ParentType extends ResolversParentTypes['Tool'] = ResolversParentTypes['Tool']> = ResolversObject<{
@@ -46325,7 +46325,7 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ToolStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ToolStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ToolStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<ToolToStixArgs>>;
   tool_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   tool_version?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -46339,13 +46339,11 @@ export type ToolResolvers<ContextType = any, ParentType extends ResolversParentT
 export type ToolConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['ToolConnection'] = ResolversParentTypes['ToolConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['ToolEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ToolEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ToolEdge'] = ResolversParentTypes['ToolEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Tool'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ToolEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ToolEditMutations'] = ResolversParentTypes['ToolEditMutations']> = ResolversObject<{
@@ -46355,7 +46353,6 @@ export type ToolEditMutationsResolvers<ContextType = any, ParentType extends Res
   fieldPatch?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<ToolEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ToolEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<ToolEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TrackingNumberResolvers<ContextType = any, ParentType extends ResolversParentTypes['TrackingNumber'] = ResolversParentTypes['TrackingNumber']> = ResolversObject<{
@@ -46397,7 +46394,7 @@ export type TrackingNumberResolvers<ContextType = any, ParentType extends Resolv
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TrackingNumberStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<TrackingNumberStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TrackingNumberStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<TrackingNumberToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -46438,13 +46435,11 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
 export type TriggerConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TriggerConnection'] = ResolversParentTypes['TriggerConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['TriggerEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TriggerEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TriggerEdge'] = ResolversParentTypes['TriggerEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Trigger'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type TypeAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TypeAttribute'] = ResolversParentTypes['TypeAttribute']> = ResolversObject<{
@@ -46458,7 +46453,6 @@ export type TypeAttributeResolvers<ContextType = any, ParentType extends Resolve
   scale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   upsert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export interface UploadScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Upload'], any> {
@@ -46504,7 +46498,7 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UrlStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UrlStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UrlStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<UrlToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -46615,7 +46609,7 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAccountStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UserAccountStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAccountStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<UserAccountToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -46664,7 +46658,7 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAgentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UserAgentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAgentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<UserAgentToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -46677,13 +46671,11 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
 export type UserConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserConnection'] = ResolversParentTypes['UserConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['UserEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type UserEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEdge'] = ResolversParentTypes['UserEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type UserEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserEditMutations'] = ResolversParentTypes['UserEditMutations']> = ResolversObject<{
@@ -46696,24 +46688,20 @@ export type UserEditMutationsResolvers<ContextType = any, ParentType extends Res
   relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<UserEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   tokenRenew?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type UserSessionResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserSession'] = ResolversParentTypes['UserSession']> = ResolversObject<{
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type UserStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserStatus'] = ResolversParentTypes['UserStatus']> = ResolversObject<{
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type VerifyOtpResolvers<ContextType = any, ParentType extends ResolversParentTypes['VerifyOtp'] = ResolversParentTypes['VerifyOtp']> = ResolversObject<{
   mfa_activated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type VocabularyResolvers<ContextType = any, ParentType extends ResolversParentTypes['Vocabulary'] = ResolversParentTypes['Vocabulary']> = ResolversObject<{
@@ -46748,7 +46736,6 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
 export type VocabularyConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['VocabularyConnection'] = ResolversParentTypes['VocabularyConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['VocabularyEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type VocabularyDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['VocabularyDefinition'] = ResolversParentTypes['VocabularyDefinition']> = ResolversObject<{
@@ -46756,20 +46743,17 @@ export type VocabularyDefinitionResolvers<ContextType = any, ParentType extends 
   entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['VocabularyFieldDefinition']>, ParentType, ContextType>;
   key?: Resolver<ResolversTypes['VocabularyCategory'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type VocabularyEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['VocabularyEdge'] = ResolversParentTypes['VocabularyEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Vocabulary'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type VocabularyFieldDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['VocabularyFieldDefinition'] = ResolversParentTypes['VocabularyFieldDefinition']> = ResolversObject<{
   key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   multiple?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type VulnerabilityResolvers<ContextType = any, ParentType extends ResolversParentTypes['Vulnerability'] = ResolversParentTypes['Vulnerability']> = ResolversObject<{
@@ -46822,7 +46806,7 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<VulnerabilityStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<VulnerabilityStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<VulnerabilityStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<VulnerabilityToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -46883,13 +46867,11 @@ export type VulnerabilityResolvers<ContextType = any, ParentType extends Resolve
 export type VulnerabilityConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['VulnerabilityConnection'] = ResolversParentTypes['VulnerabilityConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['VulnerabilityEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type VulnerabilityEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['VulnerabilityEdge'] = ResolversParentTypes['VulnerabilityEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Vulnerability'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type VulnerabilityEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['VulnerabilityEditMutations'] = ResolversParentTypes['VulnerabilityEditMutations']> = ResolversObject<{
@@ -46899,7 +46881,6 @@ export type VulnerabilityEditMutationsResolvers<ContextType = any, ParentType ex
   fieldPatch?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WidgetResolvers<ContextType = any, ParentType extends ResolversParentTypes['Widget'] = ResolversParentTypes['Widget']> = ResolversObject<{
@@ -46909,7 +46890,6 @@ export type WidgetResolvers<ContextType = any, ParentType extends ResolversParen
   parameters?: Resolver<Maybe<ResolversTypes['WidgetParameters']>, ParentType, ContextType>;
   perspective?: Resolver<Maybe<ResolversTypes['WidgetPerspective']>, ParentType, ContextType>;
   type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WidgetColumnResolvers<ContextType = any, ParentType extends ResolversParentTypes['WidgetColumn'] = ResolversParentTypes['WidgetColumn']> = ResolversObject<{
@@ -46917,7 +46897,6 @@ export type WidgetColumnResolvers<ContextType = any, ParentType extends Resolver
   displayStyle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   variableName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WidgetDataSelectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WidgetDataSelection'] = ResolversParentTypes['WidgetDataSelection']> = ResolversObject<{
@@ -46937,7 +46916,6 @@ export type WidgetDataSelectionResolvers<ContextType = any, ParentType extends R
   sort_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sort_mode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   zoom?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WidgetLayoutResolvers<ContextType = any, ParentType extends ResolversParentTypes['WidgetLayout'] = ResolversParentTypes['WidgetLayout']> = ResolversObject<{
@@ -46948,7 +46926,6 @@ export type WidgetLayoutResolvers<ContextType = any, ParentType extends Resolver
   w?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   x?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   y?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WidgetParametersResolvers<ContextType = any, ParentType extends ResolversParentTypes['WidgetParameters'] = ResolversParentTypes['WidgetParameters']> = ResolversObject<{
@@ -46958,7 +46935,6 @@ export type WidgetParametersResolvers<ContextType = any, ParentType extends Reso
   legend?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   stacked?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['WindowsRegistryKey'] = ResolversParentTypes['WindowsRegistryKey']> = ResolversObject<{
@@ -47003,7 +46979,7 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<WindowsRegistryKeyToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -47054,7 +47030,7 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryValueTypeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryValueTypeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -47079,19 +47055,16 @@ export type WorkResolvers<ContextType = any, ParentType extends ResolversParentT
   timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   tracking?: Resolver<Maybe<ResolversTypes['WorkTracking']>, ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WorkConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkConnection'] = ResolversParentTypes['WorkConnection']> = ResolversObject<{
   edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['WorkEdge']>>>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WorkEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkEdge'] = ResolversParentTypes['WorkEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Work'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WorkEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkEditMutations'] = ResolversParentTypes['WorkEditMutations']> = ResolversObject<{
@@ -47102,7 +47075,6 @@ export type WorkEditMutationsResolvers<ContextType = any, ParentType extends Res
   reportExpectation?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsReportExpectationArgs>>;
   toProcessed?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsToProcessedArgs>>;
   toReceived?: Resolver<ResolversTypes['ID'], ParentType, ContextType, Partial<WorkEditMutationsToReceivedArgs>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WorkMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkMessage'] = ResolversParentTypes['WorkMessage']> = ResolversObject<{
@@ -47110,14 +47082,12 @@ export type WorkMessageResolvers<ContextType = any, ParentType extends Resolvers
   sequence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WorkTrackingResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkTracking'] = ResolversParentTypes['WorkTracking']> = ResolversObject<{
   import_expected_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   import_last_processed?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   import_processed_number?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Workspace'] = ResolversParentTypes['Workspace']> = ResolversObject<{
@@ -47151,13 +47121,11 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
 export type WorkspaceConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkspaceConnection'] = ResolversParentTypes['WorkspaceConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['WorkspaceEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type WorkspaceEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['WorkspaceEdge'] = ResolversParentTypes['WorkspaceEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Workspace'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type X509CertificateResolvers<ContextType = any, ParentType extends ResolversParentTypes['X509Certificate'] = ResolversParentTypes['X509Certificate']> = ResolversObject<{
@@ -47224,7 +47192,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   subject_public_key_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   subject_public_key_exponent?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   subject_public_key_modulus?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<X509CertificateToStixArgs>>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   validity_not_after?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   validity_not_before?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
