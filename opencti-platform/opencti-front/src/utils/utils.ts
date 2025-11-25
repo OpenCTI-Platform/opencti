@@ -16,9 +16,9 @@ export const copyToClipboard = (t: (text: string) => string, text: string) => {
 };
 
 export const removeEmptyFields = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
   obj: Record<string, any | undefined>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, any> => {
   const clone = { ...obj };
   Object.keys(clone).forEach((key) => {
@@ -32,7 +32,7 @@ export const removeEmptyFields = (
 export const deleteElementByValue = (obj: Record<string, string>, val: string) => {
   for (const key in obj) {
     if (obj[key] === val) {
-      // eslint-disable-next-line no-param-reassign
+      // oxlint-disable-next-line no-param-reassign
       delete obj[key];
     }
   }

@@ -4,7 +4,7 @@ import { expect, afterEach, vi } from 'vitest';
 
 import '@testing-library/jest-dom/vitest';
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// oxlint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 global.jest = vi;
 

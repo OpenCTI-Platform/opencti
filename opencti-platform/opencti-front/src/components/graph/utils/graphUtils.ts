@@ -9,7 +9,7 @@ import { GraphState } from '../graph.types';
  * @param point Point to see if inside polygon.
  * @returns True if the point is inside the polygon.
  */
-// eslint-disable-next-line import/prefer-default-export
+// oxlint-disable-next-line import/prefer-default-export
 export const pointInPolygon = (
   polygon: number[][],
   point: [number, number],
