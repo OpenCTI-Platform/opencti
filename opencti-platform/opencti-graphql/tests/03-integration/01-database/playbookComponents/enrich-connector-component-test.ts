@@ -45,6 +45,59 @@ describe('PLAYBOOK_ENRICH_CONNECTOR_COMPONENT', () => {
     },
   };
 
+  it('should add opencti_upsert_operations to new bundle if same objects ids and not present in new bundle', async () => {
+    const previousStepBundle = {
+      ...baseBundle,
+      objects: [{
+        ...baseBundleObject,
+        labels: ['label-id-1'],
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: 'some--id',
+            type: 'sco',
+            extension_type: 'property-extension',
+            opencti_upsert_operations: [
+              { key: 'objectLabel', value: ['label-id-1'], operation: 'remove' },
+            ],
+            labels_ids: ['label-id-1'],
+          } as StixOpenctiExtension,
+        },
+      } as StixObject],
+    } as StixBundle;
+
+    const bundle = {
+      ...baseBundle,
+      objects: [{
+        ...baseBundleObject,
+        labels: ['label-id-1'],
+        extensions: {
+          [STIX_EXT_OCTI]: {
+            id: 'some--id',
+            type: 'sco',
+            extension_type: 'property-extension',
+            labels_ids: ['label-id-1', 'label-id-2'],
+          } as StixOpenctiExtension,
+        },
+      } as StixObject],
+    } as StixBundle;
+
+    const result = await PLAYBOOK_CONNECTOR_COMPONENT.executor({
+      dataInstanceId: '',
+      ...baseExecutorParams,
+      previousStepBundle,
+      bundle,
+      playbookNode: dummyPlaybookNode,
+    });
+
+    const updated = result.bundle.objects.find((o) => o.id === ipv4ObjectId) as StixObject;
+    const ext = updated.extensions![STIX_EXT_OCTI] as StixOpenctiExtension;
+    expect(ext.opencti_upsert_operations).toBeDefined();
+    expect(ext.opencti_upsert_operations!.length).toBe(1);
+    expect(ext.opencti_upsert_operations![0].operation).toBe('remove');
+    expect(ext.opencti_upsert_operations![0].key).toBe('objectLabel');
+    expect(ext.opencti_upsert_operations![0].value[0]).toBe('label-id-1');
+  });
+
   it('should add previousStepBundle objects that are not present in the new bundle', async () => {
     const idInBoth = 'sco--in-both';
     const idOnlyInPrevious = 'sco--only-in-previous';

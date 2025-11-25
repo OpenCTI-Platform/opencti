@@ -201,6 +201,7 @@ export const addStixCyberObservable = async (context, user, input) => {
     createIndicator,
     payload_bin,
     url,
+    upsertOperations,
   } = input;
   const graphQLType = type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
   if (!input[graphQLType]) {
@@ -209,7 +210,6 @@ export const addStixCyberObservable = async (context, user, input) => {
   checkScore(x_opencti_score);
   const lowerCaseTypes = ['Domain-Name', 'Email-Addr'];
   if (lowerCaseTypes.includes(type) && input[graphQLType].value) {
-    // eslint-disable-next-line no-param-reassign
     input[graphQLType].value = input[graphQLType].value.toLowerCase();
   }
   if (type === 'Artifact' && input[graphQLType].file && isEmptyField(payload_bin)) {
@@ -225,6 +225,7 @@ export const addStixCyberObservable = async (context, user, input) => {
     objectLabel,
     externalReferences,
     update,
+    upsertOperations,
     ...input[graphQLType],
   };
   if (internal_id) {
