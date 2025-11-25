@@ -10,7 +10,7 @@ jobs:
     steps:
 
     - name: OpenCTI checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Runner information
       continue-on-error: true

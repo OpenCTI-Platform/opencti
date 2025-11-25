@@ -13,7 +13,7 @@ jobs:
         python-version: [ "3.9", "3.10", "3.11", "3.12" ]
     steps:
     - name: OpenCTI checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Runner information
       continue-on-error: true
