@@ -499,7 +499,7 @@ export const modified: AttributeDefinition = {
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
-  upsert: false,
+  upsert: true,
   isFilterable: false, // use updated_at filter
 };
 

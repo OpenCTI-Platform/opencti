@@ -2811,6 +2811,12 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   if (!INTERNAL_USERS[user.id] && !user.no_creators) {
     updatePatch.creator_id = [user.id];
   }
+  // Handle "modified" upsert
+  // Only upsert modified if after the existing one
+  if (isNotEmptyField(updatePatch.modified)) {
+    const { date: alignedModified } = computeExtendedDateValues(updatePatch.modified, resolvedElement.modified, ALIGN_NEWEST);
+    updatePatch.modified = alignedModified;
+  }
   // Upsert observed data count and times extensions
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
     const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, resolvedElement.first_observed, ALIGN_OLDEST);
