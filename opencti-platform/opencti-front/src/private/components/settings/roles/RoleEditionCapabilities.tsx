@@ -72,6 +72,15 @@ export const roleEditionCapabilitiesLinesSearch = graphql`
         }
       }
     }
+    capabilitiesInDraft(first: 500) {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
   }
 `;
 
@@ -219,6 +228,11 @@ const RoleEditionCapabilities = createFragmentContainer(
         id
         can_manage_sensitive_config
         capabilities {
+          id
+          name
+          description
+        }
+        capabilitiesInDraft {
           id
           name
           description

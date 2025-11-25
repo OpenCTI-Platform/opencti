@@ -9,6 +9,7 @@ export const RELATION_PARTICIPATE_TO = 'participate-to';
 export const RELATION_ALLOWED_BY = 'allowed-by';
 export const RELATION_HAS_ROLE = 'has-role';
 export const RELATION_HAS_CAPABILITY = 'has-capability';
+export const RELATION_HAS_CAPABILITY_IN_DRAFT = 'has-capability-in-draft';
 export const RELATION_ACCESSES_TO = 'accesses-to';
 export const RELATION_IN_PIR = 'in-pir';
 
@@ -18,6 +19,7 @@ export const INTERNAL_RELATIONSHIPS = [
   RELATION_ALLOWED_BY,
   RELATION_HAS_ROLE,
   RELATION_HAS_CAPABILITY,
+  RELATION_HAS_CAPABILITY_IN_DRAFT,
   RELATION_ACCESSES_TO,
   RELATION_PARTICIPATE_TO,
   RELATION_IN_PIR,

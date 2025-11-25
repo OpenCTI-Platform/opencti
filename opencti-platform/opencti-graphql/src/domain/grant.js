@@ -2,7 +2,7 @@ import { assoc, dissoc, pipe, uniq } from 'ramda';
 import nconf from 'nconf';
 import { createEntity, createRelation, updateAttribute } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
-import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
+import { RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { publishUserAction } from '../listener/UserActionListener';
 
@@ -15,8 +15,17 @@ export const updateCapability = async (context, user, capabilityId, input) => {
   return updatedElem;
 };
 
+const createCapabilitiesRelations = async ({ context, user, roleId, capabilities, relationshipType }) => {
+  for (let index = 0; index < capabilities.length; index += 1) {
+    const capability = capabilities[index];
+    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capability });
+    await createRelation(context, user, { fromId: roleId, toId: generateToId, relationship_type: relationshipType });
+  }
+};
+
 export const addRole = async (context, user, role) => {
   const capabilities = uniq(role.capabilities ?? []);
+  const capabilitiesInDraft = uniq(role.capabilitiesInDraft ?? []);
   const roleToCreate = pipe(
     assoc('description', role.description ? role.description : ''),
     dissoc('capabilities'),
@@ -28,11 +37,20 @@ export const addRole = async (context, user, role) => {
   };
 
   const { element, isCreation } = await createEntity(context, user, completeRoleToCreate, ENTITY_TYPE_ROLE, { complete: true });
-  for (let index = 0; index < capabilities.length; index += 1) {
-    const capability = capabilities[index];
-    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capability });
-    await createRelation(context, user, { fromId: element.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });
-  }
+  await createCapabilitiesRelations({
+    context,
+    user,
+    roleId: element.id,
+    capabilities,
+    relationshipType: RELATION_HAS_CAPABILITY
+  });
+  await createCapabilitiesRelations({
+    context,
+    user,
+    roleId: element.id,
+    capabilities: capabilitiesInDraft,
+    relationshipType: RELATION_HAS_CAPABILITY_IN_DRAFT
+  });
   if (isCreation) {
     await publishUserAction({
       user,

@@ -62,6 +62,7 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, REDACTED_USER } from '../utils/access';
 import { getNotifiers } from '../modules/notifier/notifier-domain';
 import { PROVIDERS } from '../config/providers-configuration';
+import { RELATION_HAS_CAPABILITY_IN_DRAFT } from '../schema/internalRelationship';
 
 const userResolvers = {
   Query: {
@@ -78,6 +79,7 @@ const userResolvers = {
     systemMembers: () => findAllSystemMemberPaginated(),
     sessions: () => findSessions(),
     capabilities: (_, args, context) => findCapabilities(context, context.user, args),
+    capabilitiesInDraft: (_, args, context) => findCapabilities(context, context.user, args, RELATION_HAS_CAPABILITY_IN_DRAFT),
     bookmarks: (_, args, context) => bookmarks(context, context.user, args),
   },
   User: {
@@ -124,6 +126,7 @@ const userResolvers = {
   Role: {
     editContext: (role) => fetchEditContext(role.id),
     capabilities: (role, _, context) => roleCapabilities(context, context.user, role.id),
+    capabilitiesInDraft: (role, _, context) => roleCapabilities(context, context.user, role.id, RELATION_HAS_CAPABILITY_IN_DRAFT),
   },
   Group: {
     roles: (group, args, context) => groupRolesPaginated(context, context.user, group.id, args),
