@@ -85,7 +85,7 @@ export const initializeBucket = async () => {
     // Try to access to the bucket
     await s3Client.send(new s3.HeadBucketCommand({ Bucket: bucketName }));
     return true;
-  } catch (err) {
+  } catch (_err) {
     // If bucket not exist, try to create it.
     // If creation fail, propagate the exception
     await s3Client.send(new s3.CreateBucketCommand({ Bucket: bucketName }));

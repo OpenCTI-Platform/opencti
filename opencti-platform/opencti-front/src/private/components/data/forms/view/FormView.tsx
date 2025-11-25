@@ -354,6 +354,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
     const startTime = Date.now();
     const TIMEOUT = 30000; // 30 seconds timeout
+    // eslint-disable-next-line prefer-const
     let interval: NodeJS.Timeout;
 
     const checkEntity = async () => {

@@ -800,7 +800,7 @@ export const addUser = async (context, user, newUser) => {
     };
     try {
       await sendEmailToUser(context, user, input);
-    } catch (err) {
+    } catch (_err) {
       logApp.error('Error sending email on user creation', { createdUserID: user.id, emailTemplateId: newUser.email_template_id });
     }
   }

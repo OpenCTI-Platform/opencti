@@ -16,7 +16,7 @@ export const xtmHubClient = {
 
       const response = await httpClient.head('/health', { timeout: 5000 });
       return { isReachable: response.status >= 200 && response.status < 300 };
-    } catch (error) {
+    } catch (_error) {
       return { isReachable: false };
     }
   },

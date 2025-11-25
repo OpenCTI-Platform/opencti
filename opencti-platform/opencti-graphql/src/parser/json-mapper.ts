@@ -439,7 +439,7 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   const stixObjects = objects.map((e) => {
     try {
       return convertStoreToStix_2_1(e as unknown as StoreCommon);
-    } catch (err) {
+    } catch (_err) {
       logApp.error('JSON mapper convert error', { cause: e });
     }
     return null;

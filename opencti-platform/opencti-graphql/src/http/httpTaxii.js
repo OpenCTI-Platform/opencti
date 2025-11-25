@@ -88,7 +88,7 @@ const JsonTaxiiMiddleware = express.json({
   type: (req) => {
     try {
       return isValidTaxiiPostContentType(req);
-    } catch (e) {
+    } catch (_e) {
       logApp.info('[Taxii] Content-Type from incoming request is missing or invalid', { contentType: req?.headers['content-type'] });
       return false;
     }

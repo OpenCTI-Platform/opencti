@@ -46,7 +46,7 @@ export const testSync = async (context, user, sync) => {
         eventSource.close();
         reject(UnsupportedError(`Cant connect to remote opencti, ${e.message}`));
       });
-    } catch (e) {
+    } catch (_e) {
       reject(UnsupportedError('Cant connect to remote opencti, check your configuration'));
     }
   });

@@ -48,7 +48,7 @@ export const execChildPython = async (context, user, scriptPath, scriptName, arg
         /* v8 ignore next */
         try {
           jsonResult = JSON.parse(message);
-        } catch (e) {
+        } catch (_e) {
           jsonResult = { status: 'error', message };
         }
       });

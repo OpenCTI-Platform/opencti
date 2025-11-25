@@ -1968,7 +1968,7 @@ function processSearch(search, args) {
   try {
     decodedSearch = decodeURIComponent(refang(search))
       .trim();
-  } catch (e) {
+  } catch (_e) {
     decodedSearch = refang(search).trim();
   }
   let remainingSearch = decodedSearch;

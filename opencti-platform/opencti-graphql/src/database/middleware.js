@@ -651,7 +651,7 @@ export const distributionHistory = async (context, user, types, args) => {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   let finalField = field;
-  if (field.includes('.' && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
+  if (field.includes('.') && !field.includes('context_data') && !field.includes('opinions_metrics')) {
     finalField = REL_INDEX_PREFIX + field;
   }
   if (field === 'name') {
@@ -2774,7 +2774,7 @@ const isOutdatedUpdate = (context, element, attributeKey) => {
       try {
         const eventDate = computeDateFromEventId(context);
         return utcDate(lastAttributeUpdateDate).isAfter(eventDate);
-      } catch (e) {
+      } catch (_e) {
         logApp.error('Error evaluating event id', { key: attributeKey, event_id: context.eventId });
       }
     }

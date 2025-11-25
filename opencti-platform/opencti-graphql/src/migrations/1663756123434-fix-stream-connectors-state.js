@@ -19,7 +19,7 @@ export const up = async (next) => {
       }
       // Not necessary to migrate
       return Promise.resolve(true);
-    } catch (e) {
+    } catch (_e) {
       // Likely a null or empty state
       return Promise.resolve(true);
     }

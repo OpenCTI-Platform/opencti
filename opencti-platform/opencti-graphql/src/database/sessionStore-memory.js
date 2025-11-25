@@ -100,6 +100,7 @@ class SessionStoreMemory extends Store {
 
   all(fn) {
     const { store } = this;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     let err = null;
     const result = {};
@@ -126,6 +127,7 @@ class SessionStoreMemory extends Store {
   // endregion
 
   startInterval() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     const ms = this.options.checkPeriod;
     if (ms && typeof ms === 'number') {
