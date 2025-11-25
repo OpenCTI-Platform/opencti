@@ -49,7 +49,7 @@ jobs:
           ./scripts/ci/wait-for-opencsti-instance-startup.sh http://localhost:4400/health?health_access_key=cihealthkey 180 10
 
 
-    - name: Start api test
+    - name: Start api test (aka yarn test:ci-integration-sync)
       run: |
         docker run --network runner-docker-network \
           --name api-tests \
@@ -73,7 +73,7 @@ jobs:
             cp /home/workspace/opencti-platform/.yarnrc.yml .
             yarn install
             yarn build
-            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration  --coverage
+            NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration-sync --coverage
         '
 
     - name: Upload backend test result
@@ -156,7 +156,7 @@ jobs:
          docker network create runner-docker-network
          docker compose --profile "backend" --profile ci-test-api up -d
 
-    - name: Start rules test
+    - name: Start rules test and others (aka yarn test:ci-rules-and-others)
       run: |
         docker run --network runner-docker-network \
           --name api-tests \
@@ -198,7 +198,7 @@ jobs:
       continue-on-error: true
       run: cat runner_resource_stat.log
 
-  run-opencti-api-non-integration-test:
+  run-opencti-api-unit-test:
     name: Unit and others tests
     runs-on: ubuntu-latest
 
@@ -212,22 +212,12 @@ jobs:
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
 
-    - name: Set up Docker Compose for backends
+    - name: Start unit tests (aka yarn test:ci-unit)
       run: |
-         set -ex
-         cd scripts/ci
-         docker network create runner-docker-network
-         docker compose --profile "backend" up -d
-
-    - name: Start unit and other tests
-      run: |
-        docker run --network runner-docker-network \
+        docker run \
           --name unit-and-other-tests \
-          -p 4010:4100 \
           -v ${{ github.workspace }}:/home/workspace \
           --env-file ${{ github.workspace }}/scripts/ci/ci-common.env \
-          -e APP__BASE_URL=http://unit-and-other-tests:4010/ \
-          -e APP__ENTERPRISE_EDITION_LICENSE="${{ secrets.EE_LICENSE }}" \
           -e PYTHONUNBUFFERED=1  \
           nikolaik/python-nodejs:python3.11-nodejs22-alpine \
           sh -c 'set -ex;
@@ -242,15 +232,6 @@ jobs:
             yarn lint
             NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-unit --coverage
         '
-
-    # Output all logs used during the job
-    - name: Log backends (Minio, Elastic, RabbitMQ, Redis)
-      continue-on-error: true
-      run: |
-          echo -e "\n\n ========== Logs Minio \n\n"; docker logs minio
-          echo -e "\n\n ========== Logs Elastic search \n\n"; sleep 1; docker logs elasticsearch
-          echo -e "\n\n ========== Logs RabbitMQ \n\n"; sleep 1; docker logs rabbitmq
-          echo -e "\n\n ========== Logs Redis \n\n"; sleep 1; docker logs redis
 
     - name: Print resources stats
       if: always()
