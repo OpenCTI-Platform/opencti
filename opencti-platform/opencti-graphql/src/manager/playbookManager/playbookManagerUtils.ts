@@ -10,6 +10,7 @@ export enum StreamDataEventTypeEnum {
 
 interface EventConfig {
   create?: boolean
+  create_rel?: boolean
   update?: boolean
   delete?: boolean
 }
@@ -18,11 +19,13 @@ export const isValidEventType = (eventType: StreamDataEventType, configuration: 
   const {
     update,
     create,
+    create_rel,
     delete: deletion
   } = configuration;
 
   let validEventType = false;
   if (eventType === StreamDataEventTypeEnum.CREATE && create === true) validEventType = true;
+  if (eventType === StreamDataEventTypeEnum.CREATE && create_rel === true) validEventType = true;
   if (eventType === StreamDataEventTypeEnum.UPDATE && update === true) validEventType = true;
   if (eventType === StreamDataEventTypeEnum.DELETE && deletion === true) validEventType = true;
 
@@ -47,4 +50,14 @@ export const isEventInPirRelationship = (eventData : StreamDataEvent) => {
 export const isEventUpdateOnEntity = (eventData : StreamDataEvent) => {
   const { data, type } = eventData;
   return type === StreamDataEventTypeEnum.UPDATE && !isStixRelation(data);
+};
+
+/**
+ * Checks if an event is a relationship creation.
+ * @param eventData The event.
+ * @returns True if the event is a relationship creation.
+ */
+export const isEventCreateRelationship = (eventData: StreamDataEvent) => {
+  const { data, scope, type } = eventData;
+  return scope === 'external' && isStixRelation(data) && type === StreamDataEventTypeEnum.CREATE;
 };
