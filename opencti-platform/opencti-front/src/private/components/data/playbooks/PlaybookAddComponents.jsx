@@ -24,7 +24,7 @@ import PlaybookFlowFieldTriggerTime from './playbookFlow/playbookFlowFields/Play
 import PlaybookFlowFieldNumber from './playbookFlow/playbookFlowFields/PlaybookFlowFieldNumber';
 import PlaybookFlowFieldBoolean from './playbookFlow/playbookFlowFields/PlaybookFlowFieldBoolean';
 import PlaybookFlowFieldString from './playbookFlow/playbookFlowFields/PlaybookFlowFieldString';
-import PlaybookFlowFieldActions from './playbookFlow/playbookFlowFields/PlaybookFlowFieldActions';
+import PlaybookFlowFieldActions from './playbookFlow/playbookFlowFields/playbookFlowFieldsActions/PlaybookFlowFieldActions';
 
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -58,24 +58,9 @@ const PlaybookAddComponentsContent = ({
   const currentConfig = action === 'config' ? selectedNode?.data?.configuration : null;
   const initialFilters = currentConfig?.filters ? deserializeFilterGroupForFrontend(currentConfig?.filters) : emptyFilterGroup;
   const filtersState = useFiltersState(initialFilters);
-  const [actionsInputs, setActionsInputs] = useState(
-    currentConfig?.actions ? currentConfig.actions : [],
-  );
   const [componentId, setComponentId] = useState(
     action === 'config' ? selectedNode?.data?.component?.id ?? null : null,
   );
-
-  const areStepsValid = () => {
-    for (const n of actionsInputs) {
-      if (n && n.attribute === 'x_opencti_detection') {
-        return true;
-      }
-      if (!n || !n.op || !n.attribute || !n.value || n.value.length === 0) {
-        return false;
-      }
-    }
-    return true;
-  };
 
   const onSubmit = (values, { resetForm }) => {
     const selectedComponent = playbookComponents
@@ -98,9 +83,6 @@ const PlaybookAddComponentsContent = ({
         triggerTime = `${day}-${triggerTime}`;
       }
       finalConfig = { ...finalConfig, triggerTime };
-    }
-    if (configurationSchema?.properties?.actions) {
-      finalConfig = { ...finalConfig, actions: actionsInputs };
     }
     resetForm();
     if (
@@ -147,136 +129,141 @@ const PlaybookAddComponentsContent = ({
             handleReset,
             isSubmitting,
             values,
-          }) => (
-            <Form>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="name"
-                value={values.name ? t_i18n(values.name) : ''}
-                label={t_i18n('Name')}
-                fullWidth={true}
-              />
-              {Object.entries(configurationSchema?.properties ?? {}).map(
-                ([k, v]) => {
-                  if (k === 'access_restrictions') {
-                    return <PlaybookFlowFieldAccessRestrictions key={k} />;
-                  }
-                  if (k === 'authorized_members') {
-                    return <PlaybookFlowFieldAuthorizedMembers key={k} />;
-                  }
-                  if (k === 'organizations') {
-                    return <PlaybookFlowFieldOrganizations key={k} />;
-                  }
-                  if (k === 'inPirFilters') {
-                    return <PlaybookFlowFieldInPirFilters key={k} />;
-                  }
-                  if (k === 'targets') {
-                    return <PlaybookFlowFieldTargets key={k} />;
-                  }
-                  if (k === 'caseTemplates') {
-                    return <PlaybookFlowFieldCaseTemplates key={k} />;
-                  }
-                  if (k === 'filters') {
+          }) => {
+            const actionsAreValid = (values.actions ?? []).every((a) => {
+              if (a.attribute === 'x_opencti_detection') return true;
+              return a.op && a.attribute && a.value && a.value.length > 0;
+            });
+
+            return (
+              <Form>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="name"
+                  value={values.name ? t_i18n(values.name) : ''}
+                  label={t_i18n('Name')}
+                  fullWidth={true}
+                />
+                {Object.entries(configurationSchema?.properties ?? {}).map(
+                  ([k, v]) => {
+                    if (k === 'access_restrictions') {
+                      return <PlaybookFlowFieldAccessRestrictions key={k} />;
+                    }
+                    if (k === 'authorized_members') {
+                      return <PlaybookFlowFieldAuthorizedMembers key={k} />;
+                    }
+                    if (k === 'organizations') {
+                      return <PlaybookFlowFieldOrganizations key={k} />;
+                    }
+                    if (k === 'inPirFilters') {
+                      return <PlaybookFlowFieldInPirFilters key={k} />;
+                    }
+                    if (k === 'targets') {
+                      return <PlaybookFlowFieldTargets key={k} />;
+                    }
+                    if (k === 'caseTemplates') {
+                      return <PlaybookFlowFieldCaseTemplates key={k} />;
+                    }
+                    if (k === 'filters') {
+                      return (
+                        <PlaybookFlowFieldFilters
+                          key={k}
+                          componentId={componentId}
+                          filtersState={filtersState}
+                        />
+                      );
+                    }
+                    if (k === 'period') {
+                      return <PlaybookFlowFieldPeriod key={k} />;
+                    }
+                    if (k === 'triggerTime') {
+                      return <PlaybookFlowFieldTriggerTime key={k} />;
+                    }
+                    if (k === 'actions') {
+                      return (
+                        <PlaybookFlowFieldActions
+                          key={k}
+                          operations={v.items?.properties?.op?.enum}
+                        />
+                      );
+                    }
+                    if (v.type === 'number') {
+                      return (
+                        <PlaybookFlowFieldNumber
+                          key={k}
+                          name={k}
+                          label={t_i18n(v.$ref ?? k)}
+                        />
+                      );
+                    }
+                    if (v.type === 'boolean') {
+                      return (
+                        <PlaybookFlowFieldBoolean
+                          key={k}
+                          name={k}
+                          label={t_i18n(v.$ref ?? k)}
+                        />
+                      );
+                    }
+                    if (v.type === 'string' && v.oneOf) {
+                      return (
+                        <PlaybookFlowFieldArray
+                          key={k}
+                          name={k}
+                          label={t_i18n(v.$ref ?? k)}
+                          options={v.oneOf}
+                        />
+                      );
+                    }
+                    if (v.type === 'array') {
+                      return (
+                        <PlaybookFlowFieldArray
+                          key={k}
+                          name={k}
+                          label={t_i18n(v.$ref ?? k)}
+                          options={v.items.oneOf}
+                          multiple
+                        />
+                      );
+                    }
                     return (
-                      <PlaybookFlowFieldFilters
-                        key={k}
-                        componentId={componentId}
-                        filtersState={filtersState}
-                      />
-                    );
-                  }
-                  if (k === 'period') {
-                    return <PlaybookFlowFieldPeriod key={k} />;
-                  }
-                  if (k === 'triggerTime') {
-                    return <PlaybookFlowFieldTriggerTime key={k} />;
-                  }
-                  if (k === 'actions') {
-                    return (
-                      <PlaybookFlowFieldActions
-                        key={k}
-                        actions={actionsInputs}
-                        onChange={setActionsInputs}
-                        operations={v.items?.properties?.op?.enum}
-                      />
-                    );
-                  }
-                  if (v.type === 'number') {
-                    return (
-                      <PlaybookFlowFieldNumber
+                      <PlaybookFlowFieldString
                         key={k}
                         name={k}
                         label={t_i18n(v.$ref ?? k)}
                       />
                     );
-                  }
-                  if (v.type === 'boolean') {
-                    return (
-                      <PlaybookFlowFieldBoolean
-                        key={k}
-                        name={k}
-                        label={t_i18n(v.$ref ?? k)}
-                      />
-                    );
-                  }
-                  if (v.type === 'string' && v.oneOf) {
-                    return (
-                      <PlaybookFlowFieldArray
-                        key={k}
-                        name={k}
-                        label={t_i18n(v.$ref ?? k)}
-                        options={v.oneOf}
-                      />
-                    );
-                  }
-                  if (v.type === 'array') {
-                    return (
-                      <PlaybookFlowFieldArray
-                        key={k}
-                        name={k}
-                        label={t_i18n(v.$ref ?? k)}
-                        options={v.items.oneOf}
-                        multiple
-                      />
-                    );
-                  }
-                  return (
-                    <PlaybookFlowFieldString
-                      key={k}
-                      name={k}
-                      label={t_i18n(v.$ref ?? k)}
-                    />
-                  );
-                },
-              )}
-              <div className="clearfix" />
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t_i18n('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={
-                    (actionsInputs.length > 0 && !areStepsValid())
+                  },
+                )}
+                <div className="clearfix" />
+                <div className={classes.buttons}>
+                  <Button
+                    variant="contained"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t_i18n('Cancel')}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={
+                    (values.actions?.length > 0 && !actionsAreValid)
                     || isSubmitting
                   }
-                  classes={{ root: classes.button }}
-                >
-                  {selectedNode?.data?.component?.id
-                    ? t_i18n('Update')
-                    : t_i18n('Create')}
-                </Button>
-              </div>
-            </Form>
-          )}
+                    classes={{ root: classes.button }}
+                  >
+                    {selectedNode?.data?.component?.id
+                      ? t_i18n('Update')
+                      : t_i18n('Create')}
+                  </Button>
+                </div>
+              </Form>
+            );
+          }}
         </Formik>
       </div>
     );
