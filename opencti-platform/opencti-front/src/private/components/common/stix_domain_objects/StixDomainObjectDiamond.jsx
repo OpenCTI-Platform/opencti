@@ -563,14 +563,8 @@ const StixDomainObjectDiamond = createRefetchContainer(
               edges {
                 node {
                   from {
-                    ... on ThreatActor {
-                      name
-                    }
-                    ... on IntrusionSet {
-                      name
-                    }
-                    ... on Campaign {
-                      name
+                    representative {
+                      main
                     }
                   }
                 }

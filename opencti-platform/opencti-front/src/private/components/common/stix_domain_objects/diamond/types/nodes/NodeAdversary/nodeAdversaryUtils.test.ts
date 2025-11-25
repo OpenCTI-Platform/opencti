@@ -1,17 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as getFilterFromEntityTypeAndNodeType from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
-import { nodeAdversaryUtils, UseNodeAdversaryProps } from './nodeAdversaryUtils';
+import { nodeAdversaryUtils, NodeAdversaryUtilsProps, StixDomainObjectFromDiamond } from './nodeAdversaryUtils';
 
 import { DiamondEntityEnum } from '../diamondEnums';
 
-describe('useNodeAdversary', () => {
+describe('nodeAdversaryUtils', () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   it('should return correct values for a Threat Actor Group', () => {
     vi.spyOn(getFilterFromEntityTypeAndNodeType, 'default').mockReturnValue('Filter');
-    const data: UseNodeAdversaryProps['data'] = {
+    const data: NodeAdversaryUtilsProps['data'] = {
       stixDomainObject: {
         entity_type: DiamondEntityEnum.threatActorGroup,
         aliases: ['Alias'],
@@ -20,7 +20,7 @@ describe('useNodeAdversary', () => {
             { node: { from: { name: 'Campaign test' } } },
           ],
         },
-      },
+      } as unknown as StixDomainObjectFromDiamond,
       entityLink: '/dashboard/entities/threat-actor-group',
     };
 
@@ -33,7 +33,7 @@ describe('useNodeAdversary', () => {
   });
 
   it('should return correct values for an Arsenal type', () => {
-    const data: UseNodeAdversaryProps['data'] = {
+    const data: NodeAdversaryUtilsProps['data'] = {
       stixDomainObject: {
         entity_type: DiamondEntityEnum.malware,
         aliases: ['Alias'],
@@ -42,7 +42,7 @@ describe('useNodeAdversary', () => {
             { node: { from: { name: 'Malware test' } } },
           ],
         },
-      },
+      } as unknown as StixDomainObjectFromDiamond,
       entityLink: '/dashboard/entities/threat-actor-group',
     };
 
@@ -52,7 +52,7 @@ describe('useNodeAdversary', () => {
   });
 
   it('should return correct values for other types', () => {
-    const data: UseNodeAdversaryProps['data'] = {
+    const data: NodeAdversaryUtilsProps['data'] = {
       stixDomainObject: {
         entity_type: DiamondEntityEnum.campaign,
         aliases: ['Alias'],
@@ -71,7 +71,7 @@ describe('useNodeAdversary', () => {
             { node: { to: { name: 'Threat Actor test' } } },
           ],
         },
-      },
+      } as unknown as StixDomainObjectFromDiamond,
       entityLink: '/dashboard/entities/threat-actor-group',
     };
     const result = nodeAdversaryUtils({ data });

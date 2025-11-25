@@ -1,45 +1,28 @@
 import * as R from 'ramda';
 import getFilterFromEntityTypeAndNodeType from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
+import { StixDomainObjectDiamond_data$data } from '@components/common/stix_domain_objects/__generated__/StixDomainObjectDiamond_data.graphql';
 import { emptyFilled } from '../../../../../../../../utils/String';
 import { DiamondEntityEnum, DiamondNodeEnum } from '../diamondEnums';
 
-export interface UseNodeAdversaryProps {
+export type StixDomainObjectFromDiamond = StixDomainObjectDiamond_data$data['stixDomainObject'] & {
+  attributedFrom?: {
+    edges: {
+      node: {
+        from: {
+          name?: string;
+        } | null | undefined;
+      };
+    }[];
+  } | null | undefined;
+} | null | undefined;
+
+export interface NodeAdversaryUtilsProps {
   data: {
-    stixDomainObject: {
-      entity_type: DiamondEntityEnum;
-      aliases?: string[];
-      attributedTo?: {
-        edges: {
-          node: {
-            to: {
-              name: string;
-            };
-          };
-        }[];
-      };
-      attributedFrom?: {
-        edges: {
-          node: {
-            from: {
-              name: string;
-            };
-          };
-        }[];
-      };
-      usedBy?: {
-        edges: {
-          node: {
-            from: {
-              name: string;
-            };
-          };
-        }[];
-      };
-    };
+    stixDomainObject: StixDomainObjectFromDiamond;
     entityLink: string;
   };
 }
-export interface UseNodeAdversaryReturns {
+export interface NodeAdversaryUtilsReturns {
   entityLink: string;
   generatedFilters: string;
   aliases?: string;
@@ -47,24 +30,35 @@ export interface UseNodeAdversaryReturns {
   lastAttributions: React.ReactNode;
 }
 
-export const nodeAdversaryUtils = ({ data }: UseNodeAdversaryProps):UseNodeAdversaryReturns => {
+export const nodeAdversaryUtils = ({ data }: NodeAdversaryUtilsProps):NodeAdversaryUtilsReturns => {
   const { stixDomainObject, entityLink } = data;
 
-  const isArsenal = [DiamondEntityEnum.malware, DiamondEntityEnum.tool, DiamondEntityEnum.channel].includes(stixDomainObject.entity_type);
-  const isThreat = [DiamondEntityEnum.threatActorGroup, DiamondEntityEnum.threatActorIndividual, DiamondEntityEnum.intrusionSet].includes(stixDomainObject.entity_type);
+  if (!stixDomainObject) {
+    return {
+      entityLink,
+      generatedFilters: '',
+      aliases: undefined,
+      isArsenal: false,
+      lastAttributions: '',
+    };
+  }
+
+  const isArsenal = [DiamondEntityEnum.malware, DiamondEntityEnum.tool, DiamondEntityEnum.channel].includes(stixDomainObject.entity_type as DiamondEntityEnum);
+  const isThreat = [DiamondEntityEnum.threatActorGroup, DiamondEntityEnum.threatActorIndividual, DiamondEntityEnum.intrusionSet]
+    .includes(stixDomainObject.entity_type as DiamondEntityEnum);
 
   const aliases = stixDomainObject.aliases?.slice(0, 5).join(', ');
 
   const attributedTo = R.uniq((stixDomainObject.attributedTo?.edges ?? [])
-    .map((n: { node: { to: { name: string } } }) => n?.node?.to?.name))
+    .map((n) => n?.node?.to?.name))
     .join(', ');
 
   const attributedFrom = R.uniq((stixDomainObject.attributedFrom?.edges ?? [])
-    .map((n: { node: { from: { name: string } } }) => n?.node?.from?.name))
+    .map((n) => n?.node?.from?.name))
     .join(', ');
 
   const usedBy = R.uniq((stixDomainObject.usedBy?.edges ?? [])
-    .map((n: { node: { from: { name: string } } }) => n?.node?.from?.name))
+    .map((n) => n?.node?.from?.name))
     .join(', ');
 
   let lastAttributions;
@@ -76,7 +70,7 @@ export const nodeAdversaryUtils = ({ data }: UseNodeAdversaryProps):UseNodeAdver
     lastAttributions = emptyFilled(attributedTo);
   }
 
-  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type, DiamondNodeEnum.adversary);
+  const generatedFilters = getFilterFromEntityTypeAndNodeType(stixDomainObject.entity_type as DiamondEntityEnum, DiamondNodeEnum.adversary);
 
   return {
     entityLink,
