@@ -13,9 +13,9 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { Route, Routes, useParams } from 'react-router-dom';
-import { graphql, usePreloadedQuery } from 'react-relay';
+import { graphql, usePreloadedQuery, useQueryLoader } from 'react-relay';
 import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import { RootPlaybookQuery } from './__generated__/RootPlaybookQuery.graphql';
 import { PlaybookComponentsQuery } from './__generated__/PlaybookComponentsQuery.graphql';
@@ -67,10 +67,11 @@ const RootPlaybook = () => {
   const playbookComponentsQueryRef = useQueryLoading<PlaybookComponentsQuery>(
     playbookComponentsQuery,
   );
-  const playbookQueryRef = useQueryLoading<RootPlaybookQuery>(
-    playbookQuery,
-    { id: playbookId },
-  );
+
+  const [playbookQueryRef, loadPlaybookQuery] = useQueryLoader<RootPlaybookQuery>(playbookQuery);
+  useEffect(() => {
+    loadPlaybookQuery({ id: playbookId }, { fetchPolicy: 'network-only' });
+  }, [playbookId]);
 
   return (
     <Suspense fallback={<Loader />}>
