@@ -1828,6 +1828,7 @@ type User implements BasicObject & InternalObject {
   external: Boolean
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role!]!
   capabilities: [Capability]!
+  capabilitiesInDraft: [Capability]!
   default_hidden_types: [String!]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1873,6 +1874,7 @@ type MeUser implements BasicObject & InternalObject {
   personal_notifiers: [Notifier!]
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
+  capabilitiesInDraft: [Capability]!
   default_hidden_types: [String]!
   user_confidence_level: ConfidenceLevel
   effective_confidence_level: EffectiveConfidenceLevel
@@ -1993,6 +1995,7 @@ type Role implements BasicObject & InternalObject {
   updated_at: DateTime!
   refreshed_at: DateTime
   capabilities: [Capability]
+  capabilitiesInDraft: [Capability]
   editContext: [EditUserContext!]
   can_manage_sensitive_config: Boolean
 }
@@ -8635,6 +8638,7 @@ type Query {
   sessions: [UserSession]
   role(id: String!): Role
   capabilities(first: Int): CapabilityConnection
+  capabilitiesInDraft(first: Int): CapabilityConnection
   connector(id: String!): Connector
   connectors: [Connector!]!
   connectorManager(managerId: ID!): ConnectorManager!

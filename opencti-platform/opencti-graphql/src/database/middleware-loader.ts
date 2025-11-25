@@ -455,8 +455,15 @@ export const topEntitiesList = async <T extends BasicStoreEntity>(context: AuthC
   return asyncMap(data.edges, (edge) => edge.node);
 };
 
-export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity>(context: AuthContext, user: AuthUser, connectedEntityId: string,
-  relationType: string, entityType: string | string[], reverse_relation: boolean, args: EntityOptions<T> = {}): Promise<BasicConnection<T>> => {
+export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity>(
+  context: AuthContext,
+  user: AuthUser,
+  connectedEntityId: string | null,
+  relationType: string,
+  entityType: string | string[],
+  reverse_relation: boolean,
+  args: EntityOptions<T> = {}
+): Promise<BasicConnection<T>> => {
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
   if (UNIMPACTED_ENTITIES_ROLE.includes(`${relationType}_to`)) {
     throw UnsupportedError('List connected entities paginated cant be used', { type: entityType });
@@ -467,7 +474,7 @@ export const pageRegardingEntitiesConnection = async <T extends BasicStoreEntity
       {
         key: [INSTANCE_REGARDING_OF],
         values: [
-          { key: ID_FILTER, values: [connectedEntityId] },
+          ...(connectedEntityId === null ? [] : [{ key: ID_FILTER, values: [connectedEntityId] }]),
           { key: RELATION_TYPE_FILTER, values: [relationType] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_FORCED, values: [true] },
           { key: INSTANCE_REGARDING_OF_DIRECTION_REVERSE, values: [reverse_relation] },

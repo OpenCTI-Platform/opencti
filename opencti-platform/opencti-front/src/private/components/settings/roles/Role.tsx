@@ -50,6 +50,11 @@ const roleFragment = graphql`
       name
       description
     }
+    capabilitiesInDraft {
+      id
+      name
+      description
+    }
     can_manage_sensitive_config
   }
 `;

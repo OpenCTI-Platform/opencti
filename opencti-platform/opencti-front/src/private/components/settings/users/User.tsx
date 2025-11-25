@@ -165,6 +165,10 @@ const UserFragment = graphql`
       id
       name
     }
+    capabilitiesInDraft {
+      id
+      name
+    }
     groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
       edges {
         node {

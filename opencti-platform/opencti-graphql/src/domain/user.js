@@ -43,6 +43,7 @@ import {
   isInternalRelationship,
   RELATION_ACCESSES_TO,
   RELATION_HAS_CAPABILITY,
+  RELATION_HAS_CAPABILITY_IN_DRAFT,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
   RELATION_PARTICIPATE_TO
@@ -173,7 +174,7 @@ const extractInfoFromBasicAuth = (authorization) => {
 const extractTokenFromBasicAuth = async (authorization) => {
   const { username, password } = extractInfoFromBasicAuth(authorization);
   if (username && password) {
-    // eslint-disable-next-line no-use-before-define
+     
     const { api_token: tokenUUID } = await login(username, password);
     return tokenUUID;
   }
@@ -443,8 +444,8 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, userMarking
   return { user: computedMarkings, default: defaultMarkings, max_shareable: await cleanMarkings(context, maxShareableMarkings) };
 };
 
-export const roleCapabilities = async (context, user, roleId) => {
-  return fullEntitiesThroughRelationsToList(context, user, roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
+export const roleCapabilities = async (context, user, roleId, relationshipType = RELATION_HAS_CAPABILITY) => {
+  return await fullEntitiesThroughRelationsToList(context, user, roleId, relationshipType, ENTITY_TYPE_CAPABILITY);
 };
 
 export const getDefaultHiddenTypes = (entities) => {
@@ -461,9 +462,9 @@ export const findRoles = (context, user, args) => {
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_ROLE], args);
 };
 
-export const findCapabilities = (context, user, args) => {
+export const findCapabilities = async (context, user, args, relationship_type = RELATION_HAS_CAPABILITY) => {
   const finalArgs = R.assoc('orderBy', 'attribute_order', args);
-  return pageEntitiesConnection(context, user, [ENTITY_TYPE_CAPABILITY], finalArgs);
+  return await pageRegardingEntitiesConnection(context, user, null, relationship_type, [ENTITY_TYPE_CAPABILITY], false, finalArgs);
 };
 
 export const roleDelete = async (context, user, roleId) => {
@@ -1001,7 +1002,7 @@ export const bookmarks = async (context, user, args) => {
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
   const filteredBookmarks = [];
-  // eslint-disable-next-line no-restricted-syntax
+   
   for (const bookmark of bookmarkList) {
     const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
     if (isNotEmptyField(loadedBookmark)) {
@@ -1462,7 +1463,7 @@ export const buildCompleteUsers = async (context, clients) => {
   const contactInformationFilter = { mode: 'and', filters: [{ key: 'contact_information', values: clients.map((c) => c.user_email) }], filterGroups: [] };
   const individualArgs = { indices: [READ_INDEX_STIX_DOMAIN_OBJECTS], filters: contactInformationFilter, noFiltersChecking: true };
   const individualsPromise = fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], individualArgs);
-  const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
+  const authRelationships = [RELATION_PARTICIPATE_TO, RELATION_MEMBER_OF, RELATION_HAS_CAPABILITY, RELATION_HAS_CAPABILITY_IN_DRAFT, RELATION_HAS_ROLE, RELATION_ACCESSES_TO];
   const relations = await fullRelationsList(context, SYSTEM_USER, authRelationships, { indices: READ_RELATIONSHIPS_INDICES });
   const users = new Map();
   const roleIds = new Set();
@@ -1472,6 +1473,7 @@ export const buildCompleteUsers = async (context, clients) => {
   const groupsRoles = new Map();
   const groupsMarkings = new Map();
   const rolesCapabilities = new Map();
+  const rolesCapabilitiesInDraft = new Map();
   for (let index = 0; index < relations.length; index += 1) {
     await doYield();
     const { fromId, entity_type, toId } = relations[index];
@@ -1525,6 +1527,19 @@ export const buildCompleteUsers = async (context, clients) => {
         rolesCapabilities.set(fromId, [toId]);
       }
     }
+
+    // role <- RELATION_HAS_CAPABILITY_IN_DRAFT -> capability
+    if (entity_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
+      roleIds.add(fromId);
+      capabilityIds.add(toId);
+      if (rolesCapabilitiesInDraft.has(fromId)) {
+        const capabilities = rolesCapabilitiesInDraft.get(fromId);
+        rolesCapabilitiesInDraft.set(fromId, [...(capabilities ?? []), toId]);
+      } else {
+        rolesCapabilitiesInDraft.set(fromId, [toId]);
+      }
+    }
+
     // group <- RELATION_HAS_ROLE -> role
     if (entity_type === RELATION_HAS_ROLE) {
       groupIds.add(fromId);
@@ -1557,6 +1572,8 @@ export const buildCompleteUsers = async (context, clients) => {
     const canManageSensitiveConfig = { can_manage_sensitive_config: isSensitiveChangesAllowed(client.id, roles) };
     const capabilities = R.uniq(roles.map((role) => rolesCapabilities.get(role.internal_id)).flat())
       .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
+    const capabilitiesInDraft = R.uniq(roles.map((role) => rolesCapabilitiesInDraft.get(role.internal_id)).flat())
+      .map((capabilityId) => resolvedObject[capabilityId]).filter((e) => isNotEmptyField(e));
     // Force push the bypass for default admin
     const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
     if (client.internal_id === OPENCTI_ADMIN_UUID && withoutBypass) {
@@ -1582,6 +1599,7 @@ export const buildCompleteUsers = async (context, clients) => {
       ...canManageSensitiveConfig,
       roles,
       capabilities,
+      capabilitiesInDraft,
       default_hidden_types,
       groups,
       organizations,
