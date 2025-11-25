@@ -2289,6 +2289,74 @@ enum ConnectorPriorityGroup {
   DEFAULT
 }
 
+input ConnectorMigrationAssessmentInput {
+  connectorId: ID!
+  contractSlug: String!
+  configuration: [ContractConfigInput!]
+}
+
+input MigrateConnectorToManagedInput {
+  connectorId: ID!
+  contractSlug: String!
+  configuration: [ContractConfigInput!]
+  preserveState: Boolean
+}
+
+type MigrationAssessmentSummary {
+  total_source_keys: Int!
+  mapped_keys: Int!
+  ignored_keys: Int!
+  missing_mandatory_keys: Int!
+  can_migrate: Boolean!
+  assessment_date: DateTime!
+}
+
+type MappedConfigKey {
+  key: String!
+  sourceKey: String!
+  value: String!
+  type: String!
+  required: Boolean!
+}
+
+type IgnoredConfigKey {
+  key: String!
+  value: String!
+  reason: String!
+}
+
+type MissingConfigKey {
+  key: String!
+  type: String!
+  description: String!
+  format: String
+  enum: [String!]
+}
+
+type MigrationAssessment {
+  connector_id: ID!
+  connector_name: String!
+  contract_slug: String!
+  contract_title: String!
+  summary: MigrationAssessmentSummary!
+  mapped: [MappedConfigKey!]!
+  ignored: [IgnoredConfigKey!]!
+  missing: [MissingConfigKey!]!
+}
+
+type MigrationWarning {
+  field: String
+  message: String!
+}
+
+type MigrateConnectorToManagedResult {
+  connector: Connector!
+  warnings: [MigrationWarning!]!
+  state_preserved: Boolean!
+  dryRun: Boolean!
+  skipped: Boolean
+}
+
 type Connector implements BasicObject & InternalObject {
   id: ID!
   standard_id: String!
@@ -8777,6 +8845,7 @@ type Query {
   connectorsForImport: [Connector]
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
+  connectorMigrationAssessment(connectorId: ID!, contractSlug: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
   work(id: ID!): Work
   isWorkAlive(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
@@ -9668,6 +9737,7 @@ type Mutation {
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
+  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!, dryRun: Boolean): MigrateConnectorToManagedResult!
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
   feedEdit(id: ID!, input: FeedAddInput!): Feed!

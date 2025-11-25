@@ -2198,6 +2198,77 @@ enum ConnectorPriorityGroup {
   DEFAULT
 }
 
+# CONNECTOR MIGRATION INPUT TYPES
+input ConnectorMigrationAssessmentInput {
+  connectorId: ID!
+  contractSlug: String!
+  configuration: [ContractConfigInput!]
+}
+
+input MigrateConnectorToManagedInput {
+  connectorId: ID!
+  contractSlug: String!
+  configuration: [ContractConfigInput!]
+  preserveState: Boolean
+}
+
+# CONNECTOR MIGRATION ASSESSMENT TYPES
+type MigrationAssessmentSummary {
+  total_source_keys: Int!
+  mapped_keys: Int!
+  ignored_keys: Int!
+  missing_mandatory_keys: Int!
+  can_migrate: Boolean!
+  assessment_date: DateTime!
+}
+
+type MappedConfigKey {
+  key: String!
+  sourceKey: String!
+  value: String!
+  type: String!
+  required: Boolean!
+}
+
+type IgnoredConfigKey {
+  key: String!
+  value: String!
+  reason: String!
+}
+
+type MissingConfigKey {
+  key: String!
+  type: String!
+  description: String!
+  format: String
+  enum: [String!]
+}
+
+type MigrationAssessment {
+  connector_id: ID!
+  connector_name: String!
+  contract_slug: String!
+  contract_title: String!
+  summary: MigrationAssessmentSummary!
+  mapped: [MappedConfigKey!]!
+  ignored: [IgnoredConfigKey!]!
+  missing: [MissingConfigKey!]!
+}
+
+# CONNECTOR MIGRATION RESULT TYPES
+type MigrationWarning {
+  field: String
+  message: String!
+}
+
+type MigrateConnectorToManagedResult {
+  connector: Connector!
+  warnings: [MigrationWarning!]!
+  state_preserved: Boolean!
+  dryRun: Boolean!
+  skipped: Boolean
+}
+
 type Connector implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -13699,6 +13770,7 @@ type Query {
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForAnalysis: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForNotification: [Connector] @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
+  connectorMigrationAssessment(connectorId: ID!, contractSlug: String!, configuration: [ContractConfigInput!]): MigrationAssessment! @auth(for: [MODULES])
   work(id: ID!): Work @auth(for: [MODULES])
   isWorkAlive(id: ID!): Boolean @auth(for: [MODULES])
   works(
@@ -15369,6 +15441,7 @@ type Mutation {
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID! @auth(for: [CONNECTORAPI])
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector @auth(for: [MODULES_MODMANAGE])
+  connectorMigrateToManaged(input: MigrateConnectorToManagedInput!, dryRun: Boolean): MigrateConnectorToManagedResult! @auth(for: [CONNECTORAPI])
   feedAdd(input: FeedAddInput!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feedDelete(id: ID!): ID! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feedEdit(id: ID!, input: FeedAddInput!): Feed! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
