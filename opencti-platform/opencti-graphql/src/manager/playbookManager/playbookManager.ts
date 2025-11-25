@@ -18,37 +18,9 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import * as jsonpatch from 'fast-json-patch';
 import moment from 'moment';
 import type { Moment } from 'moment/moment';
-import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from '../database/redis';
-import { lockResources } from '../lock/master-lock';
-import conf, { booleanConf, logApp } from '../config/conf';
-import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
-import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../utils/access';
-import type { SseEvent, StreamDataEvent } from '../types/event';
-import type { StixBundle } from '../types/stix-2-1-common';
-import type { StixBundle, StixObject } from '../types/stix-2-1-common';
-import { streamEventId, utcDate } from '../utils/format';
-import { findById } from '../modules/playbook/playbook-domain';
-import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../modules/playbook/playbook-components';
-import { PLAYBOOK_COMPONENTS } from '../modules/playbook/playbook-components';
-import type { BasicStoreEntityPlaybook, ComponentDefinition, PlaybookExecution, PlaybookExecutionStep } from '../modules/playbook/playbook-types';
-import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
-import { READ_STIX_INDICES } from '../database/utils';
-import type { BasicStoreSettings } from '../types/settings';
-import type { AuthContext, AuthUser } from '../types/user';
-import type { MutationPlaybookStepExecutionArgs } from '../generated/graphql';
-import { STIX_SPEC_VERSION } from '../database/stix';
-import { getEntitiesListFromCache } from '../database/cache';
-import { isStixMatchFilterGroup } from '../utils/filtering/filtering-stix/stix-filtering';
-import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resolution';
-import { elPaginate } from '../database/engine';
-import { stixLoadByFilters, stixLoadById } from '../database/middleware';
-import { convertRelationRefsFilterKeys } from '../utils/filtering/filtering-utils';
-import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../types/playbookExecution';
-import { isEnterpriseEdition } from '../enterprise-edition/ee';
-import { createStreamProcessor, type StreamProcessor } from '../../database/redis';
 import { lockResources } from '../../lock/master-lock';
 import conf, { booleanConf, logApp } from '../../config/conf';
-import { FunctionalError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../../config/errors';
 import { AUTOMATION_MANAGER_USER, executionContext, RETENTION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import type { SseEvent, StreamDataEvent } from '../../types/event';
 import type { StixBundle } from '../../types/stix-2-1-common';
@@ -56,12 +28,16 @@ import { streamEventId, utcDate } from '../../utils/format';
 import { findById } from '../../modules/playbook/playbook-domain';
 import { type CronConfiguration, PLAYBOOK_INTERNAL_DATA_CRON, type StreamConfiguration } from '../../modules/playbook/playbook-components';
 import { PLAYBOOK_COMPONENTS } from '../../modules/playbook/playbook-components';
-import type { BasicStoreEntityPlaybook, ComponentDefinition } from '../../modules/playbook/playbook-types';
+import type {
+  BasicStoreEntityPlaybook,
+  ComponentDefinition, PlaybookExecution,
+  PlaybookExecutionStep
+} from '../../modules/playbook/playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from '../../modules/playbook/playbook-types';
 import { READ_STIX_INDICES } from '../../database/utils';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type MutationPlaybookStepExecutionArgs } from '../../generated/graphql';
+import { type MutationPlaybookStepExecutionArgs, type StixObject } from '../../generated/graphql';
 import { STIX_SPEC_VERSION } from '../../database/stix';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
@@ -72,7 +48,8 @@ import { convertRelationRefsFilterKeys } from '../../utils/filtering/filtering-u
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { listenPirEvents } from './listenPirEventsUtils';
 import { isValidEventType } from './playbookManagerUtils';
-import { playbookExecutor } from './playbookExecutor';
+import type { ExecutionEnvelop, ExecutionEnvelopStep } from '../../types/playbookExecution';
+import { createStreamProcessor, redisPlaybookUpdate, type StreamProcessor } from '../../database/redis';
 
 const PLAYBOOK_LIVE_KEY = conf.get('playbook_manager:lock_key');
 const PLAYBOOK_CRON_KEY = conf.get('playbook_manager:lock_cron_key');
