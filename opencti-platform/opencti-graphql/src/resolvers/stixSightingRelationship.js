@@ -75,7 +75,7 @@ const stixSightingRelationshipResolvers = {
     // endregion
     // Utils
     relationship_type: () => 'stix-sighting-relationship',
-    toStix: (rel, _, context) => stixLoadByIdStringify(context, context.user, rel.id),
+    toStix: (rel, args, context) => stixLoadByIdStringify(context, context.user, rel.id, args),
     editContext: (rel) => fetchEditContext(rel.id),
     status: (entity, _, context) => (entity.x_opencti_workflow_id ? findStatusById(context, context.user, entity.x_opencti_workflow_id) : null),
     workflowEnabled: async (entity, _, context) => {

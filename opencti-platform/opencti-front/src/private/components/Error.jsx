@@ -98,7 +98,6 @@ class ErrorBoundaryComponent extends React.Component {
         return <ErrorNotFound/>;
       }
       if (includes('AUTH_REQUIRED', types)) {
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw this.state.error;
       }
       const DisplayComponent = this.props.display || SimpleError;

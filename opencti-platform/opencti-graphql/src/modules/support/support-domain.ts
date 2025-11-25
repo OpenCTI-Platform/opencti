@@ -14,11 +14,11 @@ import {
   TELEMETRY_LOG_FILE_PREFIX,
   TELEMETRY_LOG_RELATIVE_LOCAL_DIR
 } from '../../config/conf';
-import { downloadFile, loadedFilesListing, streamConverter } from '../../database/file-storage';
+import { downloadFile } from '../../database/raw-file-storage';
+import { loadedFilesListing, streamConverter, fileToReadStream, uploadToStorage } from '../../database/file-storage';
 import type { EditInput, QuerySupportPackagesArgs, SupportPackageAddInput, SupportPackageForceZipInput } from '../../generated/graphql';
 import { EditOperation, PackageStatus } from '../../generated/graphql';
 import { updateAttribute } from '../../database/middleware';
-import { fileToReadStream, uploadToStorage } from '../../database/file-storage-helper';
 import { wait } from '../../database/utils';
 import {
   notify,
@@ -138,9 +138,13 @@ const downloadAllLogFiles = async (context:AuthContext, user: AuthUser, s3Direct
       const newLocalFile = join(localDirectory, `${supportFile.name}`);
       fs.closeSync(fs.openSync(newLocalFile, 'w'));
       const stream = await downloadFile(supportFile.id);
-      const data = await streamConverter(stream);
-      fs.writeFileSync(newLocalFile, data, {});
-      logApp.info('Writing file to directory', { file: supportFile?.name, dir: localDirectory });
+      if (stream) {
+        const data = await streamConverter(stream);
+        fs.writeFileSync(newLocalFile, data, {});
+        logApp.info('Writing file to directory', { file: supportFile?.name, dir: localDirectory });
+      } else {
+        logApp.warn('Support file not found in S3, skipping', { fileId: supportFile.id, fileName: supportFile.name });
+      }
     }
   }
 };

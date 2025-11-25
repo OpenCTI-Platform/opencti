@@ -796,7 +796,7 @@ describe('PublicDashboard resolver', () => {
           const { publicStixRelationshipsMultiTimeSeries } = data;
           const attacksData = publicStixRelationshipsMultiTimeSeries[0].data;
           expect(attacksData.length).toEqual(1);
-          expect(attacksData[0].value).toEqual(5);
+          expect(attacksData[0].value).toEqual(4); // same result as for '6dbb6564-3e4a-4a28-85b1-e2ac479e38e7' widget
         });
 
         it('should return the data for API: SCO Distribution', async () => {

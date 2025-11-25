@@ -33,6 +33,7 @@ export default {
           name: sendContext.operationName ?? 'Unspecified',
           status: requestError ? 'ERROR' : 'SUCCESS',
           type: requestError ? sendContext.response.body.singleResult.errors.at(0)?.name ?? requestError.name : undefined,
+          user_agent: sendContext.contextValue.req.header('user-agent') ?? 'Unspecified',
         };
 
         if (!sendContext.operationName) {

@@ -316,6 +316,7 @@ const LeftBar = () => {
     'Grouping',
     'Note',
     'Malware-Analysis',
+    'Security-Coverage',
   );
   const hideEvents = useIsHiddenEntities(
     'stix-sighting-relationship',
@@ -329,7 +330,8 @@ const LeftBar = () => {
     'Infrastructure',
   );
   const hideThreats = useIsHiddenEntities(
-    'Threat-Actor',
+    'Threat-Actor-Group',
+    'Threat-Actor-Individual',
     'Intrusion-Set',
     'Campaign',
   );

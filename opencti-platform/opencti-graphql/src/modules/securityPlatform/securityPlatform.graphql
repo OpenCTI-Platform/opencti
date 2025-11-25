@@ -110,7 +110,7 @@ type SecurityPlatform implements BasicObject & StixObject & StixCoreObject & Sti
   security_platform_type: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String

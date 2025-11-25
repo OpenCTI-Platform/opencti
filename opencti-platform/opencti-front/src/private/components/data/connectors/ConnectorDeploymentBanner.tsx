@@ -8,18 +8,18 @@ import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 const URL = 'https://docs.opencti.io/latest/deployment/integration-manager/';
 
 type ConnectorDeploymentBannerProps = {
-  hasRegisteredManagers: boolean;
+  hasActiveManagers: boolean;
 };
 
-const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProps> = ({ hasRegisteredManagers }) => {
+const ConnectorDeploymentBanner: FunctionComponent<ConnectorDeploymentBannerProps> = ({ hasActiveManagers }) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
 
-  if (isEnterpriseEdition && hasRegisteredManagers) {
+  if (isEnterpriseEdition && hasActiveManagers) {
     return null;
   }
 
-  if (isEnterpriseEdition && !hasRegisteredManagers) {
+  if (isEnterpriseEdition && !hasActiveManagers) {
     return (
       <Alert severity="warning">
         <Typography>

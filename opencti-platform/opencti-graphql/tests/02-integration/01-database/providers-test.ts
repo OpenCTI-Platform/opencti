@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { initializeAdminUser } from '../../../src/config/providers';
+import { initializeAdminUser } from '../../../src/config/providers-initialization';
 import conf from '../../../src/config/conf';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';

@@ -10,7 +10,7 @@ import { resolveUserByIdFromCache } from '../../../src/domain/user';
 import type { AuthUser } from '../../../src/types/user';
 import conf from '../../../src/config/conf';
 import { IMPORT_STORAGE_PATH } from '../../../src/modules/internal/document/document-domain';
-import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage-helper';
+import { fileToReadStream, uploadToStorage } from '../../../src/database/file-storage';
 import type { CsvBundlerIngestionOpts } from '../../../src/parser/csv-bundler';
 
 describe('Verify internal importCsv connector', () => {

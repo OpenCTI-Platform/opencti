@@ -14,7 +14,7 @@ import passport from 'passport/lib';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
-import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
+import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
 import { applicationSession } from '../database/session';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { userEditField } from '../domain/user';
@@ -45,7 +45,7 @@ const createHttpServer = async () => {
       const key = loadCert(CERT_KEY_PATH);
       const cert = loadCert(CERT_KEY_CERT);
       const ca = CA_CERTS.map((path) => loadCert(path));
-      const requestCert = isStrategyActivated(STRATEGY_CERT);
+      const requestCert = isStrategyActivated(StrategyType.STRATEGY_CERT);
       const passphrase = conf.get('app:https_cert:passphrase');
       const options = { key, cert, passphrase, requestCert, rejectUnauthorized, ca };
       httpServer = https.createServer(options, app);

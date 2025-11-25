@@ -202,28 +202,15 @@ export async function handleSimplifiedEmailNotification(
 }
 
 export async function handleWebhookNotification(configurationString: string | undefined, templateData: object) {
-  function escapeLineBreak(str: string):string {
-    return str
-      .replace(/\n/g, '\\n');
-  }
-
-  function escapeStringValuesForJSON(obj: any): any {
-    if (typeof obj === 'string') {
-      return escapeLineBreak(obj);
-    } if (Array.isArray(obj)) {
-      return obj.map(escapeStringValuesForJSON);
-    } if (typeof obj === 'object' && obj !== null) {
-      return Object.fromEntries(
-        Object.entries(obj).map(([key, value]) => [key, escapeStringValuesForJSON(value)])
-      );
-    }
-    return obj;
-  }
-
   const { url, template, verb, params, headers } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
-  const safeTemplateData = escapeStringValuesForJSON(templateData);
 
-  const renderedWebhookTemplate = ejs.render(template, safeTemplateData);
+  // Use ejs.render with escape function that uses JSON.stringify
+  const renderedWebhookTemplate = ejs.render(template, templateData, {
+    escape: (value: any) => {
+      const result = JSON.stringify(value);
+      return result.startsWith('"') && result.endsWith('"') ? result.slice(1, -1) : result;
+    }
+  });
   const webhookPayload = JSON.parse(renderedWebhookTemplate);
 
   const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
@@ -251,41 +238,37 @@ export const internalProcessNotification = async (
   usersMap: Map<string, AuthUser>,
   // eslint-disable-next-line consistent-return
 ): Promise<{ error: string } | void> => {
-  try {
-    if (notificationUser.user_service_account) {
-      return { error: 'Cannot send notification to service account user' };
-    }
-    const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
-    const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
-    const triggerIds = triggerList.map((trigger) => trigger?.id).filter((id) => id);
+  if (notificationUser.user_service_account) {
+    return { error: 'Cannot send notification to service account user' };
+  }
+  const notificationName = triggerList.map((trigger) => trigger?.name).join(';');
+  const notificationType = triggerList.length > 1 ? 'buffer' : triggerList[0].trigger_type;
+  const triggerIds = triggerList.map((trigger) => trigger?.id).filter((id) => id);
 
-    const { notifier_connector_id: notifierConnectorId, notifier_configuration: notifierConfigurationString } = notifier;
+  const { notifier_connector_id: notifierConnectorId, notifier_configuration: notifierConfigurationString } = notifier;
 
-    const contentEventMapping = await processNotificationData(authContext, notificationEntities, notificationUser, notificationData, usersMap);
+  const contentEventMapping = await processNotificationData(authContext, notificationEntities, notificationUser, notificationData, usersMap);
 
-    const content = Object.entries(contentEventMapping).map(([title, events]) => ({ title, events }));
+  const content = Object.entries(contentEventMapping).map(([title, events]) => ({ title, events }));
 
-    const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, notificationData);
+  const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, notificationData);
 
-    switch (notifierConnectorId) {
-      case NOTIFIER_CONNECTOR_UI:
-        await handleUINotification(authContext, notificationName, triggerIds, notificationType, notificationUser, content);
-        break;
-      case NOTIFIER_CONNECTOR_EMAIL:
-        await handleEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
-        break;
-      case NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL:
-        await handleSimplifiedEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
-        break;
-      case NOTIFIER_CONNECTOR_WEBHOOK:
-        await handleWebhookNotification(notifierConfigurationString, assembledTemplateData);
-        break;
-      default:
-        // TODO: Handle other notifier scenarios
-        break;
-    }
-  } catch (error) {
-    return { error: (error as Error).message };
+  switch (notifierConnectorId) {
+    case NOTIFIER_CONNECTOR_UI:
+      await handleUINotification(authContext, notificationName, triggerIds, notificationType, notificationUser, content);
+      break;
+    case NOTIFIER_CONNECTOR_EMAIL:
+      await handleEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
+      break;
+    case NOTIFIER_CONNECTOR_SIMPLIFIED_EMAIL:
+      await handleSimplifiedEmailNotification(storeSettings, notificationUser, notifierConfigurationString, assembledTemplateData, triggerIds);
+      break;
+    case NOTIFIER_CONNECTOR_WEBHOOK:
+      await handleWebhookNotification(notifierConfigurationString, assembledTemplateData);
+      break;
+    default:
+      // TODO: Handle other notifier scenarios
+      break;
   }
 };
 

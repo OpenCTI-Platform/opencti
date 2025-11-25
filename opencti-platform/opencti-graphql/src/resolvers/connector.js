@@ -114,7 +114,7 @@ const connectorResolvers = {
     connector_user: (cn, _, context) => connectorUser(context, context.user, cn.connector_user_id),
   },
   ConnectorManager: {
-    active: (cm) => sinceNowInMinutes(cm.updated_at) < 5,
+    active: (cm) => sinceNowInMinutes(cm.last_sync_execution) < 5,
     about_version: () => PLATFORM_VERSION
   },
   Work: {
