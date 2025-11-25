@@ -44,12 +44,12 @@ jobs:
             job_templates launch 'Deploy OpenCTI feature branch for testing' \
             --wait \
             --inventory eu-west-staging \
-            --extra_vars '{"octi_version":"${{steps.meta.outputs.version}}","octi_config": ${{ inputs.octi_config }},"redis_cluster":"${{ inputs.redis_cluster }}"}' \
+            --extra_vars '{"octi_version":"${{ needs.wf-build-image.outputs.image-tag-cleaned }}","octi_config": ${{ inputs.octi_config }},"redis_cluster":"${{ inputs.redis_cluster }}"}' \
             -f human
       - name: Forge URL to match playbook limitations
         id: urlforge
         run: |
-          url=$(echo "${{steps.meta.outputs.version}}" | cut -c 1-15 | sed 's/[_.]/-/g' | sed 's/-*$//')
+          url=$(echo "${{ needs.wf-build-image.outputs.image-tag-cleaned }}" | cut -c 1-15 | sed 's/[_.]/-/g' | sed 's/-*$//')
           echo "url=$url" >> $GITHUB_OUTPUT
       - name: display URL
         run: echo "https://feat-${{steps.urlforge.outputs.url}}.octi.staging.filigran.io"

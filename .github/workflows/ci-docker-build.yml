@@ -7,11 +7,17 @@ on:
         description: "Image Tag"
         type: string
         required: true
+    outputs:
+      image-tag-cleaned:
+        description: "Image tag after formatting"
+        value: ${{ jobs.build-opencti-platform.outputs.image-tag-cleaned }}
 
 jobs:
   build-opencti-platform:
     name: Build OpenCTI Platform image
     runs-on: ubuntu-latest
+    outputs:
+      image-tag-cleaned: ${{ steps.meta.outputs.tags }}
     steps:
     - uses: actions/checkout@v6
 
