@@ -10,7 +10,7 @@ import { useTheme } from '@mui/styles';
 import TextField from '../../../../../components/TextField';
 import SelectField from '../../../../../components/fields/SelectField';
 import { SubscriptionFocus } from '../../../../../components/Subscription';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/MarkdownField/MarkdownField';
 import ObjectOrganizationField from '../../../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../../../components/i18n';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';

@@ -10,7 +10,7 @@ import SelectField from '../../../../components/fields/SelectField';
 import ConfidenceField from '../form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { hasKillChainPhase } from '../../../../utils/Relation';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';

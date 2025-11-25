@@ -8,7 +8,7 @@ import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../../components/i18n';
 import TextField from '../../../../../components/TextField';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/MarkdownField/MarkdownField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 import type { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/fields/SwitchField';

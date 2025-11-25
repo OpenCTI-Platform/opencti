@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Field, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -8,7 +8,7 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkdownField from '../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../components/fields/MarkdownField/MarkdownField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useFormatter } from '../../../../components/i18n';
 import { SecurityCoverageEditionOverview_securityCoverage$key } from './__generated__/SecurityCoverageEditionOverview_securityCoverage.graphql';

@@ -14,7 +14,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
-import MarkdownField from '../../../../../components/fields/MarkdownField';
+import MarkdownField from '../../../../../components/fields/MarkdownField/MarkdownField';
 import { handleErrorInForm } from '../../../../../relay/environment';
 import { insertNode } from '../../../../../utils/store';
 import { dayStartDate, parse } from '../../../../../utils/Time';

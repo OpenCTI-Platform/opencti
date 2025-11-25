@@ -338,7 +338,7 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
   };
   if (variant === 'markdown') {
     return (
-      <div style={style || { position: 'absolute', top: 17, right: 0, paddingTop: 4 }}>
+      <div style={style || { paddingTop: 0 }}>
         {fullyActive && renderButton()}
       </div>
     );
