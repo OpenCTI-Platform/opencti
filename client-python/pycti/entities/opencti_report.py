@@ -723,6 +723,7 @@ class Report:
         granted_refs = kwargs.get("objectOrganization", None)
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         update = kwargs.get("update", False)
+        upsert_operations = kwargs.get("opencti_upsert_operations", None)
 
         if name is not None and published is not None:
             self.opencti.app_logger.info("Creating Report", {"name": name})
@@ -763,6 +764,7 @@ class Report:
                         "x_opencti_stix_ids": x_opencti_stix_ids,
                         "x_opencti_workflow_id": x_opencti_workflow_id,
                         "update": update,
+                        "upsertOperations": upsert_operations,
                     }
                 },
             )
@@ -910,6 +912,12 @@ class Report:
                         "participant_ids", stix_object
                     )
                 )
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
+                )
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=(
@@ -986,6 +994,11 @@ class Report:
                     else None
                 ),
                 update=update,
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                )
             )
         else:
             self.opencti.app_logger.error(
