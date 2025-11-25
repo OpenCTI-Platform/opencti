@@ -134,17 +134,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
               <Typography variant="h4" gutterBottom={true}>
                 {t_i18n('Details')}
               </Typography>
-              <Paper
-                variant="outlined"
-                className="paper-for-grid"
-                style={{
-                  marginTop: theme.spacing(1),
-                  padding: theme.spacing(2),
-                  borderRadius: theme.spacing(0.5),
-                  position: 'relative',
-                  height: '235px',
-                }}
-              >
+              <Paper style={{ marginTop: theme.spacing(1), position: 'relative' }}>
                 <div style={{ height: '100%', width: '100%' }}>
                   <div style={{
                     display: 'flex',
