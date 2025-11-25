@@ -106,9 +106,9 @@ export const generatePirContextData = (event: SseEvent<StreamDataEvent>): Partia
       to_id = extensions.target_ref;
       if ((extensions.source_ref_pir_refs ?? []).length > 0) {
         pir_match_from = true;
-        pir_ids = extensions.source_ref_pir_refs;
+        pir_ids = extensions.source_ref_pir_refs ?? [];
       } else if ((extensions.target_ref_pir_refs ?? []).length > 0) {
-        pir_ids = extensions.target_ref_pir_refs;
+        pir_ids = extensions.target_ref_pir_refs ?? [];
       }
     }
   } else if (eventData.type === 'internal-relationship'
