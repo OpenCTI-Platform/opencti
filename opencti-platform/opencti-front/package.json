@@ -64,7 +64,7 @@
     "dompurify": "3.3.0",
     "extract-files": "13.0.0",
     "filigran-chatbot": "https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.7/filigran-chatbot-v0.1.7.tgz",
-    "filigran-icon": "0.19.0",
+    "filigran-icon": "0.19.1",
     "formik": "2.4.9",
     "formik-mui": "5.0.0-alpha.0",
     "formik-mui-lab": "1.0.0",
