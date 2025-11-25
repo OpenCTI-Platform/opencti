@@ -1,5 +1,4 @@
 import * as jsonpatch from 'fast-json-patch';
-import * as R from 'ramda';
 import type { AuthUser } from '../../types/user';
 import type { StoreObject } from '../../types/store';
 import { generateMergeMessage } from '../generate-message';
@@ -8,9 +7,19 @@ import type { StixCoreObject } from '../../types/stix-2-1-common';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../utils';
 import { UnsupportedError } from '../../config/errors';
 import { INTERNAL_EXPORTABLE_TYPES } from '../../schema/stixCoreObject';
-import type { BaseEvent, DataEvent, DeleteEvent, EventOpts, MergeEvent, SseEvent, StreamDataEvent, UpdateEvent, UpdateEventOpts } from '../../types/event';
+import type {
+  ActivityStreamEvent,
+  BaseEvent,
+  DeleteEvent,
+  EventOpts,
+  MergeEvent,
+  SseEvent,
+  StreamDataEvent,
+  StreamNotifEvent,
+  UpdateEvent,
+  UpdateEventOpts
+} from '../../types/event';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
-import { asyncMap } from '../../utils/data-processing';
 
 export const LIVE_STREAM_NAME = 'stream.opencti';
 export const NOTIFICATION_STREAM_NAME = 'stream.notification';
@@ -44,52 +53,25 @@ export type StreamInfo = {
 
 export interface RawStreamClient {
   initializeStreams: () => Promise<void>;
-  rawPushToStream: (rawEvent: string[]) => Promise<void>;
+  rawPushToStream: <T extends BaseEvent> (event: T) => Promise<void>;
   rawFetchStreamInfo: (streamName?: string) => Promise<StreamInfo>;
   rawCreateStreamProcessor: <T extends BaseEvent> (
     provider: string,
     callback: (events: Array<SseEvent<T>>, lastEventId: string) => Promise<void>,
     opts?: StreamOption
   ) => StreamProcessor;
-  rawFetchStreamEventsRangeFromEventId: (
+  rawFetchStreamEventsRangeFromEventId: <T extends BaseEvent> (
     startEventId: string,
-    callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
+    callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
     opts?: StreamOption,
   ) => Promise<{ lastEventId: string }>;
-  rawStoreNotificationEvent: (events: string[]) => Promise<void>;
-  rawFetchRangeNotifications: <T extends BaseEvent> (start: Date, end: Date) => Promise<Array<T>>;
-  rawStoreActivityEvent: (events: string[]) => Promise<void>;
+  rawStoreNotificationEvent: <T extends StreamNotifEvent> (event: T) => Promise<void>;
+  rawFetchRangeNotifications: <T extends StreamNotifEvent> (start: Date, end: Date) => Promise<Array<T>>;
+  rawStoreActivityEvent: (event: ActivityStreamEvent) => Promise<void>;
 }
 
 export const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
-};
-export const mapJSToStream = (event: any) => {
-  const cmdArgs: Array<string> = [];
-  Object.keys(event).forEach((key) => {
-    const value = event[key];
-    if (value !== undefined) {
-      cmdArgs.push(key);
-      cmdArgs.push(JSON.stringify(value));
-    }
-  });
-  return cmdArgs;
-};
-export const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
-  const count = data.length / 2;
-  const obj: any = {};
-  for (let i = 0; i < count; i += 1) {
-    obj[data[2 * i]] = JSON.parse(data[2 * i + 1]);
-  }
-  return { id, event: obj.type, data: obj };
-};
-export const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean | undefined) => {
-  const transform = (r: any) => mapStreamToJS(r);
-  const filter = (s: any) => (withInternal ? true : (s.data.scope ?? 'external') === 'external');
-  const events = await asyncMap(results, transform, filter);
-  const lastEventId = events.length > 0 ? R.last(events)?.id : `${new Date().valueOf()}-0`;
-  await callback(events, lastEventId);
-  return lastEventId;
 };
 // Merge
 export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: StoreObject, sourceEntities: Array<StoreObject>): Promise<MergeEvent> => {
