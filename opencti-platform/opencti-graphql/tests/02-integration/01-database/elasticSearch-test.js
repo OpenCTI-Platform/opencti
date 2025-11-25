@@ -599,7 +599,8 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Tracking-Number')).toBe(entitiesCounter.TrackingNumber);
     expect(entityTypeMap.get('User')).toBe(entitiesCounter.User);
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(data.edges.length).toEqual(209 + entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
+    expect(data.edges.length).toEqual(210 + entitiesCounter.Vocabulary);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = {
@@ -675,7 +676,8 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Opinion')).toBe(entitiesCounter.Opinion);
     expect(entityTypeMap.get('Threat-Actor-Individual')).toBe(1); // because of created filter
     expect(entityTypeMap.get('Vocabulary')).toBe(entitiesCounter.Vocabulary);
-    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 26);
+    expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
+    expect(data.edges.length).toEqual(entitiesCounter.Vocabulary + TESTING_ORGS.length + 27);
     filters = {
       mode: 'and',
       filters: [
@@ -737,7 +739,8 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('Label')).toBe(entitiesCounter.Label);
     expect(entityTypeMap.get('Kill-Chain-Phase')).toBe(entitiesCounter.KillChainPhase);
     expect(entityTypeMap.get('External-Reference')).toBe(entitiesCounter.ExternalReference);
-    expect(data.edges.length).toEqual(220 + entitiesCounter.Vocabulary);
+    expect(entityTypeMap.get('EmailTemplate')).toBe(entitiesCounter.EmailTemplate);
+    expect(data.edges.length).toEqual(221 + entitiesCounter.Vocabulary);
     const createdDates = R.map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
