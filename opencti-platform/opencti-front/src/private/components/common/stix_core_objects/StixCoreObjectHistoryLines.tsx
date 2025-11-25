@@ -12,8 +12,7 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import ListItem from '@mui/material/ListItem';
 import { ListItemButton } from '@mui/material';
-import Typography from '@mui/material/Typography';
-import Drawer from '../drawer/Drawer';
+import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
 import useInterval from '../../../../utils/hooks/useInterval';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
@@ -62,18 +61,17 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
   paginationOptions,
 }) => {
   const { t_i18n } = useFormatter();
+  const [open, setOpen] = useState(false);
   const queryData = usePreloadedQuery(stixCoreObjectHistoryLinesQuery, queryRef);
   const [data, refetch] = useRefetchableFragment<StixCoreObjectHistoryLinesQuery, StixCoreObjectHistoryLines_data$key>(
     StixCoreObjectHistoryLinesFragment,
     queryData,
   );
-  const [open, setOpen] = useState(false);
   useInterval(() => {
     // Refresh the history every interval
     refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, FIVE_SECONDS);
   const logs = data?.logs?.edges ?? [];
-
   return (
     <Paper
       style={{
@@ -117,22 +115,13 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                     />
 
                   </ListItemButton>
-                  <Drawer
+                  <HistoryDrawer
+                    key={log.id}
                     open={open}
-                    title={('Knowledge log detail')}
                     onClose={() => setOpen(false)}
-                  >
-                    <>
-                      <div>
-                        <Typography variant="h4" gutterBottom={true}>
-                          {('Message')}
-                        </Typography>
-                      </div>
-                      <Typography variant="h4" gutterBottom={true}>
-                        {('Details')}
-                      </Typography>
-                    </>
-                  </Drawer>
+                    title={t_i18n('Knowledge log details')}
+                    node={log}
+                  />
                 </ListItem>
               </React.Fragment>
             );
