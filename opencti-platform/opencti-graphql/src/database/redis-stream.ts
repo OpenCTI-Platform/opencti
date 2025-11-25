@@ -1,21 +1,13 @@
 import { Cluster, Redis } from 'ioredis';
 import * as R from 'ramda';
 import conf, { logApp, REDIS_PREFIX } from '../config/conf';
-import type { BaseEvent, DataEvent, SseEvent } from '../types/event';
-import {
-  ACTIVITY_STREAM_NAME,
-  LIVE_STREAM_NAME,
-  mapStreamToJS,
-  NOTIFICATION_STREAM_NAME,
-  processStreamResult,
-  type RawStreamClient,
-  type StreamOption,
-  type StreamProcessor
-} from './stream/stream-utils';
+import type { ActivityStreamEvent, BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../types/event';
+import { ACTIVITY_STREAM_NAME, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamOption, type StreamProcessor } from './stream/stream-utils';
 import { createRedisClient, getClientBase } from './redis';
 import { isEmptyField, wait, waitInSec } from './utils';
 import { utcDate } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
+import { asyncMap } from '../utils/data-processing';
 
 // region opencti data stream
 const REDIS_LIVE_STREAM_NAME = `${REDIS_PREFIX}${LIVE_STREAM_NAME}`;
@@ -36,15 +28,43 @@ const convertStreamName = (streamName = LIVE_STREAM_NAME) => {
   }
 };
 
-const rawPushToStream = async (eventMessage: string[]) => {
-  const redisClient = getClientBase();
-  if (streamTrimming) {
-    await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventMessage);
-  } else {
-    await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, '*', ...eventMessage);
+const mapJSToStream = (event: any) => {
+  const cmdArgs: Array<string> = [];
+  Object.keys(event).forEach((key) => {
+    const value = event[key];
+    if (value !== undefined) {
+      cmdArgs.push(key);
+      cmdArgs.push(JSON.stringify(value));
+    }
+  });
+  return cmdArgs;
+};
+const mapStreamToJS = ([id, data]: any): SseEvent<any> => {
+  const count = data.length / 2;
+  const obj: any = {};
+  for (let i = 0; i < count; i += 1) {
+    obj[data[2 * i]] = JSON.parse(data[2 * i + 1]);
   }
+  return { id, event: obj.type, data: obj };
 };
 
+const rawPushToStream = async <T extends BaseEvent> (event: T) => {
+  const redisClient = getClientBase();
+  const eventStreamData = mapJSToStream(event);
+  if (streamTrimming) {
+    await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, 'MAXLEN', '~', streamTrimming, '*', ...eventStreamData);
+  } else {
+    await redisClient.call('XADD', REDIS_LIVE_STREAM_NAME, '*', ...eventStreamData);
+  }
+};
+const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean | undefined) => {
+  const transform = (r: any) => mapStreamToJS(r);
+  const filter = (s: any) => (withInternal ? true : (s.data.scope ?? 'external') === 'external');
+  const events = await asyncMap(results, transform, filter);
+  const lastEventId = events.length > 0 ? R.last(events)?.id : `${new Date().valueOf()}-0`;
+  await callback(events, lastEventId);
+  return lastEventId;
+};
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   const redisStreamName = convertStreamName(streamName);
   const res: any = await getClientBase().xinfo('STREAM', redisStreamName);
@@ -192,10 +212,11 @@ const rawFetchStreamEventsRangeFromEventId = async (
 
 // region opencti notification stream
 const notificationTrimming = conf.get('redis:notification_trimming') || 50000;
-const rawStoreNotificationEvent = async (event: string[]) => {
-  await getClientBase().call('XADD', REDIS_NOTIFICATION_STREAM_NAME, 'MAXLEN', '~', notificationTrimming, '*', ...event);
+const rawStoreNotificationEvent = async <T extends StreamNotifEvent> (event: T) => {
+  const eventStreamData = mapJSToStream(event);
+  await getClientBase().call('XADD', REDIS_NOTIFICATION_STREAM_NAME, 'MAXLEN', '~', notificationTrimming, '*', ...eventStreamData);
 };
-const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end: Date): Promise<Array<T>> => {
+const rawFetchRangeNotifications = async <T extends StreamNotifEvent> (start: Date, end: Date): Promise<Array<T>> => {
   const streamResult = await getClientBase().call('XRANGE', REDIS_NOTIFICATION_STREAM_NAME, start.getTime(), end.getTime()) as any[];
   const streamElements: Array<SseEvent<T>> = streamResult.map((r) => mapStreamToJS(r));
   return streamElements.filter((s) => s.event === 'live').map((e) => e.data);
@@ -204,8 +225,9 @@ const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end
 
 // region opencti audit stream
 const auditTrimming = conf.get('redis:activity_trimming') || 50000;
-const rawStoreActivityEvent = async (event: string[]) => {
-  await getClientBase().call('XADD', REDIS_ACTIVITY_STREAM_NAME, 'MAXLEN', '~', auditTrimming, '*', ...event);
+const rawStoreActivityEvent = async (event: ActivityStreamEvent) => {
+  const eventStreamData = mapJSToStream(event);
+  await getClientBase().call('XADD', REDIS_ACTIVITY_STREAM_NAME, 'MAXLEN', '~', auditTrimming, '*', ...eventStreamData);
 };
 // endregion
 

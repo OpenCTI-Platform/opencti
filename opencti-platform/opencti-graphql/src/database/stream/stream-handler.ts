@@ -1,7 +1,7 @@
 import { SEMATTRS_DB_NAME } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StoreObject, StoreRelation } from '../../types/store';
-import type { ActivityStreamEvent, BaseEvent, CreateEventOpts, DataEvent, EventOpts, SseEvent, StreamDataEvent, UpdateEventOpts } from '../../types/event';
+import type { ActivityStreamEvent, BaseEvent, CreateEventOpts, EventOpts, SseEvent, StreamDataEvent, StreamNotifEvent, UpdateEventOpts } from '../../types/event';
 import { isStixExportableInStreamData } from '../../schema/stixCoreObject';
 import { generateCreateMessage, generateDeleteMessage, generateRestoreMessage } from '../generate-message';
 import {
@@ -11,7 +11,6 @@ import {
   buildUpdateEvent,
   isStreamPublishable,
   LIVE_STREAM_NAME,
-  mapJSToStream,
   type RawStreamClient,
   type StreamOption,
   type StreamProcessor
@@ -28,13 +27,12 @@ export const initializeStreamStack = async () => {
   }
 };
 
-const pushToStream = async (context: AuthContext, user: AuthUser, event: BaseEvent, opts: EventOpts = {}) => {
+const pushToStream = async <T extends BaseEvent> (context: AuthContext, user: AuthUser, event: T, opts: EventOpts = {}) => {
   const draftContext = getDraftContext(context, user);
   const eventToPush = { ...event, event_id: context.eventId };
   if (!draftContext && isStreamPublishable(opts)) {
-    const streamMessage = mapJSToStream(eventToPush);
     const pushToStreamFn = async () => {
-      await streamClient.rawPushToStream(streamMessage);
+      await streamClient.rawPushToStream(eventToPush);
     };
     await telemetry(context, user, 'INSERT STREAM', {
       [SEMATTRS_DB_NAME]: 'stream_engine',
@@ -131,26 +129,24 @@ export const fetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   return streamClient.rawFetchStreamInfo(streamName);
 };
 
-export const fetchStreamEventsRangeFromEventId = async (
+export const fetchStreamEventsRangeFromEventId = async <T extends BaseEvent> (
   startEventId: string,
-  callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
+  callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
   opts: StreamOption = {},
 ) => {
   return streamClient.rawFetchStreamEventsRangeFromEventId(startEventId, callback, opts);
 };
 
 // region opencti notification stream
-export const storeNotificationEvent = async (_context: AuthContext, event: any) => {
-  const eventMessage = mapJSToStream(event);
-  await streamClient.rawStoreNotificationEvent(eventMessage);
+export const storeNotificationEvent = async <T extends StreamNotifEvent>(_context: AuthContext, event: T) => {
+  await streamClient.rawStoreNotificationEvent(event);
 };
-export const fetchRangeNotifications = async <T extends BaseEvent>(start: Date, end: Date): Promise<Array<T>> => {
-  return streamClient.rawFetchRangeNotifications(start, end);
+export const fetchRangeNotifications = async <T extends StreamNotifEvent>(start: Date, end: Date): Promise<Array<T>> => {
+  return streamClient.rawFetchRangeNotifications<T>(start, end);
 };
 // endregion
 // region opencti audit stream
 export const storeActivityEvent = async (event: ActivityStreamEvent) => {
-  const eventMessage = mapJSToStream(event);
-  await streamClient.rawStoreActivityEvent(eventMessage);
+  await streamClient.rawStoreActivityEvent(event);
 };
 // endregion
