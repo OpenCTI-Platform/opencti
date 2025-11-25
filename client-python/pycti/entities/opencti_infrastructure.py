@@ -522,6 +522,7 @@ class Infrastructure:
         update = kwargs.get("update", False)
         files = kwargs.get("files", None)
         files_markings = kwargs.get("filesMarkings", None)
+        upsert_operations = kwargs.get("upsert_operations", None)
 
         if name is not None:
             self.opencti.app_logger.info("Creating Infrastructure", {"name": name})
@@ -563,6 +564,7 @@ class Infrastructure:
                         "update": update,
                         "files": files,
                         "filesMarkings": files_markings,
+                        "upsertOperations": upsert_operations,
                     }
                 },
             )
@@ -607,6 +609,12 @@ class Infrastructure:
             if "x_opencti_modified_at" not in stix_object:
                 stix_object["x_opencti_modified_at"] = (
                     self.opencti.get_attribute_in_extension("modified_at", stix_object)
+                )
+            if "opencti_upsert_operations" not in stix_object:
+                stix_object["opencti_upsert_operations"] = (
+                    self.opencti.get_attribute_in_extension(
+                        "opencti_upsert_operations", stix_object
+                    )
                 )
 
             return self.create(
@@ -680,6 +688,11 @@ class Infrastructure:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=(
+                    stix_object["opencti_upsert_operations"]
+                    if "opencti_upsert_operations" in stix_object
+                    else None
+                ),
             )
         else:
             self.opencti.app_logger.error(

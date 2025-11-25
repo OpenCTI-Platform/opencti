@@ -142,6 +142,48 @@ export const sanitizeAuthorizedMembers = (input: MemberAccessInput[]) => {
   });
 };
 
+export const buildRestrictedMembers = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: {
+    entityId: string;
+    input: MemberAccessInput[] | undefined | null;
+    requiredCapabilities: string[];
+    entityType: string;
+  },
+): Promise<null | AuthorizedMember[]> => {
+  const { entityId, input, requiredCapabilities, entityType } = args;
+
+  // Allow authorized members edition only on draft type but not for other entity types in draft
+  const draftId = getDraftContext(context, user);
+  if (draftId && draftId !== entityId) throw UnsupportedError('Cannot edit authorized members in draft');
+  let restricted_members: { id: string; access_right: string; groups_restriction_ids: string[] | null | undefined }[] | null = null;
+  if (input) {
+    // validate input (validate access right) remove duplicate
+    const filteredInput = sanitizeAuthorizedMembers(input);
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+    if (filteredInput.some(({ id }) => id === MEMBER_ACCESS_ALL) && settings.platform_organization && !isInternalObject(entityType)) {
+      throw FunctionalError('You can\'t grant access to everyone in an organization sharing context');
+    }
+    const hasValidAdmin = await containsValidAdmin(
+      context,
+      filteredInput,
+      requiredCapabilities,
+    );
+    if (!hasValidAdmin) {
+      throw FunctionalError('It should have at least one valid member with admin access');
+    }
+    restricted_members = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
+      const member = { id, access_right, groups_restriction_ids };
+      if (!groups_restriction_ids) {
+        delete member.groups_restriction_ids;
+      }
+      return member;
+    });
+  }
+  return restricted_members;
+};
+
 export const editAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
@@ -155,38 +197,12 @@ export const editAuthorizedMembers = async (
 ) => {
   const { entityId, input, requiredCapabilities, entityType, busTopicKey } = args;
 
-  // Allow authorized members edition only on draft type but not for other entity types in draft
-  const draftId = getDraftContext(context, user);
-  if (draftId && draftId !== entityId) throw UnsupportedError('Cannot edit authorized members in draft');
-
-  let restricted_members: { id: string; access_right: string; groups_restriction_ids: string[] | null | undefined }[] | null = null;
-
-  if (input) {
-    // validate input (validate access right) remove duplicate
-    const filteredInput = sanitizeAuthorizedMembers(input);
-
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-    if (filteredInput.some(({ id }) => id === MEMBER_ACCESS_ALL) && settings.platform_organization && !isInternalObject(entityType)) {
-      throw FunctionalError('You can\'t grant access to everyone in an organization sharing context');
-    }
-
-    const hasValidAdmin = await containsValidAdmin(
-      context,
-      filteredInput,
-      requiredCapabilities,
-    );
-    if (!hasValidAdmin) {
-      throw FunctionalError('It should have at least one valid member with admin access');
-    }
-
-    restricted_members = filteredInput.map(({ id, access_right, groups_restriction_ids }) => {
-      const member = { id, access_right, groups_restriction_ids };
-      if (!groups_restriction_ids) {
-        delete member.groups_restriction_ids;
-      }
-      return member;
-    });
-  }
+  const restricted_members = await buildRestrictedMembers(context, user, {
+    entityId,
+    input,
+    requiredCapabilities,
+    entityType,
+  });
 
   const patch = { restricted_members };
   const { element } = await patchAttribute(context, user, entityId, entityType, patch);

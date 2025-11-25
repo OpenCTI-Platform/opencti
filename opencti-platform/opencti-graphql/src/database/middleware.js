@@ -2157,6 +2157,22 @@ export const buildChanges = async (context, user, entityType, inputs) => {
   return changes;
 };
 
+const resolveRefsForInputs = async (context, user, type, updateInputs) => {
+  // endregion
+  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(type), ...schemaRelationsRefDefinition.getInputNames(type)];
+  const meta = updateInputs.filter((e) => metaKeys.includes(e.key));
+  const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
+  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
+  const revolvedInputs = updateInputs.map((input) => {
+    if (metaKeys.includes(input.key)) {
+      const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
+      return { ...input, value: resolvedValues };
+    }
+    return input;
+  });
+  return revolvedInputs;
+};
+
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -2565,17 +2581,8 @@ export const updateAttributeFromLoadedWithRefs = async (context, user, initial, 
   }
   const newInputs = adaptUpdateInputsConfidence(user, inputs, initial);
   // endregion
-  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
-  const meta = newInputs.filter((e) => metaKeys.includes(e.key));
-  const metaIds = R.uniq(meta.map((i) => i.value ?? []).flat());
-  const metaDependencies = await elFindByIds(context, user, metaIds, { toMap: true, mapWithAllIds: true });
-  const revolvedInputs = newInputs.map((input) => {
-    if (metaKeys.includes(input.key)) {
-      const resolvedValues = (input.value ?? []).map((refId) => metaDependencies[refId]).filter((o) => isNotEmptyField(o));
-      return { ...input, value: resolvedValues };
-    }
-    return input;
-  });
+  const revolvedInputs = await resolveRefsForInputs(context, user, initial.entity_type, newInputs);
+
   return updateAttributeMetaResolved(context, user, initial, revolvedInputs, opts);
 };
 
@@ -2847,6 +2854,11 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch, resolvedElement);
 
   const updatePatch = buildUpdatePatchForUpsert(user, resolvedElement, type, basePatch, confidenceForUpsert);
+
+  // upsertOperations : resolve refs
+  if (updatePatch.upsertOperations?.length > 0) {
+    updatePatch.upsertOperations = await resolveRefsForInputs(context, user, type, updatePatch.upsertOperations);
+  }
 
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validEnterpriseEdition = settings.valid_enterprise_edition;

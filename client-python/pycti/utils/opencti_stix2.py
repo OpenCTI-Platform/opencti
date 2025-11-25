@@ -1278,6 +1278,9 @@ class OpenCTIStix2:
             "files": files_to_upload if files_to_upload else None,
             "filesMarkings": files_markings if files_markings else None,
         }
+        upsert_operations = self.opencti.get_attribute_in_extension(
+            "opencti_upsert_operations", stix_object
+        )
         if stix_object["type"] == "simple-observable":
             stix_observable_result = self.opencti.stix_cyber_observable.create(
                 simple_observable_id=stix_object["id"],
@@ -1322,6 +1325,7 @@ class OpenCTIStix2:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=upsert_operations,
             )
         else:
             stix_observable_result = self.opencti.stix_cyber_observable.create(
@@ -1348,6 +1352,7 @@ class OpenCTIStix2:
                 update=update,
                 files=extras.get("files"),
                 filesMarkings=extras.get("filesMarkings"),
+                upsert_operations=upsert_operations,
             )
         if stix_observable_result is not None:
             if "id" in stix_object:
@@ -1562,6 +1567,9 @@ class OpenCTIStix2:
         }
 
         # Create the sighting
+        upsert_operations = self.opencti.get_attribute_in_extension(
+            "opencti_upsert_operations", stix_sighting
+        )
 
         if (
             "x_opencti_negative" not in stix_sighting
@@ -1632,6 +1640,7 @@ class OpenCTIStix2:
                 if "x_opencti_ignore_dates" in stix_sighting
                 else None
             ),
+            upsert_operations=upsert_operations,
         )
         if stix_sighting_result is not None:
             self.set_in_cache(
