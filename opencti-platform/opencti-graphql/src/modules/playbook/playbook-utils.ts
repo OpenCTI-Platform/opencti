@@ -6,6 +6,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
+import { isFeatureEnabled } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import type { FilterGroup, PlaybookAddNodeInput } from '../../generated/graphql';
@@ -72,6 +73,25 @@ export const convertMembersToUsers = async (
     return isDirectlyAuthorized || isAuthorizedByGroup || isAuthorizedByOrganization;
   });
   return R.uniqBy(R.prop('id'), users);
+};
+
+export const applyOperationFieldPatch = (element: StixObject, patchObject: {
+  key: string;
+  value: any[];
+  operation: 'add' | 'replace' | 'remove'
+}[]) => {
+  if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS')) {
+    // TODO upsert_operations
+    //  should we consolidate operations ? or only append them ? => keep only one key per attribute
+    // key: 'objectLabel', value: ['label1'], operation: remove
+    // key: 'objectLabel', value: ['label2'], operation: remove => deduplicate?
+    //  should we only apply remove operations
+    if (!element.extensions[STIX_EXT_OCTI].opencti_upsert_operations) {
+      // eslint-disable-next-line no-param-reassign
+      element.extensions[STIX_EXT_OCTI].opencti_upsert_operations = [];
+    }
+    element.extensions[STIX_EXT_OCTI].opencti_upsert_operations.push(...patchObject);
+  }
 };
 
 export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {

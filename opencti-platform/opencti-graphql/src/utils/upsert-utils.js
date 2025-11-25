@@ -185,6 +185,68 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   return [];
 };
 
+export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchInput, upsertOperation) => {
+  // TODO
+  const finalPatchInput = { ...updatePatchInput };
+  // we need to first apply the upsertOperation on element then the updatePatchInput
+  if (updatePatchInput.operation === 'add') {
+    // for now we only handle 'add' operations coming from updatePatchInput for multiple attributes
+    if (!upsertOperation.operation || upsertOperation === 'replace') { // replace
+      // TODO handle replace case
+    } else if (upsertOperation.operation === 'remove') {
+      let currentValueArray = elementCurrentValue ?? [];
+      currentValueArray = Array.isArray(currentValueArray) ? currentValueArray : [currentValueArray];
+      let finalPatchValue = [...currentValueArray];
+      if (upsertOperation.value?.length > 0) {
+        // filter values to remove from current values in DB
+        finalPatchValue = finalPatchValue.filter((e) => !upsertOperation.value.includes(e));
+        // add updatePatchInput values coming from upsert
+        if (updatePatchInput.value?.length > 0) {
+          finalPatchValue.push(...updatePatchInput.value);
+        }
+        finalPatchValue = Array.from(new Set(finalPatchValue)); // keep only unique values
+        // we replace current values
+        finalPatchInput.value = finalPatchValue;
+        finalPatchInput.operation = 'replace';
+      } else {
+        // TODO if value is empty, does it mean we should remove everything?
+      }
+    }
+  }
+  return finalPatchInput;
+};
+
+/**
+ * should return a merged inputs list with only one element per key
+ *
+ * @param resolvedElement (element from DB)
+ * @param updatePatch (element from bundle)
+ * @param updatePatchInputs : array inputs generated from updatePatch (from element in bundle)
+ * @param upsertOperations : array inputs from upsertOperations in bundle
+ */
+export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInputs, upsertOperations) => {
+  // we want only to call this method for remove or replace operations that should happen on arrays
+  if (!upsertOperations || upsertOperations.length === 0) {
+    return updatePatchInputs;
+  }
+  const updatePatchInputsMap = new Map(updatePatchInputs.map((input) => [input.key, input]));
+  for (let i = 0; i < upsertOperations.length; i += 1) {
+    const upsertOperation = upsertOperations[i];
+    const key = upsertOperation.key;
+    if (updatePatchInputsMap.has(key)) {
+      const updatePatchInput = updatePatchInputsMap.get(key);
+      const elementCurrentValue = resolvedElement[key];
+      const upsertValue = updatePatch[key];
+      const mergedInput = mergeUpsertInput(elementCurrentValue, upsertValue, updatePatchInput, upsertOperation);
+      updatePatchInputsMap.set(key, mergedInput); // replace updatePatchInput
+    } else {
+      updatePatchInputsMap.set(key, upsertOperation); // just add the upsert operation
+    }
+  }
+  const mergedInputs = Array.from(updatePatchInputsMap.values());
+  return mergedInputs;
+};
+
 export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
@@ -296,5 +358,8 @@ export const generateInputsForUpsert = async (context, user, resolvedElement, ty
   const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
   inputs.push(...refsInputs);
 
-  return inputs;
+  // -- merge inputs with upsertOperations
+  const finalInputs = mergeUpsertInputs(resolvedElement, updatePatch, inputs, updatePatch.upsertOperations);
+
+  return finalInputs;
 };
