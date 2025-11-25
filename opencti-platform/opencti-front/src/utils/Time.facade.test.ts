@@ -1,6 +1,4 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest';
-import moment from 'moment';
-import 'moment-timezone';
 import {
   setDateFormatLocale,
   parseDate,
@@ -32,600 +30,476 @@ import {
 } from './Time';
 
 /**
- * Comparison tests between moment.js and Time.ts facade functions
- * These tests verify that the Time.ts facade (using date-fns internally)
- * produces identical outputs to moment.js for all replaced functions
+ * Tests for Time.ts facade functions (date-fns based implementation)
+ * These tests verify that the Time.ts facade functions work correctly
+ * after the migration from moment.js to date-fns
  */
-describe('Time.ts as Moment.js facade', () => {
+describe('Time.ts facade functions', () => {
   // Mock current date for consistent testing
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2025-01-15T10:30:00.000Z'));
-    moment.locale('en'); // Reset to English locale
   });
 
   afterEach(() => {
     vi.useRealTimers();
   });
 
-  describe('parseDate() as moment() - Core facade function', () => {
+  describe('parseDate() - Core facade function', () => {
     describe('format() method', () => {
-      it('should match moment().utc().format() without parameters', () => {
+      it('should format dates in ISO format without parameters', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).format();
+        const result = parseDate(testDate).format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15T10:30:00Z');
+        expect(result).toBe('2025-01-15T10:30:00Z');
       });
 
       it('should handle YYYY-MM-DD format conversion', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).format('YYYY-MM-DD');
-        const facadeResult = parseDate(testDate).format('YYYY-MM-DD');
+        const result = parseDate(testDate).format('YYYY-MM-DD');
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15');
+        expect(result).toBe('2025-01-15');
       });
 
       it('should handle YYYY format conversion', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).format('YYYY');
-        const facadeResult = parseDate(testDate).format('YYYY');
+        const result = parseDate(testDate).format('YYYY');
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025');
+        expect(result).toBe('2025');
       });
 
       it('should handle DD format conversion', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).format('DD');
-        const facadeResult = parseDate(testDate).format('DD');
+        const result = parseDate(testDate).format('DD');
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('15');
+        expect(result).toBe('15');
       });
 
       it('should handle YY format conversion', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).format('YY');
-        const facadeResult = parseDate(testDate).format('YY');
+        const result = parseDate(testDate).format('YY');
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('25');
+        expect(result).toBe('25');
       });
 
       it('should handle D format conversion (day without leading zero)', () => {
         const testDate = '2025-01-05T10:30:00.000Z';
 
-        const momentResult = moment(testDate).format('D');
-        const facadeResult = parseDate(testDate).format('D');
+        const result = parseDate(testDate).format('D');
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('5');
+        expect(result).toBe('5');
       });
     });
 
     describe('unix() method', () => {
-      it('should match moment().unix()', () => {
+      it('should return Unix timestamp in seconds', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).unix();
-        const facadeResult = parseDate(testDate).unix();
+        const result = parseDate(testDate).unix();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe(1736937000);
+        expect(result).toBe(1736937000);
       });
 
       it('should handle Unix timestamp input (seconds)', () => {
         const unixTimestamp = 1736937000; // 2025-01-15T10:30:00.000Z
 
-        const momentResult = moment.unix(unixTimestamp).unix();
-        const facadeResult = parseDate(unixTimestamp).unix();
+        const result = parseDate(unixTimestamp).unix();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe(1736937000);
+        expect(result).toBe(1736937000);
       });
     });
 
     describe('valueOf() method', () => {
-      it('should match moment().valueOf()', () => {
+      it('should return timestamp in milliseconds', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).valueOf();
-        const facadeResult = parseDate(testDate).valueOf();
+        const result = parseDate(testDate).valueOf();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe(1736937000000);
+        expect(result).toBe(1736937000000);
       });
     });
 
     describe('toDate() method', () => {
-      it('should match moment().toDate()', () => {
+      it('should convert to JavaScript Date object', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).toDate();
-        const facadeResult = parseDate(testDate).toDate();
+        const result = parseDate(testDate).toDate();
 
-        expect(facadeResult.toISOString()).toBe(momentResult.toISOString());
-        expect(facadeResult.toISOString()).toBe('2025-01-15T10:30:00.000Z');
+        expect(result.toISOString()).toBe('2025-01-15T10:30:00.000Z');
       });
     });
 
     describe('subtract() method', () => {
-      it('should match moment().subtract() for days', () => {
+      it('should subtract days correctly', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).subtract(5, 'days').utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).subtract(5, 'days').format();
+        const result = parseDate(testDate).subtract(5, 'days').format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-10T10:30:00Z');
+        expect(result).toBe('2025-01-10T10:30:00Z');
       });
 
-      it('should match moment().subtract() for months', () => {
+      it('should subtract months correctly', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        // Note: moment.js has a DST bug in non-UTC timezones, so we test the correct behavior
-        // The time should remain constant in UTC when subtracting months
-        const facadeResult = parseDate(testDate).subtract(3, 'months').format();
+        const result = parseDate(testDate).subtract(3, 'months').format();
 
-        expect(facadeResult).toBe('2024-10-15T10:30:00Z');
+        expect(result).toBe('2024-10-15T10:30:00Z');
       });
 
-      it('should match moment().subtract() for years', () => {
+      it('should subtract years correctly', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).subtract(2, 'years').utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).subtract(2, 'years').format();
+        const result = parseDate(testDate).subtract(2, 'years').format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2023-01-15T10:30:00Z');
+        expect(result).toBe('2023-01-15T10:30:00Z');
       });
 
-      it('should match moment().subtract() for minutes', () => {
+      it('should subtract minutes correctly', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).subtract(30, 'minutes').utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).subtract(30, 'minutes').format();
+        const result = parseDate(testDate).subtract(30, 'minutes').format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15T10:00:00Z');
+        expect(result).toBe('2025-01-15T10:00:00Z');
       });
     });
 
     describe('add() method', () => {
-      it('should match moment().add() for days', () => {
+      it('should add days correctly', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).add(5, 'days').utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).add(5, 'days').format();
+        const result = parseDate(testDate).add(5, 'days').format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-20T10:30:00Z');
+        expect(result).toBe('2025-01-20T10:30:00Z');
       });
     });
 
     describe('endOf() method', () => {
-      it('should match moment().endOf("day")', () => {
+      it('should get end of day correctly', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment.utc(testDate).endOf('day').format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).endOf('day').format();
+        const result = parseDate(testDate).endOf('day').format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15T23:59:59Z');
+        expect(result).toBe('2025-01-15T23:59:59Z');
       });
 
-      it('should match moment().endOf("month")', () => {
+      it('should get end of month correctly', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment.utc(testDate).endOf('month').format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).endOf('month').format();
+        const result = parseDate(testDate).endOf('month').format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-31T23:59:59Z');
+        expect(result).toBe('2025-01-31T23:59:59Z');
       });
     });
 
     describe('diff() method', () => {
-      it('should match moment().diff() for minutes', () => {
+      it('should calculate difference in minutes', () => {
         const start = '2025-01-15T10:00:00.000Z';
         const end = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(end).diff(moment(start), 'minutes');
-        const facadeResult = parseDate(start).diff(end, 'minutes');
+        const result = parseDate(start).diff(end, 'minutes');
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe(30);
+        expect(result).toBe(30);
       });
 
-      it('should match moment().diff() for seconds', () => {
+      it('should calculate difference in seconds', () => {
         const start = '2025-01-15T10:00:00.000Z';
         const end = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(end).diff(moment(start), 'seconds');
-        const facadeResult = parseDate(start).diff(end, 'seconds');
+        const result = parseDate(start).diff(end, 'seconds');
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe(1800);
+        expect(result).toBe(1800);
       });
     });
 
     describe('utc().format() method', () => {
-      it('should match moment().utc().format()', () => {
+      it('should format in UTC', () => {
         const testDate = '2025-01-15T10:30:00.000Z';
 
-        const momentResult = moment(testDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).utc().format();
+        const result = parseDate(testDate).utc().format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15T10:30:00Z');
+        expect(result).toBe('2025-01-15T10:30:00Z');
       });
     });
 
     describe('Edge cases', () => {
-      it('should handle null input like moment()', () => {
-        // Note: moment(null) returns "Invalid date" while our facade returns current date
-        // This is an acceptable divergence as moment's behavior is inconsistent
-        const facadeResult = parseDate(null).format();
+      it('should handle null input', () => {
+        const result = parseDate(null).format();
 
-        // Our facade returns "Invalid date" for null input
-        expect(facadeResult).toBe('Invalid date');
+        expect(result).toBe('Invalid date');
       });
 
-      it('should handle undefined input like moment()', () => {
-        const momentResult = moment(undefined).utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(undefined).format();
+      it('should handle undefined input by using current date', () => {
+        const result = parseDate(undefined).format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15T10:30:00Z');
+        expect(result).toBe('2025-01-15T10:30:00Z');
       });
 
-      it('should handle date-only strings like moment()', () => {
+      it('should handle date-only strings', () => {
         const testDate = '2025-01-15';
 
-        const momentResult = moment.utc(testDate).format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).format();
+        const result = parseDate(testDate).format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15T00:00:00Z');
+        expect(result).toBe('2025-01-15T00:00:00Z');
       });
 
       it('should handle Date objects', () => {
         const testDate = new Date('2025-01-15T10:30:00.000Z');
 
-        const momentResult = moment(testDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(testDate).format();
+        const result = parseDate(testDate).format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15T10:30:00Z');
+        expect(result).toBe('2025-01-15T10:30:00Z');
       });
 
       it('should handle millisecond timestamps', () => {
         const timestampValue = 1736937000000; // 2025-01-15T10:30:00.000Z
 
-        const momentResult = moment(timestampValue).utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-        const facadeResult = parseDate(timestampValue).format();
+        const result = parseDate(timestampValue).format();
 
-        expect(facadeResult).toBe(momentResult);
-        expect(facadeResult).toBe('2025-01-15T10:30:00Z');
+        expect(result).toBe('2025-01-15T10:30:00Z');
       });
     });
   });
 
-  describe('formatDateToISO() as moment formatting', () => {
-    it('should match moment().utc().format() for ISO dates', () => {
+  describe('formatDateToISO()', () => {
+    it('should format dates to ISO format', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = formatDateToISO(testDate);
+      const result = formatDateToISO(testDate);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T10:30:00Z');
+      expect(result).toBe('2025-01-15T10:30:00Z');
     });
 
-    it('should match moment for Date objects', () => {
+    it('should handle Date objects', () => {
       const testDate = new Date('2025-01-15T10:30:00.000Z');
 
-      const momentResult = moment(testDate).utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = formatDateToISO(testDate);
+      const result = formatDateToISO(testDate);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T10:30:00Z');
+      expect(result).toBe('2025-01-15T10:30:00Z');
     });
 
     it('should handle null/undefined appropriately', () => {
-      // Our facade returns null for null/undefined, moment would return "Invalid date"
-      // This is an intentional difference
       expect(formatDateToISO(null)).toBeNull();
       expect(formatDateToISO(undefined)).toBeNull();
     });
   });
 
-  describe('dayStartDateUTC() as moment.startOf("day")', () => {
-    it('should match moment.utc().startOf("day") for current date', () => {
-      const momentResult = moment.utc().startOf('day').toDate();
-      const facadeResult = dayStartDateUTC();
+  describe('dayStartDateUTC()', () => {
+    it('should return start of day in UTC for current date', () => {
+      const result = dayStartDateUTC();
 
-      expect(facadeResult.toISOString()).toBe(momentResult.toISOString());
-      expect(facadeResult.toISOString()).toBe('2025-01-15T00:00:00.000Z');
+      expect(result.toISOString()).toBe('2025-01-15T00:00:00.000Z');
     });
 
-    it('should match moment.utc().startOf("day") for specific date', () => {
+    it('should return start of day in UTC for specific date', () => {
       const testDate = '2025-01-20T15:45:30.000Z';
 
-      const momentResult = moment.utc(testDate).startOf('day').toDate();
-      const facadeResult = dayStartDateUTC(testDate);
+      const result = dayStartDateUTC(testDate);
 
-      expect(facadeResult.toISOString()).toBe(momentResult.toISOString());
-      expect(facadeResult.toISOString()).toBe('2025-01-20T00:00:00.000Z');
+      expect(result.toISOString()).toBe('2025-01-20T00:00:00.000Z');
     });
 
     it('should return original date when fromStart is false', () => {
       const testDate = '2025-01-20T15:45:30.000Z';
 
-      const facadeResult = dayStartDateUTC(testDate, false);
+      const result = dayStartDateUTC(testDate, false);
 
-      expect(facadeResult.toISOString()).toBe('2025-01-20T15:45:30.000Z');
+      expect(result.toISOString()).toBe('2025-01-20T15:45:30.000Z');
     });
   });
 
-  describe('dayEndDateUTC() as moment.endOf("day")', () => {
-    it('should match moment.utc().endOf("day") for current date', () => {
-      const momentResult = moment.utc().endOf('day').toDate();
-      const facadeResult = dayEndDateUTC();
+  describe('dayEndDateUTC()', () => {
+    it('should return end of day in UTC for current date', () => {
+      const result = dayEndDateUTC();
 
-      expect(facadeResult.toISOString()).toBe(momentResult.toISOString());
-      expect(facadeResult.toISOString()).toBe('2025-01-15T23:59:59.999Z');
+      expect(result.toISOString()).toBe('2025-01-15T23:59:59.999Z');
     });
 
-    it('should match moment.utc().endOf("day") for specific date', () => {
+    it('should return end of day in UTC for specific date', () => {
       const testDate = '2025-01-20T10:00:00.000Z';
 
-      const momentResult = moment.utc(testDate).endOf('day').toDate();
-      const facadeResult = dayEndDateUTC(testDate);
+      const result = dayEndDateUTC(testDate);
 
-      expect(facadeResult.toISOString()).toBe(momentResult.toISOString());
-      expect(facadeResult.toISOString()).toBe('2025-01-20T23:59:59.999Z');
+      expect(result.toISOString()).toBe('2025-01-20T23:59:59.999Z');
     });
   });
 
-  describe('nowInUTC() as moment()', () => {
-    it('nowInUTC() should match moment().utc().format()', () => {
-      const momentResult = moment().utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = nowInUTC();
+  describe('nowInUTC()', () => {
+    it('should return current time in UTC format', () => {
+      const result = nowInUTC();
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T10:30:00Z');
-    });
-
-    it('nowInUTC() should match moment.utc().format() (duplicate test for clarity)', () => {
-      const momentResult = moment.utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = nowInUTC();
-
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T10:30:00Z');
+      expect(result).toBe('2025-01-15T10:30:00Z');
     });
   });
 
   describe('Date arithmetic functions', () => {
-    it('dayAgoUTC() should match moment().subtract(1, "day")', () => {
-      const momentResult = moment().subtract(1, 'day').utc().format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = dayAgoUTC();
+    it('dayAgoUTC() should return one day ago', () => {
+      const result = dayAgoUTC();
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-14T10:30:00Z');
+      expect(result).toBe('2025-01-14T10:30:00Z');
     });
 
-    it('daysAgoUTC() should match moment for N days ago', () => {
-      const momentResult = moment.utc().startOf('day').subtract(5, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = daysAgoUTC(5);
+    it('daysAgoUTC() should return N days ago from start of day', () => {
+      const result = daysAgoUTC(5);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-10T00:00:00Z');
+      expect(result).toBe('2025-01-10T00:00:00Z');
     });
 
-    it('daysAgoUTC() with specific date should match moment', () => {
+    it('daysAgoUTC() with specific date should calculate from that date', () => {
       const baseDate = '2025-01-20T10:00:00.000Z';
 
-      const momentResult = moment.utc(baseDate).startOf('day').subtract(5, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = daysAgoUTC(5, baseDate);
+      const result = daysAgoUTC(5, baseDate);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T00:00:00Z');
+      expect(result).toBe('2025-01-15T00:00:00Z');
     });
 
-    it('daysAgoUTC() with fromStart=false should match moment', () => {
+    it('daysAgoUTC() with fromStart=false should preserve time', () => {
       const baseDate = '2025-01-20T10:00:00.000Z';
 
-      const momentResult = moment.utc(baseDate).subtract(5, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = daysAgoUTC(5, baseDate, false);
+      const result = daysAgoUTC(5, baseDate, false);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T10:00:00Z');
+      expect(result).toBe('2025-01-15T10:00:00Z');
     });
 
-    it('lastDayOfThePreviousMonth() should match moment', () => {
-      const momentResult = moment.utc().subtract(1, 'month').endOf('month').format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = lastDayOfThePreviousMonth();
+    it('lastDayOfThePreviousMonth() should return last day of previous month', () => {
+      const result = lastDayOfThePreviousMonth();
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2024-12-31T23:59:59Z');
+      expect(result).toBe('2024-12-31T23:59:59Z');
     });
 
-    it('daysAfter() should match moment.add()', () => {
+    it('daysAfter() should add days to date', () => {
       const baseDate = '2025-01-10T00:00:00.000Z';
 
-      const momentResult = moment.utc(baseDate).add(5, 'days').format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = daysAfter(5, baseDate, false);
+      const result = daysAfter(5, baseDate, false);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T00:00:00Z');
+      expect(result).toBe('2025-01-15T00:00:00Z');
     });
 
-    it('minutesBefore() should match moment.subtract() for minutes', () => {
+    it('minutesBefore() should subtract minutes', () => {
       const baseDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment.utc(baseDate).subtract(30, 'minutes').format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = minutesBefore(30, baseDate);
+      const result = minutesBefore(30, baseDate);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T10:00:00Z');
+      expect(result).toBe('2025-01-15T10:00:00Z');
     });
 
-    it('monthsAgo() should match moment for N months ago', () => {
-      const momentResult = moment.utc().startOf('day').subtract(3, 'months').format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = monthsAgo(3);
+    it('monthsAgo() should return N months ago', () => {
+      const result = monthsAgo(3);
 
-      // Month arithmetic can vary due to different month lengths
-      // Verify the month is correct
-      expect(facadeResult).toContain('2024-10');
-      expect(momentResult).toContain('2024-10');
+      expect(result).toContain('2024-10');
     });
 
-    it('yearsAgo() should match moment for N years ago', () => {
-      const momentResult = moment.utc().startOf('day').subtract(2, 'years').format('YYYY-MM-DDTHH:mm:ss[Z]');
-      const facadeResult = yearsAgo(2);
+    it('yearsAgo() should return N years ago', () => {
+      const result = yearsAgo(2);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2023-01-15T00:00:00Z');
+      expect(result).toBe('2023-01-15T00:00:00Z');
     });
   });
 
   describe('Format functions', () => {
-    it('yearFormat() should match moment.format("YYYY")', () => {
+    it('yearFormat() should return year in YYYY format', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).format('YYYY');
-      const facadeResult = yearFormat(testDate);
+      const result = yearFormat(testDate);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025');
+      expect(result).toBe('2025');
     });
 
     it('yearFormat() should handle Date objects', () => {
       const testDate = new Date('2025-01-15');
 
-      const momentResult = moment(testDate).format('YYYY');
-      const facadeResult = yearFormat(testDate);
+      const result = yearFormat(testDate);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025');
+      expect(result).toBe('2025');
     });
 
-    it('dateFormat() should match moment.format() with default format', () => {
+    it('dateFormat() should format with default format', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).format('YYYY-MM-DD');
-      const facadeResult = dateFormat(testDate);
+      const result = dateFormat(testDate);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15');
+      expect(result).toBe('2025-01-15');
     });
 
     it('dateFormat() should handle custom format YYYY-MM-DD', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).format('YYYY-MM-DD');
-      const facadeResult = dateFormat(testDate, 'YYYY-MM-DD');
+      const result = dateFormat(testDate, 'YYYY-MM-DD');
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15');
+      expect(result).toBe('2025-01-15');
     });
 
     it('dateFormat() should handle custom format YYYY', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).format('YYYY');
-      const facadeResult = dateFormat(testDate, 'YYYY');
+      const result = dateFormat(testDate, 'YYYY');
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025');
+      expect(result).toBe('2025');
     });
 
     it('dateFormat() should handle custom format DD', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).format('DD');
-      const facadeResult = dateFormat(testDate, 'DD');
+      const result = dateFormat(testDate, 'DD');
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('15');
+      expect(result).toBe('15');
     });
 
     it('formatTimeForToday() should create today\'s date with specific time', () => {
       const time = '14:30:00';
 
-      const momentResult = `${moment().format('YYYY-MM-DD')}T${time}`;
-      const facadeResult = formatTimeForToday(time);
+      const result = formatTimeForToday(time);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15T14:30:00');
+      expect(result).toBe('2025-01-15T14:30:00');
     });
   });
 
   describe('Utility functions', () => {
-    it('timestamp() should match moment.unix()', () => {
+    it('timestamp() should return Unix timestamp', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).unix();
-      const facadeResult = timestamp(testDate);
+      const result = timestamp(testDate);
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe(1736937000);
+      expect(result).toBe(1736937000);
     });
 
-    it('jsDate() should match moment.toDate()', () => {
+    it('jsDate() should return JavaScript Date object', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).toDate();
-      const facadeResult = jsDate(testDate);
+      const result = jsDate(testDate);
 
-      expect(facadeResult.toISOString()).toBe(momentResult.toISOString());
-      expect(facadeResult.toISOString()).toBe('2025-01-15T10:30:00.000Z');
+      expect(result.toISOString()).toBe('2025-01-15T10:30:00.000Z');
     });
 
     it('minutesBetweenDates() should calculate correctly', () => {
       const start = '2025-01-15T10:00:00.000Z';
       const end = '2025-01-15T10:30:00.000Z';
 
-      const momentDiff = Math.abs(moment(end).diff(moment(start), 'minutes')) + 1;
-      const facadeResult = minutesBetweenDates(start, end);
+      const result = minutesBetweenDates(start, end);
 
-      expect(facadeResult).toBe(momentDiff);
-      expect(facadeResult).toBe(31); // 30 minutes + 1
+      expect(result).toBe(31); // 30 minutes + 1
     });
 
     it('secondsBetweenDates() should calculate correctly', () => {
       const start = '2025-01-15T10:00:00.000Z';
       const end = '2025-01-15T10:00:30.000Z';
 
-      const momentDiff = Math.abs(moment(end).diff(moment(start), 'seconds')) + 1;
-      const facadeResult = secondsBetweenDates(start, end);
+      const result = secondsBetweenDates(start, end);
 
-      expect(facadeResult).toBe(momentDiff);
-      expect(facadeResult).toBe(31); // 30 seconds + 1
+      expect(result).toBe(31); // 30 seconds + 1
     });
   });
 
   describe('setDateFormatLocale() - Locale management', () => {
-    it('should accept locale strings like moment.locale()', () => {
-      // Test various locale formats
-      setDateFormatLocale('en-us');
-      setDateFormatLocale('fr-fr');
-      setDateFormatLocale('de-de');
-      setDateFormatLocale('es-es');
-
-      // Should not throw errors
-      expect(() => setDateFormatLocale('en')).not.toThrow();
-      expect(() => setDateFormatLocale('fr')).not.toThrow();
-      expect(() => setDateFormatLocale('de')).not.toThrow();
+    it('should accept locale strings', () => {
+      expect(() => setDateFormatLocale('en-us')).not.toThrow();
+      expect(() => setDateFormatLocale('fr-fr')).not.toThrow();
+      expect(() => setDateFormatLocale('de-de')).not.toThrow();
+      expect(() => setDateFormatLocale('es-es')).not.toThrow();
     });
 
     it('should handle case-insensitive locale names', () => {
@@ -636,73 +510,59 @@ describe('Time.ts as Moment.js facade', () => {
   });
 
   describe('humanizeDateDuration() - Duration humanization', () => {
-    it('should return human-readable duration for minutes', () => {
-      // Reset locale to English for consistent output
+    beforeEach(() => {
       setDateFormatLocale('en');
+    });
 
-      const facadeResult = humanizeDateDuration(30, 'minutes');
+    it('should return human-readable duration for minutes', () => {
+      const result = humanizeDateDuration(30, 'minutes');
 
-      // The exact output depends on the locale, but it should be a non-empty string
-      expect(facadeResult).toBeTruthy();
-      expect(typeof facadeResult).toBe('string');
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
     });
 
     it('should return human-readable duration for hours', () => {
-      setDateFormatLocale('en');
+      const result = humanizeDateDuration(2, 'hours');
 
-      const facadeResult = humanizeDateDuration(2, 'hours');
-
-      expect(facadeResult).toBeTruthy();
-      expect(typeof facadeResult).toBe('string');
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
     });
 
     it('should return human-readable duration for days', () => {
-      setDateFormatLocale('en');
+      const result = humanizeDateDuration(7, 'days');
 
-      const facadeResult = humanizeDateDuration(7, 'days');
-
-      expect(facadeResult).toBeTruthy();
-      expect(typeof facadeResult).toBe('string');
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
     });
 
     it('should return human-readable duration for months', () => {
-      setDateFormatLocale('en');
+      const result = humanizeDateDuration(3, 'months');
 
-      const facadeResult = humanizeDateDuration(3, 'months');
-
-      expect(facadeResult).toBeTruthy();
-      expect(typeof facadeResult).toBe('string');
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
     });
 
     it('should return human-readable duration for years', () => {
-      setDateFormatLocale('en');
+      const result = humanizeDateDuration(2, 'years');
 
-      const facadeResult = humanizeDateDuration(2, 'years');
-
-      expect(facadeResult).toBeTruthy();
-      expect(typeof facadeResult).toBe('string');
+      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
     });
 
     it('should handle null/undefined/zero values', () => {
-      setDateFormatLocale('en');
-
       const nullResult = humanizeDateDuration(null, 'days');
       const undefinedResult = humanizeDateDuration(undefined, 'days');
       const zeroResult = humanizeDateDuration(0, 'days');
 
-      // All should return a string (likely "less than a minute" or similar)
       expect(typeof nullResult).toBe('string');
       expect(typeof undefinedResult).toBe('string');
       expect(typeof zeroResult).toBe('string');
     });
 
     it('should handle singular as plural units', () => {
-      setDateFormatLocale('en');
-
       const minuteResult = humanizeDateDuration(1, 'minute');
       const minutesResult = humanizeDateDuration(1, 'minutes');
 
-      // Both should work and return the same result
       expect(minuteResult).toBe(minutesResult);
     });
   });
@@ -719,59 +579,39 @@ describe('Time.ts as Moment.js facade', () => {
     });
 
     it('should return current date when no input provided', () => {
-      const parseDateResult = parseDate(new Date()).format();
-      const momentDateResult = momentDate().format();
+      const result = momentDate().format();
 
-      expect(momentDateResult).toBe(parseDateResult);
-      expect(momentDateResult).toBe('2025-01-15T10:30:00Z');
+      expect(result).toBe('2025-01-15T10:30:00Z');
     });
 
     it('should handle undefined input by returning current date', () => {
-      const parseDateResult = parseDate(new Date()).format();
-      const momentDateResult = momentDate(undefined).format();
+      const result = momentDate(undefined).format();
 
-      expect(momentDateResult).toBe(parseDateResult);
-      expect(momentDateResult).toBe('2025-01-15T10:30:00Z');
+      expect(result).toBe('2025-01-15T10:30:00Z');
     });
   });
 
   describe('Complex date manipulations', () => {
-    it('should handle chained operations like moment', () => {
+    it('should handle chained operations', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      // moment().subtract(5, 'days').add(2, 'days').format()
-      const momentResult = moment(testDate)
-        .subtract(5, 'days')
-        .add(2, 'days')
-        .utc()
-        .format('YYYY-MM-DDTHH:mm:ss[Z]');
-
-      const facadeResult = parseDate(testDate)
+      const result = parseDate(testDate)
         .subtract(5, 'days')
         .add(2, 'days')
         .format();
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-12T10:30:00Z');
+      expect(result).toBe('2025-01-12T10:30:00Z');
     });
 
-    it('should handle endOf() after subtract() like moment', () => {
+    it('should handle endOf() after subtract()', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment.utc(testDate)
-        .subtract(1, 'month')
-        .endOf('month')
-        .format('YYYY-MM-DDTHH:mm:ss[Z]');
-
-      const facadeResult = parseDate(testDate)
+      const result = parseDate(testDate)
         .subtract(1, 'month')
         .endOf('month')
         .format();
 
-      expect(facadeResult).toBe(momentResult);
-      // After subtracting 1 month from 2025-01-15, we get 2024-12-15
-      // The end of that month is 2024-12-31T23:59:59Z
-      expect(facadeResult).toBe('2024-12-31T23:59:59Z');
+      expect(result).toBe('2024-12-31T23:59:59Z');
     });
   });
 
@@ -779,27 +619,23 @@ describe('Time.ts as Moment.js facade', () => {
     it('should handle combined format patterns', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).format('YYYY/MM/DD');
-      const facadeResult = parseDate(testDate).format('YYYY/MM/DD');
+      const result = parseDate(testDate).format('YYYY/MM/DD');
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025/01/15');
+      expect(result).toBe('2025/01/15');
     });
 
     it('should preserve non-format characters', () => {
       const testDate = '2025-01-15T10:30:00.000Z';
 
-      const momentResult = moment(testDate).format('YYYY-MM-DD');
-      const facadeResult = parseDate(testDate).format('YYYY-MM-DD');
+      const result = parseDate(testDate).format('YYYY-MM-DD');
 
-      expect(facadeResult).toBe(momentResult);
-      expect(facadeResult).toBe('2025-01-15');
+      expect(result).toBe('2025-01-15');
     });
   });
 
-  describe('TypeScript fixes verification', () => {
+  describe('TypeScript type compatibility', () => {
     describe('dateFormat() with unknown type', () => {
-      it('should accept unknown values (entity.published case)', () => {
+      it('should accept unknown values', () => {
         const unknownValue: unknown = '2025-01-15T10:30:00.000Z';
 
         const result = dateFormat(unknownValue);
@@ -814,7 +650,6 @@ describe('Time.ts as Moment.js facade', () => {
         const result = dateFormat(unknownValue, 'YYYY-MM-DD');
 
         expect(result).toBe('2025-01-15');
-        expect(typeof result).toBe('string');
       });
 
       it('should always return string, never null', () => {
@@ -822,7 +657,6 @@ describe('Time.ts as Moment.js facade', () => {
         const undefinedResult = dateFormat(undefined);
         const emptyResult = dateFormat('');
 
-        // All should return empty string, not null
         expect(nullResult).toBe('');
         expect(undefinedResult).toBe('');
         expect(emptyResult).toBe('');
@@ -858,8 +692,8 @@ describe('Time.ts as Moment.js facade', () => {
         expect(result1).toBeInstanceOf(Date);
         expect(result2).toBeInstanceOf(Date);
         expect(result3).toBeInstanceOf(Date);
-        expect(result4).toBeInstanceOf(Date); // Returns new Date() for null
-        expect(result5).toBeInstanceOf(Date); // Returns new Date() for undefined
+        expect(result4).toBeInstanceOf(Date);
+        expect(result5).toBeInstanceOf(Date);
         expect(result6).toBeInstanceOf(Date);
       });
 
@@ -877,15 +711,13 @@ describe('Time.ts as Moment.js facade', () => {
       it('should return MomentLike when called without arguments', () => {
         const result = dayStartDate();
 
-        // Should have toISOString method
         expect(typeof result.toISOString).toBe('function');
         expect(typeof result.format).toBe('function');
         expect(typeof result.unix).toBe('function');
 
-        // Should be able to call toISOString()
         const isoString = result.toISOString();
         expect(typeof isoString).toBe('string');
-        expect(isoString).toContain('T00:00:00'); // Should be start of day
+        expect(isoString).toContain('T00:00:00');
       });
 
       it('should return Date when called with arguments', () => {
@@ -910,7 +742,6 @@ describe('Time.ts as Moment.js facade', () => {
         expect(typeof result.format).toBe('function');
         expect(typeof result.toDate).toBe('function');
 
-        // Should return a MomentLike for timestamp 0
         const date = result.toDate();
         expect(date).toBeInstanceOf(Date);
       });
@@ -921,7 +752,6 @@ describe('Time.ts as Moment.js facade', () => {
         expect(typeof result.format).toBe('function');
         expect(typeof result.toDate).toBe('function');
 
-        // Should return a MomentLike for timestamp 0
         const date = result.toDate();
         expect(date).toBeInstanceOf(Date);
       });
@@ -942,7 +772,6 @@ describe('Time.ts as Moment.js facade', () => {
         const result = dateFiltersValueForDisplay(input, 'lte');
 
         expect(result).toBeInstanceOf(Date);
-        // Should be one day before
         expect((result as Date).toISOString()).toBe('2025-01-14T10:30:00.000Z');
       });
 
@@ -951,7 +780,6 @@ describe('Time.ts as Moment.js facade', () => {
         const result = dateFiltersValueForDisplay(input, 'gt');
 
         expect(result).toBeInstanceOf(Date);
-        // Should be one day before
         expect((result as Date).toISOString()).toBe('2025-01-14T10:30:00.000Z');
       });
 
@@ -964,7 +792,6 @@ describe('Time.ts as Moment.js facade', () => {
         const result2 = dateFiltersValueForDisplay(dateInput);
         const result3 = dateFiltersValueForDisplay(numberInput);
 
-        // All results should be compatible with Date constructor
         const date1 = new Date(result1 as string | number | Date);
         const date2 = new Date(result2 as string | number | Date);
         const date3 = new Date(result3 as string | number | Date);
@@ -991,7 +818,7 @@ describe('Time.ts as Moment.js facade', () => {
       });
     });
 
-    describe('MomentLike interface with toISOString and utc().format()', () => {
+    describe('MomentLike interface', () => {
       it('should have toISOString() method', () => {
         const momentLike = parseDate('2025-01-15T10:30:00.000Z');
 
@@ -1003,22 +830,19 @@ describe('Time.ts as Moment.js facade', () => {
       it('should have utc().format() with optional formatStr', () => {
         const momentLike = parseDate('2025-01-15T10:30:00.000Z');
 
-        // Without format string
         const defaultFormat = momentLike.utc().format();
         expect(defaultFormat).toBe('2025-01-15T10:30:00Z');
 
-        // With format string
         const customFormat = momentLike.utc().format('HH:mm:ss');
         expect(customFormat).toBe('10:30:00');
       });
     });
 
-    describe('parseToUTC() handling MomentLike objects', () => {
-      it('should handle MomentLike objects in parseDate', () => {
+    describe('MomentLike handling in parseDate', () => {
+      it('should handle MomentLike objects in diff method', () => {
         const momentLike = parseDate('2025-01-15T10:30:00.000Z');
-
-        // Using MomentLike in diff method
         const other = parseDate('2025-01-15T11:00:00.000Z');
+
         const diffMinutes = momentLike.diff(other, 'minutes');
 
         expect(diffMinutes).toBe(30);
@@ -1027,7 +851,6 @@ describe('Time.ts as Moment.js facade', () => {
       it('should handle MomentLike in DateInput', () => {
         const momentLike = parseDate('2025-01-15T10:30:00.000Z');
 
-        // Pass MomentLike as DateInput
         const result = dateFormat(momentLike as DateInput);
 
         expect(result).toBe('2025-01-15');

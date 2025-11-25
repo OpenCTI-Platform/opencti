@@ -84,8 +84,6 @@
     "markdown-to-jsx": "8.0.0",
     "marked": "17.0.1",
     "mdi-material-ui": "7.9.4",
-    "moment": "2.30.1",
-    "moment-timezone": "0.6.0",
     "pdfmake": "0.2.20",
     "prop-types": "15.8.1",
     "qrcode": "1.5.4",
