@@ -186,7 +186,7 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   return [];
 };
 
-const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
+export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
   const inputs = [];
@@ -220,7 +220,7 @@ const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type
   return inputs;
 };
 
-const generateRefsInputsForUpsert = async (context, user, resolvedElement, _type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
+const generateRefsInputsForUpsert = (context, user, resolvedElement, _type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
   const { isConfidenceMatch, isConfidenceUpper } = confidenceForUpsert;
   const inputs = [];
   const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(resolvedElement.entity_type).map((ref) => ref.name);
