@@ -390,19 +390,19 @@ export const extractFilterKeyValues = (filterKey: string, filterGroup: FilterGro
 /**
  * Replace @me by the user id in filter whose values can contain user ids, and replace eventual label values with label ids
  */
-export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: string, resolvedLabels: Record<string, string>) => {
-  const filtersResult = { ...filterGroup };
-  filtersResult.filters.forEach((filter) => {
+export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: string, resolvedLabels: Record<string, string>): FilterGroup => {
+  const newFilters = filterGroup.filters.map((filter) => {
     const { key } = filter;
     const arrayKeys = Array.isArray(key) ? key : [key];
+    let newFilterValues = filter.values;
     if (arrayKeys.some((filterKey) => FILTER_KEYS_WITH_ME_VALUE.includes(filterKey))) {
-      // replace ME_FILTER_VALUE with the id of the user
+      // replace @me value with the id of the user
       if (filter.values.includes(ME_FILTER_VALUE)) {
-        // eslint-disable-next-line no-param-reassign
-        filter.values = filter.values.map((v) => (v === ME_FILTER_VALUE ? userId : v));
+        newFilterValues = filter.values.map((v) => (v === ME_FILTER_VALUE ? userId : v));
       }
     }
     if (arrayKeys.includes(LABEL_FILTER)) {
+      // replace labels values by the associated label id
       const labelValues = [];
       for (let i = 0; i < filter.values.length; i += 1) {
         const labelValue = filter.values[i];
@@ -412,12 +412,23 @@ export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: s
           labelValues.push(labelValue);
         }
       }
-      // eslint-disable-next-line no-param-reassign
-      filter.values = labelValues;
+      newFilterValues = labelValues;
+    }
+    return {
+      ...filter,
+      values: newFilterValues,
     }
   });
-  filtersResult.filterGroups.forEach((fg) => replaceEnrichValuesInFilters(fg, userId, resolvedLabels));
-  return filtersResult;
+  // recursivity on the filter groups
+  let newFilterGroups: FilterGroup[] = [];
+  if (filterGroup.filterGroups.length > 0) {
+    newFilterGroups = filterGroup.filterGroups.map((fg) => replaceEnrichValuesInFilters(fg, userId, resolvedLabels));
+  }
+  return {
+    ...filterGroup,
+    filters: newFilters,
+    filterGroups: newFilterGroups,
+  };
 };
 
 let availableKeysCache: Set<string>;
