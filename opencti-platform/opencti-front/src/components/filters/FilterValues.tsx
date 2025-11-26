@@ -16,47 +16,7 @@ import { FilterRepresentative } from './FiltersModel';
 import { Filter } from '../../utils/filters/filtersHelpers-types';
 import useSchema from '../../utils/hooks/useSchema';
 import FilterValuesForDynamicSubKey from './FilterValuesForDynamicSubKey';
-
-// Deprecated - https://mui.com/system/styles/basics/
-// Do not use it for new code.
-const useStyles = makeStyles<Theme>((theme) => ({
-  inlineOperator: {
-    display: 'inline-block',
-    height: '100%',
-    borderRadius: 0,
-    margin: '0 5px 0 5px',
-    padding: '0 5px 0 5px',
-    cursor: 'pointer',
-    backgroundColor: theme.palette.action?.disabled,
-    fontFamily: 'Consolas, monaco, monospace',
-    '&:hover': {
-      textDecorationLine: 'underline',
-      backgroundColor: theme.palette.text?.disabled,
-    },
-  },
-  inlineOperatorReadOnly: {
-    display: 'inline-block',
-    height: '100%',
-    borderRadius: 0,
-    margin: '0 5px 0 5px',
-    padding: '0 5px 0 5px',
-    backgroundColor: theme.palette.action?.disabled,
-    fontFamily: 'Consolas, monaco, monospace',
-  },
-  regardingOfOperatorReadOnly: {
-    display: 'inline-block',
-    height: '100%',
-    borderRadius: 0,
-    margin: '0 2px 0 0',
-    fontFamily: 'Consolas, monaco, monospace',
-  },
-  label: {
-    cursor: 'pointer',
-    '&:hover': {
-      textDecorationLine: 'underline',
-    },
-  },
-}));
+import { useTheme } from '@mui/material/styles';
 
 interface FilterValuesProps {
   label: string | React.JSX.Element;
@@ -90,7 +50,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   filtersRestrictions,
 }) => {
   const { t_i18n } = useFormatter();
-  const classes = useStyles();
+  const theme = useTheme();
   const { schema: { scos } } = useSchema();
 
   const filterKey = currentFilter.key;
@@ -99,14 +59,21 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const isOperatorNil = ['nil', 'not_nil'].includes(filterOperator ?? 'eq');
   const deactivatePopoverMenu = !isFilterEditable(filtersRestrictions, filterKey, filterValues) || !isReadWriteFilter;
   const onCLick = deactivatePopoverMenu ? () => {} : onClickLabel;
-  const menuClassName = deactivatePopoverMenu ? '' : classes.label;
+  const labelStyle = deactivatePopoverMenu
+    ? undefined
+    : {
+      cursor: 'pointer',
+      '&:hover': {
+        textDecorationLine: 'underline',
+      },
+    };
 
   // special case for nil/not_nil
   if (isOperatorNil) {
     return (
       <>
         <strong
-          className={menuClassName}
+          style={labelStyle}
           onClick={onCLick}
         >
           {label}
@@ -126,7 +93,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     return (
       <>
         <strong
-          className={menuClassName}
+          style={labelStyle}
           onClick={onCLick}
         >
           {label}
@@ -145,7 +112,30 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && handleSwitchLocalMode
       && !filtersRestrictions?.preventLocalModeSwitchingFor?.includes(filterKey)
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
-    const operatorClassName = isLocalModeSwitchable ? classes.inlineOperator : classes.inlineOperatorReadOnly;
+    const localModeStyle = isLocalModeSwitchable
+      ? {
+        display: 'inline-block',
+        height: '100%',
+        borderRadius: 0,
+        margin: '0 5px 0 5px',
+        padding: '0 5px 0 5px',
+        cursor: 'pointer',
+        backgroundColor: theme.palette.action?.disabled,
+        fontFamily: 'Consolas, monaco, monospace',
+        '&:hover': {
+          textDecorationLine: 'underline',
+          backgroundColor: theme.palette.text?.disabled,
+        },
+      }
+      : {
+        display: 'inline-block',
+        height: '100%',
+        borderRadius: 0,
+        margin: '0 5px 0 5px',
+        padding: '0 5px 0 5px',
+        backgroundColor: theme.palette.action?.disabled,
+        fontFamily: 'Consolas, monaco, monospace',
+      };
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
@@ -177,10 +167,18 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               filterOperator={filterOperator}
             />
             {last(filterValues) !== id && isRegardingOfFilter && (
-              <div className={classes.regardingOfOperatorReadOnly} onClick={operatorOnClick}>,</div>
+              <div
+                style={{
+                  display: 'inline-block',
+                  height: '100%',
+                  borderRadius: 0,
+                  margin: '0 2px 0 0',
+                  fontFamily: 'Consolas, monaco, monospace',
+                }}
+                onClick={operatorOnClick}>,</div>
             )}
             {last(filterValues) !== id && !isRegardingOfFilter && (
-              <div className={operatorClassName} onClick={operatorOnClick}>
+              <div style={localModeStyle} onClick={operatorOnClick}>
                 {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
               </div>
             )}
@@ -217,7 +215,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           </Tooltip>
         )}
         <strong
-          className={menuClassName}
+          style={labelStyle}
           onClick={onCLick}
         >
           {label}
@@ -297,7 +295,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     return (
       <>
         <strong
-          className={menuClassName}
+          style={labelStyle}
           onClick={onCLick}
         >
           {label}
@@ -312,7 +310,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   return (
     <>
       <strong
-        className={menuClassName}
+        style={labelStyle}
         onClick={onCLick}
       >
         {label}
