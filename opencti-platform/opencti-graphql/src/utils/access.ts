@@ -926,21 +926,24 @@ export const filterMembersWithUsersOrgs = async (
       const member = members[i];
       if (member.id === user.id || INTERNAL_USERS[member.id] || member.user_service_account) {
         resultMembers.push(member);
-      }
-      const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
-      const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
-      if (!sameOrg) {
-        if (filterMode === FilterMembersMode.RESTRICT) {
-          const restrictedMember = {
-            ...member,
-            name: RESTRICTED_USER.name,
-            user_email: RESTRICTED_USER.user_email,
-            representative: {
-              main: RESTRICTED_USER.name,
-              secondary: RESTRICTED_USER.name
-            }
-          };
-          resultMembers.push(restrictedMember);
+      } else {
+        const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
+        const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
+        if (!sameOrg) {
+          if (filterMode === FilterMembersMode.RESTRICT) {
+            const restrictedMember = {
+              ...member,
+              name: RESTRICTED_USER.name,
+              user_email: RESTRICTED_USER.user_email,
+              representative: {
+                main: RESTRICTED_USER.name,
+                secondary: RESTRICTED_USER.name
+              }
+            };
+            resultMembers.push(restrictedMember);
+          }
+        } else {
+          resultMembers.push(member);
         }
       }
     }
