@@ -76,21 +76,6 @@ export const convertMembersToUsers = async (
   return R.uniqBy(R.prop('id'), users);
 };
 
-const removeMeFilterValuesFromFilterGroup = (filterGroup: FilterGroup): FilterGroup => {
-  const newFilters = filterGroup.filters.filter((f) =>
-    (f.key.some((k) => FILTER_KEYS_WITH_ME_VALUE.includes(k) && !f.values.includes(ME_FILTER_VALUE))
-      || !f.key.some((k) => FILTER_KEYS_WITH_ME_VALUE.includes(k)))
-  );
-  const newFilterGroups = filterGroup.filterGroups.length > 0
-    ? filterGroup.filterGroups.map((fg) => removeMeFilterValuesFromFilterGroup(fg))
-    : [];
-  return {
-    ...filterGroup,
-    filters: newFilters,
-    filterGroups: newFilterGroups,
-  };
-};
-
 export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
   // Resolve all nodes to delete
   const linksToDelete = links;
@@ -118,6 +103,21 @@ export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links
   return {
     nodes: definition.nodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
     links: definition.links.filter((n) => !linksToDelete.map((o) => o.id).includes(n.id))
+  };
+};
+
+const removeMeFilterValuesFromFilterGroup = (filterGroup: FilterGroup): FilterGroup => {
+  const newFilters = filterGroup.filters.filter((f) =>
+    (f.key.some((k) => FILTER_KEYS_WITH_ME_VALUE.includes(k) && !f.values.includes(ME_FILTER_VALUE))
+      || !f.key.some((k) => FILTER_KEYS_WITH_ME_VALUE.includes(k)))
+  );
+  const newFilterGroups = filterGroup.filterGroups.length > 0
+    ? filterGroup.filterGroups.map((fg) => removeMeFilterValuesFromFilterGroup(fg))
+    : [];
+  return {
+    ...filterGroup,
+    filters: newFilters,
+    filterGroups: newFilterGroups,
   };
 };
 
