@@ -117,8 +117,8 @@ describe('XTM hub', () => {
         ENTITY_TYPE_SETTINGS,
         [
           { key: 'xtm_hub_registration_status', value: [XtmHubRegistrationStatus.Registered] },
-          { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
           { key: 'xtm_hub_should_send_connectivity_email', value: [true] },
+          { key: 'xtm_hub_last_connectivity_check', value: [expect.any(Date)] },
           { key: 'xtm_hub_backend_is_reachable', value: [true] }
         ]
       );

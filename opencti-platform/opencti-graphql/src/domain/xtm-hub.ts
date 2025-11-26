@@ -41,25 +41,11 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
     attributeUpdates.push({ key: 'xtm_hub_registration_status', value: [newRegistrationStatus] });
   }
 
-  const lastCheckDate = utcDate(settings.xtm_hub_last_connectivity_check);
-  const are24HoursPassed = utcDate().diff(lastCheckDate, 'hours') >= 24;
-  const isEmailEnabled = booleanConf('xtm:xtmhub_connectivity_email_enabled', true);
-  const shouldSendLostConnectivityEmail = !isConnectivityActive
-    && are24HoursPassed
-    && settings.xtm_hub_should_send_connectivity_email
-    && isEmailEnabled;
-  if (shouldSendLostConnectivityEmail) {
-    await sendAdministratorsLostConnectivityEmail(context, settings);
-    attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [false] });
-  }
+  const emailAttributeUpdates = await handleLostConnectivityEmail(context, settings, isConnectivityActive)
+  attributeUpdates.push(...emailAttributeUpdates)
 
   if (isConnectivityActive) {
     attributeUpdates.push({ key: 'xtm_hub_last_connectivity_check', value: [new Date()] });
-
-    const shouldAllowConnectivityLostEmailAgain = !settings.xtm_hub_should_send_connectivity_email;
-    if (shouldAllowConnectivityLostEmailAgain) {
-      attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [true] });
-    }
   }
 
   const { isReachable } = await xtmHubClient.isBackendReachable();
@@ -152,4 +138,26 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
 
   const updatedSettings = await getSettings(context);
   await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
+}
+
+const handleLostConnectivityEmail = async (context: AuthContext, settings: BasicStoreSettings, isConnectivityActive: boolean): Promise<AttributeUpdate[]> => {
+  const lastCheckDate = utcDate(settings.xtm_hub_last_connectivity_check);
+  const are24HoursPassed = utcDate().diff(lastCheckDate, 'hours') >= 24;
+  const isEmailEnabled = booleanConf('xtm:xtmhub_connectivity_email_enabled', true);
+  const shouldSendLostConnectivityEmail = !isConnectivityActive
+    && are24HoursPassed
+    && settings.xtm_hub_should_send_connectivity_email
+    && isEmailEnabled;
+  const attributeUpdates: AttributeUpdate[] = []
+  if (shouldSendLostConnectivityEmail) {
+    await sendAdministratorsLostConnectivityEmail(context, settings);
+    attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [false] })
+  }
+
+  const shouldAllowConnectivityLostEmailAgain = isConnectivityActive && !settings.xtm_hub_should_send_connectivity_email;
+  if (shouldAllowConnectivityLostEmailAgain) {
+    attributeUpdates.push({ key: 'xtm_hub_should_send_connectivity_email', value: [true] });
+  }
+
+  return attributeUpdates
 }
