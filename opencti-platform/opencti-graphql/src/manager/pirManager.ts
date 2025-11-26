@@ -32,6 +32,7 @@ import convertEntityPirToStix from '../modules/pir/pir-converter';
 import { buildStixBundle } from '../database/stix-2-1-converter';
 import conf, { booleanConf } from '../config/conf';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
+import { StreamProvider } from '../database/stream/stream-utils';
 
 const PIR_MANAGER_ID = 'PIR_MANAGER';
 const PIR_MANAGER_LABEL = 'Pir Manager';
@@ -174,7 +175,7 @@ const pirManagerHandler = async () => {
     const { lastEventId } = await fetchStreamEventsRangeFromEventId(
       pir.lastEventId,
       processStreamEventsForPir(context, pir),
-      { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE, autoReconnect: false, provider: PIR_MANAGER_LABEL }
+      { streamBatchSize: PIR_MANAGER_STREAM_BATCH_SIZE, autoReconnect: false, provider: StreamProvider.PIR }
     );
       // Update pir last event id.
     if (lastEventId !== pir.lastEventId) {
