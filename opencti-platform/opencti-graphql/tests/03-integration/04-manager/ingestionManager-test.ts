@@ -295,7 +295,7 @@ describe('Verify csv ingestion', () => {
     await wait(60000); // Wait 1 minute for worker to discover the new queue
     csvMapperParsed = parseCsvMapper(mapperCreated);
 
-    csvLines = await readCsvFromFileStream('./tests/02-integration/04-manager/ingestionManager', 'csv-file-cities.csv');
+    csvLines = await readCsvFromFileStream('./tests/03-integration/04-manager/ingestionManager', 'csv-file-cities.csv');
   });
 
   it('should csv ingestion run', async () => {
