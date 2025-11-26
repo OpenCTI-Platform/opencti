@@ -15,31 +15,45 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
-import { BUS_TOPICS, logApp } from '../../config/conf';
-import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
-import { type EntityOptions, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
+import { BUS_TOPICS } from '../../config/conf';
+import {
+  createEntity,
+  deleteElementById,
+  patchAttribute,
+  stixLoadById,
+  updateAttribute
+} from '../../database/middleware';
+import {
+  type EntityOptions,
+  internalFindByIds,
+  pageEntitiesConnection,
+  storeLoadById
+} from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import {
   type EditInput,
-  type FilterGroup,
   FilterMode,
   type PlaybookAddInput,
   type PlaybookAddLinkInput,
   type PlaybookAddNodeInput,
   type PositionInput
 } from '../../generated/graphql';
-import type { BasicStoreEntityPlaybook, ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
+import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
-import { PLAYBOOK_COMPONENTS, PLAYBOOK_INTERNAL_DATA_CRON, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
+import { PLAYBOOK_COMPONENTS, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
+import {
+  type BasicStoreEntityOrganization,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION
+} from '../organization/organization-types';
+import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
+import { findFiltersFromKey } from '../../utils/filtering/filtering-utils';
 import { findFiltersFromKey, checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { elFindByIds } from '../../database/engine';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -48,6 +62,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
+import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren } from './playbook-utils';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -184,36 +199,6 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   }
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user).then(() => nodeId);
-};
-
-const deleteLinksAndAllChildren = (definition: ComponentDefinition, links: LinkDefinition[]) => {
-  // Resolve all nodes to delete
-  const linksToDelete = links;
-  const nodesToDelete = [] as NodeDefinition[];
-  let childrenLinks = [] as LinkDefinition[];
-  // Resolve children nodes
-  let childrenNodes = definition.nodes.filter((n) => links.map((o) => o.to.id).includes(n.id));
-  if (childrenNodes.length > 0) {
-    nodesToDelete.push(...childrenNodes);
-    childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
-  }
-  while (childrenLinks.length > 0) {
-    linksToDelete.push(...childrenLinks);
-    // Resolve children nodes not already in nodesToDelete
-    childrenNodes = definition.nodes.filter((n) => linksToDelete.map((o) => o.to.id).includes(n.id) && !nodesToDelete.map((o) => o.id).includes(n.id));
-    if (childrenNodes.length > 0) {
-      nodesToDelete.push(...childrenNodes);
-      // eslint-disable-next-line @typescript-eslint/no-loop-func
-      childrenLinks = definition.links.filter((n) => childrenNodes.map((o) => o.id).includes(n.from.id));
-    } else {
-      childrenLinks = [];
-    }
-    logApp.info('Delete links and children loop', { nodesToDelete, linksToDelete });
-  }
-  return {
-    nodes: definition.nodes.filter((n) => !nodesToDelete.map((o) => o.id).includes(n.id)),
-    links: definition.links.filter((n) => !linksToDelete.map((o) => o.id).includes(n.id))
-  };
 };
 
 export const playbookUpdatePositions = async (context: AuthContext, user: AuthUser, id: string, positions: string) => {

@@ -556,7 +556,8 @@ const useSearchEntities = ({
             group: n?.node.entity_type,
           }));
           unionSetEntities(key, membersEntities);
-          if (entityTypes.includes('User')) { // add @me filter value
+          // add @me value for filters with user id as values, except in stix playbook components
+          if (entityTypes.includes('User') && searchContext.elementType !== 'Playbook-Stix-Component') {
             unionSetEntities(key, [meEntity]);
           }
           const membersSystems = (
@@ -592,8 +593,8 @@ const useSearchEntities = ({
           type,
         });
       }
-      // add @me value for filters with user id as values
-      if (type === 'User') {
+      // add @me value for filters with user id as values, except in stix playbook components
+      if (type === 'User' && searchContext.elementType !== 'Playbook-Stix-Component') {
         newOptions.push(meEntity);
       }
 
