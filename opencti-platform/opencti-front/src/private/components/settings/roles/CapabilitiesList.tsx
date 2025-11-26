@@ -15,20 +15,27 @@ import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModif
 interface CapabilitiesListProps {
   queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
   role: Role_role$data;
+  isCapabilitiesInDraft?: boolean;
 }
 
 const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
   queryRef,
   role,
+  isCapabilitiesInDraft = false,
 }) => {
   const { t_i18n } = useFormatter();
-  const roleCapabilities = (role.capabilities ?? []).map((n) => ({
-    name: n?.name,
-  })) as { name: string }[];
-  const { capabilities } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
+
+  const { capabilities, capabilitiesInDraft } = usePreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>(
     roleEditionCapabilitiesLinesSearch,
     queryRef,
   );
+
+  const capabilitiesType = isCapabilitiesInDraft ? 'capabilitiesInDraft' : 'capabilities';
+  const capabilitiesBaseList = isCapabilitiesInDraft ? capabilitiesInDraft : capabilities;
+
+  const roleCapabilities = (role[capabilitiesType] ?? []).map((n) => ({
+    name: n?.name,
+  })) as { name: string }[];
   const { isSensitive } = useSensitiveModifications();
 
   return (
@@ -53,7 +60,7 @@ const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({
           />
         </ListItem>
       )}
-      {capabilities?.edges?.map((edge, i) => {
+      {capabilitiesBaseList?.edges?.map((edge, i) => {
         const capability = edge?.node;
         if (capability) {
           const paddingLeft = (capability.name.split('_').length ?? -20) * 20 - 20;
