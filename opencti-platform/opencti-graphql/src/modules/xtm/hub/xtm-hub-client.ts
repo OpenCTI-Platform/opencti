@@ -37,7 +37,8 @@ export const xtmHubClient = {
       input: {
         platformId,
         token,
-        platformVersion
+        platformVersion,
+        platformIdentifier: 'opencti'
       }
     };
     const httpClient = getHttpClient({
