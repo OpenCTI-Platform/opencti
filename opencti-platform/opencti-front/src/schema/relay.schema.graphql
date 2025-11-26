@@ -3809,6 +3809,7 @@ input ReportAddInput {
   update: Boolean
   file: Upload
   authorized_members: [MemberAccessInput!]
+  upsertOperations: [EditInput!]
 }
 
 enum CoursesOfActionOrdering {
