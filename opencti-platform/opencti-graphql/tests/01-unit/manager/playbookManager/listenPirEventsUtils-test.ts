@@ -18,6 +18,7 @@ import * as middlewareLoader from '../../../../src/database/middleware-loader';
 import * as playbookExecutor from '../../../../src/manager/playbookManager/playbookExecutor';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
+import type { PirStreamConfiguration } from '../../../../src/modules/playbook/components/data-stream-pir-component';
 
 describe('listenPirEventsUtils', () => {
   beforeEach(() => {
@@ -122,6 +123,7 @@ describe('listenPirEventsUtils', () => {
       const result = await isEventInPirRelationshipMatchPir(
         randomContext,
         randomEventInPir.data,
+        { create: true } as PirStreamConfiguration,
       );
       expect(result).toBeTruthy();
       expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
@@ -134,6 +136,7 @@ describe('listenPirEventsUtils', () => {
         randomContext,
         randomEventInPir.data,
         randomPirList,
+        { create: true } as PirStreamConfiguration,
       );
       expect(result).toBeTruthy();
       expect(stixFiltering.isStixMatchFilterGroup).toHaveBeenCalled();
@@ -146,6 +149,7 @@ describe('listenPirEventsUtils', () => {
         randomContext,
         randomEventInPir.data,
         randomPirList,
+        { create: true } as PirStreamConfiguration,
       );
       expect(result).toBeFalsy();
       expect(stixFiltering.isStixMatchFilterGroup).toHaveBeenCalled();
@@ -161,6 +165,7 @@ describe('listenPirEventsUtils', () => {
       const result = await isUpdateEventMatchPir(
         randomContext,
         randomEventInPir.data,
+        { update: true } as PirStreamConfiguration,
       );
       expect(result).toBeTruthy();
       expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
@@ -173,6 +178,7 @@ describe('listenPirEventsUtils', () => {
       const result = await isUpdateEventMatchPir(
         randomContext,
         randomUpdateEventOnEntity.data,
+        { update: true } as PirStreamConfiguration,
         randomPirList,
       );
       expect(result).toBeTruthy();
@@ -185,6 +191,7 @@ describe('listenPirEventsUtils', () => {
       const result = await isUpdateEventMatchPir(
         randomContext,
         randomUpdateEventOnEntity.data,
+        { update: true } as PirStreamConfiguration,
         randomPirList,
       );
       expect(result).toBeFalsy();
@@ -198,6 +205,7 @@ describe('listenPirEventsUtils', () => {
       const result = await isUpdateEventMatchPir(
         randomContext,
         randomUpdateEventOnEntity.data,
+        { update: true } as PirStreamConfiguration,
         randomPirList,
       );
       expect(result).toBeFalsy();
@@ -212,6 +220,7 @@ describe('listenPirEventsUtils', () => {
 
       const result = await stixIdOfLinkedEntity(
         randomEventInPir.data,
+        { create_rel: true } as PirStreamConfiguration,
         randomPirList,
       );
       expect(result).toBeNull();
@@ -223,6 +232,7 @@ describe('listenPirEventsUtils', () => {
 
       const result = await stixIdOfLinkedEntity(
         randomEventInPir.data,
+        { create_rel: true } as PirStreamConfiguration,
         randomPirList,
       );
       expect(result).toBeNull();
@@ -236,6 +246,7 @@ describe('listenPirEventsUtils', () => {
 
       const result = await stixIdOfLinkedEntity(
         randomEventInPirWithPirOnlyInSource.data,
+        { create_rel: true } as PirStreamConfiguration,
       );
       expect(result).toBe('target-id');
     });
@@ -263,6 +274,7 @@ describe('listenPirEventsUtils', () => {
 
       const result = await stixIdOfLinkedEntity(
         randomEventInPirWithPirOnlyInTarget.data,
+        { create_rel: true } as PirStreamConfiguration,
       );
       expect(result).toBe('source-id');
     });
@@ -275,6 +287,7 @@ describe('listenPirEventsUtils', () => {
 
       const result = await stixIdOfLinkedEntity(
         randomEventInPirWithMatchingPirInSource.data,
+        { create_rel: true } as PirStreamConfiguration,
         randomPirList
       );
       expect(result).toBe('target-id');
@@ -304,6 +317,7 @@ describe('listenPirEventsUtils', () => {
 
       const result = await stixIdOfLinkedEntity(
         randomEventInPirWithMatchingPirInTarget.data,
+        { create_rel: true } as PirStreamConfiguration,
         randomPirList
       );
       expect(result).toBe('source-id');
