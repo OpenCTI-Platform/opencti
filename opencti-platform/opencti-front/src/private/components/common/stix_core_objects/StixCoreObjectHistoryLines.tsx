@@ -29,7 +29,7 @@ export const stixCoreObjectHistoryLinesQuery = graphql`
   }
 `;
 
-const StixCoreObjectHistoryLinesFragment = graphql`
+export const StixCoreObjectHistoryLinesFragment = graphql`
   fragment StixCoreObjectHistoryLines_data on Query
   @refetchable(queryName: "StixCoreObjectHistoryLinesRefetchQuery") {
     logs(
@@ -62,6 +62,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
+  const [selectedLog, setSelectedLog] = useState(undefined)
   const queryData = usePreloadedQuery(stixCoreObjectHistoryLinesQuery, queryRef);
   const [data, refetch] = useRefetchableFragment<StixCoreObjectHistoryLinesQuery, StixCoreObjectHistoryLines_data$key>(
     StixCoreObjectHistoryLinesFragment,
@@ -72,6 +73,16 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
     refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, FIVE_SECONDS);
   const logs = data?.logs?.edges ?? [];
+  const handleOpen = (log: any) => {
+    setSelectedLog(log);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedLog(undefined);
+  };
+
   return (
     <Paper
       style={{
@@ -81,7 +92,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
       variant="outlined"
     >
       {logs.length > 0 ? (
-        <List style={{ margin: 0 }}>
+        <List>
           {logs.filter((l) => !!l).map((logEdge) => {
             const log = logEdge.node;
             return (
@@ -94,8 +105,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                     <>
                       <Tooltip title={t_i18n('Browse the link')}>
                         <IconButton
-                          onClick={() => setOpen(true)
-                          }
+                          onClick={() => handleOpen(log)}
                           size="large"
                           color="primary"
                         >
@@ -106,7 +116,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                 >
                   <ListItemButton
                     style={{ margin: 0, height: 60 }}
-                    onClick={() => setOpen(true)}
+                    onClick={() => handleOpen(log)}
                   >
                     <StixCoreObjectHistoryLine
                       key={log.id}
@@ -118,9 +128,9 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                   <HistoryDrawer
                     key={log.id}
                     open={open}
-                    onClose={() => setOpen(false)}
+                    onClose={handleClose}
                     title={t_i18n('Knowledge log details')}
-                    node={log}
+                    node={selectedLog}
                   />
                 </ListItem>
               </React.Fragment>

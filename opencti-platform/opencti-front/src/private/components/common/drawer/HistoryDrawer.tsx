@@ -19,7 +19,7 @@ interface HistoryDrawerProps {
   open: boolean
   onClose: () => void
   title: string
-  node: StixCoreObjectHistoryLine_node$key
+  node: StixCoreObjectHistoryLine_node$key | undefined
 }
 
 const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, node }) => {
@@ -40,13 +40,13 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
       onClose={onClose}
       title={title}
     >
-      <>
+      <div>
         <div>
           <Typography variant="h4" gutterBottom={true}>
             {('Message')}
           </Typography>
           <MarkdownDisplay
-            content={data.context_data?.message ?? ''}
+            content={data?.context_data?.message ?? ''}
             remarkGfmPlugin={true}
             commonmark={true}
           />
@@ -94,8 +94,8 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
             </div>
           </Paper>
         </div>
-      </>
+      </div>
     </Drawer>
-  );
+);
 };
 export default HistoryDrawer;
