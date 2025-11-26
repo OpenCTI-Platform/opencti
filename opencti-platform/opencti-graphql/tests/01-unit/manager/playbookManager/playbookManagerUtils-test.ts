@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { isEventInPirRelationship, isEventUpdateOnEntity, isValidEventType } from '../../../../src/manager/playbookManager/playbookManagerUtils';
+import {
+  isEventCreateRelationship,
+  isEventInPirRelationship,
+  isEventUpdateOnEntity,
+  isValidEventType,
+  StreamDataEventTypeEnum
+} from '../../../../src/manager/playbookManager/playbookManagerUtils';
 import * as stixRelationship from '../../../../src/schema/stixRelationship';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import type { StreamDataEvent } from '../../../../src/types/event';
@@ -96,6 +102,60 @@ describe('playbookManagerUtils', () => {
       } as unknown as StreamDataEvent;
       const result = isEventUpdateOnEntity(streamEventMock);
       expect(result).toBeFalsy();
+    });
+  });
+
+  describe('isEventCreateRelationship', () => {
+    it('should return true if event scope is external, if event data is a stix relationship, and if the type af the event is create', () => {
+      vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
+
+      const streamEventMock = {
+        type: StreamDataEventTypeEnum.CREATE,
+        scope: 'external',
+      } as unknown as StreamDataEvent;
+
+      const result = isEventCreateRelationship(streamEventMock);
+
+      expect(result).toBe(true);
+    });
+
+    it('should return false if alla conditions are not met: not a sti relationship', () => {
+      vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(false);
+
+      const streamEventMock = {
+        type: StreamDataEventTypeEnum.CREATE,
+        scope: 'external',
+      } as unknown as StreamDataEvent;
+
+      const result = isEventCreateRelationship(streamEventMock);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false if alla conditions are not met: not an external event', () => {
+      vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
+
+      const streamEventMock = {
+        type: StreamDataEventTypeEnum.CREATE,
+        scope: 'internal',
+      } as unknown as StreamDataEvent;
+
+      const result = isEventCreateRelationship(streamEventMock);
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false if alla conditions are not met: not a create type event', () => {
+      vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
+
+      const streamEventMock = {
+        type: StreamDataEventTypeEnum.DELETE,
+        scope: 'external',
+      } as unknown as StreamDataEvent;
+
+      const result = isEventCreateRelationship(streamEventMock);
+
+      expect(result).toBe(false);
     });
   });
 });
