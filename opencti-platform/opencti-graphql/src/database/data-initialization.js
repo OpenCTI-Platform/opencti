@@ -376,6 +376,10 @@ const createBasicRolesAndCapabilities = async (context) => {
       'INGESTION',
       'SETTINGS_SETMARKINGS',
       'SETTINGS_SETLABELS',
+      'SETTINGS_SETVOCABULARIES',
+      'SETTINGS_SETCASETEMPLATES',
+      'SETTINGS_SETSTATUSTEMPLATES',
+      'SETTINGS_SETKILLCHAINPHASES',
     ],
     can_manage_sensitive_config: false
   };
