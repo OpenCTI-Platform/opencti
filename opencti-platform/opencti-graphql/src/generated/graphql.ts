@@ -27050,6 +27050,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_critical_alerts: Array<PlatformCriticalAlert>;
   platform_demo?: Maybe<Scalars['Boolean']['output']>;
   platform_email?: Maybe<Scalars['String']['output']>;
+  platform_email_configurable: Scalars['Boolean']['output'];
   platform_enterprise_edition: PlatformEe;
   platform_favicon?: Maybe<Scalars['String']['output']>;
   platform_feature_flags?: Maybe<Array<Module>>;
@@ -45351,6 +45352,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_critical_alerts?: Resolver<Array<ResolversTypes['PlatformCriticalAlert']>, ParentType, ContextType>;
   platform_demo?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_email_configurable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_enterprise_edition?: Resolver<ResolversTypes['PlatformEE'], ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
