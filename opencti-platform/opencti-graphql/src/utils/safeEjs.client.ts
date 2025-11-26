@@ -49,7 +49,7 @@ const prepareDataForWorker = (data: Data): Data => {
       Object.entries(obj).forEach(([key, value]) => {
         // Check for forbidden properties
         if (forbidden.includes(key)) {
-          throw new Error(`Forbidden property in data: ${key}`);
+          throw new Error(`Inaccessible property in data: ${key}`);
         }
         result[key] = serialize(value, currentPath ? `${currentPath}.${key}` : key);
       });
@@ -127,7 +127,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
 
         worker.on('exit', (code) => {
           if (code !== 0 && code !== null) {
-            reject(new Error(`Worker stopped with exit code ${code} - possible memory limit exceeded`));
+            reject(new Error(`Worker stopped with exit code ${code}`));
           }
         });
       }),
@@ -135,7 +135,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
       // Timeout promise
       new Promise<never>((_, reject) => {
         setTimeout(() => {
-          reject(new Error(`Rendering timeout after ${timeout}ms - possible DoS attempt`));
+          reject(new Error(`Rendering timeout after ${timeout}ms`));
         }, timeout);
       })
     ]);
@@ -145,7 +145,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
     // Enhance error messages
     if (error instanceof Error) {
       if (error.message.includes('Worker terminated')) {
-        throw new Error('Rendering exceeded memory limits - possible DoS attempt');
+        throw new Error('Rendering exceeded memory limits');
       }
       throw error;
     }
