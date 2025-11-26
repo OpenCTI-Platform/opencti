@@ -140,7 +140,7 @@ describe('Stix Filtering', () => {
     expect(await isStixMatchFilterGroup_MockableForUnitTests(testContext, ADMIN_USER, stixIndicator, filterGroup, MOCK_RESOLUTION_MAP)).toEqual(true);
   });
 
-  it('matches stix object with filters with @me value in filters', async () => {
+  it('matches stix object with filters containing a @me value (@me value representing the current user)', async () => {
     const filterGroup = {
       mode: 'and',
       filters: [{
