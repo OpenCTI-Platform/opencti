@@ -567,7 +567,10 @@ const PlaybookAddComponentsContent = ({
     const entityTypes = componentId === 'PLAYBOOK_INTERNAL_DATA_CRON'
       ? ['Stix-Core-Object', 'stix-core-relationship']
       : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'];
-    const searchContext = { entityTypes };
+    const searchContext = {
+      entityTypes,
+      elementType: componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? undefined : 'Playbook-Stix-Component',
+    };
 
     return (
       <div className={classes.config}>
