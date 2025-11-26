@@ -13,6 +13,11 @@ import { utcDate } from '../utils/format';
 import { sendAdministratorsLostConnectivityEmail } from '../modules/xtm/hub/xtm-hub-email';
 import { getEnterpriseEditionInfoFromPem } from '../modules/settings/licensing';
 
+interface AttributeUpdate {
+  key: keyof BasicStoreSettings
+  value: unknown[]
+}
+
 export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUser): Promise<{
   status: XtmHubRegistrationStatus
 }> => {
@@ -22,9 +27,14 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   }
   const platformInformation = { platformId: settings.id, token: settings.xtm_hub_token, platformVersion: PLATFORM_VERSION };
   const status = await xtmHubClient.refreshRegistrationStatus(platformInformation);
+  if (status === 'not_found') {
+    await resetRegistration(context, user, settings)
+    return { status: XtmHubRegistrationStatus.Unregistered };
+  }
+
   const isConnectivityActive = status === 'active';
   const newRegistrationStatus: XtmHubRegistrationStatus = isConnectivityActive ? XtmHubRegistrationStatus.Registered : XtmHubRegistrationStatus.LostConnectivity;
-  const attributeUpdates: { key: string, value: unknown[] }[] = [];
+  const attributeUpdates: AttributeUpdate[] = [];
 
   const shouldUpdateRegistrationStatus = newRegistrationStatus !== settings.xtm_hub_registration_status;
   if (shouldUpdateRegistrationStatus) {
@@ -103,3 +113,43 @@ export const autoRegisterOpenCTI = async (context: AuthContext, user: AuthUser, 
   );
   return { success: true };
 };
+
+const resetRegistration = async (context: AuthContext, user: AuthUser, settings: BasicStoreSettings) => {
+  const attributeUpdates: AttributeUpdate[] = [
+    {
+      key: 'xtm_hub_token',
+      value: []
+    },
+    {
+      key: 'xtm_hub_registration_status',
+      value: [XtmHubRegistrationStatus.Unregistered]
+    },
+    {
+      key: 'xtm_hub_registration_user_id',
+      value: []
+    },
+    {
+      key: 'xtm_hub_registration_user_name',
+      value: []
+    },
+    {
+      key: 'xtm_hub_registration_date',
+      value: []
+    },
+    {
+      key: 'xtm_hub_last_connectivity_check',
+      value: []
+    }
+  ]
+
+  await updateAttribute(
+    context,
+    user,
+    settings.id,
+    ENTITY_TYPE_SETTINGS,
+    attributeUpdates
+  );
+
+  const updatedSettings = await getSettings(context);
+  await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
+}
