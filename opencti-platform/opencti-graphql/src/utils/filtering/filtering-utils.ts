@@ -417,7 +417,7 @@ export const replaceEnrichValuesInFilters = (filterGroup: FilterGroup, userId: s
     return {
       ...filter,
       values: newFilterValues,
-    }
+    };
   });
   // recursivity on the filter groups
   let newFilterGroups: FilterGroup[] = [];
