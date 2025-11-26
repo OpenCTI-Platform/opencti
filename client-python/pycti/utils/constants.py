@@ -65,6 +65,9 @@ class StixCyberObservableTypes(CaseInsensitiveEnum):
     SIMPLE_OBSERVABLE = "Simple-Observable"
     PERSONA = "Persona"
     SSH_KEY = "SSH-Key"
+    IMEI = "IMEI"
+    ICCID = "ICCID"
+    IMSI = "IMSI"
 
 
 class IdentityTypes(CaseInsensitiveEnum):
@@ -755,5 +758,65 @@ class CustomObservableSshKey:
     :param object_marking_refs: List of marking definition references
     :type object_marking_refs: list
     """
+
+    pass
+
+
+@CustomObservable(
+    "imei",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableIMEI:
+    """IMEI observable."""
+
+    pass
+
+
+@CustomObservable(
+    "iccid",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableICCID:
+    """ICCID observable."""
+
+    pass
+
+
+@CustomObservable(
+    "imsi",
+    [
+        ("value", StringProperty(required=True)),
+        ("spec_version", StringProperty(fixed="2.1")),
+        (
+            "object_marking_refs",
+            ListProperty(
+                ReferenceProperty(valid_types="marking-definition", spec_version="2.1")
+            ),
+        ),
+    ],
+    ["value"],
+)
+class CustomObservableIMSI:
+    """IMSI observable."""
 
     pass

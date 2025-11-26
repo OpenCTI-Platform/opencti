@@ -144,6 +144,9 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   'Payment-Card': 'observables',
   'Media-Content': 'observables',
   Persona: 'observables',
+  IMEI: 'observables',
+  IMSI: 'observables',
+  ICCID: 'observables',
 
   // Relationships
   'Stix-Core-Relationship': 'relationships',
