@@ -4,17 +4,7 @@ import { StixDomainObjectDiamond_data$data } from '@components/common/stix_domai
 import { emptyFilled } from '../../../../../../../../utils/String';
 import { DiamondEntityEnum, DiamondNodeEnum } from '../diamondEnums';
 
-export type StixDomainObjectFromDiamond = StixDomainObjectDiamond_data$data['stixDomainObject'] & {
-  attributedFrom?: {
-    edges: {
-      node: {
-        from: {
-          name?: string;
-        } | null | undefined;
-      };
-    }[];
-  } | null | undefined;
-} | null | undefined;
+export type StixDomainObjectFromDiamond = StixDomainObjectDiamond_data$data['stixDomainObject'];
 
 export interface NodeAdversaryUtilsProps {
   data: {
