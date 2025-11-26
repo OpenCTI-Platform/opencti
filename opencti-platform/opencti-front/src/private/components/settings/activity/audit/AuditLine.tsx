@@ -93,8 +93,12 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const data = useFragment(AuditLineFragment, node);
   const message = useGenerateAuditMessage<AuditLine_node$data>(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
-  // console.log('message', message);
-  // console.log('data', JSON.parse(data.raw_data));
+  console.log('context_data', data?.context_data);
+  console.log('data', data);
+
+    // const rawData = data?.raw_data != null ? JSON.parse(data?.raw_data) : 'unknown'
+    // const changesData = rawData.context_data.changes
+  // console.log('changes', changesData.context_data.changes);
   function createData(name: string, PreviousValue:string, NewValue:string) {
     return { name, PreviousValue, NewValue };
   }
