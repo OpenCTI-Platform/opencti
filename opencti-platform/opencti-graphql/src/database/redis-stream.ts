@@ -2,8 +2,16 @@ import { Cluster, Redis } from 'ioredis';
 import * as R from 'ramda';
 import conf, { logApp, REDIS_PREFIX } from '../config/conf';
 import type { ActivityStreamEvent, BaseEvent, DataEvent, SseEvent, StreamNotifEvent } from '../types/event';
-import { ACTIVITY_STREAM_NAME, LIVE_STREAM_NAME, NOTIFICATION_STREAM_NAME, type RawStreamClient, type StreamOption, type StreamProcessor } from './stream/stream-utils';
-import { createRedisClient, getClientBase } from './redis';
+import {
+  ACTIVITY_STREAM_NAME,
+  LIVE_STREAM_NAME,
+  NOTIFICATION_STREAM_NAME,
+  type RawStreamClient,
+  type StreamOption,
+  type StreamProcessor,
+  StreamProvider
+} from './stream/stream-utils';
+import { createRedisClient, getClientBase, getClientPir } from './redis';
 import { isEmptyField, wait, waitInSec } from './utils';
 import { utcDate } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
@@ -175,10 +183,15 @@ const rawFetchStreamEventsRangeFromEventId = async (
   callback: (events: Array<SseEvent<DataEvent>>, lastEventId: string) => void,
   opts: StreamOption = {},
 ) => {
-  const { streamBatchSize = MAX_RANGE_MESSAGES, streamName = LIVE_STREAM_NAME, provider = 'fetchEventRange' } = opts;
+  const { streamBatchSize = MAX_RANGE_MESSAGES, streamName = LIVE_STREAM_NAME, provider = StreamProvider.BASE } = opts;
   const redisStreamName = convertStreamName(streamName);
   let effectiveStartEventId = startEventId;
-  const redisClient = await createRedisClient(provider, opts.autoReconnect); // Create client for this processing loop
+  let redisClient;
+  if (provider === StreamProvider.PIR) {
+    redisClient = getClientPir();
+  } else {
+    redisClient = getClientBase();
+  }
   try {
     // Consume streamBatchSize number of stream events from startEventId (excluded)
     const streamResult = await redisClient.call(

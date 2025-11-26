@@ -34,10 +34,15 @@ export interface StreamProcessor {
   running: () => boolean;
 }
 
+export enum StreamProvider {
+  BASE = 'base',
+  PIR = 'Pir Manager'
+}
+
 export interface StreamOption {
   withInternal?: boolean;
   bufferTime?: number;
-  provider?: string;
+  provider?: StreamProvider;
   autoReconnect?: boolean;
   streamName?: string;
   streamBatchSize?: number
