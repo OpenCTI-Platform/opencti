@@ -199,7 +199,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyValuesFromPatchElements } from './generate-message';
+import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyName, getKeyValuesFromPatchElements } from './generate-message';
 import {
   authorizedMembers,
   authorizedMembersActivationDate,
@@ -2059,6 +2059,38 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
+const buildChanges = (entityType, inputs) => {
+  const changes = [];
+
+  inputs.forEach((input) => {
+    const { key, previous, value } = input;
+    if (!key) return;
+    const field = getKeyName(entityType, key); // this does not work for auth members :(
+    const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
+    const isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+    if (isMultiple) {
+      if (previous.length > 0 && value.length === 0) { // REMOVE
+        changes.push({
+          field,
+          removed: previous,
+        });
+      } else if (previous.length === 0 && value.length > 0) { // ADD
+        changes.push({
+          field,
+          added: value,
+        });
+      }
+    } else if (!isMultiple) {
+      changes.push({
+        field,
+        previous,
+        new: value,
+      });
+    }
+  });
+  return changes;
+};
+
 export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
@@ -2399,6 +2431,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
       const message = await generateUpdateMessage(context, user, updatedInstance.entity_type, updatedInputs);
+      const changes = buildChanges(updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -2412,6 +2445,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         initial,
         updatedInstance,
         message,
+        changes,
         {
           ...opts,
           commit,
