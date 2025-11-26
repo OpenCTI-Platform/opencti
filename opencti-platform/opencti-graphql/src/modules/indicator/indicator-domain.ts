@@ -275,23 +275,26 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const isDecayActivated: boolean = await isDecayEnabled();
 
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
-  const exclusionRule = checkDecayExclusionRules(observableType, activeDecayExclusionRuleList);
+  const exclusionRule = await checkDecayExclusionRules(context, user, indicator, activeDecayExclusionRuleList);
 
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
 
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
-  const indicatorToCreate = R.pipe(
-    R.dissoc('createObservables'),
-    R.dissoc('basedOn'),
-    R.assoc('pattern', formattedPattern),
-    R.assoc('x_opencti_main_observable_type', observableType),
-    R.assoc(X_SCORE, indicatorBaseScore),
-    R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),
-    R.assoc('valid_from', validFrom.toISOString()),
-    R.assoc('valid_until', validUntil.toISOString()),
-    R.assoc('revoked', revoked),
-  )(indicator);
+
+  const indicatorToCreate = {
+    ...indicator,
+    pattern: formattedPattern,
+    x_opencti_main_observable_type: observableType,
+    [X_SCORE]: indicatorBaseScore,
+    x_opencti_detection: indicator.x_opencti_detection ?? false,
+    valid_from: validFrom.toISOString(),
+    valid_until: validUntil.toISOString(),
+    revoked,
+  };
+  delete indicatorToCreate.basedOn;
+  delete indicatorToCreate.createObservables;
+
   let finalIndicatorToCreate;
 
   if (isDecayActivated && exclusionRule) {
@@ -301,7 +304,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
         decay_exclusion_id: exclusionRule.id,
         decay_exclusion_name: exclusionRule.name,
         decay_exclusion_created_at: exclusionRule.created_at,
-        decay_exclusion_observable_types: exclusionRule.decay_exclusion_observable_types,
+        decay_exclusion_filters: exclusionRule.decay_exclusion_filters,
       }
     };
   } else if (isDecayActivated && !revoked) {

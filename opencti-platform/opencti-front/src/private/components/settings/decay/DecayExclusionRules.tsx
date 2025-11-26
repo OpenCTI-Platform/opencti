@@ -73,7 +73,7 @@ const decayExclusionRulesLineFragment = graphql`
     entity_type
     description
     created_at
-    decay_exclusion_observable_types
+    decay_exclusion_filters
     active
   }
 `;
@@ -124,24 +124,24 @@ const DecayExclusionRules = () => {
       id: 'name',
       label: t_i18n('Name'),
       isSortable: true,
-      percentWidth: 30,
+      percentWidth: 50,
     },
-    decay_exclusion_observable_types: {
-      id: 'decay_exclusion_observable_types',
-      label: 'obs',
-      isSortable: false,
-      percentWidth: 40,
-      render: (node) => (<div>{node.decay_exclusion_observable_types.join(', ')}</div>),
-    },
+    // decay_exclusion_filters: {
+    //   id: 'decay_exclusion_observable_types',
+    //   label: 'obs',
+    //   isSortable: false,
+    //   percentWidth: 40,
+    //   // render: (node) => (<div>{node.decay_exclusion_filters.join(', ')}</div>),
+    // },
     created_at: {
       label: t_i18n('Creation date'),
-      percentWidth: 15,
+      percentWidth: 25,
       isSortable: true,
     },
     active: {
       id: 'active ',
       label: t_i18n('Active'),
-      percentWidth: 15,
+      percentWidth: 25,
       isSortable: true,
       render: (node: DecayExclusionRules_node$data) => (
         <>

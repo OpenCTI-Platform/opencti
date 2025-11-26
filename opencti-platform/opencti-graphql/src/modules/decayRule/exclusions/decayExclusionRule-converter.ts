@@ -9,7 +9,7 @@ const convertDecayExclusionRuleToStix = (instance: StoreEntityDecayExclusionRule
     ...stixObject,
     name: instance.name,
     description: instance.description,
-    decay_exclusion_observable_types: instance.decay_exclusion_observable_types,
+    decay_exclusion_filters: instance.decay_exclusion_filters,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],

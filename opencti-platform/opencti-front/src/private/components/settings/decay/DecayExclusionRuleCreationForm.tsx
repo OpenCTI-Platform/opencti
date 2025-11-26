@@ -5,13 +5,17 @@ import * as Yup from 'yup';
 import { fieldSpacingContainerStyle } from 'src/utils/field';
 import Button from '@mui/material/Button';
 import { graphql } from 'react-relay';
-import ObservableTypesField from '@components/common/form/ObservableTypesField';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import useFiltersState from 'src/utils/filters/useFiltersState';
+import Filters from '@components/common/lists/Filters';
+import FilterIconButton from 'src/components/FilterIconButton';
+import Box from '@mui/material/Box';
 import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { handleErrorInForm } from '../../../../relay/environment';
+import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
 const decayExclusionRuleCreationFormAddMutation = graphql`
   mutation DecayExclusionRuleCreationFormAddMutation($input: DecayExclusionRuleAddInput!) {
@@ -30,7 +34,7 @@ type DecayExclusionRuleCreationFormProps = {
 type DecayExclusionRuleCreationFormData = {
   name: string;
   description: string;
-  decay_exclusion_observable_types: string[];
+  decay_exclusion_filters: string;
   active: boolean;
 };
 
@@ -38,24 +42,27 @@ const decayExclusionRuleCreationValidator = (t: (value: string) => string) => {
   return Yup.object().shape({
     name: Yup.string().trim().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    decay_exclusion_observable_types: Yup.array().of(Yup.string()),
+    decay_exclusion_filters: Yup.array().of(Yup.string()),
     active: Yup.boolean(),
   });
 };
 
+export const enabledFilters = ['creator_id', 'createdBy', 'objectMarking', 'objectLabel', 'pattern_type', 'indicator_types'];
+
 const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: DecayExclusionRuleCreationFormProps) => {
   const { t_i18n } = useFormatter();
   const [commit] = useApiMutation(decayExclusionRuleCreationFormAddMutation);
-
+  const [filters, filterHelpers] = useFiltersState(emptyFilterGroup);
   const onSubmit: FormikConfig<DecayExclusionRuleCreationFormData>['onSubmit'] = (
     values,
     { setSubmitting, resetForm, setErrors },
   ) => {
-    const { name, description, decay_exclusion_observable_types, active } = values;
+    const { name, description, active } = values;
+    const jsonFilters = serializeFilterGroupForBackend(filters);
     const input = {
       name,
       description,
-      decay_exclusion_observable_types,
+      decay_exclusion_filters: jsonFilters,
       active,
     };
 
@@ -81,7 +88,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
   const initialValues: DecayExclusionRuleCreationFormData = {
     name: '',
     description: '',
-    decay_exclusion_observable_types: [],
+    decay_exclusion_filters: '',
     active: false,
   };
 
@@ -112,11 +119,23 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
             rows={2}
             style={{ marginTop: 20 }}
           />
-          <ObservableTypesField
-            name="decay_exclusion_observable_types"
-            label={t_i18n('Apply on indicator observable types (none = ALL)')}
-            multiple={true}
-            style={{ marginTop: 20 }}
+          <Box sx={{
+            paddingTop: '20px',
+            display: 'flex',
+            gap: 1,
+          }}
+          >
+            <Filters
+              availableFilterKeys={enabledFilters}
+              helpers={filterHelpers}
+              searchContext={{ entityTypes: ['Indicator'] }}
+            />
+          </Box>
+          <FilterIconButton
+            filters={filters}
+            helpers={filterHelpers}
+            styleNumber={2}
+            searchContext={{ entityTypes: ['Indicator'] }}
           />
           <Field
             component={SwitchField}

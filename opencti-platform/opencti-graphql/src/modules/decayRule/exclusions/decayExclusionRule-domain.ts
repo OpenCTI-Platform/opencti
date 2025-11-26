@@ -1,3 +1,4 @@
+import { isStixMatchFilterGroup } from '../../../utils/filtering/filtering-stix/stix-filtering';
 import { now } from '../../../utils/format';
 import { FunctionalError, UnsupportedError } from '../../../config/errors';
 import { deleteElementById, updateAttribute } from '../../../database/middleware';
@@ -5,11 +6,12 @@ import { publishUserAction } from '../../../listener/UserActionListener';
 import { BUS_TOPICS, isFeatureEnabled } from '../../../config/conf';
 import { pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
+import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import type { DecayExclusionRuleAddInput, EditInput, QueryDecayExclusionRulesArgs } from '../../../generated/graphql';
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
+import { IndicatorAddInput } from '../../../generated/graphql';
 
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
 
@@ -18,7 +20,7 @@ export interface DecayExclusionRuleModel {
   name: string;
   description: string;
   created_at: Date;
-  decay_exclusion_observable_types: string[];
+  decay_exclusion_filters: string;
   active: boolean;
 }
 
@@ -36,16 +38,28 @@ export const getActiveDecayExclusionRule = async (context: AuthContext, user: Au
   return decayExclusionRuleEdges.edges.map(({ node }) => node).filter((rule) => rule.active);
 };
 
-export const checkDecayExclusionRules = (
-  observableType: string,
+export const checkDecayExclusionRules = async (
+  context: AuthContext,
+  user: AuthUser,
+  indicatorToCreate: IndicatorAddInput,
   activeDecayExclusionRuleList: DecayExclusionRuleModel[]
-): DecayExclusionRuleModel | null => {
-  const exclusionRuleList = activeDecayExclusionRuleList.filter((rule) => {
-    return rule.decay_exclusion_observable_types.length === 0 || rule.decay_exclusion_observable_types.includes(observableType);
-  });
-
+): Promise<DecayExclusionRuleModel | null> => {
   if (!isDecayExclusionRuleEnabled) return null;
-  return exclusionRuleList.length > 0 ? exclusionRuleList[0] : null;
+
+  const formatedIndicator = {
+    ...indicatorToCreate,
+    object_marking_refs: (indicatorToCreate[INPUT_MARKINGS] ?? []).map((id) => id),
+    created_by_ref: indicatorToCreate[INPUT_CREATED_BY] ?? '',
+    labels: (indicatorToCreate[INPUT_LABELS] ?? []).map((id) => id),
+  };
+
+  for (let i = 0; i < activeDecayExclusionRuleList.length; i += 1) {
+    const { decay_exclusion_filters } = activeDecayExclusionRuleList[i];
+    const filterGroup = JSON.parse(decay_exclusion_filters);
+    const result = await isStixMatchFilterGroup(context, user, formatedIndicator, filterGroup, false);
+    if (result) return activeDecayExclusionRuleList[i];
+  }
+  return null;
 };
 
 export const addDecayExclusionRule = (context: AuthContext, user: AuthUser, input: DecayExclusionRuleAddInput) => {

@@ -12947,7 +12947,7 @@ type IndicatorDecayExclusionRule {
   decay_exclusion_id: String!
   decay_exclusion_name: String!
   decay_exclusion_created_at: DateTime!
-  decay_exclusion_observable_types: [String!]!
+  decay_exclusion_filters: String!
 }
 
 type DecayLiveDetails {
@@ -13145,7 +13145,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   created_at: DateTime!
   name: String!
   description: String
-  decay_exclusion_observable_types: [String!]!
+  decay_exclusion_filters: String!
   active: Boolean!
 }
 
@@ -13169,7 +13169,7 @@ input DecayExclusionRuleAddInput {
   "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
   name: String!
   description: String
-  decay_exclusion_observable_types: [String!]
+  decay_exclusion_filters: String!
   active: Boolean!
 }
 

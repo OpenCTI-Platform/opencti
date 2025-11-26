@@ -47,7 +47,7 @@ type IndicatorDecayExclusionRule {
   decay_exclusion_id: String!
   decay_exclusion_name: String!
   decay_exclusion_created_at: DateTime!
-  decay_exclusion_observable_types: [String!]!
+  decay_exclusion_filters: String!
 }
 
 type DecayLiveDetails {

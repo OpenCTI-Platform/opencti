@@ -8,7 +8,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   # DecayExclusionRule
   name: String!
   description: String
-  decay_exclusion_observable_types: [String!]!
+  decay_exclusion_filters: String!
   active: Boolean!
 }
 
@@ -43,7 +43,7 @@ type Query {
 input DecayExclusionRuleAddInput {
   name: String! @constraint(minLength: 2, format: "not-blank")
   description: String
-  decay_exclusion_observable_types: [String!]
+  decay_exclusion_filters: String!
   active: Boolean!
 }
 
