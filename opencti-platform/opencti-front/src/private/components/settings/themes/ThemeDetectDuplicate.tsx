@@ -58,7 +58,7 @@ const ThemeDetectDuplicate: FunctionComponent<ThemeDetectDuplicateProps> = ({
           .filter(Boolean);
 
         setDuplicateCount(duplicates.length);
-      } catch (error) {
+      } catch (_error) {
         // console.error('Failed to fetch duplicate themes:', error);
         setDuplicateCount(0);
       }

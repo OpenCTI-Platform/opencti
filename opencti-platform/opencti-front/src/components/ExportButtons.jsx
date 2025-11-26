@@ -158,7 +158,7 @@ class ExportButtons extends Component {
         pixelRatio,
         this.adjust,
       );
-    } catch (e) {
+    } catch (_e) {
       MESSAGING$.notifyError(t('Dashboard cannot be exported to pdf'));
     } finally {
       commitLocalUpdate((store) => {

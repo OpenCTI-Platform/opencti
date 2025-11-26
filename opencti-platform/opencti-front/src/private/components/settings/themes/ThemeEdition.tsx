@@ -84,7 +84,7 @@ const ThemeEdition: FunctionComponent<ThemeEditionProps> = ({
     try {
       await updateTheme(values);
       setSubmitting(false);
-    } catch (error) {
+    } catch (_error) {
       setSubmitting(false);
       resetForm();
     }

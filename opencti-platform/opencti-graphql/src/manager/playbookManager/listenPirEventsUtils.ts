@@ -130,7 +130,7 @@ export const listenPirEvents = async (
       let stixEntity: StixObject | undefined;
 
       if (isEventInPirRelationship(streamEvent.data) && isStixRelation(data)) {
-        stixEntity = await stixLoadById(context, AUTOMATION_MANAGER_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT);
+        stixEntity = await stixLoadById(context, AUTOMATION_MANAGER_USER, data.source_ref, ABSTRACT_STIX_CORE_OBJECT) as unknown as StixObject;
         isEntityMatchFilters = !!stixEntity && await isStixMatchFilterGroup(context, AUTOMATION_MANAGER_USER, stixEntity, filtersOnSource);
       } else if (isEventUpdateOnEntity(streamEvent.data)) {
         stixEntity = data;

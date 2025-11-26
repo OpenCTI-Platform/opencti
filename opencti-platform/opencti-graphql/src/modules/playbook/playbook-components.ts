@@ -16,8 +16,8 @@ import * as R from 'ramda';
 import { v4 as uuidv4 } from 'uuid';
 import type { JSONSchemaType } from 'ajv';
 import * as jsonpatch from 'fast-json-patch';
-import { type PlaybookComponent } from './playbook-types';
-import { AUTOMATION_MANAGER_USER, AUTOMATION_MANAGER_USER_UUID, executionContext, SYSTEM_USER } from '../../utils/access';
+import { type BasicStoreEntityPlaybook, ENTITY_TYPE_PLAYBOOK, type PlaybookComponent } from './playbook-types';
+import {AUTOMATION_MANAGER_USER,AUTOMATION_MANAGER_USER_UUID, executionContext, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { pushToConnector, pushToWorkerForConnector } from '../../database/rabbitmq';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
@@ -35,12 +35,10 @@ import {
   INPUT_PARTICIPANT,
   OPENCTI_ADMIN_UUID
 } from '../../schema/general';
-import { convertStoreToStix } from '../../database/stix-2-1-converter';
 import type { BasicStoreCommon, BasicStoreRelation, StoreCommon, StoreRelation } from '../../types/store';
 import { generateInternalId, generateStandardId, idGenFromData } from '../../schema/identifier';
 import { now, observableValue, utcDate } from '../../utils/format';
 import type { StixCampaign, StixContainer, StixIncident, StixInfrastructure, StixMalware, StixReport, StixThreatActor } from '../../types/stix-2-1-sdo';
-import { generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import { convertStixToInternalTypes, generateInternalType, getParentTypes } from '../../schema/schemaUtils';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -56,14 +54,11 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { internalFindByIds, fullEntitiesList, fullRelationsList } from '../../database/middleware-loader';
 import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
-import { getEntitiesMapFromCache } from '../../database/cache';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { isFeatureEnabled, logApp } from '../../config/conf';
-import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { extractStixRepresentative } from '../../database/stix-representative';
 import { isEmptyField, isNotEmptyField, READ_RELATIONSHIPS_INDICES, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -99,9 +94,7 @@ import { removeOrganizationRestriction } from '../../domain/stix';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
-import { extractBundleBaseElement } from './playbook-utils';
 import { PLAYBOOK_DATA_STREAM_PIR } from './components/data-stream-pir-component';
-import { PLAYBOOK_NOTIFIER_COMPONENT } from './components/notifier-component';
 import { convertMembersToUsers, extractBundleBaseElement } from './playbook-utils';
 import { convertStoreToStix_2_1 } from '../../database/stix-2-1-converter';
 

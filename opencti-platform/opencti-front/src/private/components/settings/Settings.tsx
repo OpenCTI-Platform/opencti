@@ -248,7 +248,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         variables: { id, input: { key: name, value: value || '' } },
       });
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   };

@@ -91,7 +91,7 @@ const ThemeCreation: FunctionComponent<ThemeCreationProps> = ({
           handleClose();
         },
       });
-    } catch (error) {
+    } catch (_error) {
       setSubmitting(false);
     }
   };
