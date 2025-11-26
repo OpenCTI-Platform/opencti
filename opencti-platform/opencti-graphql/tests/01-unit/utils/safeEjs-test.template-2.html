@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" style="margin:0; padding:0;">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CTI Weekly Watchlist</title>
+</head>
+<body style="margin:0; padding:0; background:#ffffff;">
+<!-- Wrapper -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f1f1;">
+    <tr>
+        <td align="center" style="padding:24px;">
+            <!-- Container -->
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:100%; background:#ffffff; border:1px solid #e5e9f2; border-radius:8px; overflow:hidden;">
+                <!-- Header -->
+                <tr>
+                    <td style="padding:0; background:#004165;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="padding:18px 24px; font-family:Century Gothic;">
+                                    <h1 style="margin:0; font-size:20px; line-height:1.3; color:#ffffff; letter-spacing:0.2px;">
+                                        CTI Weekly Digest 🔎
+                                    </h1>
+                                    <p style="margin:6px 0 0; font-size:14px; color:#FFC000;">
+                                        <b>[TLP: AMBER + STRICT] </b></p>
+                                    <p style="margin:6px 0 0; font-size:11px; color:#c9d1d9;">
+                                        <em><%= (new Date(notification.created)).toLocaleString() %></em>
+                                    </p>
+                                </td>
+                                <td><IMG
+                                            SRC="data:image/png;base64,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"></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Intro stripe -->
+                <tr>
+                    <td style="height:4px; background:#9DBCB0;"></td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:20px 24px 8px 24px; font-family:Century Gothic;">
+
+                        <!-- Empty-state detection -->
+                        <%
+                        var hasItems = false;
+                        for (var _i=0; _i<content.length; _i++) {
+                            if (content[_i].events && content[_i].events.length > 0) { hasItems = true; break; }
+                        }
+                        %>
+                        <% if (!hasItems) { %>
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 12px; border:0px dashed #cfd8ea; border-radius:6px;">
+                                <tr>
+                                    <td style="padding:16px;">
+                                        <p style="margin:0; font-size:14px; color:#071578;">No Reports matched your filters this week.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        <% } %>
+
+                        <!-- Build a de-duplicated index of reports by instance_id (no array.push) -->
+                        <%
+                        var byReport = {};
+                        var reportIds = [];
+
+                        for (var i=0; i<content.length; i++) {
+                            var item = content[i];
+                            if (!item || !item.events) { /* skip */ } else {
+                                for (var j=0; j<item.events.length; j++) {
+                                    var ev = item.events[j];
+                                    var rid = ev.instance_id;
+                                    if (!byReport[rid]) {
+                                        byReport[rid] = { title: item.title, inst: null };
+                                        var _len = reportIds.length; /* manual append */
+                                        reportIds[_len] = rid;
+                                    }
+                                }
+                            }
+                        }
+
+                        /* Attach the STIX instance from `data` once per report */
+                        for (var di=0; di<data.length; di++) {
+                            if (data[di].instance) {
+                                var iid = data[di].instance.id;
+                                if (byReport[iid]) {
+                                    byReport[iid].inst = data[di].instance;
+                                }
+                            }
+                        }
+                        %>
+
+                        <!-- Render one card per unique report -->
+                        <% for (var k=0; k<reportIds.length; k++) {
+                            var rid   = reportIds[k];
+                            var entry = byReport[rid];
+                            var inst  = entry.inst;
+                            var title = entry.title || (inst && inst.name) || 'Untitled report';
+                            var desc  = (inst && inst.description) ? inst.description : 'No description available.';
+
+                            /* Markdown -> HTML minimal: bold **, italic *, code `, line breaker \n + character escape &, <, > */
+                            var descSrc  = (inst && inst.description) ? inst.description : 'No description available.';
+                            var descHtml = '';
+
+                            var p = 0;
+                            while (p < descSrc.length) {
+                                /* Extract one line: until \n or the end */
+                                var line = '';
+                                while (p < descSrc.length && descSrc[p] !== '\n') {
+                                    line += descSrc[p];
+                                    p++;
+                                }
+
+                                if (p < descSrc.length && descSrc[p] === '\n') { p++; } /* skip the \n */
+
+                                /* Identify the header level 1..4 */
+                                var hLevel = 0;
+                                var idx = 0;
+                                while (idx < line.length && hLevel < 4 && line[idx] === '#') {
+                                    hLevel++;
+                                    idx++;
+                                }
+                                var isHeading = (hLevel > 0 && idx < line.length && line[idx] === ' ');
+                                var contentStart = isHeading ? (idx + 1) : 0; /* skip the space after the # */
+
+                                /* Parsing inline bold/italic/code + character escape &, <, > */
+                                var inner = '';
+                                var bold = false, italic = false, code = false;
+                                for (var i2 = contentStart; i2 < line.length; i2++) {
+                                    var ch   = line[i2];
+                                    var next = line[i2 + 1];
+
+                                    /* Parse Markdown link: [Text](URL) */
+                                    if (!code && ch === '[') {
+                                        /* Get the text between brackets */
+                                        var t = '';
+                                        var pText = i2 + 1;
+                                        var foundCloseBracket = false;
+                                        while (pText < line.length) {
+                                            var c = line[pText];
+                                            if (c === ']') { foundCloseBracket = true; break; }
+                                            t += c;
+                                            pText++;
+                                        }
+                                        if (foundCloseBracket) {
+                                            /* Must be followed by the URL */
+                                            var openParen = pText + 1 < line.length ? line[pText + 1] : '';
+                                            if (openParen === '(') {
+                                                var u = '';
+                                                var pUrl = pText + 2;
+                                                var foundCloseParen = false;
+                                                while (pUrl < line.length) {
+                                                    var c2 = line[pUrl];
+                                                    if (c2 === ')') { foundCloseParen = true; break; }
+                                                    u += c2;
+                                                    pUrl++;
+                                                }
+                                                if (foundCloseParen) {
+                                                    /* Escape text and URL */
+                                                    var textEsc = '';
+                                                    for (var et = 0; et < t.length; et++) {
+                                                        var tc = t[et];
+                                                        if (tc === '&')      { textEsc += '&amp;'; }
+                                                        else if (tc === '<') { textEsc += '&lt;'; }
+                                                        else if (tc === '>') { textEsc += '&gt;'; }
+                                                        else                 { textEsc += tc; }
+                                                    }
+                                                    var urlEsc = '';
+                                                    for (var eu = 0; eu < u.length; eu++) {
+                                                        var uc = u[eu];
+                                                        if (uc === '&')       { urlEsc += '&amp;'; }
+                                                        else if (uc === '<')  { urlEsc += '&lt;'; }
+                                                        else if (uc === '>')  { urlEsc += '&gt;'; }
+                                                        else if (uc === '"')  { urlEsc += '&quot;'; }
+                                                        else                  { urlEsc += uc; }
+                                                    }
+                                                    inner += '<a href="' + urlEsc + '">' + textEsc + '</a>';
+                                                    i2 = pUrl; /* jump to the closing parenthesis ) */
+                                                    continue;
+                                                }
+                                            }
+                                        }
+                                        /* if we get here, we don't have a well-formed link → treat '[' as a normal escaped character */
+                                        if (ch === '&')      { inner += '&amp;'; }
+                                        else if (ch === '<') { inner += '&lt;'; }
+                                        else if (ch === '>') { inner += '&gt;'; }
+                                        else                 { inner += ch; }
+                                        continue;
+                                    }
+
+                                    if (!code && ch === '*' && next === '*') {
+                                        bold = !bold; inner += (bold ? '<strong>' : '</strong>'); i2++; continue;
+                                    }
+                                    if (!code && ch === '*') {
+                                        italic = !italic; inner += (italic ? '<em>' : '</em>'); continue;
+                                    }
+                                    if (ch === '`') {
+                                        code = !code; inner += (code ? '<code>' : '</code>'); continue;
+                                    }
+
+                                    /* Minimal character escape */
+                                    if (ch === '&')      { inner += '&amp;'; }
+                                    else if (ch === '<') { inner += '&lt;'; }
+                                    else if (ch === '>') { inner += '&gt;'; }
+                                    else                 { inner += ch; }
+                                }
+
+                                /* Close html tags if markdown not closed */
+                                if (code)   { inner += '</code>'; }
+                                if (italic) { inner += '</em>'; }
+                                if (bold)   { inner += '</strong>'; }
+
+                                /* Generate the line : title h1..h4 or normal line + <br> */
+                                if (isHeading) {
+                                    var tag = (hLevel === 1 ? 'h1' : (hLevel === 2 ? 'h2' : (hLevel === 3 ? 'h3' : 'h4')));
+                                    descHtml += '<' + tag + '>' + inner + '</' + tag + '>';
+                                } else {
+                                    if (inner === '') { descHtml += '<br>'; }
+                                    else { descHtml += inner + '<br>'; }
+                                }
+                            }
+
+                            /* Labels CSV string "label1, label2, ..." */
+                            var labelsCsv = '';
+                            if (inst && inst.labels && inst.labels.length) {
+                                for (var li=0; li<inst.labels.length; li++) {
+                                    if (li > 0) { labelsCsv += ', '; }
+                                    labelsCsv += inst.labels[li];
+                                }
+                            }
+                        %>
+
+                        <!-- Card -->
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px; border:0px solid #ffffff; border-radius:8px;">
+                            <tr>
+                                <td style="padding:16px;">
+                                    <h2 style="margin:0 0 6px; font-size:16px; line-height:1.35; color:#00020C;"><%= title %></h2>
+                                    <p style="margin:0 0 12px; font-size:13px; line-height:1.6; color:#333;"><%= descHtml %></p>
+
+                                    <!-- CTA Button (bulletproof, Outlook-friendly) -->
+                                    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+                                        <tr>
+                                            <td align="left">
+                                                <!--[if mso]>
+                              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="https://testing.octi.staging.filigran.io/dashboard/id/<%= rid %>"
+                                style="height:40px;v-text-anchor:middle;width:200px;" arcsize="10%" strokecolor="#9DBCB0" fillcolor="#9DBCB0">
+                                <w:anchorlock/>
+                                <center style="color:#ffffff; font-family:Century Gothic; font-size:14px; font-weight:bold;">
+                                  View in OpenCTI
+                                </center>
+                              </v:roundrect>
+                              <![endif]-->
+                                                <!--[if !mso]><!-- -->
+                                                <a href="https://testing.octi.staging.filigran.io/dashboard/id/<%= rid %>"
+                                                   style="display:inline-block; background:#9DBCB0; border:0px solid #9DBCB0; border-radius:6px; padding:10px 16px; text-decoration:none;
+                                        font-size:14px; font-weight:bold; color:#ffffff; font-family:Century Gothic">
+                                                    View in OpenCTI
+                                                </a>
+                                                <!--<![endif]-->
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </td>
+                            </tr>
+                            <!-- Accent divider -->
+                            <tr>
+                                <td style="height:3px; background:#9DBCB0;"></td>
+                            </tr>
+                        </table>
+
+                        <% } %> <!-- end unique reports -->
+
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="padding:16px 24px 22px 24px; background:#f8faff; font-family:Century Gothic; border-top:1px solid #e5e9f2;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td style="font-size:12px; color:#5f6b7a;">
+                                    <b>TLP AMBER+STRICT</b> -- Recipients may only share TLP: AMBER+STRICT information with
+                                    members of their own organization who need to know, and only as widely as necessary to act
+                                    on that information.
+                                    <br>
+                                    <br>
+                                    This weekly digest has been produced with love from your CTI Team
+                                </td>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+</table>
+<!-- /Container -->
+</td>
+</tr>
+</table>
+<!-- /Wrapper -->
+</body>
+</html>
