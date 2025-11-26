@@ -4,8 +4,10 @@ import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
+import EEChip from '@components/common/entreprise_edition/EEChip';
 import RoleEditionOverview from './RoleEditionOverview';
 import RoleEditionCapabilities, { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -44,6 +46,7 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
   const [currentTab, setCurrentTab] = useState(0);
   const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
   const role = useFragment<RoleEdition_role$key>(RoleEditionFragment, roleRef);
+  const isEnterpriseEdition = useEnterpriseEdition();
 
   const UpdateRoleControlledDial = (props: DrawerControlledDialProps) => (
     <EditEntityControlledDial
@@ -68,7 +71,15 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
             <Tab label={t_i18n('Overview')} />
             <Tab label={t_i18n('Capabilities')} />
             {/* TODO: EEChip */}
-            <Tab label={t_i18n('Capabilities in Drafts')} />
+            <Tab
+              disabled={!isEnterpriseEdition}
+              label={
+                <Box>
+                  {t_i18n('Capabilities in Draft')}
+                  <EEChip clickable={false} />
+                </Box>
+              }
+            />
           </Tabs>
         </Box>
         {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
