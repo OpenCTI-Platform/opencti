@@ -53,6 +53,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import {
   applyOrganizationRestriction,
   BYPASS,
+  CAPABILITIES_IN_DRAFT_NAMES,
   executionContext,
   FilterMembersMode,
   filterMembersWithUsersOrgs,
@@ -73,7 +74,7 @@ import { defaultMarkingDefinitionsFromGroups, findGroupPaginated as findGroups }
 import { addIndividual } from './individual';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
-import { extractFilterKeys, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
+import { addFilter, extractFilterKeys, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import { testFilterGroup, testStringFilter } from '../utils/filtering/boolean-logic-engine';
 import { computeUserEffectiveConfidenceLevel } from '../utils/confidence-level';
 import { STATIC_NOTIFIER_EMAIL, STATIC_NOTIFIER_UI } from '../modules/notifier/notifier-statics';
@@ -463,8 +464,14 @@ export const findRoles = (context, user, args) => {
 };
 
 export const findCapabilities = async (context, user, args, relationship_type = RELATION_HAS_CAPABILITY) => {
-  const finalArgs = R.assoc('orderBy', 'attribute_order', args);
-  return await pageRegardingEntitiesConnection(context, user, null, relationship_type, [ENTITY_TYPE_CAPABILITY], false, finalArgs);
+  const filters = relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT
+    ? addFilter(args.filters, 'name', CAPABILITIES_IN_DRAFT_NAMES)
+    : args.filters;
+  return await pageEntitiesConnection(context, user, [ENTITY_TYPE_CAPABILITY], {
+    ...args,
+    filters,
+    orderBy: 'attribute_order'
+  });
 };
 
 export const roleDelete = async (context, user, roleId) => {
