@@ -2069,6 +2069,7 @@ const buildChanges = (entityType, inputs) => {
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
     const isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
     if (isMultiple) {
+      if (Array.isArray(previous) && Array.isArray(value)) { // TODO this is to avoid crash with auth members when value === {"access_right":"view","id":"79b4813f-e7bf-427d-b11c-061fd8059d92"}
       if (previous.length > 0 && value.length === 0) { // REMOVE
         changes.push({
           field,
@@ -2086,7 +2087,7 @@ const buildChanges = (entityType, inputs) => {
         previous,
         new: value,
       });
-    }
+    }}
   });
   return changes;
 };
