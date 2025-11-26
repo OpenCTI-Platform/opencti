@@ -67,11 +67,16 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
           <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
             <Tab label={t_i18n('Overview')} />
             <Tab label={t_i18n('Capabilities')} />
+            {/* TODO: EEChip */}
+            <Tab label={t_i18n('Capabilities in Drafts')} />
           </Tabs>
         </Box>
         {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
         {currentTab === 1 && queryRef && (
           <RoleEditionCapabilities role={role} queryRef={queryRef} />
+        )}
+        {currentTab === 2 && queryRef && (
+          <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />
         )}
       </>)
         : (<Loader />)}
