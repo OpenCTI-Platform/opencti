@@ -838,15 +838,22 @@ const PlaybookAddComponentsContent = ({
                     );
                   }
                   if (v.type === 'boolean') {
+                    let helperText = '';
+                    if (v.$ref === 'An entity is linked to an entity from a selected PIR') {
+                      helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
+                    }
                     return (
-                      <Field
-                        key={k}
-                        component={SwitchField}
-                        type="checkbox"
-                        name={k}
-                        label={t_i18n(v.$ref ?? k)}
-                        containerstyle={{ marginTop: 20 }}
-                      />
+                      <>
+                        <Field
+                          key={k}
+                          component={SwitchField}
+                          type="checkbox"
+                          name={k}
+                          label={t_i18n(v.$ref ?? k)}
+                          containerstyle={{ marginTop: 20 }}
+                          helpertext={helperText}
+                        />
+                      </>
                     );
                   }
                   if (v.type === 'string' && v.oneOf) {
