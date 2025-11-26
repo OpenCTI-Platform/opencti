@@ -135,8 +135,8 @@ describe('listenPirEventsUtils', () => {
       const result = await isEventInPirRelationshipMatchPir(
         randomContext,
         randomEventInPir.data,
-        randomPirList,
         { create: true } as PirStreamConfiguration,
+        randomPirList,
       );
       expect(result).toBeTruthy();
       expect(stixFiltering.isStixMatchFilterGroup).toHaveBeenCalled();
@@ -148,8 +148,8 @@ describe('listenPirEventsUtils', () => {
       const result = await isEventInPirRelationshipMatchPir(
         randomContext,
         randomEventInPir.data,
-        randomPirList,
         { create: true } as PirStreamConfiguration,
+        randomPirList,
       );
       expect(result).toBeFalsy();
       expect(stixFiltering.isStixMatchFilterGroup).toHaveBeenCalled();
