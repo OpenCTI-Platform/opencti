@@ -53,6 +53,14 @@ interface StreamDataEvent extends BaseEvent {
   noHistory?: boolean;
 }
 
+interface Change {
+  field: string;
+  previous?: string;
+  new?: string;
+  added?: Array<string>;
+  removed?: Array<string>;
+}
+
 interface UpdateEvent extends StreamDataEvent {
   type: 'update';
   commit: CommitContext | undefined;
@@ -60,7 +68,8 @@ interface UpdateEvent extends StreamDataEvent {
     patch: Array<Operation>;
     reverse_patch: Array<Operation>;
     related_restrictions?: { markings: string[] };
-    pir_ids?: string[]
+    pir_ids?: string[];
+    changes: Change[];
   };
 }
 
