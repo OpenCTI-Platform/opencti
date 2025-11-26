@@ -54,8 +54,6 @@ import { registerConnectorQueues, unregisterConnector } from '../../database/rab
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import { findFiltersFromKey } from '../../utils/filtering/filtering-utils';
-import { findFiltersFromKey, checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
-import { elFindByIds } from '../../database/engine';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import pjson from '../../../package.json';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -146,30 +144,6 @@ export const getPlaybookDefinition = async (context: AuthContext, playbook: Basi
     }
   }
   return playbook.playbook_definition;
-};
-
-const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
-  context: AuthContext,
-  user: AuthUser,
-  input: PlaybookAddNodeInput,
-  userId: string
-) => {
-  if (!input.configuration) {
-    return '{}';
-  }
-  let stringifiedFilters;
-  const config = JSON.parse(input.configuration);
-  if (config.filters) {
-    const filterGroup = JSON.parse(config.filters) as FilterGroup;
-    if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds as FiltersIdsFinder, { noFiltersConvert: true });
-      stringifiedFilters = JSON.stringify(convertedFilters);
-    } else { // our stix matching is currently limited, we need to validate the input filters
-      validateFilterGroupForStixMatch(filterGroup);
-      stringifiedFilters = config.filters;
-    }
-  }
-  return JSON.stringify({ ...config, filters: stringifiedFilters });
 };
 
 export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: string, input: PlaybookAddNodeInput) => {

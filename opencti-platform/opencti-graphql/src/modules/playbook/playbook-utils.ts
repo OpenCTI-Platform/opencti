@@ -12,8 +12,7 @@ import type { FilterGroup, PlaybookAddNodeInput } from '../../generated/graphql'
 import { FILTER_KEYS_WITH_ME_VALUE, ME_FILTER_VALUE } from '../../utils/filtering/filtering-constants';
 import { PLAYBOOK_INTERNAL_DATA_CRON } from './playbook-components';
 import { elFindByIds } from '../../database/engine';
-import type { BasicStoreObject } from '../../types/store';
-import { checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
+import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { validateFilterGroupForStixMatch } from '../../utils/filtering/filtering-stix/stix-filtering';
 import type { ComponentDefinition, LinkDefinition, NodeDefinition } from './playbook-types';
 import { logApp } from '../../config/conf';
@@ -135,8 +134,7 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   if (config.filters) {
     const filterGroup = JSON.parse(config.filters) as FilterGroup;
     if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-      const findIds = elFindByIds as (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>;
-      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, findIds, { noFiltersConvert: true });
+      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds as FiltersIdsFinder, { noFiltersConvert: true });
       stringifiedFilters = JSON.stringify(convertedFilters);
     } else {
       // our stix matching is currently limited, we need to validate the input filters

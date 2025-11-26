@@ -1,6 +1,5 @@
 import React, { Fragment, FunctionComponent } from 'react';
 import { last } from 'ramda';
-import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
@@ -8,7 +7,6 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
-import type { Theme } from '../Theme';
 import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
@@ -166,7 +164,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               filterDefinition={filterDefinition}
               filterOperator={filterOperator}
             />
-            {last(filterValues) !== id && isRegardingOfFilter && (
+            {last(filterValues) !== id && isRegardingOfFilter &&
               <div
                 style={{
                   display: 'inline-block',
@@ -175,13 +173,16 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   margin: '0 2px 0 0',
                   fontFamily: 'Consolas, monaco, monospace',
                 }}
-                onClick={operatorOnClick}>,</div>
-            )}
-            {last(filterValues) !== id && !isRegardingOfFilter && (
+                onClick={operatorOnClick}
+              >
+                ,
+              </div>
+            }
+            {last(filterValues) !== id && !isRegardingOfFilter &&
               <div style={localModeStyle} onClick={operatorOnClick}>
                 {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
               </div>
-            )}
+            }
           </>
         }
       </Fragment>
