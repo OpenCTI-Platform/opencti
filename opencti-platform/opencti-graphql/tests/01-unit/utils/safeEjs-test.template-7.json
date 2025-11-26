@@ -1,0 +1,42 @@
+{
+    "type": "message",
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "content": {
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": [
+                    {
+                        "type": "Container",
+                        "items": [
+                            {
+                                "type": "TextBlock",
+                                "text": "<%=notification.name%>",
+                                "weight": "bolder",
+                                "size": "extraLarge"
+                            }, {
+                                "type": "TextBlock",
+                                "text": "<%=(new Date(notification.created)).toLocaleString()%>",
+                                "size": "medium"
+                            }
+                        ]
+                    },
+                    <% for(var i=0; i<content.length; i++) { %>
+                    {
+                        "type": "Container",
+                        "items": [<% for(var j=0; j<content[i].events.length; j++) { %>
+                            {
+                                "type" : "TextBlock",
+                                "text" : "[<%=content[i].events[j].message%>](https://localhost:3000/dashboard/id/<%=content[i].events[j].instance_id%>)"
+                         	}<% if(j<(content[i].events.length - 1)) {%>,<% } %>
+                        <% } %>]
+		   }<% if(i<(content.length - 1)) {%>,<% } %>
+                    <% } %>
+                ]
+            }
+        }
+    ],
+   "dataString": <%-JSON.stringify(notification)%>
+}
