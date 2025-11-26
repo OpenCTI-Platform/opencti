@@ -60,9 +60,10 @@ export const listOfPirInEntity = async (context: AuthContext, entityId: string) 
 export const isEventInPirRelationshipMatchPir = async (
   context: AuthContext,
   eventData: StreamDataEvent,
+  config: PirStreamConfiguration,
   pirList?: { value: string }[]
 ) => {
-  if (isEventInPirRelationship(eventData)) {
+  if (isEventInPirRelationship(eventData) && (config.create || config.delete)) {
     // If entity is flagged and no PIR filtering set, it matches.
     if (!pirList || pirList.length === 0) return true;
 
@@ -89,9 +90,10 @@ export const isEventInPirRelationshipMatchPir = async (
 export const isUpdateEventMatchPir = async (
   context: AuthContext,
   eventData: StreamDataEvent,
+  config: PirStreamConfiguration,
   pirList?: { value: string }[]
 ) => {
-  if (isEventUpdateOnEntity(eventData)) {
+  if (isEventUpdateOnEntity(eventData) && config.update) {
     const entityPirList = await listOfPirInEntity(context, eventData.data.id);
     if (entityPirList.length > 0) {
       // If entity is flagged and no PIR filtering set, it matches.
@@ -113,9 +115,10 @@ export const isUpdateEventMatchPir = async (
  */
 export const stixIdOfLinkedEntity = (
   eventData: StreamDataEvent,
-  pirList?: { value: string }[]
+  config: PirStreamConfiguration,
+  pirList?: { value: string }[],
 ) => {
-  if (isEventCreateRelationship(eventData) && isStixRelation(eventData.data)) {
+  if (isEventCreateRelationship(eventData) && isStixRelation(eventData.data) && config.create_rel) {
     const { source_ref_pir_refs, target_ref_pir_refs } = eventData.data.extensions[STIX_EXT_OCTI];
     // In case no PIR is selected, it means any PIR.
     if (!pirList || pirList.length === 0) {
@@ -167,9 +170,9 @@ export const listenPirEvents = async (
   // Check that event type matches the active toggles of the config.
   if (isValidEventType(type, configuration)) {
     let stixEntity: StixObject | undefined;
-    const isInPirRel = await isEventInPirRelationshipMatchPir(context, streamEvent.data, inPirFilters);
-    const isUpdateEvent = await isUpdateEventMatchPir(context, streamEvent.data, inPirFilters);
-    const stixIdLinked = stixIdOfLinkedEntity(streamEvent.data, inPirFilters);
+    const isInPirRel = await isEventInPirRelationshipMatchPir(context, streamEvent.data, configuration, inPirFilters);
+    const isUpdateEvent = await isUpdateEventMatchPir(context, streamEvent.data, configuration, inPirFilters);
+    const stixIdLinked = stixIdOfLinkedEntity(streamEvent.data, configuration, inPirFilters);
 
     if (isInPirRel && isStixRelation(data)) {
       // Event on relationship in-pir.
