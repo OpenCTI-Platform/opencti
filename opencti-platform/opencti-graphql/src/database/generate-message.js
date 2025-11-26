@@ -157,7 +157,7 @@ const buildUpdateMessageForPatchOperation = (operationType, patchOperation, enti
 
   let message = `\`${messageForValues}\``;
   if (operationType === 'replace') {
-    message = `\`${messageForValues}\``;
+    message = `\`${truncate(messageForValues)}\``;
   }
   message += ` in \`${keyName}\``;
   if (valuesArray.length > MAX_DISPLAYED_VALUES) {
