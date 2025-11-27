@@ -53,9 +53,9 @@ const authorizeGlobals = {
   Boolean: true,
   Number: true,
   BigInt: true,
-  Date: true, // TODO proxy date object to avoid side channel attack, eg round the second
+  Date: true,
   String: true,
-  RegExp: true, // TODO check how to enforce safe regexp in order to avoid ReDoS
+  RegExp: true,
   JSON: true,
   Math: true,
   Infinity: true,
@@ -110,10 +110,6 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
       },
 
     [safeName('property')]: (propertyName: unknown) => {
-      // const type = typeof propertyName;
-      // if (type !== 'string' && type !== 'number' && type !== 'symbol') {
-      //   throw new VerifierIllegalAccessError(`Invalid property key type ${JSON.stringify({ propertyName, type })}`);
-      // }
       if (typeof propertyName === 'string' && (propertyName.startsWith(safeReservedPrefix) || forbiddenProperties.has(propertyName))) {
         throw new VerifierIllegalAccessError(`Forbidden property access ${JSON.stringify({ propertyName })}`);
       }
