@@ -211,26 +211,42 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
         continue;
       }
       
-      if (['=', '_', '-'].includes(template[startPos])) {
+      if (template[startPos] === '=') {
         startPos += 1;
       }
-      pos = template.indexOf(closeTag, startPos);
+      
+      const hasStartWhitespaceControl = ['_', '-'].includes(template[startPos]);
+      let codeStartPos = startPos;
+      if (hasStartWhitespaceControl) {
+        codeStartPos += 1;
+      }
+      
+      pos = template.indexOf(closeTag, codeStartPos);
       if (pos === -1) {
         throw new VerifierParsingError('Unable to parse EJS template, missing close tag');
       }
 
-      let endPos = pos;
-      if (['_', '-'].includes(template[endPos - 1])) {
-        endPos -= 1;
+      const hasEndWhitespaceControl = ['_', '-'].includes(template[pos - 1]);
+      let codeEndPos = pos;
+      if (hasEndWhitespaceControl) {
+        codeEndPos -= 1;
       }
 
       if (startPos > processedPos) {
         pushFragment(template.substring(processedPos, startPos), false);
       }
+      
+      if (hasStartWhitespaceControl) {
+        pushFragment(template[startPos], false);
+      }
 
-      pushFragment(template.substring(startPos, endPos), true);
+      pushFragment(template.substring(codeStartPos, codeEndPos), true);
 
-      processedPos = endPos;
+      if (hasEndWhitespaceControl) {
+        pushFragment(template[codeEndPos], false);
+      }
+
+      processedPos = pos;
     }
   }
 
