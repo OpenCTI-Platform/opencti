@@ -21,6 +21,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { resolveUserIndividual } from '../domain/user';
@@ -33,6 +34,9 @@ const checkUserAccess = async (context, user, id) => {
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
   const opinion = await findById(context, user, id);
+  if (!opinion) {
+    return;
+  }
   const isCreator = opinion[RELATION_CREATED_BY] ? opinion[RELATION_CREATED_BY] === user.individual_id : false;
   const isCollaborationAllowed = userCapabilities.includes(KNOWLEDGE_COLLABORATION) && isCreator;
   const accessGranted = isAuthorized || isCollaborationAllowed;
@@ -73,7 +77,7 @@ const opinionResolvers = {
     opinionEdit: (_, { id }, context) => ({
       delete: async () => {
         await checkUserAccess(context, context.user, id);
-        return stixDomainObjectDelete(context, context.user, id);
+        return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_OPINION);
       },
       fieldPatch: async ({ input, commitMessage, references }) => {
         await checkUserAccess(context, context.user, id);

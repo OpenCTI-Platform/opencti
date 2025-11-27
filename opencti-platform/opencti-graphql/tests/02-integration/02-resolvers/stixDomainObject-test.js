@@ -1,9 +1,12 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import Upload from 'graphql-upload/Upload.mjs';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { fileToReadStream } from '../../../src/database/file-storage';
 import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
+import { addTool } from '../../../src/domain/tool';
+import { addMalware } from '../../../src/domain/malware';
+import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 const LIST_QUERY = gql`
   query stixDomainObjects(
@@ -382,8 +385,27 @@ describe('StixDomainObject resolver standard behavior', () => {
       variables: { id: stixDomainObjectInternalId },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainObjectStixId } });
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: stixDomainObjectStixId } });
     expect(queryResult).not.toBeNull();
+    expect(queryResult.data.stixDomainObject).toBeNull();
+  });
+
+  it('should several stixDomainObject deleted at once', async () => {
+    const newTool = await addTool(testContext, ADMIN_USER, {name: 'SDO delete test Tool'});
+    const newMalware = await addMalware(testContext, ADMIN_USER, {name: 'SDO delete test Malware'});
+
+    const DELETE_LIST_QUERY = gql`
+      mutation stixDomainObjectsDelete($id: [ID]!) {
+          stixDomainObjectsDelete(id: $id)
+      }
+    `;
+    // Delete the stixDomainObject
+    await queryAsAdmin({
+      query: DELETE_LIST_QUERY,
+      variables: { id: [newTool.id, newMalware.id] },
+    });
+    // Verify is no longer found
+    const queryResult = await queryAsAdminWithSuccess({ query: READ_QUERY, variables: { id: stixDomainObjectStixId } });
     expect(queryResult.data.stixDomainObject).toBeNull();
   });
 });

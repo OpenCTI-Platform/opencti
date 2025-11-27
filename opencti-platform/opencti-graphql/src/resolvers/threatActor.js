@@ -3,11 +3,12 @@ import { addThreatActorGroup, findThreatActorGroupPaginated, findById as groupFi
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../schema/stixDomainObject';
 
 const threatActorGroupResolvers = {
   Query: {
@@ -29,7 +30,7 @@ const threatActorGroupResolvers = {
   Mutation: {
     threatActorGroupAdd: (_, { input }, context) => addThreatActorGroup(context, context.user, input),
     threatActorGroupEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_THREAT_ACTOR_GROUP),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

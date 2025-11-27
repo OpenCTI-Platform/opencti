@@ -149,7 +149,7 @@ export const reportDeleteWithElements = async (context, user, reportId) => {
     await internalDeleteElementById(context, context.user, object.id, object.entity_type);
   }
   // Delete the report
-  await stixDomainObjectDelete(context, user, reportId);
+  await stixDomainObjectDelete(context, user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
   return reportId;
 };
 export const reportDeleteElementsCount = async (context, user, reportId) => {

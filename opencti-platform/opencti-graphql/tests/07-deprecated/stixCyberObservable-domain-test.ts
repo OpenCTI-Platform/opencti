@@ -5,6 +5,7 @@ import { promoteObservableToIndicator as promoteObservableToIndicator_deprecated
 import { ADMIN_USER, testContext } from '../utils/testQuery';
 import { stixDomainObjectDelete } from '../../src/domain/stixDomainObject';
 import { queryAsAdminWithSuccess } from '../utils/testQueryHelper';
+import { ENTITY_TYPE_INDICATOR } from '../../src/modules/indicator/indicator-types';
 
 const LIST_QUERY = gql`
   query indicators(
@@ -52,6 +53,6 @@ describe('stixCyberObservable deprecated API [>=6.2 & <6.8]', () => {
 
     // cleanup
     await stixCyberObservableDelete(testContext, ADMIN_USER, observable.id);
-    await stixDomainObjectDelete(testContext, ADMIN_USER, createdIndicatorId);
+    await stixDomainObjectDelete(testContext, ADMIN_USER, createdIndicatorId, ENTITY_TYPE_INDICATOR);
   });
 });

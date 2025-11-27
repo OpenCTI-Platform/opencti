@@ -3,6 +3,7 @@ import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addCaseIncident, caseIncidentContainsStixObjectOrStixRelationship, findCaseIncidentPaginated, findById } from './case-incident-domain';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from './case-incident-types';
 import { findSecurityCoverageByCoveredId } from '../../securityCoverage/securityCoverage-domain';
 
 const caseIncidentResolvers: Resolvers = {
@@ -25,7 +26,7 @@ const caseIncidentResolvers: Resolvers = {
       return addCaseIncident(context, context.user, input);
     },
     caseIncidentDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
     },
   },
 };
