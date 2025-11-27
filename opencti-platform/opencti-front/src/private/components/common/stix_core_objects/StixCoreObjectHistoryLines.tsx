@@ -123,7 +123,6 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                       node={log}
                       isRelation={isRelationLog}
                     />
-
                   </ListItemButton>
                   <HistoryDrawer
                     key={log.id}
