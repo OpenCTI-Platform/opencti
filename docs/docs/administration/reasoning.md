@@ -76,7 +76,23 @@ The rules engine comprises a set of predefined rules (named inference rules) tha
 |:--------------------------------------------------------------------------------|:---------------------------------------------|
 | A User is affiliated with an Organization B, which is part of an Organization C | The User is affiliated to the Organization C |
 
-![Organisation_via_participation](assets/organisation_via_participation.png)
+![Organization_via_participation](assets/organisation_via_participation.png)
+
+#### Usage propagation of parent techniques
+
+| Conditions                                                                     | Creations                      |
+|:-------------------------------------------------------------------------------|:-------------------------------|
+| An Entity A uses an Entity B and the Entity B is a subtechnique of an Entity C | The Entity A uses the Entity C |
+
+![Usage_propagation_of_parent_techniques](assets/usage_propagation_of_parent_techniques.png)
+
+#### Usage propagation via attribution
+
+| Conditions                                                                 | Creations                      |
+|:---------------------------------------------------------------------------|:-------------------------------|
+| An Entity A uses an Entity B and the Entity A is attributed to an Entity C | The Entity C uses the Entity B |
+
+![Usage_propagation_via attribution](assets/usage_propagation_via_attribution.png)
 
 #### Identities propagation in reports
 
@@ -85,6 +101,14 @@ The rules engine comprises a set of predefined rules (named inference rules) tha
 | A Report contains an Identity B and this Identity B is part of an Identity C | The Report contains Identity C, as well as the Relationship between Identity B and Identity C |
 
 ![Identities_propagation](assets/identities_propagation.png)
+
+#### Indicators propagation in reports
+
+| Conditions                                                                         | Creations                                                                                         |
+|:-----------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------|
+| A Report contains an observable B and an Indicator C is based on this Observable B | The Report contains Indicator C, as well as the Relationship between Indicator C and Observable B |
+
+![Indicators_propagation_report](assets/indicators_propagation_report.png)
 
 #### Locations propagation in reports
 
@@ -102,13 +126,13 @@ The rules engine comprises a set of predefined rules (named inference rules) tha
 
 ![Observables_propagation](assets/observables_propagation.png)
 
-#### Usage propagation via attribution
+#### Relation propagation testing rule
 
-| Conditions                                               | Creations                      |
-|:---------------------------------------------------------|:-------------------------------|
-| An Entity A, attributed to an Entity C, uses an Entity B | The Entity C uses the Entity B |
+| Conditions                                                                       | Creations                               |
+|:---------------------------------------------------------------------------------|:----------------------------------------|
+| An Entity A is related to an Entity B and the Entity B is related to an Entity C | The Entity A is related to the Entity C |
 
-![Usage_propagation](assets/usage_propagation.png)
+![Relation_propagation_testing_rule](assets/relation_propagation_testing_rule.png)
 
 #### Inference of targeting via a sighting
 
@@ -136,17 +160,17 @@ The rules engine comprises a set of predefined rules (named inference rules) tha
 
 #### Targeting propagation via location
 
-| Conditions                                                                    | Creations                         |
-|:------------------------------------------------------------------------------|:----------------------------------|
-| An Entity targets a Location B and this Location B is located at a Location C | The Entity targets the Location C |
+| Conditions                                                                 | Creations                           |
+|:---------------------------------------------------------------------------|:------------------------------------|
+| An Entity targets an Entity B and this Entity B is located at a Location C | The Entity A targets the Location C |
 
 ![Targeting_via_location](assets/targeting_via_location.png)
 
 #### Targeting propagation when located
 
-| Conditions                                                                | Creations                           |
-|:--------------------------------------------------------------------------|:------------------------------------|
-| An Entity A targets an Entity B and this target is located at Location D. | The Entity A targets the Location D |
+| Conditions                                                                  | Creations                           |
+|:----------------------------------------------------------------------------|:------------------------------------|
+| An Entity A targets an Entity B and this Entity B is located at Location D | The Entity A targets the Location D |
 
 ![Targeting_when_located](assets/targeting_when_located.png)
 
