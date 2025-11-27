@@ -15,8 +15,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import ReactFlow from 'reactflow';
 import { graphql, useFragment } from 'react-relay';
-import PlaybookAddComponents from '@components/data/playbooks/PlaybookAddComponents';
-import PlaybookFlowDeleteNode from '@components/data/playbooks/playbookFlow/PlaybookFlowDeleteNode';
+import PlaybookFlowAddComponents from './PlaybookFlowAddComponents';
+import PlaybookFlowDeleteNode from './PlaybookFlowDeleteNode';
 import useManipulateComponents from '../hooks/useManipulateComponents';
 import { addPlaceholders, computeEdges, computeNodes } from '../utils/playbook';
 import useLayout from '../hooks/useLayout';
@@ -113,7 +113,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
         zoomOnDoubleClick={false}
         proOptions={proOptions}
       />
-      <PlaybookAddComponents
+      <PlaybookFlowAddComponents
         action={action}
         setSelectedNode={setSelectedNode}
         setSelectedEdge={setSelectedEdge}

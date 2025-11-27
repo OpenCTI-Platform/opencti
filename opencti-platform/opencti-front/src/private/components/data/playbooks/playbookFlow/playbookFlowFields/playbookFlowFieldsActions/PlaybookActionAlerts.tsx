@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import { Alert } from '@mui/material';
 import { useFormatter } from '../../../../../../../components/i18n';
 import { PlaybookUpdateAction } from './playbookAction-types';
@@ -6,7 +21,6 @@ interface ActionAlertsProps {
   action: PlaybookUpdateAction
 }
 
-// Internal component to display an alert at the top of the actions form.
 const PlaybookActionAlerts = ({ action }: ActionAlertsProps) => {
   const { t_i18n } = useFormatter();
 

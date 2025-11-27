@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2025 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Enterprise Edition License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import { CancelOutlined, AddOutlined } from '@mui/icons-material';
 import { IconButton, MenuItem, Button, Grid2 as Grid } from '@mui/material';
 import { Field, FieldArray, useFormikContext } from 'formik';
@@ -57,11 +72,7 @@ const PlaybookFlowFieldActions = ({
                     aria-label="Delete"
                     disabled={values.actions.length === 1}
                     onClick={() => arrayHelpers.remove(i)}
-                    sx={{
-                      position: 'absolute',
-                      top: -18,
-                      right: -18,
-                    }}
+                    sx={{ position: 'absolute', top: -18, right: -18 }}
                   >
                     <CancelOutlined fontSize="small" />
                   </IconButton>
