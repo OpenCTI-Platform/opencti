@@ -3410,8 +3410,8 @@ export type Change = {
   __typename?: 'Change';
   added?: Maybe<Array<Scalars['String']['output']>>;
   field: Scalars['String']['output'];
-  new?: Maybe<Scalars['String']['output']>;
-  previous?: Maybe<Scalars['String']['output']>;
+  new?: Maybe<Array<Scalars['String']['output']>>;
+  previous?: Maybe<Array<Scalars['String']['output']>>;
   removed?: Maybe<Array<Scalars['String']['output']>>;
 };
 
@@ -38730,8 +38730,8 @@ export type CatalogEdgeResolvers<ContextType = any, ParentType extends Resolvers
 export type ChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Change'] = ResolversParentTypes['Change']> = ResolversObject<{
   added?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  new?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  previous?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  new?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  previous?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   removed?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
 }>;
 
