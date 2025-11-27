@@ -139,7 +139,6 @@ import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_VULNERABILITY,
   isStixDomainObjectIdentity,
@@ -152,14 +151,13 @@ import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
 import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
-import { FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
+import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { elUpdateRemovedFiles } from './file-search';
 import {
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
   executionContext,
-  INTERNAL_USERS,
   isBypassUser,
   isMarkingAllowed,
   isOrganizationAllowed,
@@ -200,6 +198,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
+import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, getKeyValuesFromPatchElements } from './generate-message';
 import {
   authorizedMembers,
@@ -210,7 +209,6 @@ import {
   iAttributes,
   modified,
   updatedAt,
-  xOpenctiStixIds
 } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { FilterMode, FilterOperator, Version } from '../generated/graphql';
@@ -240,7 +238,6 @@ import { idLabel } from '../schema/schema-labels';
 import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
 import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
-import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 
 // region global variables
@@ -2021,10 +2018,6 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   };
 };
 
-const computeDateFromEventId = (context) => {
-  return utcDate(parseInt(context.eventId.split('-')[0], 10)).toISOString();
-};
-
 export const generateUpdateMessage = async (context, user, entityType, inputs) => {
   const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
   const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
@@ -2346,7 +2339,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
         const uniqImpactKey = uniqImpactKeys[i];
         attributesMap.set(uniqImpactKey, {
           name: uniqImpactKey,
-          updated_at: context?.eventId ? computeDateFromEventId(context) : now(),
+          updated_at: context?.eventId ? computeDateFromEventId(context.eventId) : now(),
           confidence: confidenceLevelToApply,
           user_id: user.internal_id,
         });
@@ -2654,48 +2647,6 @@ const validateEntityAndRelationCreation = async (context, user, input, type, ent
   }
 };
 
-const ALIGN_OLDEST = 'oldest';
-const ALIGN_NEWEST = 'newest';
-const computeExtendedDateValues = (newValue, currentValue, mode) => {
-  const newValueDate = moment(newValue);
-  if (isNotEmptyField(currentValue)) {
-    const currentValueDate = moment(currentValue);
-    if (mode === ALIGN_OLDEST) {
-      if (newValueDate.isBefore(currentValueDate)) {
-        return { updated: true, date: newValueDate.utc().toISOString() };
-      }
-      return { updated: false, date: currentValueDate.utc().toISOString() };
-    }
-    if (mode === ALIGN_NEWEST) {
-      if (newValueDate.isAfter(currentValueDate)) {
-        return { updated: true, date: newValueDate.utc().toISOString() };
-      }
-      return { updated: false, date: currentValueDate.utc().toISOString() };
-    }
-  }
-  return { updated: true, date: newValueDate.utc().toISOString() };
-};
-const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => {
-  const inputs = [];
-  const fieldKey = attribute.name;
-  if (attribute.multiple) {
-    const operation = isFullSync ? UPDATE_OPERATION_REPLACE : UPDATE_OPERATION_ADD;
-    // Only add input in case of replace or when we really need to add something
-    if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
-      inputs.push({ key: fieldKey, value: inputData ?? [], operation });
-    }
-  } else if (isObjectAttribute(fieldKey)) {
-    if (isNotEmptyField(inputData)) {
-      const mergedDict = R.mergeAll([currentData, inputData]);
-      inputs.push({ key: fieldKey, value: [mergedDict] });
-    } else if (isFullSync) { // We only allowed removal for full synchronization
-      inputs.push({ key: fieldKey, value: [inputData] });
-    }
-  } else {
-    inputs.push({ key: fieldKey, value: [inputData] });
-  }
-  return inputs;
-};
 const buildRelationDeduplicationFilters = (input) => {
   const filters = [];
   const { from, relationship_type: relationshipType, createdBy } = input;
@@ -2760,22 +2711,6 @@ const buildRelationDeduplicationFilters = (input) => {
   return filters;
 };
 
-const isOutdatedUpdate = (context, element, attributeKey) => {
-  if (context.eventId) {
-    const attributesMap = new Map((element[iAttributes.name] ?? []).map((obj) => [obj.name, obj]));
-    const { updated_at: lastAttributeUpdateDate } = attributesMap.get(attributeKey) ?? {};
-    if (lastAttributeUpdateDate) {
-      try {
-        const eventDate = computeDateFromEventId(context);
-        return utcDate(lastAttributeUpdateDate).isAfter(eventDate);
-      } catch (_e) {
-        logApp.error('Error evaluating event id', { key: attributeKey, event_id: context.eventId });
-      }
-    }
-  }
-  return false;
-};
-
 const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
   // -- Independent update
   let resolvedElement = element;
@@ -2785,196 +2720,15 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
       throw FunctionalError('Cant find element to resolve', { id: element?.internal_id });
     }
   }
-  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const updatePatch = { ...basePatch };
-  const { confidenceLevelToApply, isConfidenceMatch, isConfidenceUpper } = controlUpsertInputWithUserConfidence(user, updatePatch, resolvedElement);
-  // Handle attributes updates
-  if (isNotEmptyField(basePatch.stix_id) || isNotEmptyField(basePatch.x_opencti_stix_ids)) {
-    const possibleNewStandardId = generateStandardId(type, basePatch);
-    const isStandardWillChange = resolvedElement.standard_id !== possibleNewStandardId;
-    const rejectedIds = isStandardWillChange && isConfidenceMatch ? [resolvedElement.standard_id, possibleNewStandardId] : [resolvedElement.standard_id];
-    const ids = [...(basePatch.x_opencti_stix_ids || [])];
-    if (isNotEmptyField(basePatch.stix_id) && !rejectedIds.includes(basePatch.stix_id) && !ids.includes(basePatch.stix_id)) {
-      ids.push(basePatch.stix_id);
-    }
-    if (ids.length > 0) {
-      updatePatch.x_opencti_stix_ids = ids;
-    }
-  }
-  // Cumulate creator id
-  if (!INTERNAL_USERS[user.id] && !user.no_creators) {
-    updatePatch.creator_id = [user.id];
-  }
-  // Handle "modified" upsert
-  // Only upsert modified if after the existing one
-  if (isNotEmptyField(updatePatch.modified)) {
-    const { date: alignedModified } = computeExtendedDateValues(updatePatch.modified, resolvedElement.modified, ALIGN_NEWEST);
-    updatePatch.modified = alignedModified;
-  }
-  // Upsert observed data count and times extensions
-  if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
-    const { date: cFo, updated: isCFoUpdated } = computeExtendedDateValues(updatePatch.first_observed, resolvedElement.first_observed, ALIGN_OLDEST);
-    const { date: cLo, updated: isCLoUpdated } = computeExtendedDateValues(updatePatch.last_observed, resolvedElement.last_observed, ALIGN_NEWEST);
-    updatePatch.first_observed = cFo;
-    updatePatch.last_observed = cLo;
-    // Only update number_observed if part of the relation dates change
-    if (isCFoUpdated || isCLoUpdated) {
-      updatePatch.number_observed = resolvedElement.number_observed + updatePatch.number_observed;
-    }
-  }
-  if (type === ENTITY_TYPE_INDICATOR) {
-    if (resolvedElement.decay_applied_rule) {
-      // Do not compute decay again when:
-      // - base score does not change
-      // - same userIs has already updated to the same score previously
-      const isScoreInUpsertSameAsBaseScore = updatePatch.decay_base_score === resolvedElement.decay_base_score && updatePatch.decay_base_score === resolvedElement.x_opencti_score;
-      const hasSameScoreChangedBySameSource = hasSameSourceAlreadyUpdateThisScore(user.id, updatePatch.x_opencti_score, resolvedElement.decay_history);
-      if (isScoreInUpsertSameAsBaseScore || hasSameScoreChangedBySameSource) {
-        logApp.debug(`[OPENCTI][DECAY] on upsert indicator skip decay, do not change score, keep:${resolvedElement.x_opencti_score}`, { elementScore: resolvedElement.x_opencti_score, patchScore: updatePatch.x_opencti_score, isScoreInUpsertSameAsBaseScore, hasSameScoreChangedBySameSource });
-        // don't reset score, valid_from & valid_until
-        updatePatch.x_opencti_score = resolvedElement.x_opencti_score; // don't change the score
-        updatePatch.valid_from = resolvedElement.valid_from;
-        updatePatch.valid_until = resolvedElement.valid_until;
-        // don't reset decay attributes
-        updatePatch.revoked = resolvedElement.revoked;
-        updatePatch.decay_base_score_date = resolvedElement.decay_base_score_date;
-        updatePatch.decay_applied_rule = resolvedElement.decay_applied_rule;
-        updatePatch.decay_history = []; // History is multiple, forcing to empty array will prevent any modification
-        updatePatch.decay_next_reaction_date = resolvedElement.decay_next_reaction_date;
-      } else {
-        // As base_score as change, decay will be reset by upsert
-        logApp.debug('[OPENCTI][DECAY] Decay is restarted', { elementScore: resolvedElement.x_opencti_score, initialPatchScore: basePatch.x_opencti_score, updatePatchScore: updatePatch.x_opencti_score });
-      }
-    }
+  const confidenceForUpsert = controlUpsertInputWithUserConfidence(user, basePatch, resolvedElement);
 
-    // When revoke is updated to true => false, we need to reset score to a valid score if no score in input
-    if (resolvedElement.revoked === true && basePatch.revoked === false) {
-      if (!updatePatch.x_opencti_score) {
-        if (resolvedElement.decay_applied_rule) {
-          updatePatch.x_opencti_score = resolvedElement.decay_base_score > INDICATOR_DEFAULT_SCORE ? resolvedElement.decay_base_score : INDICATOR_DEFAULT_SCORE;
-        } else {
-          updatePatch.x_opencti_score = INDICATOR_DEFAULT_SCORE;
-        }
-      }
-    }
-  }
-  // Upsert relations with times extensions
-  if (isStixCoreRelationship(type)) {
-    const { date: cStartTime } = computeExtendedDateValues(updatePatch.start_time, resolvedElement.start_time, ALIGN_OLDEST);
-    const { date: cStopTime } = computeExtendedDateValues(updatePatch.stop_time, resolvedElement.stop_time, ALIGN_NEWEST);
-    updatePatch.start_time = cStartTime;
-    updatePatch.stop_time = cStopTime;
-  }
-  if (isStixSightingRelationship(type)) {
-    const { date: cFs, updated: isCFsUpdated } = computeExtendedDateValues(updatePatch.first_seen, resolvedElement.first_seen, ALIGN_OLDEST);
-    const { date: cLs, updated: isCLsUpdated } = computeExtendedDateValues(updatePatch.last_seen, resolvedElement.last_seen, ALIGN_NEWEST);
-    updatePatch.first_seen = cFs;
-    updatePatch.last_seen = cLs;
-    if (isCFsUpdated || isCLsUpdated) {
-      updatePatch.attribute_count = resolvedElement.attribute_count + updatePatch.attribute_count;
-    }
-  }
-  const inputs = []; // All inputs impacted by modifications (+inner)
-  // If file directly attached
-  if (!isEmptyField(updatePatch.file)) {
-    const path = `import/${resolvedElement.entity_type}/${resolvedElement.internal_id}`;
-    const { upload: file } = await uploadToStorage(context, user, path, updatePatch.file, { entity: resolvedElement });
-    const convertedFile = storeFileConverter(user, file);
-    // The impact in the database is the completion of the files
-    const fileImpact = { key: 'x_opencti_files', value: [...(resolvedElement.x_opencti_files ?? []), convertedFile] };
-    inputs.push(fileImpact);
-  }
-  // region confidence control / upsert
-  updatePatch.confidence = confidenceLevelToApply;
-  // note that if the existing data has no confidence (null) it will still be updated below, even if isConfidenceMatch = false
-  // endregion
-  // -- Upsert attributes
-  const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values());
-  for (let attrIndex = 0; attrIndex < attributes.length; attrIndex += 1) {
-    const attribute = attributes[attrIndex];
-    const attributeKey = attribute.name;
-    const isInputAvailable = attributeKey in updatePatch;
-    if (isInputAvailable) { // The attribute is explicitly available in the patch
-      const inputData = updatePatch[attributeKey];
-      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
-      const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
-      const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data
-      const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
-      const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
-      // Field can be upsert if:
-      // 1. Confidence is correct
-      // 2. Attribute is declared upsert=true in the schema
-      // 3. Data from the inputs is not empty to prevent any data cleaning
-      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
-      // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
-      if (!isOutDatedModification) {
-        if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
-          inputs.push(...buildAttributeUpdate(isFullSync, attribute, resolvedElement[attributeKey], inputData));
-        }
-      } else {
-        logApp.info('Discarding outdated attribute update mutation', { key: attributeKey });
-      }
-    }
-  }
-  // -- Upsert refs
-  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(resolvedElement.entity_type).map((ref) => ref.name);
-  for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
-    const inputField = metaInputFields[fieldIndex];
-    const relDef = schemaRelationsRefDefinition.getRelationRef(resolvedElement.entity_type, inputField);
-    const isInputAvailable = inputField in updatePatch;
-    if (isInputAvailable) {
-      const patchInputData = updatePatch[inputField];
-      const isInputWithData = isNotEmptyField(patchInputData);
-      const isUpsertSynchro = context.synchronizedUpsert;
-      const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, inputField);
-      if (!isOutDatedModification) {
-        if (relDef.multiple) {
-          const currentData = resolvedElement[relDef.databaseName] ?? [];
-          const currentDataSet = new Set(currentData);
-          const isCurrentWithData = isNotEmptyField(currentData);
-          const fullPatchInputData = patchInputData ?? [];
-          const fullPatchInputDataSet = new Set(fullPatchInputData.map((i) => i.internal_id));
-          // Specific case for organization restriction, has EE must be activated.
-          // If not supported, upsert of organization is not applied
-          const isUserCanManipulateGrantedRefs = isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && settings.valid_enterprise_edition === true;
-          const allowedOperation = relDef.databaseName !== RELATION_GRANTED_TO || (relDef.databaseName === RELATION_GRANTED_TO && isUserCanManipulateGrantedRefs);
-          const inputToCurrentDiff = fullPatchInputData.filter((target) => !currentDataSet.has(target.internal_id));
-          const currentToInputDiff = currentData.filter((current) => !fullPatchInputDataSet.has(current));
-          // If expected data is different from current data
-          if (allowedOperation && (inputToCurrentDiff.length + currentToInputDiff.length) > 0) {
-            // In full synchro, just replace everything
-            if (isUpsertSynchro) {
-              inputs.push({ key: inputField, value: fullPatchInputData, operation: UPDATE_OPERATION_REPLACE });
-            } else if ((isCurrentWithData && isInputWithData && inputToCurrentDiff.length > 0 && isConfidenceMatch)
-                || (isInputWithData && !isCurrentWithData)
-            ) {
-              // If data is provided, different from existing data, and of higher confidence
-              // OR if existing data is empty and data is provided (even if lower confidence, it's better than nothing),
-              // --> apply an add operation
-              inputs.push({ key: inputField, value: inputToCurrentDiff, operation: UPDATE_OPERATION_ADD });
-            }
-          }
-        } else { // not multiple
-          // If expected data is different from current data...
-          const currentData = resolvedElement[relDef.databaseName];
-          const isCurrentEmptyData = isEmptyField(currentData);
-          const isInputDifferentFromCurrent = !R.equals(currentData, patchInputData);
-          // ... and data can be updated:
-          // forced synchro
-          // OR the field is currently null (auto consolidation)
-          // OR the confidence matches
-          // To prevent too much flickering on multi sources the created-by will be replaced only for strict upper confidence
-          const isProtectedCreatedBy = relDef.databaseName === RELATION_CREATED_BY && !isCurrentEmptyData && !isConfidenceUpper;
-          const updatable = ((isInputWithData && isCurrentEmptyData) || isConfidenceMatch) && !isProtectedCreatedBy;
-          if (isInputDifferentFromCurrent && (isUpsertSynchro || updatable)) {
-            inputs.push({ key: inputField, value: [patchInputData] });
-          }
-        }
-      } else {
-        logApp.info('Discarding outdated attribute update mutation', { key: inputField });
-      }
-    }
-  }
+  const updatePatch = buildUpdatePatchForUpsert(user, resolvedElement, type, basePatch, confidenceForUpsert);
+
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const validEnterpriseEdition = settings.valid_enterprise_edition;
+  // All inputs impacted by modifications (+inner)
+  const inputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
+
   // -- If modifications need to be done, add updated_at and modified
   if (inputs.length > 0) {
     // Update the attribute and return the result

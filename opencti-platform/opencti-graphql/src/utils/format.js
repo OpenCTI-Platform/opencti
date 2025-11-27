@@ -90,6 +90,9 @@ export const isDateInRange = (startDate, duration, specificDate) => {
   const specific = moment(specificDate);
   return specific.isBetween(start, end, null, '[]');
 };
+export const computeDateFromEventId = (eventId) => {
+  return utcDate(parseInt(eventId.split('-')[0], 10)).toISOString();
+};
 export const streamEventId = (date = null, index = 0) => `${utcEpochTime(date)}-${index}`;
 export const now = () => utcDate().toISOString();
 export const nowTime = () => timeFormat(now());

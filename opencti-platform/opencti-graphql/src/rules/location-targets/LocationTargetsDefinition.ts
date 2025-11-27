@@ -11,11 +11,11 @@ const display = {
       source: 'Entity A',
       source_color: '#ff9800',
       relation: 'relationship_targets',
-      target: 'Location B',
+      target: 'Entity B',
       target_color: '#4caf50',
     },
     {
-      source: 'Location B',
+      source: 'Entity B',
       source_color: '#4caf50',
       relation: 'relationship_located-at',
       target: 'Location C',
