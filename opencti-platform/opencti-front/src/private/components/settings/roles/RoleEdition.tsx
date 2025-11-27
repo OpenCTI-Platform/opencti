@@ -70,7 +70,6 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
           <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
             <Tab label={t_i18n('Overview')} />
             <Tab label={t_i18n('Capabilities')} />
-            {/* TODO: EEChip */}
             <Tab
               disabled={!isEnterpriseEdition}
               label={
