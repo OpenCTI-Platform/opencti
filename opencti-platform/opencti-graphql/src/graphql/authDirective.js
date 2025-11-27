@@ -61,7 +61,8 @@ export const authDirectiveBuilder = (directiveName) => {
                 }
               }
               // LTS version must be validated
-              if (info.fieldName !== 'setupEnterpriseLicense' && info.fieldName !== 'settings' && blocked_for_lts_validation) {
+              const allowUnlicensedLTS = !!getDirective(schema, fieldConfig, 'allowUnlicensedLTS')?.[0];
+              if (blocked_for_lts_validation && !allowUnlicensedLTS) {
                 throw LtsRequiredActivation();
               }
               // Start checking capabilities

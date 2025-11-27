@@ -1,5 +1,5 @@
 import nconf from 'nconf';
-import { BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
+import { BUS_TOPICS } from '../config/conf';
 import {
   setupEnterpriseLicense,
   getApplicationDependencies,
@@ -23,7 +23,7 @@ import { elAggregationCount } from '../database/engine';
 import { findById } from '../modules/organization/organization-domain';
 import { READ_DATA_INDICES } from '../database/utils';
 import { internalFindByIds } from '../database/middleware-loader';
-import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
+import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
 import { CguStatus, PlatformType } from '../generated/graphql';
 import { getEntityMetricsConfiguration } from '../modules/metrics/metrics-utils';
@@ -40,7 +40,7 @@ const settingsResolvers = {
     relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
   },
   Settings: {
-    platform_type: () => (PLATFORM_VERSION.endsWith('lts') ? PlatformType.Lts : PlatformType.Standard),
+    platform_type: () => (IS_LTS_PLATFORM ? PlatformType.Lts : PlatformType.Standard),
     platform_session_idle_timeout: () => Number(nconf.get('app:session_idle_timeout')),
     platform_session_timeout: () => Number(nconf.get('app:session_timeout')),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),

@@ -2,6 +2,7 @@
 
 directive @auth(for: [Capabilities] = [], and: Boolean = false) on OBJECT | FIELD_DEFINITION
 directive @public on OBJECT | FIELD_DEFINITION
+directive @allowUnlicensedLTS on OBJECT | FIELD_DEFINITION
 directive @constraint(
   # String constraints
   minLength: Int
@@ -13579,7 +13580,7 @@ type Query {
 
   ######## INTERNAL OBJECT ENTITIES
   publicSettings: PublicSettings! @public # All returned information are public
-  settings: Settings! @auth
+  settings: Settings! @auth @allowUnlicensedLTS
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): GroupConnection
   @auth(for: [SETTINGS_SETACCESSES, SETTINGS_SECURITYACTIVITY, VIRTUAL_ORGANIZATION_ADMIN])
@@ -15249,7 +15250,7 @@ type Mutation {
   otpUserDeactivation(id: ID!): MeUser @auth(for: [SETTINGS_SETACCESSES])
   otpLogin(input: UserOTPLoginInput): Boolean @auth @rateLimit(limit: 1, duration: 1)
   settingsEdit(id: ID!): SettingsEditMutations @auth
-  setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB])
+  setupEnterpriseLicense(input: LicenseActivationInput!): Settings @auth(for: [SETTINGS_SETPARAMETERS, SETTINGS_SETMANAGEXTMHUB]) @allowUnlicensedLTS
   subTypeEdit(id: ID!): SubTypeEditMutations @auth(for: [SETTINGS_SETCUSTOMIZATION])
   statusTemplateAdd(input: StatusTemplateAddInput!): StatusTemplate! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
   statusTemplateDelete(id: ID!): ID! @auth(for: [SETTINGS_SETSTATUSTEMPLATES])
