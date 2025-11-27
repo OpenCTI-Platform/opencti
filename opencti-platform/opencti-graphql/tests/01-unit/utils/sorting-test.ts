@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildElasticSortingForAttributeCriteria } from '../../../src/utils/sorting';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { testContext } from '../../utils/testQuery';
