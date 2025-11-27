@@ -553,6 +553,36 @@ const StixDomainObjectDiamond = createRefetchContainer(
           ... on IntrusionSet {
             name
             aliases
+            attributedFrom: stixCoreRelationships(
+              relationship_type: "attributed-to"
+              fromTypes: ["Campaign"]
+              first: 10
+              orderBy: created_at
+              orderMode: desc
+            ) {
+              edges {
+                node {
+                  from {
+                    ... on ThreatActor {
+                      representative {
+                        main
+                      }
+                    }
+                    ... on IntrusionSet {
+                      representative {
+                        main
+                      }
+                    }
+                    ... on Campaign {
+                      representative {
+                        main
+                      }
+                    }
+                    
+                  }
+                }
+              }
+            }
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
@@ -735,6 +765,29 @@ const StixDomainObjectDiamond = createRefetchContainer(
           ... on ThreatActor {
             name
             aliases
+            attributedFrom: stixCoreRelationships(
+              relationship_type: "attributed-to"
+              fromTypes: ["Campaign"]
+              first: 10
+              orderBy: created_at
+              orderMode: desc
+            ) {
+              edges {
+                node {
+                  from {
+                    ... on ThreatActor {
+                      name
+                    }
+                    ... on IntrusionSet {
+                      name
+                    }
+                    ... on Campaign {
+                      name
+                    }
+                  }
+                }
+              }
+            }
             targetedCountries: stixCoreRelationships(
               relationship_type: "targets"
               toTypes: ["Country"]
