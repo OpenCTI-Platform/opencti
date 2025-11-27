@@ -140,8 +140,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
     <Formik<NotifierAddInput>
       initialValues={initialValues}
       validationSchema={notifierValidation(t_i18n)}
-      onSubmit={() => {
-      }}
+      onSubmit={() => {}}
       onReset={onClose}
     >
       {({
