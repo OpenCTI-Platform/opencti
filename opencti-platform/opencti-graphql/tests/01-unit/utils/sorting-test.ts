@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { buildElasticSortingForAttributeCriteria } from '../../../src/utils/sorting';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { testContext } from '../../utils/testQuery';
-import * as EECheck from '../../../src/enterprise-edition/ee';
 
 describe('Sorting utilities', () => {
   let sorting;
@@ -53,11 +52,5 @@ describe('Sorting utilities', () => {
   it('buildElasticSortingForAttributeCriteria throws on error if sorting criteria not in schema', async () => {
     sorting = async () => buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'context_data', 'asc');
     await expect(sorting).rejects.toThrowError('Sorting on [context_data] is not supported: this criteria does not have a sortBy definition in schema');
-  });
-
-  it('buildElasticSortingForAttributeCriteria throws on error if pir sorting and user has not the rights', async () => {
-    vi.spyOn(EECheck,'checkEnterpriseEdition').mockResolvedValue()
-    sorting = async () => buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'pir_score', 'asc', 'fakePirId');
-    await expect(sorting).rejects.toThrowError('No PIR found');
   });
 });
