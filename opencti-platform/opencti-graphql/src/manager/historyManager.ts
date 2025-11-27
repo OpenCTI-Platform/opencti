@@ -31,6 +31,14 @@ const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
 const SCHEDULE_TIME = 10000;
 
+interface Change {
+  field: string;
+  previous?: string;
+  new?: string;
+  added?: Array<string>;
+  removed?: Array<string>;
+}
+
 interface HistoryContext {
   id: string;
   entity_type: string;
@@ -47,6 +55,7 @@ interface HistoryContext {
   pir_ids?: Array<string>;
   pir_score?: number;
   pir_match_from?: boolean;
+  changes?: Array<Change>
 }
 
 export interface HistoryData extends BasicStoreEntity {
@@ -180,6 +189,8 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
         const relatedMarkings = updateEvent.context.related_restrictions.markings ?? [];
         eventMarkingRefs.push(...relatedMarkings);
       }
+      // add changes
+      contextData.changes = updateEvent.context.changes;
     }
     if (stix.type === STIX_TYPE_RELATION) {
       const rel: StixRelation = stix as StixRelation;

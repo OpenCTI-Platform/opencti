@@ -523,6 +523,14 @@ type LogEdge {
   node: Log!
 }
 
+type Change {
+  field: String!
+  previous: [String!]
+  new: [String!]
+  added: [String!]
+  removed: [String!]
+}
+
 type ContextData {
   entity_id: String
   entity_name: String
@@ -536,6 +544,7 @@ type ContextData {
   pir_ids: [String!]
   pir_score: Int
   pir_match_from: Boolean
+  changes: [Change]
 }
 
 type Log {
