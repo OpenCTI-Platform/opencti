@@ -6,7 +6,7 @@ on:
       image_tag:
         description: "Image Tag"
         type: string
-        required: true
+        default: ${{ github.sha }}
       checkout_ref:
         description: "Reference of the branch or commit sha"
         type: string

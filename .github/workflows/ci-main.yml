@@ -10,7 +10,6 @@ jobs:
       name: Build image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        image_tag: ${{ github.event_name == 'pull_request' && format('{0}-{1}', github.sha, github.event.pull_request.number) || github.sha }}
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
 
