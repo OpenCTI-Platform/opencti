@@ -44,6 +44,7 @@ export const entitiesCounter = {
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
   Vocabulary: 354,
+  EmailTemplate: 1,
 };
 
 export const entitiesCounterTotal = Object.values(entitiesCounter).reduce((acc, value) => acc + value, 0);

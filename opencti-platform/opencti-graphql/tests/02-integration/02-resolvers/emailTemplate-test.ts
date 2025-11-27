@@ -127,7 +127,7 @@ describe('Email template resolver standard behavior', () => {
 
       const emailTemplates = listResult.data?.emailTemplates.edges;
       expect(emailTemplates).not.toBeNull();
-      expect(emailTemplates.length).toEqual(2);
+      expect(emailTemplates.length).toEqual(3);
     });
   });
 
