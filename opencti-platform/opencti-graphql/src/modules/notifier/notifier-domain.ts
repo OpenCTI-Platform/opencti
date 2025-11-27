@@ -161,6 +161,6 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
     [{ created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[],
     usersFromCache,
   ).catch((error) => {
-    return { error: (error as Error).message };
+    return error.message;
   });
 };
