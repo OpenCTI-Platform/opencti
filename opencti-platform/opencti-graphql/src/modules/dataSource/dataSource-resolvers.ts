@@ -1,14 +1,15 @@
 import type { Resolvers } from '../../generated/graphql';
 import { dataComponentsPaginated, dataSourceAdd, dataSourceDataComponentAdd, dataSourceDataComponentDelete, findDatasourcePaginated, findById } from './dataSource-domain';
 import {
-  stixDomainObjectAddRelation,
-  stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
-  stixDomainObjectDeleteRelation,
-  stixDomainObjectEditContext,
-  stixDomainObjectEditField
+stixDomainObjectAddRelation,
+stixDomainObjectCleanContext,
+stixDomainObjectDeleteRelation,
+stixDomainObjectDeleteWithTypeCheck,
+stixDomainObjectEditContext,
+stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
 import type { BasicStoreEntityDataComponent } from '../dataComponent/dataComponent-types';
+import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 
 const dataSourceResolvers: Resolvers = {
   Query: {
@@ -23,7 +24,7 @@ const dataSourceResolvers: Resolvers = {
       return dataSourceAdd(context, context.user, input);
     },
     dataSourceDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_DATA_SOURCE);
     },
     dataSourceFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
