@@ -34,6 +34,7 @@ export const findDecayExclusionRulePaginated = (context: AuthContext, user: Auth
 };
 
 export const getActiveDecayExclusionRule = async (context: AuthContext, user: AuthUser) => {
+  if (!isDecayExclusionRuleEnabled) return [];
   const decayExclusionRuleEdges = await findDecayExclusionRulePaginated(context, user, {});
   return decayExclusionRuleEdges.edges.map(({ node }) => node).filter((rule) => rule.active);
 };
