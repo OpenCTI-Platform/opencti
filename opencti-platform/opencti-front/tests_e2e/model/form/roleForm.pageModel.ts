@@ -18,7 +18,7 @@ export default class RoleFormPage {
   }
 
   getCapabilitiesTab() {
-    return this.page.getByRole('tab', { name: 'Capabilities' });
+    return this.page.getByRole('tab', { name: 'Capabilities', exact: true });
   }
 
   getAccessKnowledgeCheckbox() {
