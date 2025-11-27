@@ -1426,6 +1426,7 @@ type Settings implements InternalObject & BasicObject & IntlSettings & ThemeSett
   platform_title: String
   platform_favicon: String
   platform_email: String
+  platform_email_configurable: Boolean!
   platform_cluster: Cluster!
   platform_modules: [Module!]
   platform_url: String

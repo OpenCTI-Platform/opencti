@@ -420,6 +420,7 @@
     "port": 25,
     "username": "",
     "password": "",
+    "forced_sender_email": "",
     "email_max_cc_size": 500
   },
   "providers": {

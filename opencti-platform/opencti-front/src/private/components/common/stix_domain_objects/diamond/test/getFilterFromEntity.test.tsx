@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import getFilterFromEntityTypeAndNodeType, { DiamondEntityType, DiamondNodeType } from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
+import getFilterFromEntityTypeAndNodeType from '@components/common/stix_domain_objects/diamond/getFilterFromEntityTypeAndNodeType';
+import { DiamondEntityEnum, DiamondNodeEnum } from '../types/nodes/diamondEnums';
 
 describe('get the filters from Threat-actor-group, containing a diamond ', () => {
-  const entityType = DiamondEntityType.threatActorGroup;
+  const entityType = DiamondEntityEnum.threatActorGroup;
 
   it('should list filter for adversary', () => {
-    const nodeType = DiamondNodeType.adversary;
+    const nodeType = DiamondNodeEnum.adversary;
     const expectedFilters = {
       mode: 'and',
       filters: [
@@ -41,7 +42,7 @@ describe('get the filters from Threat-actor-group, containing a diamond ', () =>
   });
 
   it('should list filter for infrastructure', () => {
-    const nodeType = DiamondNodeType.infrastructure;
+    const nodeType = DiamondNodeEnum.infrastructure;
     const expectedFilters = {
       mode: 'and',
       filters: [
@@ -82,10 +83,10 @@ describe('get the filters from Threat-actor-group, containing a diamond ', () =>
 });
 
 describe('get the filters from Malware, containing a diamond ', () => {
-  const entityType = DiamondEntityType.malware;
+  const entityType = DiamondEntityEnum.malware;
 
   it('should list filter for adversary', () => {
-    const nodeType = DiamondNodeType.adversary;
+    const nodeType = DiamondNodeEnum.adversary;
     const expectedFilters = {
       mode: 'and',
       filters: [
@@ -121,7 +122,7 @@ describe('get the filters from Malware, containing a diamond ', () => {
   });
 
   it('should list filter for infrastructure', () => {
-    const nodeType = DiamondNodeType.infrastructure;
+    const nodeType = DiamondNodeEnum.infrastructure;
     const expectedFilters = {
       mode: 'and',
       filters: [

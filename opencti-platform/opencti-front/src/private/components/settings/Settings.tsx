@@ -51,6 +51,7 @@ const settingsQuery = graphql`
       platform_title
       platform_favicon
       platform_email
+      platform_email_configurable
       platform_theme {
         id
         name
@@ -125,6 +126,7 @@ export const settingsMutationFieldPatch = graphql`
         platform_title
         platform_favicon
         platform_email
+        platform_email_configurable
         platform_theme {
           id
           name
@@ -496,6 +498,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     component={TextField}
                     variant="standard"
                     name="platform_email"
+                    disabled={!settings.platform_email_configurable}
                     label={t_i18n('Sender email address')}
                     fullWidth
                     style={{ marginTop: 20 }}

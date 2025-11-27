@@ -832,6 +832,8 @@ describe('Elasticsearch pagination', () => {
     }
   });
   it('should relation paginate everything', async () => {
+    const totalCountRelations = R.sum(Object.values(relationsCounter));
+
     let data = await elPaginate(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, { includeAuthorities: true });
     expect(data).not.toBeNull();
     const groupByIndices = R.groupBy((e) => e.node._index, data.edges);
@@ -877,8 +879,7 @@ describe('Elasticsearch pagination', () => {
     expect(metaByEntityType['object-marking'].length).toEqual(relationsCounter['object-marking']);
     expect(metaByEntityType['kill-chain-phase'].length).toEqual(relationsCounter['kill-chain-phase']);
     expect(metaByEntityType['operating-system'].length).toEqual(relationsCounter['operating-system']);
-
-    expect(data.edges.length).toEqual(272);
+    expect(data.edges.length).toEqual(totalCountRelations);
     let filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');
@@ -907,7 +908,7 @@ describe('Elasticsearch pagination', () => {
     expect(entityTypeMap.get('external-reference')).toBe(relationsCounter['external-reference']);
     expect(entityTypeMap.get('operating-system')).toBe(relationsCounter['operating-system']);
     expect(entityTypeMap.get('stix-sighting-relationship')).toBe(relationsCounter['stix-sighting-relationship']);
-    expect(data.length).toEqual(272);
+    expect(data.length).toEqual(totalCountRelations);
     filterBaseTypes = R.uniq(R.map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('RELATION');

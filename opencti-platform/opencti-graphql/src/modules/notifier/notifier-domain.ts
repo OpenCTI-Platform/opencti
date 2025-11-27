@@ -186,7 +186,7 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
     ['default_notification_id_2', { name: 'test 2' } as BasicStoreEntityTrigger],
     ['default_activity_id', { name: 'test 2' } as BasicStoreEntityTrigger],
   ]);
-  const result = await internalProcessNotification(
+  return internalProcessNotification(
     context,
     settings,
     notificationMap,
@@ -200,6 +200,7 @@ export const testNotifier = async (context: AuthContext, user: AuthUser, notifie
     MOCK_NOTIFICATIONS[notifier.notifier_test_id],
     [{ created: (new Date()).toISOString() }] as unknown as BasicStoreEntityTrigger[],
     usersFromCache,
-  );
-  return result?.error;
+  ).catch((error) => {
+    return { error: (error as Error).message };
+  });
 };
