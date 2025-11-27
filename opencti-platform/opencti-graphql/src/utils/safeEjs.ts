@@ -28,7 +28,7 @@ export type SafeOptions = {
 export type SafeRenderOptions = Options & SafeOptions;
 
 export const safeReservedPrefix = '____safe____';
-export const safeName = (name: 'statement' | 'property' | 'Object') => `${safeReservedPrefix}${name}`;
+export const safeName = (name: 'statement' | 'property' | 'Object' | 'Date' | 'RegExp') => `${safeReservedPrefix}${name}`;
 
 const forbiddenProperties = new Set([
   '__proto__',
@@ -37,7 +37,6 @@ const forbiddenProperties = new Set([
   'arguments',
   'callee',
   'caller',
-  'create',
   'defineProperty',
   'defineProperties',
   'freeze',
@@ -53,9 +52,8 @@ const authorizeGlobals = {
   Boolean: true,
   Number: true,
   BigInt: true,
-  Date: true,
+  Date: safeName('Date'),
   String: true,
-  RegExp: true,
   JSON: true,
   Math: true,
   Infinity: true,
@@ -121,7 +119,6 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
       values: Object.values,
       entries: Object.entries,
       fromEntries: Object.fromEntries,
-      // hasOwn: Object.hasOwn, TODO need to switch TS to es2022
       assign: (target: Record<string, unknown>, ...sources: Record<string, unknown>[]) => {
         sources
           .filter((src) => src && typeof src === 'object')
@@ -137,6 +134,40 @@ const createSafeContext = (async: boolean, { maxExecutedStatementCount = 0, maxE
         return target;
       },
     }),
+    [safeName('Date')]: new Proxy(
+      function SafeDate(...args: unknown[]) {
+        if (args.length === 0) {
+          return new Date();
+        }
+        if (args.length === 1) {
+          return new Date(args[0] as string | number | Date);
+        }
+        return new Date(
+          args[0] as number,
+          args[1] as number,
+          args[2] as number | undefined ?? 1,
+          args[3] as number | undefined ?? 0,
+          args[4] as number | undefined ?? 0,
+          args[5] as number | undefined ?? 0,
+          args[6] as number | undefined ?? 0
+        );
+      },
+      {
+        get(target, prop) {
+          if (prop === 'prototype') return Date.prototype;
+          if (prop === 'now') return Date.now;
+          if (prop === 'parse') return Date.parse;
+          if (prop === 'UTC') return Date.UTC;
+          if (typeof prop === 'string' && (prop.startsWith(safeReservedPrefix) || forbiddenProperties.has(prop))) {
+            throw new VerifierIllegalAccessError(`Forbidden Date property access ${JSON.stringify({ propertyName: prop })}`);
+          }
+          return undefined;
+        },
+        set() {
+          return false;
+        },
+      }
+    ),
   };
 };
 

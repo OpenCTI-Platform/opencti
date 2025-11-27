@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { render } from 'ejs';
 import { safeRender } from '../../../src/utils/safeEjs';
+import { safeRender as safeRenderClient } from '../../../src/utils/safeEjs.client';
 
 const testFilename = fileURLToPath(import.meta.url);
 
@@ -33,6 +34,157 @@ describe('check safeRender on valid cases', () => {
     const safeRendered = safeRender(template, data);
     const unsafeRendered = render(template, data);
     expect(safeRendered).toEqual(unsafeRendered);
+  });
+});
+
+describe('check safeRender Date proxy', () => {
+  it('should allow Date.now()', () => {
+    const template = '<%= Date.now() %>';
+    const result = safeRender(template, {});
+    expect(result).toMatch(/^\d+$/);
+  });
+
+  it('should allow Date.parse()', () => {
+    const template = '<%= Date.parse("2024-01-01") %>';
+    const result = safeRender(template, {});
+    expect(result).toBe('1704067200000');
+  });
+
+  it('should allow Date.UTC()', () => {
+    const template = '<%= Date.UTC(2024, 0, 1) %>';
+    const result = safeRender(template, {});
+    expect(result).toBe('1704067200000');
+  });
+
+  it('should allow new Date() with no arguments', () => {
+    const template = '<%= new Date() %>';
+    const result = safeRender(template, {});
+    // Should create a valid date string
+    expect(result).toMatch(/^\w{3} \w{3} \d{2} \d{4}/);
+  });
+
+  it('should allow new Date() with timestamp', () => {
+    const template = '<%= new Date(1704067200000) %>';
+    const result = safeRender(template, {});
+    expect(result).toContain('2024');
+  });
+
+  it('should allow new Date() with date string', () => {
+    const template = '<%= new Date("2024-01-01") %>';
+    const result = safeRender(template, {});
+    expect(result).toContain('2024');
+  });
+
+  it('should allow new Date() with multiple arguments', () => {
+    const template = '<%= new Date(2024, 0, 1).getFullYear() %>';
+    const result = safeRender(template, {});
+    expect(result).toBe('2024');
+  });
+
+  it('should allow using Date instance methods', () => {
+    const template = '<% const d = new Date(2024, 0, 15); %><%= d.getDate() %>';
+    const result = safeRender(template, {});
+    expect(result).toBe('15');
+  });
+
+  it('should allow Date operations in templates', () => {
+    const template = `
+      <% const now = new Date(); %>
+      <% const timestamp = Date.now(); %>
+      Year: <%= now.getFullYear() %>
+      Timestamp: <%= timestamp %>
+    `;
+    const result = safeRender(template, {});
+    expect(result).toMatch(/Year: \d{4}/);
+    expect(result).toMatch(/Timestamp: \d+/);
+  });
+
+  it('should prevent access to Date.prototype', () => {
+    const template = '<%= Date.prototype %>';
+    expect(() => safeRender(template, {})).toThrow();
+  });
+
+  it('should prevent access to Date.constructor', () => {
+    const template = '<%= Date.constructor %>';
+    expect(() => safeRender(template, {})).toThrow();
+  });
+});
+
+describe('check safeRenderClient error handling and worker termination detection', () => {
+  it('should report timeout error when rendering takes too long', async () => {
+    // Template with infinite loop should timeout
+    const template = '<% while(true) {} %>';
+    const data = {};
+    
+    await expect(
+      safeRenderClient(template, data, { timeout: 100 })
+    ).rejects.toThrow(/timeout after 100ms/i);
+  });
+
+  it('should preserve worker error when worker fails before timeout', async () => {
+    // Template that causes a worker error
+    const template = '<%= nonExistentVariable.property %>';
+    const data = {};
+    
+    await expect(
+      safeRenderClient(template, data, { timeout: 5000 })
+    ).rejects.toThrow(/nonExistentVariable/i);
+  });
+
+  it('should handle memory limit errors correctly', async () => {
+    // Template that tries to allocate too much memory
+    const template = '<% const arr = new Array(1000000000).fill("x"); %><%= arr.length %>';
+    const data = {};
+    
+    await expect(
+      safeRenderClient(template, data, { 
+        timeout: 5000,
+        resourceLimits: {
+          maxOldGenerationSizeMb: 10,
+          maxYoungGenerationSizeMb: 5,
+          codeRangeSizeMb: 5,
+          stackSizeMb: 2,
+        }
+      })
+    ).rejects.toThrow();
+  });
+
+  it('should handle syntax errors in template', async () => {
+    // Template with syntax error
+    const template = '<% const x = ; %>';
+    const data = {};
+    
+    await expect(
+      safeRenderClient(template, data)
+    ).rejects.toThrow();
+  });
+
+  it('should preserve error type when worker encounters runtime error', async () => {
+    // Template that causes a runtime error (division by zero leads to Infinity, but accessing undefined property causes error)
+    const template = '<%= undefined.nonExistentProperty %>';
+    const data = {};
+    
+    await expect(
+      safeRenderClient(template, data)
+    ).rejects.toThrow(/undefined/i);
+  });
+
+  it('should handle template with invalid data access gracefully', async () => {
+    // Template trying to access undefined deeply nested property
+    const template = '<%= data.deep.nested.property.that.does.not.exist %>';
+    const data = {};
+    
+    await expect(
+      safeRenderClient(template, data)
+    ).rejects.toThrow();
+  });
+
+  it('should succeed with valid template and reasonable timeout', async () => {
+    const template = '<% for(let i = 0; i < 1000; i++) {} %>Success';
+    const data = {};
+    
+    const result = await safeRenderClient(template, data, { timeout: 5000 });
+    expect(result).toBe('Success');
   });
 });
 

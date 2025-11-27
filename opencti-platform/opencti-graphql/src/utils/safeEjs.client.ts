@@ -17,7 +17,7 @@ export type WorkerOptions = {
 
 // Helper to serialize functions and validate data
 const prepareDataForWorker = (data: Data): Data => {
-  const forbidden = ['eval', 'Function', 'constructor', '__proto__', 'prototype', 'freeze'];
+  const forbidden = ['__proto__','prototype','constructor','arguments','callee','caller','defineProperty','defineProperties','freeze','seal','preventExtensions','getPrototypeOf','setPrototypeOf'];
 
   // Track function results to create a wrapper object
   const functionMap = new Map<string, any>();
@@ -47,9 +47,9 @@ const prepareDataForWorker = (data: Data): Data => {
     if (typeof obj === 'object') {
       const result: any = {};
       Object.entries(obj).forEach(([key, value]) => {
-        // Check for forbidden properties
+        // Check for forbidden properties that could enable sandbox escape
         if (forbidden.includes(key)) {
-          throw new Error(`Inaccessible property in data: ${key}`);
+          throw new Error(`Forbidden property in data object: ${key}. This property could be used for prototype manipulation or sandbox escape.`);
         }
         result[key] = serialize(value, currentPath ? `${currentPath}.${key}` : key);
       });
@@ -109,6 +109,9 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
   });
 
   try {
+    // Track worker error to preserve it in case of timeout
+    let workerError: Error | undefined;
+
     // Race between rendering and timeout
     const result = await Promise.race([
       // Rendering promise
@@ -117,17 +120,23 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
           if (message.success && message.result !== undefined) {
             resolve(message.result);
           } else {
-            reject(new Error(message.error || 'Unknown worker error'));
+            const error = new Error(message.error || 'Unknown worker error');
+            workerError = error;
+            reject(error);
           }
         });
 
         worker.on('error', (error) => {
-          reject(new Error(`Worker error: ${error.message}`));
+          const workerErr = new Error(`Worker error: ${error.message}`);
+          workerError = workerErr;
+          reject(workerErr);
         });
 
         worker.on('exit', (code) => {
           if (code !== 0 && code !== null) {
-            reject(new Error(`Worker stopped with exit code ${code}`));
+            const exitError = new Error(`Worker stopped with exit code ${code}`);
+            workerError = exitError;
+            reject(exitError);
           }
         });
       }),
@@ -135,7 +144,8 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
       // Timeout promise
       new Promise<never>((_, reject) => {
         setTimeout(() => {
-          reject(new Error(`Rendering timeout after ${timeout}ms`));
+          // Preserve worker error if it exists, otherwise report timeout
+          reject(workerError ?? new Error(`Rendering timeout after ${timeout}ms`));
         }, timeout);
       })
     ]);
