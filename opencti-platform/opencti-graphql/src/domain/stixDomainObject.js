@@ -205,21 +205,46 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const stixDomainObjectDelete = async (context, user, stixDomainObjectId) => {
+export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, expectedEntityType = null) => {
   // If we are in a draft, we need to also search for deleted elements
   const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
   if (!stixDomainObject) {
     throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.');
   }
+  
+  if (expectedEntityType) {
+    // Handle both string and array types for flexibility
+    const allowedTypes = Array.isArray(expectedEntityType) ? expectedEntityType : [expectedEntityType];
+    
+    // Check if the entity type matches any of the expected types
+    if (!allowedTypes.includes(stixDomainObject.entity_type)) {
+      throw FunctionalError(
+        `Cannot delete the object, type mismatch: expected ${allowedTypes.join(', ')}, found ${stixDomainObject.entity_type}.`,
+        { expectedTypes: allowedTypes, actualType: stixDomainObject.entity_type, objectId: stixDomainObjectId }
+      );
+    }
+  }
+  
   await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
   return stixDomainObjectId;
 };
 
+// Helper function for entities that validate their type before deletion
+export const stixDomainObjectDeleteWithTypeCheck = async (context, user, stixDomainObjectId, expectedEntityType) => {
+  // First, validate that the entity exists and has the correct type
+  const entity = await storeLoadById(context, user, stixDomainObjectId, expectedEntityType);
+  if (!entity) {
+    throw FunctionalError(`Cannot delete the object, entity of type ${expectedEntityType} not found.`);
+  }
+  // Then proceed with deletion using the validated type
+  return stixDomainObjectDelete(context, user, stixDomainObjectId, expectedEntityType);
+};
+
 export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixDomainObjectsIds.length; i += 1) {
-    await stixDomainObjectDelete(user, stixDomainObjectsIds[i]);
+    await stixDomainObjectDelete(context, user, stixDomainObjectsIds[i]);
   }
   return stixDomainObjectsIds;
 };

@@ -1,12 +1,13 @@
-import { addCampaign, campaignsTimeSeries, campaignsTimeSeriesByEntity, findCampaignPaginated, findById } from '../domain/campaign';
+import { addCampaign, campaignsTimeSeries, campaignsTimeSeriesByEntity, findCampaignPaginated, findById } from '../domain/campaign';;
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
+  stixDomainObjectDeleteWithTypeCheck,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField,
+  stixDomainObjectEditField
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
 
 const campaignResolvers = {
   Query: {
@@ -21,7 +22,7 @@ const campaignResolvers = {
   },
   Mutation: {
     campaignEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_CAMPAIGN),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
