@@ -38,6 +38,8 @@ describe('check safeRender on valid cases', () => {
       <%# Comment at end %>
     `,
     'ejs with comment between code': '<% const x = 1; %><%# Comment here %><%= x %>',
+    'whitespace slurp with underscore': '  <%_ JSON.stringify(user) _%>  ',
+    'whitespace slurp with dash': '  <%- user.name -%>  ',
   }).map(([name, template]) => ({ name, template }));
 
   it.each(validCases)('safeRender should succeed for "$name" case', ({ template }) => {
