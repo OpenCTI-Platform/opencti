@@ -62,7 +62,6 @@ const buildAttributeUpdate = (isFullSync, attribute, currentData, inputData) => 
     // Only add input in case of replace or when we really need to add something
     if (operation === UPDATE_OPERATION_REPLACE || (operation === UPDATE_OPERATION_ADD && isNotEmptyField(inputData))) {
       inputs.push({ key: fieldKey, value: inputData ?? [], operation });
-      // 1: key: 'objectLabel', value: ['A', 'C', 'D'], operation: 'replace' ?
     }
   } else if (isObjectAttribute(fieldKey)) {
     if (isNotEmptyField(inputData)) {
