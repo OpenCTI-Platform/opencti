@@ -14,12 +14,13 @@ import {
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
+  stixDomainObjectDeleteWithTypeCheck,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField,
+  stixDomainObjectEditField
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
+import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 import { KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { BYPASS, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
@@ -31,6 +32,9 @@ const checkUserAccess = async (context, user, id) => {
   const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
   const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
   const note = await findById(context, user, id);
+  if (!note) {
+    return;
+  }
   const isCreator = note[RELATION_CREATED_BY] ? note[RELATION_CREATED_BY] === user.individual_id : false;
   const isCollaborationAllowed = userCapabilities.includes(KNOWLEDGE_COLLABORATION) && isCreator;
   const accessGranted = isAuthorized || isCollaborationAllowed;
@@ -70,7 +74,7 @@ const noteResolvers = {
     noteEdit: (_, { id }, context) => ({
       delete: async () => {
         await checkUserAccess(context, context.user, id);
-        return stixDomainObjectDelete(context, context.user, id);
+        return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_CONTAINER_NOTE);
       },
       fieldPatch: async ({ input, commitMessage, references }) => {
         await checkUserAccess(context, context.user, id);

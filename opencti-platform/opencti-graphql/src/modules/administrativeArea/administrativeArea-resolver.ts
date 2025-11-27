@@ -1,14 +1,15 @@
 import type { Resolvers } from '../../generated/graphql';
 import { addAdministrativeArea, findAdministrativeAreaPaginated, findById } from './administrativeArea-domain';
 import {
-  stixDomainObjectAddRelation,
-  stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
-  stixDomainObjectDeleteRelation,
-  stixDomainObjectEditContext,
-  stixDomainObjectEditField
+stixDomainObjectAddRelation,
+stixDomainObjectCleanContext,
+stixDomainObjectDeleteRelation,
+stixDomainObjectDeleteWithTypeCheck,
+stixDomainObjectEditContext,
+stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
-import { locatedAtCountry } from '../../domain/city';
+import { locatedAtCountry } from '../../domain/city';;
+import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from './administrativeArea-types';;
 
 const administrativeAreaResolvers: Resolvers = {
   Query: {
@@ -25,7 +26,7 @@ const administrativeAreaResolvers: Resolvers = {
       return addAdministrativeArea(context, context.user, input);
     },
     administrativeAreaDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
     },
     administrativeAreaFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

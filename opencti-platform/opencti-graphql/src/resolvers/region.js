@@ -1,12 +1,13 @@
 import { addRegion, childRegionsPaginated, countriesPaginated, findRegionPaginated, findById, parentRegionsPaginated } from '../domain/region';
 import {
-  stixDomainObjectAddRelation,
-  stixDomainObjectCleanContext,
-  stixDomainObjectDelete,
-  stixDomainObjectDeleteRelation,
-  stixDomainObjectEditContext,
-  stixDomainObjectEditField,
+stixDomainObjectAddRelation,
+stixDomainObjectCleanContext,
+stixDomainObjectDeleteRelation,
+stixDomainObjectDeleteWithTypeCheck,
+stixDomainObjectEditContext,
+stixDomainObjectEditField
 } from '../domain/stixDomainObject';
+import { ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
 
 const regionResolvers = {
   Query: {
@@ -20,7 +21,7 @@ const regionResolvers = {
   },
   Mutation: {
     regionEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_LOCATION_REGION),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
