@@ -1,19 +1,17 @@
 name: OpenCTI CI
 on:
   workflow_call:
-    inputs:
-      is_pr_merge:
-        description: "Branch push or PR merge. Values branch | merge"
-        type: boolean
-        default: false
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   wf-build-image:
       name: Build image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        image_tag: ${{ inputs.is_pr_merge && format('{0}-{1}', github.sha, github.event.pull_request.number) || github.sha }}
-        checkout_ref: ${{ inputs.is_pr_merge && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+        image_tag: ${{ github.event_name == 'pull_request' && format('{0}-{1}', github.sha, github.event.pull_request.number) || github.sha }}
+        checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
 
 
