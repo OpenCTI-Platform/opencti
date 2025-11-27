@@ -217,8 +217,6 @@ const rawFetchStreamEventsRangeFromEventId = async (
     if (opts.autoReconnect) {
       await waitInSec(2);
     }
-  } finally {
-    redisClient.disconnect();
   }
   return { lastEventId: effectiveStartEventId };
 };
