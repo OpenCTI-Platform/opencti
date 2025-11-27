@@ -474,6 +474,19 @@ export const findCapabilities = async (context, user, args, relationship_type = 
   });
 };
 
+export const findRolesWithCapabilityInDraft = async (context, user, args) => {
+  return R.uniqBy(relation => relation.fromId,
+    await fullRelationsList(
+      context,
+      user,
+      RELATION_HAS_CAPABILITY_IN_DRAFT, {
+      ...args,
+      fromTypes: [ENTITY_TYPE_ROLE],
+      toTypes: [ENTITY_TYPE_CAPABILITY],
+    })
+  );
+};
+
 export const roleDelete = async (context, user, roleId) => {
   const deleted = await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
   await publishUserAction({

@@ -26,6 +26,7 @@ import type { AuthUser } from '../types/user';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
+import { findRolesWithCapabilityInDraft } from '../domain/user';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 const TELEMETRY_CONSOLE_DEBUG = conf.get('telemetry_manager:console_debug') ?? false;
@@ -235,6 +236,11 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
     const activeConnectors = connectors.filter((c) => c.active);
     manager.setActiveConnectorsCount(activeConnectors.length);
+    // endregion
+
+    // region Roles with draft capability information
+    const rolesWithCapabilityInDraft = await findRolesWithCapabilityInDraft(context, TELEMETRY_MANAGER_USER);
+    manager.setRolesWithCapabilityInDraftCount(rolesWithCapabilityInDraft.length);
     // endregion
 
     // region Draft information
