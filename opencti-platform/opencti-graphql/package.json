@@ -176,6 +176,7 @@
     "@graphql-codegen/typescript-resolvers": "5.1.2",
     "@luckycatfactory/esbuild-graphql-loader": "3.8.1",
     "@rollup/plugin-graphql": "2.0.5",
+    "@stylistic/eslint-plugin": "5.6.1",
     "@types/archiver": "7.0.0",
     "@types/bluebird": "3.5.42",
     "@types/content-type": "1.1.9",
