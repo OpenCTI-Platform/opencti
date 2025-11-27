@@ -1,0 +1,28 @@
+name: OpenCTI CI trigger
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# This workflow is used to enable the launch of OpenCTI CI on push and pull request merge.
+
+jobs:
+  ci:
+      uses: ./.github/workflows/ci-main.yml
+      strategy:
+        matrix:
+          include:
+            # On all push, test on the current branch
+            - name: "Current branch"
+              is_pr_merge: false
+              condition: ${{ github.event_name == 'push' }}
+            # On PR test on simulated merge
+            - name: "Merge with base"
+              is_pr_merge: true
+              condition: ${{ github.event_name == 'pull_request' }}
+      if: ${{ matrix.condition }}
+      name: OpenCTI CI ${{ matrix.name }}
+      with:
+        is_pr_merge: ${{ matrix.is_pr_merge }}
+      secrets: inherit

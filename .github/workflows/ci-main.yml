@@ -1,16 +1,21 @@
 name: OpenCTI CI
 on:
-  workflow_dispatch:
-  push:
+  workflow_call:
+    inputs:
+      is_pr_merge:
+        description: "Branch push or PR merge. Values branch | merge"
+        type: boolean
+        default: false
 
-# Test stability 6
 jobs:
   wf-build-image:
       name: Build image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        image_tag: ${{ github.sha }}
+        image_tag:  ${{ inputs.is_pr_merge }} && ${{ github.sha }}-${{ github.event.pull_request.number }} || ${{ github.sha }}
+        checkout_ref: ${{ inputs.is_pr_merge }} && refs/pull/${{ github.event.pull_request.number }}/merge || ${{ github.sha }}
       secrets: inherit
+
 
   wf-api-test:
       name: API test
