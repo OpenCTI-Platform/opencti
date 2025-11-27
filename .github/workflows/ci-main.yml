@@ -12,8 +12,8 @@ jobs:
       name: Build image
       uses: ./.github/workflows/ci-docker-build.yml
       with:
-        image_tag:  ${{ inputs.is_pr_merge }} && ${{ github.sha }}-${{ github.event.pull_request.number }} || ${{ github.sha }}
-        checkout_ref: ${{ inputs.is_pr_merge }} && refs/pull/${{ github.event.pull_request.number }}/merge || ${{ github.sha }}
+        image_tag: ${{ inputs.is_pr_merge && format('{0}-{1}', github.sha, github.event.pull_request.number) || github.sha }}
+        checkout_ref: ${{ inputs.is_pr_merge && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
       secrets: inherit
 
 
