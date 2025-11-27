@@ -5,6 +5,7 @@ import type { Success } from '../../../generated/graphql';
 type RegistrationStatus = 'active' | 'inactive' | 'not_found';
 
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
+const HUB_OPENCTI_IDENTIFIER = 'opencti'
 
 export const xtmHubClient = {
   isBackendReachable: async (): Promise<{ isReachable: boolean }> => {
@@ -38,7 +39,7 @@ export const xtmHubClient = {
         platformId,
         token,
         platformVersion,
-        platformIdentifier: 'opencti'
+        platformIdentifier: HUB_OPENCTI_IDENTIFIER
       }
     };
     const httpClient = getHttpClient({
