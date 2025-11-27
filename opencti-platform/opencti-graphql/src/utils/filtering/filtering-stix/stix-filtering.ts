@@ -93,7 +93,7 @@ export const isStixMatchFilterGroup = async (
   user: AuthUser,
   stix: any,
   filterGroup?: FilterGroup,
-  withMap?: boolean,
+  withMap = true,
 ) : Promise<boolean> => {
   // resolve some of the ids as we filter on their corresponding values or standard-id for instance
   // the provided map will contain replacements for filter values, if any necessary.
