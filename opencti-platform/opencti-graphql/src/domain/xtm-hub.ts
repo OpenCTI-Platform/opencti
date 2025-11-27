@@ -5,7 +5,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { xtmHubClient } from '../modules/xtm/hub/xtm-hub-client';
 import { type AutoRegisterInput, XtmHubRegistrationStatus } from '../generated/graphql';
 import { updateAttribute } from '../database/middleware';
-import { booleanConf, BUS_TOPICS, PLATFORM_VERSION } from '../config/conf';
+import { booleanConf, BUS_TOPICS, logApp, PLATFORM_VERSION } from '../config/conf';
 import { HUB_REGISTRATION_MANAGER_USER } from '../utils/access';
 import { getSettings, settingsEditField } from './settings';
 import { notify } from '../database/redis';
@@ -28,6 +28,7 @@ export const checkXTMHubConnectivity = async (context: AuthContext, user: AuthUs
   const platformInformation = { platformId: settings.id, token: settings.xtm_hub_token, platformVersion: PLATFORM_VERSION };
   const status = await xtmHubClient.refreshRegistrationStatus(platformInformation);
   if (status === 'not_found') {
+    logApp.warn('[XTMH] Platform was not found on XTM Hub')
     await resetRegistration(context, user, settings)
     return { status: XtmHubRegistrationStatus.Unregistered };
   }
