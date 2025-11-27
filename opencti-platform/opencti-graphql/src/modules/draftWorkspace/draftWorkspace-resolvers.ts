@@ -43,7 +43,9 @@ const draftWorkspaceResolvers: Resolvers = {
     },
     objectsCount: (draft, _, context) => getObjectsCount(context, context.user, draft),
     processingCount: (draft, _, context) => getProcessingCount(context, context.user, draft),
-    works: (draft, args, context) => worksForDraft(context, context.user, draft.id, args),
+    works: (draft, args, context) => {
+      return worksForDraft(context, context.user, draft.id, args) as unknown as any;
+    },
     validationWork: (draft, _, context) => (draft.validation_work_id ? findWorkById(context, context.user, draft.validation_work_id) as any : null),
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),

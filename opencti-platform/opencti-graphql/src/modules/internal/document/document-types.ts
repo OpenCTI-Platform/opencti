@@ -4,6 +4,7 @@ export interface BasicStoreEntityDocument extends BasicStoreEntity {
   size: number
   lastModified: Date
   lastModifiedSinceMin: Date
+  uploadStatus: string,
   metaData: {
     entity_id?: string
     mimetype: string

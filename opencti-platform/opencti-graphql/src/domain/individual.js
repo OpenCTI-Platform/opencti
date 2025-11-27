@@ -8,6 +8,7 @@ import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import { buildPagination } from '../database/utils';
 
 export const findById = (context, user, individualId) => {
   return storeLoadById(context, user, individualId, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
@@ -24,6 +25,10 @@ export const addIndividual = async (context, user, individual, opts = {}) => {
 };
 
 export const partOfOrganizationsPaginated = async (context, user, individualId, args) => {
+  const checkIndividualAccess = await findById(context, user, individualId)
+  if (!checkIndividualAccess) {
+    return buildPagination(0, null, [], 0);
+  }
   return pageRegardingEntitiesConnection(context, user, individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, false, args);
 };
 

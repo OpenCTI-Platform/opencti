@@ -21,7 +21,7 @@ import { schemaOverviewLayoutCustomization } from '../../schema/schema-overviewL
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from '../fintelTemplate/fintelTemplate-types';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import type { BasicStoreEntity, StoreEntityConnection } from '../../types/store';
+import type { BasicStoreEntity, BasicConnection } from '../../types/store';
 import { emptyPaginationResult } from '../../database/utils';
 import { findAllMembers } from '../../domain/user';
 import { authorizedMembers } from '../../schema/attribute-definition';
@@ -106,10 +106,10 @@ export const getTemplatesForSetting = async (
   user: AuthUser,
   targetType: string,
   opts: EntitySettingFintelTemplatesArgs,
-): Promise<StoreEntityConnection<BasicStoreEntityFintelTemplate>> => {
+): Promise<BasicConnection<BasicStoreEntityFintelTemplate>> => {
   const canGetTemplates = await canViewTemplates(context);
   if (!canGetTemplates) {
-    return emptyPaginationResult();
+    return emptyPaginationResult<BasicStoreEntityFintelTemplate>();
   }
   const filters = addFilter(undefined, 'settings_types', [targetType]);
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_FINTEL_TEMPLATE], { ...opts, filters });

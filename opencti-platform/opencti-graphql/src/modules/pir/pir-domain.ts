@@ -59,9 +59,10 @@ import { isBypassUser, MEMBER_ACCESS_ALL, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCE
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { READ_INDEX_HISTORY } from '../../database/utils';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
-import { elPaginate } from '../../database/engine';
+import { elPaginate, type PaginateOpts } from '../../database/engine';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 import { lockResources } from '../../lock/master-lock';
+import type { LogConnection } from '../../types/log';
 
 export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
@@ -135,7 +136,7 @@ export const findPirHistory = async (context: AuthContext, user: AuthUser, args:
     orderMode: args.orderMode ?? 'desc',
     types: [ENTITY_TYPE_PIR_HISTORY, ENTITY_TYPE_HISTORY],
   };
-  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
+  return await elPaginate(context, user, READ_INDEX_HISTORY, finalArgs as PaginateOpts) as LogConnection;
 };
 
 export const findPirContainers = async (

@@ -60,6 +60,7 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import { removeAuthenticationCredentials } from '../modules/ingestion/ingestion-common';
 import { createOnTheFlyUser } from '../modules/user/user-domain';
 import { addDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-domain';
+import type { Work } from '../types/work';
 
 // Sanitize name for K8s/Docker
 const sanitizeContainerName = (label: string): string => {
@@ -84,7 +85,7 @@ const sanitizeContainerName = (label: string): string => {
 
 // region connectors
 export const connectorForWork = async (context: AuthContext, user: AuthUser, id: string) => {
-  const work = await elLoadById(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY }) as unknown as Work;
+  const work = await elLoadById<Work>(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
   if (work) return connector(context, user, work.connector_id);
   return null;
 };

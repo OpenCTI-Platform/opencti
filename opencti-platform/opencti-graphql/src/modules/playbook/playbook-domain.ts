@@ -40,7 +40,7 @@ import { isStixMatchFilterGroup, validateFilterGroupForStixMatch } from '../../u
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
-import { findFiltersFromKey, checkAndConvertFilters } from '../../utils/filtering/filtering-utils';
+import { findFiltersFromKey, checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
 import { elFindByIds } from '../../database/engine';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import pjson from '../../../package.json';
@@ -48,7 +48,6 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { buildPagination } from '../../database/utils';
-import type { BasicStoreObject } from '../../types/store';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -60,7 +59,7 @@ export const findById: DomainFindById<BasicStoreEntityPlaybook> = async (context
 export const findPlaybookPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityPlaybook>) => {
   const isEE = await isEnterpriseEdition(context);
   if (!isEE) {
-    return buildPagination(0, null, [], 0);
+    return buildPagination<BasicStoreEntityPlaybook>(0, null, [], 0);
   }
   return pageEntitiesConnection<BasicStoreEntityPlaybook>(context, user, [ENTITY_TYPE_PLAYBOOK], opts);
 };
@@ -148,8 +147,7 @@ const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   if (config.filters) {
     const filterGroup = JSON.parse(config.filters) as FilterGroup;
     if (input.component_id === PLAYBOOK_INTERNAL_DATA_CRON.id) {
-      const findIds = elFindByIds as (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>;
-      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, findIds, { noFiltersConvert: true });
+      const convertedFilters = await checkAndConvertFilters(context, user, filterGroup, userId, elFindByIds as FiltersIdsFinder, { noFiltersConvert: true });
       stringifiedFilters = JSON.stringify(convertedFilters);
     } else { // our stix matching is currently limited, we need to validate the input filters
       validateFilterGroupForStixMatch(filterGroup);
