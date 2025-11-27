@@ -25,7 +25,7 @@ export const addIndividual = async (context, user, individual, opts = {}) => {
 };
 
 export const partOfOrganizationsPaginated = async (context, user, individualId, args) => {
-  const checkIndividualAccess = await findById(context, user, individualId)
+  const checkIndividualAccess = await findById(context, user, individualId);
   if (!checkIndividualAccess) {
     return buildPagination(0, null, [], 0);
   }
