@@ -1,10 +1,11 @@
-interface Work {
+import type { BasicStoreBase } from './store';
+
+interface Work extends BasicStoreBase {
   _index: string
   id: string
   sort: number[]
   internal_id: string
   timestamp: string
-  updated_at: string
   name: string
   entity_type: string
   event_type: string

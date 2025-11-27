@@ -43,7 +43,7 @@ const getValueFromPath = (path: string, json: any) => {
   return JSONPath.JSONPath({ path, json, wrap: false, flatten: true });
 };
 const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, requestData: Record<string, any>, withDefault = true) => {
-  const params: Record<string, object> = {};
+  const params: Record<string, object | string> = {};
   if (queryParamsAttributes) {
     for (let attrIndex = 0; attrIndex < queryParamsAttributes.length; attrIndex += 1) {
       const queryParamsAttribute = queryParamsAttributes[attrIndex];
@@ -67,7 +67,7 @@ const buildQueryObject = (queryParamsAttributes: Array<DataParam> | undefined, r
   return params;
 };
 
-const replaceVariables = (body: string, variables: Record<string, object>) => {
+const replaceVariables = (body: string, variables: Record<string, object | string>) => {
   const regex = /\$\w+/g;
   return body.replace(regex, (match) => {
     const variableName = match.substring(1);
@@ -80,8 +80,8 @@ const replaceVariables = (body: string, variables: Record<string, object>) => {
   });
 };
 
-const filterVariablesForAttributes = (attributes: Array<DataParam>, variables: Record<string, object>, exposed: 'body' | 'query_param' | 'header') => {
-  const params: Record<string, object> = {};
+const filterVariablesForAttributes = (attributes: Array<DataParam>, variables: Record<string, object | string>, exposed: 'body' | 'query_param' | 'header') => {
+  const params: Record<string, object | string> = {};
   const paramAttributes = attributes.filter((query) => query.exposed === exposed);
   for (let attrIndex = 0; attrIndex < paramAttributes.length; attrIndex += 1) {
     const queryParamsAttribute = paramAttributes[attrIndex];

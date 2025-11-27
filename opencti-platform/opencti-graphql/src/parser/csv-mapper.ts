@@ -41,9 +41,9 @@ export const formatValue = (value: string | boolean, type: AttrType, column: Att
     try {
       if (isNotEmptyField(pattern_date)) {
         if (isNotEmptyField(timezone)) {
-          return DateTime.fromFormat(value, pattern_date, { zone: timezone }).toUTC().toISO();
+          return DateTime.fromFormat(value, pattern_date as string, { zone: timezone }).toUTC().toISO();
         }
-        return DateTime.fromFormat(value, pattern_date).toUTC().toISO();
+        return DateTime.fromFormat(value, pattern_date as string).toUTC().toISO();
       }
       return DateTime.fromISO(value).toUTC().toISO();
     } catch (_error: any) {

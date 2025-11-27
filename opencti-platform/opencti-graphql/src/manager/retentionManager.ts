@@ -17,7 +17,7 @@ import { RetentionRuleScope, RetentionUnit } from '../generated/graphql';
 import { canDeleteElement } from '../database/data-consistency';
 import { deleteFile } from '../database/file-storage';
 import { DELETABLE_FILE_STATUSES, paginatedForPathWithEnrichment } from '../modules/internal/document/document-domain';
-import type { BasicStoreCommonEdge, StoreObject } from '../types/store';
+import type { BasicNodeEdge, StoreObject } from '../types/store';
 import { ALREADY_DELETED_ERROR } from '../config/errors';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
@@ -56,7 +56,7 @@ export const getElementsToDelete = async (context: AuthContext, scope: string, b
   if (scope === 'knowledge') {
     const jsonFilters = filters ? JSON.parse(filters) : null;
     const queryOptions = await convertFiltersToQueryOptions(jsonFilters, { before });
-    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: RETENTION_BATCH_SIZE });
+    result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, { ...queryOptions, first: RETENTION_BATCH_SIZE }) as any;
   } else if (scope === 'file') {
     result = await paginatedForPathWithEnrichment(context, RETENTION_MANAGER_USER, 'import/global', undefined, { first: RETENTION_BATCH_SIZE, notModifiedSince: before.toISOString() });
   } else if (scope === 'workbench') {
@@ -82,7 +82,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
   if (elements.length > 0) {
     logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);
     const start = new Date().getTime();
-    const deleteFn = async (element: BasicStoreCommonEdge<StoreObject>) => {
+    const deleteFn = async (element: BasicNodeEdge<StoreObject>) => {
       const { node } = element;
       const { updated_at: up } = node;
       try {
@@ -104,7 +104,7 @@ const executeProcessing = async (context: AuthContext, retentionRule: RetentionR
         }
       }
     };
-    const concurrentElements = R.splitEvery<BasicStoreCommonEdge<StoreObject>>(RETENTION_MAX_CONCURRENCY, elements);
+    const concurrentElements = R.splitEvery<BasicNodeEdge<StoreObject>>(RETENTION_MAX_CONCURRENCY, elements);
     for (let i = 0; i < concurrentElements.length; i += 1) {
       if (shutdown) {
         break;

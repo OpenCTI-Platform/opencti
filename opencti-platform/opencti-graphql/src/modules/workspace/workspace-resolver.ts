@@ -34,7 +34,9 @@ const workspaceResolvers: Resolvers = {
     authorizedMembers: (workspace, _, context) => getAuthorizedMembers(context, context.user, workspace),
     currentUserAccessRight: (workspace, _, context) => getCurrentUserAccessRight(context, context.user, workspace),
     owner: (workspace, _, context) => context.batch.creatorBatchLoader.load(getOwnerId(workspace)),
-    objects: (workspace, args, context) => objects(context, context.user, workspace, args),
+    objects: (workspace, args, context) => {
+      return objects(context, context.user, workspace, args) as any;
+    },
     editContext: (workspace) => fetchEditContext(workspace.id),
     toStixReportBundle: (workspace, _, context) => toStixReportBundle(context, context.user, workspace),
     toConfigurationExport: (workspace, _, context) => generateWorkspaceExportConfiguration(context, context.user, workspace),

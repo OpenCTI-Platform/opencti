@@ -24,7 +24,7 @@ import { getUserAccessRight, isUserHasCapability, MEMBER_ACCESS_RIGHT_ADMIN, SYS
 import { publishUserAction } from '../../listener/UserActionListener';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
 import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
-import type { BasicStoreEntity } from '../../types/store';
+import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, isNotEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractContentFrom } from '../../utils/fileToContent';
@@ -106,14 +106,14 @@ export const objects = async (
   args: WorkspaceObjectsArgs,
 ) => {
   if (isEmptyField(investigated_entities_ids)) {
-    return buildPagination(1, null, [], 0);
+    return buildPagination<BasicStoreBase>(1, null, [], 0);
   }
   const filters = addFilter(args.filters, 'internal_id', investigated_entities_ids);
   const finalArgs = { ...args, filters };
   if (args.all) {
     return fullEntitiesOrRelationsConnection(context, user, args.types, finalArgs);
   }
-  return pageEntitiesOrRelationsConnection(context, user, args.types, finalArgs);
+  return await pageEntitiesOrRelationsConnection(context, user, args.types, finalArgs) as BasicConnection<BasicStoreBase>;
 };
 
 const checkInvestigatedEntitiesInputs = async (

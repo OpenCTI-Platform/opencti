@@ -42,7 +42,17 @@ import type * as SDO from '../types/stix-2-1-sdo';
 import type * as SRO from '../types/stix-2-1-sro';
 import type * as SCO from '../types/stix-2-1-sco';
 import type * as SMO from '../types/stix-2-1-smo';
-import type { BasicStoreObject, StoreCommon, StoreCyberObservable, StoreEntity, StoreEntityIdentity, StoreFileWithRefs, StoreObject, StoreRelation } from '../types/store';
+import type {
+  BasicStoreCommon,
+  BasicStoreObject,
+  StoreCommon,
+  StoreCyberObservable,
+  StoreEntity,
+  StoreEntityIdentity,
+  StoreFileWithRefs,
+  StoreObject,
+  StoreRelation
+} from '../types/store';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -185,7 +195,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
         object_marking_refs: (file[INPUT_MARKINGS] ?? []).filter((f) => f).map((f) => f.standard_id),
       })),
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
-    is_inferred: instance._index ? isInferredIndex(instance._index) : undefined, // TODO Use case for empty _index?
+    is_inferred: isInferredIndex(instance._index),
     // Refs
     granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
     // Internals
@@ -1222,14 +1232,16 @@ const checkInstanceCompletion = (instance: StoreRelation) => {
 // SRO
 const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
   checkInstanceCompletion(instance);
+  const resolvedFrom = instance.from as BasicStoreCommon;
+  const resolvedTo = instance.to as BasicStoreCommon;
   const stixRelationship = buildStixRelationship(instance);
   const isBuiltin = isRelationBuiltin(instance);
   return {
     ...stixRelationship,
     relationship_type: instance.relationship_type,
     description: instance.description,
-    source_ref: instance.from.standard_id,
-    target_ref: instance.to.standard_id,
+    source_ref: resolvedFrom.standard_id,
+    target_ref: resolvedTo.standard_id,
     start_time: convertToStixDate(instance.start_time),
     stop_time: convertToStixDate(instance.stop_time),
     external_references: buildExternalReferences(instance),
@@ -1238,17 +1250,17 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
         ...stixRelationship.extensions[STIX_EXT_OCTI],
         extension_type: isBuiltin ? 'property-extension' : 'new-sro',
         source_value: extractEntityRepresentativeName(instance.from),
-        source_ref: instance.from.internal_id,
-        source_type: instance.from.entity_type,
-        source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
-        source_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
-        source_ref_pir_refs: instance.from[RELATION_IN_PIR] ?? [],
+        source_ref: resolvedFrom.internal_id,
+        source_type: resolvedFrom.entity_type,
+        source_ref_object_marking_refs: resolvedFrom[RELATION_OBJECT_MARKING] ?? [],
+        source_ref_granted_refs: resolvedFrom[RELATION_GRANTED_TO] ?? [],
+        source_ref_pir_refs: resolvedFrom[RELATION_IN_PIR] ?? [],
         target_value: extractEntityRepresentativeName(instance.to),
-        target_ref: instance.to.internal_id,
-        target_type: instance.to.entity_type,
-        target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
-        target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
-        target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
+        target_ref: resolvedTo.internal_id,
+        target_type: resolvedTo.entity_type,
+        target_ref_object_marking_refs: resolvedTo[RELATION_OBJECT_MARKING] ?? [],
+        target_ref_granted_refs: resolvedTo[RELATION_GRANTED_TO] ?? [],
+        target_ref_pir_refs: resolvedTo[RELATION_IN_PIR] ?? [],
         kill_chain_phases: buildKillChainPhases(instance),
         coverage: instance.coverage,
       })
@@ -1257,6 +1269,8 @@ const convertRelationToStix = (instance: StoreRelation): SRO.StixRelation => {
 };
 const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
   checkInstanceCompletion(instance);
+  const resolvedFrom = instance.from as BasicStoreCommon;
+  const resolvedTo = instance.to as BasicStoreCommon;
   const stixRelationship = buildStixRelationship(instance);
   return {
     ...stixRelationship,
@@ -1264,23 +1278,23 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
     first_seen: convertToStixDate(instance.first_seen),
     last_seen: convertToStixDate(instance.last_seen),
     count: instance.attribute_count,
-    sighting_of_ref: instance.from.standard_id,
-    where_sighted_refs: [instance.to.standard_id],
+    sighting_of_ref: resolvedFrom.standard_id,
+    where_sighted_refs: [resolvedTo.standard_id],
     summary: instance.summary,
     observed_data_refs: [], // TODO Add support
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
         sighting_of_value: extractEntityRepresentativeName(instance.from),
-        sighting_of_ref: instance.from.internal_id,
-        sighting_of_type: instance.from.entity_type,
-        sighting_of_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
-        sighting_of_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
+        sighting_of_ref: resolvedFrom.internal_id,
+        sighting_of_type: resolvedFrom.entity_type,
+        sighting_of_ref_object_marking_refs: resolvedFrom[RELATION_OBJECT_MARKING] ?? [],
+        sighting_of_ref_granted_refs: resolvedFrom[RELATION_GRANTED_TO] ?? [],
         where_sighted_values: [extractEntityRepresentativeName(instance.to)],
-        where_sighted_refs: [instance.to.internal_id],
-        where_sighted_types: [instance.to.entity_type],
-        where_sighted_refs_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
-        where_sighted_refs_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
+        where_sighted_refs: [resolvedTo.internal_id],
+        where_sighted_types: [resolvedTo.entity_type],
+        where_sighted_refs_object_marking_refs: resolvedTo[RELATION_OBJECT_MARKING] ?? [],
+        where_sighted_refs_granted_refs: resolvedTo[RELATION_GRANTED_TO] ?? [],
         negative: instance.x_opencti_negative,
       })
     }
@@ -1288,32 +1302,34 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
 };
 const convertInPirRelToStix = (instance: StoreRelationPir): SRO.StixRelation => {
   checkInstanceCompletion(instance);
+  const resolvedFrom = instance.from as BasicStoreCommon;
+  const resolvedTo = instance.to as BasicStoreCommon;
   const stixRelationship = buildStixRelationship(instance);
   const isBuiltin = isRelationBuiltin(instance);
   return {
     ...stixRelationship,
     relationship_type: instance.relationship_type,
     description: instance.description,
-    source_ref: instance.from.standard_id,
-    target_ref: instance.to.standard_id,
+    source_ref: resolvedFrom.standard_id,
+    target_ref: resolvedTo.standard_id,
     start_time: convertToStixDate(instance.start_time),
     stop_time: convertToStixDate(instance.stop_time),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixRelationship.extensions[STIX_EXT_OCTI],
         extension_type: isBuiltin ? 'property-extension' : 'new-sro',
-        source_value: extractEntityRepresentativeName(instance.from),
-        source_ref: instance.from.internal_id,
-        source_type: instance.from.entity_type,
-        source_ref_object_marking_refs: instance.from[RELATION_OBJECT_MARKING] ?? [],
-        source_ref_granted_refs: instance.from[RELATION_GRANTED_TO] ?? [],
-        source_ref_pir_refs: instance.from[RELATION_IN_PIR] ?? [],
-        target_value: extractEntityRepresentativeName(instance.to),
-        target_ref: instance.to.internal_id,
-        target_type: instance.to.entity_type,
-        target_ref_object_marking_refs: instance.to[RELATION_OBJECT_MARKING] ?? [],
-        target_ref_granted_refs: instance.to[RELATION_GRANTED_TO] ?? [],
-        target_ref_pir_refs: instance.to[RELATION_IN_PIR] ?? [],
+        source_value: extractEntityRepresentativeName(resolvedFrom),
+        source_ref: resolvedFrom.internal_id,
+        source_type: resolvedFrom.entity_type,
+        source_ref_object_marking_refs: resolvedFrom[RELATION_OBJECT_MARKING] ?? [],
+        source_ref_granted_refs: resolvedFrom[RELATION_GRANTED_TO] ?? [],
+        source_ref_pir_refs: resolvedFrom[RELATION_IN_PIR] ?? [],
+        target_value: extractEntityRepresentativeName(resolvedTo),
+        target_ref: resolvedTo.internal_id,
+        target_type: resolvedTo.entity_type,
+        target_ref_object_marking_refs: resolvedTo[RELATION_OBJECT_MARKING] ?? [],
+        target_ref_granted_refs: resolvedTo[RELATION_GRANTED_TO] ?? [],
+        target_ref_pir_refs: resolvedTo[RELATION_IN_PIR] ?? [],
         kill_chain_phases: [],
         coverage: instance.coverage,
         pir_score: instance.pir_score,
