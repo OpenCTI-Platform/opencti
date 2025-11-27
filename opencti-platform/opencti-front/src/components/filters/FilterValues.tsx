@@ -7,13 +7,7 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { WarningOutlined } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useFormatter } from '../i18n';
-import {
-  FiltersRestrictions,
-  isFilterEditable,
-  isFilterGroupNotEmpty,
-  isRegardingOfFilterWarning,
-  useFilterDefinition
-} from '../../utils/filters/filtersUtils';
+import { FiltersRestrictions, isFilterEditable, isFilterGroupNotEmpty, isRegardingOfFilterWarning, useFilterDefinition } from '../../utils/filters/filtersUtils';
 import { isDateIntervalTranslatable, translateDateInterval, truncate } from '../../utils/String';
 import FilterValuesContent from '../FilterValuesContent';
 import { FilterRepresentative } from './FiltersModel';
@@ -170,7 +164,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               filterDefinition={filterDefinition}
               filterOperator={filterOperator}
             />
-            {last(filterValues) !== id && isRegardingOfFilter && (
+            {last(filterValues) !== id && isRegardingOfFilter &&
               <div
                 style={{
                   display: 'inline-block',
@@ -179,13 +173,16 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   margin: '0 2px 0 0',
                   fontFamily: 'Consolas, monaco, monospace',
                 }}
-                onClick={operatorOnClick}>,</div>
-            )}
-            {last(filterValues) !== id && !isRegardingOfFilter && (
+                onClick={operatorOnClick}
+              >
+                ,
+              </div>
+            }
+            {last(filterValues) !== id && !isRegardingOfFilter &&
               <div style={localModeStyle} onClick={operatorOnClick}>
                 {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
               </div>
-            )}
+            }
           </>
         }
       </Fragment>
