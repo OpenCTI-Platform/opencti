@@ -151,20 +151,8 @@ export async function handleEmailNotification(
     octi: new NotificationTool(),
   };
 
-  let renderedTitle: string;
-  let renderedEmail: string;
-
-  try {
-    renderedTitle = await safeRender(title, sanitizedData);
-    renderedEmail = await safeRender(template, sanitizedData);
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager email rendering error', {
-      cause: error,
-      manager: 'PUBLISHER_MANAGER',
-      triggerIds
-    });
-    throw new Error('Failed to render email template');
-  }
+  const renderedTitle = await safeRender(title, sanitizedData);
+  const renderedEmail = await safeRender(template, sanitizedData);
 
   const emailPayload = {
     from: await smtpComputeFrom(),
@@ -173,12 +161,7 @@ export async function handleEmailNotification(
     html: renderedEmail
   };
 
-  try {
-    await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: error, manager: 'PUBLISHER_MANAGER' });
-    throw error;
-  }
+  await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
 }
 
 export async function handleSimplifiedEmailNotification(
@@ -206,20 +189,8 @@ export async function handleSimplifiedEmailNotification(
     url_suffix,
   };
 
-  let renderedTitle: string;
-  let renderedEmail: string;
-
-  try {
-    renderedTitle = await safeRender(title, sanitizedData);
-    renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData);
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager simplified email rendering error', {
-      cause: error,
-      manager: 'PUBLISHER_MANAGER',
-      triggerIds
-    });
-    throw new Error('Failed to render simplified email template');
-  }
+  const renderedTitle = await safeRender(title, sanitizedData);
+  const renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData);
 
   const emailPayload = {
     from: await smtpComputeFrom(),
@@ -230,35 +201,18 @@ export async function handleSimplifiedEmailNotification(
   if (!emailPayload.to) {
     logApp.warn('[OPENCTI-MODULE] No recipient defined in email payload', { toId: user.user_id, manager: 'PUBLISHER_MANAGER' });
   } else {
-    try {
-      await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
-    } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Publisher manager send email error', { cause: error, manager: 'PUBLISHER_MANAGER' });
-      throw error;
-    }
+    await sendMail(emailPayload, { identifier: triggerIds, category: 'notification' });
   }
 }
 
 export async function handleWebhookNotification(configurationString: string | undefined, templateData: object) {
   const { url, template, verb, params, headers } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
 
-  let renderedWebhookTemplate: string;
-  let webhookPayload: any;
-
-  try {
-    // Use safeRender with JSON escape option for webhook templates
-    renderedWebhookTemplate = await safeRender(template, sanitizeNotificationData(templateData), {
-      useJsonEscape: true
-    });
-    webhookPayload = JSON.parse(renderedWebhookTemplate);
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager webhook rendering error', {
-      cause: error,
-      manager: 'PUBLISHER_MANAGER',
-      url
-    });
-    throw new Error('Failed to render webhook template');
-  }
+  // Use safeRender with JSON escape option for webhook templates
+  const renderedWebhookTemplate = await safeRender(template, sanitizeNotificationData(templateData), {
+    useJsonEscape: true
+  });
+  const webhookPayload = JSON.parse(renderedWebhookTemplate);
 
   const headersObject = Object.fromEntries((headers ?? []).map((header) => [header.attribute, header.value]));
   const paramsObject = Object.fromEntries((params ?? []).map((param) => [param.attribute, param.value]));
@@ -266,12 +220,7 @@ export async function handleWebhookNotification(configurationString: string | un
   const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject };
   const httpClient = getHttpClient(httpClientOptions);
 
-  try {
-    await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });
-  } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager webhook error', { cause: error, manager: 'PUBLISHER_MANAGER', url });
-    throw error;
-  }
+  await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });
 }
 
 export const internalProcessNotification = async (
@@ -347,7 +296,15 @@ export const processNotificationEvent = async (
 
     // There is no await in purpose; the goal is to send notification and continue without waiting result.
     internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap)
-      .catch((reason) => logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason }));
+      .catch((reason) => {
+        logApp.error('[OPENCTI-MODULE] Publisher manager notification processing error', {
+          cause: reason,
+          manager: 'PUBLISHER_MANAGER',
+          notifierType: notifier.notifier_connector_id,
+          userId: user.user_id,
+          notificationId,
+        });
+      });
   }
 };
 
@@ -449,18 +406,25 @@ const processBufferedEvents = async (
         const triggersInDataToSend = [...new Set(dataToSend.map((d) => triggerMap.get(d.notification_id)).filter((t) => t))];
         // If triggers can't be found, no need to send the data
         if (triggersInDataToSend.length >= 1) {
+          const notifierEntity = allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier;
           // There is no await in purpose, the goal is to send notification and continue without waiting result.
           internalProcessNotification(
             context,
             settings,
             triggerMap,
             currentUser,
-            allNotifiersMap.get(notifier) ?? {} as BasicStoreEntityNotifier,
+            notifierEntity,
             dataToSend,
             triggersInDataToSend as BasicStoreEntityTrigger[],
             usersFromCache,
           ).catch((reason) => {
-            logApp.error('[OPENCTI-MODULE] Publisher manager unknown error.', { cause: reason });
+            logApp.error('[OPENCTI-MODULE] Publisher manager buffered notification processing error', {
+              cause: reason,
+              manager: 'PUBLISHER_MANAGER',
+              notifierType: notifierEntity.notifier_connector_id,
+              userId: currentUser.user_id,
+              triggerCount: triggersInDataToSend.length,
+            });
           });
         } else {
           logApp.error('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
