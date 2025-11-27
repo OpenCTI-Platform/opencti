@@ -259,7 +259,7 @@ export const changes: AttributeDefinition = {
   upsert: false,
   isFilterable: false,
   mappings: [
-    { name: 'field', label: 'Field', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
+    { name: 'field', label: 'Field', type: 'string', format: 'short', editDefault: false, mandatoryType: 'external', multiple: true, upsert: true, isFilterable: false },
     { name: 'added', label: 'Added value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'removed', label: 'Removed value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
     { name: 'previous', label: 'Previous value', type: 'string', format: 'short', editDefault: false, mandatoryType: 'no', multiple: true, upsert: true, isFilterable: false },
