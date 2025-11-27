@@ -67,6 +67,8 @@ jobs:
       version: ${{ steps.meta.outputs.version }}
     steps:
     - uses: actions/checkout@v6
+      with:
+        ref: ${{ inputs.checkout_ref }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
