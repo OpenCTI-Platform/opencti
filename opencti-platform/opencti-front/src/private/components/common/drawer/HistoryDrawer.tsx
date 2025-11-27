@@ -14,6 +14,7 @@ import TableBody from '@mui/material/TableBody';
 import { useTheme } from '@mui/styles';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
+import { useFormatter } from "../../../../components/i18n";
 
 interface HistoryDrawerProps {
   open: boolean
@@ -25,15 +26,8 @@ interface HistoryDrawerProps {
 const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, node }) => {
   const data = useFragment(StixCoreObjectHistoryFragment, node);
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
 
-  function createData(name: string, PreviousValue:string, NewValue:string) {
-    return { name, PreviousValue, NewValue };
-  }
-  const rows = [
-    createData('Report type', 'Threat report', 'APT'),
-    createData('Markings', 'TLP:RED', 'TLP:AMBER'),
-    createData('Description', 'lzal', ''),
-  ];
   return (
     <Drawer
       open={open}
@@ -65,6 +59,7 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                 textAlign: 'center',
               }}
               >
+                {data?.context_data?.changes && data.context_data.changes.length > 0 ? (
                 <TableContainer component={Paper}>
                   <Table sx={{ minWidth: 650 }} size="small">
                     <TableHead>
@@ -75,21 +70,26 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {rows.map((row) => (
+                      {data?.context_data?.changes?.map((row) => (
                         <TableRow
-                          key={row.name}
+                          key={row?.field}
                           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                         >
                           <TableCell component="th" scope="row">
-                            {row.name}
+                            {row?.field}
                           </TableCell>
-                          <TableCell align="left">{row.PreviousValue}</TableCell>
-                          <TableCell align="left">{row.NewValue}</TableCell>
+                          <TableCell align="left">{row?.previous}</TableCell>
+                          <TableCell align="left">{row?.new}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
+                ) : (
+                  <div>
+                    {t_i18n('No detail in this log')}
+                  </div>
+                  )}
               </div>
             </div>
           </Paper>
