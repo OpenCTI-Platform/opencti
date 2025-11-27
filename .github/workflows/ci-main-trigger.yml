@@ -15,13 +15,10 @@ jobs:
           include:
             # On all push, test on the current branch
             - name: "Current branch"
-              is_pr_merge: false
-              condition: ${{ github.event_name == 'push' }}
+              is_pr_merge: ${{ github.event_name == 'push' }}
             # On PR test on simulated merge
             - name: "Merge with base"
-              is_pr_merge: true
-              condition: ${{ github.event_name == 'pull_request' }}
-      if: ${{ matrix.condition }}
+              is_pr_merge: ${{ github.event_name == 'pull_request' }}
       name: OpenCTI CI ${{ matrix.name }}
       with:
         is_pr_merge: ${{ matrix.is_pr_merge }}
