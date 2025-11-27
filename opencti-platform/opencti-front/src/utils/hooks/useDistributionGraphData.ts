@@ -107,7 +107,7 @@ const useDistributionGraphData = () => {
    */
   const buildWidgetLabelsOption = (distributionData: DistributionQueryData, groupBy: string) => {
     return distributionData.map((n) => {
-      if (!n) return 'Unknown';
+      if (!n || n.label === 'unknown') return 'Unknown';
       if (isFieldForIdentifier(groupBy)) {
         return getMainRepresentative(n.entity);
       }

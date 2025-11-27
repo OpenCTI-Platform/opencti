@@ -599,7 +599,7 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true });
   // filter out unresolved data (like the SYSTEM user for instance)
-  const filteredData = data.filter((n) => isNotEmptyField(allResolveLabels[n.label.toLowerCase()]));
+  const filteredData = data.filter((n) => isNotEmptyField(n.label === 'unknown' || allResolveLabels[n.label.toLowerCase()]));
   // entities not granted shall be sent as "restricted" with limited information
   const grantedIds = [];
   for (let i = 0; i < filteredData.length; i += 1) {
