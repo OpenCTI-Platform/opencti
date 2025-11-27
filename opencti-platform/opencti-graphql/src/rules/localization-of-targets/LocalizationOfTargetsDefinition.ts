@@ -32,14 +32,6 @@ const display = {
       target: 'Location D',
       target_color: '#00bcd4',
     },
-    {
-      action: 'CREATE',
-      relation: 'relationship_object',
-      source: 'Report A',
-      source_color: '#ff9800',
-      target: 'Relation D',
-      target_color: '#7e57c2',
-    },
   ],
 };
 
