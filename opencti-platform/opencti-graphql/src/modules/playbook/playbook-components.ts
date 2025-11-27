@@ -911,16 +911,15 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
         };
 
         if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS') && element.id) {
-          const restrictedMembers = await buildRestrictedMembers(context, AUTOMATION_MANAGER_USER, args);
           const patchValue = {
             op: EditOperation.Replace,
-            path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
-            value: restrictedMembers,
+            path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/authorized_members`,
+            value: [],
           };
           const patchOperation = {
             operation: EditOperation.Replace,
             key: INPUT_AUTHORIZED_MEMBERS,
-            value: restrictedMembers,
+            value: [],
           };
           element.extensions[STIX_EXT_OCTI].opencti_upsert_operations = [
             ...(element.extensions[STIX_EXT_OCTI].opencti_upsert_operations ?? []),
@@ -928,6 +927,9 @@ export const PLAYBOOK_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<AccessRes
           ];
           patchOperations.push(patchValue);
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
       }
       if (patchOperations.length > 0) {
         const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
