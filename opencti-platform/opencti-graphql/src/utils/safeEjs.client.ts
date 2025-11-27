@@ -64,7 +64,7 @@ const prepareDataForWorker = (data: Data): Data => {
 
 export const safeRender = async (template: string, data: Data, options?: SafeRenderOptions & WorkerOptions): Promise<string> => {
   // Handle empty template directly without worker
-  if (!template || template.length === 0) {
+  if (!template) {
     return '';
   }
 
@@ -143,13 +143,13 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
     return result;
   } catch (error) {
     // Enhance error messages
-    if (error instanceof Error) {
-      if (error.message.includes('Worker terminated')) {
-        throw new Error('Rendering exceeded memory limits');
-      }
-      throw error;
+    if (!(error instanceof Error)) {
+      throw new Error('Unknown rendering error');
     }
-    throw new Error('Unknown rendering error');
+    if (error.message.includes('Worker terminated')) {
+      throw new Error('Rendering exceeded memory limits');
+    }
+    throw error;
   } finally {
     // Clean termination
     await worker.terminate();
