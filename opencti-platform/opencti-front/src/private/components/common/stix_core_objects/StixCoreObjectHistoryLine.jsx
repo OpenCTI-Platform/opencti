@@ -36,6 +36,7 @@ export const StixCoreObjectHistoryFragment = graphql`
     user {
       name
     }
+
     context_data {
       message
       commit
@@ -48,6 +49,13 @@ export const StixCoreObjectHistoryFragment = graphql`
         url
         description
       }
+        changes{
+          field
+          previous
+          new
+          added
+          removed
+        }
     }
   }
 `;

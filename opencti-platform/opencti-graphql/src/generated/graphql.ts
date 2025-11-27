@@ -3406,6 +3406,15 @@ export enum CatalogsOrdering {
   Name = 'name'
 }
 
+export type Change = {
+  __typename?: 'Change';
+  added?: Maybe<Array<Scalars['String']['output']>>;
+  field: Scalars['String']['output'];
+  new?: Maybe<Scalars['String']['output']>;
+  previous?: Maybe<Scalars['String']['output']>;
+  removed?: Maybe<Array<Scalars['String']['output']>>;
+};
+
 export type ChangePasswordInput = {
   newPassword: Scalars['String']['input'];
   otp: Scalars['String']['input'];
@@ -4445,6 +4454,7 @@ export enum ContainersOrdering {
 
 export type ContextData = {
   __typename?: 'ContextData';
+  changes?: Maybe<Array<Maybe<Change>>>;
   commit?: Maybe<Scalars['String']['output']>;
   entity_id?: Maybe<Scalars['String']['output']>;
   entity_name?: Maybe<Scalars['String']['output']>;
@@ -35845,6 +35855,7 @@ export type ResolversTypes = ResolversObject<{
   CatalogConnection: ResolverTypeWrapper<Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversTypes['CatalogEdge']> }>;
   CatalogEdge: ResolverTypeWrapper<Omit<CatalogEdge, 'node'> & { node: ResolversTypes['Catalog'] }>;
   CatalogsOrdering: CatalogsOrdering;
+  Change: ResolverTypeWrapper<Change>;
   ChangePasswordInput: ChangePasswordInput;
   Channel: ResolverTypeWrapper<BasicStoreEntityChannel>;
   ChannelAddInput: ChannelAddInput;
@@ -36859,6 +36870,7 @@ export type ResolversParentTypes = ResolversObject<{
   Catalog: GraphqlCatalog;
   CatalogConnection: Omit<CatalogConnection, 'edges'> & { edges: Array<ResolversParentTypes['CatalogEdge']> };
   CatalogEdge: Omit<CatalogEdge, 'node'> & { node: ResolversParentTypes['Catalog'] };
+  Change: Change;
   ChangePasswordInput: ChangePasswordInput;
   Channel: BasicStoreEntityChannel;
   ChannelAddInput: ChannelAddInput;
@@ -38715,6 +38727,14 @@ export type CatalogEdgeResolvers<ContextType = any, ParentType extends Resolvers
   node?: Resolver<ResolversTypes['Catalog'], ParentType, ContextType>;
 }>;
 
+export type ChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['Change'] = ResolversParentTypes['Change']> = ResolversObject<{
+  added?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  new?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  previous?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  removed?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+}>;
+
 export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = ResolversObject<{
   aliases?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
@@ -39093,6 +39113,7 @@ export type ContainerEditMutationsResolvers<ContextType = any, ParentType extend
 }>;
 
 export type ContextDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContextData'] = ResolversParentTypes['ContextData']> = ResolversObject<{
+  changes?: Resolver<Maybe<Array<Maybe<ResolversTypes['Change']>>>, ParentType, ContextType>;
   commit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -48140,6 +48161,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Catalog?: CatalogResolvers<ContextType>;
   CatalogConnection?: CatalogConnectionResolvers<ContextType>;
   CatalogEdge?: CatalogEdgeResolvers<ContextType>;
+  Change?: ChangeResolvers<ContextType>;
   Channel?: ChannelResolvers<ContextType>;
   ChannelConnection?: ChannelConnectionResolvers<ContextType>;
   ChannelEdge?: ChannelEdgeResolvers<ContextType>;
