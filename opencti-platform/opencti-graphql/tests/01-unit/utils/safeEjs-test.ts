@@ -28,6 +28,16 @@ describe('check safeRender on valid cases', () => {
       <% } %>
     `,
     'object assign': '<% Object.assign({}, {test: 1}) %>',
+    'ejs with comment': '<%# This is a comment %>Hello <%= user.name %>',
+    'ejs with multiple comments': `
+      <%# Comment at start %>
+      <% if (user) { %>
+        <%# Comment in block %>
+        <h2><%= user.name %></h2>
+      <% } %>
+      <%# Comment at end %>
+    `,
+    'ejs with comment between code': '<% const x = 1; %><%# Comment here %><%= x %>',
   }).map(([name, template]) => ({ name, template }));
 
   it.each(validCases)('safeRender should succeed for "$name" case', ({ template }) => {

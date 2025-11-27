@@ -192,6 +192,25 @@ const extractEJSCode = (template: string, openTag: string, closeTag: string) => 
     pos = template.indexOf(openTag, pos);
     if (pos !== -1) {
       let startPos = pos + openTag.length;
+      
+      // Skip EJS comments (<%# ... %>)
+      if (template[startPos] === '#') {
+        const commentStart = pos;
+        pos = template.indexOf(closeTag, startPos + 1);
+        if (pos === -1) {
+          throw new VerifierParsingError('Unable to parse EJS template, missing close tag');
+        }
+        // Add non-code fragment before comment if needed
+        if (commentStart > processedPos) {
+          pushFragment(template.substring(processedPos, commentStart), false);
+        }
+        // Skip the entire comment (treat as non-code to preserve line structure)
+        pushFragment(template.substring(commentStart, pos + closeTag.length), false);
+        processedPos = pos + closeTag.length;
+        pos = pos + closeTag.length;
+        continue;
+      }
+      
       if (['=', '_', '-'].includes(template[startPos])) {
         startPos += 1;
       }
