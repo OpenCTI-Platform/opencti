@@ -2,8 +2,6 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
 import type { DecayExclusionRuleModel } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
-import { ENTITY_IPV6_ADDR, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 export const DECAY_EXCLUSION_RULE_LIST_QUERY = gql`
   query decayExclusionRules($first: Int, $filters: FilterGroup) {
@@ -13,7 +11,7 @@ export const DECAY_EXCLUSION_RULE_LIST_QUERY = gql`
           id
           name
           created_at
-          decay_exclusion_observable_types
+          decay_exclusion_filters
           active
         }
       }
@@ -27,7 +25,7 @@ export const DECAY_EXCLUSION_RULE_CREATE = gql`
       id
       name
       created_at
-      decay_exclusion_observable_types
+      decay_exclusion_filters
       active
     }
   }
@@ -39,7 +37,7 @@ const DECAY_EXCLUSION_RULE_UPDATE = gql`
       id
       name
       created_at
-      decay_exclusion_observable_types
+      decay_exclusion_filters
       active
     }
   }
@@ -58,12 +56,12 @@ describe('Decay Exclusion Rule', () => {
   describe('Create', async () => {
     const createInput = {
       name: 'test name 1',
-      decay_exclusion_observable_types: ['ENTITY_IPV4_ADDR', 'ENTITY_IPV6_ADDR'],
+      decay_exclusion_filters: '{"mode":"and","filters":[],"filterGroups":[]}',
       active: true,
     };
     const createInput2 = {
       name: 'test name 2',
-      decay_exclusion_observable_types: ['ENTITY_TYPE_CONTAINER_REPORT', 'ENTITY_IPV6_ADDR'],
+      decay_exclusion_filters: '{"mode":"and","filters":[{"key":["objectMarking"],"operator":"eq","values":["14baccf5-f87d-4dae-bca5-5e0e90062dbb"],"mode":"or"},{"key":["objectLabel"],"operator":"eq","values":["97699018-9db6-4a47-9528-dd3145d78b4d"],"mode":"or"},{"key":["pattern_type"],"operator":"eq","values":["stix","tanium-signal"],"mode":"or"}],"filterGroups":[]}',
       active: false,
     };
 
@@ -102,6 +100,7 @@ describe('Decay Exclusion Rule', () => {
       expect(decayExclusionRuleList?.data?.decayExclusionRules?.edges.length).toBe(2);
     });
   });
+
   describe('Update', () => {
     it('should edit the name of the decay exclusion rule', async () => {
       const result = await queryAsAdminWithSuccess({
@@ -119,6 +118,7 @@ describe('Decay Exclusion Rule', () => {
       expect(result?.data?.decayExclusionRuleFieldPatch?.name).toBe('updated name 1');
     });
   });
+
   describe('Delete', () => {
     beforeAll(async () => {
       await queryAsAdminWithSuccess({
