@@ -175,7 +175,7 @@ const extractInfoFromBasicAuth = (authorization) => {
 const extractTokenFromBasicAuth = async (authorization) => {
   const { username, password } = extractInfoFromBasicAuth(authorization);
   if (username && password) {
-    // eslint-disable-next-line no-use-before-define
+     
     const { api_token: tokenUUID } = await login(username, password);
     return tokenUUID;
   }
@@ -1022,7 +1022,7 @@ export const bookmarks = async (context, user, args) => {
     bookmarkList = bookmarkList.filter((mark) => testFilterGroup(mark, filters, entityTypeBookmarkTester));
   }
   const filteredBookmarks = [];
-  // eslint-disable-next-line no-restricted-syntax
+   
   for (const bookmark of bookmarkList) {
     const loadedBookmark = await storeLoadById(context, user, bookmark.id, bookmark.type);
     if (isNotEmptyField(loadedBookmark)) {
