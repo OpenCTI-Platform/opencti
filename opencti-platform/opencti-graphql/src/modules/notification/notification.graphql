@@ -53,7 +53,7 @@ type Trigger implements InternalObject & BasicObject {
     id: ID! # internal_id
     standard_id: String!
     entity_type: String!
-    parent_types: [String]!
+    parent_types: [String!]!
     metrics:[Metric]
     created: DateTime
     modified: DateTime
@@ -136,7 +136,7 @@ type Notification implements InternalObject & BasicObject {
     created: DateTime
     name: String!
     notification_type: String!
-    parent_types: [String]!
+    parent_types: [String!]!
   metrics:[Metric]
     notification_content: [NotificationContent!]!
     is_read: Boolean!
