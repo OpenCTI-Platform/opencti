@@ -8,7 +8,7 @@ import { EVENT_TYPE_UPDATE, INDEX_HISTORY, isEmptyField, isNotEmptyField } from 
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, REDACTED_USER, SYSTEM_USER } from '../utils/access';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import type { SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
+import type {Change, SseEvent, StreamDataEvent, UpdateEvent} from '../types/event';
 import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
@@ -30,14 +30,6 @@ import { RELATION_IN_PIR } from '../schema/internalRelationship';
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const HISTORY_WITH_INFERENCES = booleanConf('history_manager:include_inferences', false);
 const SCHEDULE_TIME = 10000;
-
-interface Change {
-  field: string;
-  previous?: string;
-  new?: string;
-  added?: Array<string>;
-  removed?: Array<string>;
-}
 
 interface HistoryContext {
   id: string;
