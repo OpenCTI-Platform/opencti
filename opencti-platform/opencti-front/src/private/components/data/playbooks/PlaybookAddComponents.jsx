@@ -907,6 +907,7 @@ const PlaybookAddComponentsContent = ({
                     );
                   }
                   if (v.type === 'array') {
+                    const translateByType = v.$ref === 'Types' ? translateEntityType : t_i18n;
                     return (
                       <Field
                         key={k}
@@ -919,11 +920,11 @@ const PlaybookAddComponentsContent = ({
                           <Tooltip
                             {...optionProps}
                             key={value.const}
-                            title={t_i18n(value.title)}
+                            title={translateByType(value.title)}
                             placement="bottom-start"
                           >
                             <MenuItem value={value.const}>
-                              {t_i18n(value.title)}
+                              {translateByType(value.title)}
                             </MenuItem>
                           </Tooltip>
                         )}
@@ -933,7 +934,9 @@ const PlaybookAddComponentsContent = ({
                           value.map((n) => (n.const ? n.const : n)),
                         )}
                         noFieldUpdate={true}
-                        options={v.items.oneOf}
+                        options={[...(v.items.oneOf ?? [])]
+                          .sort((a, b) => translateByType(a?.title ?? '')
+                            .localeCompare(translateByType(b?.title ?? '')))}
                         textfieldprops={{
                           variant: 'standard',
                           label: t_i18n(v.$ref ?? k),
