@@ -38,7 +38,6 @@ import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
 import { extractStixRepresentativeForUser } from '../database/stix-representative';
 import { EVENT_TYPE_UPDATE } from '../database/utils';
-import NotificationTool from '../utils/NotificationTool';
 import { sanitizeNotificationData } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 
@@ -148,11 +147,14 @@ export async function handleEmailNotification(
     // Sanitize template data before rendering
     ...sanitizeNotificationData(templateData),
     url_suffix: urlSuffix,
-    octi: new NotificationTool(),
   };
 
-  const renderedTitle = await safeRender(title, sanitizedData);
-  const renderedEmail = await safeRender(template, sanitizedData);
+  const renderedTitle = await safeRender(title, sanitizedData, {
+    useNotificationTool: true
+  });
+  const renderedEmail = await safeRender(template, sanitizedData, {
+    useNotificationTool: true
+  });
 
   const emailPayload = {
     from: await smtpComputeFrom(),
@@ -189,8 +191,12 @@ export async function handleSimplifiedEmailNotification(
     url_suffix,
   };
 
-  const renderedTitle = await safeRender(title, sanitizedData);
-  const renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData);
+  const renderedTitle = await safeRender(title, sanitizedData, {
+    useNotificationTool: true
+  });
+  const renderedEmail = await safeRender(SIMPLIFIED_EMAIL_TEMPLATE, sanitizedData, {
+    useNotificationTool: true
+  });
 
   const emailPayload = {
     from: await smtpComputeFrom(),

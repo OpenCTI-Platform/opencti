@@ -122,6 +122,82 @@ describe('check safeRender Date proxy', () => {
   });
 });
 
+describe('check safeRender with NotificationTool (markdown)', () => {
+  it('should render markdown to HTML with useNotificationTool flag', async () => {
+    const template = '<%- octi.markdownToHtml(description) %>';
+    const data = {
+      description: '# Title\n\nThis is **bold** and *italic* text.'
+    };
+    
+    const result = await safeRenderClient(template, data, { useNotificationTool: true });
+    
+    expect(result).toContain('<h1>Title</h1>');
+    expect(result).toContain('<strong>bold</strong>');
+    expect(result).toContain('<em>italic</em>');
+  });
+
+  it('should handle markdown with lists', async () => {
+    const template = '<%- octi.markdownToHtml(content) %>';
+    const data = {
+      content: '- Item 1\n- Item 2\n- Item 3'
+    };
+    
+    const result = await safeRenderClient(template, data, { useNotificationTool: true });
+    
+    expect(result).toContain('<ul>');
+    expect(result).toContain('<li>Item 1</li>');
+    expect(result).toContain('<li>Item 2</li>');
+    expect(result).toContain('<li>Item 3</li>');
+  });
+
+  it('should handle undefined markdown gracefully', async () => {
+    const template = '<%- octi.markdownToHtml(description) || "No description" %>';
+    const data = {
+      description: undefined
+    };
+    
+    const result = await safeRenderClient(template, data, { useNotificationTool: true });
+    
+    expect(result).toBe('No description');
+  });
+
+  it('should work in complex template with data array', async () => {
+    const template = `
+      <% data.forEach(function(item) { %>
+        <div class="item">
+          <h2><%= item.title %></h2>
+          <div class="description"><%- octi.markdownToHtml(item.description) %></div>
+        </div>
+      <% }); %>
+    `;
+    const data = {
+      data: [
+        { title: 'Item 1', description: '**Important** information' },
+        { title: 'Item 2', description: 'Another *description*' }
+      ]
+    };
+    
+    const result = await safeRenderClient(template, data, { useNotificationTool: true });
+    
+    expect(result).toContain('<h2>Item 1</h2>');
+    expect(result).toContain('<strong>Important</strong>');
+    expect(result).toContain('<h2>Item 2</h2>');
+    expect(result).toContain('<em>description</em>');
+  });
+
+  it('should fail when useNotificationTool flag is not set', async () => {
+    const template = '<%- octi.markdownToHtml(description) %>';
+    const data = {
+      description: '# Title'
+    };
+    
+    // Without the flag, octi should not be available
+    await expect(
+      safeRenderClient(template, data)
+    ).rejects.toThrow(/octi/i);
+  });
+});
+
 describe('check safeRenderClient error handling and worker termination detection', () => {
   it('should report timeout error when rendering takes too long', async () => {
     // Template with infinite loop should timeout
