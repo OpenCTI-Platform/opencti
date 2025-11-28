@@ -114,7 +114,8 @@ export const schemaRelationsRefDefinition = {
     return this.registeredTypes;
   },
 
-  getRelationRef(entityType: string, name: string): RefAttribute | null {
+  getRelationRef(entityType: string, name: string | null): RefAttribute | null {
+    if (!name) return null;
     const refMap = this.relationsRefCacheMap.get(this.selectEntityType(entityType));
     // From and To are not directly part of the model
     // In the database they are stored in the connection attribute

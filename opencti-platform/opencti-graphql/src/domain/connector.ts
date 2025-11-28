@@ -53,7 +53,7 @@ import { testSync as testSyncUtils } from './connector-utils';
 import { defaultValidationMode, loadFile, uploadJobImport } from '../database/file-storage';
 import { controlUserConfidenceAgainstElement } from '../utils/confidence-level';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
-import type { BasicStoreCommon } from '../types/store';
+import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
 import { computeConnectorTargetContract, getSupportedContractsByImage } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -150,7 +150,7 @@ export const pingConnector = async (context: AuthContext, user: AuthUser, id: st
 };
 export const resetStateConnector = async (context: AuthContext, user: AuthUser, id: string) => {
   const patch = { connector_state: '', connector_state_reset: true, connector_state_timestamp: now() };
-  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
+  const { element } = await patchAttribute<BasicStoreEntityConnector>(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -377,7 +377,7 @@ export const registerConnector = async (
 export const connectorDelete = async (context: AuthContext, user: AuthUser, connectorId: string) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
-  const { element } = await internalDeleteElementById(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
+  const { element } = await internalDeleteElementById<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -392,7 +392,7 @@ export const connectorDelete = async (context: AuthContext, user: AuthUser, conn
 };
 
 const updateConnector = async (context: AuthContext, user: AuthUser, connectorId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, connectorId, ENTITY_TYPE_CONNECTOR, input);
+  const { element } = await updateAttribute<BasicStoreEntityConnector>(context, user, connectorId, ENTITY_TYPE_CONNECTOR, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -592,7 +592,7 @@ export const registerSync = async (context: AuthContext, user: AuthUser, syncDat
   return element;
 };
 export const syncEditField = async (context: AuthContext, user: AuthUser, syncId: string, input: EditInput[]) => {
-  const { element } = await updateAttribute(context, user, syncId, ENTITY_TYPE_SYNC, input);
+  const { element } = await updateAttribute<StoreEntity>(context, user, syncId, ENTITY_TYPE_SYNC, input);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -604,7 +604,7 @@ export const syncEditField = async (context: AuthContext, user: AuthUser, syncId
   return notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, element, user);
 };
 export const syncDelete = async (context: AuthContext, user: AuthUser, syncId: string) => {
-  const deleted = await deleteElementById(context, user, syncId, ENTITY_TYPE_SYNC);
+  const deleted = await deleteElementById<StoreEntity>(context, user, syncId, ENTITY_TYPE_SYNC);
   await unregisterConnector(syncId);
   await publishUserAction({
     user,

@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import { type EntityOptions, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN } from './fintelDesign-types';
+import { type BasicStoreEntityFintelDesign, ENTITY_TYPE_FINTEL_DESIGN, type StoreEntityFintelDesign } from './fintelDesign-types';
 import type { EditContext, FintelDesignAddInput, MutationFintelDesignFieldPatchArgs } from '../../generated/graphql';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -72,7 +72,7 @@ export const fintelDesignEditField = async (
   if (finalInput.length === 0) {
     return null;
   }
-  const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, finalInput);
+  const { element } = await updateAttribute<StoreEntityFintelDesign>(context, user, id, ENTITY_TYPE_FINTEL_DESIGN, finalInput);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -90,7 +90,7 @@ export const fintelDesignEditField = async (
 
 export const fintelDesignDelete = async (context: AuthContext, user: AuthUser, designId: string) => {
   await checkEnterpriseEdition(context);
-  const deleted = await deleteElementById(
+  const deleted = await deleteElementById<StoreEntityFintelDesign>(
     context,
     user,
     designId,
