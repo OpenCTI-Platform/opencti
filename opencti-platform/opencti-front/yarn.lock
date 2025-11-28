@@ -2144,7 +2144,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@eslint-community/eslint-utils@npm:^4.7.0, @eslint-community/eslint-utils@npm:^4.8.0":
+"@eslint-community/eslint-utils@npm:^4.7.0, @eslint-community/eslint-utils@npm:^4.8.0, @eslint-community/eslint-utils@npm:^4.9.0":
   version: 4.9.0
   resolution: "@eslint-community/eslint-utils@npm:4.9.0"
   dependencies:
@@ -4705,6 +4705,22 @@ __metadata:
   version: 0.3.0
   resolution: "@standard-schema/utils@npm:0.3.0"
   checksum: 10c0/6eb74cd13e52d5fc74054df51e37d947ef53f3ab9e02c085665dcca3c38c60ece8d735cebbdf18fbb13c775fbcb9becb3f53109b0e092a63f0f7389ce0993fd0
+  languageName: node
+  linkType: hard
+
+"@stylistic/eslint-plugin@npm:5.6.1":
+  version: 5.6.1
+  resolution: "@stylistic/eslint-plugin@npm:5.6.1"
+  dependencies:
+    "@eslint-community/eslint-utils": "npm:^4.9.0"
+    "@typescript-eslint/types": "npm:^8.47.0"
+    eslint-visitor-keys: "npm:^4.2.1"
+    espree: "npm:^10.4.0"
+    estraverse: "npm:^5.3.0"
+    picomatch: "npm:^4.0.3"
+  peerDependencies:
+    eslint: ">=9.0.0"
+  checksum: 10c0/dfd33107209dac554a6b88d40813bfadd938e901ee7b853dfff9b66c9ffe0601790591865ad67e05f1f1061fc3c958087ad25efc1117375fe2487bfa69c44352
   languageName: node
   linkType: hard
 
@@ -13974,6 +13990,7 @@ __metadata:
     "@rjsf/core": "npm:5.24.13"
     "@rjsf/mui": "npm:5.24.13"
     "@rjsf/utils": "npm:5.24.13"
+    "@stylistic/eslint-plugin": "npm:5.6.1"
     "@testing-library/dom": "npm:10.4.1"
     "@testing-library/jest-dom": "npm:6.9.1"
     "@testing-library/react": "npm:16.3.0"

@@ -6,6 +6,7 @@ import globals from 'globals';
 import importPlugin from 'eslint-plugin-import';
 import importNewlines from 'eslint-plugin-import-newlines';
 import customRules from 'eslint-plugin-custom-rules';
+import stylistic from '@stylistic/eslint-plugin';
 
 export default defineConfig([
   {
@@ -62,6 +63,7 @@ export default defineConfig([
     plugins: {
       'import-newlines': importNewlines,
       'custom-rules': customRules,
+      '@stylistic': stylistic,
     },
   },
 
@@ -92,10 +94,13 @@ export default defineConfig([
 			globals: {
 				...globals.browser,
 				...globals.jest,
-				myCustomGlobal: "readonly",
+				myCustomGlobal: 'readonly',
 			},
     },
     rules: {
+      '@stylistic/quotes': ['error', 'single', { 'avoidEscape': true }],
+      '@stylistic/semi': ['error', 'always'],
+      '@stylistic/no-multiple-empty-lines': ['error', { 'max': 1, 'maxEOF': 1 }],
       'custom-rules/classes-rule': 1,
       'no-restricted-syntax': 0,
       'react/no-unused-prop-types': 0,

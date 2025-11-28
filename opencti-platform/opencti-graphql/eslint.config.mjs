@@ -5,6 +5,7 @@ import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import importPlugin from 'eslint-plugin-import';
 import importNewlines from 'eslint-plugin-import-newlines';
+import stylistic from '@stylistic/eslint-plugin';
 
 export default defineConfig([
   {
@@ -52,6 +53,7 @@ export default defineConfig([
   {
     plugins: {
       'import-newlines': importNewlines,
+      '@stylistic': stylistic,
     },
   },
 
@@ -71,6 +73,9 @@ export default defineConfig([
     },
 
     rules: {
+      '@stylistic/quotes': ['error', 'single', { 'avoidEscape': true }],
+      '@stylistic/semi': ['error', 'always'],
+      '@stylistic/no-multiple-empty-lines': ['error', { 'max': 1, 'maxEOF': 1 }],
       'import/extensions': [
         'error',
         'ignorePackages',
