@@ -15,7 +15,7 @@ import {
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDeleteWithTypeCheck,
+  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
@@ -65,7 +65,7 @@ const groupingResolvers: Resolvers = {
       return addGrouping(context, context.user, input);
     },
     groupingDelete: (_, { id }, context) => {
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_CONTAINER_GROUPING);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_GROUPING);
     },
     groupingFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

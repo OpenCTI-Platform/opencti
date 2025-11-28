@@ -4,7 +4,7 @@ import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
   stixDomainObjectDeleteRelation,
-  stixDomainObjectDeleteWithTypeCheck,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';;
@@ -20,7 +20,7 @@ const languageResolvers: Resolvers = {
       return addLanguage(context, context.user, input);
     },
     languageDelete: (_, { id }, context) => {
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_LANGUAGE);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_LANGUAGE);
     },
     languageFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

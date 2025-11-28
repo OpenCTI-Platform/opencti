@@ -16,7 +16,7 @@ import {
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDeleteWithTypeCheck,
+  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
@@ -77,7 +77,7 @@ const opinionResolvers = {
     opinionEdit: (_, { id }, context) => ({
       delete: async () => {
         await checkUserAccess(context, context.user, id);
-        return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_CONTAINER_OPINION);
+        return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_OPINION);
       },
       fieldPatch: async ({ input, commitMessage, references }) => {
         await checkUserAccess(context, context.user, id);

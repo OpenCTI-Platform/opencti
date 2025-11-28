@@ -1,7 +1,7 @@
 import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_OBJECT_ASSIGNEE } from '../../../schema/stixRefRelationship';
-import { stixDomainObjectDeleteWithTypeCheck } from '../../../domain/stixDomainObject';
+import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 
 import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, findRfiPaginated, findById } from './case-rfi-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
@@ -27,7 +27,7 @@ const caseRfiResolvers: Resolvers = {
       return addCaseRfi(context, context.user, input);
     },
     caseRfiDelete: (_, { id }, context) => {
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_CASE_RFI);
     },
     caseRfiApprove: (_, { id }, context) => {
       return approveRequestAccess(context, context.user, id);

@@ -4,7 +4,7 @@ import {
 stixDomainObjectAddRelation,
 stixDomainObjectCleanContext,
 stixDomainObjectDeleteRelation,
-stixDomainObjectDeleteWithTypeCheck,
+stixDomainObjectDelete,
 stixDomainObjectEditContext,
 stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -20,7 +20,7 @@ const channelResolvers: Resolvers = {
       return addChannel(context, context.user, input);
     },
     channelDelete: (_, { id }, context) => {
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_CHANNEL);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CHANNEL);
     },
     channelFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
