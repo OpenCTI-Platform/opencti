@@ -71,7 +71,7 @@ export interface ListFilter<T extends BasicStoreCommon> {
 }
 
 // entities
-interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
+export interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   fromOrToId?: string | Array<string>;
   fromId?: string | Array<string>;
   fromRole?: string;
