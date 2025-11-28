@@ -8,7 +8,13 @@ import { pageEntitiesConnection, storeLoadById } from '../../../database/middlew
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../../schema/general';
 import { notify } from '../../../database/redis';
-import type { DecayExclusionRuleAddInput, EditInput, QueryDecayExclusionRulesArgs } from '../../../generated/graphql';
+import type {
+  DecayExclusionRuleAddInput,
+  EditInput,
+  Label,
+  MarkingDefinition,
+  QueryDecayExclusionRulesArgs,
+} from '../../../generated/graphql';
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
 import { type IndicatorAddInput } from '../../../generated/graphql';
@@ -55,9 +61,9 @@ export const checkDecayExclusionRules = async (
 
   const formattedIndicator = {
     ...indicatorToCreate,
-    object_marking_refs: resolvedIndicator[INPUT_MARKINGS].map((marking) => marking.standard_id),
+    object_marking_refs: resolvedIndicator[INPUT_MARKINGS].map((marking: MarkingDefinition) => marking.standard_id),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
-    labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label) => label.id),
+    labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.id),
   };
 
   for (let i = 0; i < activeDecayExclusionRuleList.length; i += 1) {
