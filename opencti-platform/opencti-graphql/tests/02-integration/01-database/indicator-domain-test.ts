@@ -2,7 +2,7 @@ import { afterAll, describe, it, expect, vi, type MockInstance, beforeEach, afte
 import { addIndicator, findById, indicatorEditField, NO_DECAY_DEFAULT_REVOKED_SCORE, NO_DECAY_DEFAULT_VALID_PERIOD } from '../../../src/modules/indicator/indicator-domain';
 import type { EditInput, IndicatorAddInput } from '../../../src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { type BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
+import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { STIX_PATTERN_TYPE } from '../../../src/utils/syntax';
 import { VALID_FROM, VALID_UNTIL, X_SCORE } from '../../../src/schema/identifier';
 import { dayToMs } from '../../../src/modules/decayRule/decayRule-domain';
@@ -33,7 +33,7 @@ describe('Testing field patch and upsert on indicator for trio {score, valid unt
   afterAll(async () => {
     const uniqueIds = [...new Set(indicatorCreatedIds)];
     for (let i = 0; i < uniqueIds.length; i += 1) {
-      await stixDomainObjectDelete(testContext, ADMIN_USER, uniqueIds[i]);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, uniqueIds[i], ENTITY_TYPE_INDICATOR);
     }
     logApp.info(`${indicatorCreatedIds.length} indicators created and deleted.`);
   });

@@ -6,12 +6,13 @@ import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
 import { editAuthorizedMembers } from '../../../src/utils/authorizedMembers';
 import { KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS } from '../../../src/utils/access';
 import { executeRemoveAuthMembers } from '../../../src/domain/stixCoreObject';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 
 describe('TaskManager executeRemoveAuthMembers tests', () => {
   const adminContext: AuthContext = { user: ADMIN_USER, tracing: undefined, source: 'taskManager-integration-test', otp_mandatory: false, user_inside_platform_organization: false };
   let reportId: string;
   afterAll(async () => {
-    await stixDomainObjectDelete(adminContext, adminContext.user, reportId); // + 1 delete
+    await stixDomainObjectDelete(adminContext, adminContext.user, reportId, ENTITY_TYPE_CONTAINER_REPORT); // + 1 delete
     const report = await findReportById(adminContext, adminContext.user, reportId);
     expect(report).toBeUndefined();
   });

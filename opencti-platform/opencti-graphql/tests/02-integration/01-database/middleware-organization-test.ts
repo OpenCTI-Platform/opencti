@@ -6,6 +6,7 @@ import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, TEST_ORGANIZATION, GREE
 import type { ThreatActorIndividualAddInput } from '../../../src/generated/graphql';
 import { type BasicStoreEntityOrganization } from '../../../src/modules/organization/organization-types';
 import { addThreatActorIndividual } from '../../../src/modules/threatActorIndividual/threatActorIndividual-domain';
+import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../../../src/modules/threatActorIndividual/threatActorIndividual-types';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { stixDomainObjectDelete } from '../../../src/domain/stixDomainObject';
@@ -63,7 +64,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
         const exception = e as GraphQLError;
         expect(exception.message).toBe('Restricted entity already exists');
       }
-      await stixDomainObjectDelete(testContext, ADMIN_USER, threatActor.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, threatActor.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
     });
 
     it('Should raise an UnsupportedError when entity exists in higher marking than the user-s one.', async () => {
@@ -85,7 +86,7 @@ describe('Middleware test coverage on organization sharing verification', () => 
         const exception = e as GraphQLError;
         expect(exception.message).toBe('Restricted entity already exists');
       }
-      await stixDomainObjectDelete(testContext, ADMIN_USER, threatActor.id);
+      await stixDomainObjectDelete(testContext, ADMIN_USER, threatActor.id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
     });
   });
 });
