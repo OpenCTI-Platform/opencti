@@ -14,7 +14,7 @@ import { utcDate } from '../utils/format';
 import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-2-1-sro';
 import { internalFindByIds, topEntitiesList } from '../database/middleware-loader';
-import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
+import type { BasicRuleEntity, BasicStoreBase, BasicStoreEntity } from '../types/store';
 import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../schema/internalObject';
@@ -84,7 +84,7 @@ export const resolveGrantedRefsIds = async (context: AuthContext, events: Array<
     type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
     baseData: true,
     baseFields: ['standard_id', 'internal_id'],
-  });
+  }) as BasicStoreBase[];
   organizationsByIds.forEach((o) => {
     organizationByIdsMap.set(o.standard_id, o.internal_id);
   });

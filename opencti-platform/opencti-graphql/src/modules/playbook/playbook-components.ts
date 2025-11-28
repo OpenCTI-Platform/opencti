@@ -64,8 +64,8 @@ import {
 import type { CyberObjectExtension, StixBundle, StixCoreObject, StixCyberObject, StixDomainObject, StixObject, StixOpenctiExtension } from '../../types/stix-2-1-common';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../../types/stix-2-1-extensions';
 import { connectorsForPlaybook } from '../../database/repository';
-import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
+import { internalFindByIds, fullEntitiesList, fullRelationsList, storeLoadById } from '../../database/middleware-loader';
+import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { createdBy, objectLabel, objectMarking } from '../../schema/stixRefRelationship';
 import { logApp } from '../../config/conf';
@@ -777,11 +777,11 @@ export const PLAYBOOK_SHARING_COMPONENT: PlaybookComponent<SharingConfiguration>
     const context = executionContext('playbook_components');
     const { organizations, all } = playbookNode.configuration;
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
-    const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsValues, {
+    const organizationsByIds = await internalFindByIds<BasicStoreEntityOrganization>(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
       baseData: true,
       baseFields: ['standard_id'],
-    });
+    }) as BasicStoreEntityOrganization[];
     if (organizationsByIds.length === 0) {
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
     }
@@ -828,11 +828,11 @@ export const PLAYBOOK_UNSHARING_COMPONENT: PlaybookComponent<UnsharingConfigurat
     const context = executionContext('playbook_components', AUTOMATION_MANAGER_USER);
     const { organizations, all } = playbookNode.configuration;
     const organizationsValues = organizations.map((o) => (typeof o !== 'string' ? o.value : o));
-    const organizationsByIds = await internalFindByIds(context, SYSTEM_USER, organizationsValues, {
+    const organizationsByIds = await internalFindByIds<BasicStoreEntityOrganization>(context, SYSTEM_USER, organizationsValues, {
       type: ENTITY_TYPE_IDENTITY_ORGANIZATION,
       baseData: true,
       baseFields: ['standard_id'],
-    });
+    }) as BasicStoreEntityOrganization[];
     if (organizationsByIds.length === 0) {
       return { output_port: 'out', bundle }; // nothing to do since organizations are empty
     }
@@ -1320,7 +1320,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         const basedOnRelations = await fullRelationsList<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
-          const indicators = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
+          const indicators = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds) as StixObject[];
           bundle.objects.push(...indicators);
           return { output_port: 'out', bundle };
         }
@@ -1335,7 +1335,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         const basedOnRelations = await fullRelationsList<BasicStoreRelation>(context, AUTOMATION_MANAGER_USER, RELATION_BASED_ON, relationOpts);
         const targetIds = R.uniq(basedOnRelations.map((relation) => relation.fromId));
         if (targetIds.length > 0) {
-          const observables = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
+          const observables = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds) as StixObject[];
           bundle.objects.push(...observables);
           return { output_port: 'out', bundle };
         }
@@ -1350,7 +1350,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         const targetIds = (report.object_refs ?? [])
           .filter((o) => ENTITIES_DATE_SEEN_PREFIX.some((prefix) => o.startsWith(prefix)));
         if (targetIds.length > 0) {
-          const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds);
+          const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, targetIds) as StixWithSeenDates[];
           const elementsToPatch = elements
             .map((e: StixWithSeenDates) => {
               // Check if seen dates will be impacted.
@@ -1386,7 +1386,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
         if (inferences && container.extensions[STIX_EXT_OCTI].object_refs_inferred && container.extensions[STIX_EXT_OCTI].object_refs_inferred.length > 0) {
           objectRefsToResolve.push(...container.extensions[STIX_EXT_OCTI].object_refs_inferred);
         }
-        const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, objectRefsToResolve);
+        const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, objectRefsToResolve) as StixObject[];
         if (elements.length > 0) {
           bundle.objects.push(...elements);
           return { output_port: 'out', bundle };
@@ -1401,7 +1401,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       };
       const containers = await fullEntitiesList(context, AUTOMATION_MANAGER_USER, [ENTITY_TYPE_CONTAINER], { filters, baseData: true });
       const containersToResolve = containers.map((container) => container.id);
-      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, containersToResolve);
+      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, containersToResolve) as StixObject[];
       if (elements.length > 0) {
         bundle.objects.push(...elements);
         return { output_port: 'out', bundle };
@@ -1425,7 +1425,7 @@ const PLAYBOOK_RULE_COMPONENT: PlaybookComponent<RuleConfiguration> = {
       if (baseDataRelation.source_ref && baseDataRelation.target_ref) {
         idsToResolve = R.uniq([...idsToResolve, baseDataRelation.source_ref, baseDataRelation.target_ref]);
       }
-      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve);
+      const elements = await stixLoadByIds(context, AUTOMATION_MANAGER_USER, idsToResolve) as StixObject[];
       if (elements.length > 0) {
         bundle.objects.push(...elements);
         return { output_port: 'out', bundle };

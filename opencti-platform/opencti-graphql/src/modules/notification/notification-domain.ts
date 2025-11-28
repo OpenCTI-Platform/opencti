@@ -23,6 +23,8 @@ import {
   ENTITY_TYPE_TRIGGER,
   NOTIFICATION_NUMBER,
   type NotificationAddInput,
+  type StoreEntityNotification,
+  type StoreEntityTrigger,
 } from './notification-types';
 import { now } from '../../utils/format';
 import { elCount } from '../../database/engine';
@@ -129,7 +131,7 @@ export const addTriggerActivity = async (
   triggerInput: TriggerActivityLiveAddInput | TriggerActivityDigestAddInput,
   type: TriggerType,
 ): Promise<BasicStoreEntityTrigger> => {
-  const members = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, triggerInput.recipients);
+  const members = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, triggerInput.recipients) as BasicStoreEntity[];
   if (members.length === 0) {
     throw UnsupportedError('Cannot add a activity trigger without recipients');
   }
@@ -177,7 +179,7 @@ export const getTriggerRecipients = async (context: AuthContext, user: AuthUser,
   const access = getUserAccessRight(user, element);
   if (access === MEMBER_ACCESS_RIGHT_ADMIN) {
     const ids = element.restricted_members.map((a) => a.id);
-    return internalFindByIds<BasicStoreEntity>(context, user, ids);
+    return internalFindByIds<BasicStoreEntity>(context, user, ids) as Promise<BasicStoreEntity[]>;
   }
   return [];
 };
@@ -245,9 +247,9 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
     .filter((a: AuthorizedMember) => a.access_right === 'admin')
     .map((a: AuthorizedMember) => a.id);
   const isSelfTrigger = adminIds.length === 1;
-  const deleted = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
+  const deleted = await deleteElementById<StoreEntityTrigger>(context, user, triggerId, ENTITY_TYPE_TRIGGER);
   const memberIds = (trigger.restricted_members ?? []).map((a: AuthorizedMember) => a.id);
-  const recipients = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, memberIds);
+  const recipients = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, memberIds) as BasicStoreEntity[];
   const recipientNames = recipients.map((r) => r.name);
   await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, deleted, user);
   await publishUserAction({
@@ -321,7 +323,7 @@ export const notificationDelete = async (context: AuthContext, user: AuthUser, n
   return notificationId;
 };
 export const notificationEditRead = async (context: AuthContext, user: AuthUser, notificationId: string, read: boolean) => {
-  const { element } = await patchAttribute(context, user, notificationId, ENTITY_TYPE_NOTIFICATION, { is_read: read });
+  const { element } = await patchAttribute<StoreEntityNotification>(context, user, notificationId, ENTITY_TYPE_NOTIFICATION, { is_read: read });
   const unreadNotificationsCount = await myUnreadNotificationsCount(context, user);
   await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: element.user_id }, user);
   return notify(BUS_TOPICS[ENTITY_TYPE_NOTIFICATION].EDIT_TOPIC, element, user);

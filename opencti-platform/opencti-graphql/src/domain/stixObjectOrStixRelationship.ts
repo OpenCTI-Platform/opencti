@@ -36,6 +36,9 @@ const patchElementWithRefRelationships = async (
   opts = {},
 ) => {
   const initial = await storeLoadByIdWithRefs(context, user, stixObjectOrRelationshipId, { type });
+  if (!initial) {
+    throw FunctionalError('Element can not be loaded', { stixObjectOrRelationshipId });
+  }
   const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(initial.entity_type, relationship_type);
   if (!fieldName) {
     throw UnsupportedError('This relationship type is not supported', { relationship_type });

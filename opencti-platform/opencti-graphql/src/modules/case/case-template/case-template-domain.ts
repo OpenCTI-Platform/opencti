@@ -10,8 +10,8 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { stixObjectOrRelationshipAddRefRelation, stixObjectOrRelationshipDeleteRefRelation } from '../../../domain/stixObjectOrStixRelationship';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
-import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
-import type { BasicStoreEntityCase } from '../case-types';
+import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE, type StoreEntityTaskTemplate } from '../../task/task-template/task-template-types';
+import type { BasicStoreEntityCase, StoreEntityCase } from '../case-types';
 
 export const findById: DomainFindById<BasicStoreEntityCaseTemplate> = (context: AuthContext, user: AuthUser, templateId: string) => {
   return storeLoadById(context, user, templateId, ENTITY_TYPE_CASE_TEMPLATE);
@@ -37,7 +37,7 @@ export const caseTemplateAdd = async (context: AuthContext, user: AuthUser, inpu
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, created, user);
 };
 export const caseTemplateDelete = async (context: AuthContext, user: AuthUser, caseTemplateId: string) => {
-  const element = await deleteElementById(context, user, caseTemplateId, ENTITY_TYPE_CASE_TEMPLATE);
+  const element = await deleteElementById<StoreEntityCase>(context, user, caseTemplateId, ENTITY_TYPE_CASE_TEMPLATE);
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   await publishUserAction({
     user,
@@ -50,7 +50,7 @@ export const caseTemplateDelete = async (context: AuthContext, user: AuthUser, c
   return caseTemplateId;
 };
 export const caseTemplateEdit = async (context: AuthContext, user: AuthUser, caseTemplateId: string, input: EditInput[]) => {
-  const { element: updatedElem } = await updateAttribute(context, user, caseTemplateId, ENTITY_TYPE_CASE_TEMPLATE, input);
+  const { element: updatedElem } = await updateAttribute<StoreEntityTaskTemplate>(context, user, caseTemplateId, ENTITY_TYPE_CASE_TEMPLATE, input);
   await publishUserAction({
     user,
     event_type: 'mutation',

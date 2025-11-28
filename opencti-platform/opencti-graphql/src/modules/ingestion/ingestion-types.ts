@@ -24,8 +24,13 @@ export interface BasicStoreEntityIngestionRss extends BasicStoreEntity {
 export interface StoreEntityIngestionRss extends StoreEntity {
   name: string;
   description: string;
+  scheduling_period: string;
   uri: string;
+  user_id: string | undefined;
+  created_by_ref: string | undefined;
   report_types: string[];
+  object_marking_refs: string[] | undefined;
+  current_state_date: Date | undefined;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
 }
@@ -66,7 +71,13 @@ export interface StoreEntityIngestionTaxii extends StoreEntity {
   name: string;
   description: string;
   uri: string;
+  version: string;
+  collection: string;
   confidence_to_score: boolean;
+  authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
+  authentication_value: string;
+  user_id: string | undefined;
+  added_after_start: Date | undefined;
   current_state_cursor: string | undefined;
   ingestion_running: boolean;
   taxii_more: boolean;
@@ -106,12 +117,14 @@ export interface BasicStoreEntityIngestionCsv extends BasicStoreEntity {
 }
 
 export interface StoreEntityIngestionCsv extends StoreEntity {
+  current_state_hash: string;
   name: string;
   description: string;
   uri: string;
   csv_mapper_id: string;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  user_id: string | undefined;
 }
 
 export interface StixIngestionCsv extends StixObject {
@@ -139,7 +152,7 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
   json_mapper_id: string;
   confidence_to_score: boolean;
   authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
-  authentication_value: string;
+  authentication_value: string | undefined | null;
   user_id: string | undefined;
   ingestion_json_state: Record<string, object>;
   ingestion_running: boolean;
@@ -155,10 +168,24 @@ export interface BasicStoreEntityIngestionJson extends BasicStoreEntity {
 export interface StoreEntityIngestionJson extends StoreEntity {
   name: string;
   description: string;
+  scheduling_period: string;
   uri: string;
+  verb: 'get' | 'post';
+  body: string;
   json_mapper_id: string;
+  confidence_to_score: boolean;
+  authentication_type: IngestionAuthType.None | IngestionAuthType.Basic | IngestionAuthType.Bearer | IngestionAuthType.Certificate;
+  authentication_value: string | undefined | null;
+  user_id: string | undefined;
+  ingestion_json_state: Record<string, object>;
   ingestion_running: boolean;
   last_execution_date: Date | undefined;
+  headers?: { name: string; value: string }[];
+  // pagination
+  pagination_with_sub_page: boolean;
+  pagination_with_sub_page_attribute_path: string;
+  pagination_with_sub_page_query_verb?: 'get' | 'post';
+  query_attributes?: Array<DataParam>;
 }
 
 export interface StixIngestionJson extends StixObject {
@@ -188,8 +215,10 @@ export interface BasicStoreEntityIngestionTaxiiCollection extends BasicStoreEnti
 export interface StoreEntityIngestionTaxiiCollection extends StoreEntity {
   name: string;
   description: string;
-  ingestion_running: boolean;
+  user_id: string | undefined;
   confidence_to_score: boolean;
+  ingestion_running: boolean;
+  restricted_members: Array<AuthorizedMember>;
 }
 
 export interface StixIngestionTaxiiCollection extends StixObject {
