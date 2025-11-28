@@ -9,8 +9,15 @@ export const buildTestConfig = (include: string[]) => defineConfig({
     include,
     testTimeout: 300000,
     teardownTimeout: 20000,
-    setupFiles: ['./tests/utils/testSetup.js'],
-  },
+    setupFiles: ['./tests/setup/unitTestSetup.js'],
+    coverage: {
+      provider: 'v8',
+      include: ['src/**'],
+      exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
+      reporter: ['text', 'json', 'html'],
+    },
+    maxWorkers: 10,
+  }
 });
 
 export default buildTestConfig(['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);

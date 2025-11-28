@@ -1,4 +1,4 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import { buildTestConfig } from './vitest.config.test';
+ 
+import { buildTestConfigIntegration } from './vitest.config.integration';
 
-export default buildTestConfig(['tests/(02|03|10|11)-*/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
+export default buildTestConfigIntegration(['tests/(02|03|10|11)-*/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
