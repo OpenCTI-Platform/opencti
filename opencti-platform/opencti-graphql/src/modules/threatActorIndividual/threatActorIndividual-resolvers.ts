@@ -3,7 +3,7 @@ import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
   stixDomainObjectDeleteRelation,
-  stixDomainObjectDeleteWithTypeCheck,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -33,7 +33,7 @@ const threatActorIndividualResolvers: Resolvers = {
       return addThreatActorIndividual(context, context.user, input);
     },
     threatActorIndividualDelete: (_, { id }, context) => {
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL);
     },
     threatActorIndividualFieldPatch: (_, { id, input }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input);

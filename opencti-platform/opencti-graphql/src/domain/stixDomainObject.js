@@ -205,6 +205,12 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
+/**
+ * @param {*} context
+ * @param {*} user
+ * @param {string} stixDomainObjectId
+ * @param {string | string[] | null} [expectedEntityType=null]
+ */
 export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, expectedEntityType = null) => {
   // If we are in a draft, we need to also search for deleted elements
   const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
@@ -228,17 +234,6 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, 
   await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, stixDomainObject, user);
   return stixDomainObjectId;
-};
-
-// Helper function for entities that validate their type before deletion
-export const stixDomainObjectDeleteWithTypeCheck = async (context, user, stixDomainObjectId, expectedEntityType) => {
-  // First, validate that the entity exists and has the correct type
-  const entity = await storeLoadById(context, user, stixDomainObjectId, expectedEntityType);
-  if (!entity) {
-    throw FunctionalError(`Cannot delete the object, entity of type ${expectedEntityType} not found.`);
-  }
-  // Then proceed with deletion using the validated type
-  return stixDomainObjectDelete(context, user, stixDomainObjectId, expectedEntityType);
 };
 
 export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {

@@ -3,7 +3,7 @@ import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
   stixDomainObjectDeleteRelation,
-  stixDomainObjectDeleteWithTypeCheck,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../domain/stixDomainObject';
@@ -21,7 +21,7 @@ const toolResolvers = {
   },
   Mutation: {
     toolEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_TOOL),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_TOOL),
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
       contextClean: () => stixDomainObjectCleanContext(context, context.user, id),

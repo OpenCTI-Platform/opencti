@@ -4,7 +4,7 @@ import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
   stixDomainObjectDeleteRelation,
-  stixDomainObjectDeleteWithTypeCheck,
+  stixDomainObjectDelete,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -26,7 +26,7 @@ const narrativeResolvers: Resolvers = {
       return addNarrative(context, context.user, input);
     },
     narrativeDelete: (_, { id }, context) => {
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_NARRATIVE);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_NARRATIVE);
     },
     narrativeFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
