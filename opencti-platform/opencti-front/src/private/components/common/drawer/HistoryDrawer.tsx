@@ -70,7 +70,7 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {data?.context_data?.changes?.map((row) => (
+                      {data?.context_data?.changes.map((row) => (
                         <TableRow
                           key={row?.field}
                           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
