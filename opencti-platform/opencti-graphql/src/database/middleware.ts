@@ -1,7 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
-import { Promise } from 'bluebird';
+import { Promise as BluePromise } from 'bluebird';
 import { compareUnsorted } from 'js-deep-equals';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
@@ -231,7 +231,10 @@ import { lockResources } from '../lock/master-lock';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
-import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import {
+  type BasicStoreEntityEntitySetting,
+  ENTITY_TYPE_ENTITY_SETTING
+} from '../modules/entitySetting/entitySetting-types';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
 import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
 import { idLabel } from '../schema/schema-labels';
@@ -239,6 +242,9 @@ import { pirExplanation } from '../modules/attributes/internalRelationship-regis
 import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import type {AuthContext, AuthUser} from "../types/user";
+import type {BasicStoreBase, BasicStoreCommon} from "../types/store";
+import type {BasicStoreSettings} from "../types/settings";
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -246,15 +252,15 @@ const MAX_EXPLANATIONS_PER_RULE = nconf.get('rule_engine:max_explanations_per_ru
 // endregion
 
 // region request access
-export const canRequestAccess = async (context, user, elements) => {
-  const settings = await getEntityFromCache(context, user, ENTITY_TYPE_SETTINGS);
+export const canRequestAccess = async (context: AuthContext, user: AuthUser, elements: BasicStoreCommon[]) => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
   const hasPlatformOrg = !!settings.platform_organization;
   const elementsThatRequiresAccess = [];
   for (let i = 0; i < elements.length; i += 1) {
     const currentElement = elements[i];
     if (!isOrganizationAllowed(context, currentElement, user, hasPlatformOrg)) {
       // Check that group has marking allowed or else request accesss RFI will be useless
-      const requestAccessSettings = await loadEntity(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
+      const requestAccessSettings = await loadEntity<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
         filters: {
           mode: 'and',
           filters: [{ key: 'target_type', values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
@@ -302,27 +308,27 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 // endregion
 
 // Standard listing
-export const topEntitiesOrRelationsList = async (context, user, thingsTypes, args = {}) => {
+export const topEntitiesOrRelationsList = async (context: AuthContext, user: AuthUser, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elPaginate(context, user, indices, { ...paginateArgs, connectionFormat: false });
 };
-export const pageEntitiesOrRelationsConnection = async (context, user, thingsTypes, args = {}) => {
+export const pageEntitiesOrRelationsConnection = async (context: AuthContext, user: AuthUser, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elPaginate(context, user, indices, { ...paginateArgs, connectionFormat: true });
 };
-export const fullEntitiesOrRelationsList = async (context, user, thingsTypes, args = {}) => {
+export const fullEntitiesOrRelationsList = async (context: AuthContext, user: AuthUser, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elList(context, user, indices, paginateArgs);
 };
-export const fullEntitiesOrRelationsConnection = async (context, user, thingsTypes, args = {}) => {
+export const fullEntitiesOrRelationsConnection = async (context: AuthContext, user: AuthUser, thingsTypes, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elConnection(context, user, indices, paginateArgs);
 };
-export const loadEntity = async (context, user, entityTypes, args = {}) => {
+export const loadEntity = async <T extends BasicStoreBase> (context: AuthContext, user: AuthUser, entityTypes, args = {}): Promise<T> => {
   const entities = await topEntitiesList(context, user, entityTypes, args);
   if (entities.length > 1) {
     throw DatabaseError('Expect only one response', { entityTypes, args });
@@ -332,7 +338,7 @@ export const loadEntity = async (context, user, entityTypes, args = {}) => {
 // endregion
 
 // region Loader element
-const loadElementMetaDependencies = async (context, user, elements, args = {}) => {
+const loadElementMetaDependencies = async (context: AuthContext, user: AuthUser, elements, args = {}) => {
   const { onlyMarking = true } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
@@ -403,11 +409,11 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   return loadedElementMap;
 };
 
-export const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
+export const loadElementsWithDependencies = async (context: AuthContext, user: AuthUser, elements, opts = {}) => {
   const fileMarkings = [];
   const elementsToDeps = [...elements];
-  let fromAndToPromise = Promise.resolve();
-  let fileMarkingsPromise = Promise.resolve();
+  let fromAndToPromise = BluePromise.resolve();
+  let fileMarkingsPromise = BluePromise.resolve();
   const targetsToResolved = [];
   elements.forEach((e) => {
     const isRelation = e.base_type === BASE_TYPE_RELATION;
@@ -433,7 +439,7 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
     const args = { type: ENTITY_TYPE_MARKING_DEFINITION, toMap: true, baseData: true };
     fileMarkingsPromise = elFindByIds(context, SYSTEM_USER, R.uniq(fileMarkings), args);
   }
-  const [fromAndToMap, depsElementsMap, fileMarkingsMap] = await Promise.all([fromAndToPromise, depsPromise, fileMarkingsPromise]);
+  const [fromAndToMap, depsElementsMap, fileMarkingsMap] = await BluePromise.all([fromAndToPromise, depsPromise, fileMarkingsPromise]);
   const loadedElements = [];
   for (let i = 0; i < elements.length; i += 1) {
     await doYield();
@@ -480,14 +486,14 @@ export const loadElementsWithDependencies = async (context, user, elements, opts
   }
   return loadedElements;
 };
-const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
+const loadByIdsWithDependencies = async (context: AuthContext, user: AuthUser, ids, opts = {}) => {
   const elements = await elFindByIds(context, user, ids, opts);
   if (elements.length > 0) {
     return loadElementsWithDependencies(context, user, elements, opts);
   }
   return [];
 };
-const loadByFiltersWithDependencies = async (context, user, types, args = {}) => {
+const loadByFiltersWithDependencies = async (context: AuthContext, user: AuthUser, types, args = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildEntityFilters(types, args);
   const elements = await elList(context, user, indices, paginateArgs);
@@ -497,16 +503,16 @@ const loadByFiltersWithDependencies = async (context, user, types, args = {}) =>
   return [];
 };
 // Get element with every elements connected element -> rel -> to
-export const storeLoadByIdsWithRefs = async (context, user, ids, opts = {}) => {
+export const storeLoadByIdsWithRefs = async (context: AuthContext, user: AuthUser, ids, opts = {}) => {
   // When loading with explicit references, data must be loaded without internal rels
   // As rels are here for search and sort there is some data that conflict after references explication resolutions
   return loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false });
 };
-export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
+export const storeLoadByIdWithRefs = async (context: AuthContext, user: AuthUser, id, opts = {}) => {
   const elements = await storeLoadByIdsWithRefs(context, user, [id], opts);
   return elements.length > 0 ? R.head(elements) : null;
 };
-export const stixLoadById = async (context, user, id, opts = {}) => {
+export const stixLoadById = async (context: AuthContext, user: AuthUser, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
   const { version = Version.Stix_2_1 } = opts;
   return instance ? convertStoreToStix(instance, version) : undefined;
@@ -525,7 +531,7 @@ const convertStoreToStixWithResolvedFiles = async (instance, version = Version.S
   }
   return instanceInStix;
 };
-export const stixLoadByIds = async (context, user, ids, opts = {}) => {
+export const stixLoadByIds = async (context: AuthContext, user: AuthUser, ids, opts = {}) => {
   const { resolveStixFiles = false, version = Version.Stix_2_1 } = opts;
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   // As stix load by ids doesn't respect the ordering we need to remap the result
@@ -535,13 +541,13 @@ export const stixLoadByIds = async (context, user, ids, opts = {}) => {
     const fileResolvedInstancesPromise = ids.map((id) => loadedInstancesMap.get(id))
       .filter((i) => isNotEmptyField(i))
       .map((e) => (convertStoreToStixWithResolvedFiles(e, version)));
-    return Promise.all(fileResolvedInstancesPromise);
+    return BluePromise.all(fileResolvedInstancesPromise);
   }
   return ids.map((id) => loadedInstancesMap.get(id))
     .filter((i) => isNotEmptyField(i))
     .map((e) => (convertStoreToStix(e, version)));
 };
-export const stixBundleByIdStringify = async (context, user, type, id) => {
+export const stixBundleByIdStringify = async (context: AuthContext, user: AuthUser, type, id) => {
   const resolver = modules.get(type)?.bundleResolver;
   if (!resolver) {
     return null;
@@ -549,12 +555,12 @@ export const stixBundleByIdStringify = async (context, user, type, id) => {
   return await resolver(context, user, id);
 };
 
-export const stixLoadByIdStringify = async (context, user, id, opts = {}) => {
+export const stixLoadByIdStringify = async (context: AuthContext, user: AuthUser, id, opts = {}) => {
   const { version = Version.Stix_2_1 } = opts;
   const data = await stixLoadById(context, user, id, { version });
   return data ? JSON.stringify(data) : '';
 };
-export const stixLoadByFilters = async (context, user, types, args) => {
+export const stixLoadByFilters = async (context: AuthContext, user: AuthUser, types, args) => {
   const elements = await loadByFiltersWithDependencies(context, user, types, args);
   return elements ? elements.map((element) => convertStoreToStix_2_1(element)) : [];
 };
@@ -594,7 +600,7 @@ export const buildRestrictedEntity = (resolvedEntity) => {
 };
 
 // region Graphics
-const convertAggregateDistributions = async (context, user, limit, orderingFunction, distribution) => {
+const convertAggregateDistributions = async (context: AuthContext, user: AuthUser, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   // resolve all of them with system user
   const allResolveLabels = await elFindByIds(context, SYSTEM_USER, data.map((d) => d.label), { toMap: true });
@@ -624,25 +630,25 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
       };
     });
 };
-export const timeSeriesHistory = async (context, user, types, args) => {
+export const timeSeriesHistory = async (context: AuthContext, user: AuthUser, types, args) => {
   const { startDate, endDate, interval } = args;
   const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, args);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const timeSeriesEntities = async (context, user, types, args) => {
+export const timeSeriesEntities = async (context: AuthContext, user: AuthUser, types, args) => {
   const timeSeriesArgs = buildEntityFilters(types, args);
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
   const { startDate, endDate, interval } = args;
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const timeSeriesRelations = async (context, user, args) => {
+export const timeSeriesRelations = async (context: AuthContext, user: AuthUser, args) => {
   const { startDate, endDate, relationship_type: relationshipTypes, interval } = args;
   const types = relationshipTypes || ['stix-core-relationship', 'object', 'stix-sighting-relationship'];
   const timeSeriesArgs = buildEntityFilters(types, args);
   const histogramData = await elHistogramCount(context, user, args.onlyInferred ? INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const distributionHistory = async (context, user, types, args) => {
+export const distributionHistory = async (context: AuthContext, user: AuthUser, types, args) => {
   const { limit = 10, order = 'desc', field } = args;
   if (field.includes('.') && (!field.endsWith('internal_id') && !field.includes('context_data') && !field.includes('opinions_metrics'))) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
@@ -677,7 +683,7 @@ export const distributionHistory = async (context, user, types, args) => {
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
-export const distributionEntities = async (context, user, types, args) => {
+export const distributionEntities = async (context: AuthContext, user: AuthUser, types, args) => {
   const distributionArgs = buildEntityFilters(types, args);
   const { limit = 10, order = 'desc', field } = args;
   const aggregationNotSupported = field.includes('.')
@@ -716,7 +722,7 @@ export const distributionEntities = async (context, user, types, args) => {
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData)); // label not good
 };
-export const distributionRelations = async (context, user, args) => {
+export const distributionRelations = async (context: AuthContext, user: AuthUser, args) => {
   const { field } = args; // Mandatory fields
   const { limit = 50, order } = args;
   const { relationship_type: relationshipTypes, dateAttribute = 'created_at' } = args;
@@ -763,7 +769,7 @@ const idVocabulary = (nameOrId, category) => {
  * @param createdById
  * @returns {Bluebird.Promise<void>}
  */
-export const validateCreatedBy = async (context, user, createdById) => {
+export const validateCreatedBy = async (context: AuthContext, user: AuthUser, createdById) => {
   if (createdById) {
     const createdByEntity = await internalLoadById(context, user, createdById);
     if (createdByEntity && createdByEntity.entity_type) {
@@ -776,7 +782,7 @@ export const validateCreatedBy = async (context, user, createdById) => {
   }
 };
 
-const inputResolveRefs = async (context, user, input, type, entitySetting) => {
+const inputResolveRefs = async (context: AuthContext, user: AuthUser, input, type, entitySetting) => {
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map();
     const expectedIds = [];
@@ -857,12 +863,12 @@ const inputResolveRefs = async (context, user, input, type, entitySetting) => {
     // This information must be added in the model
     const idsToFetch = Array.from(fetchingIdsMap.keys());
     const simpleResolutionsPromise = internalFindByIds(context, user, idsToFetch);
-    let embeddedFromPromise = Promise.resolve();
+    let embeddedFromPromise = BluePromise.resolve();
     if (embeddedFromResolution) {
       fetchingIdsMap.set(embeddedFromResolution, [{ id: embeddedFromResolution, destKey: 'from', multiple: false }]);
       embeddedFromPromise = storeLoadByIdWithRefs(context, user, embeddedFromResolution);
     }
-    const [resolvedElements, embeddedFrom] = await Promise.all([simpleResolutionsPromise, embeddedFromPromise]);
+    const [resolvedElements, embeddedFrom] = await BluePromise.all([simpleResolutionsPromise, embeddedFromPromise]);
     if (embeddedFrom) {
       resolvedElements.push(embeddedFrom);
     }
@@ -995,7 +1001,7 @@ const createContainerSharingTask = (context, type, element, relations = []) => {
   // If object_refs relations are newly created
   // One side is a container, the other side must inherit from the granted_refs
   const targetGrantIds = [];
-  let taskPromise = Promise.resolve();
+  let taskPromise = BluePromise.resolve();
   const elementGrants = (relations ?? []).filter((e) => e.entity_type === RELATION_GRANTED_TO).map((r) => r.to.internal_id);
   // If container is granted, we need to grant every new children.
   if (element.base_type === BASE_TYPE_ENTITY && isStixDomainObjectShareableContainer(element.entity_type)) {
@@ -1026,11 +1032,11 @@ const createContainerSharingTask = (context, type, element, relations = []) => {
   }
   return taskPromise;
 };
-const indexCreatedElement = async (context, user, { element, relations }) => {
+const indexCreatedElement = async (context: AuthContext, user: AuthUser, { element, relations }) => {
   // Continue the creation of the element and the connected relations
   const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
   const taskPromise = createContainerSharingTask(context, ACTION_TYPE_SHARE, element, relations);
-  await Promise.all([taskPromise, indexPromise]);
+  await BluePromise.all([taskPromise, indexPromise]);
 };
 export const updatedInputsToData = (instance, inputs) => {
   const inputPairs = R.map((input) => {
@@ -1183,7 +1189,7 @@ const mergeInstanceWithUpdateInputs = (base, inputs) => {
   const resolvedInputs = R.filter((f) => !R.isEmpty(f), remappedInputs);
   return mergeInstanceWithInputs(instance, resolvedInputs);
 };
-const listEntitiesByHashes = async (context, user, type, hashes) => {
+const listEntitiesByHashes = async (context: AuthContext, user: AuthUser, type, hashes) => {
   if (isEmptyField(hashes)) {
     return [];
   }
@@ -1262,7 +1268,7 @@ const filterTargetByExisting = async (context, targetEntity, redirectSide, sourc
   return { deletions: markingTargetDeletions, redirects: filtered };
 };
 
-const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, targetDependencies, sourcesDependencies, opts = {}) => {
+const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEntity, sourceEntities, targetDependencies, sourcesDependencies, opts = {}) => {
   const { chosenFields = {} } = opts;
   // 01 Check if everything is fully resolved.
   const elements = [targetEntity, ...sourceEntities];
@@ -1420,7 +1426,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     currentRelsUpdateCount += connsToUpdate.length;
     logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
-  await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  await BluePromise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
@@ -1433,10 +1439,10 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     currentEntUpdateCount += entitiesToUpdate.length;
     logApp.info(`[OPENCTI] Merging updating bulk entities ${currentEntUpdateCount} / ${updateBulkEntities.length}`);
   };
-  await Promise.map(groupsOfEntityUpdate, concurrentEntitiesUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  await BluePromise.map(groupsOfEntityUpdate, concurrentEntitiesUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Take care of multi update
   const updateMultiEntities = entries.filter(([, values]) => values.length > 1);
-  await Promise.map(
+  await BluePromise.map(
     updateMultiEntities,
     async ([id, values]) => {
       logApp.info(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
@@ -1530,7 +1536,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   }
 };
 
-const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
+const loadMergeEntitiesDependencies = async (context: AuthContext, user: AuthUser, entityIds) => {
   const data = { [INTERNAL_FROM_FIELD]: [], [INTERNAL_TO_FIELD]: [] };
   for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex += 1) {
     const entityId = entityIds[entityIndex];
@@ -1576,7 +1582,7 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
   return data;
 };
 
-export const mergeEntities = async (context, user, targetEntityId, sourceEntityIds, opts = {}) => {
+export const mergeEntities = async (context: AuthContext, user: AuthUser, targetEntityId, sourceEntityIds, opts = {}) => {
   // Pre-checks
   if (sourceEntityIds.includes(targetEntityId)) {
     throw FunctionalError('Cannot merge entities, same ID detected in source and destination', {
@@ -1667,7 +1673,7 @@ const innerUpdateAttribute = (instance, rawInput) => {
   }
   return input;
 };
-const prepareAttributesForUpdate = async (context, user, instance, elements) => {
+const prepareAttributesForUpdate = async (context: AuthContext, user: AuthUser, instance, elements) => {
   const instanceType = instance.entity_type;
   const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
   return elements.map((input) => {
@@ -1766,7 +1772,7 @@ const updateDateRangeValidation = (instance, inputs, from, to) => {
     throw DatabaseError(`You cant update an element with ${to} less than ${from}`, data);
   }
 };
-const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) => {
+const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance, inputs, opts = {}) => {
   const today = now();
   // Upsert option is only useful to force aliases to be kept when upserting the entity
   const { impactStandardId = true, upsert = false } = opts;
@@ -2025,7 +2031,7 @@ const getKeyValuesFromPatchElements = (patchElements, keyName) => {
     });
   });
 };
-export const generateUpdateMessage = async (context, user, entityType, inputs) => {
+export const generateUpdateMessage = async (context: AuthContext, user: AuthUser, entityType, inputs) => {
   const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
   const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
   const resolvedInputs = inputs.map((i) => {
@@ -2066,7 +2072,7 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
-export const updateAttributeMetaResolved = async (context, user, initial, inputs, opts = {}) => {
+export const updateAttributeMetaResolved = async (context: AuthContext, user: AuthUser, initial, inputs, opts = {}) => {
   const { locks = [], impactStandardId = true } = opts;
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -2178,8 +2184,8 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
     // region handle attributes
     // Only for StixCyberObservable
     const lookingEntities = [];
-    let existingEntityPromise = Promise.resolve(undefined);
-    let existingByHashedPromise = Promise.resolve([]);
+    let existingEntityPromise = BluePromise.resolve(undefined);
+    let existingByHashedPromise = BluePromise.resolve([]);
     if (eventualNewStandardId) {
       existingEntityPromise = internalLoadById(context, SYSTEM_USER, eventualNewStandardId, { type: initial.entity_type });
     }
@@ -2187,7 +2193,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
       existingByHashedPromise = listEntitiesByHashes(context, SYSTEM_USER, initial.entity_type, updated.hashes)
         .then((entities) => entities.filter((e) => e.id !== initial.internal_id));
     }
-    const [existingEntity, existingByHashed] = await Promise.all([existingEntityPromise, existingByHashedPromise]);
+    const [existingEntity, existingByHashed] = await BluePromise.all([existingEntityPromise, existingByHashedPromise]);
     if (existingEntity) {
       lookingEntities.push(existingEntity);
     }
@@ -2449,7 +2455,7 @@ export const updateAttributeMetaResolved = async (context, user, initial, inputs
   }
 };
 
-export const updateAttributeFromLoadedWithRefs = async (context, user, initial, inputs, opts = {}) => {
+export const updateAttributeFromLoadedWithRefs = async (context: AuthContext, user: AuthUser, initial, inputs, opts = {}) => {
   if (!initial) {
     throw FunctionalError('Cant update undefined element');
   }
@@ -2483,17 +2489,17 @@ const generateEnrichmentLoaders = (context, user, element) => {
     bundleById: () => stixBundleByIdStringify(context, user, element.entity_type, element.internal_id),
   };
 };
-const triggerCreateEntityAutoEnrichment = async (context, user, element) => {
+const triggerCreateEntityAutoEnrichment = async (context: AuthContext, user: AuthUser, element) => {
   const loaders = generateEnrichmentLoaders(context, user, element);
   await createEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-const triggerEntityUpdateAutoEnrichment = async (context, user, element) => {
+const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: AuthUser, element) => {
   // If element really updated, try to enrich if needed
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
 
-export const updateAttribute = async (context, user, id, type, inputs, opts = {}) => {
+export const updateAttribute = async (context: AuthContext, user: AuthUser, id, type, inputs, opts = {}) => {
   const initial = await storeLoadByIdWithRefs(context, user, id, { ...opts, type });
   if (!initial) {
     throw FunctionalError('Cant find element to update', { id, type });
@@ -2510,12 +2516,12 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   return data;
 };
 
-export const patchAttribute = async (context, user, id, type, patch, opts = {}) => {
+export const patchAttribute = async (context: AuthContext, user: AuthUser, id, type, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
   return updateAttribute(context, user, id, type, inputs, opts);
 };
 
-export const patchAttributeFromLoadedWithRefs = async (context, user, initial, patch, opts = {}) => {
+export const patchAttributeFromLoadedWithRefs = async (context: AuthContext, user: AuthUser, initial, patch, opts = {}) => {
   const inputs = transformPatchToInput(patch, opts.operations);
   return updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
 };
@@ -2606,7 +2612,7 @@ const createUpsertRulePatch = async (instance, input, opts = {}) => {
   const innerPatch = createRuleDataPatch(ruleInstance);
   return { ...rulePatch, ...innerPatch };
 };
-const upsertEntityRule = async (context, user, instance, input, opts = {}) => {
+const upsertEntityRule = async (context: AuthContext, user: AuthUser, instance, input, opts = {}) => {
   const { fromRule } = opts;
   // 01. If relation already have max explanation, don't do anything
   // Strict equals to clean existing element with too many explanations
@@ -2619,7 +2625,7 @@ const upsertEntityRule = async (context, user, instance, input, opts = {}) => {
   const element = await storeLoadByIdWithRefs(context, user, instance.internal_id, { type: instance.entity_type });
   return await patchAttributeFromLoadedWithRefs(context, RULE_MANAGER_USER, element, patch, opts);
 };
-const upsertRelationRule = async (context, user, instance, input, opts = {}) => {
+const upsertRelationRule = async (context: AuthContext, user: AuthUser, instance, input, opts = {}) => {
   const { fromRule, fromRuleDeletion = false } = opts;
   // 01. If relation already have max explanation, don't do anything
   // Strict equals to clean existing element with too many explanations
@@ -2642,7 +2648,7 @@ const upsertRelationRule = async (context, user, instance, input, opts = {}) => 
 };
 // endregion
 
-const validateEntityAndRelationCreation = async (context, user, input, type, entitySetting, opts = {}) => {
+const validateEntityAndRelationCreation = async (context: AuthContext, user: AuthUser, input, type, entitySetting, opts = {}) => {
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
     const isAllowedToByPass = isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE);
     if (!isAllowedToByPass && entitySetting?.enforce_reference) {
@@ -2718,7 +2724,7 @@ const buildRelationDeduplicationFilters = (input) => {
   return filters;
 };
 
-const upsertElement = async (context, user, element, type, basePatch, opts = {}) => {
+const upsertElement = async (context: AuthContext, user: AuthUser, element, type, basePatch, opts = {}) => {
   // -- Independent update
   let resolvedElement = element;
   if (!opts.elementAlreadyResolved) {
@@ -2746,7 +2752,7 @@ const upsertElement = async (context, user, element, type, basePatch, opts = {})
   return { element: resolvedElement, event: null, isCreation: false };
 };
 
-export const getExistingRelations = async (context, user, input, opts = {}) => {
+export const getExistingRelations = async (context: AuthContext, user: AuthUser, input, opts = {}) => {
   const { from, to, relationship_type: relationshipType } = input;
   const { fromRule } = opts;
   const existingRelationships = [];
@@ -2799,7 +2805,7 @@ export const getExistingRelations = async (context, user, input, opts = {}) => {
   return existingRelationships;
 };
 
-export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
+export const createRelationRaw = async (context: AuthContext, user: AuthUser, rawInput, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = rawInput;
@@ -2920,8 +2926,8 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     // In case on embedded relationship creation, we need to dispatch
     // an update of the from entity that host this embedded ref.
     if (isStixRefRelationship(relationshipType)) {
-      const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
-      const references = await Promise.all(referencesPromises);
+      const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : BluePromise.resolve([]);
+      const references = await BluePromise.all(referencesPromises);
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
         throw FunctionalError('Cant find element references for commit', {
           id: input.fromId,
@@ -2979,7 +2985,7 @@ export const createRelationRaw = async (context, user, rawInput, opts = {}) => {
     if (lock) await lock.unlock();
   }
 };
-export const createRelation = async (context, user, input, opts = {}) => {
+export const createRelation = async (context: AuthContext, user: AuthUser, input, opts = {}) => {
   const data = await createRelationRaw(context, user, input, opts);
   return data.element;
 };
@@ -3009,7 +3015,7 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
   return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
 };
 /* v8 ignore next */
-export const createRelations = async (context, user, inputs, opts = {}) => {
+export const createRelations = async (context: AuthContext, user: AuthUser, inputs, opts = {}) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improved by grouping and indexing in one shot.
@@ -3023,20 +3029,20 @@ export const createRelations = async (context, user, inputs, opts = {}) => {
 
 // region mutation entity
 
-export const getExistingEntities = async (context, user, input, type) => {
+export const getExistingEntities = async (context: AuthContext, user: AuthUser, input, type) => {
   const participantIds = getInputIds(type, input);
   const existingByIdsPromise = internalFindByIds(context, SYSTEM_USER, participantIds, { type });
-  let existingByHashedPromise = Promise.resolve([]);
+  let existingByHashedPromise = BluePromise.resolve([]);
   if (isStixCyberObservableHashedObservable(type)) {
     existingByHashedPromise = listEntitiesByHashes(context, user, type, input.hashes);
   }
-  const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
+  const [existingByIds, existingByHashed] = await BluePromise.all([existingByIdsPromise, existingByHashedPromise]);
   const existingEntities = [];
   existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
   return existingEntities;
 };
 
-const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
+const createEntityRaw = async (context: AuthContext, user: AuthUser, rawInput, type, opts = {}) => {
   // region confidence control
   const input = { ...rawInput };
   const { confidenceLevelToApply } = controlCreateInputWithUserConfidence(user, input, type);
@@ -3079,7 +3085,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
     // When creating a hash, we can check all hashes to update or merge the result
     // Generating multiple standard ids could be a solution but to complex to implements
     // For now, we will look for any observables that have any hashes of this input.
-    let existingByHashedPromise = Promise.resolve([]);
+    let existingByHashedPromise = BluePromise.resolve([]);
     if (isStixCyberObservableHashedObservable(type)) {
       existingByHashedPromise = listEntitiesByHashes(context, user, type, input.hashes);
       resolvedInput.update = true;
@@ -3095,7 +3101,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
       }
     }
     // Resolve the existing entity
-    const [existingByIds, existingByHashed] = await Promise.all([existingByIdsPromise, existingByHashedPromise]);
+    const [existingByIds, existingByHashed] = await BluePromise.all([existingByIdsPromise, existingByHashedPromise]);
     existingEntities.push(...R.uniqBy((e) => e.internal_id, [...existingByIds, ...existingByHashed]));
     // region - Pre-Check
     if (existingEntities.length === 0) { // We do not use default values on upsert.
@@ -3251,7 +3257,7 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   }
 };
 
-export const createEntity = async (context, user, input, type, opts = {}) => {
+export const createEntity = async (context: AuthContext, user: AuthUser, input, type, opts = {}) => {
   const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
   const data = await createEntityRaw(context, user, input, type, opts);
@@ -3282,7 +3288,7 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
 
 // region mutation deletion
 
-const draftInternalDeleteElement = async (context, user, draftElement) => {
+const draftInternalDeleteElement = async (context: AuthContext, user: AuthUser, draftElement) => {
   let lock;
   const participantIds = [draftElement.internal_id];
   try {
@@ -3302,7 +3308,7 @@ const draftInternalDeleteElement = async (context, user, draftElement) => {
   return { element: draftElement, event: {} };
 };
 
-export const internalDeleteElementById = async (context, user, id, type, opts = {}) => {
+export const internalDeleteElementById = async (context: AuthContext, user: AuthUser, id, type, opts = {}) => {
   let lock;
   let event;
   const element = await storeLoadByIdWithRefs(context, user, id, { ...opts, type, includeDeletedInDraft: true });
@@ -3342,8 +3348,8 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
     // Try to get the lock in redis
     lock = await lockResources(participantIds);
     if (isStixRefRelationship(element.entity_type)) {
-      const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
-      const references = await Promise.all(referencesPromises);
+      const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : BluePromise.resolve([]);
+      const references = await BluePromise.all(referencesPromises);
       if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
         throw FunctionalError('Cant find element references for commit', {
           id: element.fromId,
@@ -3376,7 +3382,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
       // Publish event in the stream
       const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
-      const [, updateEvent] = await Promise.all([taskPromise, eventPromise]);
+      const [, updateEvent] = await BluePromise.all([taskPromise, eventPromise]);
       event = updateEvent;
       element.from = instance; // dynamically update the from to have an up to date relation
     } else {
@@ -3411,7 +3417,7 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   // - TRANSACTION END
   return { element, event };
 };
-export const deleteElementById = async (context, user, id, type, opts = {}) => {
+export const deleteElementById = async (context: AuthContext, user: AuthUser, id, type, opts = {}) => {
   if (R.isNil(type)) {
     /* v8 ignore next */
     throw FunctionalError('You need to specify a type when deleting an entity');
@@ -3474,7 +3480,7 @@ export const deleteInferredRuleElement = async (rule, instance, deletedDependenc
   }
   return false;
 };
-export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, relationshipType, scopeType, opts = {}) => {
+export const deleteRelationsByFromAndTo = async (context: AuthContext, user: AuthUser, fromId, toId, relationshipType, scopeType, opts = {}) => {
   //* v8 ignore if */
   if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
     throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
