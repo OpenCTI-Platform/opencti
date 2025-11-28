@@ -16,7 +16,7 @@ reportsTimeSeriesByEntity
 import {
 stixDomainObjectAddRelation,
 stixDomainObjectCleanContext,
-stixDomainObjectDeleteWithTypeCheck,
+stixDomainObjectDelete,
 stixDomainObjectDeleteRelation,
 stixDomainObjectEditContext,
 stixDomainObjectEditField
@@ -77,7 +77,7 @@ const reportResolvers = {
         if (purgeElements) {
           return reportDeleteWithElements(context, context.user, id);
         }
-        return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_CONTAINER_REPORT);
+        return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_CONTAINER_REPORT);
       },
       fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),

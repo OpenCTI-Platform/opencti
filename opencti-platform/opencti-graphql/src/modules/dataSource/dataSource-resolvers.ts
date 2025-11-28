@@ -4,7 +4,7 @@ import {
 stixDomainObjectAddRelation,
 stixDomainObjectCleanContext,
 stixDomainObjectDeleteRelation,
-stixDomainObjectDeleteWithTypeCheck,
+stixDomainObjectDelete,
 stixDomainObjectEditContext,
 stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -24,7 +24,7 @@ const dataSourceResolvers: Resolvers = {
       return dataSourceAdd(context, context.user, input);
     },
     dataSourceDelete: (_, { id }, context) => {
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_DATA_SOURCE);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_DATA_SOURCE);
     },
     dataSourceFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

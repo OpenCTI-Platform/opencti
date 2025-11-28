@@ -4,7 +4,7 @@ import {
 stixDomainObjectAddRelation,
 stixDomainObjectCleanContext,
 stixDomainObjectDeleteRelation,
-stixDomainObjectDeleteWithTypeCheck,
+stixDomainObjectDelete,
 stixDomainObjectEditContext,
 stixDomainObjectEditField
 } from '../../domain/stixDomainObject';
@@ -26,7 +26,7 @@ const administrativeAreaResolvers: Resolvers = {
       return addAdministrativeArea(context, context.user, input);
     },
     administrativeAreaDelete: (_, { id }, context) => {
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
+      return stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA);
     },
     administrativeAreaFieldPatch: (_, { id, input, commitMessage, references }, context) => {
       return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });

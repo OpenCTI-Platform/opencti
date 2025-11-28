@@ -2,7 +2,7 @@ import { addIncident, findIncidentPaginated, findById, incidentsTimeSeries, inci
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
-  stixDomainObjectDeleteWithTypeCheck,
+  stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
   stixDomainObjectEditField
@@ -40,7 +40,7 @@ const incidentResolvers = {
   },
   Mutation: {
     incidentEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDeleteWithTypeCheck(context, context.user, id, ENTITY_TYPE_INCIDENT),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_INCIDENT),
       fieldPatch: ({
         input,
         commitMessage,

@@ -1,5 +1,5 @@
 import { Promise as BluePromise } from 'bluebird';
-import { stixDomainObjectDeleteWithTypeCheck } from '../../domain/stixDomainObject';
+import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE } from './case-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from './feedback/feedback-types';
@@ -49,7 +49,7 @@ const caseResolvers: Resolvers = {
         ENTITY_TYPE_CONTAINER_CASE_RFI,
         ENTITY_TYPE_CONTAINER_CASE_RFT,
       ];
-      return stixDomainObjectDeleteWithTypeCheck(context, context.user, id, acceptedCaseTypes);
+      return stixDomainObjectDelete(context, context.user, id, acceptedCaseTypes);
     },
     caseSetTemplate: async (_, { id, caseTemplatesId }, context) => {
       await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, context.user, id, caseTemplateId));
