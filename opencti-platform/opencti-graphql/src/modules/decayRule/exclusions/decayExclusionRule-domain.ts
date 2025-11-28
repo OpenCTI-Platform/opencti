@@ -8,13 +8,7 @@ import { pageEntitiesConnection, storeLoadById } from '../../../database/middlew
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../../schema/general';
 import { notify } from '../../../database/redis';
-import type {
-  DecayExclusionRuleAddInput,
-  EditInput,
-  Label,
-  MarkingDefinition,
-  QueryDecayExclusionRulesArgs,
-} from '../../../generated/graphql';
+import type { DecayExclusionRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayExclusionRulesArgs } from '../../../generated/graphql';
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
 import { type IndicatorAddInput } from '../../../generated/graphql';
@@ -56,8 +50,7 @@ export const checkDecayExclusionRules = async (
   if (!isDecayExclusionRuleEnabled) return null;
 
   const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
-  const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting)
-
+  const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting);
 
   const formattedIndicator = {
     ...indicatorToCreate,
