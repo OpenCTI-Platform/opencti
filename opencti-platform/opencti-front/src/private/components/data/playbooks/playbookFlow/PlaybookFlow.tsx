@@ -90,8 +90,8 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
     initialNodes,
     initialEdges,
-    setAction,
-    setSelectedNode,
+    setAction as React.Dispatch<React.SetStateAction<string | null>>,
+    setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
   );
 
   // Needs to be called after computing nodes and edges.
