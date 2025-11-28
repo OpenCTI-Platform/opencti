@@ -57,8 +57,7 @@ describe('listenPirEventsUtils', () => {
       id: 'internal-relationship--id-3',
       scope: 'internal',
       type: 'create',
-      data: { 
-        relationship_type: RELATION_IN_PIR,
+      data: { relationship_type: RELATION_IN_PIR,
         extensions: { [STIX_EXT_OCTI]:
         {
           id: 'id-5',
@@ -68,6 +67,7 @@ describe('listenPirEventsUtils', () => {
         } },
         target_ref: 'target-id'
       },
+
     } } as unknown as SseEvent<StreamDataEvent>;
 
   const randomEventNotInPir = { ...randomEventInPir, data: { ...randomEventInPir.data, data: { relationship_type: 'not-pir-relationship' }, } } as unknown as SseEvent<StreamDataEvent>;
@@ -157,6 +157,19 @@ describe('listenPirEventsUtils', () => {
   });
 
   describe('isUpdateEventMatchPir', () => {
+    it('should return true when called with no PIR list and flagged entity', () => {
+      vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(false);
+      vi.spyOn(playbookUtils, 'isEventUpdateOnEntity').mockResolvedValue(true);
+      vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({ pir_information: [{ pir_id: 'id-2' }] } as unknown as BasicStoreEntityPlaybook);
+
+      const result = isUpdateEventMatchPir(
+        randomEventInPir.data,
+        { update: true } as PirStreamConfiguration,
+      );
+      expect(result).toBeTruthy();
+      expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
+    });
+
     it('should return true when called with an event update on an entity, and is in a PIR that matches filters', () => {
       vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(false);
       vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({ pir_information: [{ pir_id: 'pir-id-2' }] } as unknown as BasicStoreEntityPlaybook);
