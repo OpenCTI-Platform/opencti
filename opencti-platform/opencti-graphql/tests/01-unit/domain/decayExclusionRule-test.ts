@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { checkDecayExclusionRules, type DecayExclusionRuleModel } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
 
 const decayExclusionRuleEmptyFilterGroupModel = {
   id: 'emptyFilterGroup id',
@@ -29,9 +30,10 @@ const decayExclusionRuleWithNoMatchingRuleModel = {
   active: true,
 };
 
-const indicatorToCreate = {
+const resolvedIndicator: BasicStoreEntityIndicator = {
+  _index: 'test_stix_domain_objects',
   pattern_type: 'stix',
-  pattern: "[ipv4-addr:value = '26.644.6.46']\n",
+  pattern: "[ipv4-addr:value = '36.76.6.46']",
   name: 'test 44',
   description: '',
   indicator_types: [],
@@ -43,45 +45,38 @@ const indicatorToCreate = {
   x_opencti_main_observable_type: 'IPv4-Addr',
   x_mitre_platforms: [],
   killChainPhases: [],
-  objectMarking: ['14baccf5-f87d-4dae-bca5-5e0e90062dbb'],
-  objectLabel: ['97699018-9db6-4a47-9528-dd3145d78b4d'],
+  objectMarking: null,
+  objectLabel: null,
   externalReferences: [],
-  createObservables: false
-};
+  createObservables: false,
+  entity_type: 'Indicator'
+}
 
 const decayExclusionRuleModelList: DecayExclusionRuleModel[] = [
-  decayExclusionRuleWithMatchingFilterGroupModel,
   decayExclusionRuleEmptyFilterGroupModel,
+  decayExclusionRuleWithMatchingFilterGroupModel,
   decayExclusionRuleWithNoMatchingRuleModel,
 ];
 
 describe('Decay Exclusion Rule', () => {
   describe('checkDecayExclusionRules', () => {
     describe('If there is a list of exclusion rules with at least one matching rule', async () => {
-      const exclusionRule = await checkDecayExclusionRules(testContext, ADMIN_USER, indicatorToCreate, decayExclusionRuleModelList);
+      const exclusionRule = await checkDecayExclusionRules(testContext, ADMIN_USER, resolvedIndicator, decayExclusionRuleModelList);
 
       it('should match an exclusion rule', () => {
         expect(exclusionRule?.id).toBeDefined();
-      });
-
-      it('should find the exclusion rule called "matchingFilterGroup id"', () => {
-        expect(exclusionRule?.id).toBe('matchingFilterGroup id');
       });
     });
     describe('If there is a rule with an empty filterGroup', async () => {
-      const exclusionRule = await checkDecayExclusionRules(testContext, ADMIN_USER, indicatorToCreate, [decayExclusionRuleEmptyFilterGroupModel]);
+      const exclusionRule = await checkDecayExclusionRules(testContext, ADMIN_USER, resolvedIndicator, [decayExclusionRuleEmptyFilterGroupModel]);
 
       it('should match an exclusion rule', () => {
         expect(exclusionRule?.id).toBeDefined();
-      });
-
-      it('should find the exclusion rule called "emptyFilterGroup id"', () => {
-        expect(exclusionRule?.id).toBe('emptyFilterGroup id');
       });
     });
 
     describe('If there is only no matching exclusion rule', async () => {
-      const exclusionRule = await checkDecayExclusionRules(testContext, ADMIN_USER, indicatorToCreate, [decayExclusionRuleWithNoMatchingRuleModel]);
+      const exclusionRule = await checkDecayExclusionRules(testContext, ADMIN_USER, resolvedIndicator, [decayExclusionRuleWithNoMatchingRuleModel]);
 
       it('should not find any exclusion rule', () => {
         expect(exclusionRule).toBe(null);

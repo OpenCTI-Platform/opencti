@@ -12,7 +12,7 @@ import type { DecayExclusionRuleAddInput, EditInput, Label, MarkingDefinition, Q
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
 import { type IndicatorAddInput } from '../../../generated/graphql';
-import { ENTITY_TYPE_INDICATOR } from '../../../modules/indicator/indicator-types';
+import {BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR} from '../../../modules/indicator/indicator-types';
 import { getEntitySettingFromCache } from '../../../modules/entitySetting/entitySetting-utils';
 
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
@@ -44,16 +44,13 @@ export const getActiveDecayExclusionRule = async (context: AuthContext, user: Au
 export const checkDecayExclusionRules = async (
   context: AuthContext,
   user: AuthUser,
-  indicatorToCreate: IndicatorAddInput,
+  resolvedIndicator: BasicStoreEntityIndicator,
   activeDecayExclusionRuleList: DecayExclusionRuleModel[]
 ): Promise<DecayExclusionRuleModel | null> => {
   if (!isDecayExclusionRuleEnabled) return null;
 
-  const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
-  const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting);
-
   const formattedIndicator = {
-    ...indicatorToCreate,
+    ...resolvedIndicator,
     object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
     labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.id),

@@ -1,6 +1,14 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
+import {
+  createEntity,
+  createRelation,
+  distributionEntities,
+  inputResolveRefs,
+  patchAttribute,
+  storeLoadByIdWithRefs,
+  timeSeriesEntities,
+} from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
@@ -57,6 +65,7 @@ import { checkObservableValue, isCacheEmpty } from '../../database/exclusionList
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
 import { checkDecayExclusionRules, getActiveDecayExclusionRule } from '../decayRule/exclusions/decayExclusionRule-domain';
+import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -275,7 +284,9 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const isDecayActivated: boolean = await isDecayEnabled();
 
   const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
-  const exclusionRule = await checkDecayExclusionRules(context, user, indicator, activeDecayExclusionRuleList);
+  const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
+  const resolvedIndicator = await inputResolveRefs(context, user, indicator, ENTITY_TYPE_INDICATOR, entitySetting);
+  const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
 
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
