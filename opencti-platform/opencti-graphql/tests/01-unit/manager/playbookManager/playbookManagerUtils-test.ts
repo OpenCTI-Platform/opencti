@@ -119,7 +119,7 @@ describe('playbookManagerUtils', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false if alla conditions are not met: not a sti relationship', () => {
+    it('should return false if all conditions are not met: not a stix relationship', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(false);
 
       const streamEventMock = {
@@ -132,7 +132,7 @@ describe('playbookManagerUtils', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if alla conditions are not met: not an external event', () => {
+    it('should return false if all conditions are not met: not an external event', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
 
       const streamEventMock = {
@@ -145,7 +145,7 @@ describe('playbookManagerUtils', () => {
       expect(result).toBe(false);
     });
 
-    it('should return false if alla conditions are not met: not a create type event', () => {
+    it('should return false if all conditions are not met: not a create type event', () => {
       vi.spyOn(stixRelationship, 'isStixRelation').mockReturnValue(true);
 
       const streamEventMock = {
