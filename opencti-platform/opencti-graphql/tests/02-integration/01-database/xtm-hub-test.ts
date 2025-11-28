@@ -28,7 +28,7 @@ describe('XTM hub', () => {
       getEntityFromCacheSpy = vi.spyOn(cache, 'getEntityFromCache');
       xtmHubClientRefreshStatusSpy = vi.spyOn(xtmHubClient, 'refreshRegistrationStatus');
       xtmHubClientIsBackendReachableSpy = vi.spyOn(xtmHubClient, 'isBackendReachable').mockResolvedValue({ isReachable: true });
-      updateAttributeSpy = vi.spyOn(middleware, 'updateAttribute').mockResolvedValue({});
+      updateAttributeSpy = vi.spyOn(middleware, 'updateAttribute').mockResolvedValue({} as unknown as any);
       sendAdministratorsLostConnectivityEmailSpy = vi.spyOn(xtmHubEmail, 'sendAdministratorsLostConnectivityEmail').mockResolvedValue({} as any);
       vi.spyOn(settingsModule, 'getSettings').mockResolvedValue({} as any);
       vi.spyOn(redisModule, 'notify').mockResolvedValue({});

@@ -1,4 +1,4 @@
-import { type BasicStoreEntityIngestionTaxii, ENTITY_TYPE_INGESTION_TAXII } from './ingestion-types';
+import { type BasicStoreEntityIngestionTaxii, ENTITY_TYPE_INGESTION_TAXII, type StoreEntityIngestionTaxii } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { BUS_TOPICS } from '../../config/conf';
@@ -62,7 +62,7 @@ export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, 
   if (patch.current_state_cursor) {
     verifiedPatch.current_state_cursor = `${patch.current_state_cursor}`;
   }
-  const patched = await patchAttribute(context, user, id, ENTITY_TYPE_INGESTION_TAXII, verifiedPatch);
+  const patched = await patchAttribute<StoreEntityIngestionTaxii>(context, user, id, ENTITY_TYPE_INGESTION_TAXII, verifiedPatch);
   return patched.element;
 };
 
@@ -111,7 +111,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     patchInput.push(cursorEditInput);
   }
 
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII, patchInput);
+  const { element } = await updateAttribute<StoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII, patchInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'TAXII',
@@ -137,7 +137,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionDelete = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  const deleted = await deleteElementById(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
+  const deleted = await deleteElementById<StoreEntityIngestionTaxii>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII);
   await unregisterConnectorForIngestion(context, deleted.id);
   await publishUserAction({
     user,
