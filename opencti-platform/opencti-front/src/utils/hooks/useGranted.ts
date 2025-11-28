@@ -1,4 +1,3 @@
-import { filter, includes } from 'ramda';
 import useAuth from './useAuth';
 
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
@@ -59,6 +58,10 @@ export const isOnlyOrganizationAdmin = () => {
   return userCapabilities.includes(VIRTUAL_ORGANIZATION_ADMIN) && !userCapabilities.includes(BYPASS) && !userCapabilities.includes(SETTINGS_SETACCESSES);
 };
 
+const getCapabilitiesName = (capabilities: readonly { name: string }[]) => {
+  return (capabilities ?? []).map((capability) => capability?.name);
+};
+
 const useGranted = (capabilities: string[], matchAll = false): boolean => {
   // Prevent use of the old SETTINGS capability for future uses
   if (capabilities.includes(SETTINGS)) {
@@ -67,25 +70,28 @@ const useGranted = (capabilities: string[], matchAll = false): boolean => {
 
   const { me } = useAuth();
 
-  const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
-  if (userCapabilities.includes(BYPASS)) {
+  let userCapabilities: string[] = [];
+  const userBaseCapabilities = getCapabilitiesName(me.capabilities);
+  
+  if (userBaseCapabilities.includes(BYPASS)) {
     return true;
   }
-  let numberOfAvailableCapabilities = 0;
-  for (let index = 0; index < capabilities.length; index += 1) {
-    const checkCapability = capabilities[index];
-    const matchingCapabilities = filter(
-      (r) => includes(checkCapability, r),
-      userCapabilities,
-    );
-    if (matchingCapabilities.length > 0) {
-      numberOfAvailableCapabilities += 1;
-    }
-  }
-  if (matchAll) {
-    return numberOfAvailableCapabilities === capabilities.length;
-  }
-  return numberOfAvailableCapabilities > 0;
+
+  // If the user is in draft mode, add capabilities in draft to the base capabilities 
+  if (me.draftContext) {
+    const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
+    userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
+  } else {
+    userCapabilities = userBaseCapabilities;
+  } 
+  
+  const capabilityMatches = (requestedCapability: string) =>
+    // Check if any of the user capabilities includes the requested capability as a substring
+    userCapabilities.some((u) => u.includes(requestedCapability));
+
+  return matchAll
+    ? capabilities.every(capabilityMatches)
+    : capabilities.some(capabilityMatches);
 };
 
 export default useGranted;
