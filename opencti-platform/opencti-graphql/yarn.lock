@@ -7683,10 +7683,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cookie@npm:1.0.2":
-  version: 1.0.2
-  resolution: "cookie@npm:1.0.2"
-  checksum: 10c0/fd25fe79e8fbcfcaf6aa61cd081c55d144eeeba755206c058682257cb38c4bd6795c6620de3f064c740695bb65b7949ebb1db7a95e4636efb8357a335ad3f54b
+"cookie@npm:1.1.0":
+  version: 1.1.0
+  resolution: "cookie@npm:1.1.0"
+  checksum: 10c0/94e45f748c308d1cb4d489fb1f6aa3a4fb9405a4c27f7ca8f05269a9adcb48863c3389e769647f1e82249cf0bdc4e37bae32875c01a5abf829bf437e6611d28e
   languageName: node
   linkType: hard
 
