@@ -24,6 +24,8 @@ import * as Yup from 'yup';
 import Box from '@mui/material/Box';
 import { Switch } from '@mui/material';
 import Chip from '@mui/material/Chip';
+import { ExperienceFieldPatchMutation$data } from '@components/settings/__generated__/ExperienceFieldPatchMutation.graphql';
+import getEEWarningMessage from '@components/settings/EEActivation';
 import { ExperienceQuery } from './__generated__/ExperienceQuery.graphql';
 import Transition from '../../../components/Transition';
 import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
@@ -61,6 +63,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const ExperienceFragment = graphql`
   fragment Experience on Settings {
     id
+    platform_type
     platform_enterprise_edition {
       license_enterprise
       license_by_configuration
@@ -98,6 +101,9 @@ export const experienceFieldPatch = graphql`
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
         ...Experience
+        platform_enterprise_edition {
+          license_validated
+        }
       }
     }
   }
@@ -124,6 +130,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
     filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([CGUStatus.enabled, CGUStatus.disabled, CGUStatus.pending]),
     platform_ai_enabled: Yup.boolean(),
   });
+  const isLtsPlatform = settings.platform_type === 'LTS';
   const [commitField] = useApiMutation(experienceFieldPatch);
   const handleSubmitField = (name: string, value: string | string[] | FieldOption | null | boolean) => {
     experienceValidation()
@@ -136,6 +143,13 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
               key: name,
               value: ((value as FieldOption)?.value ?? value) || '',
             },
+          },
+          onCompleted: (response) => {
+            const resData = response as ExperienceFieldPatchMutation$data;
+            // If platform is LTS but license is no longer valid, need to refresh to force the license.
+            if (isLtsPlatform && !resData.settingsEdit?.fieldPatch?.platform_enterprise_edition.license_validated) {
+              window.location.reload();
+            }
           },
         });
       })
@@ -206,7 +220,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                             color="dangerZone"
                             style={{ borderColor: theme.palette.dangerZone.main }}
                           >
-                            {t_i18n('You are about to disable the "Enterprise Edition" mode. Please note that this action will disable access to certain advanced features (organization segregation, automation, file indexing etc.).')}
+                            {t_i18n(getEEWarningMessage(isLtsPlatform))}
                             <br/><br/>
                             <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
                           </Alert>

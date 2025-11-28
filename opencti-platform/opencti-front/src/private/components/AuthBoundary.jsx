@@ -1,6 +1,7 @@
 import React from 'react';
 import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
+import LtsLicenseRoot from './LtsLicenseRoot';
 import { HighLevelError } from './Error';
 import LoginRoot from '../../public/LoginRoot';
 import withRouter from '../../utils/compat_router/withRouter';
@@ -21,6 +22,9 @@ class AuthBoundaryComponent extends React.Component {
       const retroErrors = this.state.error.data?.res?.errors ?? [];
       const types = map((e) => e.extensions.code, [...baseErrors, ...retroErrors]);
       // If user not authenticated, redirect to login with encoded path
+      if (includes('LTS_REQUIRED_ACTIVATION', types)) {
+        return <LtsLicenseRoot />;
+      }
       if (includes('AUTH_REQUIRED', types)) {
         return <LoginRoot type="LOGIN" />;
       }

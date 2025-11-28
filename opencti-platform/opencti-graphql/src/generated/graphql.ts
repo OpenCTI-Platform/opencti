@@ -13103,6 +13103,11 @@ export enum LanguagesOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type LicenseActivationInput = {
+  license: Scalars['String']['input'];
+  settingId: Scalars['ID']['input'];
+};
+
 export type ListTask = BackgroundTask & {
   __typename?: 'ListTask';
   actions?: Maybe<Array<Maybe<BackgroundTaskAction>>>;
@@ -15155,6 +15160,7 @@ export type Mutation = {
   sendUserMail?: Maybe<Scalars['Boolean']['output']>;
   sessionKill?: Maybe<Scalars['ID']['output']>;
   settingsEdit?: Maybe<SettingsEditMutations>;
+  setupEnterpriseLicense?: Maybe<Settings>;
   statusTemplateAdd: StatusTemplate;
   statusTemplateContextClean: StatusTemplate;
   statusTemplateContextPatch: StatusTemplate;
@@ -17057,6 +17063,11 @@ export type MutationSessionKillArgs = {
 
 export type MutationSettingsEditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationSetupEnterpriseLicenseArgs = {
+  input: LicenseActivationInput;
 };
 
 
@@ -20810,6 +20821,11 @@ export type PlatformProtectedSubConfig = {
   enabled: Scalars['Boolean']['output'];
   protected_ids: Array<Scalars['String']['output']>;
 };
+
+export enum PlatformType {
+  Lts = 'LTS',
+  Standard = 'STANDARD'
+}
 
 export type PlayBookExecution = {
   __typename?: 'PlayBookExecution';
@@ -27090,6 +27106,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_title?: Maybe<Scalars['String']['output']>;
   platform_translations?: Maybe<Scalars['String']['output']>;
   platform_trash_enabled: Scalars['Boolean']['output'];
+  platform_type: PlatformType;
   platform_url?: Maybe<Scalars['String']['output']>;
   platform_user_statuses: Array<UserStatus>;
   platform_whitemark?: Maybe<Scalars['Boolean']['output']>;
@@ -36028,6 +36045,7 @@ export type ResolversTypes = ResolversObject<{
   LanguageConnection: ResolverTypeWrapper<Omit<LanguageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LanguageEdge']>>> }>;
   LanguageEdge: ResolverTypeWrapper<Omit<LanguageEdge, 'node'> & { node: ResolversTypes['Language'] }>;
   LanguagesOrdering: LanguagesOrdering;
+  LicenseActivationInput: LicenseActivationInput;
   ListTask: ResolverTypeWrapper<Omit<ListTask, 'work'> & { work?: Maybe<ResolversTypes['Work']> }>;
   ListTaskAddInput: ListTaskAddInput;
   Location: ResolverTypeWrapper<ResolversInterfaceTypes<ResolversTypes>['Location']>;
@@ -36193,6 +36211,7 @@ export type ResolversTypes = ResolversObject<{
   PlatformEE: ResolverTypeWrapper<PlatformEe>;
   PlatformProtectedSensitiveConfig: ResolverTypeWrapper<PlatformProtectedSensitiveConfig>;
   PlatformProtectedSubConfig: ResolverTypeWrapper<PlatformProtectedSubConfig>;
+  PlatformType: PlatformType;
   PlayBookExecution: ResolverTypeWrapper<PlayBookExecution>;
   PlayBookExecutionStep: ResolverTypeWrapper<PlayBookExecutionStep>;
   Playbook: ResolverTypeWrapper<BasicStoreEntityPlaybook>;
@@ -36971,6 +36990,7 @@ export type ResolversParentTypes = ResolversObject<{
   LanguageAddInput: LanguageAddInput;
   LanguageConnection: Omit<LanguageConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LanguageEdge']>>> };
   LanguageEdge: Omit<LanguageEdge, 'node'> & { node: ResolversParentTypes['Language'] };
+  LicenseActivationInput: LicenseActivationInput;
   ListTask: Omit<ListTask, 'work'> & { work?: Maybe<ResolversParentTypes['Work']> };
   ListTaskAddInput: ListTaskAddInput;
   Location: ResolversInterfaceTypes<ResolversParentTypes>['Location'];
@@ -37425,6 +37445,10 @@ export type ResolversParentTypes = ResolversObject<{
   X509Certificate: Omit<X509Certificate, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   X509CertificateAddInput: X509CertificateAddInput;
 }>;
+
+export type AllowUnlicensedLtsDirectiveArgs = { };
+
+export type AllowUnlicensedLtsDirectiveResolver<Result, Parent, ContextType = any, Args = AllowUnlicensedLtsDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
 
 export type AuthDirectiveArgs = {
   and?: Maybe<Scalars['Boolean']['input']>;
@@ -42799,6 +42823,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   sendUserMail?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSendUserMailArgs, 'input'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;
   settingsEdit?: Resolver<Maybe<ResolversTypes['SettingsEditMutations']>, ParentType, ContextType, RequireFields<MutationSettingsEditArgs, 'id'>>;
+  setupEnterpriseLicense?: Resolver<Maybe<ResolversTypes['Settings']>, ParentType, ContextType, RequireFields<MutationSetupEnterpriseLicenseArgs, 'input'>>;
   statusTemplateAdd?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateAddArgs, 'input'>>;
   statusTemplateContextClean?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextCleanArgs, 'id'>>;
   statusTemplateContextPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextPatchArgs, 'id' | 'input'>>;
@@ -45392,6 +45417,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_translations?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_trash_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  platform_type?: Resolver<ResolversTypes['PlatformType'], ParentType, ContextType>;
   platform_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_user_statuses?: Resolver<Array<ResolversTypes['UserStatus']>, ParentType, ContextType>;
   platform_whitemark?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -48470,6 +48496,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
 }>;
 
 export type DirectiveResolvers<ContextType = any> = ResolversObject<{
+  allowUnlicensedLTS?: AllowUnlicensedLtsDirectiveResolver<any, any, ContextType>;
   auth?: AuthDirectiveResolver<any, any, ContextType>;
   constraint?: ConstraintDirectiveResolver<any, any, ContextType>;
   public?: PublicDirectiveResolver<any, any, ContextType>;

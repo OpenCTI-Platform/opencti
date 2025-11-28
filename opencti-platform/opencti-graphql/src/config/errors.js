@@ -37,6 +37,13 @@ export const OtpRequired = (data) => error(OTP_REQUIRED, 'You must validate your
   ...data,
 });
 
+export const LTS_REQUIRED_ACTIVATION = 'LTS_REQUIRED_ACTIVATION';
+export const LtsRequiredActivation = (data) => error(LTS_REQUIRED_ACTIVATION, 'You must activate your LTS license.', {
+  http_status: 401,
+  genre: CATEGORY_TECHNICAL,
+  ...data,
+});
+
 export const OTP_REQUIRED_ACTIVATION = 'OTP_REQUIRED_ACTIVATION';
 export const OtpRequiredActivation = (data) => error(OTP_REQUIRED_ACTIVATION, 'You must activate your account with 2FA.', {
   http_status: 401,
