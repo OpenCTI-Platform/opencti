@@ -3,7 +3,8 @@ import type { PlaybookComponent } from '../playbook-types';
 
 export interface PirStreamConfiguration {
   create: boolean,
-  // update: boolean,
+  create_rel: boolean,
+  update: boolean,
   delete: boolean,
   inPirFilters: { value: string }[],
   filters: string,
@@ -21,9 +22,10 @@ const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = 
     create: { type: 'boolean', default: true, $ref: 'A new entity enters a selected PIR' },
     delete: { type: 'boolean', default: false, $ref: 'An entity has left a selected PIR' },
     update: { type: 'boolean', default: false, $ref: 'An entity from a selected PIR has been updated' },
+    create_rel: { type: 'boolean', default: false, $ref: 'An entity is linked to an entity from a selected PIR' },
     filters: { type: 'string' },
   },
-  required: ['create', 'delete'],
+  required: ['create', 'delete', 'update', 'create_rel'],
 };
 
 export const PLAYBOOK_DATA_STREAM_PIR: PlaybookComponent<PirStreamConfiguration> = {
