@@ -358,7 +358,7 @@ describe('Filtering utils', () => {
     } as FilterGroup;
     expect(extractFilterGroupValues(dynamicToFilter, 'objectLabel', false, true)).toStrictEqual(['label1', 'label2', 'label3', 'dynamic', 'label4']);
   });
-  it('should replace ME_FILTER_VALUE values in filters compatible with @me', async () => {
+  it('should replace special values in filters: @me value by the user id for filter keys compatible with @me, and labels values by their ids', async () => {
     const user_id = 'user-id';
     const filterGroup = {
       mode: 'and',
@@ -371,9 +371,10 @@ describe('Filtering utils', () => {
         {
           mode: 'or',
           filters: [
-            { key: ['objectLabel'], values: ['label1-id', 'label2-id'], mode: 'and' },
+            { key: ['objectLabel'], values: ['label1-id', 'label2-id', 'label3'], mode: 'and' },
             { key: ['objectParticipant'], values: [ME_FILTER_VALUE] },
             { key: ['description'], values: [ME_FILTER_VALUE], operator: 'starts_with' },
+            { key: ['creator_id'], values: [ME_FILTER_VALUE] },
           ],
           filterGroups: [],
         },
@@ -390,15 +391,16 @@ describe('Filtering utils', () => {
         {
           mode: 'or',
           filters: [
-            { key: ['objectLabel'], values: ['label1-id', 'label2-id'], mode: 'and' },
+            { key: ['objectLabel'], values: ['label1-id', 'label2-id', 'label3-id'], mode: 'and' },
             { key: ['objectParticipant'], values: [user_id] },
             { key: ['description'], values: [ME_FILTER_VALUE], operator: 'starts_with' },
+            { key: ['creator_id'], values: [user_id] },
           ],
           filterGroups: [],
         },
       ],
     } as FilterGroup;
-    const finalFilter = replaceEnrichValuesInFilters(filterGroup, user_id, {});
+    const finalFilter = replaceEnrichValuesInFilters(filterGroup, user_id, { label1: 'label1-id', label3: 'label3-id' });
     expect(finalFilter).toEqual(expectedFilter);
   });
 });
