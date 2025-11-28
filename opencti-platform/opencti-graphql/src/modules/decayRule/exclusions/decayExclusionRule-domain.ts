@@ -54,7 +54,7 @@ export const checkDecayExclusionRules = async (
 
   const formattedIndicator = {
     ...indicatorToCreate,
-    object_marking_refs: resolvedIndicator[INPUT_MARKINGS].map((marking: MarkingDefinition) => marking.standard_id),
+    object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
     labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.id),
   };
