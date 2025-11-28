@@ -21,6 +21,7 @@ interface UserOrigin {
   playbook_id?: string;
   referer?: string;
   user_metadata?: object;
+  call_retry_number?: number;
 }
 
 interface AuthUser extends BasicStoreIdentifier {
@@ -67,6 +68,8 @@ interface AuthContext {
   user_inside_platform_organization: boolean;
   user_otp_validated?: boolean;
   user_with_session?: boolean;
+  synchronizedUpsert?: boolean;
+  previousStandard?: string;
   req?: Express.Request;
   blocked_for_lts_validation?: boolean;
 }

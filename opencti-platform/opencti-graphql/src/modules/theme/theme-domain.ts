@@ -116,7 +116,7 @@ export const fieldPatchTheme = async (context: AuthContext, user: AuthUser, them
   if (!theme) {
     throw FunctionalError(`Theme ${themeId} cannot be found`);
   }
-  const { element } = await updateAttribute(context, user, themeId, ENTITY_TYPE_THEME, input);
+  const { element } = await updateAttribute<StoreEntityTheme>(context, user, themeId, ENTITY_TYPE_THEME, input);
   await publishUserAction({
     user,
     event_type: 'mutation',

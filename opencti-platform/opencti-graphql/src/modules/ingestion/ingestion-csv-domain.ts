@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV } from './ingestion-types';
+import { type BasicStoreEntityIngestionCsv, ENTITY_TYPE_INGESTION_CSV, type StoreEntityIngestionCsv } from './ingestion-types';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
@@ -127,7 +127,7 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
 };
 
 export const patchCsvIngestion = async (context: AuthContext, user: AuthUser, id: string, patch: object) => {
-  const patched = await patchAttribute(context, user, id, ENTITY_TYPE_INGESTION_CSV, patch);
+  const patched = await patchAttribute<StoreEntityIngestionCsv>(context, user, id, ENTITY_TYPE_INGESTION_CSV, patch);
   return patched.element;
 };
 
@@ -174,7 +174,7 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
     parsedInput.push(resetAuthenticationValue);
   }
 
-  const { element } = await updateAttribute(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, parsedInput);
+  const { element } = await updateAttribute<StoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV, parsedInput);
   await registerConnectorForIngestion(context, {
     id: element.id,
     type: 'CSV',
@@ -221,7 +221,7 @@ export const ingestionCsvResetState = async (context: AuthContext, user: AuthUse
 };
 
 export const deleteIngestionCsv = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
-  const deleted = await deleteElementById(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
+  const deleted = await deleteElementById<StoreEntityIngestionCsv>(context, user, ingestionId, ENTITY_TYPE_INGESTION_CSV);
   await unregisterConnectorForIngestion(context, deleted.id);
   await publishUserAction({
     user,

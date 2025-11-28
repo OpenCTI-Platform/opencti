@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
 import { createInferredRelation, deleteInferredRuleElement, generateUpdateMessage, stixLoadById } from '../database/middleware';
@@ -11,14 +10,14 @@ import type { StixReport } from '../types/stix-2-1-sdo';
 import type { StixRelation } from '../types/stix-2-1-sro';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { internalFindByIds, internalLoadById, fullRelationsList } from '../database/middleware-loader';
+import { fullRelationsList, internalFindByIds, internalLoadById } from '../database/middleware-loader';
 import type { RelationCreation, UpdateEvent } from '../types/event';
-import { READ_DATA_INDICES, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { READ_DATA_INDICES } from '../database/utils';
 import type { AuthContext } from '../types/user';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 import { publishStixToStream } from '../database/stream/stream-handler';
 import { INPUT_DOMAIN_TO, INPUT_OBJECTS, RULE_PREFIX } from '../schema/general';
-import { FilterMode, FilterOperator } from '../generated/graphql';
+import { type EditInput, EditOperation, FilterMode, FilterOperator } from '../generated/graphql';
 import { asyncFilter } from '../utils/data-processing';
 import { buildStixUpdateEvent } from '../database/stream/stream-utils';
 
@@ -41,7 +40,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     ];
   };
   type ArrayRefs = Array<{ partOfFromId: string; partOfId: string; partOfStandardId: StixId; partOfTargetId: string; partOfTargetStandardId: StixId }>;
-  // eslint-disable-next-line max-len
+
   const createObjectRefsInferences = async (context: AuthContext, data: StixReport, addedTargets: ArrayRefs, deletedTargets: Array<BasicStoreRelation>): Promise<void> => {
     if (addedTargets.length === 0 && deletedTargets.length === 0) {
       return;
@@ -102,12 +101,12 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       } else {
         delete updatedReport.extensions[STIX_EXT_OCTI].object_refs_inferred;
       }
-      const inputs = [];
+      const inputs: EditInput[] = [];
       if (createdTargets.length > 0) {
-        inputs.push({ key: INPUT_OBJECTS, value: createdTargets, operation: UPDATE_OPERATION_ADD });
+        inputs.push({ key: INPUT_OBJECTS, value: createdTargets, operation: EditOperation.Add });
       }
       if (deletedTargetRefs.length > 0) {
-        inputs.push({ key: INPUT_OBJECTS, value: deletedTargetRefs, operation: UPDATE_OPERATION_REMOVE });
+        inputs.push({ key: INPUT_OBJECTS, value: deletedTargetRefs, operation: EditOperation.Remove });
       }
       const message = await generateUpdateMessage(context, RULE_MANAGER_USER, report.extensions[STIX_EXT_OCTI].type, inputs);
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message, []);
@@ -191,7 +190,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
     const listReportArgs = { fromTypes: [containerType], toId: isSource ? partOfFromId : partOfTargetId, callback: listFromCallback };
     await fullRelationsList(context, RULE_MANAGER_USER, RELATION_OBJECT, listReportArgs);
   };
-  // eslint-disable-next-line consistent-return
+
   const applyInsert = async (data: StixObject): Promise<void> => {
     const context = executionContext(ruleDefinition.name, RULE_MANAGER_USER);
     const entityType = generateInternalType(data);

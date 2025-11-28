@@ -777,7 +777,7 @@ export const checkUserFilterStoreElements = (
     || (element.restricted_members && element.restricted_members.length > 0 && hasAuthorizedMemberAccess(user, element));
 };
 
-export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
+export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>): Promise<BasicStoreCommon[]> => {
   const userFilterStoreElementsFn = async () => {
     // If user have bypass, grant access to all
     if (isBypassUser(user)) {
