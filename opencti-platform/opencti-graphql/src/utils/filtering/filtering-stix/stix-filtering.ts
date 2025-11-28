@@ -85,7 +85,6 @@ export const isStixMatchFilterGroup_MockableForUnitTests = async (
  * @param user
  * @param stix stix object from the raw event stream
  * @param filterGroup
- * @param withMap
  * @throws {Error} on invalid filter keys
  */
 export const isStixMatchFilterGroup = async (
@@ -93,14 +92,13 @@ export const isStixMatchFilterGroup = async (
   user: AuthUser,
   stix: any,
   filterGroup?: FilterGroup,
-  withMap = true,
 ) : Promise<boolean> => {
   // resolve some of the ids as we filter on their corresponding values or standard-id for instance
   // the provided map will contain replacements for filter values, if any necessary.
   // we use the entities stored in cache for the "Resolved-Filters" (all the entities used by the saved filters - stream, trigger, playbooks)
   // see cacheManager.ts:platformResolvedFilters
   const cache = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  const map = filterGroup && withMap ? await buildResolutionMapForFilterGroup(context, user, filterGroup, cache) : new Map();
+  const map = filterGroup ? await buildResolutionMapForFilterGroup(context, user, filterGroup, cache) : new Map();
 
   return isStixMatchFilterGroup_MockableForUnitTests(context, user, stix, filterGroup, map);
 };

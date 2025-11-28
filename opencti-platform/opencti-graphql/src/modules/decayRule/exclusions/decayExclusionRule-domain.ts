@@ -1,7 +1,7 @@
 import { isStixMatchFilterGroup } from '../../../utils/filtering/filtering-stix/stix-filtering';
 import { now } from '../../../utils/format';
 import { FunctionalError, UnsupportedError } from '../../../config/errors';
-import { deleteElementById, updateAttribute } from '../../../database/middleware';
+import {deleteElementById, inputResolveRefs, updateAttribute} from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { BUS_TOPICS, isFeatureEnabled } from '../../../config/conf';
 import { pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
@@ -12,6 +12,8 @@ import type { DecayExclusionRuleAddInput, EditInput, QueryDecayExclusionRulesArg
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
 import { type IndicatorAddInput } from '../../../generated/graphql';
+import { ENTITY_TYPE_INDICATOR } from '../../../modules/indicator/indicator-types';
+import { getEntitySettingFromCache } from '../../../modules/entitySetting/entitySetting-utils';
 
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
 
@@ -47,17 +49,21 @@ export const checkDecayExclusionRules = async (
 ): Promise<DecayExclusionRuleModel | null> => {
   if (!isDecayExclusionRuleEnabled) return null;
 
-  const formatedIndicator = {
+  const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
+  const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting)
+
+
+  const formattedIndicator = {
     ...indicatorToCreate,
-    object_marking_refs: (indicatorToCreate[INPUT_MARKINGS] ?? []).map((id) => id),
-    created_by_ref: indicatorToCreate[INPUT_CREATED_BY] ?? '',
-    labels: (indicatorToCreate[INPUT_LABELS] ?? []).map((id) => id),
+    object_marking_refs: resolvedIndicator[INPUT_MARKINGS].map((marking) => marking.standard_id),
+    created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
+    labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label) => label.id),
   };
 
   for (let i = 0; i < activeDecayExclusionRuleList.length; i += 1) {
     const { decay_exclusion_filters } = activeDecayExclusionRuleList[i];
     const filterGroup = JSON.parse(decay_exclusion_filters);
-    const result = await isStixMatchFilterGroup(context, user, formatedIndicator, filterGroup, false);
+    const result = await isStixMatchFilterGroup(context, user, formattedIndicator, filterGroup);
     if (result) return activeDecayExclusionRuleList[i];
   }
   return null;

@@ -35279,6 +35279,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityCsvMapper )
     | ( BasicStoreEntityDataComponent )
     | ( BasicStoreEntityDataSource )
+    | ( BasicStoreEntityDecayExclusionRule )
     | ( BasicStoreEntityDecayRule )
     | ( BasicStoreEntityDeleteOperation )
     | ( Omit<Directory, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -35418,6 +35419,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
     | ( ConnectorManager )
     | ( BasicStoreEntityCsvMapper )
+    | ( BasicStoreEntityDecayExclusionRule )
     | ( BasicStoreEntityDecayRule )
     | ( BasicStoreEntityDeleteOperation )
     | ( DisseminationList )
@@ -39686,13 +39688,11 @@ export type DecayExclusionRuleResolvers<ContextType = any, ParentType extends Re
 export type DecayExclusionRuleConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayExclusionRuleConnection'] = ResolversParentTypes['DecayExclusionRuleConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['DecayExclusionRuleEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DecayExclusionRuleEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayExclusionRuleEdge'] = ResolversParentTypes['DecayExclusionRuleEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['DecayExclusionRule'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type DecayHistoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayHistory'] = ResolversParentTypes['DecayHistory']> = ResolversObject<{
@@ -41305,7 +41305,6 @@ export type IndicatorDecayExclusionRuleResolvers<ContextType = any, ParentType e
   decay_exclusion_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   decay_exclusion_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   decay_exclusion_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type IndicatorDecayRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['IndicatorDecayRule'] = ResolversParentTypes['IndicatorDecayRule']> = ResolversObject<{
