@@ -209,26 +209,24 @@ export const addStixDomainObject = async (context, user, stixDomainObject) => {
  * @param {*} context
  * @param {*} user
  * @param {string} stixDomainObjectId
- * @param {string | string[] | null} [expectedEntityType=null]
+ * @param {string | string[]} expectedEntityType - Required entity type(s) for validation
  */
-export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, expectedEntityType = null) => {
+export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, expectedEntityType) => {
   // If we are in a draft, we need to also search for deleted elements
   const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, { includeDeletedInDraft: true });
   if (!stixDomainObject) {
     throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.');
   }
   
-  if (expectedEntityType) {
-    // Handle both string and array types for flexibility
-    const allowedTypes = Array.isArray(expectedEntityType) ? expectedEntityType : [expectedEntityType];
-    
-    // Check if the entity type matches any of the expected types
-    if (!allowedTypes.includes(stixDomainObject.entity_type)) {
-      throw FunctionalError(
-        `Cannot delete the object, type mismatch: expected ${allowedTypes.join(', ')}, found ${stixDomainObject.entity_type}.`,
-        { expectedTypes: allowedTypes, actualType: stixDomainObject.entity_type, objectId: stixDomainObjectId }
-      );
-    }
+  // Handle both string and array types for flexibility
+  const allowedTypes = Array.isArray(expectedEntityType) ? expectedEntityType : [expectedEntityType];
+  
+  // Check if the entity type matches any of the expected types
+  if (!allowedTypes.includes(stixDomainObject.entity_type)) {
+    throw FunctionalError(
+      `Cannot delete the object, type mismatch: expected ${allowedTypes.join(', ')}, found ${stixDomainObject.entity_type}.`,
+      { expectedTypes: allowedTypes, actualType: stixDomainObject.entity_type, objectId: stixDomainObjectId }
+    );
   }
   
   await deleteElementById(context, user, stixDomainObjectId, stixDomainObject.entity_type);
@@ -239,7 +237,7 @@ export const stixDomainObjectDelete = async (context, user, stixDomainObjectId, 
 export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsIds) => {
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixDomainObjectsIds.length; i += 1) {
-    await stixDomainObjectDelete(context, user, stixDomainObjectsIds[i]);
+    await stixDomainObjectDelete(context, user, stixDomainObjectsIds[i], ABSTRACT_STIX_DOMAIN_OBJECT);
   }
   return stixDomainObjectsIds;
 };
