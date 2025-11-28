@@ -1,10 +1,10 @@
-/* eslint-disable import/no-extraneous-dependencies */
+ 
 import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 import { BaseSequencer, type TestSpecification } from 'vitest/node';
 
-export const buildTestConfig = (include: string[]) => defineConfig({
+export const buildIntegrationTestConfig = (include: string[]) => defineConfig({
   plugins: [graphql() as PluginOption],
   test: {
     include,
@@ -18,20 +18,15 @@ export const buildTestConfig = (include: string[]) => defineConfig({
       exclude: ['src/generated/**', 'src/migrations/**', 'src/stixpattern/**', 'src/python/**'],
       reporter: ['text', 'json', 'html'],
     },
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+    maxWorkers: 1,
     sequence: {
       shuffle: false,
       sequencer: class Sequencer extends BaseSequencer {
-        // eslint-disable-next-line class-methods-use-this
+         
         async shard(files: TestSpecification[]) {
           return files;
         }
-
-        // eslint-disable-next-line class-methods-use-this
+         
         async sort(files: TestSpecification[]) {
           return files.sort((testA, testB) => (testA.moduleId > testB.moduleId ? 1 : -1));
         }
@@ -40,4 +35,4 @@ export const buildTestConfig = (include: string[]) => defineConfig({
   },
 });
 
-export default buildTestConfig(['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
+export default buildIntegrationTestConfig(['tests/**/*-test.{js,mjs,cjs,ts,mts,cts,jsx,tsx}']);
