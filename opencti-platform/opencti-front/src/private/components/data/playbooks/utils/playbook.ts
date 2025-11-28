@@ -1,5 +1,10 @@
+import { Edge } from "@reactflow/core/dist/esm/types";
 
-type PlaybookComponents = readonly ({
+interface PortDefinition {
+  id: string
+  type: string
+}
+interface PlaybookComponent {
     readonly configuration_schema: string | null | undefined;
     readonly description: string;
     readonly icon: string;
@@ -7,13 +12,19 @@ type PlaybookComponents = readonly ({
     readonly is_entry_point: boolean | null | undefined;
     readonly is_internal: boolean | null | undefined;
     readonly name: string;
-    readonly ports: readonly {
-        readonly id: string;
-        readonly type: string;
-    }[];
-} | null | undefined)[]
+    readonly ports:  readonly PortDefinition[];
+}
 
-
+interface LinkDefinition {
+  id: string,
+  from: {
+    port: string,
+    id: string
+  },
+  to: {
+    id: string
+  }
+}
 interface ComputedNodesReturns {
     id: string;
     type: string;
@@ -21,27 +32,14 @@ interface ComputedNodesReturns {
     data: {
         name: string;
         configuration: any;
-        component: {
-            readonly configuration_schema: string | null | undefined;
-            readonly description: string;
-            readonly icon: string;
-            readonly id: string;
-            readonly is_entry_point: boolean | null | undefined;
-            readonly is_internal: boolean | null | undefined;
-            readonly name: string;
-            readonly ports: readonly {
-                readonly id: string;
-                readonly type: string;
-            }[];
-        } | null | undefined;
+        component: PlaybookComponent | null | undefined;
         openConfig: (nodeId: string) => void;
         openReplace: (nodeId: string) => void;
         openAddSibling: (nodeId: string) => void;
         openDelete: (nodeId: string) => void;
     };
 }
-
-interface NodeDefinition {
+interface ComputeNodeDefinition {
   id: string,
   name: string,
   position: { x: number, y: number },
@@ -49,22 +47,9 @@ interface NodeDefinition {
   configuration: string // json
 }
 
-interface ComputeEdgesReturns {
-  
-      id: string,
-      type: 'workflow',
-      source: string,
-      sourceHandle: string,
-      target: string,
-      data: {
-        openConfig: (edgeId: string) => {},
-      },
-    
-}
-
 export const computeNodes = (
-  playbookNodes: NodeDefinition[],
-  playbookComponents:PlaybookComponents,
+  playbookNodes: ComputeNodeDefinition[],
+  playbookComponents:readonly (PlaybookComponent | null | undefined)[],
   setAction: React.Dispatch<React.SetStateAction<string | null>>,
   setSelectedNode: React.Dispatch<React.SetStateAction<string | null>>,
 ):ComputedNodesReturns[] => {
@@ -102,9 +87,9 @@ export const computeNodes = (
 };
 
 export const computeEdges = (
-  playbookEdges, 
+  playbookEdges:LinkDefinition[], 
   setAction: React.Dispatch<React.SetStateAction<string | null>>, setSelectedEdge: React.Dispatch<React.SetStateAction<string | null>>
-):ComputeEdgesReturns[] => {
+):Edge[] => {
   return playbookEdges.map((edge) => {
     return {
       id: edge.id,
@@ -113,7 +98,7 @@ export const computeEdges = (
       sourceHandle: edge.from.port,
       target: edge.to.id,
       data: {
-        openConfig: (edgeId) => {
+        openConfig: (edgeId: string) => {
           setSelectedEdge(edgeId);
           setAction('config');
         },
@@ -122,7 +107,12 @@ export const computeEdges = (
   });
 };
 
-export const addPlaceholders = (nodes, edges, setAction, setSelectedNode) => {
+export const addPlaceholders = (
+  nodes:ComputedNodesReturns[], 
+  edges: Edge[], 
+  setAction:React.Dispatch<React.SetStateAction<string | null>>, 
+  setSelectedNode:React.Dispatch<React.SetStateAction<string | null>>
+) => {
   if (nodes.length === 0) {
     return {
       nodes: [
@@ -134,7 +124,7 @@ export const addPlaceholders = (nodes, edges, setAction, setSelectedNode) => {
             name: '+',
             configuration: null,
             component: { is_entry_point: true },
-            openConfig: (nodeId) => {
+            openConfig: (nodeId: string) => {
               setSelectedNode(nodeId);
               setAction('config');
             },
@@ -155,26 +145,26 @@ export const addPlaceholders = (nodes, edges, setAction, setSelectedNode) => {
       .length === 0,
   );
   const placeholders = notConnectedNodesOutputs.map((notConnectedNodeOutput) => {
-    const childPlaceholderId = `${notConnectedNodeOutput.id}-${notConnectedNodeOutput.port_id}-PLACEHOLDER`;
+    const childPlaceholderId = `${notConnectedNodeOutput?.id}-${notConnectedNodeOutput?.port_id}-PLACEHOLDER`;
     const childPlaceholderNode = {
       id: childPlaceholderId,
-      position: { x: notConnectedNodeOutput.position.x, y: notConnectedNodeOutput.position.y },
+      position: { x: notConnectedNodeOutput?.position.x, y: notConnectedNodeOutput?.position.y },
       type: 'placeholder',
       data: {
         name: '+',
         configuration: null,
         component: { is_entry_point: false },
-        openConfig: (nodeId) => {
+        openConfig: (nodeId: string) => {
           setSelectedNode(nodeId);
           setAction('config');
         },
       },
     };
     const childPlaceholderEdge = {
-      id: `${notConnectedNodeOutput.id}-${notConnectedNodeOutput.port_id}-${childPlaceholderId}`,
+      id: `${notConnectedNodeOutput?.id}-${notConnectedNodeOutput?.port_id}-${childPlaceholderId}`,
       type: 'placeholder',
-      source: notConnectedNodeOutput.id,
-      sourceHandle: notConnectedNodeOutput.port_id,
+      source: notConnectedNodeOutput?.id,
+      sourceHandle: notConnectedNodeOutput?.port_id,
       target: childPlaceholderId,
     };
     return { node: childPlaceholderNode, edge: childPlaceholderEdge };
