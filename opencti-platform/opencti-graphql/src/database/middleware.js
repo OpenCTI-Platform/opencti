@@ -776,7 +776,7 @@ export const validateCreatedBy = async (context, user, createdById) => {
   }
 };
 
-const inputResolveRefs = async (context, user, input, type, entitySetting) => {
+export const inputResolveRefs = async (context, user, input, type, entitySetting) => {
   const inputResolveRefsFn = async () => {
     const fetchingIdsMap = new Map();
     const expectedIds = [];

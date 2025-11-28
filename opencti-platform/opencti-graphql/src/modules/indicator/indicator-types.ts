@@ -43,6 +43,13 @@ export interface IndicatorDecayRule {
   decay_revoke_score: number
 }
 
+interface IndicatorDecayExclusionRule {
+  decay_exclusion_id: string;
+  decay_exclusion_name: string;
+  decay_exclusion_created_at: string;
+  decay_exclusion_observable_types: string[];
+}
+
 export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   name: string;
   description: string;
@@ -54,6 +61,7 @@ export interface BasicStoreEntityIndicator extends BasicStoreEntity {
   valid_until: Date;
   kill_chain_phases: Array<StixKillChainPhase>;
   decay_applied_rule: IndicatorDecayRule;
+  decay_exclusion_applied_rule: IndicatorDecayExclusionRule;
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;
@@ -70,6 +78,7 @@ export interface StoreEntityIndicator extends StoreEntity {
   valid_until: Date;
   kill_chain_phases: Array<StixKillChainPhase>;
   decay_applied_rule: IndicatorDecayRule;
+  decay_exclusion_applied_rule: IndicatorDecayExclusionRule;
   decay_history: Array<DecayHistory>;
   decay_base_score: number;
   decay_base_score_date: Date;

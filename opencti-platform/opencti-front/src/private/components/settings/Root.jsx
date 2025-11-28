@@ -49,7 +49,7 @@ const VocabularyCategories = lazy(() => import('./VocabularyCategories'));
 const Audit = lazy(() => import('./activity/audit/Root'));
 const Configuration = lazy(() => import('./activity/configuration/Configuration'));
 const Alerting = lazy(() => import('./activity/alerting/Alerting'));
-const DecayRules = lazy(() => import('./decay/DecayRules'));
+const DecayRuleTabs = lazy(() => import('./decay/DecayRuleTabs'));
 const DecayRule = lazy(() => import('./decay/DecayRule'));
 const ExclusionLists = lazy(() => import('./exclusion_lists/ExclusionLists'));
 const DisseminationLists = lazy(() => import('./dissemination_lists/DisseminationLists'));
@@ -373,7 +373,7 @@ const Root = () => {
             path="customization/decay"
             element={
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={urlWithCapabilities()} />}>
-                <DecayRules />
+                <DecayRuleTabs />
               </Security>
             }
           />
