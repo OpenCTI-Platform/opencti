@@ -839,7 +839,7 @@ const PlaybookAddComponentsContent = ({
                   }
                   if (v.type === 'boolean') {
                     let helperText = '';
-                    if (v.$ref === 'An entity is linked to an entity from a selected PIR') {
+                    if (k === 'create_rel') {
                       helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
                     }
                     return (
