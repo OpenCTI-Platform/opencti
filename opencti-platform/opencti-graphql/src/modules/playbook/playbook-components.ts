@@ -896,6 +896,7 @@ const PLAYBOOK_UPDATE_KNOWLEDGE_COMPONENT_SCHEMA: JSONSchemaType<UpdateConfigura
   properties: {
     actions: {
       type: 'array',
+      default: [],
       items: {
         type: 'object',
         properties: {

@@ -14,7 +14,7 @@ import { FieldOption } from '../../../../utils/field';
 interface OpenVocabProps {
   type: string;
   name: string;
-  label: string;
+  label?: string;
   required?: boolean;
   variant?: string;
   onFocus?: (name: string, value: FieldOption) => void;

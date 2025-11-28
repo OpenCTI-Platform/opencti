@@ -17,16 +17,13 @@ import List from '@mui/material/List';
 import { ListItemButton } from '@mui/material';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Node } from 'reactflow';
 import ItemIcon from '../../../../../components/ItemIcon';
 import { useFormatter } from '../../../../../components/i18n';
-import { PlaybookFlow_playbookComponents$data } from './__generated__/PlaybookFlow_playbookComponents.graphql';
-
-type PlaybookComponents = NonNullable<PlaybookFlow_playbookComponents$data['playbookComponents']>;
+import { PlaybookComponents, PlaybookNode } from '../types/playbook-types';
 
 interface PlaybookSelectComponentProps {
   components: PlaybookComponents
-  selectedNode?: Node
+  selectedNode: PlaybookNode | null
   onSelect: (componentId: string) => void
 }
 
