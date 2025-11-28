@@ -23,7 +23,7 @@ import { csvMapperDynamicChar } from './dynamic-url-ip-character/csv-mapper-mock
 
 describe('CSV-PARSER', () => {
   it('Parse CSV - Simple entity', async () => {
-    const filPath = './tests/02-integration/05-parser/simple-entity-test/Threat-Actor-Group_list.csv';
+    const filPath = './tests/03-integration/05-parser/simple-entity-test/Threat-Actor-Group_list.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMockSimpleEntity as CsvMapperParsed);
 
     expect(objects.length).toBe(5);
@@ -38,7 +38,7 @@ describe('CSV-PARSER', () => {
   });
 
   it('Parse CSV - Simple relationship', async () => {
-    const filPath = './tests/02-integration/05-parser/simple-relationship-test/Threat-Actor-Group_PART-OF_list.csv';
+    const filPath = './tests/03-integration/05-parser/simple-relationship-test/Threat-Actor-Group_PART-OF_list.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMockSimpleRelationship as CsvMapperParsed);
 
     expect(objects.length).toBe(6);
@@ -49,7 +49,7 @@ describe('CSV-PARSER', () => {
   });
 
   it('Parse CSV - Simple sighting', async () => {
-    const filPath = './tests/02-integration/05-parser/simple-sighting-test/Threat-Actor-Group_SIGHTING_org.csv';
+    const filPath = './tests/03-integration/05-parser/simple-sighting-test/Threat-Actor-Group_SIGHTING_org.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSighting as CsvMapperParsed);
 
     expect(objects.length)
@@ -66,7 +66,7 @@ describe('CSV-PARSER', () => {
   });
 
   it('Parse CSV - Simple entity with refs', async () => {
-    const filPath = './tests/02-integration/05-parser/simple-entity-with-ref-test/Threat-Actor-Group_with-ref.csv';
+    const filPath = './tests/03-integration/05-parser/simple-entity-with-ref-test/Threat-Actor-Group_with-ref.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMockSimpleEntityWithRef as CsvMapperParsed);
 
     expect(objects.length)
@@ -91,7 +91,7 @@ describe('CSV-PARSER', () => {
   });
 
   it('Parse CSV - Real use case', async () => {
-    const filPath = './tests/02-integration/05-parser/real-use-case/schema incidents.csv';
+    const filPath = './tests/03-integration/05-parser/real-use-case/schema incidents.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMockRealUseCase as CsvMapperParsed);
 
     const incidents = objects.filter((o) => o.type === 'incident');
@@ -123,7 +123,7 @@ describe('CSV-PARSER', () => {
   });
 
   it('Parse CSV - Simple skip line test on Simple entity ', async () => {
-    const filPath = './tests/02-integration/05-parser/simple-skip-line-test/Threat-Actor-Group_list_skip_line.csv';
+    const filPath = './tests/03-integration/05-parser/simple-skip-line-test/Threat-Actor-Group_list_skip_line.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSkipLine as CsvMapperParsed);
 
     const threatActors: StixThreatActor[] = objects as StixThreatActor[];
@@ -140,7 +140,7 @@ describe('CSV-PARSER', () => {
   });
 
   it('Parse CSV - Simple skip double quoted data line test on Simple entity ', async () => {
-    const filPath = './tests/02-integration/05-parser/simple-skip-line-test/Threat-Actor-Group_list_skip_double_quoted_data_line.csv';
+    const filPath = './tests/03-integration/05-parser/simple-skip-line-test/Threat-Actor-Group_list_skip_double_quoted_data_line.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMockSimpleSkipLine as CsvMapperParsed);
 
     const threatActors: StixThreatActor[] = objects as StixThreatActor[];
@@ -151,7 +151,7 @@ describe('CSV-PARSER', () => {
   });
 
   it('Parse CSV - manage boolean values', async () => {
-    const filPath = './tests/02-integration/05-parser/entities-with-booleans/malwares.csv';
+    const filPath = './tests/03-integration/05-parser/entities-with-booleans/malwares.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMalware as CsvMapperParsed);
 
     const malwares: StixMalware[] = objects as StixMalware[];
@@ -165,7 +165,7 @@ describe('CSV-PARSER', () => {
 
 describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', () => {
   it('Parse CSV - Simple different entities', async () => {
-    const filPath = './tests/02-integration/05-parser/dynamic-simple-test/Threat-Actor-Group_or_Organization.csv';
+    const filPath = './tests/03-integration/05-parser/dynamic-simple-test/Threat-Actor-Group_or_Organization.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filPath, csvMapperMockSimpleDifferentEntities as CsvMapperParsed);
 
     expect(objects.length).toBe(2);
@@ -174,7 +174,7 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
   });
 
   it('Parse CSV - dynamic entity with IPs and URLs', async () => {
-    const filePath = './tests/02-integration/05-parser/dynamic-url-and-ip/url-ip.csv';
+    const filePath = './tests/03-integration/05-parser/dynamic-url-and-ip/url-ip.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filePath, csvMapperDynamicIpAndUrl as CsvMapperParsed);
 
     expect(objects.length).toBe(77); // 76 lines + 1 individual
@@ -192,7 +192,7 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
   });
 
   it('Parse CSV - dynamic entity with MD5 and SHA-256 files', async () => {
-    const filePath = './tests/02-integration/05-parser/dynamic-file-hash/distinct-hash.csv';
+    const filePath = './tests/03-integration/05-parser/dynamic-file-hash/distinct-hash.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filePath, csvMapperMockFileHashHack as CsvMapperParsed);
 
     expect(objects.length).toBe(7);
@@ -206,7 +206,7 @@ describe('CSV-PARSER with dynamic mapping (aka different entity on one file)', (
   });
 
   it('Parse CSV - dynamic entity with URL and IP with special characters', async () => {
-    const filePath = './tests/02-integration/05-parser/dynamic-url-ip-character/url-ip-char.csv';
+    const filePath = './tests/03-integration/05-parser/dynamic-url-ip-character/url-ip-char.csv';
     const objects: StixObject[] = await getTestBundleObjectsFromFile(testContext, ADMIN_USER, filePath, csvMapperDynamicChar as CsvMapperParsed);
 
     const firstUrl: StixURL = objects.filter((o) => o.type === 'url')[0] as StixURL;

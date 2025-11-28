@@ -137,8 +137,8 @@ describe('Elasticsearch computation', () => {
       }
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('Malware')).toEqual(2);
-    expect(aggregationMap.get('Indicator')).toEqual(3);
+    expect(aggregationMap.get('Malware')).toEqual(entitiesCounter.Malware);
+    expect(aggregationMap.get('Indicator')).toEqual(entitiesCounter.Indicator);
   });
   it('should entity aggregation with date accurate', async () => {
     const mostRecentMalware = await elLoadById(testContext, ADMIN_USER, 'malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
@@ -221,7 +221,7 @@ describe('Elasticsearch computation', () => {
   it('should invalid time histogram fail', async () => {
     const histogramCount = elHistogramCount(testContext, ADMIN_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: ['Stix-Domain-Object'], field: 'created_at', interval: 'minute' });
     // noinspection ES6MissingAwait.toEqual(36);
-    expect(histogramCount).rejects.toThrow();
+    await expect(histogramCount).rejects.toThrow();
   });
   it('should day histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -234,7 +234,7 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(R.head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(R.head(data).value).toEqual(34 + TESTING_ORGS.length);
+    expect(R.head(data).value).toEqual(entitiesCounter.Organization);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
@@ -986,7 +986,7 @@ describe('Elasticsearch reindex', () => {
   it('should relation reindex check consistency', async () => {
     const indexPromise = elIndexElements(testContext, ADMIN_USER, 'uses', [{ relationship_type: 'uses' }]);
     // noinspection ES6MissingAwait
-    expect(indexPromise).rejects.toThrow();
+    await expect(indexPromise).rejects.toThrow();
   });
   it('should reindex sighting with unmapped fields', async () => {
     // dummy object with old fields that are not part of the strict mapping

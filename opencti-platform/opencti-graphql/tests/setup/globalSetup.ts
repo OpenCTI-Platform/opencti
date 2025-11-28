@@ -1,11 +1,11 @@
 // region static graphql modules, need to be imported before everything
-import '../../src/modules/index';
+import '../../src/modules';
 // import managers
-import '../../src/manager/index';
+import '../../src/manager';
 // endregion
 import { storageInit, initializeBucket } from '../../src/database/raw-file-storage';
 import { deleteQueues } from '../../src/domain/connector';
-import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './testQuery';
+import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from '../utils/testQuery';
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { createRedisClient, initializeRedisClients, shutdownRedisClients } from '../../src/database/redis';

@@ -138,7 +138,7 @@ describe('CSV-MAPPER', () => {
 
   describe('Manage hashes for files', () => {
     it('should map files hashes correctly', async () => {
-      const filePath = './tests/02-integration/05-parser/files-hashes/data.csv';
+      const filePath = './tests/03-integration/05-parser/files-hashes/data.csv';
       const data = (await mapData(filePath, csvMapperFile)).flat();
 
       const { MD5 } = data[0].hashes;
@@ -156,7 +156,7 @@ describe('CSV-MAPPER', () => {
 
   describe('Managing default values', () => {
     it('should use default values from settings', async () => {
-      const filePath = './tests/02-integration/05-parser/default-values/data.csv';
+      const filePath = './tests/03-integration/05-parser/default-values/data.csv';
       const data = (await mapData(filePath, csvMapperAreaMalware)).flat();
 
       const morbihan = data.find((object) => object.name === 'morbihan');
@@ -223,7 +223,7 @@ describe('CSV-MAPPER', () => {
     });
 
     it('should use default values from mapper', async () => {
-      const filePath = './tests/02-integration/05-parser/default-values/data.csv';
+      const filePath = './tests/03-integration/05-parser/default-values/data.csv';
       const killChainPhase = killChainPhases[0];
       const data = (await mapData(
         filePath,
@@ -322,7 +322,7 @@ describe('CSV-MAPPER', () => {
     });
 
     it('should retrieve marking from data', async () => {
-      const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const filePath = './tests/03-integration/05-parser/default-values/data-markings.csv';
       const data = (await mapData(filePath, csvMapperAreaMarking())).flat();
 
       const indre = data.find((object) => object.name === 'indre');
@@ -335,7 +335,7 @@ describe('CSV-MAPPER', () => {
     });
 
     it('should not set markings if no default policy in settings and mapper', async () => {
-      const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const filePath = './tests/03-integration/05-parser/default-values/data-markings.csv';
       const data = (await mapData(filePath, csvMapperAreaMarking())).flat();
 
       const indre = data.find((object) => object.name === 'indre');
@@ -351,7 +351,7 @@ describe('CSV-MAPPER', () => {
     });
 
     it('should set user default markings if policy in mapper is set to user default', async () => {
-      const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const filePath = './tests/03-integration/05-parser/default-values/data-markings.csv';
       const data = (await mapData(filePath, csvMapperAreaMarking('user-default'), user)).flat();
 
       const indre = data.find((object) => object.name === 'indre');
@@ -369,7 +369,7 @@ describe('CSV-MAPPER', () => {
     });
 
     it('should set user chosen markings if policy in mapper is set to user choice', async () => {
-      const filePath = './tests/02-integration/05-parser/default-values/data-markings.csv';
+      const filePath = './tests/03-integration/05-parser/default-values/data-markings.csv';
       const USER_CHOICE_MARKING_CONFIG = 'user-choice';
       const data = (await mapData(
         filePath,
