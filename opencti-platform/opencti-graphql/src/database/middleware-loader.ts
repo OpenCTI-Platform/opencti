@@ -94,7 +94,7 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
 }
 
 // relations
-interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
+export interface RelationFilters<T extends BasicStoreCommon> extends ListFilter<T> {
   relationFilter?: {
     relation: string;
     id: string;

@@ -2,6 +2,7 @@ import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import { Promise as BluePromise } from 'bluebird';
+// @ts-ignore
 import { compareUnsorted } from 'js-deep-equals';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
@@ -185,7 +186,7 @@ import {
   fullEntitiesThroughRelationsToList,
   topEntitiesList,
   topRelationsList,
-  storeLoadById
+  storeLoadById, type RelationFilters, type EntityOptions
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
@@ -243,7 +244,13 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import type {AuthContext, AuthUser} from "../types/user";
-import type {BasicStoreBase, BasicStoreCommon} from "../types/store";
+import type {
+  BasicConnection,
+  BasicStoreBase,
+  BasicStoreCommon,
+  BasicStoreEntity, BasicStoreRelation,
+  StoreProxyRelation
+} from "../types/store";
 import type {BasicStoreSettings} from "../types/settings";
 
 // region global variables
@@ -262,12 +269,12 @@ export const canRequestAccess = async (context: AuthContext, user: AuthUser, ele
       // Check that group has marking allowed or else request accesss RFI will be useless
       const requestAccessSettings = await loadEntity<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], {
         filters: {
-          mode: 'and',
-          filters: [{ key: 'target_type', values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
+          mode: FilterMode.And,
+          filters: [{ key: ['target_type'], values: [ENTITY_TYPE_CONTAINER_CASE_RFI] }],
           filterGroups: [],
         }
       });
-      if (requestAccessSettings.request_access_workflow && requestAccessSettings.request_access_workflow?.approval_admin.length > 0) {
+      if (requestAccessSettings && requestAccessSettings.request_access_workflow && requestAccessSettings.request_access_workflow?.approval_admin.length > 0) {
         const adminGroupId = requestAccessSettings.request_access_workflow?.approval_admin[0];
         const adminGroupMarking = await fullEntitiesThroughRelationsToList(context, user, adminGroupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
         const authorizedGroupMarkings = adminGroupMarking.map((a) => a.internal_id);
@@ -283,22 +290,24 @@ export const canRequestAccess = async (context: AuthContext, user: AuthUser, ele
 // end region request access
 
 // region Loader common
-export const batchLoader = (loader, context, user) => {
-  const dataLoader = new DataLoader(
-    (elements) => {
-      const elementsToLoad = elements.map((e) => e.elementToLoad);
-      return loader(context, user, elementsToLoad);
-    },
-    { maxBatchSize: MAX_BATCH_SIZE, cache: false }
-  );
+export const batchLoader = (
+  loader: (context: AuthContext, user: AuthUser, elements: any[]) => Promise<BasicStoreBase[]>,
+  context: AuthContext,
+  user: AuthUser
+) => {
+  const loadFn = (elements: ReadonlyArray<{ elementToLoad: any }>): Promise<BasicStoreBase[]> => {
+    const elementsToLoad = elements.map((e) => e.elementToLoad);
+    return loader(context, user, elementsToLoad);
+  };
+  const dataLoader = new DataLoader(loadFn, { maxBatchSize: MAX_BATCH_SIZE, cache: false });
   return {
-    load: (element) => {
+    load: (element: any) => {
       return dataLoader.load({ elementToLoad: element });
     },
   };
 };
 
-const checkIfInferenceOperationIsValid = (user, element) => {
+const checkIfInferenceOperationIsValid = (user: AuthUser, element: BasicStoreBase) => {
   const isRuleManaged = isRuleUser(user);
   const ifElementInferred = isInferredIndex(element._index);
   if (ifElementInferred && !isRuleManaged) {
@@ -308,27 +317,54 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 // endregion
 
 // Standard listing
-export const topEntitiesOrRelationsList = async (context: AuthContext, user: AuthUser, thingsTypes, args = {}) => {
+export const topEntitiesOrRelationsList = async <T extends BasicStoreCommon> (
+  context: AuthContext,
+  user: AuthUser,
+  thingsTypes: string[],
+  args: RelationFilters<T> = {}
+): Promise<T[]> => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
-  return elPaginate(context, user, indices, { ...paginateArgs, connectionFormat: false });
+  const result = await elPaginate<T>(context, user, indices, { ...paginateArgs, connectionFormat: false });
+  return result as T[];
 };
-export const pageEntitiesOrRelationsConnection = async (context: AuthContext, user: AuthUser, thingsTypes, args = {}) => {
+export const pageEntitiesOrRelationsConnection = async <T extends BasicStoreCommon> (
+  context: AuthContext,
+  user: AuthUser,
+  thingsTypes: string[],
+  args: RelationFilters<T> = {}
+): Promise<BasicConnection<T>> => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
-  return elPaginate(context, user, indices, { ...paginateArgs, connectionFormat: true });
+  const result = await elPaginate<T>(context, user, indices, { ...paginateArgs, connectionFormat: true });
+  return result as BasicConnection<T>;
 };
-export const fullEntitiesOrRelationsList = async (context: AuthContext, user: AuthUser, thingsTypes, args = {}) => {
+export const fullEntitiesOrRelationsList = async <T extends BasicStoreCommon> (
+  context: AuthContext, 
+  user: AuthUser, 
+  thingsTypes: string[], 
+  args: RelationFilters<T> = {}
+): Promise<T[]> => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
-  return elList(context, user, indices, paginateArgs);
+  return elList<T>(context, user, indices, paginateArgs);
 };
-export const fullEntitiesOrRelationsConnection = async (context: AuthContext, user: AuthUser, thingsTypes, args = {}) => {
+export const fullEntitiesOrRelationsConnection = async <T extends BasicStoreCommon> (
+  context: AuthContext, 
+  user: AuthUser,
+  thingsTypes: string[], 
+  args: RelationFilters<T> = {}
+): Promise<BasicConnection<T>> => {
   const { indices = READ_DATA_INDICES } = args;
   const paginateArgs = buildThingsFilters(thingsTypes, args);
   return elConnection(context, user, indices, paginateArgs);
 };
-export const loadEntity = async <T extends BasicStoreBase> (context: AuthContext, user: AuthUser, entityTypes, args = {}): Promise<T> => {
+export const loadEntity = async <T extends BasicStoreEntity> (
+  context: AuthContext,
+  user: AuthUser,
+  entityTypes: string[],
+  args: EntityOptions<T> = {}
+): Promise<T | undefined> => {
   const entities = await topEntitiesList(context, user, entityTypes, args);
   if (entities.length > 1) {
     throw DatabaseError('Expect only one response', { entityTypes, args });
@@ -338,14 +374,19 @@ export const loadEntity = async <T extends BasicStoreBase> (context: AuthContext
 // endregion
 
 // region Loader element
-const loadElementMetaDependencies = async (context: AuthContext, user: AuthUser, elements, args = {}) => {
+const loadElementMetaDependencies = async <T extends BasicStoreBase> (
+  context: AuthContext,
+  user: AuthUser,
+  elements: T[],
+  args: { onlyMarking?: boolean } = {}
+) => {
   const { onlyMarking = true } = args;
   const workingElements = Array.isArray(elements) ? elements : [elements];
   const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
   const workingIds = Array.from(workingElementsMap.keys());
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations, huge filters are inefficient, splitting will maximize the query speed
-  const refsRelations = [];
+  const refsRelations: BasicStoreRelation[] = [];
   const groupOfWorkingIds = R.splitEvery(ES_MAX_PAGINATION, workingIds);
   for (let i = 0; i < groupOfWorkingIds.length; i += 1) {
     const fromIds = groupOfWorkingIds[i];
@@ -353,16 +394,16 @@ const loadElementMetaDependencies = async (context: AuthContext, user: AuthUser,
     // All callback to iteratively push the relations to the global ref relations array
     // As fullRelationsList can bring more than 100K+ relations, we need to split the append
     // due to nodejs limitation to 100K function parameters limit
-    const allRelCallback = async (relations) => {
+    const allRelCallback = async (relations: BasicStoreRelation[]) => {
       refsRelations.push(...relations);
     };
-    await fullRelationsList(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
+    await fullRelationsList<BasicStoreRelation>(context, user, relTypes, { baseData: true, filters: relationFilter, callback: allRelCallback });
   }
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
   const toResolvedTypes = R.uniq(refsRelations.map((rel) => rel.toType));
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, toMap: true });
+  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { type: toResolvedTypes, toMap: true }) as Record<string, BasicStoreBase>;
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -371,7 +412,7 @@ const loadElementMetaDependencies = async (context: AuthContext, user: AuthUser,
     // Build flatten view inside the data for stix meta
     const data = {};
     if (element) {
-      const grouped = R.groupBy((a) => a.entity_type, dependencies);
+      const grouped = R.groupBy((a) => a.entity_type, dependencies as BasicStoreRelation[]) as Record<string, BasicStoreRelation[]>;
       const entries = Object.entries(grouped);
       for (let index = 0; index < entries.length; index += 1) {
         const [key, values] = entries[index];
@@ -392,8 +433,7 @@ const loadElementMetaDependencies = async (context: AuthContext, user: AuthUser,
           // This kind of situation can happen if:
           // - Access rights are asymmetric, should not happen for meta relationships.
           // - Relations is invalid, should not happen in platform data consistency.
-          const relations = invalidRelations.map((v) => ({ relation_id: v.id, target_id: v.toId }));
-          logApp.info('Targets of loadElementMetaDependencies not found', { relations });
+          logApp.info('Targets of loadElementMetaDependencies not found', { invalidRelations });
         }
         const inputKey = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, key);
         const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputKey);
