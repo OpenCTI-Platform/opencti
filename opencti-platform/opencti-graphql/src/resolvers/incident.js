@@ -5,8 +5,9 @@ import {
   stixDomainObjectDelete,
   stixDomainObjectDeleteRelation,
   stixDomainObjectEditContext,
-  stixDomainObjectEditField,
-} from '../domain/stixDomainObject';
+  stixDomainObjectEditField
+} from '../domain/stixDomainObject';;
+import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 import { RELATION_OBJECT_ASSIGNEE } from '../schema/stixRefRelationship';
 import { buildRefRelationKey, INPUT_PARTICIPANT } from '../schema/general';
 import { loadThroughDenormalized } from './stix';
@@ -39,7 +40,7 @@ const incidentResolvers = {
   },
   Mutation: {
     incidentEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
+      delete: () => stixDomainObjectDelete(context, context.user, id, ENTITY_TYPE_INCIDENT),
       fieldPatch: ({
         input,
         commitMessage,

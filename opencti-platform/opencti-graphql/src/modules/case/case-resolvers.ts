@@ -1,6 +1,11 @@
 import { Promise as BluePromise } from 'bluebird';
 import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
+import { ENTITY_TYPE_CONTAINER_CASE } from './case-types';
+import { ENTITY_TYPE_CONTAINER_FEEDBACK } from './feedback/feedback-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from './case-incident/case-incident-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft/case-rft-types';
 import { findCasesPaginated, findById, upsertTemplateForCase } from './case-domain';
 import { caseTasksPaginated } from '../task/task-domain';
 import type { BasicStoreEntityTask } from '../task/task-types';
@@ -36,7 +41,15 @@ const caseResolvers: Resolvers = {
   },
   Mutation: {
     caseDelete: (_, { id }, context) => {
-      return stixDomainObjectDelete(context, context.user, id);
+      // Accept any case subtype for deletion
+      const acceptedCaseTypes = [
+        ENTITY_TYPE_CONTAINER_CASE,
+        ENTITY_TYPE_CONTAINER_FEEDBACK,
+        ENTITY_TYPE_CONTAINER_CASE_INCIDENT,
+        ENTITY_TYPE_CONTAINER_CASE_RFI,
+        ENTITY_TYPE_CONTAINER_CASE_RFT,
+      ];
+      return stixDomainObjectDelete(context, context.user, id, acceptedCaseTypes);
     },
     caseSetTemplate: async (_, { id, caseTemplatesId }, context) => {
       await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, context.user, id, caseTemplateId));
