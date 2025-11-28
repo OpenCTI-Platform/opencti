@@ -37,7 +37,7 @@ export const buildPirFilters = (pirList: { value: string }[]) => {
  * @param context To query DB.
  * @param entityId ID of the entity to retrieve flagged PIR.
  */
-export const listOfPirInEntity = async (entity: StixCoreObject) => {
+export const getEntityPirIds = (entity: StixCoreObject) => {
   const { pir_information } = entity.extensions[STIX_EXT_OCTI];
   return pir_information?.map((pir) => pir.pir_id) || [];
 };
@@ -80,13 +80,13 @@ export const isEventInPirRelationshipMatchPir = async (
  * @param pirList List of selected PIR.
  * @returns True if the event matches selected PIR.
  */
-export const isUpdateEventMatchPir = async (
+export const isUpdateEventMatchPir = (
   eventData: StreamDataEvent,
   config: PirStreamConfiguration,
   pirList?: { value: string }[]
 ) => {
   if (isEventUpdateOnEntity(eventData) && config.update) {
-    const entityPirList = await listOfPirInEntity(eventData.data);
+    const entityPirList = getEntityPirIds(eventData.data);
     if (entityPirList.length > 0) {
       // If entity is flagged and no PIR filtering set, it matches.
       if (!pirList || pirList.length === 0) return true;
@@ -163,7 +163,7 @@ export const listenPirEvents = async (
   if (isValidEventType(type, configuration)) {
     let stixEntity: StixObject | undefined;
     const isInPirRel = await isEventInPirRelationshipMatchPir(context, streamEvent.data, configuration, inPirFilters);
-    const isUpdateEvent = await isUpdateEventMatchPir(streamEvent.data, configuration, inPirFilters);
+    const isUpdateEvent = isUpdateEventMatchPir(streamEvent.data, configuration, inPirFilters);
     const stixIdLinked = stixIdOfLinkedEntity(streamEvent.data, configuration, inPirFilters);
 
     if (isInPirRel && isStixRelation(data)) {

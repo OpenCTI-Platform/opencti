@@ -157,12 +157,12 @@ describe('listenPirEventsUtils', () => {
   });
 
   describe('isUpdateEventMatchPir', () => {
-    it('should return true when called with no PIR list and flagged entity', async () => {
+    it('should return true when called with no PIR list and flagged entity', () => {
       vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(false);
       vi.spyOn(playbookUtils, 'isEventUpdateOnEntity').mockResolvedValue(true);
       vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({ pir_information: [{ pir_id: 'id-2' }] } as unknown as BasicStoreEntityPlaybook);
 
-      const result = await isUpdateEventMatchPir(
+      const result = isUpdateEventMatchPir(
         randomEventInPir.data,
         { update: true } as PirStreamConfiguration,
       );
@@ -170,11 +170,11 @@ describe('listenPirEventsUtils', () => {
       expect(stixFiltering.isStixMatchFilterGroup).not.toHaveBeenCalled();
     });
 
-    it('should return true when called with an event update on an entity, and is in a PIR that matches filters', async () => {
+    it('should return true when called with an event update on an entity, and is in a PIR that matches filters', () => {
       vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(false);
       vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({ pir_information: [{ pir_id: 'pir-id-2' }] } as unknown as BasicStoreEntityPlaybook);
 
-      const result = await isUpdateEventMatchPir(
+      const result = isUpdateEventMatchPir(
         randomUpdateEventOnEntity.data,
         { update: true } as PirStreamConfiguration,
         randomPirList,
@@ -183,10 +183,10 @@ describe('listenPirEventsUtils', () => {
       expect(middlewareLoader.storeLoadById).toHaveBeenCalled();
     });
 
-    it('should return false when called with an event update on entity, and is in a PIR that does not match filters', async () => {
+    it('should return false when called with an event update on entity, and is in a PIR that does not match filters', () => {
       vi.spyOn(stixFiltering, 'isStixMatchFilterGroup').mockResolvedValue(false);
       vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({ pir_information: [{ pir_id: 'not good pir id' }] } as unknown as BasicStoreEntityPlaybook);
-      const result = await isUpdateEventMatchPir(
+      const result = isUpdateEventMatchPir(
         randomUpdateEventOnEntity.data,
         { update: true } as PirStreamConfiguration,
         randomPirList,
@@ -195,11 +195,11 @@ describe('listenPirEventsUtils', () => {
       expect(middlewareLoader.storeLoadById).toHaveBeenCalled();
     });
 
-    it('should return false when event is not an update on a entity', async () => {
+    it('should return false when event is not an update on a entity', () => {
       vi.spyOn(playbookUtils, 'isEventUpdateOnEntity').mockReturnValue(false);
       vi.spyOn(middlewareLoader, 'storeLoadById').mockResolvedValue({} as unknown as BasicStoreEntityPlaybook);
 
-      const result = await isUpdateEventMatchPir(
+      const result = isUpdateEventMatchPir(
         randomUpdateEventOnEntity.data,
         { update: true } as PirStreamConfiguration,
         randomPirList,
