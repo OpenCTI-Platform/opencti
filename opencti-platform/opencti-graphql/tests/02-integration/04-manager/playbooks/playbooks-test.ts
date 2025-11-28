@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildStixTaskFromTaskTemplate } from '../../../src/modules/playbook/playbook-components';
-import type { BasicStoreEntityTaskTemplate } from '../../../src/modules/task/task-template/task-template-types';
-import type { StixContainer } from '../../../src/types/stix-2-1-sdo';
+import { buildStixTaskFromTaskTemplate } from '../../../../src/modules/playbook/playbook-components';
+import type { BasicStoreEntityTaskTemplate } from '../../../../src/modules/task/task-template/task-template-types';
+import type { StixContainer } from '../../../../src/types/stix-2-1-sdo';
 
 describe('buildStixTaskFromTaskTemplate tests', () => {
   it('should return StixTask from taskTemplate', () => {
