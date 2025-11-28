@@ -79,13 +79,13 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   const initialNodes = computeNodes(
     definition.nodes ?? [],
     playbookComponents,
-    setAction,
-    setSelectedNode,
+    setAction as React.Dispatch<React.SetStateAction<string | null>>,
+    setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
   );
   const initialEdges = computeEdges(
     definition.links ?? [],
-    setAction,
-    setSelectedEdge,
+    setAction as React.Dispatch<React.SetStateAction<string | null>>,
+    setSelectedEdge as React.Dispatch<React.SetStateAction<string | null>>,
   );
   const { nodes: flowNodes, edges: flowEdges } = addPlaceholders(
     initialNodes,
