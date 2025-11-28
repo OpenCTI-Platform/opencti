@@ -78,6 +78,13 @@ const AuditLineFragment = graphql`
       message
       from_id
       to_id
+      changes{
+        field
+        previous
+        new
+        added
+        removed
+      }
     }
   }
 `;
@@ -93,20 +100,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const data = useFragment(AuditLineFragment, node);
   const message = useGenerateAuditMessage<AuditLine_node$data>(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
-  console.log('context_data', data?.context_data);
-  console.log('data', data);
 
-    // const rawData = data?.raw_data != null ? JSON.parse(data?.raw_data) : 'unknown'
-    // const changesData = rawData.context_data.changes
-  // console.log('changes', changesData.context_data.changes);
-  function createData(name: string, PreviousValue:string, NewValue:string) {
-    return { name, PreviousValue, NewValue };
-  }
-  const rows = [
-    createData('Report type', 'Threat report', 'APT'),
-    createData('Markings', 'TLP:RED', 'TLP:AMBER'),
-    createData('Description', 'lzal', ''),
-  ];
   return (
     <>
       <Drawer
@@ -148,6 +142,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                     textAlign: 'center',
                   }}
                   >
+                    {data?.context_data?.changes && data.context_data.changes.length > 0 ? (
                     <TableContainer component={Paper}>
                       <Table sx={{ minWidth: 650 }} size="small">
                         <TableHead>
@@ -158,21 +153,26 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {rows.map((row) => (
+                          {data?.context_data?.changes.map((row) => (
                             <TableRow
-                              key={row.name}
+                              key={row?.field}
                               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                             >
                               <TableCell component="th" scope="row">
-                                {row.name}
+                                {row?.field}
                               </TableCell>
-                              <TableCell align="left">{row.PreviousValue}</TableCell>
-                              <TableCell align="left">{row.NewValue}</TableCell>
+                              <TableCell align="left">{row?.previous}</TableCell>
+                              <TableCell align="left">{row?.new}</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
                       </Table>
                     </TableContainer>
+                      ): (
+                      <div>
+                        {t_i18n('No detail in this log')}
+                      </div>
+                    )}
                   </div>
                 </div>
               </Paper>
