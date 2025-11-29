@@ -2059,32 +2059,36 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
-const buildChanges = (entityType, inputs) => {
+export const buildChanges = (entityType, inputs) => {
   const changes = [];
-
   inputs.forEach((input) => {
     const { key, previous, value } = input;
     if (!key) return;
-    const field = getKeyName(entityType, key); // this does not work for auth members :(
+    const field = getKeyName(entityType, key);
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
     const isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
+    // all values as arrays
+    const previousArray = Array.isArray(previous) ? previous : [previous];
+    const valueArray = Array.isArray(value) ? value : [value];
+
     if (isMultiple) {
-      if (previous.length > 0 && value.length === 0) { // REMOVE
+
+      const added = valueArray.filter((item) => !previousArray.includes(item));
+      const removed = previousArray.filter((item) => !valueArray.includes(item));
+
+      if (added.length > 0 || removed.length > 0) {
         changes.push({
           field,
-          removed: previous,
-        });
-      } else if (previous.length === 0 && value.length > 0) { // ADD
-        changes.push({
-          field,
-          added: value,
+          added: added.map((item) => item ?? typeof item === 'string' ? item : item?.id).filter((item) => item !== null && item !== undefined),
+          removed: removed.map((item) => item ?? typeof item === 'string' ? item : item?.id).filter((item) => item !== null && item !== undefined)
         });
       }
-    } else if (!isMultiple) {
+    }
+    else if (isMultiple === false) {
       changes.push({
         field,
-        previous,
-        new: value,
+        previous: previousArray.map((item) => item ?? (typeof item === 'string' ? item : item?.id)).filter((item) => item !== null && item !== undefined),
+        new: valueArray.map((item) => item ?? (typeof item === 'string' ? item : item?.id)).filter((item) => item !== null && item !== undefined)
       });
     }
   });
