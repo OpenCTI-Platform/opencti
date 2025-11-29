@@ -211,6 +211,21 @@ export const buildViewParamsFromUrlAndStorage = (
       ? split(',', finalParams.createdBy)
       : [];
   }
+  if (typeof finalParams.disabledEntityTypes === 'string') {
+    finalParams.disabledEntityTypes = finalParams.disabledEntityTypes
+      ? split(',', finalParams.disabledEntityTypes)
+      : [];
+  }
+  if (typeof finalParams.disabledCreators === 'string') {
+    finalParams.disabledCreators = finalParams.disabledCreators
+      ? split(',', finalParams.disabledCreators)
+      : [];
+  }
+  if (typeof finalParams.disabledMarkings === 'string') {
+    finalParams.disabledMarkings = finalParams.disabledMarkings
+      ? split(',', finalParams.disabledMarkings)
+      : [];
+  }
   if (typeof finalParams.selectedTimeRangeInterval === 'string') {
     finalParams.selectedTimeRangeInterval = finalParams.selectedTimeRangeInterval
       .split(',').map((d) => new Date(d));
