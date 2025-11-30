@@ -19,7 +19,7 @@ import {
   elLoadById,
   elPaginate,
   ES_DEFAULT_PAGINATION,
-  UNIMPACTED_ENTITIES_ROLE
+  UNIMPACTED_ENTITIES_ROLE, type ElFindByIdsOpts
 } from './engine';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -538,9 +538,9 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
     toMap?: boolean,
     mapWithAllIds?: boolean,
     baseFields?: string[]
-  } & Record<string, string | string[] | boolean>
+  } & ElFindByIdsOpts
 ) => {
-  return await elFindByIds(context, user, ids, args) as unknown as T[];
+  return await elFindByIds<T>(context, user, ids, args);
 };
 
 // Similar to internalFindByIds but forcing toMap: true in type.

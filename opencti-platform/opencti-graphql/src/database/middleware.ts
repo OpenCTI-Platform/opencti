@@ -1,10 +1,10 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
-import Bluebird, { Promise as BluePromise } from 'bluebird';
+import Bluebird, {Promise as BluePromise} from 'bluebird';
 // @ts-ignore
-import { compareUnsorted } from 'js-deep-equals';
-import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
+import {compareUnsorted} from 'js-deep-equals';
+import {SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION} from '@opentelemetry/semantic-conventions';
 import * as jsonpatch from 'fast-json-patch';
 import nconf from 'nconf';
 import {
@@ -20,7 +20,7 @@ import {
   UnsupportedError,
   ValidationError
 } from '../config/errors';
-import { extractEntityRepresentativeName } from './entity-representative';
+import {extractEntityRepresentativeName} from './entity-representative';
 import {
   computeAverage,
   extractIdsFromStoreObject,
@@ -44,14 +44,16 @@ import {
   UPDATE_OPERATION_REPLACE
 } from './utils';
 import {
+  type AggregationRelationsCount,
   elAggregationCount,
   elAggregationRelationsCount,
+  elConnection,
   elDeleteElements,
   elFindByIds,
+  type ElFindByIdsOpts,
   elHistogramCount,
   elIndexElements,
   elList,
-  elConnection,
   elMarkElementsAsDraftDelete,
   elPaginate,
   elUpdateElement,
@@ -59,10 +61,12 @@ import {
   elUpdateRelationConnections,
   ES_MAX_CONCURRENCY,
   ES_MAX_PAGINATION,
+  type HistogramCountOpts,
   isImpactedTypeAndSide,
   MAX_BULK_OPERATIONS,
+  type RepaginateOpts,
   ROLE_FROM,
-  ROLE_TO, type ElFindByIdsOpts, type RepaginateOpts, type HistogramCountOpts, type AggregationRelationsCount
+  ROLE_TO
 } from './engine';
 import {
   FIRST_OBSERVED,
@@ -91,8 +95,16 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID
 } from '../schema/identifier';
-import { notify, redisAddDeletions, storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
-import { cleanStixIds } from './stix';
+import {
+  notify,
+  redisAddDeletions,
+  storeCreateEntityEvent,
+  storeCreateRelationEvent,
+  storeDeleteEvent,
+  storeMergeEvent,
+  storeUpdateEvent
+} from './redis';
+import {cleanStixIds} from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -112,7 +124,7 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX
 } from '../schema/general';
-import { isAnId, isValidDate } from '../schema/schemaUtils';
+import {isAnId, isValidDate} from '../schema/schemaUtils';
 import {
   isStixRefRelationship,
   RELATION_CREATED_BY,
@@ -122,9 +134,9 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isStixCoreObject } from '../schema/stixCoreObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
+import {ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_USER} from '../schema/internalObject';
+import {isStixCoreObject} from '../schema/stixCoreObject';
+import {isBasicRelationship} from '../schema/stixRelationship';
 import {
   dateForEndAttributes,
   dateForLimitsAttributes,
@@ -134,7 +146,12 @@ import {
   isUpdatedAtObject,
   noReferenceAttributes
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
+import {
+  isStixCoreRelationship,
+  RELATION_REVOKED_BY,
+  RELATION_TARGETS,
+  RELATION_USES
+} from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
@@ -148,13 +165,30 @@ import {
   resolveAliasesField,
   STIX_ORGANIZATIONS_UNRESTRICTED
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { ENTITY_HASHED_OBSERVABLE_ARTIFACT, ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable, isStixCyberObservableHashedObservable } from '../schema/stixCyberObservable';
-import conf, { BUS_TOPICS, extendedErrors, logApp } from '../config/conf';
-import { computeDateFromEventId, FROM_START_STR, mergeDeepRightAll, now, prepareDate, UNTIL_END_STR, utcDate } from '../utils/format';
-import { checkObservableSyntax } from '../utils/syntax';
-import { elUpdateRemovedFiles } from './file-search';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION
+} from '../schema/stixMetaObject';
+import {isStixSightingRelationship} from '../schema/stixSightingRelationship';
+import {
+  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
+  isStixCyberObservable,
+  isStixCyberObservableHashedObservable
+} from '../schema/stixCyberObservable';
+import conf, {BUS_TOPICS, extendedErrors, logApp} from '../config/conf';
+import {
+  computeDateFromEventId,
+  FROM_START_STR,
+  mergeDeepRightAll,
+  now,
+  prepareDate,
+  UNTIL_END_STR,
+  utcDate
+} from '../utils/format';
+import {checkObservableSyntax} from '../utils/syntax';
+import {elUpdateRemovedFiles} from './file-search';
 import {
   CONTAINER_SHARING_USER,
   controlUserRestrictDeleteAgainstElement,
@@ -171,36 +205,65 @@ import {
   userFilterStoreElements,
   validateUserAccessOperation
 } from '../utils/access';
-import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules-utils';
-import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
-import { createEntityAutoEnrichment, updateEntityAutoEnrichment } from '../domain/enrichment';
-import { convertExternalReferenceToStix, convertStoreToStix_2_1 } from './stix-2-1-converter';
-import { convertStoreToStix } from './stix-common-converter';
+import {isRuleUser, RULES_ATTRIBUTES_BEHAVIOR} from '../rules/rules-utils';
+import {instanceMetaRefsExtractor, isSingleRelationsRef,} from '../schema/stixEmbeddedRelationship';
+import {createEntityAutoEnrichment, updateEntityAutoEnrichment} from '../domain/enrichment';
+import {convertExternalReferenceToStix, convertStoreToStix_2_1} from './stix-2-1-converter';
+import {convertStoreToStix} from './stix-common-converter';
 import {
   buildAggregationRelationFilter,
   buildEntityFilters,
   buildThingsFilters,
+  type EntityFilters,
+  type EntityOptions,
+  fullEntitiesThroughRelationsToList,
+  fullRelationsList,
   internalFindByIds,
   internalLoadById,
-  fullRelationsList,
-  fullEntitiesThroughRelationsToList,
+  type RelationFilters,
+  storeLoadById,
   topEntitiesList,
-  topRelationsList,
-  storeLoadById, type RelationFilters, type EntityOptions, type EntityFilters
+  topRelationsList
 } from './middleware-loader';
-import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
-import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from './cache';
-import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
-import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
-import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityFieldAnOpenVocabulary, updateElasticVocabularyValue } from '../modules/vocabulary/vocabulary-utils';
-import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
-import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
-import { telemetry } from '../config/tracing';
-import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
-import { generateCreateMessage, generateRestoreMessage, generateUpdatePatchMessage, MAX_OPERATIONS_FOR_MESSAGE, MAX_PATCH_ELEMENTS_FOR_MESSAGE } from './generate-message';
+import {checkRelationConsistency, isRelationConsistent} from '../utils/modelConsistency';
+import {getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache} from './cache';
+import {ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask} from '../domain/backgroundTask-common';
+import {
+  type BasicStoreEntityVocabulary,
+  ENTITY_TYPE_VOCABULARY,
+  vocabularyDefinitions
+} from '../modules/vocabulary/vocabulary-types';
+import {
+  getVocabulariesCategories,
+  getVocabularyCategoryForField,
+  isEntityFieldAnOpenVocabulary,
+  updateElasticVocabularyValue
+} from '../modules/vocabulary/vocabulary-utils';
+import {
+  depsKeysRegister,
+  isDateAttribute,
+  isMultipleAttribute,
+  isNumericAttribute,
+  isObjectAttribute,
+  schemaAttributesDefinition
+} from '../schema/schema-attributes';
+import {
+  fillDefaultValues,
+  getAttributesConfiguration,
+  getEntitySettingFromCache
+} from '../modules/entitySetting/entitySetting-utils';
+import {schemaRelationsRefDefinition} from '../schema/schema-relationsRef';
+import {validateInputCreation, validateInputUpdate} from '../schema/schema-validator';
+import {telemetry} from '../config/tracing';
+import {cleanMarkings, handleMarkingOperations} from '../utils/markingDefinition-utils';
+import {buildUpdatePatchForUpsert, generateInputsForUpsert} from '../utils/upsert-utils';
+import {
+  generateCreateMessage,
+  generateRestoreMessage,
+  generateUpdatePatchMessage,
+  MAX_OPERATIONS_FOR_MESSAGE,
+  MAX_PATCH_ELEMENTS_FOR_MESSAGE
+} from './generate-message';
 import {
   authorizedMembers,
   authorizedMembersActivationDate,
@@ -208,13 +271,14 @@ import {
   creators as creatorsAttribute,
   iAliasedIds,
   iAttributes,
-  modified, type RefAttribute,
+  modified,
+  type RefAttribute,
   updatedAt,
 } from '../schema/attribute-definition';
-import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
-import {type EditInput, FilterMode, FilterOperator, Version} from '../generated/graphql';
-import { getMandatoryAttributesForSetting } from '../modules/entitySetting/entitySetting-attributeUtils';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
+import {ENTITY_TYPE_INDICATOR} from '../modules/indicator/indicator-types';
+import {type EditInput, EditOperation, FilterMode, FilterOperator, Version} from '../generated/graphql';
+import {getMandatoryAttributesForSetting} from '../modules/entitySetting/entitySetting-attributeUtils';
+import {ENTITY_TYPE_IDENTITY_ORGANIZATION} from '../modules/organization/organization-types';
 import {
   adaptUpdateInputsConfidence,
   controlCreateInputWithUserConfidence,
@@ -222,45 +286,50 @@ import {
   controlUserConfidenceAgainstElement,
   shouldCheckConfidenceOnRefRelationship
 } from '../utils/confidence-level';
-import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
-import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
-import { deleteAllObjectFiles, moveAllFilesFromEntityToAnother, uploadToStorage, storeFileConverter } from './file-storage';
-import { getFileContent } from './raw-file-storage';
-import { getDraftContext } from '../utils/draftContext';
-import { getDraftChanges, isDraftSupportedEntity } from './draft-utils';
-import { lockResources } from '../lock/master-lock';
-import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccessUtils';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
+import {buildEntityData, buildInnerRelation, buildRelationData} from './data-builder';
+import {isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization} from './data-consistency';
+import {
+  deleteAllObjectFiles,
+  moveAllFilesFromEntityToAnother,
+  storeFileConverter,
+  uploadToStorage
+} from './file-storage';
+import {getFileContent} from './raw-file-storage';
+import {getDraftContext} from '../utils/draftContext';
+import {getDraftChanges, isDraftSupportedEntity} from './draft-utils';
+import {lockResources} from '../lock/master-lock';
+import {STIX_EXT_OCTI} from '../types/stix-2-1-extensions';
+import {isRequestAccessEnabled} from '../modules/requestAccess/requestAccessUtils';
+import {ENTITY_TYPE_CONTAINER_CASE_RFI} from '../modules/case/case-rfi/case-rfi-types';
 import {
   type BasicStoreEntityEntitySetting,
   ENTITY_TYPE_ENTITY_SETTING
 } from '../modules/entitySetting/entitySetting-types';
-import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
-import { generateVulnerabilitiesUpdates } from '../utils/vulnerabilities';
-import { idLabel } from '../schema/schema-labels';
-import { pirExplanation } from '../modules/attributes/internalRelationship-registrationAttributes';
-import { modules } from '../schema/module';
-import { doYield } from '../utils/eventloop-utils';
-import { RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import {RELATION_ACCESSES_TO} from '../schema/internalRelationship';
+import {generateVulnerabilitiesUpdates} from '../utils/vulnerabilities';
+import {idLabel} from '../schema/schema-labels';
+import {pirExplanation} from '../modules/attributes/internalRelationship-registrationAttributes';
+import {modules} from '../schema/module';
+import {doYield} from '../utils/eventloop-utils';
+import {RELATION_COVERED} from '../modules/securityCoverage/securityCoverage-types';
 import type {AuthContext, AuthUser} from "../types/user";
 import type {
   BasicConnection,
   BasicStoreBase,
-  BasicStoreCommon,
+  BasicStoreCommon, BasicStoreCyberObservable,
   BasicStoreEntity,
   BasicStoreEntityMarkingDefinition,
   BasicStoreObject,
-  BasicStoreRelation,
+  BasicStoreRelation, BasicWorkflowStatus,
   StoreCommon,
-  StoreFile,
+  StoreFile, StoreObject,
   StoreRelation,
 } from "../types/store";
 import type {BasicStoreSettings} from "../types/settings";
-import type {BasicStoreEntityDocument} from "../modules/internal/document/document-types";
 import type * as S from "../types/stix-2-1-common";
 import type * as S2 from "../types/stix-2-0-common";
-import {T} from "types-ramda";
+import type {EventOpts} from "../types/event";
+import type {StixId} from "../types/stix-2-1-common";
 
 // region global variables
 const MAX_BATCH_SIZE = nconf.get('elasticsearch:batch_loader_max_size') ?? 300;
@@ -572,12 +641,12 @@ const loadByFiltersWithDependencies = async (
   return [] as BasicStoreCommon[];
 };
 // Get element with every elements connected element -> rel -> to
-export const storeLoadByIdsWithRefs = async (context: AuthContext, user: AuthUser, ids: string[], opts = {}) => {
+export const storeLoadByIdsWithRefs = async <T extends StoreObject> (context: AuthContext, user: AuthUser, ids: string[], opts = {}) => {
   // When loading with explicit references, data must be loaded without internal rels
   // As rels are here for search and sort there is some data that conflict after references explication resolutions
-  return loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false });
+  return await loadByIdsWithDependencies(context, user, ids, {...opts, onlyMarking: false}) as T[];
 };
-export const storeLoadByIdWithRefs = async <T extends BasicStoreCommon>(
+export const storeLoadByIdWithRefs = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
   id: string | null | undefined,
@@ -1203,9 +1272,9 @@ const createContainerSharingTask = (
   return taskPromise;
 };
 const indexCreatedElement = async (
-    context: AuthContext,
-    user: AuthUser,
-    { element, relations }: { element: BasicStoreCommon, relations: StoreRelation[] }
+  context: AuthContext,
+  user: AuthUser,
+  { element, relations }: { element: BasicStoreCommon, relations: StoreRelation[] }
 ) => {
   // Continue the creation of the element and the connected relations
   const indexPromise = elIndexElements(context, user, element.entity_type, [element, ...(relations ?? [])]);
@@ -1223,7 +1292,7 @@ export const updatedInputsToData = (instance: Record<string, any>, inputs: EditI
   }, inputs);
   return mergeDeepRightAll(...inputPairs);
 };
-export const mergeInstanceWithInputs = (instance: BasicStoreCommon, inputs: EditInput[]) => {
+export const mergeInstanceWithInputs = (instance: Record<string, any>, inputs: EditInput[]): Record<string, any> => {
   // standard_id must be maintained
   // const inputsWithoutId = inputs.filter((i) => i.key !== ID_STANDARD);
   const data = updatedInputsToData(instance, inputs);
@@ -1240,13 +1309,12 @@ const partialInstanceWithInputs = (instance: BasicStoreCommon, inputs: EditInput
     ...inputData,
   };
 };
-const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: BasicStoreCommon) => {
+const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Record<string, any>): EditInput | {} => {
   const { key, value, object_path, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
   const isMultiple = isMultipleAttribute(instance.entity_type, key);
   let finalVal;
   if (isMultiple) {
-    const currentValue = (key in instance && instance[key]);
-    const filledCurrentValues = (key in instance && isNotEmptyField(instance[key])) ? instance[key] : [];
+    const filledCurrentValues = isNotEmptyField(instance[key]) ? instance[key] : [];
     const currentValues = Array.isArray(filledCurrentValues) ? filledCurrentValues : [filledCurrentValues];
     if (operation === UPDATE_OPERATION_ADD) {
       if (isObjectAttribute(key)) {
@@ -1256,12 +1324,12 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Bas
         let patch;
         if (instanceKeyValues === undefined) {
           // if the instance has not yet this key, we need to add the full key as a new array
-          patch = [{ op: operation, path: `${preparedPath}`, value }];
+          patch = [{ op: 'add' as const, path: `${preparedPath}`, value }];
         } else {
           // otherwise we need to add the values to the existing array, using jsonpatch indexed path
           patch = value.map((v, index) => {
             const afterIndex = index + instanceKeyValues.length;
-            return { op: operation, path: `${preparedPath}/${afterIndex}`, value: v };
+            return { op: 'add' as const, path: `${preparedPath}/${afterIndex}`, value: v };
           });
         }
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
@@ -1274,7 +1342,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Bas
       if (isObjectAttribute(key)) {
         const path = object_path ?? key;
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
-        const patch = [{ op: operation, path: preparedPath }];
+        const patch = [{ op: 'remove' as const, path: preparedPath, value: null }];
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else {
@@ -1285,8 +1353,8 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Bas
       if (isObjectAttribute(key)) {
         const path = object_path ?? key;
         const preparedPath = path.startsWith('/') ? path : `/${path}`;
-        const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
-        const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
+        const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
+        const patch = [{ op: 'replace' as const, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
         const patchedInstance = jsonpatch.applyPatch(structuredClone(instance), patch).newDocument;
         finalVal = patchedInstance[key];
       } else { // Replace general
@@ -1299,8 +1367,8 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Bas
     }
   } else if (isObjectAttribute(key) && object_path) {
     const preparedPath = object_path.startsWith('/') ? object_path : `/${object_path}`;
-    const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance, preparedPath);
-    const patch = [{ op: operation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
+    const targetIsMultiple = isObjectPathTargetMultipleAttribute(instance as BasicStoreCommon, preparedPath);
+    const patch = [{ op: operation as EditOperation, path: preparedPath, value: targetIsMultiple ? value : R.head(value) }];
     const clonedInstance = structuredClone(instance);
     clonedInstance[key] = clonedInstance[key] ?? {}; // Patch on complete empty value is not supported by jsonpatch
     const patchedInstance = jsonpatch.applyPatch(clonedInstance, patch).newDocument;
@@ -1354,40 +1422,45 @@ const rebuildAndMergeInputFromExistingData = (rawInput: EditInput, instance: Bas
   }
   return { key, value: finalVal, operation };
 };
-const mergeInstanceWithUpdateInputs = (base, inputs) => {
+const mergeInstanceWithUpdateInputs = (base: Record<string, any>, inputs: EditInput[]) => {
   const instance = structuredClone(base);
   const updates = Array.isArray(inputs) ? inputs : [inputs];
   const metaKeys = [...schemaRelationsRefDefinition.getStixNames(instance.entity_type), ...schemaRelationsRefDefinition.getInputNames(instance.entity_type)];
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
-  const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance);
+  const mergeInput = (input: EditInput) => rebuildAndMergeInputFromExistingData(input, instance);
   const remappedInputs = R.map((i) => mergeInput(i), attributes);
   const resolvedInputs = R.filter((f) => !R.isEmpty(f), remappedInputs);
-  return mergeInstanceWithInputs(instance, resolvedInputs);
+  return mergeInstanceWithInputs(instance, resolvedInputs as EditInput[]);
 };
-const listEntitiesByHashes = async (context: AuthContext, user: AuthUser, type, hashes) => {
+const listEntitiesByHashes = async (
+  context: AuthContext,
+  user: AuthUser,
+  type: string,
+  hashes: Record<string, string> | null | undefined
+): Promise<BasicStoreEntity[]> => {
   if (isEmptyField(hashes)) {
     return [];
   }
-  const searchHashes = extractNotFuzzyHashValues(hashes); // Search hashes must filter the fuzzy hashes
+  const searchHashes = extractNotFuzzyHashValues(hashes as Record<string, string>); // Search hashes must filter the fuzzy hashes
   if (searchHashes.length === 0) {
     return [];
   }
   return topEntitiesList(context, user, [type], {
     filters: {
-      mode: 'and',
-      filters: [{ key: 'hashes.*', values: searchHashes, operator: 'wildcard' }],
+      mode: FilterMode.And,
+      filters: [{ key: ['hashes.*'], values: searchHashes, operator: FilterOperator.Wildcard }],
       filterGroups: [],
     },
     noFiltersChecking: true,
   });
 };
-export const hashMergeValidation = (instances) => {
+export const hashMergeValidation = (instances: { hashes?: Record<string, string> }[]) => {
   // region Specific check for observables with hashes
   // If multiple results start by checking the possible merge validity
-  const allHashes = instances.map((h) => h.hashes).filter((e) => isNotEmptyField(e));
+  const allHashes = instances.map((h) => h.hashes).filter((e) => isNotEmptyField(e)) as Record<string, string>[];
   if (allHashes.length > 0) {
     const elements = allHashes.map((e) => Object.entries(e)).flat();
-    const groupElements = R.groupBy(([key]) => key, elements);
+    const groupElements = R.groupBy(([key]) => key, elements) as Record<string, [string, string][]>;
     Object.entries(groupElements).forEach(([algo, values]) => {
       const hashes = R.uniq(values.map(([, data]) => data));
       if (hashes.length > 1) {
@@ -1400,11 +1473,17 @@ export const hashMergeValidation = (instances) => {
 // endregion
 
 // region mutation update
-const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
-const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
-const filterTargetByExisting = async (context, targetEntity, redirectSide, sourcesDependencies, targetDependencies) => {
-  const cache = [];
-  const filtered = [];
+const ed = (date?: string) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
+const noDate = (e: { first_seen?: string, last_seen?: string, start_time?: string, stop_time?: string}) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
+const filterTargetByExisting = async (
+  context: AuthContext,
+  targetEntity: BasicStoreBase,
+  redirectSide: 'from' | 'to',
+  sourcesDependencies: MergeEntitiesDependency,
+  targetDependencies: MergeEntitiesDependency
+): Promise<{deletions: BasicStoreRelation[], redirects: MergeEntityDependency[]}> => {
+  const cache: string[] = [];
+  const filtered: MergeEntityDependency[] = [];
   const sources = sourcesDependencies[`i_relations_${redirectSide}`];
   const targets = targetDependencies[`i_relations_${redirectSide}`];
   const markingSources = sources.filter((r) => r.i_relation.entity_type === RELATION_OBJECT_MARKING);
@@ -1416,17 +1495,18 @@ const filterTargetByExisting = async (context, targetEntity, redirectSide, sourc
   for (let index = 0; index < sources.length; index += 1) {
     const source = sources[index];
     // If the relation source is already in target = filtered
-    const finder = (t) => {
+    const finder = (t: MergeEntityDependency) => {
       const sameTarget = t.internal_id === source.internal_id;
       const sameRelationType = t.i_relation.entity_type === source.i_relation.entity_type;
-      return sameRelationType && sameTarget && noDate(t.i_relation);
+      return sameRelationType && sameTarget && noDate(t.i_relation as unknown as any);
     };
     // In case of single meta to move, check if the target have not already this relation.
     // If yes, we keep it, if not we rewrite it
     const relationRefType = redirectSide === 'from' ? source.i_relation.fromType : source.i_relation.toType;
     const isSingleMeta = isSingleRelationsRef(relationRefType, source.i_relation.entity_type);
-    const relationInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(targetEntity.entity_type, source.i_relation.entity_type);
-    const existingSingleMeta = isSingleMeta && isNotEmptyField(targetEntity[relationInputName]);
+    const relationInputName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(targetEntity.entity_type, source.i_relation.entity_type) as string;
+    const targetEntityRelValue = (targetEntity as any)[relationInputName];
+    const existingSingleMeta = isSingleMeta && isNotEmptyField(targetEntityRelValue);
     // For single meta only rely on entity type to prevent relation duplications
     const id = (isSingleMeta && redirectSide === 'from') ? source.i_relation.entity_type : `${source.i_relation.entity_type}-${source.internal_id}`;
     // Self ref relationships is not allowed, need to compare the side that will be kept with the target
@@ -1443,7 +1523,15 @@ const filterTargetByExisting = async (context, targetEntity, redirectSide, sourc
   return { deletions: markingTargetDeletions, redirects: filtered };
 };
 
-const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEntity, sourceEntities, targetDependencies, sourcesDependencies, opts = {}) => {
+const mergeEntitiesRaw = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetEntity: BasicStoreEntity,
+  sourceEntities: BasicStoreCommon[],
+  targetDependencies: MergeEntitiesDependency,
+  sourcesDependencies: MergeEntitiesDependency,
+  opts: { chosenFields?: Record<string, any> } = {}
+): Promise<void> => {
   const { chosenFields = {} } = opts;
   // 01 Check if everything is fully resolved.
   const elements = [targetEntity, ...sourceEntities];
@@ -1478,12 +1566,16 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
   // For vocabularies, extra elastic query is required
   if (targetEntity.entity_type === ENTITY_TYPE_VOCABULARY) {
     // Merge is only possible between same categories
-    const categories = new Set([targetEntity.category, ...sourceEntities.map((s) => s.category)]);
+    const targetVocabularyEntity = targetEntity as BasicStoreEntityVocabulary;
+    const sourceVocabularyEntities = sourceEntities as BasicStoreEntityVocabulary[];
+    const categories = new Set([targetVocabularyEntity.category, ...sourceVocabularyEntities.map((s) => s.category)]);
     if (categories.size > 1) {
       throw FunctionalError('Cannot merge vocabularies of different category', { categories });
     }
-    const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetEntity.category);
-    await updateElasticVocabularyValue(sourceEntities.map((s) => s.name), targetEntity.name, completeCategory);
+    const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetVocabularyEntity.category);
+    if(completeCategory){
+      await updateElasticVocabularyValue(sourceVocabularyEntities.map((s) => s.name), targetVocabularyEntity.name, completeCategory);
+    }
   }
 
   // Prepare S3 file move
@@ -1505,8 +1597,25 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
   const { deletions: fromDeletions, redirects: relationsToRedirectFrom } = await filterTargetByExisting(context, targetEntity, 'from', sourcesDependencies, targetDependencies);
   // region CHANGING TO
   const { deletions: toDeletions, redirects: relationsFromRedirectTo } = await filterTargetByExisting(context, targetEntity, 'to', sourcesDependencies, targetDependencies);
-  const updateConnections = [];
-  const updateEntities = [];
+  type UpdateConnection = {
+    _index: string,
+    id: string,
+    standard_id: string,
+    toReplace: string,
+    entity_type: string,
+    side: 'source_ref' | 'target_ref',
+    data: { internal_id: string, name: string },
+  };
+  const updateConnections: UpdateConnection[] = [];
+  type UpdateEntity = {
+    _index: string,
+    id: string,
+    toReplace: string | null,
+    relationType: string,
+    entity_type: string,
+    data: { internal_id: string | string[] },
+};
+  const updateEntities: UpdateEntity[] = [];
   // FROM (x -> MERGED TARGET) --- (from) relation (to) ---- RELATED_ELEMENT
   // noinspection DuplicatedCode
   for (let indexFrom = 0; indexFrom < relationsToRedirectFrom.length; indexFrom += 1) {
@@ -1523,7 +1632,7 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
       standard_id: entity.i_relation.standard_id,
       toReplace: sideToRedirect,
       entity_type: relationType,
-      side: 'source_ref',
+      side: 'source_ref' as const,
       data: { internal_id: sideTarget, name: targetEntity.name },
     };
     updateConnections.push(relUpdate);
@@ -1565,7 +1674,7 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
       standard_id: entity.i_relation.standard_id,
       toReplace: sideToRedirect,
       entity_type: relationType,
-      side: 'target_ref',
+      side: 'target_ref' as const,
       data: { internal_id: sideTarget, name: targetEntity.name },
     };
     updateConnections.push(relUpdate);
@@ -1596,7 +1705,7 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
   logApp.info(`[OPENCTI] Merging updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
   let currentRelsUpdateCount = 0;
   const groupsOfRelsUpdate = R.splitEvery(MAX_BULK_OPERATIONS, updateConnections);
-  const concurrentRelsUpdate = async (connsToUpdate) => {
+  const concurrentRelsUpdate = async (connsToUpdate: UpdateConnection[]) => {
     await elUpdateRelationConnections(connsToUpdate);
     currentRelsUpdateCount += connsToUpdate.length;
     logApp.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
@@ -1605,11 +1714,11 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
-  const entries = Object.entries(updatesByEntity);
+  const entries = Object.entries(updatesByEntity) as [string, UpdateEntity[]][];
   let currentEntUpdateCount = 0;
-  const updateBulkEntities = entries.filter(([, values]) => values.length === 1).map(([, values]) => values).flat();
+  const updateBulkEntities = entries.filter(([, values]) => values?.length === 1).map(([, values]) => values).flat();
   const groupsOfEntityUpdate = R.splitEvery(MAX_BULK_OPERATIONS, updateBulkEntities);
-  const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
+  const concurrentEntitiesUpdate = async (entitiesToUpdate: UpdateEntity[]) => {
     await elUpdateEntityConnections(entitiesToUpdate);
     currentEntUpdateCount += entitiesToUpdate.length;
     logApp.info(`[OPENCTI] Merging updating bulk entities ${currentEntUpdateCount} / ${updateBulkEntities.length}`);
@@ -1624,13 +1733,13 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
       const changeOperations = values.filter((element) => element.toReplace !== null);
       const addOperations = values.filter((element) => element.toReplace === null);
       // Group all simple add into single operation
-      const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
+      const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations) as Record<string, UpdateEntity[]>;
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
           // eslint-disable-next-line camelcase
-          const { _index, entity_type } = R.head(vals);
+          const { _index, entity_type } = R.head(vals) as UpdateEntity;
           const ids = vals.map((v) => v.data.internal_id);
-          return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
+          return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } } as UpdateEntity;
         })
         .flat();
       operations.push(...changeOperations);
@@ -1648,26 +1757,26 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
   await elDeleteElements(context, SYSTEM_USER, elementToRemoves);
   // Everything if fine update remaining attributes
-  const updateAttributes = [];
+  const updateAttributes: EditInput[] = [];
   // 1. Update all possible attributes
   const attributes = schemaAttributesDefinition.getAttributeNames(targetType);
   const targetFields = attributes.filter((s) => !s.startsWith(INTERNAL_PREFIX));
   for (let fieldIndex = 0; fieldIndex < targetFields.length; fieldIndex += 1) {
     const targetFieldKey = targetFields[fieldIndex];
-    const mergedEntityCurrentFieldValue = targetEntity[targetFieldKey];
+    const mergedEntityCurrentFieldValue = (targetEntity as Record<string, any>)[targetFieldKey];
     const chosenSourceEntityId = chosenFields[targetFieldKey];
     // Select the one that will fill the empty MONO value of the target
     const takenFrom = chosenSourceEntityId
       ? R.find((i) => i.standard_id === chosenSourceEntityId, sourceEntities)
       : R.head(sourceEntities); // If not specified, take the first one.
-    const sourceFieldValue = takenFrom[targetFieldKey];
-    const fieldValues = R.flatten(sourceEntities.map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
+    const sourceFieldValue = (takenFrom as Record<string, any>)[targetFieldKey];
+    const fieldValues = R.flatten((sourceEntities as Record<string, any>[]).map((s) => s[targetFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
     if (isObjectAttribute(targetFieldKey)) {
       // Special case of object that need to be merged
       const isObjectMultiple = isMultipleAttribute(targetType, targetFieldKey);
       if (isObjectMultiple) {
-        updateAttributes.push({ key: targetFieldKey, value: fieldValues, operation: UPDATE_OPERATION_ADD });
+        updateAttributes.push({ key: targetFieldKey, value: fieldValues, operation: EditOperation.Add });
       } else {
         const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
         if (isNotEmptyField(mergedDict)) {
@@ -1678,11 +1787,11 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
       if (targetFieldKey === ATTRIBUTE_ALIASES || targetFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
-        sourceValues.push(...sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
+        sourceValues.push(...(sourceEntities as BasicStoreEntity[]).map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // For x_opencti_additional_names exists, add the source name inside
       if (targetFieldKey === ATTRIBUTE_ADDITIONAL_NAMES) {
-        sourceValues.push(...sourceEntities.map((s) => s.name).filter((n) => isNotEmptyField(n)));
+        sourceValues.push(...(sourceEntities as BasicStoreEntity[]).map((s) => s.name).filter((n) => isNotEmptyField(n)));
       }
       // standard_id of merged entities must be kept in x_opencti_stix_ids
       if (targetFieldKey === IDS_STIX) {
@@ -1690,8 +1799,9 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
       }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
-        const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue || [], sourceValues));
-        updateAttributes.push({ key: targetFieldKey, value: multipleValues, operation: UPDATE_OPERATION_ADD });
+        const concatSource = mergedEntityCurrentFieldValue as any[] ?? [];
+        const multipleValues = R.uniq(R.concat(concatSource, sourceValues));
+        updateAttributes.push({ key: targetFieldKey, value: multipleValues, operation: EditOperation.Add });
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
       // Single value. Put the data in the merged field only if empty.
@@ -1705,20 +1815,34 @@ const mergeEntitiesRaw = async (context: AuthContext, user: AuthUser, targetEnti
   // region Update elasticsearch
   // Elastic update with partial instance to prevent data override
   if (impactedInputs.length > 0) {
-    const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
+    const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs) as BasicStoreBase;
     await elUpdateElement(context, user, updateAsInstance);
     logApp.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
 };
-
-const loadMergeEntitiesDependencies = async (context: AuthContext, user: AuthUser, entityIds) => {
-  const data = { [INTERNAL_FROM_FIELD]: [], [INTERNAL_TO_FIELD]: [] };
+type MergeEntityDependency = {
+  _index: string,
+  internal_id: string,
+  entity_type: string,
+  name: string,
+  i_relation: StoreRelation
+};
+type MergeEntitiesDependency = {
+  [INTERNAL_FROM_FIELD]: MergeEntityDependency[],
+  [INTERNAL_TO_FIELD]: MergeEntityDependency[]
+};
+const loadMergeEntitiesDependencies = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityIds: string[]
+): Promise<MergeEntitiesDependency> => {
+  const data: MergeEntitiesDependency = { [INTERNAL_FROM_FIELD]: [], [INTERNAL_TO_FIELD]: [] };
   for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex += 1) {
     const entityId = entityIds[entityIndex];
     // Internal From
-    const listFromCallback = async (elements) => {
+    const listFromCallback = async (elements: StoreRelation[]) => {
       const findArgs = { toMap: true, baseData: true };
-      const relTargets = await internalFindByIds(context, user, elements.map((rel) => rel.toId), findArgs);
+      const relTargets = await internalFindByIds(context, user, elements.map((rel) => rel.toId), findArgs) as Record<string, BasicStoreObject>;
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
         if (relTargets[rel.toId]) {
@@ -1735,9 +1859,9 @@ const loadMergeEntitiesDependencies = async (context: AuthContext, user: AuthUse
     const fromArgs = { baseData: true, fromId: entityId, callback: listFromCallback };
     await fullRelationsList(context, user, ABSTRACT_STIX_RELATIONSHIP, fromArgs);
     // Internal to
-    const listToCallback = async (elements) => {
+    const listToCallback = async (elements: StoreRelation[]) => {
       const findArgs = { toMap: true, baseData: true };
-      const relSources = await internalFindByIds(context, user, elements.map((rel) => rel.fromId), findArgs);
+      const relSources = await internalFindByIds(context, user, elements.map((rel) => rel.fromId), findArgs) as Record<string, BasicStoreObject>;
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
         if (relSources[rel.fromId]) {
@@ -1757,7 +1881,13 @@ const loadMergeEntitiesDependencies = async (context: AuthContext, user: AuthUse
   return data;
 };
 
-export const mergeEntities = async (context: AuthContext, user: AuthUser, targetEntityId, sourceEntityIds, opts = {}) => {
+export const mergeEntities = async (
+  context: AuthContext,
+  user: AuthUser,
+  targetEntityId: string,
+  sourceEntityIds: string[],
+  opts: { locks?: string[], chosenFields?: Record<string, any> } & EventOpts = {}
+) => {
   // Pre-checks
   if (sourceEntityIds.includes(targetEntityId)) {
     throw FunctionalError('Cannot merge entities, same ID detected in source and destination', {
@@ -1768,12 +1898,12 @@ export const mergeEntities = async (context: AuthContext, user: AuthUser, target
   logApp.info(`[OPENCTI] Merging ${sourceEntityIds} in ${targetEntityId}`);
   // targetEntity and sourceEntities must be accessible
   const mergedIds = [targetEntityId, ...sourceEntityIds];
-  const mergedInstances = await internalFindByIds(context, user, mergedIds);
+  const mergedInstances = await internalFindByIds(context, user, mergedIds) as BasicStoreObject[];
   if (mergedIds.length !== mergedInstances.length) {
     throw FunctionalError('Cannot access all entities for merging');
   }
   mergedInstances.forEach((instance) => controlUserConfidenceAgainstElement(user, instance));
-  if (mergedInstances.some(({ entity_type, builtIn }) => entity_type === ENTITY_TYPE_VOCABULARY && Boolean(builtIn))) {
+  if (mergedInstances.some((o) => o.entity_type === ENTITY_TYPE_VOCABULARY && Boolean((o as BasicStoreEntityVocabulary).builtIn))) {
     throw FunctionalError('Cannot merge builtin vocabularies');
   }
   // We need to lock all elements not locked yet.
@@ -1784,15 +1914,21 @@ export const mergeEntities = async (context: AuthContext, user: AuthUser, target
     // Lock the participants that will be merged
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // Entities must be fully loaded with admin user to resolve/move all dependencies
-    const initialInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
-    const target = { ...initialInstance };
+    const initialInstance = await storeLoadByIdWithRefs<StoreObject>(context, user, targetEntityId);
+    if (!initialInstance) {
+      throw FunctionalError('Cannot access initial instance', { targetEntityId });
+    }
+    const target = { ...initialInstance } as BasicStoreEntity;
     const sources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
     await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
-    const mergedInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
+    const mergedInstance = await storeLoadByIdWithRefs<StoreObject>(context, user, targetEntityId);
+    if (!mergedInstance) {
+      throw FunctionalError('Cannot access merged instance', { targetEntityId });
+    }
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context, user));
@@ -1800,7 +1936,7 @@ export const mergeEntities = async (context: AuthContext, user: AuthUser, target
     return await storeLoadById(context, user, target.id, ABSTRACT_STIX_OBJECT).then((finalStixCoreObject) => {
       return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user);
     });
-  } catch (err) {
+  } catch (err: any) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds });
     }
@@ -1810,21 +1946,24 @@ export const mergeEntities = async (context: AuthContext, user: AuthUser, target
   }
 };
 
-export const transformPatchToInput = (patch, operations = {}) => {
+export const transformPatchToInput = (
+  patch: Record<string, any>,
+  operations: Record<string, undefined | 'add' | 'remove' | 'replace'> = {}
+): EditInput[] => {
   return R.pipe(
     R.toPairs,
     R.map((t) => {
-      const val = R.last(t);
-      const key = R.head(t);
+      const val = R.last(t) as any;
+      const key = R.head(t) as string;
       const operation = operations[key] || UPDATE_OPERATION_REPLACE;
       if (!R.isNil(val)) {
-        return { key, value: Array.isArray(val) ? val : [val], operation };
+        return { key, value: Array.isArray(val) ? val : [val], operation } as EditInput;
       }
-      return { key, value: null, operation };
+      return { key, value: [null], operation } as EditInput;
     })
   )(patch);
 };
-const checkAttributeConsistency = (entityType, key) => {
+const checkAttributeConsistency = (entityType: string, key: string) => {
   if (key.startsWith(RULE_PREFIX)) {
     return;
   }
@@ -1838,7 +1977,7 @@ const checkAttributeConsistency = (entityType, key) => {
     throw FunctionalError('This attribute key is not allowed, please check your registration attribute name', { key, entity_type: entityType });
   }
 };
-const innerUpdateAttribute = (instance, rawInput) => {
+const innerUpdateAttribute = (instance: BasicStoreBase, rawInput: EditInput): EditInput | undefined => {
   const { key } = rawInput;
   // Check consistency
   checkAttributeConsistency(instance.entity_type, key);
@@ -1846,11 +1985,16 @@ const innerUpdateAttribute = (instance, rawInput) => {
   if (R.isEmpty(input)) {
     return undefined;
   }
-  return input;
+  return input as EditInput;
 };
-const prepareAttributesForUpdate = async (context: AuthContext, user: AuthUser, instance, elements) => {
+const prepareAttributesForUpdate = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: BasicStoreBase,
+  elements: EditInput[]
+) => {
   const instanceType = instance.entity_type;
-  const platformStatuses = await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS);
+  const platformStatuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, user, ENTITY_TYPE_STATUS);
   return elements.map((input) => {
     // Dynamic cases, attributes not defined in the schema
     if (input.key.startsWith(RULE_PREFIX) || input.key.startsWith(REL_INDEX_PREFIX)) {
@@ -1870,7 +2014,7 @@ const prepareAttributesForUpdate = async (context: AuthContext, user: AuthUser, 
     }
     // Aliases can't have the same name as entity name and an already existing normalized alias
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
-      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName(instance.name));
+      const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName((instance as BasicStoreEntity).name));
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
       return { key: input.key, value: uniqAliases };
     }
@@ -1923,10 +2067,10 @@ const prepareAttributesForUpdate = async (context: AuthContext, user: AuthUser, 
     }
     // No need to rework the input
     return input;
-  }).filter((i) => isNotEmptyField(i));
+  }).filter((i) => isNotEmptyField(i)) as EditInput[];
 };
 
-const getPreviousInstanceValue = (key, instance) => {
+const getPreviousInstanceValue = (key: string, instance: Record<string, any>) => {
   if (key.includes('.')) {
     const [base, target] = key.split('.');
     const data = instance[base]?.[target];
@@ -1939,7 +2083,7 @@ const getPreviousInstanceValue = (key, instance) => {
   return isMultipleAttribute(instance.entity_type, key) ? data : [data];
 };
 
-const updateDateRangeValidation = (instance, inputs, from, to) => {
+const updateDateRangeValidation = (instance: Record<string, any>, inputs: EditInput[], from: string, to: string) => {
   const fromVal = R.head(R.find((e) => e.key === from, inputs)?.value || [instance[from]]);
   const toVal = R.head(R.find((e) => e.key === to, inputs)?.value || [instance[to]]);
   if (utcDate(fromVal) > utcDate(toVal)) {
@@ -1947,7 +2091,17 @@ const updateDateRangeValidation = (instance, inputs, from, to) => {
     throw DatabaseError(`You cant update an element with ${to} less than ${from}`, data);
   }
 };
-const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance, inputs, opts = {}) => {
+const updateAttributeRaw = async (
+  context: AuthContext,
+  user: AuthUser,
+  instance: BasicStoreBase,
+  inputs: EditInput[] | EditInput,
+  opts: { impactStandardId?: boolean, upsert?: boolean } = {}
+): Promise<{
+  updatedInputs: (EditInput & { previous: any })[], // Sourced inputs for event stream
+  impactedInputs: EditInput[], // All inputs that need to be re-indexed. (so without meta relationships)
+  updatedInstance: Record<string, any>,
+}> => {
   const today = now();
   // Upsert option is only useful to force aliases to be kept when upserting the entity
   const { impactStandardId = true, upsert = false } = opts;
@@ -1973,6 +2127,7 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
   // region Some magic around aliases
   // If named entity name updated or alias are updated, modify the aliases ids
   if (isStixObjectAliased(instanceType)) {
+    const aliasedInstance = instance as BasicStoreEntity;
     const aliasField = resolveAliasesField(instanceType).name;
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
@@ -1982,22 +2137,23 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
       if (aliasesInput) {
         const preparedAliases = (aliasesInput.value ?? [])
           .filter((a) => isNotEmptyField(a))
-          .filter((a) => normalizeName(a) !== normalizeName(instance.name)
+          .filter((a) => normalizeName(a) !== normalizeName(aliasedInstance.name)
             && normalizeName(a) !== normalizeName(askedModificationName))
           .map((a) => a.trim());
         aliasesInput.value = R.uniqBy((e) => normalizeName(e), preparedAliases);
       }
       // In case of upsert name change, old name must be pushed in aliases
       // If aliases are also ask for modification, we need to change the input
-      if (askedModificationName && normalizeName(instance.name) !== normalizeName(askedModificationName)) {
+      if (askedModificationName && normalizeName(aliasedInstance.name) !== normalizeName(askedModificationName)) {
         // If name change, we need to add the old name in aliases
-        const aliases = [...(instance[aliasField] ?? [])];
+        // @ts-ignore
+        const aliases = [...(aliasedInstance[aliasField] ?? [])];
         if (upsert) {
           // For upsert, we concatenate everything to be none destructive
           aliases.push(...(aliasesInput ? aliasesInput.value : []));
-          if (!aliases.includes(instance.name)) {
+          if (!aliases.includes(aliasedInstance.name)) {
             // If name changing is part of an upsert, the previous name must be copied into aliases
-            aliases.push(instance.name);
+            aliases.push(aliasedInstance.name);
           }
           const uniqAliases = R.uniqBy((e) => normalizeName(e), aliases).filter((a) => a !== askedModificationName);
           if (aliasesInput) { // If aliases input also exists
@@ -2009,35 +2165,37 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
         } else if (!aliasesInput) {
           // Name change can create a duplicate with aliases
           // If it's the case aliases must be also patched.
-          const currentAliases = instance[aliasField] || [];
-          const targetAliases = currentAliases.filter((a) => a !== askedModificationName);
+          // @ts-ignore
+          const currentAliases = aliasedInstance[aliasField] || [];
+          const targetAliases = currentAliases.filter((a: string) => a !== askedModificationName);
           if (currentAliases.length !== targetAliases.length) {
             const generatedAliasesInput = { key: aliasField, value: targetAliases };
             preparedElements.push(generatedAliasesInput);
           }
         }
         // Regenerated the internal ids with the instance target aliases
-        const aliasesId = generateAliasesId(aliases, instance);
+        const aliasesId = generateAliasesId(aliases, aliasedInstance);
         const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasInput);
       } else if (aliasesInput) {
         // No name change asked but aliases addition
         if (upsert) {
           // In upsert we cumulate with current aliases
-          aliasesInput.value = R.uniqBy((e) => normalizeName(e), [...aliasesInput.value, ...(instance[aliasField] || [])]);
+          // @ts-ignore
+          aliasesInput.value = R.uniqBy((e) => normalizeName(e), [...aliasesInput.value, ...(aliasedInstance[aliasField] || [])]);
         }
         // Internal ids alias must be generated again
-        const aliasesId = generateAliasesId(aliasesInput.value, instance);
+        const aliasesId = generateAliasesId(aliasesInput.value, aliasedInstance);
         const aliasIdsInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         preparedElements.push(aliasIdsInput);
         // Purge removed alias IDs from other stix IDS
-        const currentStixIds = instance[IDS_STIX] ?? [];
-        const removedAliasesIds = instance[INTERNAL_IDS_ALIASES].filter((aid) => !aliasesId.includes(aid));
+        const currentStixIds = aliasedInstance[IDS_STIX] ?? [];
+        const removedAliasesIds = aliasedInstance[INTERNAL_IDS_ALIASES]?.filter((aid) => !aliasesId.includes(aid));
         const stixIdsInput = R.find((e) => e.key === IDS_STIX, preparedElements);
         if (stixIdsInput) {
-          stixIdsInput.value = stixIdsInput.value.filter((sid) => !removedAliasesIds.includes(sid));
+          stixIdsInput.value = stixIdsInput.value.filter((sid) => !removedAliasesIds?.includes(sid));
         } else {
-          const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds.includes(sid));
+          const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds?.includes(sid));
           if (newStixIds.length < currentStixIds.length) {
             const newStixIdsInput = { key: IDS_STIX, value: newStixIds };
             preparedElements.push(newStixIdsInput);
@@ -2051,17 +2209,18 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
   // In case of artifact and file, we need to keep name in additional names in case of upsert
   const isNamedObservable = instanceType === ENTITY_HASHED_OBSERVABLE_ARTIFACT || instanceType === ENTITY_HASHED_OBSERVABLE_STIX_FILE;
   if (upsert && isNamedObservable) {
+    const namedObservableInstance = instance as BasicStoreCyberObservable;
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     // In Upsert mode, x_opencti_additional_names update must not be destructive, previous names must be kept
     const additionalNamesInput = R.find((e) => e.key === ATTRIBUTE_ADDITIONAL_NAMES, preparedElements);
     if (additionalNamesInput) {
-      const names = [...additionalNamesInput.value, ...(instance[ATTRIBUTE_ADDITIONAL_NAMES] ?? [])];
+      const names = [...additionalNamesInput.value, ...(namedObservableInstance[ATTRIBUTE_ADDITIONAL_NAMES] ?? [])];
       if (nameInput) { // If name will be replaced, add it in additional names
-        names.push(instance[NAME_FIELD]);
+        names.push(namedObservableInstance[NAME_FIELD]);
       }
       additionalNamesInput.value = R.uniq(names);
     } else if (nameInput) { // If name will be replaced, add it in additional names
-      const newAdditional = [instance[NAME_FIELD], ...(instance[ATTRIBUTE_ADDITIONAL_NAMES] ?? [])];
+      const newAdditional = [namedObservableInstance[NAME_FIELD], ...(namedObservableInstance[ATTRIBUTE_ADDITIONAL_NAMES] ?? [])];
       const addNamesInput = { key: ATTRIBUTE_ADDITIONAL_NAMES, value: R.uniq(newAdditional) };
       preparedElements.push(addNamesInput);
     }
@@ -2084,12 +2243,12 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
       // Standard id is generated from data depending on multiple ways and multiple attributes
       if (isStixCyberObservableHashedObservable(instanceType) && preparedElements.length > 0) {
         const instanceStandardIds = generateHashedObservableStandardIds(instance);
-        const updatedInstanceStandardIds = generateHashedObservableStandardIds(updatedInstance);
+        const updatedInstanceStandardIds = generateHashedObservableStandardIds(updatedInstance) as StixId[];
         const instanceStixIds = (instance[IDS_STIX] ?? []);
         const instanceOtherStixIds = instanceStixIds.filter((id) => !instanceStandardIds.includes(id));
         const newStixIds = [...instanceOtherStixIds, ...updatedInstanceStandardIds].filter((id) => id !== standardId);
         const stixIdsHaveNotChanged = instanceStixIds.length === newStixIds.length
-          && newStixIds.every((id) => instanceStixIds.includes(id));
+          && newStixIds.every((id: StixId) => instanceStixIds.includes(id));
 
         const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
         if (stixInput) {
@@ -2103,7 +2262,7 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
           } else {
             stixInput.value = R.uniq([...stixInput.value, ...newStixIds]);
           }
-          stixInput.operation = UPDATE_OPERATION_REPLACE;
+          stixInput.operation = EditOperation.Replace;
         } else if (!stixIdsHaveNotChanged) {
           // If no stix ids modification, add the standard id in the list and patch the element
           preparedElements.push({ key: IDS_STIX, value: R.uniq(newStixIds) });
@@ -2123,7 +2282,7 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
         // If standard_id is downgraded, we need to remove the old one from the other stix ids
         const stixInput = R.find((e) => e.key === IDS_STIX, preparedElements);
         if (stixInput) {
-          stixInput.operation = UPDATE_OPERATION_REPLACE;
+          stixInput.operation = EditOperation.Replace;
           stixInput.value = stixInput.value.filter((i) => i !== standardId);
         } else {
           // In case of downgrade we purge the other stix ids.
@@ -2150,8 +2309,8 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
     }
   }
   // Update all needed attributes with inner elements if needed
-  const updatedInputs = [];
-  const impactedInputs = [];
+  const updatedInputs: (EditInput & { previous: any })[] = [];
+  const impactedInputs: EditInput[] = [];
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
     const ins = innerUpdateAttribute(instance, input);
@@ -2199,14 +2358,20 @@ const updateAttributeRaw = async (context: AuthContext, user: AuthUser, instance
   };
 };
 
-const getKeyValuesFromPatchElements = (patchElements, keyName) => {
+const getKeyValuesFromPatchElements = (patchElements: any, keyName: string) => {
+  // @ts-ignore
   return patchElements.slice(0, MAX_PATCH_ELEMENTS_FOR_MESSAGE).flatMap(([,operations]) => {
-    return operations.slice(0, MAX_OPERATIONS_FOR_MESSAGE).flatMap(({ key, value }) => {
+    return operations.slice(0, MAX_OPERATIONS_FOR_MESSAGE).flatMap(({ key, value }: any) => {
       return key === keyName ? (value ?? []) : [];
     });
   });
 };
-export const generateUpdateMessage = async (context: AuthContext, user: AuthUser, entityType, inputs) => {
+export const generateUpdateMessage = async (
+  context: AuthContext,
+  user: AuthUser,
+  entityType: string,
+  inputs: EditInput[]
+): Promise<string> => {
   const isWorkflowChange = inputs.filter((i) => i.key === X_WORKFLOW_ID).length > 0;
   const platformStatuses = isWorkflowChange ? await getEntitiesListFromCache(context, user, ENTITY_TYPE_STATUS) : [];
   const resolvedInputs = inputs.map((i) => {
@@ -2229,20 +2394,20 @@ export const generateUpdateMessage = async (context: AuthContext, user: AuthUser
   }
 
   const authorizedMembersIds = getKeyValuesFromPatchElements(patchElements, authorizedMembers.name).map(({ id }) => id);
-  let members = [];
+  let members: BasicStoreBase[] = [];
   if (authorizedMembersIds.length > 0) {
     members = await internalFindByIds(context, SYSTEM_USER, authorizedMembersIds, {
       baseData: true,
       baseFields: ['internal_id', 'name']
-    });
+    }) as BasicStoreBase[];
   }
 
   const creatorsIds = getKeyValuesFromPatchElements(patchElements, creatorsAttribute.name);
   let creators = [];
   if (creatorsIds.length > 0 && !(creatorsIds.length === 1 && creatorsIds.includes(user.id))) {
     // get creators only if it's not the current user (which will be 'itself')
-    const platformUsers = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    creators = creatorsIds.map((id) => platformUsers.get(id));
+    const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+    creators = creatorsIds.map((id: string) => platformUsers.get(id));
   }
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
