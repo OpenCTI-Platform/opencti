@@ -12136,10 +12136,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:1.3.1":
-  version: 1.3.1
-  resolution: "node-forge@npm:1.3.1"
-  checksum: 10c0/e882819b251a4321f9fc1d67c85d1501d3004b4ee889af822fd07f64de3d1a8e272ff00b689570af0465d65d6bf5074df9c76e900e0aff23e60b847f2a46fbe8
+"node-forge@npm:1.3.2":
+  version: 1.3.2
+  resolution: "node-forge@npm:1.3.2"
+  checksum: 10c0/1def35652c93a588718a6d0d0b4f33e3e7de283aa6f4c00d01d1605d6ccce23fb3b59bcbfb6434014acd23a251cfcc2736052b406f53d94e1b19c09d289d0176
   languageName: node
   linkType: hard
 
@@ -12616,7 +12616,7 @@ __metadata:
     nconf: "npm:0.13.0"
     node-calls-python: "npm:1.11.1"
     node-fetch: "npm:3.3.2"
-    node-forge: "npm:1.3.1"
+    node-forge: "npm:1.3.2"
     nodemailer: "npm:7.0.11"
     openai: "npm:4.104.0"
     openid-client: "npm:5.7.1"
