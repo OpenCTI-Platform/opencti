@@ -9864,10 +9864,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"filigran-icon@npm:0.19.1":
-  version: 0.19.1
-  resolution: "filigran-icon@npm:0.19.1"
-  checksum: 10c0/fcde5ae71b71e2ea2080cff5945a681157b9b49ded5b987e63cac2fb24461870a3e23f1d5aee5d830bf8bd638d5b1338dc766e3cbf46ba4baa3a661d4cfdbddd
+"filigran-icon@npm:0.20.0":
+  version: 0.20.0
+  resolution: "filigran-icon@npm:0.20.0"
+  checksum: 10c0/ad1b27180f60dcd59fffd5fd71ed0cd761c41936325d3b1016f6c1b4d2d1e2145ed36f9cbd7d64a50c1edac18f54bdc8555a57d45d13fe048d260fd479071aac
   languageName: node
   linkType: hard
 
@@ -14036,7 +14036,7 @@ __metadata:
     express: "npm:5.1.0"
     extract-files: "npm:13.0.0"
     filigran-chatbot: "https://github.com/FiligranHQ/filigran-chatbot/releases/download/0.1.7/filigran-chatbot-v0.1.7.tgz"
-    filigran-icon: "npm:0.19.1"
+    filigran-icon: "npm:0.20.0"
     formik: "npm:2.4.9"
     formik-mui: "npm:5.0.0-alpha.0"
     formik-mui-lab: "npm:1.0.0"
