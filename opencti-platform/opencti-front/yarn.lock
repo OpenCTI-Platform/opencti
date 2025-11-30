@@ -2828,23 +2828,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsonforms/material-renderers@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@jsonforms/material-renderers@npm:3.6.0"
+"@jsonforms/material-renderers@npm:3.7.0":
+  version: 3.7.0
+  resolution: "@jsonforms/material-renderers@npm:3.7.0"
   dependencies:
     "@date-io/dayjs": "npm:^3.0.0"
     dayjs: "npm:1.10.7"
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@emotion/react": ^11.4.1
+    "@emotion/react": ^11.5.0
     "@emotion/styled": ^11.3.0
-    "@jsonforms/core": 3.6.0
-    "@jsonforms/react": 3.6.0
-    "@mui/icons-material": ^5.11.16 || ^6.0.0
-    "@mui/material": ^5.13.0 || ^6.0.0
-    "@mui/x-date-pickers": ^6.0.0 || ^7.0.0
+    "@jsonforms/core": 3.7.0
+    "@jsonforms/react": 3.7.0
+    "@mui/icons-material": ^7.0.0
+    "@mui/material": ^7.0.0
+    "@mui/x-date-pickers": ^8.0.0
     react: ^16.12.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/55400ddb82f62f625802f1f8fca526098b48577d74302a3d27bf750638de74697b3e637d905a9929982ea0c483b2902c3819d61f5fc3771abfa99ef093fba88c
+  checksum: 10c0/68ee9ecbfb3583ea04269b58d8679ac87b13260e560830572b3c774911f6972178d6d077d979d07c14dda08c64d02804281b424b90cebb5c231843c12fee4d67
   languageName: node
   linkType: hard
 
@@ -13979,7 +13979,7 @@ __metadata:
     "@graphiql/toolkit": "npm:0.11.3"
     "@hello-pangea/dnd": "npm:18.0.1"
     "@jsonforms/core": "npm:3.7.0"
-    "@jsonforms/material-renderers": "npm:3.6.0"
+    "@jsonforms/material-renderers": "npm:3.7.0"
     "@jsonforms/react": "npm:3.7.0"
     "@mui/icons-material": "npm:6.5.0"
     "@mui/lab": "npm:5.0.0-alpha.177"
