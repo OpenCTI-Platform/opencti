@@ -3,7 +3,7 @@ import type { AuthUser } from '../../types/user';
 import type { StoreObject } from '../../types/store';
 import { generateMergeMessage } from '../generate-message';
 import { convertStoreToStix_2_1 } from '../stix-2-1-converter';
-import type { StixCoreObject } from '../../types/stix-2-1-common';
+import type { StixCoreObject, StixObject  } from '../../types/stix-2-1-common';
 import { asyncListTransformation, EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../utils';
 import { UnsupportedError } from '../../config/errors';
 import { INTERNAL_EXPORTABLE_TYPES } from '../../schema/stixCoreObject';
@@ -93,7 +93,7 @@ export const buildMergeEvent = async (user: AuthUser, previous: StoreObject, ins
     context: {
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
-      sources: await asyncListTransformation(sourceEntities, convertStoreToStix_2_1),
+      sources: await asyncListTransformation<StixObject>(sourceEntities, convertStoreToStix_2_1) as StixCoreObject[],
     }
   };
 };
