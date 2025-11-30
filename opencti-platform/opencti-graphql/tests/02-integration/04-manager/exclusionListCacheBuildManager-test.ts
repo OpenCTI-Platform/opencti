@@ -6,7 +6,7 @@ import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { ENTITY_DOMAIN_NAME, ENTITY_IPV4_ADDR } from '../../../src/schema/stixCyberObservable';
 import { buildCacheFromAllExclusionLists } from '../../../src/database/exclusionListCache';
 import { checkExclusionLists } from '../../../src/utils/exclusionLists';
-import { fileToReadStream } from '../../../src/database/file-storage-helper';
+import { fileToReadStream } from '../../../src/database/file-storage';
 
 describe('Exclusion list cache build manager tests ', () => {
   const context = testContext;

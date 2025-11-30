@@ -38,6 +38,7 @@ import { type FieldOption, fieldSpacingContainerStyle } from '../../../../utils/
 import TextField from '../../../../components/TextField';
 import { Accordion, AccordionSummary } from '../../../../components/Accordion';
 import { resolveLink } from '../../../../utils/Entity';
+import { JsonFormVerticalLayout, jsonFormVerticalLayoutTester } from './utils/JsonFormVerticalLayout';
 
 const ingestionCatalogConnectorCreationMutation = graphql`
   mutation IngestionCatalogConnectorCreationMutation($input: AddManagedConnectorInput) {
@@ -78,6 +79,7 @@ const sanitizeContainerName = (label: string): string => {
 
 const customRenderers = [
   ...materialRenderers,
+  { tester: jsonFormVerticalLayoutTester, renderer: JsonFormVerticalLayout },
   { tester: jsonFormPasswordTester, renderer: JsonFormPasswordRenderer },
   { tester: jsonFormArrayTester, renderer: JsonFormArrayRenderer },
   { tester: jsonFormUnsupportedTypeTester, renderer: JsonFormUnsupportedType },
@@ -88,7 +90,7 @@ interface IngestionCatalogConnectorCreationProps {
   open: boolean;
   onClose: () => void;
   catalogId: string;
-  hasRegisteredManagers: boolean
+  hasActiveManagers: boolean;
   deploymentCount?: number;
   onCreate?: (connectorId: string) => void;
 }
@@ -111,7 +113,7 @@ const validationSchema = Yup.object().shape({
 });
 
 const IngestionCatalogConnectorCreation = ({
-  connector, open, onClose, catalogId, hasRegisteredManagers, deploymentCount = 0, onCreate,
+  connector, open, onClose, catalogId, hasActiveManagers, deploymentCount = 0, onCreate,
 }: IngestionCatalogConnectorCreationProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -130,6 +132,7 @@ const IngestionCatalogConnectorCreation = ({
     setSubmitting,
     resetForm,
   }: Partial<FormikHelpers<ManagedConnectorValues>>) => {
+    setSubmitting?.(true);
     const input = {
       name: values.display_name,
       catalog_id: catalogId,
@@ -296,7 +299,7 @@ const IngestionCatalogConnectorCreation = ({
       }
     >
       <Stack gap={1}>
-        <ConnectorDeploymentBanner hasRegisteredManagers={hasRegisteredManagers} />
+        <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />
 
         <Formik<ManagedConnectorValues>
           onReset={onClose}
@@ -319,11 +322,11 @@ const IngestionCatalogConnectorCreation = ({
             return (
               <Form>
                 <fieldset
-                  disabled={!hasRegisteredManagers}
+                  disabled={!hasActiveManagers}
                   style={{
                     border: 'none',
                     padding: 0,
-                    ...(!hasRegisteredManagers && { opacity: 0.5, pointerEvents: 'none' }),
+                    ...(!hasActiveManagers && { opacity: 0.5, pointerEvents: 'none' }),
                   }}
                 >
                   <Field
@@ -398,7 +401,7 @@ const IngestionCatalogConnectorCreation = ({
                             <AccordionSummary id="accordion-panel">
                               <Typography>{t_i18n('Advanced options')}</Typography>
                             </AccordionSummary>
-                            <AccordionDetails>
+                            <AccordionDetails sx={{ paddingTop: 2 }}>
                               <JsonForms
                                 data={configDefaults}
                                 schema={optionalProperties}
@@ -425,7 +428,7 @@ const IngestionCatalogConnectorCreation = ({
                     {t_i18n('Cancel')}
                   </Button>
                   {
-                    hasRegisteredManagers && (
+                    hasActiveManagers && (
                       <Button
                         variant="contained"
                         color="secondary"

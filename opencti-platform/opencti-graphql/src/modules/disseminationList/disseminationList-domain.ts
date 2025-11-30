@@ -23,11 +23,12 @@ import conf, { logApp } from '../../config/conf';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../domain/internalObject';
-import { downloadFile, getFileContent, loadFile } from '../../database/file-storage';
+import { downloadFile, getFileContent } from '../../database/raw-file-storage';
+import { loadFile } from '../../database/file-storage';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { OCTI_EMAIL_TEMPLATE } from '../../utils/emailTemplates/octiEmailTemplate';
-import { sendMail } from '../../database/smtp';
+import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { BasicStoreSettings } from '../../types/settings';
 import { emailChecker } from '../../utils/syntax';
 import type { BasicStoreCommon } from '../../types/store';
@@ -80,18 +81,25 @@ export const sendDisseminationEmail = async (
   for (let i = 0; i < opts.attachFileIds.length; i += 1) {
     const attachFileId = opts.attachFileIds[i];
     const file = await loadFile(context, user, attachFileId);
-    const canBeDisseminated = file && allowedTypesInAttachment.includes(file.metaData.mimetype);
+    const canBeDisseminated = file && file.metaData.mimetype && allowedTypesInAttachment.includes(file.metaData.mimetype);
     if (!canBeDisseminated) {
       throw UnsupportedError('File cant be disseminate', { id: attachFileId });
     }
     sentFiles.push(file);
-    const stream = await downloadFile(file.id);
-    attachmentListForSendMail.push({ filename: file.name, content: stream });
+    try {
+      const stream = await downloadFile(file.id);
+      if (!stream) {
+        throw UnsupportedError('File not found in storage', { id: file.id });
+      }
+      attachmentListForSendMail.push({ filename: file.name, content: stream });
+    } catch (err) {
+      throw UnsupportedError('Cannot download file for dissemination', { id: file.id, cause: err });
+    }
   }
 
   if (opts.htmlToBodyFileId) {
     const bodyFile = await loadFile(context, user, opts.htmlToBodyFileId);
-    const canBeInBody = bodyFile && allowedTypesInBody.includes(bodyFile.metaData.mimetype);
+    const canBeInBody = bodyFile && bodyFile.metaData.mimetype && allowedTypesInBody.includes(bodyFile.metaData.mimetype);
     if (!canBeInBody) {
       throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: opts.htmlToBodyFileId });
     }
@@ -104,7 +112,7 @@ export const sendDisseminationEmail = async (
   }
 
   const sendMailArgs: SendMailArgs = {
-    from: `${settings.platform_title} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(),
     to: toEmail,
     bcc: [...opts.emails, user.user_email],
     subject: opts.object,

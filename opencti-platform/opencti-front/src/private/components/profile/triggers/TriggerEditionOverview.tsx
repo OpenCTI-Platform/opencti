@@ -3,10 +3,11 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { Box } from '@mui/material';
+import { instanceTriggerDescription } from '@components/profile/triggers/TriggerLiveCreation';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,7 +17,14 @@ import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
-import { deserializeFilterGroupForFrontend, serializeFilterGroupForBackend, stixFilters } from '../../../../utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  getDefaultFilterObject,
+  serializeFilterGroupForBackend,
+  stixFilters,
+  useFilterDefinition,
+} from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
 import NotifierField from '../../common/form/NotifierField';
 import Filters from '../../common/lists/Filters';
@@ -26,6 +34,7 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import TriggersField from './TriggersField';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import SwitchField from '../../../../components/fields/SwitchField';
 
 export const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -85,9 +94,21 @@ interface TriggerEditionFormValues {
 
 const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
   const { t_i18n } = useFormatter();
+  const defaultInstanceTriggerFilters = {
+    ...emptyFilterGroup,
+    filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
+  };
   const trigger = useFragment(triggerEditionOverviewFragment, data);
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
+  const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
+      ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
+  const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
+  const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
+    { value: 'create', label: t_i18n('Creation') },
+    { value: 'update', label: t_i18n('Modification') },
+    { value: 'delete', label: t_i18n('Deletion') },
+  ];
 
   useEffect(() => {
     commitFieldPatch({
@@ -95,11 +116,11 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
         id: trigger.id,
         input: {
           key: 'filters',
-          value: serializeFilterGroupForBackend(filters),
+          value: instanceTrigger ? serializeFilterGroupForBackend(instanceTriggerFilters) : serializeFilterGroupForBackend(filters),
         },
       },
     });
-  }, [filters]);
+  }, [filters, instanceTriggerFilters]);
 
   const onSubmit: FormikConfig<TriggerEditionFormValues>['onSubmit'] = (
     values,
@@ -116,6 +137,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const triggerValidation = () => Yup.object().shape({
     name: Yup.string().required(t_i18n('This field is required')),
     description: Yup.string().nullable(),
@@ -144,6 +166,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
           .required(t_i18n('This field is required'))
         : Yup.array().nullable(),
   });
+
   const handleSubmitTriggers = (name: string, value: { value: string }[]) => triggerValidation()
     .validateAt(name, { [name]: value })
     .then(() => {
@@ -155,6 +178,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       });
     })
     .catch(() => false);
+
   const handleSubmitDay = (_: string, value: string) => {
     const day = value && value.length > 0 ? value : '1';
     const currentTime = trigger.trigger_time?.split('-') ?? [
@@ -170,6 +194,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleSubmitTime = (_: string, value: string) => {
     const time = value && value.length > 0
       ? `${parse(value).utc().format('HH:mm:00.000')}Z`
@@ -187,6 +212,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleClearTime = () => {
     return commitFieldPatch({
       variables: {
@@ -195,6 +221,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleRemoveDay = () => {
     const currentTime = trigger.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,
@@ -207,6 +234,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleAddDay = () => {
     const currentTime = trigger.trigger_time?.split('-') ?? [
       `${parse(dayStartDate()).utc().format('HH:mm:00.000')}Z`,
@@ -219,6 +247,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       },
     });
   };
+
   const handleSubmitField = (
     name: string,
     value: FieldOption | string | string[],
@@ -246,9 +275,38 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
       })
       .catch(() => false);
   };
+
+  const onChangeInstanceTrigger = (
+    setFieldValue: (
+      key: string,
+      value: { value: string; label: string }[],
+    ) => void,
+  ) => {
+    const newInstanceTriggerValue = !instanceTrigger;
+    setFieldValue(
+      'event_types',
+      newInstanceTriggerValue ? instanceEventTypesOptions : eventTypesOptions,
+    );
+
+    helpers.handleClearAllFilters();
+    instanceTriggerFiltersHelpers.handleClearAllFilters();
+    setInstanceTrigger(newInstanceTriggerValue);
+
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: {
+          key: 'instance_trigger',
+          value: newInstanceTriggerValue,
+        },
+      },
+    });
+  };
+
   const currentTime = trigger.trigger_time?.split('-') ?? [
     dayStartDate().toISOString(),
   ];
+
   const initialValues = {
     name: trigger.name,
     description: trigger.description,
@@ -411,30 +469,39 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
             )
             }
           />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="instance_trigger"
+            label={t_i18n('Subscription to specific object(s)')}
+            tooltip={instanceTriggerDescription}
+            containerstyle={{ marginTop: 20 }}
+            onChange={() => onChangeInstanceTrigger(setFieldValue)}
+            checked={instanceTrigger}
+          />
           {trigger.trigger_type === 'live' && (
             <span>
               <Box sx={{
-                paddingTop: 4,
+                marginTop: '20px',
                 display: 'flex',
                 gap: 1,
               }}
               >
-                {(!trigger.instance_trigger
-                && (
-                  <Filters
+                {!instanceTrigger
+                  && <Filters
                     availableFilterKeys={stixFilters}
                     helpers={helpers}
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
-                  />
-                ))}
+                     />
+                }
               </Box>
 
-              {trigger.instance_trigger
+              {instanceTrigger
                 ? (
                   <FilterIconButton
-                    filters={filters}
+                    filters={instanceTriggerFilters}
                     helpers={{
-                      ...helpers,
+                      ...instanceTriggerFiltersHelpers,
                       handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
                     }}
                     redirection

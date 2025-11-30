@@ -169,6 +169,11 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
   const { t_i18n } = useFormatter();
   const coverageInformationMutation = mode === 'entity'
     ? coverageEntityInformationMutation : coverageRelationInformationMutation;
+
+  const disabledOptions = values
+    ?.map((v) => v.coverage_name)
+    .filter((coverageName) => coverageName !== '');
+
   return (
     <div style={{ ...fieldSpacingContainerStyle, ...containerStyle }}>
       <Typography variant="h4" gutterBottom>
@@ -195,6 +200,7 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                       type="coverage_ov"
                       name={`${name}.${index}.coverage_name`}
                       required={true}
+                      disabledOptions={disabledOptions}
                       onChange={(_: string, value) => {
                         const isCreation = isEmptyField(values?.[index]?.coverage_name);
                         if (isNotEmptyField(value)) {

@@ -133,7 +133,7 @@ const PirOverview = ({ data }: PirOverviewProps) => {
         {
           key: ['refreshed_at'],
           operator: 'within',
-          values: ['now-1M', 'now'],
+          values: ['now-7d', 'now'],
           mode: 'or',
         },
       ],

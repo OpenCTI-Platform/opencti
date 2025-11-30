@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Readable } from 'stream';
 import { SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
-import { defaultValidationMode, deleteFile } from '../database/file-storage';
+import { defaultValidationMode, deleteFile, uploadToStorage } from '../database/file-storage';
 import { internalLoadById, fullEntitiesList } from '../database/middleware-loader';
 import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
@@ -11,7 +11,6 @@ import { supportedMimeTypes } from '../modules/managerConfiguration/managerConfi
 import { isUserHasCapabilities, SYSTEM_USER } from '../utils/access';
 import { isEmptyField, isNotEmptyField, READ_INDEX_FILES, READ_INDEX_HISTORY } from '../database/utils';
 import { getStats } from '../database/engine';
-import { uploadToStorage } from '../database/file-storage-helper';
 import { extractContentFrom } from '../utils/fileToContent';
 import { stixLoadById } from '../database/middleware';
 import { getEntitiesMapFromCache } from '../database/cache';

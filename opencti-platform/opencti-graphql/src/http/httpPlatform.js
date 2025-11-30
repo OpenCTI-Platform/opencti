@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { URL } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -15,9 +15,10 @@ import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
 import { printSchema } from 'graphql/utilities';
 import { basePath, DEV_MODE, ENABLED_UI, logApp, OPENCTI_SESSION, PLATFORM_VERSION, AUTH_PAYLOAD_BODY_SIZE, getBaseUrl } from '../config/conf';
-import passport, { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
+import passport from '../config/providers-initialization';
 import { HEADERS_AUTHENTICATORS, loginFromProvider, sessionAuthenticateUser, userWithOrigin } from '../domain/user';
-import { downloadFile, getFileContent, isStorageAlive, loadFile } from '../database/file-storage';
+import { downloadFile, getFileContent, isStorageAlive } from '../database/raw-file-storage';
+import { loadFile } from '../database/file-storage';
 import { DEFAULT_INVALID_CONF_VALUE, executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
@@ -33,6 +34,7 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { createAuthenticatedContext } from './httpAuthenticatedContext';
 import { setCookieError } from './httpUtils';
 import { getChatbotProxy } from './httpChatbotProxy';
+import { isStrategyActivated, StrategyType } from '../config/providers-configuration';
 
 export const sanitizeReferer = (refererToSanitize) => {
   if (!refererToSanitize) return '/';
@@ -40,7 +42,7 @@ export const sanitizeReferer = (refererToSanitize) => {
   const resolvedUrl = new URL(refererToSanitize, base).toString();
   if (resolvedUrl === base || resolvedUrl.startsWith(`${base}/`)) {
     // same domain URL accept the redirection
-    if (refererToSanitize.startsWith('/')) {
+    if (refererToSanitize.startsWith('/') && !refererToSanitize.startsWith('//')) {
       // in case of relative URL, keep relative.
       return refererToSanitize;
     }
@@ -211,14 +213,14 @@ const createApp = async (app, schema) => {
   });
 
   // -- File download
-  app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/get/*file`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_get');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
-      const { file } = req.params;
+      const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       // If file is attach to a specific instance, we need to contr
       await publishFileDownload(context, context.user, data);
@@ -233,14 +235,14 @@ const createApp = async (app, schema) => {
   });
 
   // -- File view
-  app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/view/*file`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_view');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
-      const { file } = req.params;
+      const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       await publishFileRead(context, context.user, data);
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
@@ -295,14 +297,14 @@ const createApp = async (app, schema) => {
   });
 
   // -- Pdf view
-  app.get(`${basePath}/storage/html/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/html/*file`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_html');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
-      const { file } = req.params;
+      const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       const { mimetype } = data.metaData;
       if (mimetype === 'text/markdown') {
@@ -323,14 +325,14 @@ const createApp = async (app, schema) => {
   });
 
   // -- Encrypted view
-  app.get(`${basePath}/storage/encrypted/:file(*)`, async (req, res) => {
+  app.get(`${basePath}/storage/encrypted/*file`, async (req, res) => {
     try {
       const context = await createAuthenticatedContext(req, res, 'storage_encrypted');
       if (!context.user) {
         res.sendStatus(403);
         return;
       }
-      const { file } = req.params;
+      const file = req.params.file.join('/');
       const data = await loadFile(context, context.user, file);
       const { metaData: { filename } } = data;
       await publishFileDownload(context, context.user, data);
@@ -351,7 +353,7 @@ const createApp = async (app, schema) => {
     try {
       const context = executionContext('cert_strategy');
       const redirect = extractRefererPathFromReq(req) ?? '/';
-      const isActivated = isStrategyActivated(STRATEGY_CERT);
+      const isActivated = isStrategyActivated(StrategyType.STRATEGY_CERT);
       if (!isActivated) {
         setCookieError(res, 'Cert authentication is not available');
         res.redirect(redirect);
@@ -534,11 +536,11 @@ const createApp = async (app, schema) => {
   app.post(`${basePath}/chatbot`, getChatbotProxy);
 
   // Other routes - Render index.html
-  app.get('*', async (_, res) => {
+  app.get('*any', async (_, res) => {
     if (ENABLED_UI) {
       const context = executionContext('app_loading');
       const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-      const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
+      const data = await readFile(`${__dirname}/../public/index.html`, 'utf8');
       const settingsTitle = settings?.platform_title;
       const description = 'OpenCTI is an open source platform allowing organizations'
           + ' to manage their cyber threat intelligence knowledge and observables.';
@@ -562,14 +564,12 @@ const createApp = async (app, schema) => {
   });
 
   // Any random unexpected request not GET
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  app.use((req, res, next) => {
+  app.use((_req, res, _next) => {
     res.status(404).send({ status: 'error', error: 'Path not found' });
   });
 
   // Error handling
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  app.use((err, req, res, next) => {
+  app.use((err, req, res, _next) => {
     logApp.error('Http call interceptor fail', { cause: err, referer: req.headers?.referer });
     res.status(500).send({ status: 'error', error: DEV_MODE ? err.stack : err.message });
   });

@@ -1,6 +1,6 @@
 import { Readable } from 'stream';
 import conf, { BUS_TOPICS } from '../../config/conf';
-import { type FileUploadData, uploadToStorage } from '../../database/file-storage-helper';
+import { type FileUploadData, uploadToStorage } from '../../database/file-storage';
 import { deleteFile, guessMimeType } from '../../database/file-storage';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';

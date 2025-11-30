@@ -1,8 +1,9 @@
-name: test-feature-branch 
+name: Deploy feature branch on staging
 on:
   workflow_dispatch:
     inputs:
       octi_config:
+        description: Env var to use in front deployment
         type: string
         default: '{}'
         required: false
@@ -18,81 +19,18 @@ on:
         default: false
 
 jobs:
-  worker:
-    name: build-worker
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: filigran/worker
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: opencti-worker
-          file: opencti-worker/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-  platform:
-    name: build-platform
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: filigran/platform
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-      - name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: opencti-platform
-          file: opencti-platform/Dockerfile_featurebranch
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+  wf-build-image:
+      name: Build image
+      uses: ./.github/workflows/ci-docker-build.yml
+      with:
+        image_tag: ${{ github.ref_name }}
+      secrets: inherit
 
   deploy:
     name: deploy
-    needs: [platform, worker]
+    needs: wf-build-image
     runs-on: ubuntu-latest
     steps:
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: filigran/platform
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
       - run: if [ "${{ inputs.upgrade_from_58 }}" == "true" ]; then ID=67; else ID=66; fi; echo "AWX_TPL_ID=$ID" >> "$GITHUB_ENV"
 
       - name: Install AWX cli
@@ -106,12 +44,12 @@ jobs:
             job_templates launch 'Deploy OpenCTI feature branch for testing' \
             --wait \
             --inventory eu-west-staging \
-            --extra_vars '{"octi_version":"${{steps.meta.outputs.version}}","octi_config": ${{ inputs.octi_config }},"redis_cluster":"${{ inputs.redis_cluster }}"}' \
+            --extra_vars '{"octi_version":"${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}","octi_config": ${{ inputs.octi_config }},"redis_cluster":"${{ inputs.redis_cluster }}"}' \
             -f human
       - name: Forge URL to match playbook limitations
         id: urlforge
         run: |
-          url=$(echo "${{steps.meta.outputs.version}}" | cut -c 1-15 | sed 's/[_.]/-/g' | sed 's/-*$//')
+          url=$(echo "${{ needs.wf-build-image.outputs.image-tag-version-cleaned }}" | cut -c 1-15 | sed 's/[_.]/-/g' | sed 's/-*$//')
           echo "url=$url" >> $GITHUB_OUTPUT
       - name: display URL
         run: echo "https://feat-${{steps.urlforge.outputs.url}}.octi.staging.filigran.io"

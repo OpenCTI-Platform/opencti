@@ -10,6 +10,7 @@ import { FilterRepresentative } from '../../components/filters/FiltersModel';
 import { isEmptyField, uniqueArray } from '../utils';
 import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filtersHelpers-types';
 import { dateFiltersValueForDisplay } from '../Time';
+import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
 
 //----------------------------------------------------------------------------------------------------------------------
 
@@ -342,7 +343,7 @@ export const buildFiltersAndOptionsForWidgets = (
     };
   }
   if (isKnowledgeRelationshipWidget) {
-    filters = addFilter(filters, 'entity_type', ['Stix-Core-Relationship', 'object']);
+    filters = addFilter(filters, 'entity_type', RELATIONSHIP_WIDGETS_TYPES);
   }
   return { filters };
 };
@@ -762,7 +763,7 @@ export const useFetchFilterKeysSchema = () => {
 
   try {
     filterKeysSchema = useAuth().schema.filterKeysSchema;
-  } catch (e) {
+  } catch (_e) {
     filterKeysSchema = new Map();
   }
   return filterKeysSchema;

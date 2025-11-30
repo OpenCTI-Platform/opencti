@@ -27,6 +27,7 @@ import {
   type RepresentationAttribute,
   type SimpleAttributePath
 } from '../modules/internal/jsonMapper/jsonMapper-types';
+import type { StixObject } from '../types/stix-2-1-common';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { generateStandardId } from '../schema/identifier';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
@@ -39,7 +40,6 @@ import { SYSTEM_USER } from '../utils/access';
 import type { BasicStoreObject, StoreCommon } from '../types/store';
 import { INPUT_MARKINGS } from '../schema/general';
 import { isStixRelationshipExceptRef } from '../schema/stixRelationship';
-import { convertStoreToStix } from '../database/stix-2-1-converter';
 import { BundleBuilder } from './bundle-creator';
 import { handleInnerType } from '../domain/stixDomainObject';
 import { createStixPatternSync } from '../python/pythonBridge';
@@ -47,6 +47,8 @@ import { logApp } from '../config/conf';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import { fromRef, toRef } from '../schema/stixRefRelationship';
+
+import { convertStoreToStix_2_1 } from '../database/stix-2-1-converter';
 
 const format = (value: string | string[], def: AttributeDefinition, attribute: SimpleAttributePath | ComplexAttributePath | undefined) => {
   if (Array.isArray(value)) {
@@ -201,24 +203,24 @@ const handleDirectAttribute = async (
     }
   }
   if (attribute.mode === 'simple' && attribute.attr_path) {
-    const computedValue = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
+    const computedValue: InputType | null | undefined = extractSimpleMultiPathFromJson(base, record, attribute.attr_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
         input.hashes = { ...values, [attribute.key]: computedValue };
       } else {
-        input[attribute.key] = computedValue;
+        input[attribute.key] = computedValue as InputType;
       }
     }
   }
   if (attribute.mode === 'complex' && attribute.complex_path) {
-    const computedValue = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
+    const computedValue: InputType | null | undefined = await extractComplexPathFromJson(base, metaData, record, attribute.complex_path, definition);
     if (isNotEmptyField(computedValue)) {
       if (isAttributeHash) {
         const values = (input.hashes ?? {}) as Record<string, any>;
         input.hashes = { ...values, [attribute.key]: computedValue };
       } else {
-        input[attribute.key] = computedValue;
+        input[attribute.key] = computedValue as InputType;
       }
     }
   }
@@ -437,12 +439,12 @@ const jsonMappingExecution = async (context: AuthContext, user: AuthUser, data: 
   const objects = Array.from(results.values()).flat();
   const stixObjects = objects.map((e) => {
     try {
-      return convertStoreToStix(e as unknown as StoreCommon);
-    } catch (err) {
+      return convertStoreToStix_2_1(e as unknown as StoreCommon);
+    } catch (_err) {
       logApp.error('JSON mapper convert error', { cause: e });
     }
     return null;
-  }).filter((elem) => isNotEmptyField(elem));
+  }).filter((elem) => isNotEmptyField(elem)) as StixObject[];
   const bundleBuilder = new BundleBuilder();
   bundleBuilder.addObjects(stixObjects);
   return bundleBuilder.build();

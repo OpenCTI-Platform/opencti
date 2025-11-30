@@ -31,6 +31,7 @@ export const xtmHubSettingsQuery = graphql`
       xtm_hub_registration_user_id
       xtm_hub_registration_user_name
       xtm_hub_last_connectivity_check
+      xtm_hub_backend_is_reachable
       xtm_hub_token
     }
   }
@@ -58,7 +59,12 @@ const XtmHubSettingsComponent = () => {
       <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
         {t_i18n('XTM Hub')}
       </Typography>
-      {isGrantedToXtmHub && isXTMHubAccessible && (<XtmHubTab registrationStatus={xtmHubSettings.xtm_hub_registration_status || undefined} />)}
+      {
+        isGrantedToXtmHub
+        && isXTMHubAccessible
+        && xtmHubSettings.xtm_hub_backend_is_reachable
+        && (<XtmHubTab registrationStatus={xtmHubSettings.xtm_hub_registration_status || undefined} />)
+      }
       <div className="clearfix" />
       <Paper
         classes={{ root: classes.paper }}

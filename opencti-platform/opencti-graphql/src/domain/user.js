@@ -81,7 +81,7 @@ import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
 import { addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
-import { sendMail } from '../database/smtp';
+import { sendMail, smtpComputeFrom } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { doYield } from '../utils/eventloop-utils';
@@ -649,7 +649,7 @@ export const sendEmailToUser = async (context, user, input) => {
   });
 
   const sendMailArgs = {
-    from: `${emailTemplate.sender_email} <${settings.platform_email}>`,
+    from: await smtpComputeFrom(emailTemplate.sender_email),
     to: targetUser.user_email,
     subject: emailTemplate.email_object,
     html: renderedHtml,
@@ -800,7 +800,7 @@ export const addUser = async (context, user, newUser) => {
     };
     try {
       await sendEmailToUser(context, user, input);
-    } catch (err) {
+    } catch (_err) {
       logApp.error('Error sending email on user creation', { createdUserID: user.id, emailTemplateId: newUser.email_template_id });
     }
   }

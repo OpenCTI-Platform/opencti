@@ -1327,6 +1327,8 @@ type PlatformEE {
   license_platform_match: Boolean!
   license_creator: String!
   license_global: Boolean!
+  license_extra_expiration: Boolean!
+  license_extra_expiration_days: Int
 }
 
 enum PlatformCriticalAlertType {
@@ -1461,6 +1463,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   platform_title: String
   platform_favicon: String
   platform_email: String
+  platform_email_configurable: Boolean!
   platform_cluster: Cluster!
   platform_modules: [Module!]
   platform_url: String
@@ -1533,6 +1536,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_last_connectivity_check: DateTime
   xtm_hub_registration_date: DateTime
   xtm_hub_registration_status: XTMHubRegistrationStatus
+  xtm_hub_backend_is_reachable: Boolean
   # AI insight
   platform_ai_enabled: Boolean!
   platform_ai_type: String
@@ -2472,7 +2476,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   x_opencti_color: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
 }
 input MarkingDefinitionAddInput {
@@ -2541,7 +2545,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   color: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
 }
 input LabelAddInput {
@@ -2835,7 +2839,7 @@ interface StixCoreObject {
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -3017,7 +3021,7 @@ interface StixDomainObject {
   avatar: OpenCtiFile
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -3224,7 +3228,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   dataComponents: DataComponentConnection # TODO paginate ? is this API used ?
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -3432,7 +3436,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objective: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -3799,7 +3803,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   likelihood: Int
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -4034,7 +4038,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   name: String!
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -4245,7 +4249,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   opinion: String!
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -4480,7 +4484,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectParticipant: [Participant!]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -4678,7 +4682,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   attackPatterns: AttackPatternConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -4858,7 +4862,7 @@ interface Identity {
   x_opencti_reliability: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -5039,7 +5043,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   organizations: OrganizationConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -5228,7 +5232,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   targetedOrganizations: StixCoreRelationshipConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -5410,7 +5414,7 @@ type System implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   organizations: OrganizationConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -5598,7 +5602,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -5785,7 +5789,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   locations: LocationConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -5968,7 +5972,7 @@ interface Location {
   x_opencti_aliases: [String]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -6150,7 +6154,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   city: City
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -6335,7 +6339,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   administrativeArea: AdministrativeArea
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -6514,7 +6518,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   region: Region
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -6695,7 +6699,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   countries: CountryConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -6769,6 +6773,10 @@ type MalwareConnection {
 type MalwareEdge {
   cursor: String!
   node: Malware!
+}
+enum Version {
+  stix_2_0
+  stix_2_1
 }
 type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
@@ -6885,7 +6893,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   samples: [StixCyberObservable!]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -7086,7 +7094,7 @@ interface ThreatActor implements BasicObject & StixObject & StixCoreObject & Sti
   countries: CountryConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -7241,7 +7249,7 @@ type ThreatActorGroup implements BasicObject & StixObject & StixCoreObject & Sti
   countries: CountryConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -7429,7 +7437,7 @@ type Tool implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   killChainPhases: [KillChainPhase!]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -7662,7 +7670,7 @@ type Vulnerability implements BasicObject & StixObject & StixCoreObject & StixDo
   softwares(relationshipType: String, first: Int, after: ID, orderBy: StixCyberObservablesOrdering, orderMode: OrderingMode): StixCyberObservableConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -7901,7 +7909,7 @@ type Incident implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectParticipant: [Participant!]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -8073,7 +8081,7 @@ interface StixCyberObservable {
   indicators(first: Int): IndicatorConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -8197,7 +8205,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   rir: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -8329,7 +8337,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   atime: DateTime
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -8459,7 +8467,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -8586,7 +8594,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   display_name: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -8719,7 +8727,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   body: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -8853,7 +8861,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   content_disposition: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -8997,7 +9005,7 @@ interface HashedObservable {
   hashes: [Hash]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -9126,7 +9134,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_additional_names: [String]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -9270,7 +9278,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   obsContent: Artifact
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -9435,7 +9443,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   policy_mappings: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -9590,7 +9598,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   countries: CountryConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -9719,7 +9727,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   countries: CountryConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -9845,7 +9853,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -9971,7 +9979,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   name: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -10109,7 +10117,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   dst_packets: Int
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -10269,7 +10277,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   service_status: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -10425,7 +10433,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   vulnerabilities: VulnerabilityConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -10565,7 +10573,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -10705,7 +10713,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   account_last_login: DateTime
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -10846,7 +10854,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   number_of_subkeys: Int
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -10976,7 +10984,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   data_type: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -11104,7 +11112,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -11230,7 +11238,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -11356,7 +11364,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -11482,7 +11490,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -11608,7 +11616,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -11737,7 +11745,7 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   account_number: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -11787,7 +11795,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectOrganization: [Organization!]
   objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
@@ -11868,7 +11876,7 @@ type TrackingNumber implements BasicObject & StixObject & StixCoreObject & StixC
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -11916,7 +11924,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   createdBy: Identity
   numberOfConnectedElement: Int!
   objectMarking: [MarkingDefinition!]
-  objectOrganization: [Organization!] @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectOrganization: [Organization!]
   objectLabel: [Label!]
   externalReferences(first: Int): ExternalReferenceConnection
   containersNumber: Number
@@ -11997,7 +12005,7 @@ type Credential implements BasicObject & StixObject & StixCoreObject & StixCyber
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -12123,7 +12131,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   value: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -12252,7 +12260,7 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   holder_name: String
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -12386,7 +12394,7 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   publication_date: DateTime
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -12517,7 +12525,7 @@ type Persona implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   persona_type: String!
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -12651,7 +12659,7 @@ type SSHKey implements BasicObject & StixObject & StixCoreObject & StixCyberObse
   created: DateTime
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   importFiles(
     first: Int
     prefixMimeType: String
@@ -13078,7 +13086,7 @@ interface StixRelationship {
   relationship_type: String!
   createdBy: Identity
   objectMarking: [MarkingDefinition!]
-  toStix: String
+  toStix(version: Version): String
   draftVersion: DraftVersion
   # Technical
   creators: [Creator!]
@@ -13202,7 +13210,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   coverage_information: [CoverageResult!]
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
@@ -13320,7 +13328,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   cases(first: Int): CaseConnection
   # Technical
   creators: [Creator!]
-  toStix: String
+  toStix(version: Version): String
   editContext: [EditUserContext!]
   status: Status
   workflowEnabled: Boolean
@@ -13415,7 +13423,7 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   opinions(first: Int): OpinionConnection
   groupings(first: Int): GroupingConnection
   cases(first: Int): CaseConnection
-  toStix: String
+  toStix(version: Version): String
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]

@@ -5,7 +5,7 @@ import { ENTITY_TYPE_DATA_COMPONENT } from '../../../src/schema/stixDomainObject
 import { STIX_CYBER_OBSERVABLES } from '../../../src/schema/stixCyberObservable';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 import { StatusScope, type TypeAttribute } from '../../../src/generated/graphql';
-import type { BasicStoreEntity, BasicStoreEntityEdge } from '../../../src/types/store';
+import type { BasicStoreEntity, BasicNodeEdge } from '../../../src/types/store';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 import { pageEntitiesConnection } from '../../../src/database/middleware-loader';
 import { ENTITY_TYPE_STATUS_TEMPLATE } from '../../../src/schema/internalObject';
@@ -115,12 +115,12 @@ describe('SubType resolver standard behavior', () => {
   it('should list subTypes with type Stix-Cyber-Observable', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { type: 'Stix-Cyber-Observable' } });
     expect(queryResult.data?.subTypes.edges.length).toEqual(STIX_CYBER_OBSERVABLES.length);
-    expect(isSorted(queryResult.data?.subTypes.edges.map((edge: BasicStoreEntityEdge<any>) => edge.node.id))).toEqual(true);
+    expect(isSorted(queryResult.data?.subTypes.edges.map((edge: BasicNodeEdge<any>) => edge.node.id))).toEqual(true);
   });
   it('should list default subTypes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
-    expect(queryResult.data?.subTypes.edges.length).toEqual(entitiesCounter.entitySetting);
-    expect(isSorted(queryResult.data?.subTypes.edges.map((edge: BasicStoreEntityEdge<any>) => edge.node.id))).toEqual(true);
+    expect(queryResult.data?.subTypes.edges.length).toEqual(entitiesCounter.EntitySetting);
+    expect(isSorted(queryResult.data?.subTypes.edges.map((edge: BasicNodeEdge<any>) => edge.node.id))).toEqual(true);
   });
   it('should retrieve mandatory attribute for an entity', async () => {
     const queryResult = await queryAsAdmin({ query: SUB_TYPE_ATTRIBUTES_QUERY, variables: { id: ENTITY_TYPE_DATA_COMPONENT } });

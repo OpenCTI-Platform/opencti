@@ -66,7 +66,8 @@ interface Representative {
 interface InternalEditInput {
   key: string;
   operation?: EditOperation | null;
-  value: (string | object | null)[];
+  value: (string | Record<string, any> | null)[];
+  previous?: any[];
 }
 
 interface NumberResult {
@@ -92,7 +93,8 @@ interface StoreFileWithRefs extends StoreFile {
 }
 
 interface DraftChange {
-  draft_operation: string
+  draft_operation: string;
+  draft_updates_patch?: string;
 }
 
 interface BasicStoreIdentifier {
@@ -104,6 +106,7 @@ interface BasicStoreIdentifier {
 }
 
 interface BasicStoreBase extends BasicStoreIdentifier {
+  _id: string;
   _index: string;
   standard_id: StixId;
   entity_type: string;
@@ -115,12 +118,14 @@ interface BasicStoreBase extends BasicStoreIdentifier {
   refreshed_at?: Date;
   x_opencti_files?: Array<StoreFile>;
   x_opencti_aliases?: Array<string>;
+  i_aliases_ids?: Array<string>;
   x_opencti_stix_ids?: Array<StixId>;
   x_opencti_workflow_id?: string;
   creator_id?: string | string[];
   type?: string;
   draft_ids?: string[];
   draft_change?: DraftChange;
+  sort?: SortResults;
   // representative
   representative: Representative
   restricted_members?: Array<AuthorizedMember>;
@@ -163,6 +168,7 @@ interface StoreConnection {
   internal_id: string;
   role: string;
   types: Array<string>;
+  name?: string;
 }
 
 interface StoreRawRule {
@@ -182,7 +188,6 @@ interface BasicStoreCommon extends BasicStoreBase {
   [k: `i_rule_${string}`]: Array<StoreRawRule>;
   // object
   hashes?: { [k: string]: string };
-  sort?: SortResults;
   // inputs
   [RELATION_GRANTED_TO]?: Array<string>;
   [RELATION_OBJECT_MARKING]?: Array<string>;
@@ -250,6 +255,8 @@ interface BasicStoreRelation extends StoreRawRelation {
 }
 
 interface StoreRelation extends BasicStoreRelation, StoreCommon {
+  from: BasicStoreBase | undefined | null,
+  to: BasicStoreBase | undefined | null,
   [INPUT_CREATED_BY]: BasicStoreEntity;
   [INPUT_DOMAIN_FROM]: BasicStoreObject;
   [INPUT_DOMAIN_TO]: BasicStoreObject;
@@ -257,36 +264,14 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
 }
 
-interface BasicStoreEntityEdge<T extends BasicStoreEntity> {
+interface BasicNodeEdge<T> {
   cursor: string
-  types?: string[]
+  types?: (string | null | undefined)[]
   node: T;
 }
 
-interface BasicStoreRelationshipEdge<T extends BasicStoreRelation> {
-  cursor: string
-  types?: string[]
-  node: T;
-}
-
-interface BasicStoreCommonEdge<T extends BasicStoreCommon> {
-  cursor: string
-  types?: string[]
-  node: T;
-}
-
-interface StoreEntityConnection<T extends BasicStoreEntity> {
-  edges: Array<BasicStoreEntityEdge<T>>;
-  pageInfo: PageInfo;
-}
-
-interface StoreRelationConnection<T extends BasicStoreRelation> {
-  edges: Array<BasicStoreRelationshipEdge<T>>;
-  pageInfo: PageInfo;
-}
-
-interface StoreCommonConnection<T extends BasicStoreCommon> {
-  edges: Array<BasicStoreCommonEdge<T>>;
+interface BasicConnection<T> {
+  edges: Array<BasicNodeEdge<T>>;
   pageInfo: PageInfo;
 }
 

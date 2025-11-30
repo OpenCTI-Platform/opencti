@@ -3,7 +3,7 @@ import '../../src/modules/index';
 // import managers
 import '../../src/manager/index';
 // endregion
-import { initializeBucket, storageInit } from '../../src/database/file-storage';
+import { storageInit, initializeBucket } from '../../src/database/raw-file-storage';
 import { deleteQueues } from '../../src/domain/connector';
 import { ADMIN_USER, createTestUsers, isPlatformAlive, testContext } from './testQuery';
 import { elDeleteIndices, elPlatformIndices, initializeSchema, searchEngineInit } from '../../src/database/engine';
@@ -11,13 +11,13 @@ import { wait } from '../../src/database/utils';
 import { createRedisClient, initializeRedisClients, shutdownRedisClients } from '../../src/database/redis';
 import { logApp, environment } from '../../src/config/conf';
 import cacheManager from '../../src/manager/cacheManager';
-import { initializeAdminUser } from '../../src/config/providers';
+import { initializeAdminUser } from '../../src/config/providers-initialization';
 import { initDefaultNotifiers } from '../../src/modules/notifier/notifier-domain';
 import { initializeInternalQueues } from '../../src/database/rabbitmq';
 import { executionContext } from '../../src/utils/access';
 import { initializeData } from '../../src/database/data-initialization';
 import { shutdownModules, startModules } from '../../src/managers';
-import { deleteAllBucketContent } from '../../src/database/file-storage-helper';
+import { deleteAllBucketContent } from '../../src/database/file-storage';
 import { initExclusionListCache } from '../../src/database/exclusionListCache';
 import { initLockFork } from '../../src/lock/master-lock';
 

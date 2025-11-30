@@ -4,10 +4,10 @@ import { createReadStream } from 'node:fs';
 import { elLoadById } from '../../../src/database/engine';
 import { elIndexFiles, elSearchFiles } from '../../../src/database/file-search';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { getFileContent } from '../../../src/database/file-storage';
+import { getFileContent } from '../../../src/database/raw-file-storage';
 import { INDEX_FILES } from '../../../src/database/utils';
 import { resetFileIndexing } from '../../../src/domain/indexedFile';
-import { uploadToStorage } from '../../../src/database/file-storage-helper';
+import { uploadToStorage } from '../../../src/database/file-storage';
 import { getManagerConfigurationFromCache, updateManagerConfigurationLastRun } from '../../../src/modules/managerConfiguration/managerConfiguration-domain';
 import { SYSTEM_USER } from '../../../src/utils/access';
 

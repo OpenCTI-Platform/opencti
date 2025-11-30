@@ -206,6 +206,8 @@ const widgetVisualizationTypes = [
 export type WidgetVisualizationTypes =
   (typeof widgetVisualizationTypes)[number]['key'];
 
+export const RELATIONSHIP_WIDGETS_TYPES = ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object', 'object-label'];
+
 export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => w.key !== 'attribute');
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));

@@ -20,9 +20,6 @@ steps:
       - chmod 777 scripts/*
       - ./scripts/clone-dependencies.sh "${DRONE_SOURCE_BRANCH}" "${DRONE_TARGET_BRANCH}" "$(pwd)" "${DRONE_PULL_REQUEST}"
       - ls -lart
-      - cd "$DRONE_WORKSPACE/client-python"
-      - echo "[INFO] using client-python on branch $(git branch --show-current)"
-      - git log -n 1
 
   - name: backend-verify-licenses
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
@@ -45,7 +42,7 @@ steps:
       - dependencies-checkout
 
   - name: frontend-verify-licenses
-    image: node:22.21.0
+    image: node:22.21.1
     volumes:
       - name: cache-frontend-verify-licenses-yarn
         path: /root/.yarn/berry
@@ -60,7 +57,7 @@ steps:
       - dependencies-checkout
 
   - name: generate-licenses
-    image: node:22.21.0
+    image: node:22.21.1
     commands:
       - chmod 777 scripts/*
       - ./scripts/generate-licenses.sh
@@ -152,7 +149,7 @@ steps:
         - generate-licenses
 
   - name: frontend-e2e-tests
-    image: node:22.21.0
+    image: node:22.21.1
     volumes:
     - name: cache-frontend-e2e-tests-yarn
       path: /root/.yarn/berry
@@ -189,7 +186,7 @@ steps:
       - frontend-tests
 
   - name: upload-build-artefact
-    image: node:22.21.0
+    image: node:22.21.1
     failure: ignore
     when:
       status:
@@ -221,45 +218,81 @@ steps:
       - api-tests
 
   - name: frontend-verify-translation
-    image: node:22.21.0
+    image: node:22.21.1
     commands:
       - cd opencti-platform/opencti-front
       - node script/verify-translation.js
-
-  - name: build-circleci
-    image: curlimages/curl
-    commands:
-      - curl -X POST --data "branch=$DRONE_COMMIT_BRANCH" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
+  
+  - name: client-test-39
+    image: python:3.9
     environment:
-      CIRCLECI_TOKEN:
-        from_secret: circleci_token
-    when:
-      branch:
-        - master
-        - release/*
-      event:
-        exclude:
-          - pull_request
-          - tag
-    depends_on:
-      - api-tests
-      - frontend-tests
-      - frontend-e2e-tests
-
-  - name: build-circleci-release
-    image: curlimages/curl
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
     commands:
-      - curl -X POST --data "tag=$DRONE_TAG" https://circleci.com/api/v1.1/project/github/OpenCTI-Platform/opencti/build?circle-token=$CIRCLECI_TOKEN
-    environment:
-      CIRCLECI_TOKEN:
-        from_secret: circleci_token
-    when:
-      event:
-        - tag
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
     depends_on:
-      - api-tests
-      - frontend-tests
-      - frontend-e2e-tests
+      - dependencies-checkout
+
+  - name: client-test-310
+    image: python:3.10
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      # - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - client-test-39
+
+  - name: client-test-311
+    image: python:3.11
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      # - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - client-test-310
+
+  - name: client-test-312
+    image: python:3.12
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      # - sleep 180
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+    depends_on:
+      - client-test-311
+
+  # always run the examples last since they don't clean up
+  - name: pycti-example-tests
+    image: python:3.12
+    environment:
+      OPENCTI_API_URL: http://opencti-pycti-start:4600
+      OPENCTI_API_TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+    commands:
+      - cd client-python
+      - pip3 install -r requirements.txt --user
+      - pip3 install .
+      - cd examples/
+       - /bin/bash run_all.sh
+    depends_on:
+      - client-test-312
 
   - name: slack
     image: plugins/slack
@@ -277,9 +310,9 @@ steps:
 
 services:
   - name: redis
-    image: redis:8.2.2
+    image: redis:8.4.0
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.19.6
+    image: elasticsearch:8.19.7
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
@@ -291,7 +324,7 @@ services:
       MINIO_ROOT_PASSWORD: ChangeMe
     command: [server, /data]
   - name: rabbitmq
-    image: rabbitmq:4.1.4-management
+    image: rabbitmq:4.2.1-management
 
   - name: opencti-raw-start
     image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
@@ -572,6 +605,48 @@ services:
       - pip install -r src/requirements.txt
       - python3 src/worker.py
 
+  - name: opencti-pycti-start
+    image: nikolaik/python-nodejs:python3.11-nodejs22-alpine
+    volumes:
+    - name: cache-opencti-pycti-start-yarn
+      path: /root/.yarn/berry
+    environment:
+      APP__PORT: 4600
+      APP__HEALTH_ACCESS_KEY: cihealthkey
+      APP__ADMIN__PASSWORD: admin
+      APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
+      APP__ENTERPRISE_EDITION_LICENSE:
+        from_secret: ee_license
+      REDIS__HOSTNAME: redis
+      REDIS__NAMESPACE: pycti-start
+      ELASTICSEARCH__URL: http://elastic:9200
+      ELASTICSEARCH__INDEX_PREFIX: pycti-start
+      MINIO__ENDPOINT: minio
+      MINIO__BUCKET_NAME: pycti-start
+      RABBITMQ__HOSTNAME: rabbitmq
+      RABBITMQ__QUEUE_PREFIX: pycti-start
+      EXPIRATION_SCHEDULER__ENABLED: false
+      SUBSCRIPTION_SCHEDULER__ENABLED: false
+      SMTP__ENABLED: false
+      GITHUB_TOKEN:
+        from_secret: github_token
+    commands:
+      - echo "$(ls /root/.yarn/berry/cache/ 2> /dev/null | wc -l || echo 0) packages in Yarn global cache"
+      - sleep 10
+      - ls -lart
+      - apk add build-base git libffi-dev cargo
+      - mkdir -p /tmp/pycti-start-platform/
+      - cp -a $DRONE_WORKSPACE/platform-reference/* /tmp/pycti-start-platform/
+      - cd "$DRONE_WORKSPACE/client-python"
+      - pip install -r requirements.txt
+      - pip install -e .[dev,doc]
+      - cd /tmp/pycti-start-platform/opencti-graphql
+      - npm install -g corepack
+      - cp $DRONE_WORKSPACE/opencti-platform/.yarnrc.yml .
+      - yarn install
+      - yarn install:python
+      - NODE_OPTIONS=--max_old_space_size=8192 yarn start
+
 volumes:
   - name: cache-backend-verify-licenses-yarn
     host:
@@ -603,6 +678,8 @@ volumes:
   - name: cache-frontend-e2e-tests-yarn
     host:
       path: /tmp/cache-frontend-e2e-tests-yarn
-
+  - name: cache-opencti-pycti-start-yarn
+    host:
+      path: /tmp/cache-opencti-pycti-start-yarn
 image_pull_secrets:
   - dockerconfigjson

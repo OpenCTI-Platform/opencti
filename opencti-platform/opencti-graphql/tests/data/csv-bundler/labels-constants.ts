@@ -1,5 +1,6 @@
 import type { CsvMapperParsed, CsvMapperRepresentation } from '../../../src/modules/internal/csvMapper/csvMapper-types';
 import type { StixBundle, StixDomainObject } from '../../../src/types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 export const indicatorsWithLabelsExpectedBundle: StixBundle = {
   id: 'bundle--c8593959-d4b1-4ccf-95d5-bee644cf2c9b',
@@ -9,9 +10,10 @@ export const indicatorsWithLabelsExpectedBundle: StixBundle = {
     {
       color: '0b41f3',
       extensions: {
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           converter_csv: '[ipv4-addr:value = \'198.168.8.5\'],IPv4-Addr,filigran,0b41f3',
           extension_type: 'new-sdo',
+          is_inferred: false,
           type: 'Label',
         },
       },
@@ -25,9 +27,10 @@ export const indicatorsWithLabelsExpectedBundle: StixBundle = {
         'extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b': {
           extension_type: 'property-extension',
         },
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           converter_csv: '[ipv4-addr:value = \'198.168.8.5\'],IPv4-Addr,filigran,0b41f3',
           extension_type: 'property-extension',
+          is_inferred: false,
           main_observable_type: 'IPv4-Addr',
           observable_values: [
             {
@@ -53,9 +56,10 @@ export const indicatorsWithLabelsExpectedBundle: StixBundle = {
         'extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b': {
           extension_type: 'property-extension',
         },
-        'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba': {
+        [STIX_EXT_OCTI]: {
           converter_csv: '[ipv4-addr:value = \'198.168.8.6\'],IPv4-Addr,filigran,0b41f3',
           extension_type: 'property-extension',
+          is_inferred: false,
           main_observable_type: 'IPv4-Addr',
           observable_values: [
             {

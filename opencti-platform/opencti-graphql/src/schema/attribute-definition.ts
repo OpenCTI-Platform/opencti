@@ -45,7 +45,7 @@ export type MappingDefinition = AttributeDefinition & {
   associatedFilterKeys?: { key: string, label: string }[] // filter key and their label, to add if key is different from: 'parentAttributeName.nestedAttributeName'
 };
 
-type BasicObjectDefinition = BasicDefinition & {
+export type BasicObjectDefinition = BasicDefinition & {
   mappings: MappingDefinition[],
   // if the object attribute can be used for sorting, we need to know how
   sortBy?: {
@@ -499,7 +499,7 @@ export const modified: AttributeDefinition = {
   mandatoryType: 'no',
   editDefault: false,
   multiple: false,
-  upsert: false,
+  upsert: true,
   isFilterable: false, // use updated_at filter
 };
 

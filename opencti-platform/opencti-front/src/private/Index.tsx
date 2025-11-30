@@ -5,6 +5,8 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { useTheme } from '@mui/styles';
 import { boundaryWrapper, NoMatch } from '@components/Error';
 import PlatformCriticalAlertDialog from '@components/settings/platform_alerts/PlatformCriticalAlertDialog';
+import LicenceBanner from '@components/LicenceBanner';
+import StartTrialBanner from '@components/xtm_hub/StartTrialBanner';
 import TopBar from './components/nav/TopBar';
 import LeftBar from './components/nav/LeftBar';
 import Message from '../components/Message';
@@ -47,7 +49,7 @@ interface IndexProps {
 
 const Index = ({ settings }: IndexProps) => {
   const theme = useTheme<Theme>();
-  const { isTrashEnable } = useHelper();
+  const { isTrashEnable, isFeatureEnable } = useHelper();
   const {
     bannerSettings: { bannerHeight },
   } = useAuth();
@@ -79,9 +81,13 @@ const Index = ({ settings }: IndexProps) => {
       }
     }
   }, [theme]);
+  const featureFlagFreeTrials = isFeatureEnable('FREE_TRIALS');
+
   return (
     <>
       <SystemBanners settings={settings} />
+      {featureFlagFreeTrials && <LicenceBanner />}
+      {featureFlagFreeTrials && <StartTrialBanner />}
       {(settings.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
       <SettingsMessagesBanner />
       <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts}/>

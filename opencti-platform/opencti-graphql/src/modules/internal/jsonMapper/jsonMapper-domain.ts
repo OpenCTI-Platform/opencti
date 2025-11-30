@@ -26,7 +26,7 @@ import { type BasicStoreEntityIngestionJson, ENTITY_TYPE_INGESTION_JSON } from '
 import { FunctionalError } from '../../../config/errors';
 import { createInternalObject, deleteInternalObject, editInternalObject } from '../../../domain/internalObject';
 import { parseJsonMapper, parseJsonMapperWithDefaultValues, validateJsonMapper } from './jsonMapper-utils';
-import type { FileUploadData } from '../../../database/file-storage-helper';
+import type { FileUploadData } from '../../../database/file-storage';
 import { streamConverter } from '../../../database/file-storage';
 import jsonMappingExecution from '../../../parser/json-mapper';
 import { convertRepresentationsIds } from '../mapper-utils';

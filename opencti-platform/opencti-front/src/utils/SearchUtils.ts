@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { NavigateFunction } from 'react-router/dist/lib/hooks';
 import { emptyFilterGroup } from './filters/filtersUtils';
 
@@ -20,7 +21,7 @@ export const decodeSearchKeyword = (searchKeyword: string) => {
   let searchTerm = '';
   try {
     searchTerm = decodeURIComponent(searchKeyword || '');
-  } catch (e) {
+  } catch (_e) {
     // Do nothing
   }
   return searchTerm;

@@ -25,6 +25,7 @@ interface OpenVocabProps {
   onChange?: (name: string, value: string | string[]) => void;
   onSubmit?: (name: string, value: string | string[]) => void;
   multiple?: boolean;
+  disabledOptions?: string[]
 }
 
 export const vocabularyQuery = graphql`
@@ -65,6 +66,7 @@ Omit<OpenVocabProps, 'type'>
   editContext,
   queryRef,
   disabled = false,
+  disabledOptions = [],
 }) => {
   const { vocabularies } = usePreloadedQuery<OpenVocabFieldQuery>(
     vocabularyQuery,
@@ -123,6 +125,7 @@ Omit<OpenVocabProps, 'type'>
         disabled={disabled}
         options={openVocabList}
         renderOption={renderOption}
+        getOptionDisabled={(option: FieldOption) => disabledOptions.includes(option.value)}
         isOptionEqualToValue={(option: FieldOption, value: string) => option.value === value
         }
         textfieldprops={{
@@ -146,6 +149,7 @@ Omit<OpenVocabProps, 'type'>
       style={containerStyle}
       options={openVocabList}
       renderOption={renderOption}
+      getOptionDisabled={(option: FieldOption) => disabledOptions.includes(option.value)}
       isOptionEqualToValue={(option: FieldOption, value: string) => option.value === value
       }
       textfieldprops={{

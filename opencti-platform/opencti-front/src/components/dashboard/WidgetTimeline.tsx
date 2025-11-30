@@ -14,13 +14,15 @@ import MarkdownDisplay from '../MarkdownDisplay';
 import ItemIcon from '../ItemIcon';
 import { itemColor } from '../../utils/Colors';
 import { useFormatter } from '../i18n';
+import FieldOrEmpty from '../FieldOrEmpty';
 
 interface WidgetTimelineProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: { value: any, link?: string }[]
+  dateAttribute?: string
 }
 
-const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
+const WidgetTimeline = ({ data, dateAttribute = 'created_at' }: WidgetTimelineProps) => {
   const { fldt } = useFormatter();
 
   return (
@@ -40,7 +42,9 @@ const WidgetTimeline = ({ data }: WidgetTimelineProps) => {
                 sx={{ paddingTop: '18px' }}
                 color="text.secondary"
               >
-                {fldt(value.created_at)}
+                <FieldOrEmpty source={value[dateAttribute]}>
+                  {fldt(value[dateAttribute])}
+                </FieldOrEmpty>
               </TimelineOppositeContent>
               <TimelineSeparator>
                 {link ? (
