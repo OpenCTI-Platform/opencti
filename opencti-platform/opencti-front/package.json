@@ -39,7 +39,7 @@
     "@fontsource/ibm-plex-sans": "5.2.8",
     "@graphiql/toolkit": "0.11.3",
     "@hello-pangea/dnd": "18.0.1",
-    "@jsonforms/core": "3.6.0",
+    "@jsonforms/core": "3.7.0",
     "@jsonforms/material-renderers": "3.6.0",
     "@jsonforms/react": "3.6.0",
     "@mui/icons-material": "6.5.0",
