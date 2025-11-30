@@ -2848,15 +2848,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@jsonforms/react@npm:3.6.0":
-  version: 3.6.0
-  resolution: "@jsonforms/react@npm:3.6.0"
+"@jsonforms/react@npm:3.7.0":
+  version: 3.7.0
+  resolution: "@jsonforms/react@npm:3.7.0"
   dependencies:
     lodash: "npm:^4.17.21"
   peerDependencies:
-    "@jsonforms/core": 3.6.0
+    "@jsonforms/core": 3.7.0
     react: ^16.12.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 10c0/2b0530c1909b07a22682c48de9ee45dbbb1815cce74ae2bb5a91bcee20bad459aca1cb3c6fede9f984deb8681defbfc94811f9363ac379c8fba37e92387a3d9e
+  checksum: 10c0/bafbafac7d62263d13d4e447c831a3a6336fcf4d050b69e7cd008e960e005fca74efa14cb19c1e3c01802d543c7fb2ecb35b0a7eb3d066ec72dc4ebbfed23ef7
   languageName: node
   linkType: hard
 
@@ -13980,7 +13980,7 @@ __metadata:
     "@hello-pangea/dnd": "npm:18.0.1"
     "@jsonforms/core": "npm:3.7.0"
     "@jsonforms/material-renderers": "npm:3.6.0"
-    "@jsonforms/react": "npm:3.6.0"
+    "@jsonforms/react": "npm:3.7.0"
     "@mui/icons-material": "npm:6.5.0"
     "@mui/lab": "npm:5.0.0-alpha.177"
     "@mui/material": "npm:6.5.0"
