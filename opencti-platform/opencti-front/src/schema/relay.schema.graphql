@@ -2299,7 +2299,7 @@ input MigrateConnectorToManagedInput {
   connectorId: ID!
   contractSlug: String!
   configuration: [ContractConfigInput!]
-  preserveState: Boolean
+  resetConnectorState: Boolean
   convertUserToServiceAccount: Boolean
 }
 
@@ -2339,24 +2339,14 @@ type MigrationAssessment {
   connector_id: ID!
   connector_name: String!
   contract_slug: String!
-  contract_title: String!
   summary: MigrationAssessmentSummary!
   mapped: [MappedConfigKey!]!
   ignored: [IgnoredConfigKey!]!
   missing: [MissingConfigKey!]!
 }
 
-type MigrationWarning {
-  field: String
-  message: String!
-}
-
 type MigrateConnectorToManagedResult {
   connector: Connector!
-  warnings: [MigrationWarning!]!
-  state_preserved: Boolean!
-  dryRun: Boolean!
-  skipped: Boolean
 }
 
 type Connector implements BasicObject & InternalObject {

@@ -180,7 +180,7 @@ describe('Check connector migration', () => {
             input: {
               connectorId: standaloneConnector.id,
               contractSlug: 'nist-nvd-cve',
-              preserveState: true,
+              resetConnectorState: false,
               convertUserToServiceAccount: true,
               configuration: [
                 { key: 'CVE_API_KEY', value: 'cve_api_key' },
