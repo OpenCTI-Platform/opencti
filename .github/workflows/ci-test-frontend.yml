@@ -155,7 +155,7 @@ jobs:
             '
 
     - name: Upload front e2e test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: always()
       continue-on-error: true
       with:

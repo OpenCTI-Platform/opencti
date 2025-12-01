@@ -1,5 +1,5 @@
 import { assert, describe, expect, it } from 'vitest';
-import { csvMapperMockSimpleDifferentEntities } from '../../02-integration/05-parser/dynamic-simple-test/csv-mapper-mock-simple-different-entities';
+import { csvMapperMockSimpleDifferentEntities } from '../05-parser/dynamic-simple-test/csv-mapper-mock-simple-different-entities';
 import { validateCsvMapper } from '../../../src/modules/internal/csvMapper/csvMapper-utils';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import type { CsvMapperParsed } from '../../../src/modules/internal/csvMapper/csvMapper-types';

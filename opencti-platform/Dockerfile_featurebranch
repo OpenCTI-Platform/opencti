@@ -44,7 +44,7 @@ RUN yarn install --immutable
 # Copy all remaining sources
 COPY opencti-front/ ./
 RUN set -eux; \
-    mkdir -p ../opencti-graphql/public \
+    mkdir -p ../opencti-graphql/public; \
     yarn build
 
 ### Build the image

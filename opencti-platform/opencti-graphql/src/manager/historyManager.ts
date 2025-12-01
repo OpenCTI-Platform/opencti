@@ -149,12 +149,12 @@ export const buildHistoryElementsFromEvents = async (context:AuthContext, events
     const eventMarkingRefs = (stix.object_marking_refs ?? [])
       .map((stixId) => markingsById.get(stixId)?.internal_id)
       .filter((o) => isNotEmptyField(o)) as string[];
-    let eventGrantedRefsIds = (stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? []);
+    let eventGrantedRefsIds: string[] = (stix.extensions[STIX_EXT_OCTI].granted_refs_ids ?? []);
     const eventGrantedRefsStandardIds = (stix.extensions[STIX_EXT_OCTI].granted_refs ?? []);
     if (eventGrantedRefsIds.length === 0 && eventGrantedRefsStandardIds.length > 0) {
       eventGrantedRefsIds = eventGrantedRefsStandardIds
         .map((stixId) => grantedRefsResolved.get(stixId))
-        .filter((o) => isNotEmptyField(o));
+        .filter((o) => isNotEmptyField(o)) as string[];
     }
     let contextData: HistoryContext = {
       id: stix.extensions[STIX_EXT_OCTI].id,
