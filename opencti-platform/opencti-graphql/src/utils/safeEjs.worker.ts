@@ -17,41 +17,13 @@ export interface WorkerReply {
   error?: string;
 }
 
-// Helper to reconstruct functions from serialized data
-const reconstructData = (obj: any): any => {
-  if (obj === null || obj === undefined) return obj;
-
-  // Check if this is a serialized function
-  if (typeof obj === 'object' && obj.__isFunction && obj.__funcResult !== undefined) {
-    // Create a function that returns the pre-computed result
-    return () => obj.__funcResult;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => reconstructData(item));
-  }
-
-  if (typeof obj === 'object') {
-    const result: any = {};
-    Object.entries(obj).forEach(([key, value]) => {
-      result[key] = reconstructData(value);
-    });
-    return result;
-  }
-
-  return obj;
-};
-
 // Main worker execution
 const executeWorker = async () => {
   const { template, data, options, useJsonEscape } = workerData as WorkerRequest;
 
-  // Reconstruct functions from serialized data
-  const reconstructedData = reconstructData(data);
-
   // Add NotificationTool (octi) if flag is enabled
   if (options?.useNotificationTool) {
-    reconstructedData.octi = new NotificationTool();
+    data.octi = new NotificationTool();
   }
 
   // Add escape function if needed
@@ -65,7 +37,7 @@ const executeWorker = async () => {
   }
 
   // Use the core logic from safeEjs (await in case it returns a Promise)
-  const result = await safeRender(template, reconstructedData, safeEjsOptions);
+  const result = await safeRender(template, data, safeEjsOptions);
   // Send result back to main thread
   const message: WorkerReply = {
     success: true,

@@ -78,7 +78,7 @@ describe('handleWebhookNotification', () => {
       type: 'notification',
     });
     
-    // Vérifier que le template a bien été rendu avec les bonnes données
+    // Verify that the template has been rendered with expected data
     const expectedData = { 
       message: 'Update on Stix-Object-Cyber-Tigrou by test-admin', 
       source_id: 'trigger-id-abcde' 
@@ -104,11 +104,9 @@ describe('handleWebhookNotification', () => {
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
     
     const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    // Le rendu du template avec safeRender devrait gérer correctement les sauts de ligne
-    // pour produire un JSON valide
+    // Ensure the template rendering produce valid JSON
     expect(axiosCallArgs.data).toHaveProperty('description');
     expect(typeof axiosCallArgs.data.description).toBe('string');
-    // La description devrait être correctement échappée dans le JSON
     expect(axiosCallArgs.data.description).toContain('Line 1');
     expect(axiosCallArgs.data.description).toContain('Line 2');
   });
@@ -144,12 +142,12 @@ describe('handleWebhookNotification', () => {
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
     
     const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    // Vérifier que les propriétés imbriquées sont correctement rendues
+    // Check imbricated properties are correctly rendered
     expect(axiosCallArgs.data).toHaveProperty('title');
     expect(axiosCallArgs.data).toHaveProperty('author_bio');
     expect(axiosCallArgs.data).toHaveProperty('first_event_message');
     
-    // Les valeurs devraient contenir le texte avec les sauts de ligne gérés correctement
+    // Ensure new lines are correctly rendered
     expect(axiosCallArgs.data.title).toContain('Quarterly');
     expect(axiosCallArgs.data.title).toContain('Report');
     expect(axiosCallArgs.data.author_bio).toContain('Cybersecurity expert');
@@ -174,7 +172,6 @@ describe('handleWebhookNotification', () => {
     expect(mockedAxiosInstance).toHaveBeenCalledOnce();
     
     const axiosCallArgs = mockedAxiosInstance.mock.calls[0][0];
-    // Les slashes devraient être préservés dans le rendu final
     expect(axiosCallArgs.data).toHaveProperty('description');
     expect(axiosCallArgs.data.description).toBe('This is a path: /home/user/file.txt');
   });

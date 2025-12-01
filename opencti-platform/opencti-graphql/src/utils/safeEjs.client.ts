@@ -15,65 +15,10 @@ export type WorkerOptions = {
   }
 };
 
-// Helper to serialize functions and validate data
-const prepareDataForWorker = (data: Data): Data => {
-  const forbidden = ['__proto__','prototype','constructor','arguments','callee','caller','defineProperty','defineProperties','freeze','seal','preventExtensions','getPrototypeOf','setPrototypeOf'];
-
-  // Track function results to create a wrapper object
-  const functionMap = new Map<string, any>();
-  let functionCounter = 0;
-
-  const serialize = (obj: any, currentPath: string = ''): any => {
-    if (obj === null || obj === undefined) return obj;
-
-    if (typeof obj === 'function') {
-      // Functions can't be passed to workers, so we create a special marker
-      // and store the function's result
-      functionCounter += 1;
-      const funcId = `__func_${functionCounter}__`;
-      try {
-        functionMap.set(funcId, obj());
-      } catch {
-        functionMap.set(funcId, undefined);
-      }
-      // Return a special object that the worker can recognize
-      return { __isFunction: true, __funcId: funcId, __funcResult: functionMap.get(funcId) };
-    }
-
-    if (Array.isArray(obj)) {
-      return obj.map((item, index) => serialize(item, `${currentPath}[${index}]`));
-    }
-
-    if (typeof obj === 'object') {
-      const result: any = {};
-      Object.entries(obj).forEach(([key, value]) => {
-        // Check for forbidden properties that could enable sandbox escape
-        if (forbidden.includes(key)) {
-          throw new Error(`Forbidden property in data object: ${key}. This property could be used for prototype manipulation or sandbox escape.`);
-        }
-        result[key] = serialize(value, currentPath ? `${currentPath}.${key}` : key);
-      });
-      return result;
-    }
-
-    return obj;
-  };
-
-  return serialize(data);
-};
-
 export const safeRender = async (template: string, data: Data, options?: SafeRenderOptions & WorkerOptions): Promise<string> => {
   // Handle empty template directly without worker
   if (!template) {
     return '';
-  }
-
-  // Prepare and validate data
-  let serializedData: Data;
-  try {
-    serializedData = prepareDataForWorker(data);
-  } catch (error) {
-    throw new Error(error instanceof Error ? error.message : 'Invalid data');
   }
 
   const timeout = options?.timeout ?? 5000; // Default 5 seconds
@@ -99,7 +44,7 @@ export const safeRender = async (template: string, data: Data, options?: SafeRen
   }
 
   const worker = new Worker(workerPath, {
-    workerData: { template, data: serializedData, options: workerOptions, useJsonEscape: options?.useJsonEscape },
+    workerData: { template, data, options: workerOptions, useJsonEscape: options?.useJsonEscape },
     resourceLimits: {
       maxOldGenerationSizeMb: options?.resourceLimits?.maxOldGenerationSizeMb ?? 50, // 50 MB heap
       maxYoungGenerationSizeMb: options?.resourceLimits?.maxYoungGenerationSizeMb ?? 10, // 10 MB new space
