@@ -1,16 +1,8 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import {
-  createEntity,
-  createRelation,
-  distributionEntities,
-  inputResolveRefs,
-  patchAttribute,
-  storeLoadByIdWithRefs,
-  timeSeriesEntities,
-} from '../../database/middleware';
+import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import {BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp} from '../../config/conf';
+import { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError, ValidationError } from '../../config/errors';
