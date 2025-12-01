@@ -16,6 +16,7 @@ import HistoryDrawer from '@components/common/drawer/HistoryDrawer';
 import useInterval from '../../../../utils/hooks/useInterval';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
+import { StixCoreObjectHistoryLine_node$key } from '@components/common/stix_core_objects/__generated__/StixCoreObjectHistoryLine_node.graphql';
 
 export const stixCoreObjectHistoryLinesQuery = graphql`
   query StixCoreObjectHistoryLinesQuery(
@@ -62,7 +63,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState(false);
-  const [selectedLog, setSelectedLog] = useState(undefined)
+  const [selectedLog, setSelectedLog] = useState<StixCoreObjectHistoryLine_node$key | undefined>(undefined);
   const queryData = usePreloadedQuery(stixCoreObjectHistoryLinesQuery, queryRef);
   const [data, refetch] = useRefetchableFragment<StixCoreObjectHistoryLinesQuery, StixCoreObjectHistoryLines_data$key>(
     StixCoreObjectHistoryLinesFragment,
@@ -73,7 +74,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
     refetch(paginationOptions, { fetchPolicy: 'store-and-network' });
   }, FIVE_SECONDS);
   const logs = data?.logs?.edges ?? [];
-  const handleOpen = (log: any) => {
+  const handleOpen = (log: StixCoreObjectHistoryLine_node$key) => {
     setSelectedLog(log);
     setOpen(true);
   };
