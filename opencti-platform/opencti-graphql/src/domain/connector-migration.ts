@@ -168,7 +168,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   let contract;
   try {
     contract = JSON.parse(contractData.contract);
-  } catch (e) {
+  } catch () {
     throw FunctionalError('Cannot parse contract found');
   }
 
@@ -252,7 +252,7 @@ export const migrateConnectorToManaged = async (
   let contract;
   try {
     contract = JSON.parse(contractData.contract);
-  } catch (e) {
+  } catch () {
     throw FunctionalError('Cannot parse contract');
   }
 
@@ -371,7 +371,7 @@ export const migrateConnectorToManaged = async (
 
   // delete queues like in connector.deleteQueues but for that specific connector id
   await unregisterConnector(existingConnector.id);
-  try { await unregisterExchanges(); } catch (e) { /* nothing */ }
+  try { await unregisterExchanges(); } catch () { /* nothing */ }
 
   await patchAttribute(
     context,
