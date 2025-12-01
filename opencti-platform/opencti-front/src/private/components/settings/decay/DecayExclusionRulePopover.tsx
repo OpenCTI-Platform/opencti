@@ -10,7 +10,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { deleteNode } from '../../../../utils/store';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import DeleteDialog from '../../../../components/DeleteDialog';
-import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
+import { DecayExclusionRulesLinesPaginationQuery$variables } from './__generated__/DecayExclusionRulesLinesPaginationQuery.graphql';
 import DecayExclusionRuleEdition, { decayExclusionRuleEditionFieldPatch } from './DecayExclusionRuleEdition';
 
 const decayExclusionRulePopoverDeleteMutation = graphql`
@@ -21,7 +21,7 @@ const decayExclusionRulePopoverDeleteMutation = graphql`
 
 type DecayExclusionRulePopoverProps = {
   data: DecayExclusionRules_node$data;
-  paginationOptions: DecayRulesLinesPaginationQuery$variables;
+  paginationOptions: DecayExclusionRulesLinesPaginationQuery$variables;
 };
 
 const DecayExclusionRulePopover = ({ data, paginationOptions }: DecayExclusionRulePopoverProps) => {

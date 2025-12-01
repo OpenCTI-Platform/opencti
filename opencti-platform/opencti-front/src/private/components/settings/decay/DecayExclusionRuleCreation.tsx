@@ -4,11 +4,11 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { insertNode } from 'src/utils/store';
 import React from 'react';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
-import { DecayRulesLinesPaginationQuery$variables } from './__generated__/DecayRulesLinesPaginationQuery.graphql';
+import { DecayExclusionRulesLinesPaginationQuery$variables } from './__generated__/DecayExclusionRulesLinesPaginationQuery.graphql';
 import DecayExclusionRuleCreationForm from './DecayExclusionRuleCreationForm';
 
 type DecayExclusionRuleCreationProps = {
-  paginationOptions: DecayRulesLinesPaginationQuery$variables;
+  paginationOptions: DecayExclusionRulesLinesPaginationQuery$variables;
 };
 
 const CreateDecayExclusionRuleControlledDial = (props: DrawerControlledDialProps) => (

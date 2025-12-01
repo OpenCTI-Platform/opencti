@@ -36,7 +36,7 @@ export const findDecayExclusionRulePaginated = (context: AuthContext, user: Auth
 
 export const getActiveDecayExclusionRules = async (context: AuthContext, user: AuthUser) => {
   if (!isDecayExclusionRuleEnabled) return [];
-  const decayExclusionRuleList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
+  const decayExclusionRuleList = await getEntitiesListFromCache<BasicStoreEntityDecayExclusionRule>(context, user, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
   return decayExclusionRuleList.filter((rule) => rule.active);
 };
 
