@@ -246,7 +246,7 @@ class Indicator:
         update = kwargs.get("update", False)
         upsert_operations = kwargs.get('opencti_upsert_operations', None)
 
-    if (
+        if (
             name is not None
             and pattern is not None
             and pattern_type is not None
