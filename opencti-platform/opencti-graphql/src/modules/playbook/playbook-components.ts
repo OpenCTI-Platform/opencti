@@ -90,7 +90,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { findAllByCaseTemplateId } from '../task/task-domain';
 import type { BasicStoreEntityTaskTemplate } from '../task/task-template/task-template-types';
 import type { BasicStoreSettings } from '../../types/settings';
-import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES, buildRestrictedMembers } from '../../utils/authorizedMembers';
+import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../utils/authorizedMembers';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { ENTITY_TYPE_CONTAINER_FEEDBACK } from '../case/feedback/feedback-types';
 import { PLAYBOOK_SEND_EMAIL_TEMPLATE_COMPONENT } from './components/send-email-template-component';
@@ -979,24 +979,25 @@ export const PLAYBOOK_REMOVE_ACCESS_RESTRICTIONS_COMPONENT: PlaybookComponent<Re
         };
 
         if (isFeatureEnabled('FIELD_PATCH_IN_PLAYBOOKS') && element.id) {
-          const restrictedMembers = await buildRestrictedMembers(context, AUTOMATION_MANAGER_USER, args);
           const patchValue = {
             op: EditOperation.Remove,
             path: `/objects/${index}/extensions/${STIX_EXT_OCTI}/restricted_members`,
-            value: restrictedMembers,
+            value: [],
           };
           const patchOperation = {
             operation: EditOperation.Remove,
             key: INPUT_AUTHORIZED_MEMBERS,
-            value: restrictedMembers,
+            value: [],
           };
           if (!element.extensions[STIX_EXT_OCTI].opencti_upsert_operations) {
-            // eslint-disable-next-line no-param-reassign
             element.extensions[STIX_EXT_OCTI].opencti_upsert_operations = [];
           }
           element.extensions[STIX_EXT_OCTI].opencti_upsert_operations.push(patchOperation);
           patchOperations.push(patchValue);
         }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        await editAuthorizedMembers(context, AUTOMATION_MANAGER_USER, args);
       }
       if (patchOperations.length > 0) {
         const patchedBundle = jsonpatch.applyPatch(structuredClone(bundle), patchOperations).newDocument;
