@@ -12,10 +12,17 @@ import type { DecayExclusionRuleAddInput, EditInput, Label, MarkingDefinition, Q
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
 import { type IndicatorAddInput } from '../../../generated/graphql';
-import {BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR} from '../../../modules/indicator/indicator-types';
+import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR } from '../../../modules/indicator/indicator-types';
 import { getEntitySettingFromCache } from '../../../modules/entitySetting/entitySetting-utils';
+import {RELATION_OBJECT_MARKING, RELATION_OBJECT_LABEL, RELATION_CREATED_BY} from '../../../schema/stixRefRelationship';
 
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
+
+interface ResolvedDecayExclusionRule extends IndicatorAddInput {
+  [RELATION_OBJECT_MARKING]?: string[];
+  [RELATION_OBJECT_LABEL]?: string[];
+  [RELATION_CREATED_BY]?: string;
+}
 
 export interface DecayExclusionRuleModel {
   id: string;
@@ -44,7 +51,7 @@ export const getActiveDecayExclusionRule = async (context: AuthContext, user: Au
 export const checkDecayExclusionRules = async (
   context: AuthContext,
   user: AuthUser,
-  resolvedIndicator: BasicStoreEntityIndicator,
+  resolvedIndicator: ResolvedDecayExclusionRule,
   activeDecayExclusionRuleList: DecayExclusionRuleModel[]
 ): Promise<DecayExclusionRuleModel | null> => {
   if (!isDecayExclusionRuleEnabled) return null;
