@@ -12,6 +12,7 @@ jobs:
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
         dockerfile_platform: Dockerfile.testing
+        build_context_platform: "."
       secrets: inherit
 
   wf-api-test:

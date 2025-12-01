@@ -16,6 +16,11 @@ on:
         type: string
         required: false
         default: Dockerfile_featurebranch
+      build_context_platform:
+        description: "Build context"
+        type: string
+        required: false
+        default: opencti-platform
     outputs:
       image-tag-version-cleaned:
         description: "Image tag after formatting"
@@ -55,7 +60,7 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
-        context: opencti-platform
+        context: ${{ inputs.build_context_platform }}
         # Using Dockerfile_featurebranch waiting for the merge of all dockerfile
         file: opencti-platform/${{ inputs.dockerfile_platform }}
         push: true
