@@ -415,7 +415,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       }
       lock = await lock.extend(maxTtl);
       queue();
-    } catch (error) {
+    } catch {
       logApp.error('Execution timeout, error extending resources', { locks });
       if (process.send) {
         // If process.send, we use a child process
@@ -458,7 +458,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
       try {
         // Finally try to unlock
         await lock.release();
-      } catch (e) {
+      } catch {
         // Nothing to do here
       }
     },
@@ -604,7 +604,7 @@ export const redisGetExclusionListCache = async () => {
   const rawCache = await getClientBase().get(EXCLUSION_LIST_CACHE_KEY);
   try {
     return rawCache ? JSON.parse(rawCache) : [];
-  } catch (e) {
+  } catch {
     logApp.error('Exclusion cache could not be parsed properly. Asking for a cache refresh.', { rawCache });
     await redisUpdateExclusionListStatus({ last_refresh_ask_date: (new Date()).toString() });
     return [];
