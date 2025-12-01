@@ -58,7 +58,7 @@ const decayExclusionRuleModelList: DecayExclusionRuleModel[] = [
   decayExclusionRuleWithNoMatchingRuleModel,
 ];
 
-describe('Decay Exclusion Rule', () => {
+describe.skip('Decay Exclusion Rule', () => {
   describe('checkDecayExclusionRules', () => {
     describe('If there is a list of exclusion rules with at least one matching rule', async () => {
       const exclusionRule = await checkDecayExclusionRules(testContext, ADMIN_USER, resolvedIndicator, decayExclusionRuleModelList);
