@@ -31,7 +31,7 @@ interface ComputedNodesReturns {
     position: { x: number, y: number };
     data: {
         name: string;
-        configuration: string;
+        configuration: string; // json
         component?: PlaybookComponent | null;
         openConfig: (nodeId: string) => void;
         openReplace: (nodeId: string) => void;
@@ -88,8 +88,9 @@ export const computeNodes = (
 
 export const computeEdges = (
   playbookEdges:LinkDefinition[], 
-  setAction: React.Dispatch<React.SetStateAction<string | null>>, setSelectedEdge: React.Dispatch<React.SetStateAction<string | null>>
-):Edge[] => {
+  setAction: React.Dispatch<React.SetStateAction<string | null>>, 
+  setSelectedEdge: React.Dispatch<React.SetStateAction<string | null>>
+): Edge[] => {
   return playbookEdges.map((edge) => {
     return {
       id: edge.id,
