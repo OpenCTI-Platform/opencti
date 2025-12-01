@@ -141,9 +141,12 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
           await createObjectRefsInferences(context, report, addedTargets, []);
         }
       };
-      const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
-      const fullListArgs = { ...listArgs, callback: listAddedRefsCallback };
-      await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, relationTypes.creationType, fullListArgs);
+      // If originIds could no longer be found, we don't try to list relations since the fromId filter will not be applied
+      if (originIds.length > 0) {
+        const listArgs = isSource ? { fromId: originIds, toTypes: [relationTypes.rightType] } : { toId: originIds, fromTypes: [relationTypes.leftType] };
+        const fullListArgs = { ...listArgs, callback: listAddedRefsCallback };
+        await fullRelationsList<BasicStoreRelation>(context, RULE_MANAGER_USER, relationTypes.creationType, fullListArgs);
+      }
     }
 
     // Find all current inferences that need to be deleted
