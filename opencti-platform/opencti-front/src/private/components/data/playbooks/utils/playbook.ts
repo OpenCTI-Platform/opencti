@@ -1,5 +1,4 @@
-import { Edge } from "@reactflow/core/dist/esm/types";
-
+import { Edge } from 'reactflow';
 interface PortDefinition {
   id: string
   type: string
