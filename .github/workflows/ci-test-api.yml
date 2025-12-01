@@ -64,7 +64,7 @@ jobs:
           -e APP__SYNC_RESTORE_START_REMOTE_URI=http://opencti-restore-start:4100/graphql \
           -e PYTHONUNBUFFERED=1  \
           filigran/platform:${{ github.sha }} \
-          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:integration
+          sh -c 'NODE_OPTIONS=--max_old_space_size=8192 yarn test:ci-integration
         '
 
     - name: Upload backend test result
@@ -198,6 +198,12 @@ jobs:
     - name: Runner information
       continue-on-error: true
       run: ./scripts/ci/runner-info.sh # Display runner info and start resource monitoring in background
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Set up Docker Compose for backends
       run: |
