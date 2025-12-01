@@ -27,6 +27,7 @@ import { MESSAGING$ } from '../../../relay/environment';
 import { RelayError } from '../../../relay/relayTypes';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import { TEN_SECONDS } from '../../../utils/Time';
+import useGranted, { KNOWLEDGE_KNASKIMPORT } from '../../../utils/hooks/useGranted';
 
 const interval$ = interval(TEN_SECONDS);
 
@@ -216,7 +217,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
               <span>{t_i18n('Containers')} ({objectsCount.containersCount})</span>
             }
           />
-          {!isDraftReadOnly && (
+          {!isDraftReadOnly && useGranted([KNOWLEDGE_KNASKIMPORT]) && (
           <Tab
             component={Link}
             to={`/dashboard/data/import/draft/${draftId}/files`}
