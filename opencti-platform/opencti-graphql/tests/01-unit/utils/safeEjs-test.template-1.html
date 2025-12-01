@@ -51,6 +51,13 @@
                     </td>
                 </tr>
 
+                <!-- Publication date -->
+                <tr>
+                    <td align="center" style="font-size: 22px; font-weight: bold; color: #333333; padding-bottom: 20px;">
+                        [<%=new Date(data[0].instance.publication_date).toString()%>]
+                    </td>
+                </tr>
+
                 <!-- Labels -->
                 <tr>
                     <td align="left" style="font-size: 16px; color: #555555; line-height: 1.6; text-align: left;">
@@ -60,10 +67,19 @@
                     </td>
                 </tr>
 
-                <!-- Content -->
+                <!-- Some regex -->
                 <tr>
                     <td align="left" style="font-size: 16px; color: #555555; line-height: 1.6; text-align: left;">
-                        (<%=data[0].instance.description%>)
+                        <% if(new RegExp(/warning/).test(data[0].instance.name)) { %>
+                        <%= data[0].instance.name %>
+                        <% } %>
+                    </td>
+                </tr>
+
+                <!-- Description with call to octi.markdownToHtml -->
+                <tr>
+                    <td align="left" style="font-size: 16px; color: #555555; line-height: 1.6; text-align: left;">
+                        (<%=octi.markdownToHtml(data[0].instance.description)%>)
                     </td>
                 </tr>
 

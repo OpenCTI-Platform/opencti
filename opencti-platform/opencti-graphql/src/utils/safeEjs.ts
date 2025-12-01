@@ -2,6 +2,7 @@
 import { parser as jsParser } from '@lezer/javascript';
 import type { Data, Options } from 'ejs';
 import { render } from 'ejs';
+import NotificationTool from './NotificationTool';
 
 export abstract class VerifierError extends Error {
   name = 'VerifierError';
@@ -379,7 +380,10 @@ const transformTemplate = (template: string, code: string, context: string[]) =>
 };
 
 export const safeRender = (template: string, data: Data, options: SafeRenderOptions = {}) => {
-  const { delimiter = '%', openDelimiter = '<', closeDelimiter = '>', async = false } = options;
+  const { delimiter = '%', openDelimiter = '<', closeDelimiter = '>', async = false, useNotificationTool = false } = options;
+  if (useNotificationTool) {
+    data.octi = new NotificationTool();
+  }
   const code = extractEJSCode(template, `${openDelimiter}${delimiter}`, `${delimiter}${closeDelimiter}`);
   const safeTemplate = transformTemplate(template, code, Object.keys(data ?? {}));
   const safeContext = createSafeContext(async, options);

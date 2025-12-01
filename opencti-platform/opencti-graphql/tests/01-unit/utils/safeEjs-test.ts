@@ -327,7 +327,7 @@ describe('check safeRender on real files', () => {
     async ({ name }) => {
       const templateFile = `${testFilename.substring(0, testFilename.lastIndexOf('.'))}.${name}`;
       const template = await fs.readFile(templateFile, 'utf8');
-      const safeRendered = safeRender(template, data);
+      const safeRendered = safeRender(template, data, { useNotificationTool: true });
       const unsafeRendered = render(template, data);
       expect(safeRendered).toEqual(unsafeRendered);
     }

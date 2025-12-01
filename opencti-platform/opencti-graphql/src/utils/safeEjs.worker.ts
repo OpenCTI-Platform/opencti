@@ -21,11 +21,6 @@ export interface WorkerReply {
 const executeWorker = async () => {
   const { template, data, options, useJsonEscape } = workerData as WorkerRequest;
 
-  // Add NotificationTool (octi) if flag is enabled
-  if (options?.useNotificationTool) {
-    data.octi = new NotificationTool();
-  }
-
   // Add escape function if needed
   const safeEjsOptions = { ...options };
   if (useJsonEscape) {
