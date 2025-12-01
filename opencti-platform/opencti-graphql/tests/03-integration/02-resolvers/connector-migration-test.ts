@@ -155,7 +155,6 @@ describe('Check connector migration', () => {
     expect(queryResult.data?.connector).toBeNull();
 
     await queryAsAdminWithSuccess({ query: DELETE_USER_MUTATION, variables: { id: userId } });
-    vi.restoreAllMocks();
   });
 
   describe('migrate connector to managed', () => {
@@ -207,7 +206,7 @@ describe('Check connector migration', () => {
         }
 
         // same values excluded from catalog-domain
-        const RUNTIME_KEYS = ['CONNECTOR_ID', 'CONNECTOR_TYPE'];
+        const RUNTIME_KEYS = ['CONNECTOR_ID', 'CONNECTOR_TYPE', 'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'HTTPS_PROXY_REJECT_UNAUTHORIZED'];
         const managedConnector = managedConnectorResult.data.connectorMigrateToManaged.connector;
         const rawConfig = managedConnector.manager_contract_configuration;
         rawConfig.filter((c: any) => !RUNTIME_KEYS.includes(c.key));

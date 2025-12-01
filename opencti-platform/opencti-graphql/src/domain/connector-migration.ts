@@ -241,7 +241,7 @@ export const migrateConnectorToManaged = async (
   connectorId: string,
   contractSlug: string,
   configuration: ConfigInput[] | null,
-  convertUserToServiceAccount: boolean = false,
+  convertUserToServiceAccount: boolean = true,
   resetConnectorState: boolean = false,
 ) => {
   const contractData = await findContractBySlug(context, user, contractSlug);

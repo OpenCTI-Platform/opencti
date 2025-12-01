@@ -199,8 +199,8 @@ const connectorResolvers = {
         connectorId,
         contractSlug,
         configuration,
-        resetConnectorState,
         convertUserToServiceAccount,
+        resetConnectorState,
       );
     },
   },
