@@ -9,7 +9,11 @@ import Box from '@mui/material/Box';
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from 'src/components/FilterIconButton';
 import useFiltersState from 'src/utils/filters/useFiltersState';
-import { emptyFilterGroup, serializeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
+import {
+  deserializeFilterGroupForFrontend,
+  emptyFilterGroup,
+  serializeFilterGroupForBackend,
+} from 'src/utils/filters/filtersUtils';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import Button from '@mui/material/Button';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -47,7 +51,10 @@ const decayExclusionRuleEditionValidator = (t: (value: string) => string) => {
 
 const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRuleEditionProps) => {
   const { t_i18n } = useFormatter();
-  const [filters, filterHelpers] = useFiltersState(JSON.parse(data.decay_exclusion_filters) ?? emptyFilterGroup);
+  const [filters, filterHelpers] = useFiltersState(
+    deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup,
+    deserializeFilterGroupForFrontend(data.decay_exclusion_filters) ?? emptyFilterGroup
+  );
 
   const [commitFieldPatch] = useApiMutation(decayExclusionRuleEditionFieldPatch);
 
@@ -83,14 +90,19 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
   const initialValues: DecayExclusionRuleEditionFormData = {
     name: data.name,
     description: data.description ?? null,
-    decay_exclusion_filters: JSON.parse(data.decay_exclusion_filters),
+    decay_exclusion_filters: deserializeFilterGroupForFrontend(data.decay_exclusion_filters),
   };
+
+  const handleClose = () => {
+    onClose();
+    filterHelpers.handleClearAllFilters();
+  }
 
   return (
     <Drawer
       title={t_i18n('Update a decay exclusion rule')}
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
     >
       <Formik<DecayExclusionRuleEditionFormData>
         initialValues={initialValues}
