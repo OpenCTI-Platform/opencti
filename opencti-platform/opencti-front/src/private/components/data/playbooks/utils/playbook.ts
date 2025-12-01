@@ -5,12 +5,12 @@ interface PortDefinition {
   type: string
 }
 interface PlaybookComponent {
-    readonly configuration_schema: string | null | undefined;
+    readonly configuration_schema?: string | null;
     readonly description: string;
     readonly icon: string;
     readonly id: string;
-    readonly is_entry_point: boolean | null | undefined;
-    readonly is_internal: boolean | null | undefined;
+    readonly is_entry_point?: boolean | null;
+    readonly is_internal?: boolean | null;
     readonly name: string;
     readonly ports:  readonly PortDefinition[];
 }
@@ -28,11 +28,11 @@ interface LinkDefinition {
 interface ComputedNodesReturns {
     id: string;
     type: string;
-    position: any;
+    position: { x: number, y: number };
     data: {
         name: string;
-        configuration: any;
-        component: PlaybookComponent | null | undefined;
+        configuration: string;
+        component?: PlaybookComponent | null;
         openConfig: (nodeId: string) => void;
         openReplace: (nodeId: string) => void;
         openAddSibling: (nodeId: string) => void;
