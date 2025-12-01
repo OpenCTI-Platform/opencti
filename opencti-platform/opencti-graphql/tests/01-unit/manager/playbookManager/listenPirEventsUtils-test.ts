@@ -7,7 +7,6 @@ import {
   listenPirEvents,
   stixIdOfLinkedEntity
 } from '../../../../src/manager/playbookManager/listenPirEventsUtils';
-import type { AuthContext } from '../../../../src/types/user';
 import type { SseEvent, StreamDataEvent } from '../../../../src/types/event';
 import type { BasicStoreEntityPlaybook } from '../../../../src/modules/playbook/playbook-types';
 import * as stixFiltering from '../../../../src/utils/filtering/filtering-stix/stix-filtering';
