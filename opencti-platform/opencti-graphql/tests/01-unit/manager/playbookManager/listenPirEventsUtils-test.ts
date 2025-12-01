@@ -260,10 +260,7 @@ describe('listenPirEventsUtils', () => {
 
     it('should return expected id if there is a pirList that matches at least one of the source ref pir id', async () => {
       const randomRelationshipEventWithMatchingPirInSource = { 
-        ...randomEventNotInPir, 
-        data: {
-          ...randomEventNotInPir.data, 
-        }  
+        ...randomEventNotInPir  
       } as unknown as SseEvent<StreamDataEvent>;
 
       const result = await stixIdOfLinkedEntity(
