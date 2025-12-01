@@ -1,12 +1,12 @@
-import { defineConfig } from 'eslint/config';
-import eslint from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import react from 'eslint-plugin-react';
-import globals from 'globals';
-import importPlugin from 'eslint-plugin-import';
-import importNewlines from 'eslint-plugin-import-newlines';
-import customRules from 'eslint-plugin-custom-rules';
-import stylistic from '@stylistic/eslint-plugin';
+import { defineConfig } from 'eslint/config'
+import eslint from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import react from 'eslint-plugin-react'
+import globals from 'globals'
+import importPlugin from 'eslint-plugin-import'
+import importNewlines from 'eslint-plugin-import-newlines'
+import customRules from 'eslint-plugin-custom-rules'
+import stylistic from '@stylistic/eslint-plugin'
 
 export default defineConfig([
   {
@@ -28,6 +28,7 @@ export default defineConfig([
 
   // Base JS rules
   eslint.configs.recommended,
+  stylistic.configs.recommended,
 
   // Typescript rules
   tseslint.configs.recommended,
@@ -91,16 +92,54 @@ export default defineConfig([
         tsconfigRootDir: import.meta.dirname,
         ecmaFeatures: { jsx: true },
       },
-			globals: {
-				...globals.browser,
-				...globals.jest,
-				myCustomGlobal: 'readonly',
-			},
+      globals: {
+        ...globals.browser,
+        ...globals.jest,
+        myCustomGlobal: 'readonly',
+      },
     },
     rules: {
-      '@stylistic/quotes': ['error', 'single', { 'avoidEscape': true }],
+      '@stylistic/jsx-first-prop-new-line': 'off',
+      '@stylistic/jsx-one-expression-per-line': 'off',
+      '@stylistic/jsx-quotes': 'off',
+      '@stylistic/jsx-indent-props': 'off',
+      '@stylistic/jsx-equals-spacing': 'off',
+      '@stylistic/jsx-curly-newline': 'off',
+      '@stylistic/jsx-curly-spacing': 'off',
+      '@stylistic/jsx-max-props-per-line': 'off',
+      '@stylistic/jsx-curly-brace-presence': 'off',
+      '@stylistic/jsx-closing-tag-location': 'off',
+      '@stylistic/jsx-tag-spacing': 'off',
+      '@stylistic/jsx-wrap-multilines': 'off',
+      '@stylistic/semi-spacing': 'off',
+      '@stylistic/curly-spacing': 'off',
+      '@stylistic/key-spacing': 'off',
+      '@stylistic/comma-style': 'off',
+      '@stylistic/eol-last': 'off',
+      '@stylistic/no-mixed-operators': 'off',
+      '@stylistic/type-annotation-spacing': 'off',
+      '@stylistic/type-generic-spacing': 'off',
+      '@stylistic/no-trailing-spaces': 'off',
+      '@stylistic/arrow-parens': 'off',
+      '@stylistic/brace-style': 'off',
+      '@stylistic/indent': 'off',
+      '@stylistic/lines-between-class-members': 'off',
+      '@stylistic/no-extra-parens': 'off',
+      '@stylistic/operator-linebreak': 'off',
+      '@stylistic/comma-dangle': 'off',
+      '@stylistic/indent-binary-ops': 'off',
+      '@stylistic/spaced-comment': 'off',
+      '@stylistic/member-delimiter-style': 'off',
+      '@stylistic/max-statements-per-line': 'off',
+      '@stylistic/multiline-ternary': 'off',
+
+      // =========
+
+      '@stylistic/space-before-blocks': 'error',
+      '@stylistic/quote-props': ['error', 'as-needed'],
+      '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
       '@stylistic/semi': ['error', 'always'],
-      '@stylistic/no-multiple-empty-lines': ['error', { 'max': 1, 'maxEOF': 1 }],
+      '@stylistic/no-multiple-empty-lines': ['error', { max: 1, maxEOF: 1 }],
       'custom-rules/classes-rule': 1,
       'no-restricted-syntax': 0,
       'react/no-unused-prop-types': 0,
@@ -143,7 +182,7 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^_',
         },
       ],
-      'import-newlines/enforce': ['error', { items: 20, 'max-len': 180 }],
+      'import-newlines/enforce': ['error', { 'items': 20, 'max-len': 180 }],
       'import/no-extraneous-dependencies': [
         'error',
         {
@@ -161,4 +200,4 @@ export default defineConfig([
       'react/react-in-jsx-scope': 'off',
     },
   },
-]);
+])
