@@ -9,7 +9,6 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { FunctionalError } from '../../config/errors';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import type { FilterGroup, PlaybookAddNodeInput } from '../../generated/graphql';
-import { FILTER_KEYS_WITH_ME_VALUE, ME_FILTER_VALUE } from '../../utils/filtering/filtering-constants';
 import { PLAYBOOK_INTERNAL_DATA_CRON } from './playbook-components';
 import { elFindByIds } from '../../database/engine';
 import { checkAndConvertFilters, type FiltersIdsFinder } from '../../utils/filtering/filtering-utils';
@@ -105,21 +104,6 @@ export const deleteLinksAndAllChildren = (definition: ComponentDefinition, links
   };
 };
 
-const removeMeFilterValuesFromFilterGroup = (filterGroup: FilterGroup): FilterGroup => {
-  const newFilters = filterGroup.filters.filter((f) =>
-    (f.key.some((k) => FILTER_KEYS_WITH_ME_VALUE.includes(k) && !f.values.includes(ME_FILTER_VALUE))
-      || !f.key.some((k) => FILTER_KEYS_WITH_ME_VALUE.includes(k)))
-  );
-  const newFilterGroups = filterGroup.filterGroups.length > 0
-    ? filterGroup.filterGroups.map((fg) => removeMeFilterValuesFromFilterGroup(fg))
-    : [];
-  return {
-    ...filterGroup,
-    filters: newFilters,
-    filterGroups: newFilterGroups,
-  };
-};
-
 export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
   context: AuthContext,
   user: AuthUser,
@@ -139,9 +123,7 @@ export const checkPlaybookFiltersAndBuildConfigWithCorrectFilters = async (
     } else {
       // our stix matching is currently limited, we need to validate the input filters
       validateFilterGroupForStixMatch(filterGroup);
-      // @me filter value is not allowed in playbooks
-      const convertedFilters = removeMeFilterValuesFromFilterGroup(filterGroup);
-      stringifiedFilters = JSON.stringify(convertedFilters);
+      stringifiedFilters = config.filters;
     }
   }
   return JSON.stringify({ ...config, filters: stringifiedFilters });
