@@ -1,6 +1,6 @@
-import { Node } from "reactflow";
-import { PlaybookFlow_playbookComponents$data } from "../playbookFlow/__generated__/PlaybookFlow_playbookComponents.graphql";
-import { PlaybookUpdateAction } from "../playbookFlow/playbookFlowFields/playbookFlowFieldsActions/playbookAction-types";
+import { Node } from 'reactflow';
+import { PlaybookFlow_playbookComponents$data } from '../playbookFlow/__generated__/PlaybookFlow_playbookComponents.graphql';
+import { PlaybookUpdateAction } from '../playbookFlow/playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 
 export type PlaybookComponents = NonNullable<PlaybookFlow_playbookComponents$data['playbookComponents']>;
 export type PlaybookComponent = NonNullable<PlaybookComponents[number]>;
@@ -15,7 +15,7 @@ export type PlaybookNode = Node<{
   name?: string
   configuration?: PlaybookConfig
   component?: PlaybookComponent
-}>
+}>;
 
 export type PlaybookComponentConfigSchema = {
   type: string
@@ -39,4 +39,4 @@ export type PlaybookComponentConfigSchema = {
       }
     }
   }
-}
+};

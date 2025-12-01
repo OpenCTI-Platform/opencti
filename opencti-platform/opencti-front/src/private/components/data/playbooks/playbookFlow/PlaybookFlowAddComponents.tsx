@@ -48,9 +48,9 @@ const PlaybookFlowAddComponents = ({
 
   useEffect(() => {
     if (action === 'config' && selectedNode?.data?.component) {
-      setComponentId(selectedNode?.data?.component?.id)
+      setComponentId(selectedNode?.data?.component?.id);
     }
-  }, [selectedNode, action])
+  }, [selectedNode, action]);
 
   const handleClose = () => {
     setSelectedNode(null);
@@ -59,7 +59,7 @@ const PlaybookFlowAddComponents = ({
   };
 
   const isActionValid = action === 'config' || action === 'add' || action === 'replace';
-  const hasSelection = selectedNode !== null || selectedEdge !== null
+  const hasSelection = selectedNode !== null || selectedEdge !== null;
   const open = isActionValid && hasSelection;
 
   return (

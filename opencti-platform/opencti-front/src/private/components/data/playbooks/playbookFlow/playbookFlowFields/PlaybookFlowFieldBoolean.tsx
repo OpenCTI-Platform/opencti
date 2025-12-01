@@ -20,17 +20,20 @@ import { fieldSpacingContainerStyle } from '../../../../../../utils/field';
 interface PlaybookFlowFieldBooleanProps {
   name: string
   label: string
+  helperText?: string
 }
 
 const PlaybookFlowFieldBoolean = ({
   name,
   label,
+  helperText
 }: PlaybookFlowFieldBooleanProps) => {
   return (
     <Field
       type="checkbox"
       name={name}
       label={label}
+      helpertext={helperText}
       component={SwitchField}
       containerstyle={fieldSpacingContainerStyle}
     />

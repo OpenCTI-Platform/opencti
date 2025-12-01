@@ -17,10 +17,10 @@ import { Field, Form, Formik, FormikConfig } from 'formik';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/styles';
 import * as Yup from 'yup';
-import { useFormatter } from "../../../../../components/i18n";
-import useFiltersState from "../../../../../utils/filters/useFiltersState";
+import { useFormatter } from '../../../../../components/i18n';
+import useFiltersState from '../../../../../utils/filters/useFiltersState';
 import { parse } from '../../../../../utils/Time';
-import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from "../../../../../utils/filters/filtersUtils";
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import PlaybookFlowFieldInPirFilters from './playbookFlowFields/PlaybookFlowFieldInPirFilters';
 import PlaybookFlowFieldTargets from './playbookFlowFields/PlaybookFlowFieldTargets';
 import PlaybookFlowFieldCaseTemplates from './playbookFlowFields/PlaybookFlowFieldCaseTemplates';
@@ -211,10 +211,15 @@ const PlaybookFlowForm = ({
                     );
                   }
                   if (property.type === 'boolean') {
+                    let helperText = '';
+                    if (propName === 'create_rel') {
+                      helperText = t_i18n('If both entities are of interest for selected PIR, then the target is kept');
+                    }
                     return (
                       <PlaybookFlowFieldBoolean
                         key={propName}
                         name={propName}
+                        helperText={helperText}
                         label={t_i18n(property.$ref ?? propName)}
                       />
                     );

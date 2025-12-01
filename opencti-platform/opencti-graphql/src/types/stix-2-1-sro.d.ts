@@ -11,13 +11,13 @@ export interface RelationExtension extends StixOpenctiExtension {
   source_type: string;
   source_ref_object_marking_refs: Array<string>;
   source_ref_granted_refs: Array<string>;
-  source_ref_pir_refs: Array<string>;
+  source_ref_pir_refs?: Array<string>;
   target_value: string;
   target_ref: string;
   target_type: string;
   target_ref_object_marking_refs: Array<string>;
   target_ref_granted_refs: Array<string>;
-  target_ref_pir_refs: Array<string>;
+  target_ref_pir_refs?: Array<string>;
   kill_chain_phases: Array<StixKillChainPhase>;
   coverage: Array<StixCoverage>;
   pir_score?: number;
