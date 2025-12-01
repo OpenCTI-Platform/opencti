@@ -30,7 +30,7 @@ const decayExclusionRuleWithNoMatchingRuleModel = {
   active: true,
 };
 
-const resolvedIndicator: BasicStoreEntityIndicator = {
+const resolvedIndicator = {
   _index: 'test_stix_domain_objects',
   pattern_type: 'stix',
   pattern: "[ipv4-addr:value = '36.76.6.46']",
@@ -50,7 +50,7 @@ const resolvedIndicator: BasicStoreEntityIndicator = {
   externalReferences: [],
   createObservables: false,
   entity_type: 'Indicator'
-}
+} as BasicStoreEntityIndicator;
 
 const decayExclusionRuleModelList: DecayExclusionRuleModel[] = [
   decayExclusionRuleEmptyFilterGroupModel,
