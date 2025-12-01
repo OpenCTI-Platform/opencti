@@ -9,11 +9,7 @@ import Box from '@mui/material/Box';
 import Filters from '@components/common/lists/Filters';
 import FilterIconButton from 'src/components/FilterIconButton';
 import useFiltersState from 'src/utils/filters/useFiltersState';
-import {
-  deserializeFilterGroupForFrontend,
-  emptyFilterGroup,
-  serializeFilterGroupForBackend,
-} from 'src/utils/filters/filtersUtils';
+import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
 import { FilterGroup } from 'src/utils/filters/filtersHelpers-types';
 import Button from '@mui/material/Button';
 import { handleErrorInForm } from '../../../../relay/environment';
@@ -96,7 +92,7 @@ const DecayExclusionRuleEdition = ({ data, isOpen, onClose }: DecayExclusionRule
   const handleClose = () => {
     onClose();
     filterHelpers.handleClearAllFilters();
-  }
+  };
 
   return (
     <Drawer

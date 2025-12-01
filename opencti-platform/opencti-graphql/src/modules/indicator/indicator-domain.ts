@@ -275,16 +275,6 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   checkScore(indicatorBaseScore);
 
-  const isDecayActivated: boolean = await isDecayEnabled();
-
-  let exclusionRule = null;
-  if (isDecayExclusionRuleEnabled) {
-    const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
-    const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
-    const resolvedIndicator = await inputResolveRefs(context, user, indicator, ENTITY_TYPE_INDICATOR, entitySetting);
-    exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
-  }
-
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
 
@@ -302,6 +292,16 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   };
   delete indicatorToCreate.basedOn;
   delete indicatorToCreate.createObservables;
+
+  const isDecayActivated: boolean = await isDecayEnabled();
+
+  let exclusionRule = null;
+  if (isDecayExclusionRuleEnabled) {
+    const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
+    const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
+    const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting);
+    exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+  }
 
   let finalIndicatorToCreate;
 

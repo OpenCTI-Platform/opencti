@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
   checkDecayExclusionRules,
-  type DecayExclusionRuleModel,
   type ResolvedDecayExclusionRule,
 } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
+import {
+  type BasicStoreEntityDecayExclusionRule,
+} from '../../../src/modules/decayRule/exclusions/decayExclusionRule-types'
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 const decayExclusionRuleEmptyFilterGroupModel = {
@@ -13,7 +15,7 @@ const decayExclusionRuleEmptyFilterGroupModel = {
   created_at: new Date(),
   decay_exclusion_filters: '{"mode":"and","filters":[],"filterGroups":[]}',
   active: true,
-};
+} as BasicStoreEntityDecayExclusionRule;
 
 const decayExclusionRuleWithMatchingFilterGroupModel = {
   id: 'matchingFilterGroup id',
@@ -22,7 +24,7 @@ const decayExclusionRuleWithMatchingFilterGroupModel = {
   created_at: new Date(),
   decay_exclusion_filters: '{"mode":"and","filters":[{"key":["objectMarking"],"operator":"eq","values":["14baccf5-f87d-4dae-bca5-5e0e90062dbb"],"mode":"or"},{"key":["objectLabel"],"operator":"eq","values":["97699018-9db6-4a47-9528-dd3145d78b4d"],"mode":"or"},{"key":["pattern_type"],"operator":"eq","values":["stix","tanium-signal"],"mode":"or"}],"filterGroups":[]}',
   active: true,
-};
+} as BasicStoreEntityDecayExclusionRule;
 
 const decayExclusionRuleWithNoMatchingRuleModel = {
   id: 'noMatchingFilterGroup id',
@@ -31,7 +33,7 @@ const decayExclusionRuleWithNoMatchingRuleModel = {
   created_at: new Date(),
   decay_exclusion_filters: '{"mode":"and","filters":[{"key":["indicator_types"],"operator":"eq","values":["compromised"],"mode":"or"},{"key":["objectMarking"],"operator":"eq","values":["14gredf5-f87d-4dae-bca5-5e0e90062dbb"],"mode":"or"}],"filterGroups":[]}',
   active: true,
-};
+} as BasicStoreEntityDecayExclusionRule;
 
 const resolvedIndicator = {
   _index: 'test_stix_domain_objects',
@@ -55,7 +57,7 @@ const resolvedIndicator = {
   entity_type: 'Indicator'
 } as ResolvedDecayExclusionRule;
 
-const decayExclusionRuleModelList: DecayExclusionRuleModel[] = [
+const decayExclusionRuleModelList = [
   decayExclusionRuleEmptyFilterGroupModel,
   decayExclusionRuleWithMatchingFilterGroupModel,
   decayExclusionRuleWithNoMatchingRuleModel,

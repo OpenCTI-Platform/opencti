@@ -6370,7 +6370,7 @@ export type DecayData = {
 
 export type DecayExclusionRule = BasicObject & InternalObject & {
   __typename?: 'DecayExclusionRule';
-  active: Scalars['Boolean']['output'];
+  active?: Maybe<Scalars['Boolean']['output']>;
   created_at: Scalars['DateTime']['output'];
   decay_exclusion_filters: Scalars['String']['output'];
   description?: Maybe<Scalars['String']['output']>;
@@ -6402,9 +6402,8 @@ export type DecayExclusionRuleEdge = {
 };
 
 export enum DecayExclusionRuleOrdering {
-  Score = '_score',
-  Name = 'name',
-  Order = 'order'
+  Active = 'active',
+  Name = 'name'
 }
 
 export type DecayHistory = {
@@ -39672,7 +39671,7 @@ export type DecayDataResolvers<ContextType = any, ParentType extends ResolversPa
 }>;
 
 export type DecayExclusionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['DecayExclusionRule'] = ResolversParentTypes['DecayExclusionRule']> = ResolversObject<{
-  active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  active?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   decay_exclusion_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

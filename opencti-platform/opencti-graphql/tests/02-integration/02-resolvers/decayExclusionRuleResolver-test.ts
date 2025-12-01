@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import gql from 'graphql-tag';
-import type { DecayExclusionRuleModel } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
+import type { StoreEntityDecayExclusionRule } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-types';
 import { queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
 
 export const DECAY_EXCLUSION_RULE_LIST_QUERY = gql`
@@ -50,8 +50,8 @@ const DECAY_EXCLUSION_RULE_DELETE = gql`
 `;
 
 describe('Decay Exclusion Rule', () => {
-  let createdDecayExclusionRule_1: DecayExclusionRuleModel | null = null;
-  let createdDecayExclusionRule_2: DecayExclusionRuleModel | null = null;
+  let createdDecayExclusionRule_1: StoreEntityDecayExclusionRule | null = null;
+  let createdDecayExclusionRule_2: StoreEntityDecayExclusionRule | null = null;
 
   describe('Create', async () => {
     const createInput = {
@@ -74,8 +74,8 @@ describe('Decay Exclusion Rule', () => {
         query: DECAY_EXCLUSION_RULE_CREATE,
         variables: { input: createInput2 }
       });
-      createdDecayExclusionRule_1 = decayExclusionRule.data?.decayExclusionRuleAdd as DecayExclusionRuleModel;
-      createdDecayExclusionRule_2 = decayExclusionRule2.data?.decayExclusionRuleAdd as DecayExclusionRuleModel;
+      createdDecayExclusionRule_1 = decayExclusionRule.data?.decayExclusionRuleAdd as StoreEntityDecayExclusionRule;
+      createdDecayExclusionRule_2 = decayExclusionRule2.data?.decayExclusionRuleAdd as StoreEntityDecayExclusionRule;
     });
 
     it('should create a decay exclusion rule', () => {

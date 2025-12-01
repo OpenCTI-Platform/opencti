@@ -43,8 +43,8 @@ export const checkDecayExclusionRules = async (
   context: AuthContext,
   user: AuthUser,
   resolvedIndicator: ResolvedDecayExclusionRule,
-  activeDecayExclusionRuleList: DecayExclusionRuleModel[]
-): Promise<DecayExclusionRuleModel | null> => {
+  activeDecayExclusionRuleList: BasicStoreEntityDecayExclusionRule[]
+): Promise<BasicStoreEntityDecayExclusionRule | null> => {
   if (!isDecayExclusionRuleEnabled) return null;
 
   const formattedIndicator = {
