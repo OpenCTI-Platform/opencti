@@ -10,8 +10,8 @@ import { FilterDefinition } from '../utils/hooks/useAuth';
 import useAttributes from '../utils/hooks/useAttributes';
 
 export const filterValuesContentQuery = graphql`
-    query FilterValuesContentQuery($filters: FilterGroup!) {
-        filtersRepresentatives(filters: $filters) {
+    query FilterValuesContentQuery($filters: FilterGroup!, $isMeValueForbidden: Boolean) {
+        filtersRepresentatives(filters: $filters, isMeValueForbidden: $isMeValueForbidden) {
             id
             value
             entity_type
@@ -31,7 +31,15 @@ interface FilterValuesContentProps {
 
 const FilterValuesContent: FunctionComponent<
 FilterValuesContentProps
-> = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition, filterOperator }) => {
+> = ({
+  redirection,
+  isFilterTooltip,
+  filterKey,
+  id,
+  value,
+  filterDefinition,
+  filterOperator,
+}) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes } = useAttributes();
   const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
