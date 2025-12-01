@@ -11,6 +11,7 @@ jobs:
       uses: ./.github/workflows/ci-docker-build.yml
       with:
         checkout_ref: ${{ github.event_name == 'pull_request'  && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
+        dockerfile_platform: Dockerfile.testing
       secrets: inherit
 
   wf-api-test:
