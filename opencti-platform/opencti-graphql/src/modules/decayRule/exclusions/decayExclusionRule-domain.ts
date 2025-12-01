@@ -1,28 +1,26 @@
 import { isStixMatchFilterGroup } from '../../../utils/filtering/filtering-stix/stix-filtering';
 import { now } from '../../../utils/format';
 import { FunctionalError, UnsupportedError } from '../../../config/errors';
-import {deleteElementById, inputResolveRefs, updateAttribute} from '../../../database/middleware';
+import {deleteElementById, updateAttribute} from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { BUS_TOPICS, isFeatureEnabled } from '../../../config/conf';
 import { pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../../schema/general';
 import { notify } from '../../../database/redis';
-import type { DecayExclusionRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayExclusionRulesArgs } from '../../../generated/graphql';
+import type {
+  DecayExclusionRuleAddInput,
+  EditInput,
+  Label,
+  MarkingDefinition,
+  QueryDecayExclusionRulesArgs,
+} from '../../../generated/graphql';
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
-import { type IndicatorAddInput } from '../../../generated/graphql';
-import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR } from '../../../modules/indicator/indicator-types';
-import { getEntitySettingFromCache } from '../../../modules/entitySetting/entitySetting-utils';
-import {RELATION_OBJECT_MARKING, RELATION_OBJECT_LABEL, RELATION_CREATED_BY} from '../../../schema/stixRefRelationship';
-
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
 
-interface ResolvedDecayExclusionRule extends IndicatorAddInput {
-  [RELATION_OBJECT_MARKING]?: string[];
-  [RELATION_OBJECT_LABEL]?: string[];
-  [RELATION_CREATED_BY]?: string;
-}
+export type ResolvedDecayExclusionRule = Record<string, any>;
+
 
 export interface DecayExclusionRuleModel {
   id: string;
@@ -61,7 +59,7 @@ export const checkDecayExclusionRules = async (
     object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
     labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.id),
-  };
+  } as ResolvedDecayExclusionRule;
 
   for (let i = 0; i < activeDecayExclusionRuleList.length; i += 1) {
     const { decay_exclusion_filters } = activeDecayExclusionRuleList[i];

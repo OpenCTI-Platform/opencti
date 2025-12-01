@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { checkDecayExclusionRules, type DecayExclusionRuleModel } from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
+import {
+  checkDecayExclusionRules,
+  type DecayExclusionRuleModel,
+  type ResolvedDecayExclusionRule,
+} from '../../../src/modules/decayRule/exclusions/decayExclusionRule-domain';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import type { BasicStoreEntityIndicator } from '../../../src/modules/indicator/indicator-types';
 
 const decayExclusionRuleEmptyFilterGroupModel = {
   id: 'emptyFilterGroup id',
@@ -50,7 +53,7 @@ const resolvedIndicator = {
   externalReferences: [],
   createObservables: false,
   entity_type: 'Indicator'
-} as BasicStoreEntityIndicator;
+} as ResolvedDecayExclusionRule;
 
 const decayExclusionRuleModelList: DecayExclusionRuleModel[] = [
   decayExclusionRuleEmptyFilterGroupModel,
@@ -58,7 +61,7 @@ const decayExclusionRuleModelList: DecayExclusionRuleModel[] = [
   decayExclusionRuleWithNoMatchingRuleModel,
 ];
 
-describe.skip('Decay Exclusion Rule', () => {
+describe('Decay Exclusion Rule', () => {
   describe('checkDecayExclusionRules', () => {
     describe('If there is a list of exclusion rules with at least one matching rule', async () => {
       const exclusionRule = await checkDecayExclusionRules(testContext, ADMIN_USER, resolvedIndicator, decayExclusionRuleModelList);
