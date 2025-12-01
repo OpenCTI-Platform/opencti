@@ -929,7 +929,9 @@ export const filterMembersWithUsersOrgs = async (
       } else {
         const memberOrgIds = member[RELATION_PARTICIPATE_TO] ?? [];
         const sameOrg = memberOrgIds.some((id) => userOrgIds.includes(id));
-        if (!sameOrg) {
+        if (sameOrg) {
+          resultMembers.push(member);
+        } else {
           if (filterMode === FilterMembersMode.RESTRICT) {
             const restrictedMember = {
               ...member,
@@ -942,8 +944,6 @@ export const filterMembersWithUsersOrgs = async (
             };
             resultMembers.push(restrictedMember);
           }
-        } else {
-          resultMembers.push(member);
         }
       }
     }
