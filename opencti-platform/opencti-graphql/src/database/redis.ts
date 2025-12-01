@@ -564,10 +564,10 @@ export const storeMergeEvent = async (
 export const buildStixUpdateEvent = (
   user: AuthUser,
   previousStix: StixCoreObject,
-  changes: Change[],
   stix: StixCoreObject,
   message: string,
-  opts: UpdateEventOpts = {}
+  opts: UpdateEventOpts = {},
+  changes: Change[] = []
 ): UpdateEvent => {
   // Build and send the event
   const patch = jsonpatch.compare(previousStix, stix);
@@ -605,7 +605,7 @@ const buildUpdateEvent = (user: AuthUser, previous: StoreObject, changes: Change
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
-  return buildStixUpdateEvent(user, previousStix, changes, stix, message, opts);
+  return buildStixUpdateEvent(user, previousStix, stix, message, opts);
 };
 export const storeUpdateEvent = async (
   context: AuthContext,
