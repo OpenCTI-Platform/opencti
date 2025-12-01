@@ -136,7 +136,8 @@ export const addPlaceholders = (
   }
   // Search for nodes with outputs and without connected nodes
   const nodesOutputs = nodes
-    .map((node) => node.data.component.ports
+    .filter((node) => node.data.component?.ports)
+    .map((node) => node.data.component!.ports
       .filter((port) => port.type === 'out')
       .map((port) => ({ ...node, port_id: port.id })))
     .flat();
