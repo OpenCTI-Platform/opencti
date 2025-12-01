@@ -86,7 +86,7 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                         ) : (
                           <TableRow>
                             <TableCell align="center" colSpan={3}>
-                              No changes
+                              {t_i18n('No changes')}
                             </TableCell>
                           </TableRow>
                         )}
