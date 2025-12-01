@@ -13146,13 +13146,12 @@ type DecayExclusionRule implements InternalObject & BasicObject {
   name: String!
   description: String
   decay_exclusion_filters: String!
-  active: Boolean!
+  active: Boolean
 }
 
 enum DecayExclusionRuleOrdering {
   name
-  order
-  _score
+  active
 }
 
 type DecayExclusionRuleEdge {

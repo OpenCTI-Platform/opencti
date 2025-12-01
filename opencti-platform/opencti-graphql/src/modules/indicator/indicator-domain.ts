@@ -56,7 +56,7 @@ import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
-import { checkDecayExclusionRules, getActiveDecayExclusionRule } from '../decayRule/exclusions/decayExclusionRule-domain';
+import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
 import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
@@ -297,7 +297,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   let exclusionRule = null;
   if (isDecayExclusionRuleEnabled) {
-    const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
+    const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
     const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
     const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting);
     exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);

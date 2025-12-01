@@ -11,6 +11,7 @@ import { notify } from '../../../database/redis';
 import type { DecayExclusionRuleAddInput, EditInput, Label, MarkingDefinition, QueryDecayExclusionRulesArgs } from '../../../generated/graphql';
 import { type BasicStoreEntityDecayExclusionRule, ENTITY_TYPE_DECAY_EXCLUSION_RULE, type StoreEntityDecayExclusionRule } from './decayExclusionRule-types';
 import { createInternalObject } from '../../../domain/internalObject';
+import { getEntitiesListFromCache } from '../../../database/cache';
 const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
 
 export type ResolvedDecayExclusionRule = Record<string, any>;
@@ -33,10 +34,10 @@ export const findDecayExclusionRulePaginated = (context: AuthContext, user: Auth
   return pageEntitiesConnection<BasicStoreEntityDecayExclusionRule>(context, user, [ENTITY_TYPE_DECAY_EXCLUSION_RULE], args);
 };
 
-export const getActiveDecayExclusionRule = async (context: AuthContext, user: AuthUser) => {
+export const getActiveDecayExclusionRules = async (context: AuthContext, user: AuthUser) => {
   if (!isDecayExclusionRuleEnabled) return [];
-  const decayExclusionRuleEdges = await findDecayExclusionRulePaginated(context, user, {});
-  return decayExclusionRuleEdges.edges.map(({ node }) => node).filter((rule) => rule.active);
+  const decayExclusionRuleList = await getEntitiesListFromCache(context, user, ENTITY_TYPE_DECAY_EXCLUSION_RULE);
+  return decayExclusionRuleList.filter((rule) => rule.active);
 };
 
 export const checkDecayExclusionRules = async (
@@ -51,7 +52,7 @@ export const checkDecayExclusionRules = async (
     ...resolvedIndicator,
     object_marking_refs: (resolvedIndicator[INPUT_MARKINGS] ?? []).map((marking: MarkingDefinition) => marking.standard_id),
     created_by_ref: resolvedIndicator[INPUT_CREATED_BY]?.standard_id ?? '',
-    labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.id),
+    labels: (resolvedIndicator[INPUT_LABELS] ?? []).map((label: Label) => label.value),
   } as ResolvedDecayExclusionRule;
 
   for (let i = 0; i < activeDecayExclusionRuleList.length; i += 1) {
