@@ -566,8 +566,8 @@ export const buildStixUpdateEvent = (
   previousStix: StixCoreObject,
   stix: StixCoreObject,
   message: string,
+  changes: Change[],
   opts: UpdateEventOpts = {},
-  changes: Change[] = []
 ): UpdateEvent => {
   // Build and send the event
   const patch = jsonpatch.compare(previousStix, stix);
@@ -601,11 +601,11 @@ export const buildStixUpdateEvent = (
 export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
   await pushToStream(context, user, getClientBase(), event);
 };
-const buildUpdateEvent = (user: AuthUser, previous: StoreObject, changes: Change[], instance: StoreObject, message: string, opts: UpdateEventOpts): UpdateEvent => {
+const buildUpdateEvent = (user: AuthUser, previous: StoreObject, instance: StoreObject, message: string, changes: Change[], opts: UpdateEventOpts): UpdateEvent => {
   // Build and send the event
   const stix = convertStoreToStix_2_1(instance) as StixCoreObject;
   const previousStix = convertStoreToStix_2_1(previous) as StixCoreObject;
-  return buildStixUpdateEvent(user, previousStix, stix, message, opts);
+  return buildStixUpdateEvent(user, previousStix, stix, message, changes, opts);
 };
 export const storeUpdateEvent = async (
   context: AuthContext,
@@ -618,7 +618,7 @@ export const storeUpdateEvent = async (
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
-      const event = buildUpdateEvent(user, previous, changes, instance, message, opts);
+      const event = buildUpdateEvent(user, previous, instance, message, changes, opts);
       await pushToStream(context, user, getClientBase(), event, opts);
       return event;
     }
