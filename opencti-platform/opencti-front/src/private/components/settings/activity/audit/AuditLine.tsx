@@ -100,6 +100,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const data = useFragment(AuditLineFragment, node);
   const message = useGenerateAuditMessage<AuditLine_node$data>(data);
   const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
+  const changes= data?.context_data?.changes;
 
   return (
     <>
@@ -142,7 +143,6 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                     textAlign: 'center',
                   }}
                   >
-                    {data?.context_data?.changes && data.context_data.changes.length > 0 ? (
                     <TableContainer component={Paper}>
                       <Table sx={{ minWidth: 650 }} size="small">
                         <TableHead>
@@ -153,7 +153,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {data?.context_data?.changes.map((row) => (
+                          {changes && changes.length > 0 ? (changes.map((row) => (
                             <TableRow
                               key={row?.field}
                               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -161,24 +161,27 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                               <TableCell component="th" scope="row">
                                 {row?.field}
                               </TableCell>
-                              <TableCell align="left">{row?.previous}</TableCell>
-                              <TableCell align="left">{row?.new}</TableCell>
+                              <TableCell align="left">{row?.previous ?? '-'}</TableCell>
+                              <TableCell align="left">{row?.new ?? '-'}</TableCell>
                             </TableRow>
-                          ))}
+                          ))
+                            ): (
+                              <TableRow>
+                                <TableCell align="center" colSpan={3}>
+                                  No changes
+                                </TableCell>
+                              </TableRow>
+                            )}
                         </TableBody>
                       </Table>
                     </TableContainer>
-                      ): (
-                      <div>
-                        {t_i18n('No detail in this log')}
-                      </div>
-                    )}
+
                   </div>
                 </div>
               </Paper>
             </Grid>
           </div>
-          <div style={{ marginTop: 16 }}>
+          <div style={{ marginTop: 20}}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Raw data')}
             </Typography>

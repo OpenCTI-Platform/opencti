@@ -87,6 +87,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
     <Paper
       style={{
         borderRadius: 4,
+        overflowY: 'auto',
       }}
       className={'paper-for-grid'}
       variant="outlined"

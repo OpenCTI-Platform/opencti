@@ -14,7 +14,7 @@ import TableBody from '@mui/material/TableBody';
 import { useTheme } from '@mui/styles';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
-import { useFormatter } from "../../../../components/i18n";
+import { useFormatter } from '../../../../components/i18n';
 
 interface HistoryDrawerProps {
   open: boolean
@@ -27,6 +27,7 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
   const data = useFragment(StixCoreObjectHistoryFragment, node);
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
+  const changes = data?.context_data?.changes;
 
   return (
     <Drawer
@@ -37,7 +38,7 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
       <div>
         <div>
           <Typography variant="h4" gutterBottom={true}>
-            {('Message')}
+            {t_i18n('Message')}
           </Typography>
           <MarkdownDisplay
             content={data?.context_data?.message ?? ''}
@@ -47,7 +48,7 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
         </div>
         <div style={{ marginTop: 16 }}>
           <Typography variant="h4" gutterBottom={true}>
-            {('Details')}
+            {t_i18n('Details')}
           </Typography>
           <Paper style={{ marginTop: theme.spacing(1), position: 'relative' }}>
             <div style={{ height: '100%', width: '100%' }}>
@@ -59,18 +60,18 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                 textAlign: 'center',
               }}
               >
-                {data?.context_data?.changes && data.context_data.changes.length > 0 ? (
+
                 <TableContainer component={Paper}>
                   <Table sx={{ minWidth: 650 }} size="small">
                     <TableHead>
                       <TableRow>
                         <TableCell></TableCell>
-                        <TableCell align="left">Previous value</TableCell>
-                        <TableCell align="left">New value</TableCell>
+                        <TableCell align="left">{t_i18n('Previous value')}</TableCell>
+                        <TableCell align="left">{t_i18n('New value')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {data?.context_data?.changes.map((row) => (
+                      {changes && changes.length > 0 ? (changes.map((row) => (
                         <TableRow
                           key={row?.field}
                           sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
@@ -78,18 +79,20 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                           <TableCell component="th" scope="row">
                             {row?.field}
                           </TableCell>
-                          <TableCell align="left">{row?.previous}</TableCell>
-                          <TableCell align="left">{row?.new}</TableCell>
+                          <TableCell align="left">{row?.previous ?? '-'}</TableCell>
+                          <TableCell align="left">{row?.new ?? '-'}</TableCell>
                         </TableRow>
-                      ))}
+                      ))
+                        ) : (
+                          <TableRow>
+                            <TableCell align="center" colSpan={3}>
+                              No changes
+                            </TableCell>
+                          </TableRow>
+                        )}
                     </TableBody>
                   </Table>
                 </TableContainer>
-                ) : (
-                  <div>
-                    {t_i18n('No detail in this log')}
-                  </div>
-                  )}
               </div>
             </div>
           </Paper>
