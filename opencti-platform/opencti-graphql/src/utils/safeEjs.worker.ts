@@ -2,7 +2,6 @@ import { parentPort, workerData } from 'worker_threads';
 import type { Data } from 'ejs';
 import { safeRender } from './safeEjs';
 import type { SafeRenderOptions } from './safeEjs';
-import NotificationTool from './NotificationTool';
 
 export interface WorkerRequest {
   template: string;
