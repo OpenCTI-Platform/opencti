@@ -32,7 +32,7 @@ const StixSightingRelationshipLatestHistory = ({stixSightingRelationshipId}) => 
         <React.Suspense fallback={<div />}>
           <StixSightingRelationshipHistoryLines
             stixSightingRelationshipId={stixSightingRelationshipId}
-            node={queryRef}
+            queryRef={queryRef}
             isRelationLog={false}
             paginationOptions={paginationOptions}
           />
