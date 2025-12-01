@@ -385,8 +385,8 @@ const eventCreateRelationshipWithOnlyFlaggedTarget = {
   });
 
   describe('stixIdOfLinkedEntity', () => {
-    it('should return null if it is a stix relation with no PIR involved', async () => {
-      const result = await stixIdOfLinkedEntity(
+    it('should return null if it is a stix relation with no PIR involved', () => {
+      const result = stixIdOfLinkedEntity(
         eventCreateRelationshipWithNoPir,
         { create_rel: true } as PirStreamConfiguration,
         randomPirList,
@@ -394,8 +394,8 @@ const eventCreateRelationshipWithOnlyFlaggedTarget = {
       expect(result).toBeNull();
     });
 
-    it('should return null if it is a stix relation but not a relationship creation', async () => {
-      const result = await stixIdOfLinkedEntity(
+    it('should return null if it is a stix relation but not a relationship creation', () => {
+      const result = stixIdOfLinkedEntity(
         eventDeleteRelationshipWithNoPir,
         { create_rel: false } as PirStreamConfiguration,
         randomPirList,
@@ -403,26 +403,26 @@ const eventCreateRelationshipWithOnlyFlaggedTarget = {
       expect(result).toBeNull();
     });
 
-    it('should return expected id if there is no pirList and at least one source ref pir id', async () => {
-      const result = await stixIdOfLinkedEntity(
+    it('should return expected id if there is no pirList and at least one source ref pir id', () => {
+      const result = stixIdOfLinkedEntity(
         eventCreateRelationshipWithOnlyFlaggedSource,
         { create_rel: true } as PirStreamConfiguration,
       );
       expect(result).toBe('vulnerability--target-id');
     });
 
-    it('should return expected id if there is no pirList and no source ref pir id, and target has at least one pir id', async () => {
+    it('should return expected id if there is no pirList and no source ref pir id, and target has at least one pir id', () => {
 
-      const result = await stixIdOfLinkedEntity(
+      const result = stixIdOfLinkedEntity(
         eventCreateRelationshipWithOnlyFlaggedTarget,
         { create_rel: true } as PirStreamConfiguration,
       );
       expect(result).toBe('malware--source-id');
     });
 
-    it('should return expected id if there is a pirList that matches at least one of the source ref pir id', async () => {
+    it('should return expected id if there is a pirList that matches at least one of the source ref pir id', () => {
 
-      const result = await stixIdOfLinkedEntity(
+      const result = stixIdOfLinkedEntity(
         eventCreateRelationshipWithOnlyFlaggedSource,
         { create_rel: true } as PirStreamConfiguration,
         randomPirList
@@ -430,9 +430,9 @@ const eventCreateRelationshipWithOnlyFlaggedTarget = {
       expect(result).toBe('vulnerability--target-id');
     });
 
-    it('should return expected id if there is a pirList that does not match the source ref pir id but matches at least one of the target ref pir id', async () => {
+    it('should return expected id if there is a pirList that does not match the source ref pir id but matches at least one of the target ref pir id', () => {
 
-      const result = await stixIdOfLinkedEntity(
+      const result = stixIdOfLinkedEntity(
         eventCreateRelationshipWithOnlyFlaggedTarget,
         { create_rel: true } as PirStreamConfiguration,
         randomPirList
