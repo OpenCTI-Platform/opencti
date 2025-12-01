@@ -10,7 +10,7 @@ import {
   timeSeriesEntities,
 } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
+import {BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp} from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError, ValidationError } from '../../config/errors';
@@ -263,6 +263,8 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   return { formattedPattern };
 };
 
+const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
+
 export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
   let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
   if (observableType === 'File') {
@@ -283,10 +285,13 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   const isDecayActivated: boolean = await isDecayEnabled();
 
-  const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
-  const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
-  const resolvedIndicator = await inputResolveRefs(context, user, indicator, ENTITY_TYPE_INDICATOR, entitySetting);
-  const exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+  let exclusionRule = null;
+  if (isDecayExclusionRuleEnabled) {
+    const activeDecayExclusionRuleList = await getActiveDecayExclusionRule(context, user);
+    const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
+    const resolvedIndicator = await inputResolveRefs(context, user, indicator, ENTITY_TYPE_INDICATOR, entitySetting);
+    exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+  }
 
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
@@ -308,7 +313,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   let finalIndicatorToCreate;
 
-  if (isDecayActivated && exclusionRule) {
+  if (isDecayActivated && exclusionRule && isDecayExclusionRuleEnabled) {
     finalIndicatorToCreate = {
       ...indicatorToCreate,
       decay_exclusion_applied_rule: {
