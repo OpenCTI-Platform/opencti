@@ -1,5 +1,4 @@
- 
-import { defineConfig } from 'vitest/config';
+ import { defineConfig } from 'vitest/config';
 import graphql from '@rollup/plugin-graphql';
 import type { PluginOption } from 'vite';
 import { BaseSequencer, type TestSpecification } from 'vitest/node';
