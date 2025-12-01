@@ -83,6 +83,7 @@ import Security from '../../../utils/Security';
 import useGranted, {
   AUTOMATION_AUTMANAGE,
   BYPASS,
+  canOnlyAccesToImportDataDrafts,
   CSVMAPPERS,
   EXPLORE,
   INGESTION,
@@ -224,7 +225,7 @@ const LeftBar = () => {
   } = useAuth();
   const navigate = useNavigate();
   const isGrantedToKnowledge = useGranted([KNOWLEDGE]);
-  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]);
+  const isGrantedToImport = useGranted([KNOWLEDGE_KNASKIMPORT]) || canOnlyAccesToImportDataDrafts();
   const isGrantedToProcessing = useGranted([KNOWLEDGE_KNUPDATE, AUTOMATION_AUTMANAGE, CSVMAPPERS]);
   const isGrantedToSharing = useGranted([TAXIIAPI]);
   const isGrantedToManage = useGranted([BYPASS]);

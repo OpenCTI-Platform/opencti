@@ -23,6 +23,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { DraftsLines_data$data } from './__generated__/DraftsLines_data.graphql';
 import { DraftsLinesPaginationQuery, DraftsLinesPaginationQuery$variables } from './__generated__/DraftsLinesPaginationQuery.graphql';
 import DraftPopover from './DraftPopover';
+import { canOnlyAccesToImportDataDrafts } from '../../../utils/hooks/useGranted';
 
 const DraftLineFragment = graphql`
     fragment Drafts_node on DraftWorkspace {
@@ -222,7 +223,7 @@ const Drafts: FunctionComponent<DraftsProps> = ({ entityId, openCreate, setOpenC
           <Breadcrumbs
             elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
           />
-          <ImportMenu />
+          {!canOnlyAccesToImportDataDrafts() && (<ImportMenu />)}
         </>
       )}
       {queryRef && (

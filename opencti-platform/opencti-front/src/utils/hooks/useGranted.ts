@@ -62,6 +62,17 @@ const getCapabilitiesName = (capabilities: readonly { name: string }[]) => {
   return (capabilities ?? []).map((capability) => capability?.name);
 };
 
+// Check if the user can only access import data drafts
+export const canOnlyAccesToImportDataDrafts = (): boolean => {
+  if (useGranted([KNOWLEDGE_KNASKIMPORT])) {
+    return false;
+  }
+  const { me } = useAuth();
+  
+  const userCapabilitiesInDraft = getCapabilitiesName(me.capabilitiesInDraft);
+  return userCapabilitiesInDraft.includes(KNOWLEDGE);
+};
+
 const useGranted = (capabilities: string[], matchAll = false): boolean => {
   // Prevent use of the old SETTINGS capability for future uses
   if (capabilities.includes(SETTINGS)) {
