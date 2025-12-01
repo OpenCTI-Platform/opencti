@@ -2209,7 +2209,8 @@ input MigrateConnectorToManagedInput {
   connectorId: ID!
   contractSlug: String!
   configuration: [ContractConfigInput!]
-  preserveState: Boolean
+  resetConnectorState: Boolean
+  convertUserToServiceAccount: Boolean
 }
 
 # CONNECTOR MIGRATION ASSESSMENT TYPES
@@ -2242,31 +2243,20 @@ type MissingConfigKey {
   description: String!
   format: String
   enum: [String!]
+  default: JSON
 }
 
 type MigrationAssessment {
   connector_id: ID!
   connector_name: String!
   contract_slug: String!
-  contract_title: String!
   summary: MigrationAssessmentSummary!
   mapped: [MappedConfigKey!]!
   ignored: [IgnoredConfigKey!]!
   missing: [MissingConfigKey!]!
 }
-
-# CONNECTOR MIGRATION RESULT TYPES
-type MigrationWarning {
-  field: String
-  message: String!
-}
-
 type MigrateConnectorToManagedResult {
   connector: Connector!
-  warnings: [MigrationWarning!]!
-  state_preserved: Boolean!
-  dryRun: Boolean!
-  skipped: Boolean
 }
 
 type Connector implements BasicObject & InternalObject {

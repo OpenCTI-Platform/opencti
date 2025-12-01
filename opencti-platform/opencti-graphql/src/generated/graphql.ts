@@ -14996,6 +14996,7 @@ export type MigrateConnectorToManagedInput = {
   configuration?: InputMaybe<Array<ContractConfigInput>>;
   connectorId: Scalars['ID']['input'];
   contractSlug: Scalars['String']['input'];
+  convertUserToServiceAccount?: InputMaybe<Scalars['Boolean']['input']>;
   preserveState?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
@@ -15038,6 +15039,7 @@ export type MigrationWarning = {
 
 export type MissingConfigKey = {
   __typename?: 'MissingConfigKey';
+  default?: Maybe<Scalars['JSON']['output']>;
   description: Scalars['String']['output'];
   enum?: Maybe<Array<Scalars['String']['output']>>;
   format?: Maybe<Scalars['String']['output']>;
@@ -43160,6 +43162,7 @@ export type MigrationWarningResolvers<ContextType = any, ParentType extends Reso
 }>;
 
 export type MissingConfigKeyResolvers<ContextType = any, ParentType extends ResolversParentTypes['MissingConfigKey'] = ResolversParentTypes['MissingConfigKey']> = ResolversObject<{
+  default?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   enum?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   format?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

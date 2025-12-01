@@ -66,7 +66,7 @@ import { getConnectorQueueSize } from '../database/rabbitmq';
 import { redisGetConnectorLogs } from '../database/redis';
 import pjson from '../../package.json';
 import { ConnectorPriorityGroup } from '../generated/graphql';
-import { assessConnectorMigration } from '../domain/connector-migration';
+import { assessConnectorMigration, migrateConnectorToManaged } from '../domain/connector-migration';
 
 export const PLATFORM_VERSION = pjson.version;
 
@@ -90,9 +90,7 @@ const connectorResolvers = {
     connectorManager: (_, { managerId }, context) => connectorManager(context, context.user, managerId),
     connectorManagers: (_, __, context) => connectorManagers(context, context.user),
     connectorMigrationAssessment: async (_, { connectorId, contractSlug, configuration }, context) => {
-      const a = await assessConnectorMigration(context, context.user, connectorId, contractSlug, configuration);
-      console.log('------res ? ', a);
-      return a;
+      return assessConnectorMigration(context, context.user, connectorId, contractSlug, configuration);
     }
     // endregion
   },
@@ -193,18 +191,18 @@ const connectorResolvers = {
     synchronizerStop: (_, { id }, context) => patchSync(context, context.user, id, { running: false }),
     synchronizerTest: (_, { input }, context) => testSync(context, context.user, input),
 
-    // connectorMigrateToManaged: (_, { input, dryRun }, context) => {
-    //   const { connectorId, contractSlug, configuration, preserveState } = input;
-    //   return migrateConnectorToManaged(
-    //     context,
-    //     context.user,
-    //     connectorId,
-    //     contractSlug,
-    //     configuration,
-    //     preserveState,
-    //     dryRun
-    //   );
-    // },
+    connectorMigrateToManaged: (_, { input }, context) => {
+      const { connectorId, contractSlug, configuration, resetConnectorState, convertUserToServiceAccount = false } = input;
+      return migrateConnectorToManaged(
+        context,
+        context.user,
+        connectorId,
+        contractSlug,
+        configuration,
+        resetConnectorState,
+        convertUserToServiceAccount,
+      );
+    },
   },
 };
 

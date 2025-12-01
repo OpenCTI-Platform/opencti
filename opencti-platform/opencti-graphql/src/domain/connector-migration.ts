@@ -1,10 +1,20 @@
+import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
-import { storeLoadById } from '../database/middleware-loader';
-import { connector, connectorManagers } from '../database/repository';
-import { findContractBySlug, getContractBySlug, getSupportedSlugs } from '../modules/catalog/catalog-domain';
-import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import type { BasicStoreEntityConnector } from '../types/connector';
+import { patchAttribute } from '../database/middleware';
+import { fullEntitiesList, storeLoadById } from '../database/middleware-loader';
+import { unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
+import { notify } from '../database/redis';
+import { completeConnector, connector } from '../database/repository';
+import type { ConnectorContractConfiguration, ContractConfigInput } from '../generated/graphql';
+import { publishUserAction } from '../listener/UserActionListener';
+import { addConnectorDeployedCount } from '../manager/telemetryManager';
+import { computeConnectorTargetContract, findContractBySlug } from '../modules/catalog/catalog-domain';
+import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_USER } from '../schema/internalObject';
+import type { BasicStoreEntityConnectorManager } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
+import { isServiceAccountUser } from '../utils/access';
+import { userEditField } from './user';
 
 type ConfigInput = {
   key: string;
@@ -25,7 +35,7 @@ type MissingKey = {
   description: string;
   format?: string;
   required: boolean;
-  defaultValue: any;
+  default: any;
   enum: string[] | null;
 };
 
@@ -43,15 +53,100 @@ export const getConnector = async (context: AuthContext, user: AuthUser, id: str
   }
 };
 
-const checkComposerRegistered = async (context:AuthContext, user: AuthUser) => {
-  const managers = await connectorManagers(context, user);
-  return managers.length > 0;
+const buildConfigMap = (configuration: ConfigInput[] | Record<string, string>): Map<string, string> => {
+  const configMap = new Map<string, string>();
+
+  if (Array.isArray(configuration)) {
+    configuration.forEach((c) => {
+      configMap.set(c.key.toUpperCase(), c.value);
+    });
+  } else {
+    Object.entries(configuration).forEach(([key, value]) => {
+      configMap.set(key.toUpperCase(), value);
+    });
+  }
+
+  return configMap;
 };
 
-export const migrateConnectorToManagedConnector = async (context:AuthContext, user: AuthUser, id: string) => {
-  if (!checkComposerRegistered(context, user)) {
-    throw FunctionalError('No registered composer found');
+const autoMapConnectorFields = (connectorOjb: any): Map<string, string> => {
+  const autoMapped = new Map<string, string>();
+
+  if (connectorOjb.name) {
+    autoMapped.set('CONNECTOR_NAME', connectorOjb.name);
   }
+
+  if (connectorOjb.connector_scope) {
+    const scopeValue = Array.isArray(connectorOjb.connector_scope)
+      ? connectorOjb.connector_scope.join(',')
+      : connectorOjb.connector_scope;
+    autoMapped.set('CONNECTOR_SCOPE', scopeValue);
+  }
+
+  if (connectorOjb.connector_type) {
+    autoMapped.set('CONNECTOR_TYPE', connectorOjb.connector_type);
+  }
+
+  return autoMapped;
+};
+
+const categorizeKeys = (
+  schemaProperties: any,
+  requiredKeys: string[],
+  configMap: Map<string, string>,
+  autoMappedKeys: Map<string, string>
+): { mapped: MappedKey[]; missing: MissingKey[] } => {
+  const mapped: MappedKey[] = [];
+  const missing: MissingKey[] = [];
+
+  Object.keys(schemaProperties).forEach((schemaKey) => {
+    const propSchema = schemaProperties[schemaKey];
+
+    const keyUpper = schemaKey.toUpperCase();
+    const value = autoMappedKeys.has(keyUpper)
+      ? autoMappedKeys.get(keyUpper)
+      : configMap.get(keyUpper);
+
+    if (value !== null && value !== undefined) {
+      mapped.push({
+        key: schemaKey,
+        value: String(value),
+        type: propSchema.type,
+        required: requiredKeys.includes(schemaKey)
+      });
+    } else {
+      missing.push({
+        key: schemaKey,
+        type: propSchema.type,
+        description: propSchema.description || 'No description',
+        format: propSchema.format,
+        required: requiredKeys.includes(schemaKey),
+        default: propSchema.default ?? null,
+        enum: propSchema.enum ?? null
+      });
+    }
+  });
+
+  return { mapped, missing };
+};
+
+const findIgnoredKeys = (schemaProperties: any, configMap: Map<string, string>): IgnoredKey[] => {
+  const ignored: IgnoredKey[] = [];
+  const schemaKeysUpper = new Set(
+    Object.keys(schemaProperties).map((k) => k.toUpperCase())
+  );
+
+  configMap.forEach((value: string, key: string) => {
+    if (!schemaKeysUpper.has(key)) {
+      ignored.push({
+        key,
+        value: String(value),
+        reason: 'Not in target contract schema'
+      });
+    }
+  });
+
+  return ignored;
 };
 
 export const assessConnectorMigration = async (context: AuthContext, user: AuthUser, connectorId: string, contractSlug: string, configuration: ConfigInput[]) => {
@@ -80,6 +175,7 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { logo, description, short_description, ...contractDefinition } = contract;
 
+  // Check type are correct
   if (existingConnector.connector_type !== contractDefinition.container_type) {
     throw FunctionalError('Connector type mismatch', {
       connector_type: existingConnector.connector_type,
@@ -87,67 +183,27 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
     });
   }
 
+  // Build configuration maps
+  const autoMappedConfig = autoMapConnectorFields(existingConnector);
+  const userConfig = buildConfigMap(configuration || {});
+
+  // Merge: auto-mapped first, then user config (user overrides auto)
+  const configMap = new Map([...autoMappedConfig, ...userConfig]);
+
+  // Categorize configuration keys
   const schemaProperties = contractDefinition.config_schema.properties;
   const requiredKeys = contractDefinition.config_schema.required || [];
 
-  const sourceConfig = configuration || {};
-
-  const configMap = new Map();
-  if (Array.isArray(sourceConfig)) {
-    sourceConfig.forEach((c) => {
-      configMap.set(c.key.toUpperCase(), c.value);
-    });
-  } else {
-    Object.entries(sourceConfig).forEach(([key, value]) => {
-      configMap.set(key.toUpperCase(), value);
-    });
-  }
-
-  const mapped: any[] = [];
-  const missing: any[] = [];
-
-  Object.keys(schemaProperties).forEach((schemaKey) => {
-    const propSchema = schemaProperties[schemaKey];
-    const value = configMap.get(schemaKey.toUpperCase());
-
-    if (value !== null && value !== undefined) {
-      mapped.push({
-        key: schemaKey,
-        value: String(value),
-        type: propSchema.type,
-        required: requiredKeys.includes(schemaKey)
-      });
-    } else {
-      const isRequired = requiredKeys.includes(schemaKey);
-      const hasDefault = propSchema.default !== undefined;
-
-      missing.push({
-        key: schemaKey,
-        type: propSchema.type,
-        description: propSchema.description || 'No description',
-        format: propSchema.format,
-        required: isRequired,
-        defaultValue: hasDefault ? propSchema.default : null,
-        enum: propSchema.enum ?? null
-      });
-    }
-  });
-
-  const ignored: any[] = [];
-  const schemaKeysUpper = new Set(
-    Object.keys(schemaProperties).map((k) => k.toUpperCase())
+  const { mapped, missing } = categorizeKeys(
+    schemaProperties,
+    requiredKeys,
+    configMap,
+    autoMappedConfig
   );
 
-  configMap.forEach((value: string, key: string) => {
-    if (!schemaKeysUpper.has(key)) {
-      ignored.push({
-        key,
-        value: String(value),
-        reason: 'Not in target contract schema'
-      });
-    }
-  });
+  const ignored = findIgnoredKeys(schemaProperties, configMap);
 
+  // Build summary
   const missingMandatory = missing.filter((m) => m.required);
 
   return {
@@ -175,96 +231,184 @@ export const assessConnectorMigration = async (context: AuthContext, user: AuthU
   };
 };
 
-interface MigrationWarning {
-  field?: string;
-  message: string;
-}
-
-interface MigrateConnectorToManagedResult {
-  connector: BasicStoreEntityConnector;
-  warnings: MigrationWarning[];
-  state_preserved: boolean;
-  dryRun: boolean;
-  skipped?: boolean;
-}
+const hasServiceAccountProperty = (user: any): user is AuthUser & { service_account?: boolean } => {
+  return user && typeof user === 'object' && 'user_service_account' in user;
+};
 
 export const migrateConnectorToManaged = async (
   context: AuthContext,
   user: AuthUser,
   connectorId: string,
   contractSlug: string,
-  configuration: Array<{ key: string; value: string }> | null = null,
-  preserveState: boolean = true,
-  dryRun: boolean = false
-): Promise<MigrateConnectorToManagedResult> => {
-  // 1. Get connector
+  configuration: ConfigInput[] | null,
+  convertUserToServiceAccount: boolean = false,
+  resetConnectorState: boolean = false,
+) => {
+  const contractData = await findContractBySlug(context, user, contractSlug);
+  if (!contractData) {
+    throw FunctionalError('Contract not found', { slug: contractSlug });
+  }
+
+  let contract;
+  try {
+    contract = JSON.parse(contractData.contract);
+  } catch (e) {
+    throw FunctionalError('Cannot parse contract');
+  }
+
+  if (!contract.manager_supported) {
+    throw FunctionalError('Connector is not managed by composer');
+  }
+
   const existingConnector = await connector(context, user, connectorId);
+
   if (!existingConnector) {
     throw FunctionalError('Connector not found', { id: connectorId });
   }
-
-  // 2. Check if already managed
   if (existingConnector.is_managed) {
-    return {
-      connector: existingConnector,
-      warnings: [{ message: 'Connector is already managed' }],
-      state_preserved: false,
-      dryRun,
-      skipped: true
-    };
+    throw FunctionalError('Connector is already managed', { id: connectorId });
   }
 
-  // 3. Get contract by slug
-  // TODO: Implement getContractBySlug
+  if (existingConnector.connector_type !== contract.container_type) {
+    throw FunctionalError('Connector type mismatch', {
+      connector_type: existingConnector.connector_type,
+      contract_type: contract.container_type
+    });
+  }
 
-  // 4. Validate type compatibility
-  // TODO: Implement validation
+  const connectorManagers = await fullEntitiesList<BasicStoreEntityConnectorManager>(
+    context,
+    user,
+    [ENTITY_TYPE_CONNECTOR_MANAGER]
+  );
+  if (connectorManagers?.length < 1) {
+    throw FunctionalError('No connector manager configured');
+  }
+  const currentManager = connectorManagers[0];
 
-  // 5. Map configuration
-  // TODO: Implement mapStandaloneConfigToContract
+  const autoMappedConfig = autoMapConnectorFields(existingConnector);
+  const userConfig = buildConfigMap(configuration || []);
+  const configMap = new Map([...autoMappedConfig, ...userConfig]);
 
-  // 6. Validate - check missing required fields
-  // TODO: Implement findMissingRequiredFields
+  const schemaProperties = contract.config_schema.properties;
+  const schemaKeysUpper = new Set(
+    Object.keys(schemaProperties).map((k) => k.toUpperCase())
+  );
 
-  // 7. Get manager for encryption
-  // TODO: Implement getActiveConnectorManager
+  const invalidKeys: string[] = [];
+  userConfig.forEach((value: string, key: string) => {
+    if (!schemaKeysUpper.has(key)) {
+      invalidKeys.push(key);
+    }
+  });
 
-  // 8. Process config (with encryption)
-  // TODO: Implement computeConnectorTargetContract
+  if (invalidKeys.length > 0) {
+    throw FunctionalError('Invalid configuration keys provided', {
+      invalid_keys: invalidKeys,
+      message: `The following keys do not exist in the contract schema: ${invalidKeys.join(', ')}`
+    });
+  }
 
-  // 9. Build update payload
-  const updatePayload = {
-    // TODO: Build payload
+  const configurationArray: ContractConfigInput[] = Array.from(configMap.entries()).map(([key, value]) => ({
+    key,
+    value
+  }));
+
+  let configurations: ConnectorContractConfiguration[];
+  try {
+    configurations = computeConnectorTargetContract(
+      configurationArray,
+      contract,
+      currentManager.public_key,
+    );
+  } catch (err: any) {
+    throw FunctionalError('Configuration validation failed', {
+      message: err.message,
+      details: err.data
+    });
+  }
+
+  // these fields are provided by the runtime resolver connector.manager_contract_definition
+  // so remove them
+  const RUNTIME_PROVIDED_FIELDS = ['CONNECTOR_NAME', 'CONNECTOR_ID', 'CONNECTOR_TYPE'];
+  const filteredConfigurations = configurations.filter(
+    (config) => !RUNTIME_PROVIDED_FIELDS.includes(config.key)
+  );
+
+  const existingUser = await storeLoadById(
+    context,
+    user,
+    existingConnector.connector_user_id,
+    ENTITY_TYPE_USER
+  );
+
+  // If existing user is not a service account, transform it to service account
+  if (
+    hasServiceAccountProperty(existingUser)
+    && !isServiceAccountUser(existingUser)
+    && convertUserToServiceAccount
+  ) {
+    await userEditField(
+      context,
+      user,
+      existingUser.id,
+      [{ key: 'user_service_account', value: [true] }]
+    );
+  }
+
+  const managedConnectorData: any = {
+    title: existingConnector.name,
+    catalog_id: contractData.catalog_id,
+    manager_contract_image: contract.container_image,
+    manager_contract_configuration: filteredConfigurations,
+    manager_requested_status: 'stopped',
   };
 
-  // 10. Generate warnings
-  const warnings: MigrationWarning[] = [];
-  // TODO: Generate warnings
-
-  // 11. DRY RUN: Return without saving
-  if (dryRun) {
-    return {
-      connector: { ...existingConnector, ...updatePayload, is_managed: true },
-      warnings,
-      state_preserved: preserveState,
-      dryRun: true
-    };
+  // Reset connector state if requested
+  if (resetConnectorState && existingConnector.connector_state) {
+    managedConnectorData.connector_state = null;
   }
 
-  // 12. ACTUAL MIGRATION: Save to database
-  // await elUpdateElement({
-  //   _index: existingConnector._index,
-  //   internal_id: existingConnector.internal_id,
-  //   ...updatePayload
-  // });
+  // delete queues like in connector.deleteQueues but for that specific connector id
+  await unregisterConnector(existingConnector.id);
+  try { await unregisterExchanges(); } catch (e) { /* nothing */ }
 
-  // 13. Reload connector
-  const migratedConnector = await connector(context, user, connectorId);
+  await patchAttribute(
+    context,
+    user,
+    existingConnector.id,
+    ENTITY_TYPE_CONNECTOR,
+    managedConnectorData
+  );
+
+  const { element } = await patchAttribute(
+    context,
+    user,
+    existingConnector.id,
+    ENTITY_TYPE_CONNECTOR,
+    managedConnectorData
+  );
+
+  const completedConnector = completeConnector(element);
+
+  await addConnectorDeployedCount();
+
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
+    message: `migrates connector \`${existingConnector.name}\` to managed`,
+    context_data: {
+      id: existingConnector.internal_id,
+      entity_type: ENTITY_TYPE_CONNECTOR,
+      input: managedConnectorData,
+    }
+  });
+
+  await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, completedConnector, user);
 
   return {
-    connector: migratedConnector,
-    warnings,
-    state_preserved: preserveState && !!existingConnector.connector_state,
-    dryRun: false
+    connector: completedConnector,
   };
 };
