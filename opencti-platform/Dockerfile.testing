@@ -13,9 +13,6 @@ RUN set -eux; \
     npm install -g node-gyp; \
     npm install -g corepack
 
-COPY opencti-platform/.yarnrc.yml /opt/opencti-build/
-
-
 ##############################
 ### Build back
 ##############################
@@ -41,23 +38,18 @@ RUN set -eux; \
     pip install -r requirements.txt; \
     pip install .[dev,doc]
 
-RUN /opt/venv/bin/pip list
-RUN pip list
-
 WORKDIR /opt/opencti-build/opencti-graphql
 
 # Copy sources necessary for install (preserve cache if no dependency changes)
 COPY opencti-platform/opencti-graphql/package.json opencti-platform/opencti-graphql/yarn.lock opencti-platform/opencti-graphql/patch ./
 COPY opencti-platform/opencti-graphql/patch/ ./patch/
+COPY opencti-platform/.yarnrc.yml ./
 
 RUN yarn install --immutable
 
 # Copy all remaining sources
 COPY opencti-platform/opencti-graphql/ ./
-RUN yarn build:prod
-
-RUN /opt/venv/bin/pip list
-RUN pip list
+RUN yarn build
 
 
 ##############################
@@ -70,6 +62,7 @@ WORKDIR /opt/opencti-build/opencti-front
 # Copy sources necessary for install (preserve cache if no dependency changes)
 COPY opencti-platform/opencti-front/package.json opencti-platform/opencti-front/yarn.lock ./
 COPY opencti-platform/opencti-front/packages/ ./packages/
+COPY opencti-platform/.yarnrc.yml ./
 
 RUN set -eux; \
     ls -larth; \
@@ -108,17 +101,10 @@ COPY --from=builder-front /opt/opencti-build/opencti-graphql/public/ ./public/
 COPY --from=builder-back /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN /opt/venv/bin/pip list
-RUN pip list
-
 RUN pip3 install --no-cache-dir --requirement /opt/opencti/src/python/requirements.txt
-
-RUN /opt/venv/bin/pip list
-RUN pip list
 
 ENV PYTHONUNBUFFERED="1"
 ENV NODE_OPTIONS="--max_old_space_size=12288"
-ENV NODE_ENV="production"
 
 RUN set -eux; \
     install -m 0777 -d '/opt/opencti/logs'; \
