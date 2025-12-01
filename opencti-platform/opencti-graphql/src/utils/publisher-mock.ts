@@ -24,7 +24,7 @@ const DEFAULT_DIGEST: NotificationData[] = [
     notification_id: 'default_notification_id_2',
     instance: { id: 'instanceId2' },
     type: 'live',
-    message: '[TEST] Udpates a malware with id : instanceId2',
+    message: '[TEST] Updates a malware with id : instanceId2',
   },
 ];
 

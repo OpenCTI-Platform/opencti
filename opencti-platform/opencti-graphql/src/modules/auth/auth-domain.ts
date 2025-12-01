@@ -1,4 +1,3 @@
-import ejs from 'ejs';
 import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
@@ -18,6 +17,8 @@ import { killUserSessions } from '../../database/session';
 import { logApp } from '../../config/conf';
 import type { SendMailArgs } from '../../types/smtp';
 import { addForgotPasswordCount } from '../../manager/telemetryManager';
+import { sanitizeSettings } from '../../utils/templateContextSanitizer';
+import { safeRender } from '../../utils/safeEjs.client';
 
 export const getLocalProviderUser = async (email: string) => {
   const user: any = await getUserByEmail(email);
@@ -76,7 +77,7 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
       from: await smtpComputeFrom(),
       to: user_email,
       subject: 'Your OpenCTI account - Password recovery code',
-      html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
+      html: await safeRender(OCTI_EMAIL_TEMPLATE, { settings: sanitizeSettings(settings), body }),
     };
     await sendMail(sendMailArgs, { identifier: id, category: 'password-reset' });
     // Audit log for sending the OTP
@@ -187,7 +188,7 @@ export const changePassword = async (context: AuthContext, input: ChangePassword
       from: await smtpComputeFrom(),
       to: email,
       subject: 'Your OpenCTI account - Password updated',
-      html: ejs.render(OCTI_EMAIL_TEMPLATE, { settings, body }),
+      html: await safeRender(OCTI_EMAIL_TEMPLATE, { settings: sanitizeSettings(settings), body }),
     };
     await sendMail(sendMailArgs, { identifier: userId, category: 'password-change' });
     return true;
