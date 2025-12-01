@@ -1,13 +1,12 @@
-/* eslint-disable no-underscore-dangle,no-param-reassign */
+ 
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
-import { filter, includes, map } from 'ramda';
-// eslint-disable-next-line import/extensions
+import { map } from 'ramda';
+ 
 import { defaultFieldResolver } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { BYPASS, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
-
-// eslint-disable-next-line
+ 
 export const authDirectiveBuilder = (directiveName) => {
   const typeDirectiveArgumentMaps = {};
   return {
@@ -64,9 +63,9 @@ export const authDirectiveBuilder = (directiveName) => {
                 return resolve(source, args, context, info);
               }
               // Compute user capabilities
-              const userCapabilities = map((c) => c.name, user.capabilities);
+              const userBaseCapabilities = map((c) => c.name, user.capabilities);
               // Accept everything if bypass capability or the system user (protection).
-              const shouldBypass = userCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
+              const shouldBypass = userBaseCapabilities.includes(BYPASS) || user.id === OPENCTI_ADMIN_UUID;
               if (shouldBypass) {
                 return resolve(source, args, context, info);
               }
@@ -76,18 +75,25 @@ export const authDirectiveBuilder = (directiveName) => {
                 }
                 return null;
               }
-              // Check the user capabilities
-              let numberOfAvailableCapabilities = 0;
-              for (let index = 0; index < requiredCapabilities.length; index += 1) {
-                const checkCapability = requiredCapabilities[index];
-                const matchingCapabilities = filter((r) => checkCapability !== BYPASS && includes(checkCapability, r), userCapabilities);
-                if (matchingCapabilities.length > 0) {
-                  numberOfAvailableCapabilities += 1;
-                }
-              }
-              const isAccessForbidden = numberOfAvailableCapabilities === 0
-                || (requiredAll && numberOfAvailableCapabilities !== requiredCapabilities.length);
-              if (isAccessForbidden) {
+              let userCapabilities = [];
+
+              // If the user is in draft mode, add capabilities in draft to the base capabilities 
+              if (user.draft_context) {
+                const userCapabilitiesInDraft = map((c) => c.name, user.capabilitiesInDraft);
+                userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
+              } else {
+                userCapabilities = userBaseCapabilities;
+              } 
+              
+              const capabilityMatches = (requestedCapability) =>
+                // Check if any of the user capabilities includes the requested capability as a substring
+                userCapabilities.some((u) => u.includes(requestedCapability));
+              
+              const isGrantedAccess = requiredAll
+                ? requiredCapabilities.every(capabilityMatches)
+                : requiredCapabilities.some(capabilityMatches);
+
+              if (!isGrantedAccess) {
                 throw ForbiddenAccess();
               }
               return resolve(source, args, context, info);
