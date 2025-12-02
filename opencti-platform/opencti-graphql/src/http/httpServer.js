@@ -8,7 +8,7 @@ import { expressMiddleware } from '@as-integrations/express5';
 import { json } from 'body-parser';
 import cors from 'cors';
 import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
+import { useServer } from 'graphql-ws/use/ws';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import passport from 'passport/lib';
 import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
