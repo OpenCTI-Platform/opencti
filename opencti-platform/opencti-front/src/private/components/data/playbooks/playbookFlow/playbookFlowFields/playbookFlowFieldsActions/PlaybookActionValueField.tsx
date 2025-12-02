@@ -48,7 +48,7 @@ const PlaybookActionValueField = ({
   const valueName = `actions.${index}.value`;
   // Represents format of the value for the frontend form.
   // /!\ It's relicate from old code and cannot be changed without breaking old playbooks.
-  const formValueName = `actions-${index}-value`;
+  const formValueName = `actionsFormValues.${index}`;
 
   switch (action.attribute) {
     case 'objectMarking':

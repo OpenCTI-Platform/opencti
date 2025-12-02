@@ -16,7 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 export interface PlaybookUpdateAction {
   op?: string
   attribute?: string
-  formValue?: unknown
   value?: {
     label?: string
     value?: string
@@ -28,5 +27,6 @@ export interface PlaybookUpdateAction {
 }
 
 export interface PlaybookUpdateActionsForm {
-  actions: PlaybookUpdateAction[]
+  actions?: PlaybookUpdateAction[]
+  actionsFormValues?: PlaybookUpdateAction['value'][]
 }
