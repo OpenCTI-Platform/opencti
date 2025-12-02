@@ -32,9 +32,9 @@ const draftWorkspaceDialogCreationMutation = graphql`
 
 interface DraftWorkspaceCreationProps {
   openCreate?: boolean;
-  handleCloseCreate?: () => void
+  handleCloseCreate?: () => void;
   entityId?: string;
-  paginationOptions: DraftsLinesPaginationQuery$variables
+  paginationOptions: DraftsLinesPaginationQuery$variables;
 }
 
 interface DraftAddInput {
@@ -74,14 +74,14 @@ const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProp
       authorized_members: !values.authorizedMembers
         ? null
         : values.authorizedMembers
-          .filter((v) => v.accessRight !== 'none')
-          .map((member) => ({
-            id: member.value,
-            access_right: member.accessRight,
-            groups_restriction_ids: member.groupsRestriction?.length > 0
-              ? member.groupsRestriction.map((group) => group.value)
-              : undefined,
-          })),
+            .filter((v) => v.accessRight !== 'none')
+            .map((member) => ({
+              id: member.value,
+              access_right: member.accessRight,
+              groups_restriction_ids: member.groupsRestriction?.length > 0
+                ? member.groupsRestriction.map((group) => group.value)
+                : undefined,
+            })),
     };
     commit({
       variables: {

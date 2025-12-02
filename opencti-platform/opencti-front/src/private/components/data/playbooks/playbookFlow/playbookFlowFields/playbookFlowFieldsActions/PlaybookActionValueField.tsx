@@ -31,8 +31,8 @@ import useAttributes from '../../../../../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../../../../../components/i18n';
 
 interface PlaybookActionValueFieldProps {
-  action: PlaybookUpdateAction
-  index: number
+  action: PlaybookUpdateAction;
+  index: number;
 }
 
 const PlaybookActionValueField = ({

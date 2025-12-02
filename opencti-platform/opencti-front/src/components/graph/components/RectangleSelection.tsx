@@ -5,20 +5,20 @@ import { hexToRGB } from '../../../utils/Colors';
 import type { Theme } from '../../Theme';
 
 interface RectangleCoordinates {
-  origin: [number, number]
-  target: [number, number]
+  origin: [number, number];
+  target: [number, number];
 }
 
 interface RectangleKeys {
-  altKey: boolean
-  shiftKey: boolean
+  altKey: boolean;
+  shiftKey: boolean;
 }
 
 export interface RectangleSelectionProps {
-  graphId: string
-  children: ReactNode
-  onSelection: (coords: RectangleCoordinates, keys: RectangleKeys) => void
-  disabled?: boolean
+  graphId: string;
+  children: ReactNode;
+  onSelection: (coords: RectangleCoordinates, keys: RectangleKeys) => void;
+  disabled?: boolean;
 }
 
 const RectangleSelection = ({

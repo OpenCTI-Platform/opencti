@@ -68,9 +68,11 @@ const CreateRelationshipContextProvider = ({ children }: { children: ReactNode }
     state,
     setState,
   }), [...Object.values(state)]);
-  return <CreateRelationshipContext.Provider value={values}>
-    {children}
-  </CreateRelationshipContext.Provider>;
+  return (
+    <CreateRelationshipContext.Provider value={values}>
+      {children}
+    </CreateRelationshipContext.Provider>
+  );
 };
 
 export default CreateRelationshipContextProvider;

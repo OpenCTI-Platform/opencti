@@ -47,8 +47,8 @@ const GradientButton = ({
   };
 
   const bgGradientStyle = (opts?: {
-    active?: boolean
-    hover?: boolean
+    active?: boolean;
+    hover?: boolean;
   }) => {
     const { active = false, hover = false } = opts ?? {};
     let shadowY = 0;

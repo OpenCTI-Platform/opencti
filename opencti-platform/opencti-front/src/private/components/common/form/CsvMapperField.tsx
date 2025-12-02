@@ -25,12 +25,12 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export type CsvMapperFieldOption = FieldOption & { representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[] };
+export type CsvMapperFieldOption = FieldOption & { representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[] };
 interface CsvMapperFieldComponentProps {
   name: string;
   isOptionEqualToValue: (option: FieldOption, value: FieldOption) => boolean;
   onChange?: (name: string, value: CsvMapperFieldOption) => void;
-  queryRef: PreloadedQuery<CsvMapperFieldSearchQuery>
+  queryRef: PreloadedQuery<CsvMapperFieldSearchQuery>;
   required?: boolean;
 }
 

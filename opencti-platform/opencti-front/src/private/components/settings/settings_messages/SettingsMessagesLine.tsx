@@ -77,7 +77,7 @@ const SettingsMessagesLine = ({
         <MessageOutlined />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns ?? {}).map((value) => (
               <div
@@ -89,7 +89,7 @@ const SettingsMessagesLine = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -107,16 +107,16 @@ export const SettingsMessagesLineDummy = ({
     <ListItem
       divider={true}
       classes={{ root: classes.item }}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
           <IconButton disabled={true} aria-haspopup="true" size="large">
             <MoreVert />
           </IconButton>
         </Box>
-      }
+      )}
     >
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -133,7 +133,7 @@ export const SettingsMessagesLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

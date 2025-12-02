@@ -3,8 +3,8 @@ import ItemNumberDifference from '../ItemNumberDifference';
 import { useFormatter } from '../i18n';
 
 interface WidgetNumberProps {
-  total: number
-  value: number
+  total: number;
+  value: number;
 }
 
 const WidgetNumber = ({ total, value }: WidgetNumberProps) => {

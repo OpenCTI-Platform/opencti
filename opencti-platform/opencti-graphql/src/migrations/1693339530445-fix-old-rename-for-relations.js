@@ -49,7 +49,7 @@ export const up = async (next) => {
     await elUpdateByQueryForMigration(
       `Rename entity type ${source} to ${destination}`,
       READ_RELATIONSHIPS_INDICES,
-      updateQuery
+      updateQuery,
     );
   }
   logApp.info(`${message} > done`);

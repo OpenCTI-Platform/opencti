@@ -41,7 +41,7 @@ const LineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -58,7 +58,7 @@ const LineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
               </div>
             ))}
           </div>
-                }
+        )}
       />
     </ListItem>
   );

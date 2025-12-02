@@ -16,12 +16,12 @@ import { validateMarking } from '../utils/access';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
 
-export const findById = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser, id: string) : Promise<T> => {
+export const findById = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser, id: string): Promise<T> => {
   return await elLoadById(context, user, id, { indices: READ_PLATFORM_INDICES }) as unknown as T;
 };
 
 export const findStixObjectOrRelationshipsPaginated = async <T extends BasicStoreObject> (context: AuthContext, user: AuthUser,
-  args: EntityOptions<BasicStoreCommon>) : Promise<BasicConnection<T>> => {
+  args: EntityOptions<BasicStoreCommon>): Promise<BasicConnection<T>> => {
   return await pageEntitiesOrRelationsConnection(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args) as unknown as BasicConnection<T>;
 };
 
@@ -33,7 +33,7 @@ const patchElementWithRefRelationships = async (
   relationship_type: string,
   targets: string[],
   operation: 'add' | 'remove',
-  opts = {}
+  opts = {},
 ) => {
   const initial = await storeLoadByIdWithRefs(context, user, stixObjectOrRelationshipId, { type });
   const fieldName = schemaRelationsRefDefinition.convertDatabaseNameToInputName(initial.entity_type, relationship_type);
@@ -51,7 +51,7 @@ export const stixObjectOrRelationshipAddRefRelation = async (
   stixObjectOrRelationshipId: string,
   input: StixRefRelationshipAddInput,
   type: string,
-  opts = {}
+  opts = {},
 ): Promise<any> => { // TODO remove any when all resolvers in ts
   // Validate specific relations, created by and markings
   if (input.relationship_type === RELATION_OBJECT_MARKING) {
@@ -73,7 +73,7 @@ export const stixObjectOrRelationshipAddRefRelations = async (
   stixObjectOrRelationshipId: string,
   input: StixRefRelationshipsAddInput,
   type: string,
-  opts = {}
+  opts = {},
 ) => {
   return patchElementWithRefRelationships(context, user, stixObjectOrRelationshipId, type, input.relationship_type, input.toIds, UPDATE_OPERATION_ADD, opts);
 };
@@ -85,7 +85,7 @@ export const stixObjectOrRelationshipDeleteRefRelation = async (
   toId: string,
   relationshipType: string,
   type: string,
-  opts = {}
+  opts = {},
 ): Promise<any> => { // TODO remove any when all resolvers in ts
   const stixObjectOrRelationship = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   if (!stixObjectOrRelationship) {

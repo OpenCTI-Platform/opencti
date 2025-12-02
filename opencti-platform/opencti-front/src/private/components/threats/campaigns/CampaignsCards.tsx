@@ -83,8 +83,8 @@ const CampaignsCards: FunctionComponent<CampaignsCardsProps> = ({
 }) => {
   const [bookmarks, setBookmarks] = useState([]);
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  CampaignsCardsPaginationQuery,
-  CampaignsCards_data$key
+    CampaignsCardsPaginationQuery,
+    CampaignsCards_data$key
   >({
     linesQuery: campaignsCardsQuery,
     linesFragment: campaignsCardsFragment,

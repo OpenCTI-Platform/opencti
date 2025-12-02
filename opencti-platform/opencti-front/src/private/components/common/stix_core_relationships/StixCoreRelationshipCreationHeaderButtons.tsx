@@ -14,7 +14,7 @@ interface StixCoreRelationshipCreationHeaderButtonsProps {
 }
 
 const StixCoreRelationshipCreationHeaderButtons: FunctionComponent<
-StixCoreRelationshipCreationHeaderButtonsProps
+  StixCoreRelationshipCreationHeaderButtonsProps
 > = ({
   show,
   showSDOs,
@@ -58,7 +58,7 @@ StixCoreRelationshipCreationHeaderButtonsProps
       {showSCOs && (
         <Button
           onClick={handleOpenCreateObservable}
-          variant='contained'
+          variant="contained"
           style={{ marginRight: '10px' }}
         >
           {t_i18n('Create an observable')}

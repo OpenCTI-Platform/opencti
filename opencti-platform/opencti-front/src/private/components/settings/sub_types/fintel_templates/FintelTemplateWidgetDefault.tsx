@@ -10,10 +10,10 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 import type { Widget } from '../../../../../utils/widget/widget';
 
 interface FintelTemplateWidgetDefaultProps {
-  widget: Widget
-  variableName: string
-  onUpdate: () => void
-  onDelete: () => void
+  widget: Widget;
+  variableName: string;
+  onUpdate: () => void;
+  onDelete: () => void;
 }
 
 const FintelTemplateWidgetDefault = ({

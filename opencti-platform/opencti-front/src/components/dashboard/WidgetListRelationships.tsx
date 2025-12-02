@@ -7,11 +7,11 @@ import { useComputeLink } from '../../utils/hooks/useAppData';
 
 interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  publicWidget?: boolean
+  data: any[];
+  publicWidget?: boolean;
   widgetId: string;
-  rootRef: DataTableProps['rootRef'],
-  columns: WidgetColumn[]
+  rootRef: DataTableProps['rootRef'];
+  columns: WidgetColumn[];
 }
 
 const WidgetListRelationships = ({
@@ -54,10 +54,10 @@ const WidgetListRelationships = ({
         globalCount={data.length}
         variant={DataTableVariant.widget}
         getComputeLink={getRedirectionLink}
-        pageSize='50'
+        pageSize="50"
         disableNavigation={publicWidget}
         rootRef={rootRef}
-        icon={(stixRelationship: { is_inferred: boolean, entity_type: string }) => (
+        icon={(stixRelationship: { is_inferred: boolean; entity_type: string }) => (
           <ItemIcon
             type={stixRelationship.is_inferred ? 'autofix' : stixRelationship.entity_type}
             color="primary"

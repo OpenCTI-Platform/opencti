@@ -92,7 +92,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Details')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -124,12 +124,12 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
             </Typography>
             {responseTypes.length > 0
               ? (data.response_types ?? []).map((responseType) => (
-                <Chip
-                  key={responseType}
-                  classes={{ root: classes.chip }}
-                  label={responseType}
-                />
-              ))
+                  <Chip
+                    key={responseType}
+                    classes={{ root: classes.chip }}
+                    label={responseType}
+                  />
+                ))
               : '-'}
           </Grid>
           <Grid item xs={12}>

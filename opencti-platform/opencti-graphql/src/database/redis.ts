@@ -24,7 +24,7 @@ import type {
   SseEvent,
   StreamDataEvent,
   UpdateEvent,
-  UpdateEventOpts
+  UpdateEventOpts,
 } from '../types/event';
 import type { StixCoreObject, StixObject } from '../types/stix-2-1-common';
 import type { EditContext } from '../generated/graphql';
@@ -83,7 +83,7 @@ const redisOptions = async (provider: string, autoReconnect = false): Promise<Re
 };
 
 // From "HOST:PORT" to { host, port }
-export const generateClusterNodes = (nodes: string[]): { host: string; port: number; }[] => {
+export const generateClusterNodes = (nodes: string[]): { host: string; port: number }[] => {
   return nodes.map((h: string) => {
     const [host, port] = h.split(':');
     return { host, port: parseInt(port, 10) };
@@ -91,8 +91,8 @@ export const generateClusterNodes = (nodes: string[]): { host: string; port: num
 };
 
 // From "HOST:PORT>HOST:PORT" to { ["HOST:PORT"]: { host, port } }
-export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number; }> => {
-  const natMap: Record<string, { host: string; port: number; }> = {};
+export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number }> => {
+  const natMap: Record<string, { host: string; port: number }> = {};
   for (let i = 0; i < mappings.length; i += 1) {
     const mapping = mappings[i];
     const [from, to] = mapping.split('>');
@@ -161,8 +161,8 @@ export const createRedisClient = async (provider: string, autoReconnect = false)
 };
 
 // region Initialization of clients
-type RedisConnection = Cluster | Redis ;
-interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
+type RedisConnection = Cluster | Redis;
+interface RedisClients { base: RedisConnection; lock: RedisConnection; pubsub: RedisPubSub }
 
 let redisClients: RedisClients;
 // Method reserved for lock child process
@@ -186,8 +186,8 @@ export const initializeRedisClients = async () => {
       subscriber,
       connectionListener: (err) => {
         logApp.info('[REDIS] Redis pubsub client closed', { error: err });
-      }
-    })
+      },
+    }),
   };
 };
 export const shutdownRedisClients = () => {
@@ -401,10 +401,10 @@ export const redisFetchLatestDeletions = async () => {
   return getClientLock().zrange('platform-deletions', 0, -1);
 };
 interface LockOptions {
-  automaticExtension?: boolean,
-  retryCount?: number,
-  draftId?: string
-  child_operation?: string
+  automaticExtension?: boolean;
+  retryCount?: number;
+  draftId?: string;
+  child_operation?: string;
 }
 const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
@@ -434,7 +434,7 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         extension = extend();
       },
-      lock.expiration - Date.now() - 2 * automaticExtensionThreshold
+      lock.expiration - Date.now() - 2 * automaticExtensionThreshold,
     );
   };
   const extend = async () => {
@@ -541,7 +541,7 @@ const buildMergeEvent = async (user: AuthUser, previous: StoreObject, instance: 
       patch: jsonpatch.compare(previousStix, currentStix),
       reverse_patch: jsonpatch.compare(currentStix, previousStix),
       sources: await asyncListTransformation<StixObject>(sourceEntities, convertStoreToStix_2_1) as StixCoreObject[],
-    }
+    },
   };
 };
 export const storeMergeEvent = async (
@@ -594,8 +594,8 @@ export const buildStixUpdateEvent = (
       reverse_patch: previousPatch,
       related_restrictions: opts.related_restrictions,
       pir_ids: opts.pir_ids,
-      changes
-    }
+      changes,
+    },
   };
 };
 export const publishStixToStream = async (context: AuthContext, user: AuthUser, event: StreamDataEvent) => {
@@ -614,7 +614,7 @@ export const storeUpdateEvent = async (
   instance: StoreObject,
   message: string,
   changes: Change[],
-  opts: UpdateEventOpts = {}
+  opts: UpdateEventOpts = {},
 ) => {
   try {
     if (isStixExportableInStreamData(instance)) {
@@ -682,7 +682,7 @@ export const buildDeleteEvent = async (
     scope: INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type) ? 'internal' : 'external',
     message,
     origin: user.origin,
-    data: stix
+    data: stix,
   };
 };
 export const storeDeleteEvent = async (context: AuthContext, user: AuthUser, instance: StoreObject, opts: EventOpts = {}) => {
@@ -741,14 +741,14 @@ interface StreamOption {
   bufferTime?: number;
   autoReconnect?: boolean;
   streamName?: string;
-  streamBatchSize?: number
+  streamBatchSize?: number;
 }
 
 export const createStreamProcessor = <T extends BaseEvent> (
   _user: AuthUser,
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
-  opts: StreamOption = {}
+  opts: StreamOption = {},
 ): StreamProcessor => {
   let client: Cluster | Redis;
   let startEventId: string;
@@ -771,7 +771,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
         STREAM_BATCH_TIME,
         'STREAMS',
         streamName,
-        startEventId
+        startEventId,
       ) as any[];
       // Process the event results
       if (streamResult && streamResult.length > 0) {
@@ -975,7 +975,7 @@ export const getLastPlaybookExecutions = async (playbookId: string) => {
       id: e.playbook_execution_id,
       playbook_id: e.playbook_id,
       execution_start: steps[0].in_timestamp,
-      steps
+      steps,
     };
   });
 };
@@ -992,7 +992,7 @@ export const SUPPORT_NODE_STATUS_IN_ERROR = 100;
  * @param nodeId
  * @param nodeStatus one of SUPPORT_NODE_STATUS_IN_PROGRESS, SUPPORT_NODE_STATUS_READY, SUPPORT_NODE_STATUS_IN_ERROR
  */
-export const redisStoreSupportPackageNodeStatus = (supportPackageId:string, nodeId: string, nodeStatus: number) => {
+export const redisStoreSupportPackageNodeStatus = (supportPackageId: string, nodeId: string, nodeStatus: number) => {
   const setKeyId = `support:${supportPackageId}`;
   // redis score =  nodeStatus
   // redis member = nodeId
@@ -1051,7 +1051,7 @@ export const OTP_TTL = conf.get('app:forgot_password:otp_ttl_second') || 600;
 export const redisSetForgotPasswordOtp = async (
   transactionId: string,
   data: { email: string; hashedOtp: string; mfa_activated: boolean; mfa_validated: boolean; userId: string },
-  ttl: number = OTP_TTL
+  ttl: number = OTP_TTL,
 ) => {
   const forgotPasswordOtpKeyName = `forgot_password_otp_${transactionId}`;
   const pointerKey = `forgot_password_transactionId_${data.email}`;
@@ -1061,7 +1061,7 @@ export const redisSetForgotPasswordOtp = async (
 export const redisGetForgotPasswordOtp = async (id: string) => {
   const keyName = `forgot_password_otp_${id}`;
   const str = await getClientBase().get(keyName) ?? '{}';
-  const values: { hashedOtp: string, email: string, mfa_activated: boolean, mfa_validated: boolean, userId: string } = JSON.parse(str);
+  const values: { hashedOtp: string; email: string; mfa_activated: boolean; mfa_validated: boolean; userId: string } = JSON.parse(str);
   const ttl = await getClientBase().ttl(keyName);
   return { ...values, ttl };
 };

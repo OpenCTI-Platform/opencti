@@ -64,7 +64,7 @@ export const courssOfActionFragment = graphql`
 `;
 
 interface CourseOfActionProps {
-  courseOfActionData: CourseOfAction_courseOfAction$key
+  courseOfActionData: CourseOfAction_courseOfAction$key;
 }
 
 const CourseOfAction: React.FC<CourseOfActionProps> = ({ courseOfActionData }) => {

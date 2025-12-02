@@ -62,7 +62,7 @@ export const verifyCanDeleteOrganization = async (context: AuthContext, user: Au
     RELATION_PARTICIPATE_TO,
     ENTITY_TYPE_USER,
     true,
-    { first: 1, indices: [READ_INDEX_INTERNAL_OBJECTS] }
+    { first: 1, indices: [READ_INDEX_INTERNAL_OBJECTS] },
   );
   if (members.pageInfo.globalCount > 0) {
     if (isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {

@@ -27,8 +27,8 @@ const connectorConfig: ConnectorConfig = {
   name: 'Import Csv built in connector',
   config: {
     enable: conf.get('import_csv_built_in_connector:enabled'),
-    validate_before_import: conf.get('import_csv_built_in_connector:validate_before_import')
-  }
+    validate_before_import: conf.get('import_csv_built_in_connector:validate_before_import'),
+  },
 };
 const LOG_PREFIX = `[OPENCTI-MODULE][${connectorConfig.id}]`;
 

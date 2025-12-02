@@ -178,7 +178,7 @@ const Pirs = () => {
       percentWidth: 33,
       render: ({ pir_criteria }: Pirs_PirFragment$data) => {
         const criteria: FilterGroup[] = pir_criteria.map((c) => JSON.parse(c.filters));
-        return <PirCriteriaDisplay criteria={criteria} size='small' />;
+        return <PirCriteriaDisplay criteria={criteria} size="small" />;
       },
     },
     creator: {
@@ -213,7 +213,7 @@ const Pirs = () => {
           entityTypes={['Pir']}
           searchContextFinal={{ entityTypes: ['Pir'] }}
           createButton={(
-            <Security needs={[PIRAPI_PIRUPDATE]} >
+            <Security needs={[PIRAPI_PIRUPDATE]}>
               <PirCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}

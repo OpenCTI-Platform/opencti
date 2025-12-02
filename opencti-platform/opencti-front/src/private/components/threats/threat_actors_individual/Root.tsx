@@ -84,7 +84,7 @@ const THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-
 
 type RootThreatActorIndividualProps = {
   threatActorIndividualId: string;
-  queryRef: PreloadedQuery<RootThreatActorIndividualQuery>
+  queryRef: PreloadedQuery<RootThreatActorIndividualQuery>;
 };
 
 const RootThreatActorIndividualComponent = ({
@@ -92,7 +92,7 @@ const RootThreatActorIndividualComponent = ({
   threatActorIndividualId,
 }: RootThreatActorIndividualProps) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
+    GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
   >(
     () => ({
       subscription,
@@ -122,7 +122,7 @@ const RootThreatActorIndividualComponent = ({
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -146,7 +146,7 @@ const RootThreatActorIndividualComponent = ({
                   ]}
                   data={threatActorIndividual}
                 />
-             }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -173,7 +173,7 @@ const RootThreatActorIndividualComponent = ({
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <ThreatActorIndividualDeletion id={threatActorIndividual.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -233,17 +233,17 @@ const RootThreatActorIndividualComponent = ({
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={threatActorIndividual.id} />
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={threatActorIndividual.id} />
+                </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
                 element={
-                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual}/>
-                  }
+                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
+                }
               />
               <Route
                 path="/knowledge"
@@ -253,22 +253,22 @@ const RootThreatActorIndividualComponent = ({
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ThreatActorIndividualKnowledge
                       threatActorIndividualData={threatActorIndividual}
                       relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={threatActorIndividual}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -278,14 +278,14 @@ const RootThreatActorIndividualComponent = ({
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={threatActorIndividualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={threatActorIndividual}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"

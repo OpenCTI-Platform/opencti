@@ -42,7 +42,7 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
   return (
     <>
       <Button
-        variant='contained'
+        variant="contained"
         sx={{ marginRight: theme.spacing(1) }}
         onClick={handleOpenCreateDigest}
       >
@@ -52,7 +52,7 @@ const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({
         })}
       </Button>
       <Button
-        variant='contained'
+        variant="contained"
         onClick={handleOpenCreateLive}
       >
         {t_i18n('', {

@@ -32,7 +32,7 @@ export interface FilterIconButtonProps {
 }
 
 interface FilterIconButtonIfFiltersProps extends FilterIconButtonProps {
-  filters: FilterGroup,
+  filters: FilterGroup;
   hasRenderedRef: boolean;
   setHasRenderedRef: (value: boolean) => void;
 }
@@ -97,7 +97,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
 };
 
 interface EmptyFilterProps {
-  setHasRenderedRef: (value: boolean) => void
+  setHasRenderedRef: (value: boolean) => void;
 }
 
 const EmptyFilter: FunctionComponent<EmptyFilterProps> = ({ setHasRenderedRef }) => {
@@ -133,10 +133,10 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   };
   const displayedFilters = filters
     ? {
-      ...filters,
-      filters:
+        ...filters,
+        filters:
         filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)),
-    } : undefined;
+      } : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery
@@ -162,7 +162,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       />
     );
   }
-  return (<EmptyFilter setHasRenderedRef={setHasRenderedRef}/>);
+  return (<EmptyFilter setHasRenderedRef={setHasRenderedRef} />);
 };
 
 export default FilterIconButton;

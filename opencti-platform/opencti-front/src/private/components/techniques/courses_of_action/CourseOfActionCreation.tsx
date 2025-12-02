@@ -63,14 +63,14 @@ const courseOfActionMutation = graphql`
 const COURSE_OF_ACTION_TYPE = 'Course-Of-Action';
 
 interface CourseOfActionAddInput {
-  name: string
-  description: string
-  confidence: number | undefined
-  createdBy: FieldOption | undefined
-  objectMarking: FieldOption[]
-  objectLabel: FieldOption[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  confidence: number | undefined;
+  createdBy: FieldOption | undefined;
+  objectMarking: FieldOption[];
+  objectLabel: FieldOption[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface CourseOfActionFormProps {
@@ -278,7 +278,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
     'courseOfActionAdd',
   );
   const CreateCourseOfActionControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Course-Of-Action' {...props} />
+    <CreateEntityControlledDial entityType="Course-Of-Action" {...props} />
   );
   const CreateCourseOfActionControlledDialContextual = CreateCourseOfActionControlledDial({
     onOpen: handleOpen,

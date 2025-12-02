@@ -30,7 +30,7 @@ const display = {
       source_color: '#ff9800',
       target: 'Location C',
       target_color: '#00bcd4',
-    }
+    },
   ],
 };
 

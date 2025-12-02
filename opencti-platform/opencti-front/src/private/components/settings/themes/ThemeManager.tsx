@@ -108,8 +108,8 @@ const themesLineFragment = graphql`
 interface ThemeManagerProps {
   handleRefetch: () => Disposable;
   defaultTheme?: {
-    id: string
-    name: string
+    id: string;
+    name: string;
   } | null;
 }
 

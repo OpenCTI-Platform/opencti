@@ -307,7 +307,7 @@ const IncidentCreation = ({
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   const CreateIncidentControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Incident' {...props} />
+    <CreateEntityControlledDial entityType="Incident" {...props} />
   );
   return (
     <Drawer

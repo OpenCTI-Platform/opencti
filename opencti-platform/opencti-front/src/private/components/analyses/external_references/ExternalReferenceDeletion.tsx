@@ -17,7 +17,7 @@ export const externalReferenceDeletionDeleteMutation = graphql`
 
 interface ExternalReferenceDeletionProps {
   id: string;
-  isOpen: boolean
+  isOpen: boolean;
   handleClose: () => void;
   objectId?: string;
   handleRemove?: (() => void) | undefined;
@@ -25,7 +25,7 @@ interface ExternalReferenceDeletionProps {
 }
 
 const ExternalReferenceDeletion: FunctionComponent<
-ExternalReferenceDeletionProps
+  ExternalReferenceDeletionProps
 > = ({ id, objectId, isOpen, handleClose, handleRemove, isExternalReferenceAttachment }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();

@@ -9,10 +9,10 @@ import TasksEditionOverview from './TasksEditionOverview';
 import { TasksEditionContainerQuery } from './__generated__/TasksEditionContainerQuery.graphql';
 
 interface TasksEditionContainerProps {
-  queryRef: PreloadedQuery<TasksEditionContainerQuery>
-  handleClose: () => void
-  open?: boolean
-  controlledDial?: DrawerControlledDialType
+  queryRef: PreloadedQuery<TasksEditionContainerQuery>;
+  handleClose: () => void;
+  open?: boolean;
+  controlledDial?: DrawerControlledDialType;
 }
 
 export const tasksEditionQuery = graphql`

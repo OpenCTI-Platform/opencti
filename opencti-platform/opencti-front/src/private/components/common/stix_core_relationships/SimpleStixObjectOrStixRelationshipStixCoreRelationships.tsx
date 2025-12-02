@@ -39,9 +39,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipsProps {
-  stixObjectOrStixRelationshipId: string,
-  stixObjectOrStixRelationshipLink: string,
-  relationshipType?: string,
+  stixObjectOrStixRelationshipId: string;
+  stixObjectOrStixRelationshipLink: string;
+  relationshipType?: string;
 }
 
 const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
@@ -99,45 +99,47 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Latest created relationships')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         {queryRef && (
-          <React.Suspense fallback={<List>
-            {Array.from(Array(5), (e, i) => (
-              <ListItem
-                key={i}
-                dense={true}
-                divider={true}
-              >
-                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                  <Skeleton
-                    animation="wave"
-                    variant="circular"
-                    width={30}
-                    height={30}
+          <React.Suspense fallback={(
+            <List>
+              {Array.from(Array(5), (e, i) => (
+                <ListItem
+                  key={i}
+                  dense={true}
+                  divider={true}
+                >
+                  <ListItemIcon classes={{ root: classes.itemIcon }}>
+                    <Skeleton
+                      animation="wave"
+                      variant="circular"
+                      width={30}
+                      height={30}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={(
+                      <Skeleton
+                        animation="wave"
+                        variant="rectangular"
+                        width="90%"
+                        height={15}
+                        style={{ marginBottom: 10 }}
+                      />
+                    )}
+                    secondary={(
+                      <Skeleton
+                        animation="wave"
+                        variant="rectangular"
+                        width="90%"
+                        height={15}
+                      />
+                    )}
                   />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    <Skeleton
-                      animation="wave"
-                      variant="rectangular"
-                      width="90%"
-                      height={15}
-                      style={{ marginBottom: 10 }}
-                    />
-                  }
-                  secondary={
-                    <Skeleton
-                      animation="wave"
-                      variant="rectangular"
-                      width="90%"
-                      height={15}
-                    />
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>}
+                </ListItem>
+              ))}
+            </List>
+          )}
           >
             <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
               stixObjectOrStixRelationshipId={stixObjectOrStixRelationshipId}

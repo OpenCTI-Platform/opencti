@@ -22,7 +22,7 @@ import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS } from '../../ut
 export const getEntitySettingSchemaAttributes = async (
   context: AuthContext,
   user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting,
 ): Promise<EntitySettingSchemaAttribute[]> => {
   return telemetry(context, user, 'ATTRIBUTES', {
     [SEMATTRS_DB_NAME]: 'attributes_domain',
@@ -53,7 +53,7 @@ export const getEntitySettingSchemaAttributes = async (
           multiple: attr.multiple,
           mandatory: attr.mandatoryType === 'external',
           upsert: attr.upsert || false,
-          scale: (attr.type === 'numeric' && attr.scalable) ? defaultScale : undefined
+          scale: (attr.type === 'numeric' && attr.scalable) ? defaultScale : undefined,
         })),
       // Configs for refs definition
       ...Array.from(refsDefinition.values())
@@ -110,7 +110,7 @@ export const getEntitySettingSchemaAttributes = async (
           const entity = entities[val.id];
           return {
             id: val.id,
-            name: entity ? (extractRepresentative(entity).main ?? val.id) : val.id
+            name: entity ? (extractRepresentative(entity).main ?? val.id) : val.id,
           };
         });
       }
@@ -123,7 +123,7 @@ export const getEntitySettingSchemaAttributes = async (
 export const getMandatoryAttributesForSetting = async (
   context: AuthContext,
   user: AuthUser,
-  entitySetting: BasicStoreEntityEntitySetting
+  entitySetting: BasicStoreEntityEntitySetting,
 ) => {
   const attributes = await getEntitySettingSchemaAttributes(context, user, entitySetting);
   if (isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS)) {

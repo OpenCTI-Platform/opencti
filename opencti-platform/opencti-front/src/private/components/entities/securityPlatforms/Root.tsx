@@ -114,7 +114,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -122,7 +122,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   ]}
                   data={securityPlatform}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -148,7 +148,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                   />
                 </Security>
               )}
-              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
+              DeleteComponent={({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => (
                 <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
                   <SecurityPlatformDeletion id={securityPlatform.id} isOpen={isOpen} handleClose={onClose} />
                 </Security>
@@ -207,66 +207,66 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
             <Routes>
               <Route
                 path="/"
-                element={
+                element={(
                   <SecurityPlatform
                     securityPlatformData={securityPlatform}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/entities/security_platforms/${securityPlatformId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <SecurityPlatformKnowledge
                       securityPlatformData={securityPlatform}
                       relatedRelationshipTypes={['should-cover']}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={securityPlatform}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
-                element={
+                element={(
                   <SecurityPlatformAnalysis
                     securityPlatform={securityPlatform}
                   />
-                }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={securityPlatformId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={securityPlatform}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
-                element={
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={securityPlatformId}
                   />
-                }
+                )}
               />
             </Routes>
           </div>
@@ -278,7 +278,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
   );
 };
 const Root = () => {
-  const { securityPlatformId } = useParams() as { securityPlatformId: string; };
+  const { securityPlatformId } = useParams() as { securityPlatformId: string };
   const queryRef = useQueryLoading<RootSecurityPlatformQuery>(securityPlatformQuery, {
     id: securityPlatformId,
   });

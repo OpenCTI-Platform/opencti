@@ -221,12 +221,12 @@ const stixNestedRefRelationshipCreationFromEntityLineFragment = graphql`
 `;
 
 interface StixNestedRefRelationshipCreationFromEntityLineProps {
-  node: StixNestedRefRelationshipCreationFromEntityLine_node$key,
+  node: StixNestedRefRelationshipCreationFromEntityLine_node$key;
   dataColumns: DataColumns;
   onLabelClick: HandleAddFilter;
   onToggleEntity: (
     entity: StixNestedRefRelationshipCreationFromEntityLine_node$data,
-    event?: React.SyntheticEvent
+    event?: React.SyntheticEvent,
   ) => void;
   selectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>;
   deSelectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>;
@@ -234,7 +234,7 @@ interface StixNestedRefRelationshipCreationFromEntityLineProps {
   onToggleShiftEntity: (
     index: number,
     entity: StixNestedRefRelationshipCreationFromEntityLine_node$data,
-    event?: React.SyntheticEvent
+    event?: React.SyntheticEvent,
   ) => void;
   index: number;
 }
@@ -292,7 +292,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
         )}
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -305,7 +305,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(data)}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}
@@ -334,7 +334,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -360,7 +360,7 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -418,7 +418,7 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

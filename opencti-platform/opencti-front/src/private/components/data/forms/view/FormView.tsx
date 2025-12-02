@@ -585,14 +585,14 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                               {(values.mainEntityGroups as unknown as Record<string, unknown>[])?.map((group, index) => (
                                 <div key={index} className={classes.fieldGroup}>
                                   {index > 0 && (
-                                  <IconButton
-                                    className={classes.deleteButton}
-                                    onClick={() => remove(index)}
-                                    size="small"
-                                    color="primary"
-                                  >
-                                    <DeleteIcon />
-                                  </IconButton>
+                                    <IconButton
+                                      className={classes.deleteButton}
+                                      onClick={() => remove(index)}
+                                      size="small"
+                                      color="primary"
+                                    >
+                                      <DeleteIcon />
+                                    </IconButton>
                                   )}
                                   <Typography variant="subtitle2" gutterBottom>
                                     {`${t_i18n(schema.mainEntityType)} ${index + 1}`}
@@ -612,7 +612,7 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
                                     />
                                   ))}
                                   {index < ((values.mainEntityGroups as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
-                                  <Divider style={{ marginTop: 15 }} />
+                                    <Divider style={{ marginTop: 15 }} />
                                   )}
                                 </div>
                               ))}
@@ -682,182 +682,182 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
                 {/* Additional Entities */}
                 {schema.additionalEntities && schema.additionalEntities.length > 0 && (
-                <>
-                  {schema.additionalEntities.map((additionalEntity) => {
+                  <>
+                    {schema.additionalEntities.map((additionalEntity) => {
                     // Find fields for this additional entity
-                    const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
-                    return (
-                      <div key={additionalEntity.id} className={classes.section}>
-                        <Typography variant="h6" className={classes.sectionTitle}>
-                          {additionalEntity.label || `${t_i18n('Additional Entity')} - ${t_i18n(additionalEntity.entityType)}`}
-                        </Typography>
-                        {(() => {
-                          if (additionalEntity.lookup) {
-                            return (
-                              <StixCoreObjectsField
-                                name={`additional_${additionalEntity.id}_lookup`}
-                                types={[additionalEntity.entityType]}
-                                style={{ width: '100%', marginTop: 20 }}
-                                helpertext={additionalEntity.multiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
-                                multiple={additionalEntity.multiple}
-                              />
-                            );
-                          }
-                          if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
+                      const entityFields = schema.fields.filter((field) => field.attributeMapping.entity === additionalEntity.id);
+                      return (
+                        <div key={additionalEntity.id} className={classes.section}>
+                          <Typography variant="h6" className={classes.sectionTitle}>
+                            {additionalEntity.label || `${t_i18n('Additional Entity')} - ${t_i18n(additionalEntity.entityType)}`}
+                          </Typography>
+                          {(() => {
+                            if (additionalEntity.lookup) {
+                              return (
+                                <StixCoreObjectsField
+                                  name={`additional_${additionalEntity.id}_lookup`}
+                                  types={[additionalEntity.entityType]}
+                                  style={{ width: '100%', marginTop: 20 }}
+                                  helpertext={additionalEntity.multiple ? t_i18n('Select one or more existing entities') : t_i18n('Select an existing entity')}
+                                  multiple={additionalEntity.multiple}
+                                />
+                              );
+                            }
+                            if (additionalEntity.multiple && additionalEntity.fieldMode === 'parsed') {
                             // Parsed mode - single text field to parse
-                            const fieldName = `additional_${additionalEntity.id}_parsed`;
-                            let helperText;
-                            if (additionalEntity.entityType === 'Indicator' && additionalEntity.autoConvertToStixPattern) {
-                              helperText = t_i18n('Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.');
-                            } else if (additionalEntity.entityType === 'Indicator') {
-                              helperText = t_i18n('Enter valid STIX patterns (e.g., [ipv4-addr:value = \'192.168.1.1\'])');
+                              const fieldName = `additional_${additionalEntity.id}_parsed`;
+                              let helperText;
+                              if (additionalEntity.entityType === 'Indicator' && additionalEntity.autoConvertToStixPattern) {
+                                helperText = t_i18n('Enter simple observable values (e.g., IP addresses, domains, hashes). They will be automatically converted to STIX patterns.');
+                              } else if (additionalEntity.entityType === 'Indicator') {
+                                helperText = t_i18n('Enter valid STIX patterns (e.g., [ipv4-addr:value = \'192.168.1.1\'])');
+                              }
+                              return (
+                                <>
+                                  {additionalEntity.parseField === 'textarea' ? (
+                                    <Field
+                                      component={TextField}
+                                      className={classes.parsedField}
+                                      name={fieldName}
+                                      placeholder={t_i18n(additionalEntity.parseMode === 'line'
+                                        ? 'Enter values separated by new lines'
+                                        : 'Enter values separated by commas')}
+                                      rows={10}
+                                      multiline={true}
+                                      fullWidth={true}
+                                      variant="standard"
+                                      style={{ marginTop: 20 }}
+                                      helperText={helperText}
+                                    />
+                                  ) : (
+                                    <Field
+                                      component={TextField}
+                                      className={classes.parsedField}
+                                      name={fieldName}
+                                      placeholder={t_i18n(additionalEntity.parseMode === 'line'
+                                        ? 'Enter values separated by new lines'
+                                        : 'Enter values separated by commas')}
+                                      variant="standard"
+                                      fullWidth
+                                      helperText={helperText}
+                                    />
+                                  )}
+                                  {entityFields.length > 0 && (
+                                    <>
+                                      <Divider style={{ marginTop: 20, marginBottom: 10 }} />
+                                      <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>
+                                        {t_i18n('Additional fields (will be applied to all created entities)')}
+                                      </Typography>
+                                      {entityFields.map((field) => (
+                                        <FormFieldRenderer
+                                          key={`additional_${additionalEntity.id}_fields.${field.name}`}
+                                          field={{
+                                            ...field,
+                                            name: `additional_${additionalEntity.id}_fields.${field.name}`,
+                                          }}
+                                          values={values}
+                                          errors={errors as Record<string, string>}
+                                          touched={touched as Record<string, boolean>}
+                                          setFieldValue={setFieldValue}
+                                          entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                        />
+                                      ))}
+                                    </>
+                                  )}
+                                </>
+                              );
+                            }
+                            if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
+                              const groupsFieldName = `additional_${additionalEntity.id}_groups`;
+                              const minAmount = additionalEntity.minAmount ?? 0;
+                              return (
+                              // Multi mode - field groups with add/remove
+                                <FieldArray name={groupsFieldName}>
+                                  {({ remove, push }) => (
+                                    <>
+                                      {(values[groupsFieldName] as unknown as Record<string, unknown>[])?.map((group, index) => (
+                                        <div key={index} className={classes.fieldGroup}>
+                                          {index >= minAmount && (
+                                            <IconButton
+                                              className={classes.deleteButton}
+                                              onClick={() => remove(index)}
+                                              size="small"
+                                              color="primary"
+                                            >
+                                              <DeleteIcon />
+                                            </IconButton>
+                                          )}
+                                          <Typography variant="subtitle2" gutterBottom>
+                                            {additionalEntity.label || additionalEntity.entityType} {index + 1}
+                                          </Typography>
+                                          {entityFields.map((field) => (
+                                            <FormFieldRenderer
+                                              key={`${groupsFieldName}.${index}.${field.name}`}
+                                              field={{
+                                                ...field,
+                                                name: `${groupsFieldName}.${index}.${field.name}`,
+                                              }}
+                                              values={values}
+                                              errors={errors as Record<string, string>}
+                                              touched={touched as Record<string, boolean>}
+                                              setFieldValue={setFieldValue}
+                                              entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                            />
+                                          ))}
+                                          {index < ((values[groupsFieldName] as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
+                                            <Divider style={{ marginTop: 15 }} />
+                                          )}
+                                        </div>
+                                      ))}
+                                      <Button
+                                        className={classes.addButton}
+                                        onClick={() => {
+                                          const newGroup: Record<string, unknown> = {};
+                                          entityFields.forEach((field) => {
+                                            if (field.type === 'checkbox' || field.type === 'toggle') {
+                                              newGroup[field.name] = false;
+                                            } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
+                                              newGroup[field.name] = [];
+                                            } else if (field.type === 'datetime') {
+                                              newGroup[field.name] = new Date().toISOString();
+                                            } else {
+                                              newGroup[field.name] = '';
+                                            }
+                                          });
+                                          push(newGroup);
+                                        }}
+                                        startIcon={<AddIcon />}
+                                        variant="outlined"
+                                        size="small"
+                                      >
+                                        {t_i18n('Add')} {additionalEntity.label || additionalEntity.entityType}
+                                      </Button>
+                                    </>
+                                  )}
+                                </FieldArray>
+                              );
                             }
                             return (
-                              <>
-                                {additionalEntity.parseField === 'textarea' ? (
-                                  <Field
-                                    component={TextField}
-                                    className={classes.parsedField}
-                                    name={fieldName}
-                                    placeholder={t_i18n(additionalEntity.parseMode === 'line'
-                                      ? 'Enter values separated by new lines'
-                                      : 'Enter values separated by commas')}
-                                    rows={10}
-                                    multiline={true}
-                                    fullWidth={true}
-                                    variant="standard"
-                                    style={{ marginTop: 20 }}
-                                    helperText={helperText}
-                                  />
-                                ) : (
-                                  <Field
-                                    component={TextField}
-                                    className={classes.parsedField}
-                                    name={fieldName}
-                                    placeholder={t_i18n(additionalEntity.parseMode === 'line'
-                                      ? 'Enter values separated by new lines'
-                                      : 'Enter values separated by commas')}
-                                    variant="standard"
-                                    fullWidth
-                                    helperText={helperText}
-                                  />
-                                )}
-                                {entityFields.length > 0 && (
-                                  <>
-                                    <Divider style={{ marginTop: 20, marginBottom: 10 }} />
-                                    <Typography variant="subtitle2" style={{ marginTop: 10, marginBottom: 10 }}>
-                                      {t_i18n('Additional fields (will be applied to all created entities)')}
-                                    </Typography>
-                                    {entityFields.map((field) => (
-                                      <FormFieldRenderer
-                                        key={`additional_${additionalEntity.id}_fields.${field.name}`}
-                                        field={{
-                                          ...field,
-                                          name: `additional_${additionalEntity.id}_fields.${field.name}`,
-                                        }}
-                                        values={values}
-                                        errors={errors as Record<string, string>}
-                                        touched={touched as Record<string, boolean>}
-                                        setFieldValue={setFieldValue}
-                                        entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                      />
-                                    ))}
-                                  </>
-                                )}
-                              </>
-                            );
-                          }
-                          if (additionalEntity.multiple && additionalEntity.fieldMode === 'multiple') {
-                            const groupsFieldName = `additional_${additionalEntity.id}_groups`;
-                            const minAmount = additionalEntity.minAmount ?? 0;
-                            return (
-                              // Multi mode - field groups with add/remove
-                              <FieldArray name={groupsFieldName}>
-                                {({ remove, push }) => (
-                                  <>
-                                    {(values[groupsFieldName] as unknown as Record<string, unknown>[])?.map((group, index) => (
-                                      <div key={index} className={classes.fieldGroup}>
-                                        {index >= minAmount && (
-                                          <IconButton
-                                            className={classes.deleteButton}
-                                            onClick={() => remove(index)}
-                                            size="small"
-                                            color="primary"
-                                          >
-                                            <DeleteIcon />
-                                          </IconButton>
-                                        )}
-                                        <Typography variant="subtitle2" gutterBottom>
-                                          {additionalEntity.label || additionalEntity.entityType} {index + 1}
-                                        </Typography>
-                                        {entityFields.map((field) => (
-                                          <FormFieldRenderer
-                                            key={`${groupsFieldName}.${index}.${field.name}`}
-                                            field={{
-                                              ...field,
-                                              name: `${groupsFieldName}.${index}.${field.name}`,
-                                            }}
-                                            values={values}
-                                            errors={errors as Record<string, string>}
-                                            touched={touched as Record<string, boolean>}
-                                            setFieldValue={setFieldValue}
-                                            entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                          />
-                                        ))}
-                                        {index < ((values[groupsFieldName] as unknown as Record<string, unknown>[])?.length || 1) - 1 && (
-                                          <Divider style={{ marginTop: 15 }} />
-                                        )}
-                                      </div>
-                                    ))}
-                                    <Button
-                                      className={classes.addButton}
-                                      onClick={() => {
-                                        const newGroup: Record<string, unknown> = {};
-                                        entityFields.forEach((field) => {
-                                          if (field.type === 'checkbox' || field.type === 'toggle') {
-                                            newGroup[field.name] = false;
-                                          } else if (field.type === 'multiselect' || field.type === 'objectMarking' || field.type === 'objectLabel' || field.type === 'files') {
-                                            newGroup[field.name] = [];
-                                          } else if (field.type === 'datetime') {
-                                            newGroup[field.name] = new Date().toISOString();
-                                          } else {
-                                            newGroup[field.name] = '';
-                                          }
-                                        });
-                                        push(newGroup);
-                                      }}
-                                      startIcon={<AddIcon />}
-                                      variant="outlined"
-                                      size="small"
-                                    >
-                                      {t_i18n('Add')} {additionalEntity.label || additionalEntity.entityType}
-                                    </Button>
-                                  </>
-                                )}
-                              </FieldArray>
-                            );
-                          }
-                          return (
                             // Single entity mode
-                            entityFields.map((field) => (
-                              <FormFieldRenderer
-                                key={`${additionalEntity.id}_${field.name}`}
-                                field={field}
-                                values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
-                                errors={(errors as unknown as Record<string, Record<string, string>>)[`additional_${additionalEntity.id}`] || {}}
-                                touched={(touched as unknown as Record<string, Record<string, boolean>>)[`additional_${additionalEntity.id}`] || {}}
-                                setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
-                                }
-                                entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
-                                fieldPrefix={`additional_${additionalEntity.id}`}
-                              />
-                            ))
-                          );
-                        })()}
-                      </div>
-                    );
-                  })}
-                </>
+                              entityFields.map((field) => (
+                                <FormFieldRenderer
+                                  key={`${additionalEntity.id}_${field.name}`}
+                                  field={field}
+                                  values={values[`additional_${additionalEntity.id}`] as Record<string, unknown> || {}}
+                                  errors={(errors as unknown as Record<string, Record<string, string>>)[`additional_${additionalEntity.id}`] || {}}
+                                  touched={(touched as unknown as Record<string, Record<string, boolean>>)[`additional_${additionalEntity.id}`] || {}}
+                                  setFieldValue={(fieldName: string, value: unknown) => setFieldValue(`additional_${additionalEntity.id}.${fieldName}`, value)
+                                  }
+                                  entitySettings={entitySettings as unknown as FormFieldRendererProps['entitySettings']}
+                                  fieldPrefix={`additional_${additionalEntity.id}`}
+                                />
+                              ))
+                            );
+                          })()}
+                        </div>
+                      );
+                    })}
+                  </>
                 )}
 
                 {/* Relationships */}
@@ -907,13 +907,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
                 <FormControlLabel
                   className={classes.draftCheckbox}
-                  control={
+                  control={(
                     <Checkbox
                       checked={isDraft}
                       onChange={(e) => setIsDraft(e.target.checked)}
                       disabled={isSubmitting || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
                     />
-                  }
+                  )}
                   label={t_i18n('Create as draft')}
                 />
                 <Button

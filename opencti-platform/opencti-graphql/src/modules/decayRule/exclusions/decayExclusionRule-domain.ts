@@ -1,7 +1,7 @@
 import { isStixMatchFilterGroup } from '../../../utils/filtering/filtering-stix/stix-filtering';
 import { now } from '../../../utils/format';
 import { FunctionalError } from '../../../config/errors';
-import {deleteElementById, updateAttribute} from '../../../database/middleware';
+import { deleteElementById, updateAttribute } from '../../../database/middleware';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { BUS_TOPICS } from '../../../config/conf';
 import { pageEntitiesConnection, storeLoadById } from '../../../database/middleware-loader';
@@ -33,7 +33,7 @@ export const checkDecayExclusionRules = async (
   context: AuthContext,
   user: AuthUser,
   resolvedIndicator: ResolvedDecayExclusionRule,
-  activeDecayExclusionRuleList: BasicStoreEntityDecayExclusionRule[]
+  activeDecayExclusionRuleList: BasicStoreEntityDecayExclusionRule[],
 ): Promise<BasicStoreEntityDecayExclusionRule | null> => {
   const formattedIndicator = {
     ...resolvedIndicator,
@@ -44,7 +44,7 @@ export const checkDecayExclusionRules = async (
     extensions: {
       [STIX_EXT_OCTI]: {
         main_observable_type: resolvedIndicator.x_opencti_main_observable_type,
-        creator_ids: [user.internal_id]
+        creator_ids: [user.internal_id],
       },
     },
   } as ResolvedDecayExclusionRule;
@@ -77,7 +77,7 @@ export const fieldPatchDecayExclusionRule = async (context: AuthContext, user: A
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for decay exclusion rule \`${element.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_DECAY_EXCLUSION_RULE, input }
+    context_data: { id, entity_type: ENTITY_TYPE_DECAY_EXCLUSION_RULE, input },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
@@ -95,7 +95,7 @@ export const deleteDecayExclusionRule = async (context: AuthContext, user: AuthU
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes decay exclusion rule \`${deleted.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_DECAY_EXCLUSION_RULE, input: deleted }
+    context_data: { id, entity_type: ENTITY_TYPE_DECAY_EXCLUSION_RULE, input: deleted },
   });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, decayExclusionRule, user);
   return id;

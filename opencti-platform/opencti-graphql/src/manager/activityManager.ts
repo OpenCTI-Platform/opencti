@@ -65,7 +65,7 @@ const alertingTriggers = async (context: AuthContext, events: Array<SseEvent<Act
       // Filter the event
       const isMatchFilter = triggerFilters ? await isActivityEventMatchFilterGroup(event.data, triggerFilters) : true;
       if (isMatchFilter) {
-        const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
+        const targets: Array<{ user: NotificationUser; type: string; message: string }> = [];
         const version = EVENT_NOTIFICATION_VERSION;
         for (let indexUser = 0; indexUser < users.length; indexUser += 1) {
           const user = users[indexUser];
@@ -193,7 +193,7 @@ const initActivityManager = () => {
           filters: [{ key: ['event_access'], values: ['EXISTS'] }],
           filterGroups: [],
         },
-        noFiltersChecking: true
+        noFiltersChecking: true,
       });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {

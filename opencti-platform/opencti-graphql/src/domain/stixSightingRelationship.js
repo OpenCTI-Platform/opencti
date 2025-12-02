@@ -24,7 +24,7 @@ export const stixSightingRelationshipsNumber = (context, user, args) => ({
     context,
     user,
     READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
-    pipe(assoc('types', [STIX_SIGHTING_RELATIONSHIP]), dissoc('endDate'))(args)
+    pipe(assoc('types', [STIX_SIGHTING_RELATIONSHIP]), dissoc('endDate'))(args),
   ),
 });
 
@@ -33,7 +33,7 @@ export const addStixSightingRelationship = async (context, user, stixSightingRel
   const created = await createRelation(
     context,
     user,
-    assoc('relationship_type', STIX_SIGHTING_RELATIONSHIP, stixSightingRelationship)
+    assoc('relationship_type', STIX_SIGHTING_RELATIONSHIP, stixSightingRelationship),
   );
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].ADDED_TOPIC, created, user);
 };

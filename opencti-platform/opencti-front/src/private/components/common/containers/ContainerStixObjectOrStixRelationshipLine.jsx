@@ -61,14 +61,14 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
     ? node.relationship_type === 'stix-sighting-relationship'
       ? `${resolveLink(node.relationship_type)}/${node.id}`
       : !restrictedWithFrom
-        ? `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`
-        : null
+          ? `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`
+          : null
     : `${resolveLink(node.entity_type)}/${node.id}`;
   return (
     <ListItem
       divider={true}
       disablePadding
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerStixCoreObjectPopover
             containerId={containerId}
@@ -80,7 +80,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
             enableReferences={enableReferences}
           />
         </Security>
-          }
+      )}
     >
       <ListItemButton
         component={Link}
@@ -92,7 +92,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -108,7 +108,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
                 style={{ width: dataColumns.name.width }}
               >
                 {getMainRepresentative(node)}
-                {node.draftVersion && (<DraftChip/>)}
+                {node.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -142,7 +142,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
                 />
               </div>
             </div>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -715,17 +715,17 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
-        <IconButton classes={classes.itemIconDisabled } disabled={true} aria-haspopup="true" size="large">
+      secondaryAction={(
+        <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true" size="large">
           <MoreVert />
         </IconButton>
-        }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -794,7 +794,7 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

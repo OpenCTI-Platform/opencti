@@ -26,14 +26,14 @@ import { useFormatter } from '../../../../components/i18n';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 interface StreamCollectionCreationProps {
-  paginationOptions: PaginationOptions
+  paginationOptions: PaginationOptions;
 }
 
 interface StreamCollectionCreationForm {
-  authorized_members: FieldOption[]
-  stream_public: boolean
-  name: string
-  description: string
+  authorized_members: FieldOption[];
+  stream_public: boolean;
+  name: string;
+  description: string;
 }
 // Deprecated - https://mui.com/system/styles/basics/
 // Do not use it for new code.
@@ -84,7 +84,7 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
 
 const CreateStreamCollectionControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='StreamCollection'
+    entityType="StreamCollection"
     {...props}
   />
 );
@@ -187,7 +187,7 @@ const StreamCollectionCreation: FunctionComponent<StreamCollectionCreationProps>
                 />
                 {!values.stream_public && (
                   <ObjectMembersField
-                    label={'Accessible for'}
+                    label="Accessible for"
                     style={fieldSpacingContainerStyle}
                     helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                     multiple={true}

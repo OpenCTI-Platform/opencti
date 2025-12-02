@@ -158,7 +158,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
             style={{ marginBottom: theme.spacing(0.5) }}
             to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
           >
-            <VectorLink fontSize="small"/>
+            <VectorLink fontSize="small" />
           </IconButton>
         </Tooltip>
       </Typography>
@@ -191,30 +191,31 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
                       handleOpenDetails(row);
                     }}
                   >
-                    <LoupeOutlined fontSize="small"/>
+                    <LoupeOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </div>
             )}
-          />) : (
-            <div style={{
-              display: 'flex',
-              height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            >
-              <span>
-                {t_i18n('No correlated containers has been found.')}
-              </span>
-            </div>
+          />
+        ) : (
+          <div style={{
+            display: 'flex',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          >
+            <span>
+              {t_i18n('No correlated containers has been found.')}
+            </span>
+          </div>
         )}
       </div>
       <Drawer
         title={selectedContainer?.name ?? '-'}
         open={!!selectedContainer}
         onClose={() => setSelectedContainer(undefined)}
-        header={
+        header={(
           <Tooltip title={t_i18n('Go to container')}>
             <IconButton
               color="primary"
@@ -223,10 +224,10 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
               size="medium"
               style={{ position: 'absolute', right: 12 }}
             >
-              <NorthEastOutlined/>
+              <NorthEastOutlined />
             </IconButton>
           </Tooltip>
-        }
+        )}
       >
         <>
           {selectedContainer && (

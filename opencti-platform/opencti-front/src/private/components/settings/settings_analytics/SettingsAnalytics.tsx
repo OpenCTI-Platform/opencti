@@ -49,33 +49,33 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
   const { id, editContext } = settings;
   return (
     <>
-      <Stack direction={'row'} alignItems={'center'} gap={0.5} sx={{ height: '30px' }}>
+      <Stack direction="row" alignItems="center" gap={0.5} sx={{ height: '30px' }}>
         <Typography variant="h4" gutterBottom={true} sx={{ margin: 0 }}>
           {t_i18n('Third-party analytics')}
         </Typography>
 
-        <Stack direction={'row'} gap={1}>
+        <Stack direction="row" gap={1}>
           <EEChip />
           <Tooltip
-            title={
+            title={(
               <>
                 {t_i18n('If needed, you can set a')}{' '}
                 <Link
-                  to={'/dashboard/settings/accesses/policies'}
+                  to="/dashboard/settings/accesses/policies"
                   target="_blank"
                 >
                   {t_i18n('consent message')}
                 </Link>{' '}
                 {t_i18n('on user login.')}
               </>
-          }
+            )}
           >
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
         </Stack>
       </Stack>
 
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Formik
           onSubmit={() => {}}
           enableReinitialize={true}
@@ -100,12 +100,12 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                     }
                     disabled={!isEnterpriseEdition}
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="analytics_google_analytics_v4"
                       />
-                    }
+                    )}
                   />
                 </span>
               </EETooltip>

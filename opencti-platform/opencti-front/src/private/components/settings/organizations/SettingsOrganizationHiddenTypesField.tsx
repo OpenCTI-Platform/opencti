@@ -25,7 +25,7 @@ const settingsOrganizationHiddenTypesFieldFragment = graphql`
 const SettingsOrganizationHiddenTypesField = ({
   organizationData,
 }: {
-  organizationData: SettingsOrganizationHiddenTypesField_organization$key
+  organizationData: SettingsOrganizationHiddenTypesField_organization$key;
 }) => {
   const organization = useFragment<SettingsOrganizationHiddenTypesField_organization$key>(settingsOrganizationHiddenTypesFieldFragment, organizationData);
   const [commit] = useApiMutation(settingsOrganizationHiddenTypesFieldPatch);

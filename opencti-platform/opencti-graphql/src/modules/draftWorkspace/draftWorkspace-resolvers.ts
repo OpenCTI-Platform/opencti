@@ -63,7 +63,7 @@ const draftWorkspaceResolvers: Resolvers = {
     draftWorkspaceDelete: (_, { id }, context) => {
       return deleteDraftWorkspace(context, context.user, id);
     },
-  }
+  },
 };
 
 export default draftWorkspaceResolvers;

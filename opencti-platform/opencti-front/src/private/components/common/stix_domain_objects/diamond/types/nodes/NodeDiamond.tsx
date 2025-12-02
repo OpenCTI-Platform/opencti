@@ -90,28 +90,28 @@ const NodeDiamond = ({ data }: NodeProps) => {
         <ItemIcon type="Attack-Pattern" size="large" color="inherit" />
       </div>
       <Handle
-        id='adversary'
+        id="adversary"
         className={classes.handleTop}
         type="source"
         position={Position.Top}
         isConnectable={false}
       />
       <Handle
-        id='infrastructure'
+        id="infrastructure"
         className={classes.handleRight}
         type="source"
         position={Position.Right}
         isConnectable={false}
       />
       <Handle
-        id='victimology'
+        id="victimology"
         className={classes.handleBottom}
         type="source"
         position={Position.Bottom}
         isConnectable={false}
       />
       <Handle
-        id='capabilities'
+        id="capabilities"
         className={classes.handleLeft}
         type="source"
         position={Position.Left}

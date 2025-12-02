@@ -529,7 +529,7 @@ const StixDomainObjectHeader = (props) => {
                     <Security
                       needs={[KNOWLEDGE_KNUPDATE]}
                       key={label}
-                      placeholder={
+                      placeholder={(
                         <Tooltip title={label}>
                           <Chip
                             sx={{
@@ -541,7 +541,7 @@ const StixDomainObjectHeader = (props) => {
                             label={truncate(label, 40)}
                           />
                         </Tooltip>
-                      }
+                      )}
                     >
                       <Tooltip title={label}>
                         <Chip
@@ -833,7 +833,7 @@ const StixDomainObjectHeader = (props) => {
                     key={label}
                     disableGutters={true}
                     dense={true}
-                    secondaryAction={
+                    secondaryAction={(
                       <IconButton
                         edge="end"
                         aria-label="delete"
@@ -846,7 +846,7 @@ const StixDomainObjectHeader = (props) => {
                       >
                         <Delete />
                       </IconButton>
-                    }
+                    )}
                   >
                     <ListItemText primary={label} />
                   </ListItem>

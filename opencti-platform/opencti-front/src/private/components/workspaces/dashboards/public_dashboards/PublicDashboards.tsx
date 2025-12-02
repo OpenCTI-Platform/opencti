@@ -216,7 +216,7 @@ const PublicDashboards = () => {
               <PublicDashboardCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
-          taskScope='PUBLIC_DASHBOARD'
+          taskScope="PUBLIC_DASHBOARD"
         />
       )}
     </>

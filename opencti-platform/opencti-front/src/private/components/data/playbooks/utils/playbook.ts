@@ -42,9 +42,9 @@ export const computeNodes = (
 };
 
 export const computeEdges = (
-  playbookEdges: PlaybookDefinitionEdge[], 
-  setAction: Dispatch<SetStateAction<string | null>>, 
-  setSelectedEdge: Dispatch<SetStateAction<string | null>>
+  playbookEdges: PlaybookDefinitionEdge[],
+  setAction: Dispatch<SetStateAction<string | null>>,
+  setSelectedEdge: Dispatch<SetStateAction<string | null>>,
 ): PlaybookEdge[] => {
   return playbookEdges.map((edge) => {
     return {
@@ -64,10 +64,10 @@ export const computeEdges = (
 };
 
 export const addPlaceholders = (
-  nodes: PlaybookNode[], 
-  edges: PlaybookEdge[], 
-  setAction:Dispatch<SetStateAction<string | null>>, 
-  setSelectedNode:Dispatch<SetStateAction<string | null>>
+  nodes: PlaybookNode[],
+  edges: PlaybookEdge[],
+  setAction: Dispatch<SetStateAction<string | null>>,
+  setSelectedNode: Dispatch<SetStateAction<string | null>>,
 ) => {
   if (nodes.length === 0) {
     return {

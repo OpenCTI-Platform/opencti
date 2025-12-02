@@ -5,7 +5,7 @@ import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../../components/dashboard/WidgetHorizontalBars';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import {useStixRelationshipsMultiHorizontalBars} from './useStixRelationshipsMultiHorizontalBars';
+import { useStixRelationshipsMultiHorizontalBars } from './useStixRelationshipsMultiHorizontalBars';
 
 const stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery = graphql`
   query StixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery(
@@ -373,10 +373,10 @@ const StixRelationshipsMultiHorizontalBars = ({
         }
       }
     }
-    
+
     const finalField = selection.attribute || field || 'entity_type';
     const finalSubDistributionField = subSelection.attribute || field || 'entity_type';
-    
+
     let variables = {
       field: finalField,
       operation: 'count',
@@ -389,7 +389,7 @@ const StixRelationshipsMultiHorizontalBars = ({
       dynamicFrom: selection.dynamicFrom,
       dynamicTo: selection.dynamicTo,
     };
-    
+
     if (subSelection.perspective === 'entities') {
       variables = {
         ...variables,
@@ -427,28 +427,28 @@ const StixRelationshipsMultiHorizontalBars = ({
       : stixRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery;
 
     const dataFromQuery = useLazyLoadQuery(queryToCall, variables);
-    
+
     const {
       chartData,
       redirectionUtils,
-      categories
+      categories,
     } = useStixRelationshipsMultiHorizontalBars(subSelection, dataFromQuery.stixRelationshipsDistribution, finalSubDistributionField, finalField);
 
-    if(dataFromQuery.stixRelationshipsDistribution && dataFromQuery.stixRelationshipsDistribution.length > 0){
-        return (
-          <WidgetHorizontalBars
-            series={chartData}
-            distributed={parameters.distributed}
-            withExport={withExportPopover}
-            readonly={isReadOnly}
-            redirectionUtils={redirectionUtils}
-            stacked
-            total
-            legend
-            categories={categories}
-          />
+    if (dataFromQuery.stixRelationshipsDistribution && dataFromQuery.stixRelationshipsDistribution.length > 0) {
+      return (
+        <WidgetHorizontalBars
+          series={chartData}
+          distributed={parameters.distributed}
+          withExport={withExportPopover}
+          readonly={isReadOnly}
+          redirectionUtils={redirectionUtils}
+          stacked
+          total
+          legend
+          categories={categories}
+        />
       );
-    } 
+    }
     if (dataFromQuery) {
       return <WidgetNoData />;
     }

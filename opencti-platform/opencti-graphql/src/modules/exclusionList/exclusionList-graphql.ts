@@ -4,5 +4,5 @@ import exclusionListResolver from './exclusionList-resolver';
 
 registerGraphqlSchema({
   schema: exclusionListTypeDefs,
-  resolver: exclusionListResolver
+  resolver: exclusionListResolver,
 });

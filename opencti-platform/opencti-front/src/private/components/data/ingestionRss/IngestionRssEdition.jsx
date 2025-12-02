@@ -125,7 +125,7 @@ const IngestionRssEditionContainer = ({
               style={fieldSpacingContainerStyle}
               onSubmit={handleSubmitField}
             />
-            <IngestionSchedulingField handleSubmitField={handleSubmitField}/>
+            <IngestionSchedulingField handleSubmitField={handleSubmitField} />
             <Field
               component={TextField}
               variant="standard"

@@ -157,7 +157,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
     exporter: new MetricFileExporter(AggregationTemporality.DELTA),
     collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
     exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
-    collectCallback: collectorCallback
+    collectCallback: collectorCallback,
   });
   filigranMetricReaders.push(fileExporterReader);
   logApp.info('[TELEMETRY] File exporter activated');
@@ -170,7 +170,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
       const OtlpExporterReader = new BatchExportingMetricReader({
         exporter: new OTLPMetricExporter({
           url: FILIGRAN_OTLP_TELEMETRY,
-          temporalityPreference: AggregationTemporality.DELTA
+          temporalityPreference: AggregationTemporality.DELTA,
         }),
         collectIntervalMillis: TELEMETRY_COLLECT_INTERVAL,
         exportIntervalMillis: TELEMETRY_EXPORT_INTERVAL,
@@ -207,7 +207,7 @@ const telemetryInitializer = async (): Promise<HandlerInput> => {
     [SEMRESATTRS_SERVICE_NAME]: TELEMETRY_SERVICE_NAME,
     [SEMRESATTRS_SERVICE_VERSION]: PLATFORM_VERSION,
     [SEMRESATTRS_SERVICE_INSTANCE_ID]: platformId,
-    'service.instance.creation': settings.created_at as unknown as string
+    'service.instance.creation': settings.created_at as unknown as string,
   });
   const resource = Resource.default().merge(filigranResource);
   const filigranMeterProvider = new MeterProvider(({ resource, readers: filigranMetricReaders }));
@@ -256,7 +256,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     const pendingFileFilter = {
       mode: FilterMode.And,
       filters: [{ key: ['internal_id'], values: ['import/pending'], operator: 'starts_with' }],
-      filterGroups: []
+      filterGroups: [],
     };
     const workbenchesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { filters: pendingFileFilter, types: [ENTITY_TYPE_INTERNAL_FILE] });
     manager.setWorkbenchCount(workbenchesCount);
@@ -282,7 +282,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
 
     // region Security Coverages
     const securityCoveragesCount = await elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
-      types: [ENTITY_TYPE_SECURITY_COVERAGE]
+      types: [ENTITY_TYPE_SECURITY_COVERAGE],
     });
     manager.setSecurityCoveragesCount(securityCoveragesCount);
     // endregion
@@ -355,7 +355,7 @@ const TELEMETRY_MANAGER_DEFINITION: ManagerDefinition = {
   },
   enabled(): boolean {
     return this.enabledByConfig;
-  }
+  },
 };
 
 registerManager(TELEMETRY_MANAGER_DEFINITION);

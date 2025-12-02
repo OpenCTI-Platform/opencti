@@ -77,12 +77,12 @@ interface ThreatActorsIndividualCardsProps {
 }
 
 const ThreatActorsIndividualCards: FunctionComponent<
-ThreatActorsIndividualCardsProps
+  ThreatActorsIndividualCardsProps
 > = ({ setNumberOfElements, queryRef, onLabelClick }) => {
   const [bookmarks, setBookmarks] = useState([]);
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  ThreatActorsIndividualCardsPaginationQuery,
-  ThreatActorsIndividualCards_data$key
+    ThreatActorsIndividualCardsPaginationQuery,
+    ThreatActorsIndividualCards_data$key
   >({
     linesQuery: threatActorsIndividualCardsPaginationQuery,
     linesFragment: ThreatActorsIndividualCardsFragment,

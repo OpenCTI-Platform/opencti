@@ -18,7 +18,8 @@ const IngestionCsvInlineWrapper: FunctionComponent<IngestionCsvInlineWrapperProp
       view: 'lines',
       searchTerm: '',
     },
-  ); const queryRefSchemaAttributes = useQueryLoading<csvMappers_SchemaAttributesQuery>(
+  );
+  const queryRefSchemaAttributes = useQueryLoading<csvMappers_SchemaAttributesQuery>(
     schemaAttributesQuery,
   );
   const queryRefMappers = useQueryLoading<csvMappers_MappersQuery>(
@@ -26,12 +27,14 @@ const IngestionCsvInlineWrapper: FunctionComponent<IngestionCsvInlineWrapperProp
     paginationOptions,
   );
 
-  return queryRefMappers && queryRefSchemaAttributes && <CsvMappersProvider
-    mappersQueryRef={queryRefMappers}
-    schemaAttributesQueryRef={queryRefSchemaAttributes}
-                                                        >
-    {children}
-  </CsvMappersProvider>;
+  return queryRefMappers && queryRefSchemaAttributes && (
+    <CsvMappersProvider
+      mappersQueryRef={queryRefMappers}
+      schemaAttributesQueryRef={queryRefSchemaAttributes}
+    >
+      {children}
+    </CsvMappersProvider>
+  );
 };
 
 export default IngestionCsvInlineWrapper;

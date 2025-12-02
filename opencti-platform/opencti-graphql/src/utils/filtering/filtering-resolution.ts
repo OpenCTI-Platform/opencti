@@ -16,7 +16,7 @@ import {
   PARTICIPANT_FILTER,
   RELATION_FROM_FILTER,
   RELATION_TO_FILTER,
-  WORKFLOW_FILTER
+  WORKFLOW_FILTER,
 } from './filtering-constants';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StixObject } from '../../types/stix-2-1-common';
@@ -60,7 +60,7 @@ export const STIX_RESOLUTION_MAP_PATHS: Record<string, string | string[]> = {
   [CONNECTED_TO_INSTANCE_SIDE_EVENTS_FILTER]: 'id', // instance trigger --> resolve with the standard id (which is the stix.id)
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Resolve some of the filter values according to a resolution map.
@@ -72,7 +72,7 @@ const resolveFilter = async (
   context: AuthContext,
   user: AuthUser,
   filter: Filter,
-  resolutionMap: FilterResolutionMap
+  resolutionMap: FilterResolutionMap,
 ): Promise<Filter> => {
   const { key, values } = filter;
   let newFilterValues: string [] = [];
@@ -109,7 +109,7 @@ const resolveFilter = async (
 
   return {
     ...filter,
-    values: newFilterValues
+    values: newFilterValues,
   };
 };
 
@@ -120,7 +120,7 @@ export const resolveFilterGroup = async (
   context: AuthContext,
   user: AuthUser,
   filterGroup: FilterGroup,
-  resolutionMap: FilterResolutionMap
+  resolutionMap: FilterResolutionMap,
 ): Promise<FilterGroup> => {
   const newFilterGroups = await Promise.all(filterGroup.filterGroups.map((fg) => resolveFilterGroup(context, user, fg, resolutionMap)));
   const newFilters = await Promise.all(filterGroup.filters.map((f) => resolveFilter(context, user, f, resolutionMap)));
@@ -131,7 +131,7 @@ export const resolveFilterGroup = async (
   };
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Build a resolution map thanks to the cache
@@ -184,7 +184,7 @@ export const buildResolutionMapForFilterGroup = async (
   context: AuthContext,
   user: AuthUser,
   filterGroup: FilterGroup,
-  cache: Map<string, StixObject>
+  cache: Map<string, StixObject>,
 ): Promise<FilterResolutionMap> => {
   const filtersMaps = await Promise.all(filterGroup.filters.map((f) => buildResolutionMapForFilter(context, user, f, cache)));
   const filterGroupsMaps = await Promise.all(filterGroup.filterGroups.map((fg) => buildResolutionMapForFilterGroup(context, user, fg, cache)));
@@ -192,7 +192,7 @@ export const buildResolutionMapForFilterGroup = async (
   return mergeMaps<string, string>([mergeMaps<string, string>(filtersMaps), mergeMaps<string, string>(filterGroupsMaps)]);
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Extract all filter values (ids) that might require a resolution from cache "Resolved-Filters"

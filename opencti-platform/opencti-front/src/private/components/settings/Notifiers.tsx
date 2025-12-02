@@ -98,7 +98,7 @@ const Notifiers = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -106,7 +106,7 @@ const Notifiers = () => {
                     <NotifierLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <NotifiersLines
               queryRef={queryRef}

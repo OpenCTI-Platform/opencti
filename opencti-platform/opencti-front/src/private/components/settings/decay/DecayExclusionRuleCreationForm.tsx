@@ -27,7 +27,7 @@ const decayExclusionRuleCreationFormAddMutation = graphql`
 `;
 
 type DecayExclusionRuleCreationFormProps = {
-  updater: (store: RecordSourceSelectorProxy, rootField: string) => void,
+  updater: (store: RecordSourceSelectorProxy, rootField: string) => void;
   onReset: () => void;
   onCompleted: () => void;
 };
@@ -112,7 +112,7 @@ const DecayExclusionRuleCreationForm = ({ updater, onReset, onCompleted }: Decay
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
               component={TextField}
-              name='name'
+              name="name"
               label={t_i18n('Name')}
               fullWidth
               required

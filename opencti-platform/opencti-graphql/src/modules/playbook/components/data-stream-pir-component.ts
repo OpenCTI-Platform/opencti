@@ -2,12 +2,12 @@ import type { JSONSchemaType } from 'ajv';
 import type { PlaybookComponent } from '../playbook-types';
 
 export interface PirStreamConfiguration {
-  create: boolean,
-  create_rel: boolean,
-  update: boolean,
-  delete: boolean,
-  inPirFilters: { value: string }[],
-  filters: string,
+  create: boolean;
+  create_rel: boolean;
+  update: boolean;
+  delete: boolean;
+  inPirFilters: { value: string }[];
+  filters: string;
 }
 
 const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = {
@@ -17,7 +17,7 @@ const PLAYBOOK_DATA_STREAM_PIR_SCHEMA: JSONSchemaType<PirStreamConfiguration> = 
       type: 'array',
       uniqueItems: true,
       default: [],
-      items: { type: 'string', oneOf: [] }
+      items: { type: 'string', oneOf: [] },
     },
     create: { type: 'boolean', default: true, $ref: 'A new entity enters a selected PIR' },
     delete: { type: 'boolean', default: false, $ref: 'An entity has left a selected PIR' },
@@ -40,5 +40,5 @@ export const PLAYBOOK_DATA_STREAM_PIR: PlaybookComponent<PirStreamConfiguration>
   schema: async () => PLAYBOOK_DATA_STREAM_PIR_SCHEMA,
   executor: async ({ bundle }) => {
     return ({ output_port: 'out', bundle, forceBundleTracking: true });
-  }
+  },
 };

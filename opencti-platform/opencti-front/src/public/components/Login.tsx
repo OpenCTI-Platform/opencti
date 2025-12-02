@@ -295,7 +295,8 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
               edge="start"
               onChange={handleChange}
               style={{ margin: 0 }}
-            ></Checkbox>
+            >
+            </Checkbox>
           </Box>
         </Paper>
       )}
@@ -366,7 +367,8 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
               by Filigran
             </Typography>
           </div>
-        )}</>
+        )}
+      </>
     );
   };
 

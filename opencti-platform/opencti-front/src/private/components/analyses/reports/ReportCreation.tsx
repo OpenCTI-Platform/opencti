@@ -79,7 +79,7 @@ interface ReportAddInput {
   published: Date | null;
   confidence: number | undefined;
   report_types: string[];
-  x_opencti_reliability: string | undefined
+  x_opencti_reliability: string | undefined;
   createdBy: FieldOption | undefined;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
@@ -88,20 +88,20 @@ interface ReportAddInput {
   externalReferences: { value: string }[];
   file: File | undefined;
   authorized_members: {
-    value: string,
-    accessRight: string,
+    value: string;
+    accessRight: string;
     groupsRestriction: {
-      label: string,
-      value: string,
-      type: string
-    }[] }[] | undefined;
+      label: string;
+      value: string;
+      type: string;
+    }[]; }[] | undefined;
 }
 
 interface ReportFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined
+    response: { id: string; name: string } | null | undefined,
   ) => void;
   onClose?: () => void;
   defaultCreatedBy?: { value: string; label: string };
@@ -353,7 +353,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
                   </AccordionSummary>
                   <AccordionDetails>
                     <Field
-                      name={'authorized_members'}
+                      name="authorized_members"
                       component={AuthorizedMembersField}
                       containerstyle={{ marginTop: 20 }}
                       showAllMembersLine
@@ -418,7 +418,7 @@ const ReportCreation = ({
     'reportAdd',
   );
   const CreateReportControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Report' {...props} />
+    <CreateEntityControlledDial entityType="Report" {...props} />
   );
   return (
     <Drawer

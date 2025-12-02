@@ -6,9 +6,9 @@ import useGraphPainter from './utils/useGraphPainter';
 import { GraphRef2D } from './GraphContext';
 
 interface SimpleGraph2DProps extends ForceGraphProps<GraphNode, GraphLink> {
-  parentRef: MutableRefObject<HTMLDivElement | null>
-  onReady?: (graphRef: GraphRef2D) => void
-  showParticules?: boolean
+  parentRef: MutableRefObject<HTMLDivElement | null>;
+  onReady?: (graphRef: GraphRef2D) => void;
+  showParticules?: boolean;
 }
 
 const SimpleGraph2D = ({

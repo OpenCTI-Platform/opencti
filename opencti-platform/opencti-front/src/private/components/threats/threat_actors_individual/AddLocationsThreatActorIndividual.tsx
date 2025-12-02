@@ -18,10 +18,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface AddLocationsThreatActorIndividualComponentProps {
-  threatActorIndividual: ThreatActorIndividualLocations_locations$data,
-  queryRef: PreloadedQuery<AddLocationsThreatActorIndividualLinesQuery>,
-  onSearch: (search: string) => void,
-  paginationOptions: AddLocationsThreatActorIndividualLinesQuery$variables,
+  threatActorIndividual: ThreatActorIndividualLocations_locations$data;
+  queryRef: PreloadedQuery<AddLocationsThreatActorIndividualLinesQuery>;
+  onSearch: (search: string) => void;
+  paginationOptions: AddLocationsThreatActorIndividualLinesQuery$variables;
 }
 
 const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocationsThreatActorIndividualComponentProps> = ({
@@ -63,7 +63,7 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
         open={open}
         onClose={handleClose}
         title={t_i18n('Add locations')}
-        header={
+        header={(
           <div
             style={{
               marginLeft: 'auto',
@@ -75,7 +75,7 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
               onSubmit={onSearch}
             />
           </div>
-          }
+        )}
       >
         {queryRef && (
           <React.Suspense
@@ -102,7 +102,7 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
 };
 
 interface AddLocationsThreatActorIndividualProps {
-  threatActorIndividual: ThreatActorIndividualLocations_locations$data,
+  threatActorIndividual: ThreatActorIndividualLocations_locations$data;
 }
 const AddLocationsThreatActorIndividual: FunctionComponent<AddLocationsThreatActorIndividualProps> = ({
   threatActorIndividual,

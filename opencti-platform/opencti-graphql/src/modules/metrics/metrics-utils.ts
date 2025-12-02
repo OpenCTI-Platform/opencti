@@ -5,14 +5,14 @@ let metricsConfiguration: EntityMetricConfiguration[];
 const allAttributesFlat: string [] = [];
 
 interface EntityMetricConfiguration {
-  entity_type: string
-  metrics: MetricDescription[]
+  entity_type: string;
+  metrics: MetricDescription[];
 }
 
 interface MetricDescription {
-  attribute: string
-  name: string
-  description?: string
+  attribute: string;
+  name: string;
+  description?: string;
 }
 
 export const loadEntityMetricsConfiguration = () => {

@@ -98,11 +98,11 @@ const ImportFilesFormView: React.FC<ImportFilesFormViewProps> = ({ onSuccess }) 
   }
 
   return (
-    <React.Suspense fallback={
+    <React.Suspense fallback={(
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
         <Loader />
       </Box>
-    }
+    )}
     >
       <ImportFilesFormViewContent queryRef={queryRef} onSuccess={onSuccess} />
     </React.Suspense>

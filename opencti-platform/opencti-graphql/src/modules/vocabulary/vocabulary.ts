@@ -14,11 +14,11 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
     id: 'vocabulary',
     name: ENTITY_TYPE_VOCABULARY,
     category: ABSTRACT_STIX_META_OBJECT,
-    aliased: true
+    aliased: true,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_VOCABULARY]: [{ src: NAME_FIELD }, { src: 'category' }]
+      [ENTITY_TYPE_VOCABULARY]: [{ src: NAME_FIELD }, { src: 'category' }],
     },
     resolvers: {
       name(data: object) {

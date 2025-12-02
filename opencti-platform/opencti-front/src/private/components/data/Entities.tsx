@@ -73,7 +73,7 @@ const Entities = () => {
   } as UsePreloadedPaginationFragment<EntitiesStixDomainObjectsLinesPaginationQuery>;
 
   return (
-    <div data-testid='data-entities-page'>
+    <div data-testid="data-entities-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Entities'), current: true }]} />
       {queryRef && (
         <DataTable

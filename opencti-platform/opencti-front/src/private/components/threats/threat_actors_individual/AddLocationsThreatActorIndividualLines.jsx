@@ -25,7 +25,7 @@ class AddLocationsThreatActorIndividualLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={threatActorIndividual}
-        relationshipType={'located-at'}
+        relationshipType="located-at"
         availableDatas={data?.locations}
         existingDatas={threatActorIndividualLocations}
         updaterOptions={{ path: 'locations' }}

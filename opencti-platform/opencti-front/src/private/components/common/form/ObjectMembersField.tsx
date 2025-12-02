@@ -151,7 +151,7 @@ const ObjectMembersField: FunctionComponent<ObjectMembersFieldProps> = ({
           option: OptionMember,
         ) => (
           <li {...props}>
-            <div className={classes.icon} >
+            <div className={classes.icon}>
               <ItemIcon type={option.type} />
             </div>
             <div className={classes.text}>{option.label}</div>

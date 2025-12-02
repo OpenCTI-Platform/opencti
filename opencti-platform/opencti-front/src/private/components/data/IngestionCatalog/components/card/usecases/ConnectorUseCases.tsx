@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import IngestionCatalogChip from '@components/data/IngestionCatalog/IngestionCatalogUseCaseChip';
 
 type ConnectorUseCasesProps = {
-  useCases: string[]
+  useCases: string[];
 };
 
 const ConnectorUseCases = ({ useCases }: ConnectorUseCasesProps) => {

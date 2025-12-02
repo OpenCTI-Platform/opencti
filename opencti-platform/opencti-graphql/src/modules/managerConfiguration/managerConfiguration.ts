@@ -9,11 +9,11 @@ const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfi
     id: 'managerConfigurations',
     name: ENTITY_TYPE_MANAGER_CONFIGURATION,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_MANAGER_CONFIGURATION]: [{ src: 'manager_id' }]
+      [ENTITY_TYPE_MANAGER_CONFIGURATION]: [{ src: 'manager_id' }],
     },
     resolvers: {
       manager_id(data: object) {
@@ -32,7 +32,7 @@ const MANAGER_CONFIGURATION_DEFINITION: ModuleDefinition<StoreEntityManagerConfi
   representative: (stix: StixManagerConfiguration) => {
     return stix.manager_id;
   },
-  converter_2_1: convertManagerConfigurationToStix
+  converter_2_1: convertManagerConfigurationToStix,
 };
 
 registerDefinition(MANAGER_CONFIGURATION_DEFINITION);

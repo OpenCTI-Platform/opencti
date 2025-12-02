@@ -102,8 +102,8 @@ const EntityStixSightingRelationshipsLines: FunctionComponent<EntityStixSighting
   setNumberOfElements,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntityStixSightingRelationshipsLinesPaginationQuery,
-  EntityStixSightingRelationshipsLines_data$key
+    EntityStixSightingRelationshipsLinesPaginationQuery,
+    EntityStixSightingRelationshipsLines_data$key
   >({
     linesQuery: entityStixSightingRelationshipsLinesQuery,
     linesFragment: EntityStixSightingRelationshipsLinesFragment,

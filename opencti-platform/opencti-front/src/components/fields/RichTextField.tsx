@@ -17,17 +17,17 @@ import { useFormatter } from '../i18n';
 import useAI from '../../utils/hooks/useAI';
 
 interface RichTextFieldProps extends FieldProps<string> {
-  disabled?: boolean
-  onFocus?: (name: string) => void
-  onChange?: (name: string, value: string) => void
-  onSubmit?: (name: string, value: string) => void
-  onTextSelection?: (value: string) => void
-  required?: boolean
-  askAi?: boolean
-  label?: string
-  style?: CSSProperties
-  lastSavedValue?: string
-  hasFullScreen?: boolean
+  disabled?: boolean;
+  onFocus?: (name: string) => void;
+  onChange?: (name: string, value: string) => void;
+  onSubmit?: (name: string, value: string) => void;
+  onTextSelection?: (value: string) => void;
+  required?: boolean;
+  askAi?: boolean;
+  label?: string;
+  style?: CSSProperties;
+  lastSavedValue?: string;
+  hasFullScreen?: boolean;
 }
 
 const RichTextField = ({

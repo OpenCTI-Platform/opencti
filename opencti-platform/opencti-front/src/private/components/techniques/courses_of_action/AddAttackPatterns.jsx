@@ -79,8 +79,8 @@ class AddAttackPatterns extends Component {
                   courseOfAction={courseOfAction}
                   courseOfActionAttackPatterns={courseOfActionAttackPatterns}
                   courseOfActionPaginationOptions={
-                      courseOfActionPaginationOptions
-                    }
+                    courseOfActionPaginationOptions
+                  }
                   data={props}
                 />
               );

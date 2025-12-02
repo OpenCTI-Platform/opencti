@@ -244,11 +244,13 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           }}
         >
           {(!instance_trigger
-            && <Filters
-              availableFilterKeys={stixFilters}
-              helpers={helpers}
-              searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
-               />
+            && (
+              <Filters
+                availableFilterKeys={stixFilters}
+                helpers={helpers}
+                searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+              />
+            )
           )}
         </Box>
       </>

@@ -9,7 +9,7 @@ const USE_CHILD_LOCK = booleanConf('app:child_locking_process:enabled', false);
 const CHILD_PROCESS_MEMORY = conf.get('app:child_locking_process:max_memory') ?? '256';
 const lockProcess = {
   forked: undefined,
-  callbacks: new Map() // [op, { lock: fn, unlock: fn }]
+  callbacks: new Map(), // [op, { lock: fn, unlock: fn }]
 };
 
 // -- Start the control lock manager
@@ -19,7 +19,7 @@ export const initLockFork = () => {
   }
   if (!lockProcess.forked) {
     lockProcess.forked = fork('./build/child-lock.manager.js', {
-      execArgv: [`--max-old-space-size=${CHILD_PROCESS_MEMORY}`]
+      execArgv: [`--max-old-space-size=${CHILD_PROCESS_MEMORY}`],
     }, { detached: false });
     lockProcess.forked.on('message', (msg) => {
       const messageKey = `${msg.operation}-${msg.type}`;
@@ -61,7 +61,7 @@ const childUnlockResources = async (operation) => {
       }
     });
     // Send the unlock operation to the child process
-    lockProcess.forked.send({ type: 'unlock', operation },);
+    lockProcess.forked.send({ type: 'unlock', operation });
   });
 };
 

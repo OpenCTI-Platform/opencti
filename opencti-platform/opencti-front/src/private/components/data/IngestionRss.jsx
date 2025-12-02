@@ -74,14 +74,14 @@ const IngestionRss = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-        <IngestionMenu/>
+        <IngestionMenu />
       </div>
     );
   }
   return (
     <div className={classes.container} data-testid="rss-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('RSS feeds'), current: true }]} />
-      <IngestionMenu/>
+      <IngestionMenu />
       <ListLines
         helpers={storageHelpers}
         sortBy={viewStorage.sortBy}
@@ -92,11 +92,11 @@ const IngestionRss = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <IngestionRssCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={IngestionRssLinesQuery}

@@ -66,7 +66,7 @@ export const opinionsNumber = (context, user, args) => ({
     context,
     user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]), dissoc('endDate'))(args)
+    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]), dissoc('endDate'))(args),
   ),
 });
 
@@ -134,7 +134,7 @@ export const updateOpinionsMetrics = async (context, user, opinionId) => {
     context,
     user,
     [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP],
-    { filters: filtersForObjects, maxSize: ES_MAX_PAGINATION, baseData: true }
+    { filters: filtersForObjects, maxSize: ES_MAX_PAGINATION, baseData: true },
   );
   for (let i = 0; i < elements.length; i += 1) {
     const filtersForOpinions = {

@@ -11,7 +11,7 @@ import {
   indicatorsNumberByEntity,
   indicatorsTimeSeries,
   indicatorsTimeSeriesByEntity,
-  observablesPaginated
+  observablesPaginated,
 } from './indicator-domain';
 import {
   stixDomainObjectAddRelation,

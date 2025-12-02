@@ -285,7 +285,7 @@ interface DraftSightingsProps {
   isReadOnly: boolean;
 }
 
-const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) => {
+const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) => {
   const { draftId } = useParams() as { draftId: string };
   const { t_i18n } = useFormatter();
   const computeLink = useComputeLink();
@@ -336,10 +336,10 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
       isSortable: false,
       render: ({ from }, { fd }) => (from !== null
         ? from.name
-              || from.attribute_abstract
-              || truncate(from.content, 30)
-              || from.observable_value
-              || `${fd(from.first_observed)} - ${fd(from.last_observed)}`
+        || from.attribute_abstract
+        || truncate(from.content, 30)
+        || from.observable_value
+        || `${fd(from.first_observed)} - ${fd(from.last_observed)}`
         : t_i18n('Restricted')),
     },
     entity_type: {
@@ -356,10 +356,10 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
       isSortable: false,
       render: ({ to }, { fd }) => (to !== null
         ? to.name
-              || to.attribute_abstract
-              || truncate(to.content, 30)
-              || to.observable_value
-              || `${fd(to.first_observed)} - ${fd(to.last_observed)}`
+        || to.attribute_abstract
+        || truncate(to.content, 30)
+        || to.observable_value
+        || `${fd(to.first_observed)} - ${fd(to.last_observed)}`
         : t_i18n('Restricted')),
     },
     first_seen: { percentWidth: 12 },
@@ -388,18 +388,18 @@ const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly })
   return (
     <span data-testid="draft-relationships-page">
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: DraftSightingsLines_data$data) => data.draftWorkspaceSightingRelationships?.edges?.map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        contextFilters={contextFilters}
-        getComputeLink={getRedirectionLink}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={draftSightingsLineFragment}
-        entityTypes={['stix-sighting-relationship']}
-        removeFromDraftEnabled
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftSightingsLines_data$data) => data.draftWorkspaceSightingRelationships?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          contextFilters={contextFilters}
+          getComputeLink={getRedirectionLink}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={draftSightingsLineFragment}
+          entityTypes={['stix-sighting-relationship']}
+          removeFromDraftEnabled
+        />
       )}
     </span>
   );

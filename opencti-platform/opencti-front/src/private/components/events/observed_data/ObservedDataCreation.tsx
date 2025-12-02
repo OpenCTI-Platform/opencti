@@ -86,7 +86,7 @@ interface ObservedDataFormProps {
 }
 
 export const ObservedDataCreationForm: FunctionComponent<
-ObservedDataFormProps
+  ObservedDataFormProps
 > = ({
   updater,
   onReset,
@@ -285,7 +285,7 @@ const ObservedDataCreation = ({
     'observedDataAdd',
   );
   const CreateObservedDataControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Observed-Data' {...props} />
+    <CreateEntityControlledDial entityType="Observed-Data" {...props} />
   );
   return (
     <Drawer

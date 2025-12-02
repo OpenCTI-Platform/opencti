@@ -45,26 +45,26 @@ import SelectField from '../../../../../components/fields/SelectField';
 import MenuItem from '@mui/material/MenuItem';
 import OpenVocabField from '@components/common/form/OpenVocabField';
 
-export type PlaybookFlowFormData = 
+export type PlaybookFlowFormData
   // Component: update knowledge
-  PlaybookUpdateActionsForm & 
-  {
+  = PlaybookUpdateActionsForm
+    & {
     // Common for every component
-    name: string
-    // Component: CRON
-    time?: string
-    period?: string
-    day?: string
-  };
+      name: string;
+      // Component: CRON
+      time?: string;
+      period?: string;
+      day?: string;
+    };
 
 interface PlaybookFlowFormProps {
-  action: string | null
-  selectedNode: PlaybookNode | null
-  playbookComponents: PlaybookComponents
-  componentId: string | null
-  onConfigAdd: (component: unknown, name: string, config: unknown) => void
-  onConfigReplace: (component: unknown, name: string, config: unknown) => void
-  handleClose: () => void
+  action: string | null;
+  selectedNode: PlaybookNode | null;
+  playbookComponents: PlaybookComponents;
+  componentId: string | null;
+  onConfigAdd: (component: unknown, name: string, config: unknown) => void;
+  onConfigReplace: (component: unknown, name: string, config: unknown) => void;
+  handleClose: () => void;
 }
 
 const PlaybookFlowForm = ({
@@ -81,9 +81,9 @@ const PlaybookFlowForm = ({
   const nodeData = action === 'config' ? selectedNode?.data : undefined;
   const currentConfig = nodeData?.configuration ?? null;
 
-  const filtersState = useFiltersState(currentConfig?.filters 
-    ? deserializeFilterGroupForFrontend(currentConfig.filters) 
-    : emptyFilterGroup
+  const filtersState = useFiltersState(currentConfig?.filters
+    ? deserializeFilterGroupForFrontend(currentConfig.filters)
+    : emptyFilterGroup,
   );
 
   const selectedComponent = playbookComponents.find((c) => c?.id === componentId);
@@ -138,36 +138,36 @@ const PlaybookFlowForm = ({
   // region initial values
 
   const initialValues: PlaybookFlowFormData = {
-    name: ''
+    name: '',
   };
 
   if (!currentConfig) {
     // Get default values from schema.
     initialValues.name = selectedComponent?.name ?? '';
     Object.entries(configurationSchema?.properties ?? {})
-    .forEach(([propName, property]) => {
+      .forEach(([propName, property]) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      initialValues[propName] = property.default;
-      if (propName === 'actions') initialValues.actionsFormValues = [];
-    });
+        initialValues[propName] = property.default;
+        if (propName === 'actions') initialValues.actionsFormValues = [];
+      });
   } else {
     // Get values from saved config.
-    initialValues.name = nodeData?.component?.id === selectedComponent?.id 
-      ? nodeData?.name ?? '' 
+    initialValues.name = nodeData?.component?.id === selectedComponent?.id
+      ? nodeData?.name ?? ''
       : selectedComponent?.name ?? '';
     const actionsFormValues: PlaybookUpdateAction['value'][] = [];
     Object.entries(currentConfig)
-    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-    .forEach(([key, value]) => {
-      if (/actions-\d-value/.test(key)) actionsFormValues.push(value);
-      else {
+      .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+      .forEach(([key, value]) => {
+        if (/actions-\d-value/.test(key)) actionsFormValues.push(value);
+        else {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        initialValues[key] = value;
-      }
-      initialValues.actionsFormValues = actionsFormValues;
-    });
+          initialValues[key] = value;
+        }
+        initialValues.actionsFormValues = actionsFormValues;
+      });
   }
 
   // endregion
@@ -225,16 +225,16 @@ const PlaybookFlowForm = ({
                         fullWidth={true}
                         containerstyle={{ width: '100%', marginTop: 20 }}
                       >
-                        <MenuItem key='ENDPOINT' value='ENDPOINT'>
+                        <MenuItem key="ENDPOINT" value="ENDPOINT">
                           {t_i18n('Endpoint')}
                         </MenuItem>
-                        <MenuItem key='CLOUD' value='CLOUD'>
+                        <MenuItem key="CLOUD" value="CLOUD">
                           {t_i18n('Cloud')}
                         </MenuItem>
-                        <MenuItem key='WEB' value='WEB'>
+                        <MenuItem key="WEB" value="WEB">
                           {t_i18n('Web')}
                         </MenuItem>
-                        <MenuItem key='TABLE-TOP' value='TABLE-TOP'>
+                        <MenuItem key="TABLE-TOP" value="TABLE-TOP">
                           {t_i18n('Table-top')}
                         </MenuItem>
                       </Field>
@@ -245,7 +245,7 @@ const PlaybookFlowForm = ({
                       <OpenVocabField
                         key={propName}
                         name={propName}
-                        type={'platforms_ov'}
+                        type="platforms_ov"
                         label={t_i18n(property.$ref)}
                         containerStyle={fieldSpacingContainerStyle}
                         multiple={true}

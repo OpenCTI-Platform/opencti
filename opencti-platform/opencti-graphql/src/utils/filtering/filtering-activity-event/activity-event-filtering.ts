@@ -4,7 +4,7 @@ import { FILTER_WITH_EVENTS_KEY_TESTERS_MAP } from './activity-event-testers';
 import { testFilterGroup } from '../boolean-logic-engine';
 import { UnsupportedError } from '../../../config/errors';
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 // Validate Filter in case of comparison against an event
 export const validateFilterForActivityEventMatch = (filter: Filter) => {
@@ -28,7 +28,7 @@ export const validateFilterGroupForActivityEventMatch = (filterGroup: FilterGrou
   filterGroup.filterGroups.forEach((fg) => validateFilterGroupForActivityEventMatch(fg));
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 /**
  * Tells if a given Activity Stream Event matches the given filter
@@ -38,7 +38,7 @@ export const validateFilterGroupForActivityEventMatch = (filterGroup: FilterGrou
 export const isActivityEventMatchFilterGroup = async (
   event: ActivityStreamEvent,
   filterGroup?: FilterGroup,
-) : Promise<boolean> => {
+): Promise<boolean> => {
   // check the filter is well formed and compatible for event matching
   if (filterGroup) validateFilterGroupForActivityEventMatch(filterGroup);
   if (!filterGroup) return true; // if no filters: the event always match

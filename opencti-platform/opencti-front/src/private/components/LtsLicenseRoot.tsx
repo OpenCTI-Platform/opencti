@@ -99,50 +99,60 @@ const LicenseComponent: FunctionComponent<LicenseProps> = ({ settings }) => {
     });
   };
   const isNoLicenseByConfig = !settings.platform_enterprise_edition.license_by_configuration;
-  return <div>
-    <SystemBanners settings={settings} />
-    <div className={classes.container}>
-      <Dialog
-        slotProps={{ paper: { elevation: 1 } }}
-        open={true}
-        onClose={() => {}}
-        fullWidth={true}
-        maxWidth="md"
-      >
-        <DialogTitle>
-          {t_i18n('OpenCTI LTS license agreement')}
-        </DialogTitle>
-        <DialogContent>
-          <Alert severity="info" style={{ marginTop: 15 }}>
-            {t_i18n('OpenCTI LTS Edition requires a license key to be enabled. Filigran provides a free-to-use license for development and research purposes as well as for charity organizations.')}
-            <br/><br/>
-            {t_i18n('To obtain a license, please')} <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">{t_i18n('reach out to the Filigran team')}</a>.
-          </Alert>
-          {isNoLicenseByConfig ? <FormGroup style={{ marginTop: 15 }}>
-            <TextField
-              onChange={(event) => setEnterpriseLicense(event.target.value)}
-              multiline={true}
-              fullWidth={true}
-              minRows={10}
-              placeholder={t_i18n('Paste your Filigran OpenCTI LTS license')}
-              variant="outlined"
-            />
-          </FormGroup> : <Alert severity="warning" style={{ marginTop: 15 }}>
-            {t_i18n('The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen')}
-          </Alert>}
-          {isNoLicenseByConfig && <div style={{ marginTop: 15 }}>
-              {t_i18n('By enabling the OpenCTI LTS, you (and your organization) agrees to the')}&nbsp;
-            <a href="https://github.com/OpenCTI-Platform/opencti/blob/master/LTS_LICENSE" target="_blank" rel="noreferrer">{t_i18n('license terms and conditions of usage')}</a>.
-            </div>}
-        </DialogContent>
-        {isNoLicenseByConfig && <DialogActions>
-          <Button disabled={isEmptyField(enterpriseLicense)} color="secondary" onClick={enableEnterpriseEdition}>
-            {t_i18n('Enable')}
-          </Button>
-          </DialogActions>}
-      </Dialog>
+  return (
+    <div>
+      <SystemBanners settings={settings} />
+      <div className={classes.container}>
+        <Dialog
+          slotProps={{ paper: { elevation: 1 } }}
+          open={true}
+          onClose={() => {}}
+          fullWidth={true}
+          maxWidth="md"
+        >
+          <DialogTitle>
+            {t_i18n('OpenCTI LTS license agreement')}
+          </DialogTitle>
+          <DialogContent>
+            <Alert severity="info" style={{ marginTop: 15 }}>
+              {t_i18n('OpenCTI LTS Edition requires a license key to be enabled. Filigran provides a free-to-use license for development and research purposes as well as for charity organizations.')}
+              <br /><br />
+              {t_i18n('To obtain a license, please')} <a href="https://filigran.io/contact/" target="_blank" rel="noreferrer">{t_i18n('reach out to the Filigran team')}</a>.
+            </Alert>
+            {isNoLicenseByConfig ? (
+              <FormGroup style={{ marginTop: 15 }}>
+                <TextField
+                  onChange={(event) => setEnterpriseLicense(event.target.value)}
+                  multiline={true}
+                  fullWidth={true}
+                  minRows={10}
+                  placeholder={t_i18n('Paste your Filigran OpenCTI LTS license')}
+                  variant="outlined"
+                />
+              </FormGroup>
+            ) : (
+              <Alert severity="warning" style={{ marginTop: 15 }}>
+                {t_i18n('The license you setup in configuration is invalid, please change it or remove it to allow direct configuration in this screen')}
+              </Alert>
+            )}
+            {isNoLicenseByConfig && (
+              <div style={{ marginTop: 15 }}>
+                {t_i18n('By enabling the OpenCTI LTS, you (and your organization) agrees to the')}&nbsp;
+                <a href="https://github.com/OpenCTI-Platform/opencti/blob/master/LTS_LICENSE" target="_blank" rel="noreferrer">{t_i18n('license terms and conditions of usage')}</a>.
+              </div>
+            )}
+          </DialogContent>
+          {isNoLicenseByConfig && (
+            <DialogActions>
+              <Button disabled={isEmptyField(enterpriseLicense)} color="secondary" onClick={enableEnterpriseEdition}>
+                {t_i18n('Enable')}
+              </Button>
+            </DialogActions>
+          )}
+        </Dialog>
+      </div>
     </div>
-  </div>;
+  );
 };
 
 const LtsLicenseRoot = () => {

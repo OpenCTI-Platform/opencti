@@ -20,7 +20,7 @@ export interface FintelTemplatePreviewFormInputs {
 }
 
 interface FintelTemplatePreviewFormProps {
-  onChange: (val: FintelTemplatePreviewFormInputs) => void
+  onChange: (val: FintelTemplatePreviewFormInputs) => void;
 }
 
 const FintelTemplatePreviewForm = ({

@@ -23,7 +23,7 @@ const caseRftResolvers: Resolvers = {
     caseRftDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);
     },
-  }
+  },
 };
 
 export default caseRftResolvers;

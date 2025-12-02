@@ -56,7 +56,7 @@ interface ExternalReferenceEditionOverviewComponentProps {
 }
 
 const ExternalReferenceEditionOverviewComponent: FunctionComponent<
-ExternalReferenceEditionOverviewComponentProps
+  ExternalReferenceEditionOverviewComponentProps
 > = ({ externalReference, context }) => {
   const { t_i18n } = useFormatter();
 

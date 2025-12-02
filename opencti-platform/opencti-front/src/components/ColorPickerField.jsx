@@ -88,7 +88,7 @@ const ColorPickerField = (props) => {
                   }}
                 />
                 <IconButton aria-label="open" onClick={handleClick} size="large">
-                  <ColorLens/>
+                  <ColorLens />
                 </IconButton>
               </InputAdornment>
             ),

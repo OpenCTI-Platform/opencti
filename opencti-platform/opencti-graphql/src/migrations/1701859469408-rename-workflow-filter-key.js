@@ -81,37 +81,37 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Trigger' } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'TaxiiCollection' } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Feed' } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'StreamCollection' } } }],
-            }
+            },
           },
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'RetentionRule' } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Rename workflow filter key for triggers, taxii, feeds, streams and retention rules',
     READ_DATA_INDICES,
-    entitiesUpdateQuery
+    entitiesUpdateQuery,
   ).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
@@ -132,12 +132,12 @@ export const up = async (next) => {
           {
             key: 'completed',
             values: ['false'],
-          }
+          },
         ],
         filterGroups: [],
       },
-      noFiltersChecking: true
-    }
+      noFiltersChecking: true,
+    },
   );
 
   let tasksFiltersConvertor = {};
@@ -163,12 +163,12 @@ export const up = async (next) => {
           { term: { 'completed.keyword': { value: 'false' } } },
         ],
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Rename workflow filter key for query tasks',
     READ_DATA_INDICES,
-    tasksUpdateQuery
+    tasksUpdateQuery,
   ).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
@@ -233,17 +233,17 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Workspace' } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Rename workflow filter key for workspaces',
     READ_DATA_INDICES,
-    workspacesUpdateQuery
+    workspacesUpdateQuery,
   ).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });
@@ -299,17 +299,17 @@ export const up = async (next) => {
           {
             bool: {
               must: [{ term: { 'entity_type.keyword': { value: 'Playbook' } } }],
-            }
+            },
           },
         ],
         minimum_should_match: 1,
       },
-    }
+    },
   };
   await elUpdateByQueryForMigration(
     '[MIGRATION] Rename workflow filter key for playbooks',
     READ_DATA_INDICES,
-    playbooksUpdateQuery
+    playbooksUpdateQuery,
   ).catch((err) => {
     throw DatabaseError('Error updating elastic', { error: err });
   });

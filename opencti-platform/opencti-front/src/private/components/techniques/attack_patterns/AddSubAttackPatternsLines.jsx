@@ -25,7 +25,7 @@ class AddSubAttackPatternsLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={attackPattern}
-        relationshipType={'subtechnique-of'}
+        relationshipType="subtechnique-of"
         availableDatas={data?.attackPatterns}
         existingDatas={attackPatternSubAttackPatterns}
         updaterOptions={{ path: 'subAttackPatterns' }}

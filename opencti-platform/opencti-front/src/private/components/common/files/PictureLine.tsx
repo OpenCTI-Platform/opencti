@@ -75,7 +75,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 className={classes.bodyItem}
@@ -99,7 +99,7 @@ const PictureLine: FunctionComponent<PictureLineComponentProps> = ({
                 />
               </div>
             </>
-          }
+          )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <NorthEastOutlined fontSize="small" />

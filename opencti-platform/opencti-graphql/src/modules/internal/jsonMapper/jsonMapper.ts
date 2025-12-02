@@ -27,11 +27,11 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityJsonMapper, StixJsonMap
     id: 'jsonmapper',
     name: ENTITY_TYPE_JSON_MAPPER,
     category: ABSTRACT_INTERNAL_OBJECT,
-    aliased: false
+    aliased: false,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_JSON_MAPPER]: () => uuidv4()
+      [ENTITY_TYPE_JSON_MAPPER]: () => uuidv4(),
     },
     resolvers: {
       name(data: object) {
@@ -48,7 +48,7 @@ const CSV_MAPPER_DEFINITION: ModuleDefinition<StoreEntityJsonMapper, StixJsonMap
   representative: (instance: StixJsonMapper) => {
     return instance.name;
   },
-  converter_2_1: convertJsonMapperToStix
+  converter_2_1: convertJsonMapperToStix,
 };
 
 registerDefinition(CSV_MAPPER_DEFINITION);

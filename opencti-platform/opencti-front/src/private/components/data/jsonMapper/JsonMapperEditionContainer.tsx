@@ -80,12 +80,12 @@ const JsonMapperEditionContainer: FunctionComponent<JsonMapperEditionProps> = ({
     data.jsonMapper,
   );
   if (!jsonMapper) {
-    return <Loader variant={LoaderVariant.inline}/>;
+    return <Loader variant={LoaderVariant.inline} />;
   }
 
   return (
     <Drawer title={t_i18n('JSON Mapper edition')} open={open} onClose={onClose}>
-      <JsonMapperEdition jsonMapper={jsonMapper} onClose={onClose}/>
+      <JsonMapperEdition jsonMapper={jsonMapper} onClose={onClose} />
     </Drawer>
   );
 };

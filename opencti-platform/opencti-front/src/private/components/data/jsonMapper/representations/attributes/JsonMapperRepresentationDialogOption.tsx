@@ -11,8 +11,8 @@ import { JsonMapperRepresentationAttributeFormData } from '@components/data/json
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface JsonMapperRepresentationDialogOptionProps {
-  children: ReactNode
-  configuration?: JsonMapperRepresentationAttributeFormData
+  children: ReactNode;
+  configuration?: JsonMapperRepresentationAttributeFormData;
 }
 
 const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresentationDialogOptionProps> = ({ children, configuration }) => {
@@ -37,7 +37,7 @@ const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresen
         size="large"
       >
         <Badge color="secondary" variant="dot" invisible={!visible}>
-          <CogOutline/>
+          <CogOutline />
         </Badge>
       </IconButton>
       <Dialog

@@ -3,7 +3,7 @@ import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, storeLoad
 import { notify } from '../../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { type BasicStoreEntityCase, ENTITY_TYPE_CONTAINER_CASE, } from './case-types';
+import { type BasicStoreEntityCase, ENTITY_TYPE_CONTAINER_CASE } from './case-types';
 import { type BasicStoreEntityTaskTemplate, ENTITY_TYPE_TASK_TEMPLATE } from '../task/task-template/task-template-types';
 import { TEMPLATE_TASK_RELATION } from './case-template/case-template-types';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -26,7 +26,7 @@ export const upsertTemplateForCase = async (context: AuthContext, user: AuthUser
       mode: FilterMode.And,
       filters: [{ key: [buildRefRelationKey(TEMPLATE_TASK_RELATION)], values: [caseTemplateId] }],
       filterGroups: [],
-    }
+    },
   };
   const templateTasks = await fullEntitiesList<BasicStoreEntityTaskTemplate>(context, user, [ENTITY_TYPE_TASK_TEMPLATE], opts);
   // Convert template to real task

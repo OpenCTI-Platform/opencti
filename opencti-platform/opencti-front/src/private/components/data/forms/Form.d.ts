@@ -161,7 +161,7 @@ export interface AttributeOption {
   type?: string;
   mandatory?: boolean;
   multiple?: boolean;
-  defaultValues?: { id: string; name: string; }[] | null;
+  defaultValues?: { id: string; name: string }[] | null;
 }
 
 // Relationship type option for UI display

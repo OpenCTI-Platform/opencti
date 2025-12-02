@@ -1,4 +1,4 @@
- import { URL } from 'node:url';
+import { URL } from 'node:url';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import express from 'express';
@@ -62,7 +62,7 @@ const extractRefererPathFromReq = (req) => {
   if (isEmptyField(req.headers.referer)) {
     return undefined;
   }
-  
+
   try {
     const refererUrl = new URL(req.headers.referer);
     // Keep only the pathname and search to prevent OPEN REDIRECT CWE-601
@@ -82,7 +82,7 @@ const publishFileDownload = async (executeContext, auth, file) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'download',
-    context_data: data
+    context_data: data,
   });
 };
 
@@ -95,7 +95,7 @@ const publishFileRead = async (executeContext, auth, file) => {
     event_type: 'file',
     event_access: 'extended',
     event_scope: 'read',
-    context_data: data
+    context_data: data,
   });
 };
 
@@ -408,7 +408,7 @@ const createApp = async (app, schema) => {
           event_type: 'authentication',
           event_access: 'administration',
           event_scope: 'logout',
-          context_data: undefined
+          context_data: undefined,
         });
         await delUserContext(user);
         res.clearCookie(OPENCTI_SESSION);
@@ -465,26 +465,25 @@ const createApp = async (app, schema) => {
       if (strategy._saml) {
         // For SAML, no session is required, referer will be send back through RelayState
         return passport.authenticate(
-          provider, 
-          { additionalParams: { RelayState: referer }}, 
+          provider,
+          { additionalParams: { RelayState: referer } },
           (err) => {
             setCookieError(res, err?.message);
             next(err);
-          }
+          },
         )(req, res, next);
-      } 
+      }
 
       // For openid / oauth, session is required so we can use it
       req.session.referer = referer;
       return passport.authenticate(
-        provider, 
-        {}, 
+        provider,
+        {},
         (err) => {
           setCookieError(res, err?.message);
           next(err);
-        }
+        },
       )(req, res, next);
-
     } catch (e) {
       setCookieError(res, e.message);
       logApp.error('Error auth provider', { cause: e });
@@ -565,7 +564,7 @@ const createApp = async (app, schema) => {
       const data = await readFile(`${__dirname}/../public/index.html`, 'utf8');
       const settingsTitle = settings?.platform_title;
       const description = 'OpenCTI is an open source platform allowing organizations'
-          + ' to manage their cyber threat intelligence knowledge and observables.';
+        + ' to manage their cyber threat intelligence knowledge and observables.';
       const settingFavicon = settings?.platform_favicon;
       const withOptionValued = data
         .replace(/%BASE_PATH%/g, basePath)

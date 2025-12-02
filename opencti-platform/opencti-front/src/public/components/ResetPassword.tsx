@@ -83,17 +83,17 @@ const FLASH_COOKIE = 'opencti_flash';
 const RESEND_COOLDOWN_MS = 30000;
 
 type AlertMessageProps = {
-  text: string
+  text: string;
 } & AlertProps;
 
 const AlertMessage = ({ text, ...alertProps }: AlertMessageProps) => {
   const theme = useTheme<Theme>();
   return (
-    <Alert 
-      variant="outlined" 
+    <Alert
+      variant="outlined"
       style={{
         marginBottom: theme.spacing(2),
-        textAlign: 'justify'
+        textAlign: 'justify',
       }}
       {...alertProps}
     >
@@ -146,11 +146,11 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
 
   const startResendCooldown = (onComplete?: () => void) => {
     setResendCodeDisabled(true);
-    
+
     if (resendTimeoutRef.current) {
       clearTimeout(resendTimeoutRef.current);
     }
-    
+
     resendTimeoutRef.current = setTimeout(() => {
       setResendCodeDisabled(false);
       onComplete?.();
@@ -191,7 +191,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
         startResendCooldown();
-      }
+      },
     });
   };
 
@@ -266,8 +266,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
                   label={t_i18n('Email address')}
                   fullWidth={true}
                   onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                  setEmail(e.currentTarget.value);
-                }}
+                    setEmail(e.currentTarget.value);
+                  }}
                 />
                 <Button
                   type="submit"
@@ -279,14 +279,15 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
                   {t_i18n('Send reset code')}
                 </Button>
               </Form>
-          );}}
+            );
+          }}
         </Formik>
       )}
 
       {step === Step.VALIDATE_OTP && (
         <Formik
           onSubmit={onSubmitValidateOtp}
-          initialTouched={{ otp:!!flashError }}
+          initialTouched={{ otp: !!flashError }}
           initialErrors={{ otp: flashError ? t_i18n(flashError) : '' }}
           validationSchema={otpValidation(t_i18n)}
           initialValues={{ otp: '' }}
@@ -294,15 +295,15 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
           {({ isSubmitting, isValid }) => (
             <Form>
               {validateOtpError ? (
-                <AlertMessage 
-                  severity="error" 
-                  text={resendCodeDisabled 
+                <AlertMessage
+                  severity="error"
+                  text={resendCodeDisabled
                     ? t_i18n('The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.')
                     : t_i18n('The reset code you entered is invalid or has expired. You can request a new code.')
                   }
                 />
               ) : (
-                <AlertMessage 
+                <AlertMessage
                   severity="info"
                   text={t_i18n('If the email address you entered is associated with an account, you will receive a confirmation email with a reset code shortly.')}
                 />
@@ -342,12 +343,12 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
           {({ isSubmitting, isValid }) => (
             <Form>
               {changePasswordError ? (
-                <AlertMessage 
+                <AlertMessage
                   severity="error"
                   text={t_i18n('This new password does not comply with the platform policies.')}
                 />
               ) : (
-                <AlertMessage 
+                <AlertMessage
                   severity="success"
                   text={t_i18n('You can now set a new password for your account.')}
                 />
@@ -381,7 +382,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         </Formik>
       )}
 
-      <div 
+      <div
         style={{
           marginTop: theme.spacing(2),
           display: 'flex',
@@ -396,7 +397,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         </a>
         {validateOtpError && (
           <a
-            style={{ 
+            style={{
               cursor: resendCodeDisabled ? 'not-allowed' : 'pointer',
               opacity: resendCodeDisabled ? 0.5 : 1,
               pointerEvents: resendCodeDisabled ? 'none' : 'auto',

@@ -21,8 +21,8 @@ const groupEntitySettingHiddenTypesListQuery = graphql`
 `;
 
 const GroupHiddenTypesListComponent: FunctionComponent<{
-  targetType: string
-  queryRef: PreloadedQuery<GroupEntitySettingHiddenTypesListQuery>
+  targetType: string;
+  queryRef: PreloadedQuery<GroupEntitySettingHiddenTypesListQuery>;
 }> = ({
   targetType,
   queryRef,
@@ -36,20 +36,22 @@ const GroupHiddenTypesListComponent: FunctionComponent<{
       targetType={targetType}
       nodes={groups}
       label={t_i18n('Hidden in groups')}
-      link={'/dashboard/settings/accesses/groups/'}
-      entityType={'Group'}
+      link="/dashboard/settings/accesses/groups/"
+      entityType="Group"
     />
   );
 };
 const GroupEntitySettingHiddenTypesList: FunctionComponent<{ targetType: string }> = ({ targetType }) => {
   const queryRef = useQueryLoading<GroupEntitySettingHiddenTypesListQuery>(groupEntitySettingHiddenTypesListQuery, {});
-  return <>
-    {queryRef && (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <GroupHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
-      </React.Suspense>
-    )}
-  </>;
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <GroupHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
+        </React.Suspense>
+      )}
+    </>
+  );
 };
 
 export default GroupEntitySettingHiddenTypesList;

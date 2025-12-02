@@ -225,7 +225,7 @@ export const rulesCleanHandler = async (
   user: AuthUser,
   instances: Array<BasicStoreCommon>,
   rules: Array<RuleRuntime>,
-  deletedDependencies: Array<string> = []
+  deletedDependencies: Array<string> = [],
 ) => {
   for (let i = 0; i < instances.length; i += 1) {
     const instance = instances[i];

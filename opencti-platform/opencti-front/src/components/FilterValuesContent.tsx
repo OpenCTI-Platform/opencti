@@ -30,16 +30,8 @@ interface FilterValuesContentProps {
 }
 
 const FilterValuesContent: FunctionComponent<
-FilterValuesContentProps
-> = ({
-  redirection,
-  isFilterTooltip,
-  filterKey,
-  id,
-  value,
-  filterDefinition,
-  filterOperator,
-}) => {
+  FilterValuesContentProps
+> = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition, filterOperator }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes } = useAttributes();
   const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
@@ -56,17 +48,19 @@ FilterValuesContentProps
     );
   }
   if (displayedValue === SELF_ID_VALUE) {
-    displayedValue = <div>
-      <span>
-        {displayedValue}
-      </span>
-      <Tooltip
-        style={{ marginLeft: 3, marginTop: -5, paddingTop: 7 }}
-        title={t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.')}
-      >
-        <InformationOutline color="primary"/>
-      </Tooltip>
-    </div>;
+    displayedValue = (
+      <div>
+        <span>
+          {displayedValue}
+        </span>
+        <Tooltip
+          style={{ marginLeft: 3, marginTop: -5, paddingTop: 7 }}
+          title={t_i18n('Current entity refers to the entity in which you will use the Fintel template. Removing this filter means you will lost the context of the container in which the template is used.')}
+        >
+          <InformationOutline color="primary" />
+        </Tooltip>
+      </div>
+    );
   }
   const isRedirectableFilter = filterDefinition
     && filterType === 'id'

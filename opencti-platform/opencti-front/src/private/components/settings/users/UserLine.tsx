@@ -44,8 +44,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface UserLineComponentProps {
-  dataColumns: DataColumns,
-  node: UserLine_node$data,
+  dataColumns: DataColumns;
+  node: UserLine_node$data;
 }
 
 const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
@@ -67,7 +67,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
         {!userServiceAccount && (external ? <AccountCircleOutlined /> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -101,7 +101,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
                 <Tooltip
                   title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
                 >
-                  <ReportGmailerrorred fontSize={'small'} color={'error'}/>
+                  <ReportGmailerrorred fontSize="small" color="error" />
                 </Tooltip>
               )}
             </div>
@@ -110,9 +110,9 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
               style={{ width: dataColumns.otp.width }}
             >
               {node.otp_activated ? (
-                <Security fontSize="small" color="secondary"/>
+                <Security fontSize="small" color="secondary" />
               ) : (
-                <HorizontalRule fontSize="small" color="primary"/>
+                <HorizontalRule fontSize="small" color="primary" />
               )}
             </div>
             <div
@@ -122,10 +122,10 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
               {fd(node.created_at)}
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined/>
+        <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -167,7 +167,7 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -247,10 +247,10 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
               />
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined/>
+        <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItem>
   );

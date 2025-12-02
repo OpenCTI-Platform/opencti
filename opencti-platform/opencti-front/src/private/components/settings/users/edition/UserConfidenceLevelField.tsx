@@ -34,11 +34,11 @@ interface UserConfidenceLevelFieldProps {
   onSubmit?: (name: string, value: string | null) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?:
-  | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
-  } | null)[]
-  | null;
+    | readonly ({
+      readonly focusOn: string | null | undefined;
+      readonly name: string;
+    } | null)[]
+    | null;
   containerStyle?: Record<string, string | number>;
   disabled?: boolean;
   user?: UserEdition_user$data; // only for edition
@@ -121,7 +121,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         component={InputSliderField}
         containerstyle={containerStyle}
         fullWidth={true}
-        entityType={'User'}
+        entityType="User"
         attributeName={name}
         name={name}
         label={finalLabel}

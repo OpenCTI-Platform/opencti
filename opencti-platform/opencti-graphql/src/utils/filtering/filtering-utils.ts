@@ -27,7 +27,7 @@ import {
   RELATION_DYNAMIC_FROM_FILTER,
   RELATION_DYNAMIC_TO_FILTER,
   SIGHTED_BY_FILTER,
-  SPECIAL_FILTER_KEYS
+  SPECIAL_FILTER_KEYS,
 } from './filtering-constants';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
@@ -46,7 +46,7 @@ export const emptyFilterGroup: FilterGroup = {
   filterGroups: [],
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Basic utility functions
 
 export const isFilterFormatCorrect = (filter: Filter) => {
@@ -272,14 +272,14 @@ export const addFilter = (filterGroup: FilterGroup | undefined | null, newKey: s
         key: keyArray,
         values: valuesArray,
         operator,
-        mode: localMode
+        mode: localMode,
       },
     ],
     filterGroups: filterGroup && isFilterGroupNotEmpty(filterGroup) ? [filterGroup] : [],
   } as FilterGroup;
 };
 
-const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string) : Filter => {
+const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string): Filter => {
   return {
     ...filter,
     key: filter.key.map((k) => (k === oldKey ? newKey : k)),
@@ -292,15 +292,15 @@ const replaceFilterKeyInFilter = (filter: Filter, oldKey: string, newKey: string
  * @param oldKey
  * @param newKey
  */
-export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKey: string) : FilterGroup => {
+export const replaceFilterKey = (filterGroup: FilterGroup, oldKey: string, newKey: string): FilterGroup => {
   return {
     ...filterGroup,
     filters: filterGroup.filters.map((f) => replaceFilterKeyInFilter(f, oldKey, newKey)),
-    filterGroups: filterGroup.filterGroups.map(((fg) => replaceFilterKey(fg, oldKey, newKey)))
+    filterGroups: filterGroup.filterGroups.map((fg) => replaceFilterKey(fg, oldKey, newKey)),
   };
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Filter adaptation
 
 // map of the special filtering keys that should be converted
@@ -496,13 +496,13 @@ const computeFilterLabelMap = async (
   context: AuthContext,
   user: AuthUser,
   inputFilterGroup: FilterGroup,
-  idsFinder: (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>
+  idsFinder: (context: AuthContext, user: AuthUser, ids: string[], opts: any) => Promise<Record<string, BasicStoreObject>>,
 ) => {
   const resolvedLabels: Record<string, string> = {};
   const labelFilterValues = extractFilterKeyValues(LABEL_FILTER, inputFilterGroup);
   const isLabelsByText = labelFilterValues.filter((val) => !isInternalId(val)).length > 0;
   const isForceLabel = (label: string) => label.startsWith(BASE_FORCE_LABEL);
-  const prepareLabel = (label:string) => {
+  const prepareLabel = (label: string) => {
     return label.startsWith(BASE_FORCE_LABEL) ? label.substring(BASE_FORCE_LABEL.length) : label;
   };
   const generateId = (val: string) => idLabel(prepareLabel(val), isForceLabel(val));
@@ -529,7 +529,7 @@ export const checkAndConvertFilters = async (
   inputFilterGroup: FilterGroup | null | undefined,
   userId: string,
   idsFinder: FiltersIdsFinder,
-  opts: { noFiltersChecking?: boolean, noFiltersConvert?: boolean } = {}
+  opts: { noFiltersChecking?: boolean; noFiltersConvert?: boolean } = {},
 ) => {
   if (!inputFilterGroup) {
     return undefined;

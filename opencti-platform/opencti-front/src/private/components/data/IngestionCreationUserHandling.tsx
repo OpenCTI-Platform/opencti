@@ -100,7 +100,7 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
               sx={{ padding: '0px 10px 0px 10px' }}
             >
               {t_i18n('User cannot be created automatically for this connector since no default group has been defined.')} {' '}
-              {setAccess ? <Link to={'/dashboard/settings/accesses/policies'}>{t_i18n('Click here to add one')}</Link> : <Box>{t_i18n('Please contact your admin')}</Box>}
+              {setAccess ? <Link to="/dashboard/settings/accesses/policies">{t_i18n('Click here to add one')}</Link> : <Box>{t_i18n('Please contact your admin')}</Box>}
             </Alert>
           </Box>
         )}
@@ -117,11 +117,11 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
           {isSensitive && (
             <FormControlLabel
               control={<Switch onChange={handleEditConfidence} />}
-              label={
+              label={(
                 <>
                   {t_i18n('Edit confidence level')}
                 </>
-              }
+              )}
             />
           )}
           <ConfidenceField

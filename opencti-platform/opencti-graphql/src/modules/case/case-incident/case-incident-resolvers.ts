@@ -27,7 +27,7 @@ const caseIncidentResolvers: Resolvers = {
     caseIncidentDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);
     },
-  }
+  },
 };
 
 export default caseIncidentResolvers;

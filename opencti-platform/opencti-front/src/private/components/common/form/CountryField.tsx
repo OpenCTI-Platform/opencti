@@ -61,10 +61,10 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const [countries, setCountries] = useState<
-  {
-    label: string | undefined;
-    value: string | undefined;
-  }[]
+    {
+      label: string | undefined;
+      value: string | undefined;
+    }[]
   >([]);
 
   const searchCountries = (event: React.ChangeEvent<HTMLInputElement>) => {

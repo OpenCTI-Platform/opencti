@@ -60,17 +60,17 @@ const aISummaryContainersQuery = graphql`
 `;
 
 interface AISummaryContainersComponentProps {
-  refetch: (newFirst: number, newRelative: string) => void
-  relative: string
-  changeRelative: (relative: string) => void
-  first: number
-  changeFirst: (first: number) => void
-  language: string
-  setLanguage: (language: string) => void
-  content: string
-  loading: boolean
-  result: AISummaryContainersContainersAskAiSummaryQuery$data | null
-  isContainer: boolean
+  refetch: (newFirst: number, newRelative: string) => void;
+  relative: string;
+  changeRelative: (relative: string) => void;
+  first: number;
+  changeFirst: (first: number) => void;
+  language: string;
+  setLanguage: (language: string) => void;
+  content: string;
+  loading: boolean;
+  result: AISummaryContainersContainersAskAiSummaryQuery$data | null;
+  isContainer: boolean;
 }
 const AISummaryContainersComponent = ({
   refetch,
@@ -164,12 +164,12 @@ const AISummaryContainersComponent = ({
 };
 
 interface ContainersAiSummaryProps {
-  busId: string
-  isContainer: boolean
-  filters: FilterGroup
-  helpers: handleFilterHelpers
-  loading: boolean
-  setLoading: (loading: boolean) => void
+  busId: string;
+  isContainer: boolean;
+  filters: FilterGroup;
+  helpers: handleFilterHelpers;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
 }
 
 const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading }: ContainersAiSummaryProps) => {
@@ -240,10 +240,10 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
     }
     const finalFilters = isContainer || !startDate ? filters
       : {
-        mode: filters.mode,
-        filters: [...filters.filters, { key: 'created', values: [startDate], operator: 'gte' }],
-        filterGroups: filters.filterGroups,
-      };
+          mode: filters.mode,
+          filters: [...filters.filters, { key: 'created', values: [startDate], operator: 'gte' }],
+          filterGroups: filters.filterGroups,
+        };
     setLoading(true);
     fetchQuery(aISummaryContainersQuery, {
       busId,

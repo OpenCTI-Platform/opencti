@@ -44,7 +44,7 @@ const OtpInputField: FunctionComponent<OtpInputFieldProps> = ({
       value={value}
       onChange={onChange}
       numInputs={OTP_CODE_SIZE}
-      inputType={'tel'}
+      inputType="tel"
       shouldAutoFocus={true}
       inputStyle={classes.inputStyle}
       renderInput={(props) => <input disabled={isDisabled} {...props} />}

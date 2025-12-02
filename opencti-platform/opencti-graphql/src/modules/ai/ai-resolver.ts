@@ -24,7 +24,7 @@ import {
   makeLonger,
   makeShorter,
   summarize,
-  summarizeFiles
+  summarizeFiles,
 } from './ai-domain';
 import { BUS_TOPICS } from '../../config/conf';
 import { AI_BUS } from './ai-types';

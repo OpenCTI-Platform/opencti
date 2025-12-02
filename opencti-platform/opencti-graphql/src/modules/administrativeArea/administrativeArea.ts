@@ -15,11 +15,11 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
     id: 'administrativeAreas',
     name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA,
     category: ENTITY_TYPE_LOCATION,
-    aliased: true
+    aliased: true,
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA]: [{ src: NAME_FIELD }]
+      [ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA]: [{ src: NAME_FIELD }],
     },
     resolvers: {
       name(data: object) {
@@ -40,19 +40,19 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
       targets: [
         { name: ENTITY_TYPE_LOCATION_COUNTRY, type: REL_BUILT_IN },
         { name: ENTITY_TYPE_LOCATION_REGION, type: REL_BUILT_IN },
-      ]
+      ],
     },
     {
       name: RELATION_DERIVED_FROM,
       targets: [
-        { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN }
-      ]
-    }
+        { name: ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, type: REL_BUILT_IN },
+      ],
+    },
   ],
   representative(instance: StixLocation): string {
     return instance.name;
   },
-  converter_2_1: convertAdministrativeAreaToStix
+  converter_2_1: convertAdministrativeAreaToStix,
 };
 
 registerDefinition(ADMINISTRATIVE_AREA_DEFINITION);

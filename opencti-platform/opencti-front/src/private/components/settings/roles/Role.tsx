@@ -98,7 +98,7 @@ const Role = ({
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -150,24 +150,26 @@ const Role = ({
               </Grid>
             </Paper>
           </Grid>
-          {isCapabilitiesInDraftEnabled &&
-            <Grid item xs={6}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t_i18n('Capabilities in Draft')}
-                <EEChip feature={t_i18n('Capabilities in Draft')} />
-              </Typography>
-              <Paper classes={{ root: classes.paper }} variant="outlined">
-                <Grid container={true} spacing={3}>
-                  <Grid item xs={12} style={{ paddingTop: 10 }}>
-                    {queryRef && (
-                      <React.Suspense>
-                        <CapabilitiesList queryRef={queryRef} role={role} isCapabilitiesInDraft />
-                      </React.Suspense>
-                    )}
+          {isCapabilitiesInDraftEnabled
+            && (
+              <Grid item xs={6}>
+                <Typography variant="h4" gutterBottom={true}>
+                  {t_i18n('Capabilities in Draft')}
+                  <EEChip feature={t_i18n('Capabilities in Draft')} />
+                </Typography>
+                <Paper classes={{ root: classes.paper }} variant="outlined">
+                  <Grid container={true} spacing={3}>
+                    <Grid item xs={12} style={{ paddingTop: 10 }}>
+                      {queryRef && (
+                        <React.Suspense>
+                          <CapabilitiesList queryRef={queryRef} role={role} isCapabilitiesInDraft />
+                        </React.Suspense>
+                      )}
+                    </Grid>
                   </Grid>
-                </Grid>
-              </Paper>
-            </Grid>
+                </Paper>
+              </Grid>
+            )
           }
         </Grid>
       </Grid>

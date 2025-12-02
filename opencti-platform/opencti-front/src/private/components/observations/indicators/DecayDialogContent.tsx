@@ -19,15 +19,15 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 
 interface DecayDialogContentProps {
-  indicator: IndicatorDetails_indicator$data,
+  indicator: IndicatorDetails_indicator$data;
   onClose: () => void;
 }
 
 export interface LabelledDecayHistory {
-  updated_at: string
-  score: number
-  label: string
-  style: SxProps<Theme>
+  updated_at: string;
+  score: number;
+  label: string;
+  style: SxProps<Theme>;
 }
 
 const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indicator, onClose }) => {
@@ -42,7 +42,8 @@ const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indica
   const getDateAsTextFor = (history: DecayHistory) => {
     if (indicator.x_opencti_score === null || indicator.x_opencti_score === undefined) {
       return '-';
-    } if (history.score < indicator.x_opencti_score && history.updated_at > indicator.decay_base_score_date) {
+    }
+    if (history.score < indicator.x_opencti_score && history.updated_at > indicator.decay_base_score_date) {
       return rd(history.updated_at);
     }
     return mhd(history.updated_at);

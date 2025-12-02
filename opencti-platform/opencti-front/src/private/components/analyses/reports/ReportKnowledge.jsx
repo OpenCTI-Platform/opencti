@@ -155,18 +155,18 @@ class ReportKnowledgeComponent extends Component {
           height: '100%',
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
-        data-testid='report-knowledge'
+        data-testid="report-knowledge"
       >
         {mode !== 'graph' && (
-        <ContainerHeader
-          container={report}
-          link={`/dashboard/analyses/reports/${report.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
-          currentMode={mode}
-          knowledge={true}
-          enableSuggestions={true}
-          investigationAddFromContainer={investigationAddFromContainer}
-        />
+          <ContainerHeader
+            container={report}
+            link={`/dashboard/analyses/reports/${report.id}/knowledge`}
+            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            currentMode={mode}
+            knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
+          />
         )}
         <Routes>
           <Route
@@ -278,11 +278,11 @@ class ReportKnowledgeComponent extends Component {
           />
           <Route
             path="/relations/:relationId"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={report.id}
               />
-            }
+            )}
           />
         </Routes>
       </div>

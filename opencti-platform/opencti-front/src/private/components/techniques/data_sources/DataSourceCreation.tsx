@@ -346,7 +346,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
     'dataSourceAdd',
   );
   const CreateDataSourceControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Data-Source' {...props} />
+    <CreateEntityControlledDial entityType="Data-Source" {...props} />
   );
   const CreateNarrativeControlledDialContextual = CreateDataSourceControlledDial({
     onOpen: handleOpen,

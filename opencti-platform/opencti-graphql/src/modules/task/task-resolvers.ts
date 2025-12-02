@@ -19,7 +19,7 @@ const taskResolvers: Resolvers = {
         return [];
       }
       return filterMembersWithUsersOrgs(context, context.user, participants);
-    }
+    },
   },
   Mutation: {
     taskAdd: (_, { input }, context) => taskAdd(context, context.user, input),

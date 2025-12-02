@@ -115,12 +115,12 @@ class StixCyberObservablesContainer extends Component {
                   <ListItem
                     key={stixCyberObservable.id}
                     divider={true}
-                    secondaryAction={
+                    secondaryAction={(
                       <StixCoreObjectLabels
                         labels={stixCyberObservable.objectLabel}
                         variant="inSearch"
                       />
-                    }
+                    )}
                   >
                     <ListItemButton
                       classes={{ root: classes.menuItem }}

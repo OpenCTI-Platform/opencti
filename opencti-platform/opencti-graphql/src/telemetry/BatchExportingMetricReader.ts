@@ -32,7 +32,7 @@ export class BatchExportingMetricReader extends MetricReader {
 
   private readonly _exportTimeout: number;
 
-  private _collectCallback:(() => void) | undefined;
+  private _collectCallback: (() => void) | undefined;
 
   constructor(options: BatchExportingMetricReaderOptions) {
     super({
@@ -62,7 +62,7 @@ export class BatchExportingMetricReader extends MetricReader {
     if (errors.length > 0) {
       api.diag.error(
         'PeriodicExportingMetricReader: metrics collection errors',
-        ...errors
+        ...errors,
       );
     }
     const doCollect = async () => {
@@ -102,7 +102,7 @@ export class BatchExportingMetricReader extends MetricReader {
       if (err instanceof TimeoutError) {
         api.diag.error(
           'Export took longer than %s milliseconds and timed out.',
-          this._exportTimeout
+          this._exportTimeout,
         );
         return;
       }

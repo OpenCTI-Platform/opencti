@@ -1,4 +1,4 @@
-import { addIngestion, findRssIngestionPaginated, findById, ingestionDelete, ingestionEditField, } from './ingestion-rss-domain';
+import { addIngestion, findRssIngestionPaginated, findById, ingestionDelete, ingestionEditField } from './ingestion-rss-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { storeLoadByIds } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';

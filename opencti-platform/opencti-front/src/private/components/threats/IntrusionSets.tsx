@@ -96,7 +96,7 @@ const IntrusionSets = () => {
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Intrusion-Set' />
+              <StixCoreObjectForms entityType="Intrusion-Set" />
               <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
             </div>
           </Security>
@@ -104,7 +104,7 @@ const IntrusionSets = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
@@ -118,7 +118,7 @@ const IntrusionSets = () => {
                     </Grid>
                   ))}
               </Grid>
-            }
+            )}
           >
             <IntrusionSetsCards
               queryRef={queryRef}
@@ -166,21 +166,21 @@ const IntrusionSets = () => {
             lineFragment={IntrusionSetCardFragment}
             exportContext={{ entity_type: 'Intrusion-Set' }}
             additionalHeaderButtons={[
-              (<ToggleButton key="cards" value="cards" aria-label="cards">
+              <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" color="primary" />
                 </Tooltip>
-              </ToggleButton>),
-              (<ToggleButton key="lines" value="lines" aria-label="lines">
+              </ToggleButton>,
+              <ToggleButton key="lines" value="lines" aria-label="lines">
                 <Tooltip title={t_i18n('Lines view')}>
                   <ViewListOutlined color="secondary" fontSize="small" />
                 </Tooltip>
-              </ToggleButton>),
+              </ToggleButton>,
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType='Intrusion-Set' />
+                  <StixCoreObjectForms entityType="Intrusion-Set" />
                   <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
                 </div>
               </Security>

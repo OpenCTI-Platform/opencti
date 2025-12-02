@@ -65,7 +65,7 @@ export const channelFragment = graphql`
 `;
 
 interface ChannelProps {
-  channelData: Channel_channel$key
+  channelData: Channel_channel$key;
 }
 
 const Channel: React.FC<ChannelProps> = ({

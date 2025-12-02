@@ -27,7 +27,7 @@ export const up = async (next) => {
         if (isStixDomainObjectIdentity(entity.entity_type)) {
           const newStandardId = generateStandardId(
             entity.entity_type,
-            R.assoc('identity_class', entity.identity_class === 'sector' ? 'class' : entity.identity_class, entity)
+            R.assoc('identity_class', entity.identity_class === 'sector' ? 'class' : entity.identity_class, entity),
           );
           const newAliasIds = generateAliases([entity.name, ...(entity.x_opencti_aliases || [])], {
             identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,

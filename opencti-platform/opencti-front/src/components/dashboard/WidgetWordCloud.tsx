@@ -11,8 +11,8 @@ import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData
 
 interface WidgetWordCloudProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data: any[]
-  groupBy: string
+  data: any[];
+  groupBy: string;
 }
 
 const WidgetWordCloud = ({ data, groupBy }: WidgetWordCloudProps) => {

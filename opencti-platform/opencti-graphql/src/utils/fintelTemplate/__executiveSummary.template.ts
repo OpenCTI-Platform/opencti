@@ -8,7 +8,7 @@ import {
   widgetRFIMultiAttributes,
   widgetRFTMultiAttributes,
   widgetThreats,
-  widgetVictims
+  widgetVictims,
 } from './__fintelTemplateWidgets';
 import type { FintelTemplateAddInput } from '../../generated/graphql';
 

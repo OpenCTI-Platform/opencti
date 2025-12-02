@@ -23,7 +23,7 @@ import {
   pageRelationsConnection,
   type RelationOptions,
   storeLoadById,
-  topRelationsList
+  topRelationsList,
 } from '../../database/middleware-loader';
 import { type BasicStoreEntityPir, type BasicStoreRelationPir, ENTITY_TYPE_PIR, type PirExplanation, type StoreEntityPir } from './pir-types';
 import {
@@ -149,7 +149,7 @@ export const findPirContainers = async (
   context: AuthContext,
   user: AuthUser,
   pir: BasicStoreEntityPir,
-  opts?: EntityOptions<BasicStoreObject>
+  opts?: EntityOptions<BasicStoreObject>,
 ) => {
   await checkEnterpriseEdition(context);
   // fetch filters entities ids
@@ -180,16 +180,16 @@ export const findPirContainers = async (
           { key: RELATION_TYPE_SUBFILTER, values: [RELATION_OBJECT] },
           { key: 'dynamic', values: [flaggedEntitiesFilter] },
         ],
-      }
+      },
     ],
     filterGroups: [],
   };
   const filters = opts?.filters && isFilterGroupNotEmpty(opts.filters)
     ? {
-      mode: FilterMode.And,
-      filters: [],
-      filterGroups: [containsFilter, opts.filters],
-    }
+        mode: FilterMode.And,
+        filters: [],
+        filterGroups: [containsFilter, opts.filters],
+      }
     : containsFilter;
   return pageEntitiesConnection(context, user, [ENTITY_TYPE_CONTAINER], { ...opts, filters });
 };
@@ -206,7 +206,7 @@ export const pirAdd = async (context: AuthContext, user: AuthUser, input: PirAdd
     {
       id: MEMBER_ACCESS_ALL,
       access_right: MEMBER_ACCESS_RIGHT_VIEW,
-    }
+    },
   ];
   const finalInput = {
     ...serializePir(input),
@@ -296,7 +296,7 @@ export const pirFlagElement = async (
         dependencies: [{ element_id: relationshipId, author_id: relationshipAuthorId }],
         criterion: {
           ...criterion,
-          filters: JSON.stringify(criterion.filters)
+          filters: JSON.stringify(criterion.filters),
         },
       }));
 

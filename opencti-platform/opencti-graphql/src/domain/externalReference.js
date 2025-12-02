@@ -7,7 +7,7 @@ import {
   deleteRelationsByFromAndTo,
   topEntitiesOrRelationsList,
   pageEntitiesOrRelationsConnection,
-  updateAttribute
+  updateAttribute,
 } from '../database/middleware';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
@@ -108,7 +108,7 @@ export const externalReferenceDeleteRelation = async (context, user, externalRef
     fromId,
     externalReferenceId,
     relationshipType,
-    ABSTRACT_STIX_REF_RELATIONSHIP
+    ABSTRACT_STIX_REF_RELATIONSHIP,
   );
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };

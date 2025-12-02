@@ -211,7 +211,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
           <Field name={fieldName}>
             {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
               <FormControlLabel
-                control={
+                control={(
                   <Checkbox
                     {...formikField}
                     checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
@@ -219,7 +219,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
                       form.setFieldValue(fieldName, e.target.checked);
                     }}
                   />
-                }
+                )}
                 label={displayLabel}
                 style={fieldSpacingContainerStyle}
               />
@@ -447,7 +447,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
               </div>
             ) : null}
             {field.description && (
-            <FormHelperText>{field.description}</FormHelperText>
+              <FormHelperText>{field.description}</FormHelperText>
             )}
           </div>
         );

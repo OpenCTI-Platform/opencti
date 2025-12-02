@@ -58,7 +58,7 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
 }
 
 export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
+  StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
 > = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
@@ -78,7 +78,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -141,7 +141,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
               />
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -397,7 +397,7 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps {
 }
 
 export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
+  StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
 > = ({ dataColumns }) => {
   const classes = useStyles();
 
@@ -407,7 +407,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -487,7 +487,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

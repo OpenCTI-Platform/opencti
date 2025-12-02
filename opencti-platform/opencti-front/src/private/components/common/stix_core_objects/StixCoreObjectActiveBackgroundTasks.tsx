@@ -53,19 +53,20 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
             color="warning"
           >
             <CircularProgress
-              variant={'indeterminate'}
+              variant="indeterminate"
               size={25}
               style={{ cursor: 'pointer' }}
             />
           </Badge>
-        </Tooltip>)}
+        </Tooltip>
+      )}
     </div>
   );
 };
 
 type StixCoreObjectBackgroundTaskProps = {
-  id: string,
-  actionsFilter: string[],
+  id: string;
+  actionsFilter: string[];
 };
 
 const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundTaskProps> = ({ id, actionsFilter }) => {

@@ -45,7 +45,7 @@ const syncManagerInstance = (syncId) => {
     eventSource = new EventSource(sseUri, {
       rejectUnauthorized: ssl,
       headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-      agent: getPlatformHttpProxyAgent(sseUri)
+      agent: getPlatformHttpProxyAgent(sseUri),
     });
     eventSource.on('heartbeat', ({ lastEventId, type }) => {
       eventsQueue.enqueue({ id: lastEventId, type });
@@ -153,7 +153,7 @@ const syncManagerInstance = (syncId) => {
                 previous_standard,
                 update: true,
                 applicant_id: sync.user_id ?? OPENCTI_SYSTEM_UUID,
-                content
+                content,
               });
               await saveCurrentState(context, 'event', sync, eventId);
             }
@@ -165,7 +165,7 @@ const syncManagerInstance = (syncId) => {
       }
       logApp.info(`[OPENCTI] Sync ${syncId}: manager stopped`);
     },
-    isRunning
+    isRunning,
   };
 };
 

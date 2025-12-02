@@ -42,14 +42,14 @@ export const addRole = async (context, user, role) => {
     user,
     roleId: element.id,
     capabilities,
-    relationshipType: RELATION_HAS_CAPABILITY
+    relationshipType: RELATION_HAS_CAPABILITY,
   });
   await createCapabilitiesRelations({
     context,
     user,
     roleId: element.id,
     capabilities: capabilitiesInDraft,
-    relationshipType: RELATION_HAS_CAPABILITY_IN_DRAFT
+    relationshipType: RELATION_HAS_CAPABILITY_IN_DRAFT,
   });
   if (isCreation) {
     await publishUserAction({
@@ -58,7 +58,7 @@ export const addRole = async (context, user, role) => {
       event_scope: 'create',
       event_access: 'administration',
       message: `creates role \`${role.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_ROLE, input: role }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_ROLE, input: role },
     });
   }
   return element;
@@ -77,7 +77,7 @@ export const addGroup = async (context, user, group) => {
     default_assignation: group.default_assignation ?? false,
     no_creators: group.no_creators ?? false,
     restrict_delete: group.restrict_delete ?? false,
-    auto_new_marking: group.auto_new_marking ?? false
+    auto_new_marking: group.auto_new_marking ?? false,
   };
   const { element, isCreation } = await createEntity(context, user, groupWithDefaultValues, ENTITY_TYPE_GROUP, { complete: true });
   if (isCreation) {
@@ -87,7 +87,7 @@ export const addGroup = async (context, user, group) => {
       event_scope: 'create',
       event_access: 'administration',
       message: `creates group \`${group.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_GROUP, input: group }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_GROUP, input: group },
     });
   }
   return element;

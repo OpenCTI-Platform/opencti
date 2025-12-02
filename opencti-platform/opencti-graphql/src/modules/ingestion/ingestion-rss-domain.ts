@@ -29,7 +29,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       type: 'RSS',
       name: element.name,
       is_running: element.ingestion_running ?? false,
-      connector_user_id: input.user_id
+      connector_user_id: input.user_id,
     });
     await publishUserAction({
       user,
@@ -37,7 +37,7 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
       event_scope: 'create',
       event_access: 'administration',
       message: `creates rss ingestion \`${input.name}\``,
-      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_RSS, input }
+      context_data: { id: element.id, entity_type: ENTITY_TYPE_INGESTION_RSS, input },
     });
   }
   return element;
@@ -55,7 +55,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     type: 'RSS',
     name: element.name,
     is_running: element.ingestion_running ?? false,
-    connector_user_id: element.user_id
+    connector_user_id: element.user_id,
   });
   await publishUserAction({
     user,
@@ -63,7 +63,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for rss ingestion \`${element.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_RSS, input }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_RSS, input },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
@@ -77,7 +77,7 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
     event_scope: 'delete',
     event_access: 'administration',
     message: `deletes rss ingestion \`${deleted.name}\``,
-    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_RSS, input: deleted }
+    context_data: { id: ingestionId, entity_type: ENTITY_TYPE_INGESTION_RSS, input: deleted },
   });
   return ingestionId;
 };

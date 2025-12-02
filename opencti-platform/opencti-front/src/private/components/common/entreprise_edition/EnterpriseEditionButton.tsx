@@ -25,10 +25,10 @@ const EnterpriseEditionButton = ({
   disabled = false,
   title = 'Manage your Enterprise Edition license',
 }: {
-  feature?: string
-  inLine?: boolean
-  disabled?: boolean
-  title?: string
+  feature?: string;
+  inLine?: boolean;
+  disabled?: boolean;
+  title?: string;
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();

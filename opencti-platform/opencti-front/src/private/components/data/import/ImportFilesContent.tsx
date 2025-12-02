@@ -178,7 +178,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
     createdBy: {
       label: 'Creator',
       percentWidth: 15,
-      render: (({ metaData }: ImportFilesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
+      render: ({ metaData }: ImportFilesContentFileLine_file$data) => metaData?.creator?.name ?? '-',
     },
     objectMarking: {
       percentWidth: 15,
@@ -189,7 +189,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
       isSortable: true,
       percentWidth: 20,
       render: ({ lastModified }: ImportFilesContentFileLine_file$data, { fd }: {
-        fd: (date: Date) => string
+        fd: (date: Date) => string;
       }) => fd(lastModified),
     },
   };
@@ -201,7 +201,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
           <Breadcrumbs
             elements={[{ label: t_i18n('Data') }, { label: t_i18n('Import'), current: true }]}
           />
-          <ImportMenu/>
+          <ImportMenu />
         </>
       )}
       {queryRef && (
@@ -215,7 +215,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
           lineFragment={workbenchLineFragment}
           entityTypes={['InternalFile']}
           searchContextFinal={{ entityTypes: ['InternalFile'] }}
-          taskScope={'IMPORT'}
+          taskScope="IMPORT"
           onLineClick={(file: ImportFilesContentFileLine_file$data) => {
             const { id, metaData, uploadStatus } = file;
             const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
@@ -223,18 +223,18 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
               window.open(getFileUri(id), '_blank', 'noreferrer');
             }
           }}
-          createButton={<UploadImport variant="contained"/>}
+          createButton={<UploadImport variant="contained" />}
           actions={(file: ImportFilesContentFileLine_file$data) => (
             <ImportActionsPopover
               file={file}
               paginationOptions={queryPaginationOptions}
-              paginationKey={'Pagination_global_importFiles'}
+              paginationKey="Pagination_global_importFiles"
             />
           )}
         />
       )}
       {openImportFilesDialog && (
-        <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)}/>
+        <ImportFilesDialog open={openImportFilesDialog} handleClose={() => setOpenImportFilesDialog(false)} />
       )}
     </div>
   );

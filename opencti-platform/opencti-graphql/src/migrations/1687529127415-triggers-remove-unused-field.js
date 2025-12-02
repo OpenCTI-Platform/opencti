@@ -8,7 +8,7 @@ const updateTriggers = async () => {
   const updateQuery = {
     script: {
       params: { toRemoveFields: ['user_ids', 'group_ids', 'recipients'] },
-      source: 'for(def field : params.toRemoveFields) ctx._source.remove(field)'
+      source: 'for(def field : params.toRemoveFields) ctx._source.remove(field)',
     },
     query: {
       bool: {
@@ -16,31 +16,31 @@ const updateTriggers = async () => {
           {
             term: {
               'entity_type.keyword': {
-                value: 'trigger'
-              }
-            }
-          }
+                value: 'trigger',
+              },
+            },
+          },
         ],
         should: [
           {
             exists: {
-              field: 'user_ids'
-            }
+              field: 'user_ids',
+            },
           },
           {
             exists: {
-              field: 'group_ids'
-            }
+              field: 'group_ids',
+            },
           },
           {
             exists: {
-              field: 'recipients'
-            }
-          }
+              field: 'recipients',
+            },
+          },
         ],
-        minimum_should_match: 1
-      }
-    }
+        minimum_should_match: 1,
+      },
+    },
   };
   return elUpdateByQueryForMigration(message, READ_INDEX_INTERNAL_OBJECTS, updateQuery);
 };

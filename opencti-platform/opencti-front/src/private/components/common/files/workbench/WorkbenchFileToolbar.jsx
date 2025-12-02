@@ -240,7 +240,7 @@ class WorkbenchFileToolbar extends Component {
                 >
                   {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
                     <Form>
-                      <ObjectMarkingField name="objectMarking" setFieldValue={setFieldValue}/>
+                      <ObjectMarkingField name="objectMarking" setFieldValue={setFieldValue} />
                       <div className={classes.buttons}>
                         <Button
                           onClick={handleReset}

@@ -64,7 +64,7 @@ interface FileIndexingConfigurationFormValues {
 }
 
 const FileIndexingConfiguration: FunctionComponent<
-FileIndexingConfigurationProps
+  FileIndexingConfigurationProps
 > = ({ managerConfiguration }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: availableEntityTypes } = useAttributes();
@@ -121,7 +121,7 @@ FileIndexingConfigurationProps
           onSubmit={onSubmitForm}
         >
           {({ submitForm, setFieldValue, values }) => (
-            <Form >
+            <Form>
               <Typography variant="h4" gutterBottom={true}>
                 {t_i18n('File types to index')}
               </Typography>

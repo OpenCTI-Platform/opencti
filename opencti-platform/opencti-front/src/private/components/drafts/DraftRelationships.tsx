@@ -194,7 +194,7 @@ interface DraftRelationshipsProps {
   isReadOnly: boolean;
 }
 
-const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {
+const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {
   const computeLink = useComputeLink();
   const { draftId } = useParams() as { draftId: string };
   const {
@@ -288,18 +288,18 @@ const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isRea
   return (
     <span data-testid="draft-relationships-page">
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        getComputeLink={getRedirectionLink}
-        contextFilters={contextFilters}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={draftRelationshipsLineFragment}
-        entityTypes={['stix-core-relationship']}
-        removeFromDraftEnabled
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          getComputeLink={getRedirectionLink}
+          contextFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={draftRelationshipsLineFragment}
+          entityTypes={['stix-core-relationship']}
+          removeFromDraftEnabled
+        />
       )}
     </span>
   );

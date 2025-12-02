@@ -30,13 +30,13 @@ const InvestigationAddStixCoreObjects = (props) => {
 
   const isTypeDomainObject = (types) => {
     return !types
-        || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0)
-        || (types.length === 1 && types[0] === 'Stix-Domain-Object');
+      || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0)
+      || (types.length === 1 && types[0] === 'Stix-Domain-Object');
   };
   const isTypeObservable = (types) => {
     return !types
-        || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0)
-        || (types.length === 1 && types[0] === 'Stix-Cyber-Observable');
+      || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0)
+      || (types.length === 1 && types[0] === 'Stix-Cyber-Observable');
   };
   const resolveAvailableTypes = () => {
     if (
@@ -71,18 +71,18 @@ const InvestigationAddStixCoreObjects = (props) => {
       sortBy: '_score',
       orderAsc: false,
       filters: targetStixCoreObjectTypes
-      && !(
-        targetStixCoreObjectTypes.includes('Stix-Domain-Object')
-        || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
-      )
+        && !(
+          targetStixCoreObjectTypes.includes('Stix-Domain-Object')
+          || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+        )
         ? {
-          mode: 'and',
-          filters: [{
-            key: 'entity_type',
-            values: targetStixCoreObjectTypes,
-          }],
-          filterGroups: [],
-        }
+            mode: 'and',
+            filters: [{
+              key: 'entity_type',
+              values: targetStixCoreObjectTypes,
+            }],
+            filterGroups: [],
+          }
         : emptyFilterGroup,
       types: [resolveAvailableTypes()],
       numberOfElements: {

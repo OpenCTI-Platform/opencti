@@ -21,7 +21,7 @@ interface DataComponentKnowledgeProps {
 }
 
 const DataComponentKnowledge: FunctionComponent<
-DataComponentKnowledgeProps
+  DataComponentKnowledgeProps
 > = ({ data }) => {
   const dataComponent = useFragment(DataComponentKnowledgeFragment, data);
   return (

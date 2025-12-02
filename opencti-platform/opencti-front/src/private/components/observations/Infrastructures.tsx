@@ -169,21 +169,21 @@ const Infrastructures = () => {
       <div data-testid="infrastructures-page">
         <Breadcrumbs elements={[{ label: t_i18n('Observations') }, { label: t_i18n('Infrastructures'), current: true }]} />
         {queryRef && (
-        <DataTable
-          dataColumns={dataColumns}
-          resolvePath={(data: InfrastructuresLines_data$data) => data.infrastructures?.edges?.map((n) => n?.node)}
-          storageKey={LOCAL_STORAGE_KEY_INFRASTRUCTURES}
-          initialValues={initialValues}
-          contextFilters={contextFilters}
-          lineFragment={infrastructureFragment}
-          preloadedPaginationProps={preloadedPaginationOptions}
-          exportContext={{ entity_type: 'Infrastructure' }}
-          createButton={(
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <InfrastructureCreation paginationOptions={queryPaginationOptions} />
-            </Security>
-          )}
-        />
+          <DataTable
+            dataColumns={dataColumns}
+            resolvePath={(data: InfrastructuresLines_data$data) => data.infrastructures?.edges?.map((n) => n?.node)}
+            storageKey={LOCAL_STORAGE_KEY_INFRASTRUCTURES}
+            initialValues={initialValues}
+            contextFilters={contextFilters}
+            lineFragment={infrastructureFragment}
+            preloadedPaginationProps={preloadedPaginationOptions}
+            exportContext={{ entity_type: 'Infrastructure' }}
+            createButton={(
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <InfrastructureCreation paginationOptions={queryPaginationOptions} />
+              </Security>
+            )}
+          />
         )}
       </div>
     </ExportContextProvider>

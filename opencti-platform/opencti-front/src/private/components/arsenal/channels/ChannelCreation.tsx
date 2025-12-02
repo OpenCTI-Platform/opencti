@@ -311,7 +311,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
 };
 
 const CreateChannelControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial entityType='Channel' {...props} />
+  <CreateEntityControlledDial entityType="Channel" {...props} />
 );
 
 const ChannelCreation = ({

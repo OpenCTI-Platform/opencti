@@ -41,13 +41,13 @@ const caseTemplateFieldQuery = graphql`
 `;
 
 interface CaseTemplateFieldComponentProps {
-  onChange?: (name: string, value: FieldOption[]) => void
-  onSubmit?: (name: string, value: FieldOption[]) => void
-  containerStyle?: Record<string, string | number>
-  helpertext?: string
-  queryRef: PreloadedQuery<CaseTemplateFieldQuery>
-  label?: string
-  isDisabled?: boolean
+  onChange?: (name: string, value: FieldOption[]) => void;
+  onSubmit?: (name: string, value: FieldOption[]) => void;
+  containerStyle?: Record<string, string | number>;
+  helpertext?: string;
+  queryRef: PreloadedQuery<CaseTemplateFieldQuery>;
+  label?: string;
+  isDisabled?: boolean;
 }
 
 const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentProps> = ({

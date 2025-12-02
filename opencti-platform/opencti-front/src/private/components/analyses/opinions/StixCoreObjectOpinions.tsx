@@ -15,8 +15,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { StixCoreObjectOpinionsOpenVocabQuery } from './__generated__/StixCoreObjectOpinionsOpenVocabQuery.graphql';
 
 interface StixCoreObjectOpinionsProps {
-  stixCoreObjectId: string
-  queryVocabulariesRef: PreloadedQuery<StixCoreObjectOpinionsOpenVocabQuery>
+  stixCoreObjectId: string;
+  queryVocabulariesRef: PreloadedQuery<StixCoreObjectOpinionsOpenVocabQuery>;
 }
 
 const stixCoreObjectOpinionsOpenVocabQuery = graphql`
@@ -106,7 +106,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
   return (
     <>
       <Typography
-        variant={'h3'}
+        variant="h3"
         gutterBottom={true}
         style={{ display: 'flex', marginTop: 20 }}
       >
@@ -152,13 +152,16 @@ const StixCoreObjectOpinions: FunctionComponent<Omit<StixCoreObjectOpinionsProps
   const queryRef = useQueryLoading<StixCoreObjectOpinionsOpenVocabQuery>(stixCoreObjectOpinionsOpenVocabQuery, {
     category: typeToCategory('opinion-ov'),
   });
-  return <div style={{ minHeight: '240px' }}>
-    {queryRef && (
-      <React.Suspense fallback={<span/>}>
-        <StixCoreObjectOpinionsComponent {...props} queryVocabulariesRef={queryRef}/>
-      </React.Suspense>)
-    }
-  </div>;
+  return (
+    <div style={{ minHeight: '240px' }}>
+      {queryRef && (
+        <React.Suspense fallback={<span />}>
+          <StixCoreObjectOpinionsComponent {...props} queryVocabulariesRef={queryRef} />
+        </React.Suspense>
+      )
+      }
+    </div>
+  );
 };
 
 export default StixCoreObjectOpinions;

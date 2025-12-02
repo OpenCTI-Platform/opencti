@@ -12,7 +12,7 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
-  ENTITY_TYPE_TOOL
+  ENTITY_TYPE_TOOL,
 } from '../../schema/stixDomainObject';
 import { ENTITY_PERSONA, ENTITY_PROCESS, ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_EVENT } from '../event/event-types';
@@ -35,14 +35,14 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
 interface VocabularyDefinition {
-  description?: string,
-  entity_types: string[],
+  description?: string;
+  entity_types: string[];
   fields: {
-    key: string,
-    composite?: string,
-    required: boolean,
-    multiple: boolean,
-  }[]
+    key: string;
+    composite?: string;
+    required: boolean;
+    multiple: boolean;
+  }[];
 }
 
 export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinition> = {
@@ -54,7 +54,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'account_type',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   attack_motivation_ov: {
     description: `Knowing a Threat Actor or Intrusion Set's motivation may allow an analyst or defender to better understand likely targets and behaviors.
@@ -72,7 +72,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'personal_motivations',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   attack_resource_level_ov: {
     description: 'Attack Resource Level is an open vocabulary that captures the general level of resources that a threat actor, intrusion set, or campaign might have access to. It ranges from individual, a person acting alone, to government, the resources of a national government',
@@ -81,7 +81,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'resource_level',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   // C
   coverage_ov: {
@@ -91,7 +91,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       composite: 'coverage_name',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   case_severity_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT, ENTITY_TYPE_CONTAINER_CASE_RFI, ENTITY_TYPE_CONTAINER_CASE_RFT], // Fill entire list
@@ -99,7 +99,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'severity',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   case_priority_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT, ENTITY_TYPE_CONTAINER_CASE_RFI, ENTITY_TYPE_CONTAINER_CASE_RFT], // Fill entire list
@@ -107,7 +107,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'priority',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   channel_types_ov: {
     entity_types: [ENTITY_TYPE_CHANNEL],
@@ -115,7 +115,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'channel_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   collection_layers_ov: {
     entity_types: [ENTITY_TYPE_DATA_SOURCE],
@@ -123,7 +123,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'collection_layers',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   // E
   event_type_ov: {
@@ -132,7 +132,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'event_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   // G
   grouping_context_ov: {
@@ -142,7 +142,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'context',
       required: true,
       multiple: false,
-    }]
+    }],
   },
   // I
   implementation_language_ov: {
@@ -152,7 +152,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'implementation_languages',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   incident_response_types_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT],
@@ -160,7 +160,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'response_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   incident_type_ov: {
     entity_types: [ENTITY_TYPE_INCIDENT],
@@ -185,7 +185,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'indicator_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   infrastructure_type_ov: {
     description: 'A non-exhaustive enumeration of infrastructure types',
@@ -194,7 +194,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'infrastructure_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   integrity_level_ov: {
     description: 'Windows integrity levels are a security feature and represent the trustworthiness of an object',
@@ -213,7 +213,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'capabilities',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   malware_result_ov: {
     description: 'This is a non-exhaustive, open vocabulary that captures common types of scanner or tool analysis process results.',
@@ -222,7 +222,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'result',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   malware_type_ov: {
     description: 'Malware type is an open vocabulary that represents different types and functions of malware. Malware types are not mutually exclusive; for example, a malware instance can be both spyware and a screen capture tool',
@@ -231,7 +231,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'malware_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   // N
   note_types_ov: {
@@ -240,7 +240,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'note_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   // O
   opinion_ov: {
@@ -250,7 +250,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'opinion',
       required: true,
       multiple: false,
-    }]
+    }],
   },
   organization_type_ov: {
     description: 'The various types of organizations playing a role in CTI, whether as a source of information or as a victim or source of attack, or even a way t segregate users in the platform.',
@@ -259,7 +259,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'x_opencti_organization_type',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   // P
   platforms_ov: {
@@ -268,7 +268,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'x_mitre_platforms',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   pattern_type_ov: {
     description: 'This is a non-exhaustive, open vocabulary that covers common pattern languages and is intended to characterize the pattern language that the indicator pattern is expressed in',
@@ -277,7 +277,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'pattern_type',
       required: true,
       multiple: false,
-    }]
+    }],
   },
   processor_architecture_ov: {
     description: 'This is a non-exhaustive, open vocabulary that covers common processor architectures and is intended to characterize the architectures that a malware instance or family may be able to execute on',
@@ -286,7 +286,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'architecture_execution_envs',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   permissions_ov: {
     entity_types: [ENTITY_TYPE_ATTACK_PATTERN],
@@ -294,7 +294,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'x_mitre_permissions_required',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   persona_type_ov: {
     entity_types: [ENTITY_PERSONA],
@@ -312,7 +312,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'x_opencti_reliability',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   report_types_ov: {
     description: 'Report type is an open vocabulary to describe the primary purpose or subject of a report. For example, a report that contains malware and indicators for that malware should have a report type of malware to capture that the malware is the primary purpose. Report types are not mutually exclusive: a Report can be both a malware report and a tool report. Just because a report contains objects of a type does not mean that the report should include that type. If the objects are there to simply provide evidence or context for other objects, it is not necessary to include them in the type',
@@ -321,7 +321,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'report_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   request_for_information_types_ov: {
     description: '',
@@ -330,7 +330,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'information_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   request_for_takedown_types_ov: {
     description: '',
@@ -339,7 +339,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'takedown_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   // S
   security_platform_type_ov: {
@@ -395,7 +395,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'threat_actor_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   threat_actor_group_role_ov: {
     description: `Threat actor group role is an open vocabulary that is used to describe the different roles that a threat actor group can play. For example, some threat actors groups author malware or operate botnets while other actors actually carry out attacks directly
@@ -405,7 +405,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'roles',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   threat_actor_group_sophistication_ov: {
     description: 'Threat actor group sophistication vocabulary captures the skill level of a threat actor group. It ranges from "none", which describes a complete novice, to "strategic", which describes an attacker who is able to influence supply chains to introduce vulnerabilities. This vocabulary is separate from resource level because an innovative, highly-skilled threat actor group may have access to very few resources while a minimal-level actor might have the resources of an organized crime ring',
@@ -414,7 +414,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'sophistication',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   threat_actor_individual_type_ov: {
     description: 'Threat actor individual type is an open vocabulary used to describe what type of threat actor the individual is. For example, some threat actors individuals are competitors who try to steal information, while others are activists who act in support of a social or political cause. Actor types are not mutually exclusive: a threat actor individual can be both a disgruntled insider and a spy. [Casey 2007])',
@@ -423,7 +423,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'threat_actor_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   threat_actor_individual_role_ov: {
     description: `Threat actor individual role is an open vocabulary that is used to describe the different roles that a threat actor individual can play. For example, some threat actors individuals author malware or operate botnets while other actors actually carry out attacks directly
@@ -433,7 +433,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'roles',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   threat_actor_individual_sophistication_ov: {
     description: 'Threat actor individual sophistication vocabulary captures the skill level of a threat actor individual. It ranges from "none", which describes a complete novice, to "strategic", which describes an attacker who is able to influence supply chains to introduce vulnerabilities. This vocabulary is separate from resource level because an innovative, highly-skilled threat actor individual may have access to very few resources while a minimal-level actor might have the resources of an organized crime ring',
@@ -442,7 +442,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'sophistication',
       required: false,
       multiple: false,
-    }]
+    }],
   },
   tool_types_ov: {
     description: 'Tool types describe the categories of tools that can be used to perform attacks',
@@ -451,7 +451,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'tool_types',
       required: false,
       multiple: true,
-    }]
+    }],
   },
   gender_ov: {
     description: 'Gender describes the characteristics of men and women that are socially constructed. The definition of gender varies from society to society and can change over time.',
@@ -508,10 +508,10 @@ export interface StoreEntityVocabulary extends StoreEntity {
 
 // region Stix type
 export interface StixVocabulary extends StixObject {
-  name: string
-  aliases: string[]
-  description?: string
-  category: VocabularyCategory
+  name: string;
+  aliases: string[];
+  description?: string;
+  category: VocabularyCategory;
 }
 
 // endregion

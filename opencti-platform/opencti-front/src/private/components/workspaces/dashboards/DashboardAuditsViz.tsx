@@ -17,13 +17,13 @@ import type { Widget } from '../../../../utils/widget/widget';
 import { useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 
 interface DashboardAuditsVizProps {
-  widget: Widget
-  isReadonly: boolean
+  widget: Widget;
+  isReadonly: boolean;
   config: {
-    relativeDate: string | undefined
-    startDate: string
-    endDate: string
-  }
+    relativeDate: string | undefined;
+    startDate: string;
+    endDate: string;
+  };
 }
 
 const DashboardAuditsViz = ({

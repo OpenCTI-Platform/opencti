@@ -15,8 +15,8 @@ const convertLanguageToStix = (instance: StoreEntityLanguage): StixLanguage => {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixDomainObject.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',
-      })
-    }
+      }),
+    },
   };
 };
 

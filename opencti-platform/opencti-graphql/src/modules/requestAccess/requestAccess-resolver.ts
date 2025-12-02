@@ -9,7 +9,7 @@ const requestAccessResolvers: Resolvers = {
     requestAccessConfigure: (_, { input }, context) => {
       return configureRequestAccess(context, context.user, input);
     },
-  }
+  },
 };
 
 export default requestAccessResolvers;

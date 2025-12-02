@@ -70,12 +70,12 @@ export const findPlaybooksForEntity = async (context: AuthContext, user: AuthUse
       const def = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
       const instance = def.nodes.find((n) => n.id === playbook.playbook_start);
       if (instance && (instance.component_id === 'PLAYBOOK_INTERNAL_DATA_STREAM' || instance.component_id === 'PLAYBOOK_INTERNAL_MANUAL_TRIGGER')) {
-        const { filters } = (JSON.parse(instance.configuration ?? '{}') as StreamConfiguration);
+        const { filters } = JSON.parse(instance.configuration ?? '{}') as StreamConfiguration;
         const jsonFilters = filters ? JSON.parse(filters) : null;
         const newFilters = {
           mode: FilterMode.And,
           filters: findFiltersFromKey(jsonFilters?.filters ?? [], 'entity_type'),
-          filterGroups: []
+          filterGroups: [],
         };
         const isMatch = await isStixMatchFilterGroup(context, SYSTEM_USER, stixEntity, newFilters);
         if (isMatch) {
@@ -160,11 +160,11 @@ export const playbookUpdatePositions = async (context: AuthContext, user: AuthUs
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const nodesPositions = JSON.parse(positions);
   definition.nodes = definition.nodes.map((n) => {
-    const position = nodesPositions.filter((o: { id: string, position: PositionInput }) => o.id === n.id).at(0);
+    const position = nodesPositions.filter((o: { id: string; position: PositionInput }) => o.id === n.id).at(0);
     if (position) {
       return {
         ...n,
-        position: position.position
+        position: position.position,
       };
     }
     return n;
@@ -178,7 +178,7 @@ export const playbookReplaceNode = async (
   user: AuthUser,
   id: string,
   nodeId: string,
-  input: PlaybookAddNodeInput
+  input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
@@ -200,7 +200,6 @@ export const playbookReplaceNode = async (
   }
   const oldComponent = PLAYBOOK_COMPONENTS[oldComponentId];
   if (oldComponent.ports.length > relatedComponent.ports.length) {
-     
     for (let i = oldComponent.ports.length - 1; i >= relatedComponent.ports.length; i--) {
       // Find all links to the port
       const linksToDelete = definition.links.filter((n) => n.from.id === nodeId && n.from.port === oldComponent.ports[i].id);
@@ -234,7 +233,7 @@ export const playbookInsertNode = async (
   parentNodeId: string,
   parentPortId: string,
   childNodeId: string,
-  input: PlaybookAddNodeInput
+  input: PlaybookAddNodeInput,
 ) => {
   await checkEnterpriseEdition(context);
   const playbook = await findById(context, user, id);
@@ -254,7 +253,7 @@ export const playbookInsertNode = async (
     name: input.name,
     position: input.position,
     component_id: input.component_id,
-    configuration: input.configuration ?? '{}' // TODO Check valid json
+    configuration: input.configuration ?? '{}', // TODO Check valid json
   });
   // Replace node with new position
   definition.nodes = definition.nodes.map((n) => {
@@ -264,7 +263,7 @@ export const playbookInsertNode = async (
         position: {
           x: n.position.x,
           y: n.position.y + 150,
-        }
+        },
       };
     }
     return n;
@@ -279,8 +278,8 @@ export const playbookInsertNode = async (
       port: parentPortId,
     },
     to: {
-      id: nodeId
-    }
+      id: nodeId,
+    },
   });
   // Replace the link
   if (relatedComponent.ports.length > 0) {
@@ -293,8 +292,8 @@ export const playbookInsertNode = async (
             port: relatedComponent.ports.at(0)?.id ?? 'out',
           },
           to: {
-            id: childNodeId
-          }
+            id: childNodeId,
+          },
         };
       }
       return n;
@@ -360,11 +359,11 @@ export const playbookAddLink = async (context: AuthContext, user: AuthUser, id: 
     id: linkId,
     from: {
       id: input.from_node,
-      port: input.from_port
+      port: input.from_port,
     },
     to: {
-      id: input.to_node
-    }
+      id: input.to_node,
+    },
   });
   const patch = { playbook_definition: JSON.stringify(definition) };
   const { element: updatedElem } = await patchAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, patch);
@@ -382,12 +381,12 @@ export const playbookDeleteLink = async (context: AuthContext, user: AuthUser, i
 };
 
 type PlaybookCreationType = {
-  name: string,
-  description?: string | null,
-  playbook_start?: string,
-  playbook_running?: boolean,
-  playbook_mode?: string,
-  playbook_definition?: string
+  name: string;
+  description?: string | null;
+  playbook_start?: string;
+  playbook_running?: boolean;
+  playbook_mode?: string;
+  playbook_definition?: string;
 };
 const createPlaybook = async (context: AuthContext, user: AuthUser, playbookCreationInput: PlaybookCreationType) => {
   await checkEnterpriseEdition(context);
@@ -427,7 +426,7 @@ export const playbookExport = async (playbook: BasicStoreEntityPlaybook) => {
       playbook_mode,
       playbook_start,
       playbook_definition,
-    }
+    },
   });
 };
 

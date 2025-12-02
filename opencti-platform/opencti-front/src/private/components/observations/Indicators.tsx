@@ -209,7 +209,7 @@ const Indicators = () => {
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Threat-Actor-Group' />
+                <StixCoreObjectForms entityType="Threat-Actor-Group" />
                 <IndicatorCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

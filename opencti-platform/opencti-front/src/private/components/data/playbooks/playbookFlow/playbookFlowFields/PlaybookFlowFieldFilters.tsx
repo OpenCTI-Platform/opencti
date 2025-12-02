@@ -20,8 +20,8 @@ import useFiltersState from '../../../../../../utils/filters/useFiltersState';
 import { stixFilters, useAvailableFilterKeysForEntityTypes } from '../../../../../../utils/filters/filtersUtils';
 
 interface PlaybookFlowFieldFiltersProps {
-  componentId: string | null
-  filtersState: ReturnType<typeof useFiltersState>
+  componentId: string | null;
+  filtersState: ReturnType<typeof useFiltersState>;
 }
 
 const PlaybookFlowFieldFilters = ({
