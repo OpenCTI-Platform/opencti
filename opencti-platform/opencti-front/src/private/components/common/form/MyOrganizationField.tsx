@@ -9,8 +9,8 @@ import { FieldOption } from '../../../../utils/field';
 interface MyOrganizationFieldProps {
   name: string;
   label: string;
-  disabled:boolean;
-  multiple:boolean;
+  disabled: boolean;
+  multiple: boolean;
   style?: CSSProperties;
   onChange?: (name: string, value: FieldOption) => void;
 }

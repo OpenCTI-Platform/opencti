@@ -51,8 +51,8 @@ export interface ContentFile {
   } | null | undefined
   objectMarking?: readonly {
     readonly id: string;
-    readonly definition?: string | null ;
-    readonly x_opencti_color?: string | null ;
+    readonly definition?: string | null;
+    readonly x_opencti_color?: string | null;
   }[];
 }
 

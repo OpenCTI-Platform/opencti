@@ -40,7 +40,7 @@ type Option = {
   label?: string; // if not present, value is used
   onClick?: () => void; // individual click handler
   selected?: boolean;
-  nestedOptions? : Option[];
+  nestedOptions?: Option[];
 };
 
 type NestedMenuProps = {

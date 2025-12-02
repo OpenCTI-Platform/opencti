@@ -72,7 +72,7 @@ export interface DataTableContextProps {
   selectOnLineClick: DataTableProps['selectOnLineClick']
   onLineClick: DataTableProps['onLineClick']
   page: number
-  setPage:Dispatch<SetStateAction<number>>
+  setPage: Dispatch<SetStateAction<number>>
   tableWidthState: [number, Dispatch<SetStateAction<number>>]
   startsWithAction: boolean
   startsWithIcon: boolean

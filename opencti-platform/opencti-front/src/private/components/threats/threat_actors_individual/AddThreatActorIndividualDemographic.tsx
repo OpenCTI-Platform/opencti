@@ -19,7 +19,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 interface AddThreatActorIndividualDemographicComponentProps {
   threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
   relType: string,
-  title:string,
+  title: string,
   queryRef: PreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>,
   onSearch: (search: string) => void,
   paginationOptions: AddThreatActorIndividualDemographicLinesQuery$variables,
@@ -89,7 +89,7 @@ AddThreatActorIndividualDemographicComponentProps
 interface AddThreatActorIndividualDemographicProps {
   threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
   relType: string,
-  title:string,
+  title: string,
 }
 
 const AddThreatActorIndividualDemographic: FunctionComponent<AddThreatActorIndividualDemographicProps> = (props) => {
