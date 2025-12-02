@@ -77,7 +77,7 @@ const ToolBar: FunctionComponent<{
       if (keyword) {
         return (
           node.target_type.toLowerCase().indexOf(keyword.toLowerCase())
-            !== -1
+          !== -1
           || t_i18n(`entity_${node.target_type}`)
             .toLowerCase()
             .indexOf(keyword.toLowerCase()) !== -1
@@ -202,7 +202,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('platform_entity_files_ref')
+                === retrieveNotAvailableSetting('platform_entity_files_ref')
                     .length
               }
               onClick={handleOpenFilesRef}
@@ -220,7 +220,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('platform_hidden_type').length
+                === retrieveNotAvailableSetting('platform_hidden_type').length
               }
               onClick={handleOpenHidden}
               color="primary"
@@ -237,7 +237,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                  === retrieveNotAvailableSetting('enforce_reference').length
+                === retrieveNotAvailableSetting('enforce_reference').length
               }
               onClick={handleOpenEnforceRef}
               color="primary"

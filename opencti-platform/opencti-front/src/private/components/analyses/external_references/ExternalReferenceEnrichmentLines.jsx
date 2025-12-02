@@ -129,7 +129,7 @@ const ExternalReferenceEnrichment = (props) => {
   const connectors = file && file.metaData
     ? R.filter(
       (n) => R.includes(file.metaData.mimetype, n.connector_scope)
-            || n.connector_scope.length === 0,
+        || n.connector_scope.length === 0,
       connectorsForImport,
     )
     : [];
@@ -261,12 +261,12 @@ const ExternalReferenceEnrichment = (props) => {
                             />
                             )}
                             {((!isFail && work.status === 'wait')
-                            || work.status === 'progress') && (
-                            <CircularProgress
-                              size={20}
-                              thickness={2}
-                              style={{ marginRight: 10 }}
-                            />
+                              || work.status === 'progress') && (
+                              <CircularProgress
+                                size={20}
+                                thickness={2}
+                                style={{ marginRight: 10 }}
+                              />
                             )}
                           </ListItemIcon>
                           <ListItemText primary={nsdt(work.timestamp)} />

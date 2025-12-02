@@ -160,7 +160,7 @@ ExternalReferenceFileImportViewerBaseProps
   };
 
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
-      && selectedConnector?.configurations?.length === 0;
+    && selectedConnector?.configurations?.length === 0;
   const [hasUserChoiceCsvMapper, setHasUserChoiceCsvMapper] = useState(false);
   const onCsvMapperSelection = (option: string | CsvMapperFieldOption) => {
     if (selectedConnector?.name === 'ImportCsv') {
@@ -304,8 +304,8 @@ ExternalReferenceFileImportViewerBaseProps
                     </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
                     }
                   {selectedConnector?.name === 'ImportCsv'
-                      && hasUserChoiceCsvMapper
-                      && (
+                    && hasUserChoiceCsvMapper
+                    && (
                       <>
                         <ObjectMarkingField
                           name="objectMarking"

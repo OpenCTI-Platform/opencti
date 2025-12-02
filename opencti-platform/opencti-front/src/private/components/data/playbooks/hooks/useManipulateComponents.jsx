@@ -443,8 +443,8 @@ const useManipulateComponents = (playbook) => {
         let i = selectedNode.data.component.ports.length;
         i
         < component.ports.length
-          - selectedNode.data.component.ports.length
-          + (selectedNode.data.component.ports.length > 0 ? 1 : 0);
+        - selectedNode.data.component.ports.length
+        + (selectedNode.data.component.ports.length > 0 ? 1 : 0);
         // eslint-disable-next-line no-plusplus
         i++
       ) {

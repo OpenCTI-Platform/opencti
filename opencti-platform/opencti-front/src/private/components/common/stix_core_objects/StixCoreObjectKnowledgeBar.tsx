@@ -71,8 +71,8 @@ const stixCoreObjectKnowledgeBarFragment = graphql`
 `;
 
 type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsWithoutRelatedToDistribution']
-| StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
-| StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['relationshipsRelatedDistribution']
+  | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
 
 interface StixCoreObjectKnowledgeBarProps {
   stixCoreObjectLink: string;

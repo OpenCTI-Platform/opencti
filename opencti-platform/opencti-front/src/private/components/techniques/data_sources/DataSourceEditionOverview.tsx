@@ -122,7 +122,7 @@ const DATA_SOURCE_TYPE = 'Data-Source';
 interface DataSourceEditionOverviewProps {
   data: DataSourceEditionOverview_dataSource$key;
   context:
-  | readonly ({
+    | readonly ({
     readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]

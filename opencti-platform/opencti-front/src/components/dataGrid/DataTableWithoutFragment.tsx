@@ -7,22 +7,22 @@ import type { Theme } from '../Theme';
 import { useDataTableContext } from './components/DataTableContext';
 
 type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
-| 'storageKey'
-| 'rootRef'
-| 'actions'
-| 'icon'
-| 'disableNavigation'
-| 'disableLineSelection'
-| 'disableToolBar'
-| 'removeSelectAll'
-| 'selectOnLineClick'
-| 'filtersComponent'
-| 'getComputeLink'
-| 'pageSize'
-| 'hideHeaders'
-| 'onLineClick'
-| 'isLocalStorageEnabled'
-| 'variant'> & {
+  | 'storageKey'
+  | 'rootRef'
+  | 'actions'
+  | 'icon'
+  | 'disableNavigation'
+  | 'disableLineSelection'
+  | 'disableToolBar'
+  | 'removeSelectAll'
+  | 'selectOnLineClick'
+  | 'filtersComponent'
+  | 'getComputeLink'
+  | 'pageSize'
+  | 'hideHeaders'
+  | 'onLineClick'
+  | 'isLocalStorageEnabled'
+  | 'variant'> & {
   data: unknown,
   globalCount: number
 };

@@ -117,7 +117,7 @@ const DATA_COMPONENT_TYPE = 'Data-Component';
 interface DataComponentEditionOverviewComponentProps {
   data: DataComponentEditionOverview_dataComponent$key;
   context:
-  | readonly ({
+    | readonly ({
     readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]

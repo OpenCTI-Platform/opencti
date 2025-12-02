@@ -101,9 +101,6 @@ export default defineConfig([
     rules: {
       '@stylistic/jsx-wrap-multilines': 'off',
       '@stylistic/no-mixed-operators': 'off',
-      '@stylistic/comma-dangle': 'off',
-      '@stylistic/indent-binary-ops': 'off',
-      '@stylistic/spaced-comment': 'off',
       '@stylistic/member-delimiter-style': 'off',
       '@stylistic/max-statements-per-line': 'off',
       '@stylistic/multiline-ternary': 'off',

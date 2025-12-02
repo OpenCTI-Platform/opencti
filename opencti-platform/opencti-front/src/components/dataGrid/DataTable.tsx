@@ -19,8 +19,8 @@ import useDraftContext from '../../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../../utils/authorizedMembers';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
-| 'contextFilters'
-| 'entityTypes'> & {
+  | 'contextFilters'
+  | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
   availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
@@ -108,12 +108,12 @@ const DataTableInternalFilters = ({
 };
 
 type DataTableInternalToolbarProps = Pick<DataTableProps,
-| 'contextFilters'
-| 'handleCopy'
-| 'removeAuthMembersEnabled'
-| 'removeFromDraftEnabled'
-| 'markAsReadEnabled'
-| 'entityTypes'
+  | 'contextFilters'
+  | 'handleCopy'
+  | 'removeAuthMembersEnabled'
+  | 'removeFromDraftEnabled'
+  | 'markAsReadEnabled'
+  | 'entityTypes'
 > & {
   taskScope?: string
   globalSearch?: string;
@@ -175,29 +175,29 @@ const DataTableInternalToolbar = ({
 };
 
 type OCTIDataTableProps = Pick<DataTableProps,
-| 'dataColumns'
-| 'resolvePath'
-| 'storageKey'
-| 'initialValues'
-| 'availableFilterKeys'
-| 'redirectionModeEnabled'
-| 'additionalFilterKeys'
-| 'contextFilters'
-| 'variant'
-| 'actions'
-| 'hideHeaders'
-| 'emptyStateMessage'
-| 'icon'
-| 'rootRef'
-| 'onLineClick'
-| 'getComputeLink'
-| 'disableNavigation'
-| 'disableLineSelection'
-| 'disableToolBar'
-| 'removeSelectAll'
-| 'selectOnLineClick'
-| 'createButton'
-| 'entityTypes'> & {
+  | 'dataColumns'
+  | 'resolvePath'
+  | 'storageKey'
+  | 'initialValues'
+  | 'availableFilterKeys'
+  | 'redirectionModeEnabled'
+  | 'additionalFilterKeys'
+  | 'contextFilters'
+  | 'variant'
+  | 'actions'
+  | 'hideHeaders'
+  | 'emptyStateMessage'
+  | 'icon'
+  | 'rootRef'
+  | 'onLineClick'
+  | 'getComputeLink'
+  | 'disableNavigation'
+  | 'disableLineSelection'
+  | 'disableToolBar'
+  | 'removeSelectAll'
+  | 'selectOnLineClick'
+  | 'createButton'
+  | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
   exportContext?: { entity_type: string, entity_id?: string }

@@ -42,13 +42,13 @@ const useDistributionGraphData = () => {
     }
     if (n.entity?.x_opencti_color) {
       color = theme.palette.mode === 'light'
-      && n.entity.x_opencti_color === '#ffffff'
+        && n.entity.x_opencti_color === '#ffffff'
         ? '#000000'
         : n.entity.x_opencti_color;
     }
     if (n.entity?.template?.color) {
       color = theme.palette.mode === 'light'
-      && n.entity.template.color === '#ffffff'
+        && n.entity.template.color === '#ffffff'
         ? '#000000'
         : n.entity.template.color;
     }

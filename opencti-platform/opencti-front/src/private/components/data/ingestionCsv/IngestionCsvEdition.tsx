@@ -240,14 +240,14 @@ export interface IngestionCsvEditionForm {
 
 type FieldValue
   = FieldOption
-  | FieldOption[]
-  | CsvMapperFieldOption
-  | string
-  | string[]
-  | number
-  | number[]
-  | null
-  | CsvMapperAddInput;
+    | FieldOption[]
+    | CsvMapperFieldOption
+    | string
+    | string[]
+    | number
+    | number[]
+    | null
+    | CsvMapperAddInput;
 
 const resolveHasUserChoiceCsvMapper = (option: CsvMapperFieldOption) => {
   return option?.representations?.some(

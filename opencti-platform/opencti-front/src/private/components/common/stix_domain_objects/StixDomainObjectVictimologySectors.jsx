@@ -511,8 +511,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 size="large"
                               >
                                 {this.state.expandedLines[subsector.id]
-                                === true ? (
-                                  <ExpandLess />
+                                  === true ? (
+                                    <ExpandLess />
                                   ) : (
                                     <ExpandMore />
                                   )}

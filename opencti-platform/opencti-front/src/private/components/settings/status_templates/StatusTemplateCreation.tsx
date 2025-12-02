@@ -59,7 +59,7 @@ interface StatusTemplateCreationProps {
   contextual: boolean;
   inputValueContextual: string;
   creationCallback: (
-    data: StatusTemplateCreationContextualMutation$data
+    data: StatusTemplateCreationContextualMutation$data,
   ) => void;
   handleClose: () => void;
   open: boolean;

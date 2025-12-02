@@ -102,7 +102,7 @@ interface IncidentFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined
+    response: { id: string; name: string } | null | undefined,
   ) => void;
   onClose?: () => void;
   defaultConfidence?: number;

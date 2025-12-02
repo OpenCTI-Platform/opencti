@@ -394,8 +394,8 @@ const FileManager = ({
                     </Field>
                   )}
                   {selectedConnector?.name === 'ImportCsv'
-                      && hasUserChoiceCsvMapper
-                      && (
+                    && hasUserChoiceCsvMapper
+                    && (
                       <>
                         <ObjectMarkingField
                           name="objectMarking"

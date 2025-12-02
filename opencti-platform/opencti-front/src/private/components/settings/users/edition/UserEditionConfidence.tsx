@@ -27,7 +27,7 @@ export interface ConfidenceFormData {
 interface UserEditionConfidenceProps {
   user: UserEdition_user$data;
   context:
-  | readonly ({
+    | readonly ({
     readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]

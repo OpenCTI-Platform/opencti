@@ -332,7 +332,7 @@ const StixCoreRelationshipCreation = ({
             const { stixCoreRelationships } = data as StixCoreRelationshipCreationQuery$data;
             if (stixCoreRelationships) {
               const newStep = stixCoreRelationships.edges
-              && stixCoreRelationships.edges.length > 0
+                && stixCoreRelationships.edges.length > 0
                 ? 1
                 : 2;
               setStep(newStep);
@@ -707,9 +707,9 @@ const StixCoreRelationshipCreation = ({
         onClose={handleClose}
       >
         {step === 0
-        || step === undefined
-        || fromObjects === null
-        || toObjects === null
+          || step === undefined
+          || fromObjects === null
+          || toObjects === null
           ? renderLoader()
           : ''}
         {step === 1 ? renderSelectRelation() : ''}

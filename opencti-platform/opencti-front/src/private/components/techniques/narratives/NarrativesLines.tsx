@@ -20,7 +20,7 @@ interface NarrativesLinesProps {
   deSelectedElements: Record<string, NarrativeLine_node$data>;
   onToggleEntity: (
     entity: NarrativeLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onLabelClick?: HandleAddFilter;

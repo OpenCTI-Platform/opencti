@@ -131,7 +131,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
   )(stixCyberObservable);
 
   const file = stixCyberObservable.importFiles
-  && stixCyberObservable.importFiles.edges.length > 0
+    && stixCyberObservable.importFiles.edges.length > 0
     ? stixCyberObservable.importFiles.edges[0].node
     : null;
 

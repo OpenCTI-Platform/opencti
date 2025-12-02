@@ -178,7 +178,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
     setFieldValue: (
       field: string,
       value: unknown,
-      shouldValidate?: boolean | undefined
+      shouldValidate?: boolean | undefined,
     ) => void,
     values: TriggerDigestAddInput,
   ) => (

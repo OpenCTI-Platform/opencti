@@ -47,7 +47,7 @@ const PasswordPolicies: FunctionComponent<{ style?: object }> = ({ style }) => {
   } = useFragment<PasswordPolicies$key>(passwordPoliciesFragment, settings);
   // If no specific policies, just render empty element
   if (password_policy_min_length === 0 && password_policy_max_length === 0 && password_policy_min_symbols === 0 && password_policy_min_numbers === 0
-      && password_policy_min_words === 0 && password_policy_min_lowercase === 0 && password_policy_min_uppercase === 0) {
+    && password_policy_min_words === 0 && password_policy_min_lowercase === 0 && password_policy_min_uppercase === 0) {
     return <></>;
   }
   return <div style={style}>

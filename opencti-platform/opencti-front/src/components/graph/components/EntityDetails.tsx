@@ -406,11 +406,11 @@ EntityDetailsComponentProps
         {t_i18n('Marking')}
       </Typography>
       {stixCoreObject.objectMarking
-      && stixCoreObject.objectMarking.length > 0 ? (
-        <ItemMarkings
-          markingDefinitions={stixCoreObject.objectMarking}
-          limit={2}
-        />
+        && stixCoreObject.objectMarking.length > 0 ? (
+          <ItemMarkings
+            markingDefinitions={stixCoreObject.objectMarking}
+            limit={2}
+          />
         ) : (
           '-'
         )}

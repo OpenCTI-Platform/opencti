@@ -104,16 +104,16 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
               {t_i18n('Infrastructure types')}
             </Typography>
             {data.infrastructure_types
-            && data.infrastructure_types.length > 0 ? (
-              <List>
-                {data.infrastructure_types.map((infrastructureType) => (
-                  <Chip
-                    key={infrastructureType}
-                    classes={{ root: classes.chip }}
-                    label={infrastructureType}
-                  />
+              && data.infrastructure_types.length > 0 ? (
+                <List>
+                  {data.infrastructure_types.map((infrastructureType) => (
+                    <Chip
+                      key={infrastructureType}
+                      classes={{ root: classes.chip }}
+                      label={infrastructureType}
+                    />
                 ))}
-              </List>
+                </List>
               ) : (
                 '-'
               )}

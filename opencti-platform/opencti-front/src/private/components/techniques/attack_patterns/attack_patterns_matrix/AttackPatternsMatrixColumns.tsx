@@ -208,10 +208,10 @@ const AttackPatternsMatrixColumns = ({
       ...a,
       attackPatterns: a.attackPatterns
         ?.filter((ap) => !searchTerm
-        || ap.name.toLowerCase().includes(searchTerm.toLowerCase())
-        || ap.description?.toLowerCase().includes(searchTerm.toLowerCase())
-        || ap.x_mitre_id?.toLowerCase().includes(searchTerm.toLowerCase())
-        || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
+          || ap.name.toLowerCase().includes(searchTerm.toLowerCase())
+          || ap.description?.toLowerCase().includes(searchTerm.toLowerCase())
+          || ap.x_mitre_id?.toLowerCase().includes(searchTerm.toLowerCase())
+          || ap.subAttackPatternsSearchText?.toLowerCase().includes(searchTerm.toLowerCase()))
         .map((ap) => ({
           ...ap,
           level: getAttackPatternLevel(ap),

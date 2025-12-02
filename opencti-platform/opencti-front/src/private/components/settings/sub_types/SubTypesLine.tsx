@@ -74,7 +74,7 @@ interface SubTypeLineProps {
   onToggleShiftEntity: (
     index: number,
     entity: { id: string },
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   index: number;
 }

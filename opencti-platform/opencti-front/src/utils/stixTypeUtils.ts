@@ -12,7 +12,7 @@ export const computeTargetStixDomainObjectTypes = (stixCoreObjectTypes: string[]
 export const computeTargetStixCyberObservableTypes = (stixCoreObjectTypes: string[]): string[] => {
   const finalStixCoreObjectTypes = stixCoreObjectTypes || ['Stix-Core-Object'];
   return finalStixCoreObjectTypes.includes('Stix-Core-Object')
-  || finalStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+    || finalStixCoreObjectTypes.includes('Stix-Cyber-Observable')
     ? ['Stix-Cyber-Observable']
     : [];
 };

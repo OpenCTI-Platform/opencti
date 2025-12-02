@@ -23,7 +23,7 @@ interface ContainerStixDomainObjectsLinesProps {
   deSelectedElements: Record<string, ContainerStixDomainObjectLine_node$data>;
   onToggleEntity: (
     entity: ContainerStixDomainObjectLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onLabelClick?: HandleAddFilter;

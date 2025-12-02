@@ -52,7 +52,7 @@ const messageValidation = () => Yup.object().shape({
 });
 
 type SettingsMessageInput = Partial<
-Pick<
+  Pick<
 SettingsMessagesLine_settingsMessage$data,
 'id' | 'activated' | 'message' | 'dismissible'
 > & { recipients: FieldOption[] }

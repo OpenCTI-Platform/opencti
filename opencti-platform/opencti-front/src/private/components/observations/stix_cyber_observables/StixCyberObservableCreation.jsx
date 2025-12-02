@@ -466,7 +466,7 @@ const StixCyberObservableCreation = ({
             const translatedOrderedList = subTypesEdges
               .map((edge) => edge.node)
               .filter((node) => !stixCyberObservableTypes
-                    || stixCyberObservableTypes.includes(node.id))
+                || stixCyberObservableTypes.includes(node.id))
               .map((node) => ({
                 ...node,
                 tlabel: t_i18n(`entity_${node.label}`),

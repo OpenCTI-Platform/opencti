@@ -47,7 +47,7 @@ interface InvestigationAddStixCoreObjectsLineComponentProps {
   onLabelClick: HandleAddFilter,
   onToggleEntity: (
     entity: InvestigationAddStixCoreObjectsLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void,
   addedElements: {
     [key: string]: InvestigationAddStixCoreObjectsLine_node$data
