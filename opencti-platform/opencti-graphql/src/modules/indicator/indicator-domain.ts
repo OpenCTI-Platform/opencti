@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 import moment from 'moment/moment';
-import { createEntity, createRelation, distributionEntities, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
+import { createEntity, createRelation, distributionEntities, inputResolveRefs, patchAttribute, storeLoadByIdWithRefs, timeSeriesEntities } from '../../database/middleware';
 import { type EntityOptions, fullEntitiesList, pageEntitiesConnection, pageRegardingEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
-import { BUS_TOPICS, extendedErrors, logApp } from '../../config/conf';
+import { BUS_TOPICS, extendedErrors, isFeatureEnabled, logApp } from '../../config/conf';
 import { notify } from '../../database/redis';
 import { checkIndicatorSyntax } from '../../python/pythonBridge';
 import { DatabaseError, FunctionalError, ValidationError } from '../../config/errors';
@@ -56,6 +56,8 @@ import { checkScore, prepareDate, utcDate } from '../../utils/format';
 import { checkObservableValue, isCacheEmpty } from '../../database/exclusionListCache';
 import { stixHashesToInput } from '../../schema/fieldDataAdapter';
 import { REVOKED, VALID_FROM, VALID_UNTIL, X_DETECTION, X_SCORE } from '../../schema/identifier';
+import { checkDecayExclusionRules, getActiveDecayExclusionRules } from '../decayRule/exclusions/decayExclusionRule-domain';
+import { getEntitySettingFromCache } from '../../modules/entitySetting/entitySetting-utils';
 
 export const NO_DECAY_DEFAULT_VALID_PERIOD: number = dayToMs(90);
 export const NO_DECAY_DEFAULT_REVOKED_SCORE: number = 0;
@@ -253,6 +255,8 @@ const validateIndicatorPattern = async (context: AuthContext, user: AuthUser, pa
   return { formattedPattern };
 };
 
+const isDecayExclusionRuleEnabled = isFeatureEnabled('DECAY_EXCLUSION_RULE_ENABLED');
+
 export const addIndicator = async (context: AuthContext, user: AuthUser, indicator: IndicatorAddInput) => {
   let observableType: string = isEmptyField(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type as string;
   if (observableType === 'File') {
@@ -271,23 +275,48 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   const indicatorBaseScore = indicator.x_opencti_score ?? INDICATOR_DEFAULT_SCORE;
   checkScore(indicatorBaseScore);
 
-  const isDecayActivated: boolean = await isDecayEnabled();
   // find default decay rule (even if decay is not activated, it is used to compute default validFrom and validUntil)
   const decayRule = await findDecayRuleForIndicator(context, observableType);
+
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
-  const indicatorToCreate = R.pipe(
-    R.dissoc('createObservables'),
-    R.dissoc('basedOn'),
-    R.assoc('pattern', formattedPattern),
-    R.assoc('x_opencti_main_observable_type', observableType),
-    R.assoc(X_SCORE, indicatorBaseScore),
-    R.assoc('x_opencti_detection', indicator.x_opencti_detection ?? false),
-    R.assoc('valid_from', validFrom.toISOString()),
-    R.assoc('valid_until', validUntil.toISOString()),
-    R.assoc('revoked', revoked),
-  )(indicator);
+
+  let indicatorToCreate = {
+    ...indicator,
+    pattern: formattedPattern,
+    x_opencti_main_observable_type: observableType,
+    [X_SCORE]: indicatorBaseScore,
+    x_opencti_detection: indicator.x_opencti_detection ?? false,
+    valid_from: validFrom.toISOString(),
+    valid_until: validUntil.toISOString(),
+    revoked,
+  };
+  delete indicatorToCreate.basedOn;
+  delete indicatorToCreate.createObservables;
+
+  const isDecayActivated: boolean = await isDecayEnabled();
+
+  let exclusionRule = null;
+  if (isDecayExclusionRuleEnabled) {
+    const activeDecayExclusionRuleList = await getActiveDecayExclusionRules(context, user);
+    const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
+    const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting);
+    exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+    indicatorToCreate = { ...resolvedIndicator };
+  }
+
   let finalIndicatorToCreate;
-  if (isDecayActivated && !revoked) {
+
+  if (isDecayActivated && exclusionRule && isDecayExclusionRuleEnabled) {
+    finalIndicatorToCreate = {
+      ...indicatorToCreate,
+      decay_exclusion_applied_rule: {
+        decay_exclusion_id: exclusionRule.id,
+        decay_exclusion_name: exclusionRule.name,
+        decay_exclusion_created_at: exclusionRule.created_at,
+        decay_exclusion_filters: exclusionRule.decay_exclusion_filters,
+      }
+    };
+  } else if (isDecayActivated && !revoked) {
     const indicatorDecayRule = {
       decay_rule_id: decayRule.id,
       decay_lifetime: decayRule.decay_lifetime,
@@ -315,6 +344,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
   } else {
     finalIndicatorToCreate = { ...indicatorToCreate };
   }
+
   // create the linked observables
   let observablesToLink: string[] = [];
   if (indicator.basedOn) {

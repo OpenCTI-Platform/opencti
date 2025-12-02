@@ -13,6 +13,7 @@ import { ENTITY_TYPE_PLAYBOOK } from '../modules/playbook/playbook-types';
 import { type BasicStoreEntityPublicDashboard, ENTITY_TYPE_PUBLIC_DASHBOARD } from '../modules/publicDashboard/publicDashboard-types';
 import { wait } from './utils';
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
+import { ENTITY_TYPE_DECAY_EXCLUSION_RULE } from '../modules/decayRule/exclusions/decayExclusionRule-types';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Resolved Filters in cache must be reset depending on connector/stream/triggers/playbooks/Pir modifications
@@ -21,6 +22,7 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   [ENTITY_TYPE_PLAYBOOK]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_CONNECTOR]: [ENTITY_TYPE_RESOLVED_FILTERS],
   [ENTITY_TYPE_PIR]: [ENTITY_TYPE_RESOLVED_FILTERS],
+  [ENTITY_TYPE_DECAY_EXCLUSION_RULE]: [ENTITY_TYPE_RESOLVED_FILTERS],
 };
 
 const cache: any = {};
