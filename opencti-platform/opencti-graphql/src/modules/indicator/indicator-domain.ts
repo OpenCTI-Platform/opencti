@@ -301,7 +301,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
     const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting);
     exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
-    indicatorToCreate = { ...resolvedIndicator }
+    indicatorToCreate = { ...resolvedIndicator };
   }
 
   let finalIndicatorToCreate;
