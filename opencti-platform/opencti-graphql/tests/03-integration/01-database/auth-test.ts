@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { askSendOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
+import { askSendOtp, generateOtp, getLocalProviderUser } from '../../../src/modules/auth/auth-domain';
 import { testContext } from '../../utils/testQuery';
 import { validate as uuidValidate } from 'uuid';
 import { OTP_TTL, redisGetForgotPasswordOtp } from '../../../src/database/redis';
@@ -9,6 +9,17 @@ describe('getLocalProviderUser', () => {
     const user = await getLocalProviderUser('anais@opencti.io');
     expect(user.user_email).toEqual('anais@opencti.io');
     expect(user.name).toEqual('anais@opencti.io');
+  });
+});
+
+describe('generateOtp', () => {
+  it('Should return a 8 char code', async () => {
+    const result = generateOtp();
+    expect(result.length).toEqual(8);
+  });
+  it('Should dont have alphabetic char', async () => {
+    const result = parseInt(generateOtp());
+    expect(result).not.toBeNaN();
   });
 });
 
