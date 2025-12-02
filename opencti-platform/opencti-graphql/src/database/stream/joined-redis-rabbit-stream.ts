@@ -34,7 +34,7 @@ const initializeStreams = async () => {
 // region opencti data stream
 
 const rawPushToStream = async (context: AuthContext, user: AuthUser, eventMessage: string[]) => {
-  await rawRabbitMQStreamClient.rawPushToStream(context, user, eventMessage);
+  await rabbitStreamClient.rawPushToStream(context, user, eventMessage);
 };
 
 const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
@@ -42,7 +42,7 @@ const rawFetchStreamInfo = async (streamName = LIVE_STREAM_NAME) => {
   if (await isRedisStreamFullyDeprecated(streamName, rabbitStreamInfo)) {
     return rabbitStreamInfo;
   }
-  // If rabbit stream data is still not older than 1 month, we want to join it with redis stream
+  // If redis stream is still not deprecated, we want to join it with rabbit stream info
   const redisStreamInfo = await redisStreamClient.rawFetchStreamInfo(streamName);
   return {
     lastEventId: redisStreamInfo.lastEventId,
@@ -74,6 +74,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
       await rabbitStreamProcessor.start(lastEventId);
     }
   };
+
   redisStreamProcessor = redisStreamClient.rawCreateStreamProcessor<T>(provider, proxyCallback, opts);
   rabbitStreamProcessor = rabbitStreamClient.rawCreateStreamProcessor<T>(provider, proxyCallback, opts);
 
@@ -91,12 +92,13 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
         isRabbitStreamProcessorActive = true;
         await rabbitStreamProcessor.start(start);
       } else {
-        // Third case: we need to check wether to start consuming in redis or rabbit. We should start consuming in redis only if start is older than most recent redis message
+        // Third case: we need to check wether to start consuming in redis or rabbit.
+        // We should start consuming in redis only if start is older than most recent redis message
         const startOffsetTime = start.split('-')[0];
         const redisStreamInfo = await redisStreamClient.rawFetchStreamInfo(streamName);
         const redisLastOffsetTime = redisStreamInfo.lastEventId.split('-')[0];
         redisLastEvendId = redisStreamInfo.lastEventId;
-        if (startOffsetTime <= redisLastOffsetTime) {
+        if (startOffsetTime < redisLastOffsetTime) {
           isRabbitStreamProcessorActive = false;
           await redisStreamProcessor.start(start);
         } else {
@@ -145,7 +147,7 @@ const rawFetchRangeNotifications = async <T extends BaseEvent> (start: Date, end
   if (await isRedisStreamFullyDeprecated(NOTIFICATION_STREAM_NAME)) {
     return rabbitStreamClient.rawFetchRangeNotifications<T>(start, end);
   }
-  // If rabbit stream is still not older than 1 month, we have to concatenate redis & rabbit stream data
+  // If reds stream is still not deprecated, we have to concatenate redis & rabbit stream data
   const redisRangeNotifications = await redisStreamClient.rawFetchRangeNotifications<T>(start, end);
   const rabbitRangeNotifications = await rabbitStreamClient.rawFetchRangeNotifications<T>(start, end);
   return [...redisRangeNotifications, ...rabbitRangeNotifications];

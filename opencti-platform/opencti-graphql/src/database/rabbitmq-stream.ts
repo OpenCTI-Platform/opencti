@@ -127,6 +127,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
   const rabbitQueueName = getRabbitMQStreamQueueName(streamName);
   let lastTimestamp: number;
   let currentTimestampCount = 0;
+  let stertStreamOffsetTime: number;
 
   let rabbitMqConnection: { close: () => void };
   const connectionSetterCallback = (conn: any) => {
@@ -142,14 +143,16 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     }
     return `${lastTimestamp}-${currentTimestampCount}`;
   };
-  const parseStreamMessage = async (message: string) => {
+  const queueConsumeCallback = async (message: string, ackCallback: () => void) => {
     const messageParsed = JSON.parse(message);
-    const reconstructedStreamId = buildStreamId(messageParsed[0]);
+    const messageTimestamp = messageParsed[0];
+    if (messageTimestamp < stertStreamOffsetTime) {
+      ackCallback();
+      return;
+    }
+    const reconstructedStreamId = buildStreamId(messageTimestamp);
     const reconstructedStreamEvent = [reconstructedStreamId, messageParsed[1]];
     await processStreamResult([reconstructedStreamEvent], callback, withInternal);
-  };
-  const queueConsumeCallback = async (message: string, ackCallback: () => void) => {
-    await parseStreamMessage(message);
     ackCallback();
   };
   const handleStreamConsume = async (startEventId = 'live') => {
@@ -157,6 +160,7 @@ const rawCreateStreamProcessor = <T extends BaseEvent> (
     if (startEventId !== 'live') {
       let streamOffsetTime = '';
       [streamOffsetTime,] = startEventId.split('-');
+      stertStreamOffsetTime = Number(streamOffsetTime);
       const offsetInSeconds = streamOffsetTime.slice(0, -3);
       streamOffsetArg = { '!': 'timestamp', value: Number(offsetInSeconds) };
     }
