@@ -165,10 +165,10 @@ const SearchInput = (props) => {
         } : undefined}
         InputProps={{
           startAdornment: (
-            <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }} >
+            <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }}>
               {isNLQActivated
                 ? <FiligranIcon icon={LogoXtmOneIcon} size="medium" color="ai" />
-                : <Search fontSize="small"/>}
+                : <Search fontSize="small" />}
             </InputAdornment>
           ),
           endAdornment: variant === 'topBar' && (
@@ -190,7 +190,7 @@ const SearchInput = (props) => {
                   && !isNLQActivated ? 'primary' : 'inherit'
                 }
               >
-                <BiotechOutlined fontSize="medium"/>
+                <BiotechOutlined fontSize="medium" />
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Bulk search')}>
@@ -205,7 +205,7 @@ const SearchInput = (props) => {
                     : 'inherit'
                 }
               >
-                <ContentPasteSearchOutlined fontSize="medium"/>
+                <ContentPasteSearchOutlined fontSize="medium" />
               </IconButton>
             </Tooltip>
             {fullyActive && (

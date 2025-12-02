@@ -130,7 +130,7 @@ const GroupField: React.FC<GroupFieldProps> = (props) => {
       renderOption={(renderProps: React.HTMLAttributes<HTMLLIElement>, option: { color: string; label: string, labelInList?: string }) => (
         <li {...renderProps}>
           <div className={classes.icon} style={{ color: option.color }}>
-            <ItemIcon type="Group"/>
+            <ItemIcon type="Group" />
           </div>
           <div className={classes.text}>{option.labelInList ?? option.label}</div>
         </li>

@@ -79,9 +79,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
               style={{ width: dataColumns.default_assignation.width }}
             >
               {node.default_assignation ? (
-                <CheckCircleOutlined fontSize="small" color="success"/>
+                <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
-                <DoNotDisturbOnOutlined fontSize="small" color="primary"/>
+                <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
             <div
@@ -89,9 +89,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
               style={{ width: dataColumns.auto_new_marking.width }}
             >
               {node.auto_new_marking ? (
-                <CheckCircleOutlined fontSize="small" color="success"/>
+                <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
-                <DoNotDisturbOnOutlined fontSize="small" color="primary"/>
+                <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
             <div
@@ -99,9 +99,9 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
               style={{ width: dataColumns.no_creators.width }}
             >
               {node.no_creators ? (
-                <CheckCircleOutlined fontSize="small" color="success"/>
+                <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
-                <DoNotDisturbOnOutlined fontSize="small" color="primary"/>
+                <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
             <div
@@ -112,7 +112,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
                 <Tooltip
                   title={t_i18n('This group does not have a Max Confidence Level, members might not be able to create data.')}
                 >
-                  <ReportGmailerrorred fontSize={'small'} color={'error'}/>
+                  <ReportGmailerrorred fontSize="small" color="error" />
                 </Tooltip>
               )}
             </div>
@@ -132,7 +132,7 @@ const GroupLineComponent: React.FC<GroupLineProps> = (props) => {
         }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined/>
+        <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -165,7 +165,7 @@ export const GroupLineDummy: React.FC<Pick<GroupLineProps, 'dataColumns'>> = ({ 
       divider={true}
       secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <KeyboardArrowRightOutlined/>
+          <KeyboardArrowRightOutlined />
         </Box>
       }
     >

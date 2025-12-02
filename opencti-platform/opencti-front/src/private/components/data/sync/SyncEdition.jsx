@@ -227,7 +227,7 @@ const SyncEditionContainer = ({ synchronizer }) => {
             />
           </Alert>
           <CreatorField
-            name={'user_id'}
+            name="user_id"
             label={t_i18n('User responsible for data creation (empty = System)')}
             containerStyle={fieldSpacingContainerStyle}
             onChange={handleSubmitField}

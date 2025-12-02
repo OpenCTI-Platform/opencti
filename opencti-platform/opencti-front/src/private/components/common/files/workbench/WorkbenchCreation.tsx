@@ -195,7 +195,7 @@ const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, 
                   color: theme.palette.primary.main,
                 }}
                 >
-                  <ItemIcon type="Label"/>
+                  <ItemIcon type="Label" />
                 </div>
                 <div style={{
                   display: 'inline-block',

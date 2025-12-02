@@ -180,7 +180,7 @@ ExternalReferenceFileImportViewerBaseProps
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Uploaded files')}
         </Typography>
-        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }}/>}>
+        <Security needs={[KNOWLEDGE_KNUPLOAD]} placeholder={<div style={{ height: 25 }} />}>
           <div style={{ float: 'left', marginTop: -15, marginBottom: 5 }}>
             <UploadImport
               entityId={id}
@@ -193,7 +193,7 @@ ExternalReferenceFileImportViewerBaseProps
           </div>
         </Security>
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           {importFiles?.edges?.length ? (
             <List>
               {importFiles?.edges?.map(
@@ -301,7 +301,7 @@ ExternalReferenceFileImportViewerBaseProps
                           </MenuItem>
                         );
                       })}
-                    </Field> : <ManageImportConnectorMessage name={selectedConnector?.name}/>
+                    </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
                     }
                   {selectedConnector?.name === 'ImportCsv'
                       && hasUserChoiceCsvMapper

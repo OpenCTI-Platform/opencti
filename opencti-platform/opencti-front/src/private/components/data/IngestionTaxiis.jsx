@@ -79,14 +79,14 @@ const IngestionTaxii = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-        <IngestionMenu/>
+        <IngestionMenu />
       </div>
     );
   }
   return (
     <div className={classes.container} data-testid="taxii-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('TAXII feeds'), current: true }]} />
-      <IngestionMenu/>
+      <IngestionMenu />
       <ListLines
         helpers={storageHelpers}
         sortBy={viewStorage.sortBy}

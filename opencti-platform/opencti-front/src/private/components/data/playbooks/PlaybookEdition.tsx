@@ -31,7 +31,7 @@ const PlaybookEdition = ({ id }: { id: string }) => {
       controlledDial={EditEntityControlledDial}
     >
       {queryRef && (
-        <React.Suspense fallback={<div/>}>
+        <React.Suspense fallback={<div />}>
           <PlaybookEditionForm
             queryRef={queryRef}
           />

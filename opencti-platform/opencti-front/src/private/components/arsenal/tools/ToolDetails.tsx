@@ -47,7 +47,7 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
         {t_i18n('Details')}
       </Typography>
       <Paper
-        className={'paper-for-grid'}
+        className="paper-for-grid"
         variant="outlined"
         style={{
           marginTop: '8px',

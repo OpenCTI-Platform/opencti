@@ -45,7 +45,7 @@ const FintelDesignEdition: FunctionComponent<FintelDesignEditionProps> = ({
       onClose={handleClose}
       controlledDial={EditEntityControlledDial}
     >
-      <FintelDesignEditionOverview data={overviewData}/>
+      <FintelDesignEditionOverview data={overviewData} />
     </Drawer>
   );
 };

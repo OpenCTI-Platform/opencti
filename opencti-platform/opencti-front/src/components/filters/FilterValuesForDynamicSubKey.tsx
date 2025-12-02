@@ -71,7 +71,7 @@ const FilterValuesForDynamicSubKeyContainer = ({
         }
         >
           <WarningOutlined
-            color={'inherit'}
+            color="inherit"
             style={{ fontSize: 20, color: '#f44336', margin: 5 }}
           />
         </Tooltip>

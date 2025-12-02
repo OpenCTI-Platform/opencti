@@ -101,7 +101,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
                 <Tooltip
                   title={t_i18n("No confidence level found in this user's groups, and no confidence level defined at the user level.")}
                 >
-                  <ReportGmailerrorred fontSize={'small'} color={'error'}/>
+                  <ReportGmailerrorred fontSize="small" color="error" />
                 </Tooltip>
               )}
             </div>
@@ -110,9 +110,9 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
               style={{ width: dataColumns.otp.width }}
             >
               {node.otp_activated ? (
-                <Security fontSize="small" color="secondary"/>
+                <Security fontSize="small" color="secondary" />
               ) : (
-                <HorizontalRule fontSize="small" color="primary"/>
+                <HorizontalRule fontSize="small" color="primary" />
               )}
             </div>
             <div
@@ -125,7 +125,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
           }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined/>
+        <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItemButton>
   );
@@ -250,7 +250,7 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
           }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined/>
+        <KeyboardArrowRightOutlined />
       </ListItemIcon>
     </ListItem>
   );

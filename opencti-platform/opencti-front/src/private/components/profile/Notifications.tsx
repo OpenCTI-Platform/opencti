@@ -282,7 +282,7 @@ const Notifications: FunctionComponent = () => {
             ) : (
               <Tooltip title={firstEvent?.message ?? '-'}>
                 <span>
-                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks/>
+                  <MarkdownDisplay content={firstEvent?.message ?? '-'} remarkGfmPlugin commonmark removeLinks />
                 </span>
               </Tooltip>
             )}
@@ -398,7 +398,7 @@ const Notifications: FunctionComponent = () => {
               size="small"
               color="primary"
             >
-              <DeleteOutlined/>
+              <DeleteOutlined />
             </IconButton>
           </span>
         </Tooltip>
@@ -424,7 +424,7 @@ const Notifications: FunctionComponent = () => {
             </Badge>
           );
         }}
-        taskScope={'USER_NOTIFICATION'}
+        taskScope="USER_NOTIFICATION"
         lineFragment={notificationsLineFragment}
         contextFilters={contextFilters}
         exportContext={{ entity_type: 'Notification' }}

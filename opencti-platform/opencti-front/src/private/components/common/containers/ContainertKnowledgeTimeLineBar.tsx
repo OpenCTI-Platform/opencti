@@ -117,7 +117,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                     size="large"
                     onClick={() => handleToggleTimeLineDisplayRelationships()}
                   >
-                    <RelationManyToMany/>
+                    <RelationManyToMany />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -134,7 +134,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                     size="large"
                     onClick={() => handleToggleTimeLineFunctionalDate()}
                   >
-                    <CalendarMultiselectOutline/>
+                    <CalendarMultiselectOutline />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -147,7 +147,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 />
               </div>
               <Divider className={classes.divider} orientation="vertical" />
-              <div style={{ paddingTop: 4 }} >
+              <div style={{ paddingTop: 4 }}>
                 <Filters
                   availableFilterKeys={[
                     'entity_type',

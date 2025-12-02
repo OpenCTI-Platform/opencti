@@ -83,22 +83,22 @@ export const renderIcon = (key: string) => {
     case 'ai':
       return <FiligranIcon icon={LogoXtmOneIcon} size="large" color="ai" />;
     case 'application/pdf':
-      return <FilePdfBox fontSize="large" color="primary"/>;
+      return <FilePdfBox fontSize="large" color="primary" />;
     case 'application/json':
     case 'application/vnd.mitre.navigator+json':
     case 'application/vnd.oasis.stix+json':
-      return <DataObjectOutlined fontSize="large" color="primary"/>;
+      return <DataObjectOutlined fontSize="large" color="primary" />;
     case 'text/html':
-      return <HtmlOutlined fontSize="large" color="primary"/>;
+      return <HtmlOutlined fontSize="large" color="primary" />;
     case 'text/markdown':
-      return <LanguageMarkdownOutline fontSize="large" color="primary"/>;
+      return <LanguageMarkdownOutline fontSize="large" color="primary" />;
     case 'text/plain':
-      return <AbcOutlined fontSize="large" color="primary"/>;
+      return <AbcOutlined fontSize="large" color="primary" />;
     case 'text/csv':
-      return <NumbersOutlined fontSize="large" color="primary"/>;
+      return <NumbersOutlined fontSize="large" color="primary" />;
 
     default:
-      return <FileExportOutline fontSize="large" color="primary"/>;
+      return <FileExportOutline fontSize="large" color="primary" />;
   }
 };
 
@@ -411,7 +411,7 @@ const StixCoreObjectFileExportForm = ({
                       component={SelectField}
                       variant="standard"
                       name="type"
-                      aria-label={'TYPE'}
+                      aria-label="TYPE"
                       label={t_i18n('Export type')}
                       fullWidth={true}
                       containerstyle={fieldSpacingContainerStyle}

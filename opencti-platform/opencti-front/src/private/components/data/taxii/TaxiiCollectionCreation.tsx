@@ -188,7 +188,7 @@ const TaxiiCollectionCreation: FunctionComponent<TaxiiCollectionCreationProps> =
                 />
                 {!values.taxii_public && (
                   <ObjectMembersField
-                    label={'Accessible for'}
+                    label="Accessible for"
                     style={fieldSpacingContainerStyle}
                     helpertext={t_i18n('Leave the field empty to grant all authenticated users')}
                     multiple={true}

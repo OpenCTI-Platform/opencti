@@ -48,7 +48,7 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
               variables={{ id: stixCoreObject.id }}
               render={({ props } : { props: ContainerMappingContentQuery$data }) => {
                 if (props && props.container) {
-                  return <ContainerMappingContent currentMode={currentMode} containerFragment={props.container}/>;
+                  return <ContainerMappingContent currentMode={currentMode} containerFragment={props.container} />;
                 }
                 return (
                   <Loader

@@ -384,7 +384,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                         }}
                         size="small"
                       >
-                        <DeleteOutlined fontSize="small" color={deleteFileColor}/>
+                        <DeleteOutlined fontSize="small" color={deleteFileColor} />
                       </IconButton>
                     </span>
                   </Tooltip>
@@ -438,7 +438,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
           </Tooltip>
         </ListItemButton>
       </ListItem>
-      <FileWork file={file} nested={workNested}/>
+      <FileWork file={file} nested={workNested} />
       <DeleteDialog
         deletion={deletion}
         submitDelete={handleRemoveFile}

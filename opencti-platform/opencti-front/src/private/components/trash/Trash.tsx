@@ -172,9 +172,9 @@ const Trash: React.FC = () => {
           sx={{ marginBottom: 2 }}
           title={<>
             {t_i18n('Entities and relationships manually deleted from the platform will appear in this view, and can be restored.')}
-            <br/>
+            <br />
             {t_i18n('Elements deleted by connectors or during platform synchronization are not put into the trash.')}
-            <br/>
+            <br />
             { isModuleEnable(GARBAGE_COLLECTION_MANAGER) && (
               t_i18n('An element will persist in the trash for a fixed period of time before being permanently deleted, according to the garbage collection manager settings.')
             )}

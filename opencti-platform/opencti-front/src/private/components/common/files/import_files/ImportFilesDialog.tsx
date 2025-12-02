@@ -444,7 +444,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
                 color="secondary"
                 onClick={() => handleClose()}
                 component={Link}
-                to={'/dashboard/data/import/file'}
+                to="/dashboard/data/import/file"
               >
                 {t_i18n('Navigate to import')}
               </Button>
@@ -496,16 +496,16 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           size="large"
           color="primary"
         >
-          <Close fontSize="small" color="primary"/>
+          <Close fontSize="small" color="primary" />
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
         {!uploadStatus ? (
           <>
-            <ImportFilesStepper/>
+            <ImportFilesStepper />
             {/* Remove stepper height (25px) */}
             <Box sx={{ paddingBlock: 5, height: 'calc(100% - 25px)' }}>
-              {activeStep === 0 && (<ImportFilesToggleMode/>)}
+              {activeStep === 0 && (<ImportFilesToggleMode />)}
               {activeStep === 1 && (
                 importMode === 'form'
                   ? <ImportFilesFormSelector />
@@ -516,7 +516,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
               {activeStep === 2 && (
                 importMode === 'form'
                   ? <ImportFilesFormView onSuccess={handleClose} />
-                  : <ImportFilesOptions optionsFormikContext={optionsContext} draftContext={draftContext}/>
+                  : <ImportFilesOptions optionsFormikContext={optionsContext} draftContext={draftContext} />
               )}
             </Box>
           </>
@@ -548,7 +548,7 @@ const ImportFilesDialog = ({ open, entityId, handleClose, initialFreeTextContent
     : { entityId };
   return (
     <ImportFilesProvider initialValue={initialValue}>
-      <ImportFiles open={open} handleClose={handleClose} ></ImportFiles>
+      <ImportFiles open={open} handleClose={handleClose}></ImportFiles>
     </ImportFilesProvider>
   );
 };

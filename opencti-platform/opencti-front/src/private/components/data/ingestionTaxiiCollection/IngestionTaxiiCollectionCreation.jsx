@@ -127,7 +127,7 @@ const IngestionTaxiiCollectionCreation = (props) => {
                 showConfidence
               />
               <ObjectMembersField
-                label={'Accessible for'}
+                label="Accessible for"
                 style={fieldSpacingContainerStyle}
                 onChange={setFieldValue}
                 multiple={true}

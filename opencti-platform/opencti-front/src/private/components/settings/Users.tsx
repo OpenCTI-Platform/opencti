@@ -218,7 +218,7 @@ const Users = () => {
       }}
       data-testid="users-settings-page"
     >
-      <AccessesMenu/>
+      <AccessesMenu />
       <Breadcrumbs elements={[
         { label: t_i18n('Settings') },
         { label: t_i18n('Security') },
@@ -248,13 +248,13 @@ const Users = () => {
               }
               return <PersonOutlined color="primary" />;
             }}
-            taskScope={'USER'}
+            taskScope="USER"
             entityTypes={['User']}
           />
           )}
         </>
       ) : (
-        <EnterpriseEdition feature="Organization sharing"/>
+        <EnterpriseEdition feature="Organization sharing" />
       )}
     </div>
   );

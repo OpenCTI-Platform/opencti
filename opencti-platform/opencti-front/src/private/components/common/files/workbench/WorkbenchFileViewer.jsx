@@ -65,7 +65,7 @@ const WorkbenchFileViewerBase = ({
           {t('Analyst workbenches')}
         </Typography>
         {!draftContext && (
-        <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }}/>}>
+        <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }} />}>
           <IconButton
             color="primary"
             aria-label="Add"
@@ -84,7 +84,7 @@ const WorkbenchFileViewerBase = ({
           entity={entity}
         />
         <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           {edges.length ? (
             <List>
               {edges.map((file) => (

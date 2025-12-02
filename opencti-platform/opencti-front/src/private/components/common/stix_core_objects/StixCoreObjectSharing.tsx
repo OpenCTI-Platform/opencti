@@ -120,7 +120,7 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
     {t_i18n(
       'The background task has been executed. You can monitor it on',
     )}{' '}
-    {<Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>}
+    <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
     .
   </span>);
   // If user not an organization organizer, return empty div

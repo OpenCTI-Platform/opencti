@@ -218,14 +218,14 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={country.id}/>
+                  <AIInsights id={country.id} />
                 </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={<Country countryData={country}/>}
+                element={<Country countryData={country} />}
               />
               <Route
                 path="/knowledge"

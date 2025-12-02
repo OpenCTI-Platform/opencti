@@ -95,7 +95,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
 
   const renderOptionIcon = (option: string) => {
     if (!nodeSubType.settings?.availableSettings?.includes(option)) {
-      return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'} />;
+      return <DoNotDisturbOnOutlined fontSize="small" color="disabled" />;
     }
     if ((nodeSubType.settings as never)?.[option] === true) {
       return <CheckCircleOutlined fontSize="small" color="success" />;
@@ -104,7 +104,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
   };
   const renderWorkflowStatus = () => {
     if (!nodeSubType.settings?.availableSettings?.includes('workflow_configuration')) {
-      return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'} />;
+      return <DoNotDisturbOnOutlined fontSize="small" color="disabled" />;
     }
     if (nodeSubType.workflowEnabled) {
       return <CheckCircleOutlined fontSize="small" color="success" />;

@@ -457,8 +457,8 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               value={currentTab}
               onChange={(_event, value) => handleChangeTab(value)}
             >
-              <Tab label={t_i18n('Overview')}/>
-              <Tab label={t_i18n('Inline csv mapper')} disabled={values.csv_mapper_type}/>
+              <Tab label={t_i18n('Overview')} />
+              <Tab label={t_i18n('Inline csv mapper')} disabled={values.csv_mapper_type} />
             </Tabs>
           </Box>
           <Box sx={{ display: currentTab === 1 ? 'block' : 'none' }}>
@@ -493,7 +493,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 style={fieldSpacingContainerStyle}
                 onSubmit={handleSubmitField}
               />
-              <IngestionSchedulingField handleSubmitField={handleSubmitField}/>
+              <IngestionSchedulingField handleSubmitField={handleSubmitField} />
               <Field
                 component={TextField}
                 variant="standard"
@@ -532,16 +532,16 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               </Box>
               {
                   values.csv_mapper_type && queryRef && (
-                    <React.Suspense fallback={<Loader variant={LoaderVariant.inline}/>}>
+                    <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
                       <Box sx={{ width: '100%', marginTop: 5 }}>
                         <Alert
                           severity="info"
                           variant="outlined"
                           style={{ padding: '0px 10px 0px 10px' }}
                         >
-                          {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
-                          <br/>
-                          {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
+                          {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
+                          <br />
+                          {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
                         </Alert>
                       </Box>
                       <CsvMapperField
@@ -666,7 +666,7 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                   variant="outlined"
                   style={{ padding: '0px 10px 0px 10px' }}
                 >
-                  {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br/>
+                  {t_i18n('Please, verify the validity of the selected CSV mapper for the given URL.')}<br />
                   {t_i18n('Only successful tests allow the ingestion edition.')}
                 </Alert>
               </Box>

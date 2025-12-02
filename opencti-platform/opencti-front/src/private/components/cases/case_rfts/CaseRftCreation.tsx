@@ -353,13 +353,13 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
               needs={[KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS]}
             >
               <div style={fieldSpacingContainerStyle}>
-                <Accordion >
+                <Accordion>
                   <AccordionSummary id="accordion-panel">
                     <Typography>{t_i18n('Advanced options')}</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
                     <Field
-                      name={'authorized_members'}
+                      name="authorized_members"
                       component={AuthorizedMembersField}
                       containerstyle={{ marginTop: 20 }}
                       showAllMembersLine

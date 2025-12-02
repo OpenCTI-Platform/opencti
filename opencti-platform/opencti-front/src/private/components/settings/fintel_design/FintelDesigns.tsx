@@ -156,7 +156,7 @@ const FintelDesigns = () => {
   return (
     <div data-testid="fintel-designs-page">
       <CustomizationMenu />
-      <PageContainer withGap withRightMenu >
+      <PageContainer withGap withRightMenu>
         <Breadcrumbs
           noMargin
           elements={[

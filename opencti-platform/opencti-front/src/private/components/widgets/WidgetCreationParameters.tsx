@@ -633,7 +633,7 @@ const WidgetCreationParameters = () => {
                                   </Select>
                                 );
                               }
-                              return <div/>;
+                              return <div />;
                             }}
                           />
                         </FormControl>

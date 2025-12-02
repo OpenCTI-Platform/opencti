@@ -511,7 +511,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           </Box>
           <Box>
             {renderHeaders()}
-            <Box id="forms" sx={{ display: 'flex', height: '100%', overflowY: 'auto', width: '100%', gap: '10px' }} >
+            <Box id="forms" sx={{ display: 'flex', height: '100%', overflowY: 'auto', width: '100%', gap: '10px' }}>
               <Box sx={{ width: `${toHeaderWidth}px` }}>
                 <TextField
                   disabled={isSubmitting}

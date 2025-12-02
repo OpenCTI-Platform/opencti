@@ -83,7 +83,7 @@ const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => 
           {
             order < statusByOrder.length - 1 && (
               <Box sx={{ display: 'flex', marginRight: 1 }}>
-                <ArrowRightAltOutlined/>
+                <ArrowRightAltOutlined />
               </Box>
             )
           }

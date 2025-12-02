@@ -224,7 +224,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
               />
 
               <CreatorField
-                label={'Connector user'}
+                label="Connector user"
                 containerStyle={fieldSpacingContainerStyle}
                 onChange={setFieldValue}
                 name="creator"
@@ -257,7 +257,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                         data={values}
                         schema={requiredProperties}
                         renderers={customRenderers}
-                        validationMode={'NoValidation'}
+                        validationMode="NoValidation"
                         onChange={async ({ data }) => {
                           await setValues(data);
                         }}
@@ -276,7 +276,7 @@ const ManagedConnectorEdition = ({ connector, open, onClose }: ManagedConnectorE
                             data={values}
                             schema={optionalProperties}
                             renderers={customRenderers}
-                            validationMode={'NoValidation'}
+                            validationMode="NoValidation"
                             onChange={async ({ data }) => {
                               await setValues(data);
                             }}

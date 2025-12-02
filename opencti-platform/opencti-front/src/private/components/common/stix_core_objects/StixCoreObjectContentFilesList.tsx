@@ -153,7 +153,7 @@ const StixCoreObjectContentFilesList = ({
                               aria-label="disseminate"
                               disabled={!isEnterpriseEdition}
                             >
-                              <SendOutlined/>
+                              <SendOutlined />
                             </IconButton>
                           </EETooltip>
                         </>

@@ -74,7 +74,7 @@ class SectorLineComponent extends Component {
               <div>
                 <div className={classes.name}>
                   {node.name}
-                  {node.draftVersion && (<DraftChip style={{ verticalAlign: 1 }}/>)}
+                  {node.draftVersion && (<DraftChip style={{ verticalAlign: 1 }} />)}
                 </div>
                 <div className={classes.description}>
                   {node.description?.length > 0

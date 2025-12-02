@@ -359,16 +359,16 @@ const StixCoreObjectFilesAndHistory = ({
                     setFieldValue={setFieldValue}
                   >
                     <MenuItem
-                      key={'workbench'}
-                      value={'workbench'}
+                      key="workbench"
+                      value="workbench"
                     >
-                      {'Workbench'}
+                      Workbench
                     </MenuItem>
                     <MenuItem
-                      key={'draft'}
-                      value={'draft'}
+                      key="draft"
+                      value="draft"
                     >
-                      {'Draft'}
+                      Draft
                     </MenuItem>
                   </Field>
                 )}

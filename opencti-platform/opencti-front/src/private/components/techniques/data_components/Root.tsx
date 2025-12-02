@@ -161,13 +161,13 @@ const RootDataComponent = () => {
                     <Route
                       path="/"
                       element={
-                        <DataComponent dataComponentData={dataComponent}/>
+                        <DataComponent dataComponentData={dataComponent} />
                       }
                     />
                     <Route
                       path="/knowledge/*"
                       element={
-                        <DataComponentKnowledge data={dataComponent}/>
+                        <DataComponentKnowledge data={dataComponent} />
                       }
                     />
                     <Route
@@ -192,7 +192,7 @@ const RootDataComponent = () => {
                     <Route
                       path="/history"
                       element={
-                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId}/>
+                        <StixCoreObjectHistory stixCoreObjectId={dataComponentId} />
                       }
                     />
                   </Routes>

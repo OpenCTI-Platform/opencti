@@ -99,7 +99,7 @@ class TaxiiLineLineComponent extends Component {
           classes={{ root: classes.item }}
           component="a"
           href={`/taxii2/root/collections/${node.id}/objects/`}
-          target={'_blank'}
+          target="_blank"
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
             <DatabaseExportOutline />

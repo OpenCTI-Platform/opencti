@@ -195,17 +195,17 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   >
                     <FormControlLabel
                       value=","
-                      control={<Radio/>}
+                      control={<Radio />}
                       label={t_i18n('Comma')}
                     />
                     <FormControlLabel
                       value=";"
-                      control={<Radio/>}
+                      control={<Radio />}
                       label={t_i18n('Semicolon')}
                     />
                     <FormControlLabel
-                      value={'|'}
-                      control={<Radio/>}
+                      value="|"
+                      control={<Radio />}
                       label={t_i18n('Pipe')}
                     />
                   </RadioGroup>
@@ -254,7 +254,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   }
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </Box>
               <FieldArray
@@ -300,7 +300,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                   }
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </Box>
               <FieldArray

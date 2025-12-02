@@ -111,7 +111,7 @@ export const SettingsOrganizationLineDummy = ({
       divider={true}
       secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
       }
     >

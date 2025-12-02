@@ -50,13 +50,13 @@ const BasicRelationshipDetails: FunctionComponent<BasicRelationshipDetailsProps>
       {relation.source_id && (
         <RelationShipFromAndTo
           id={relation.source_id}
-          direction={'From'}
+          direction="From"
         />
       )}
       {relation.target_id && (
         <RelationShipFromAndTo
           id={relation.target_id}
-          direction={'To'}
+          direction="To"
         />
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>

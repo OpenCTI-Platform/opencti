@@ -42,7 +42,7 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
         <>
           <VisuallyHiddenInput
             type="file"
-            accept={'application/JSON'}
+            accept="application/JSON"
             ref={inputRef}
             onChange={handleWidgetImport}
           />

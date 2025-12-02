@@ -68,11 +68,14 @@ const StixSightingRelationshipHistoryLines = ({ queryRef, isRelationLog, paginat
   };
 
     return (
-      <Paper style={{
+      <Paper
+        style={{
         marginTop: theme.spacing(1),
         padding: '0 15px',
         borderRadius: 4,
-      }} className={'paper-for-grid'} variant="outlined"
+      }}
+        className="paper-for-grid"
+        variant="outlined"
       >
         {logs.length > 0 ? (
           logs.map((logEdge) => {

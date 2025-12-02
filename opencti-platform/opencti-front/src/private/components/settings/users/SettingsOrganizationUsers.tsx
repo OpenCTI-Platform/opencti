@@ -213,7 +213,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
         variant="standard"
       />
       <Paper
-        className={'paper-for-grid'}
+        className="paper-for-grid"
         variant="outlined"
         sx={{
           marginTop: '28px',
@@ -247,7 +247,7 @@ const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = 
             }
             return <PersonOutlined color="primary" />;
           }}
-          taskScope={'USER'}
+          taskScope="USER"
         />
         )}
       </Paper>

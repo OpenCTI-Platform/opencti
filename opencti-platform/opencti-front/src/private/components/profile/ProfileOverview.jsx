@@ -440,9 +440,9 @@ const ProfileOverviewComponent = (props) => {
                 containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
-                <MenuItem value={'auto'}><em>{t('Automatic')}</em></MenuItem>
-                <MenuItem value={'Imperial'}>{t('Imperial')}</MenuItem>
-                <MenuItem value={'Metric'}>{t('Metric')}</MenuItem>
+                <MenuItem value="auto"><em>{t('Automatic')}</em></MenuItem>
+                <MenuItem value="Imperial">{t('Imperial')}</MenuItem>
+                <MenuItem value="Metric">{t('Metric')}</MenuItem>
               </Field>
               <ListItem style={{ padding: '20px 0 0 0' }}>
                 <ListItemText
@@ -637,7 +637,7 @@ const ProfileOverviewComponent = (props) => {
               onClick={() => setShowToken((value) => !value)}
               aria-label={showToken ? t('Hide') : t('Show')}
             >
-              {showToken ? <VisibilityOff/> : <Visibility/>}
+              {showToken ? <VisibilityOff /> : <Visibility />}
             </IconButton>
           </pre>
           {me.id !== OPENCTI_ADMIN_UUID && (
@@ -673,7 +673,7 @@ const ProfileOverviewComponent = (props) => {
                 content={
                   <>
                     Content-Type: application/json
-                    <br/>
+                    <br />
                     Authorization: Bearer {showToken ? me.api_token : maskString(me.api_token)}
                   </>
                   }
@@ -692,7 +692,7 @@ const ProfileOverviewComponent = (props) => {
               onClick={() => setShowToken((value) => !value)}
               aria-label={showToken ? t('Hide') : t('Show')}
             >
-              {showToken ? <VisibilityOff/> : <Visibility/>}
+              {showToken ? <VisibilityOff /> : <Visibility />}
             </IconButton>
           </pre>
           { isPlaygroundEnable() && (

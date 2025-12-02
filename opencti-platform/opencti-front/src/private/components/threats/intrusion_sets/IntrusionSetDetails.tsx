@@ -46,7 +46,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
           padding: '15px',
           borderRadius: '4px',
         }}
-        className={'paper-for-grid'}
+        className="paper-for-grid"
         variant="outlined"
       >
         <Grid container spacing={3}>

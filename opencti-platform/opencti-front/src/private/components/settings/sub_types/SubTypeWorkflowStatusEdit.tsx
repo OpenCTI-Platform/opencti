@@ -132,7 +132,7 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
               <StatusTemplateField
                 name="template"
                 setFieldValue={setFieldValue}
-                helpertext={''}
+                helpertext=""
               />
               <Field
                 component={TextField}

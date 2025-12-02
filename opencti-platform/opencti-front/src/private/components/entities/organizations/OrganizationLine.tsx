@@ -100,7 +100,7 @@ export const OrganizationLine: FunctionComponent<OrganizationLineProps> = ({
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}

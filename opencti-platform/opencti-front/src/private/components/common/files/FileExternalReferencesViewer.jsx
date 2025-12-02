@@ -56,7 +56,7 @@ const FileExternalReferencesViewerBase = ({
         {t('External references files')}
       </Typography>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         {allFiles.length ? (
           <List>
             {allFiles.map((file) => file && (

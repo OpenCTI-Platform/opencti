@@ -72,7 +72,7 @@ const DataTableInternalFilters = ({
         >
           {!hideSearch && (
             <SearchInput
-              variant={'small'}
+              variant="small"
               onSubmit={helpers.handleSearch}
               keyword={searchTerm}
             />

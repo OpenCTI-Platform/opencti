@@ -196,7 +196,7 @@ const ObservedDatas: FunctionComponent = () => {
           exportContext={{ entity_type: 'Observed-Data' }}
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <ObservedDataCreation paginationOptions={queryPaginationOptions}/>
+              <ObservedDataCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}
         />

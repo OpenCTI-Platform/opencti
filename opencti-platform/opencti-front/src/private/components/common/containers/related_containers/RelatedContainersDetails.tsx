@@ -184,8 +184,8 @@ const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ con
       </Grid>
 
       {/* Related Containers Distribution */}
-      <Grid item xs={12} >
-        <Typography variant="h4" >
+      <Grid item xs={12}>
+        <Typography variant="h4">
           {t_i18n('Correlated indicators and observables distribution')}
         </Typography>
         {queryRef && <RelatedContainersDetailsDistribution queryRef={queryRef} />}

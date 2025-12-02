@@ -121,7 +121,7 @@ const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps>
         component={InputSliderField}
         containerstyle={containerStyle}
         fullWidth={true}
-        entityType={'User'}
+        entityType="User"
         attributeName={name}
         name={name}
         label={finalLabel}

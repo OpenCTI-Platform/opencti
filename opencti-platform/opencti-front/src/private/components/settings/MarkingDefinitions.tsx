@@ -173,7 +173,7 @@ const MarkingDefinitions = () => {
         { label: t_i18n('Marking definitions'), current: true },
       ]}
       />
-      <AccessesMenu/>
+      <AccessesMenu />
       {queryRef && (
         <DataTable
           dataColumns={dataColumns}
@@ -186,7 +186,7 @@ const MarkingDefinitions = () => {
           icon={(data) => {
             const { x_opencti_color } = data;
             return (
-              <MarkingIcon theme={theme} color={x_opencti_color}/>
+              <MarkingIcon theme={theme} color={x_opencti_color} />
             );
           }}
           actions={(markingDefinition) => (
@@ -201,7 +201,7 @@ const MarkingDefinitions = () => {
           disableToolBar
           removeSelectAll
           disableLineSelection
-          createButton={<MarkingDefinitionCreation paginationOptions={queryPaginationOptions}/>}
+          createButton={<MarkingDefinitionCreation paginationOptions={queryPaginationOptions} />}
         />
       )}
     </div>

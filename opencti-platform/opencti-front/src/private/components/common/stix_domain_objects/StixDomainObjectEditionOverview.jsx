@@ -401,7 +401,7 @@ const StixDomainObjectEditionContainer = (props) => {
                 onSubmit={handleSubmitField}
                 containerStyle={fieldSpacingContainerStyle}
                 editContext={editContext}
-                entityType={'Stix-Domain-Object'}
+                entityType="Stix-Domain-Object"
               />
               {'description' in stixDomainObject && stixDomainObject.description !== undefined && (
                 <Field

@@ -44,7 +44,7 @@ const SharingMenu = () => {
       >
         <MenuItem
           component={Link}
-          to={'/dashboard/data/sharing/streams'}
+          to="/dashboard/data/sharing/streams"
           selected={location.pathname === '/dashboard/data/sharing/streams'}
           dense={false}
         >
@@ -52,7 +52,7 @@ const SharingMenu = () => {
         </MenuItem>
         <MenuItem
           component={Link}
-          to={'/dashboard/data/sharing/feeds'}
+          to="/dashboard/data/sharing/feeds"
           selected={location.pathname.includes('/dashboard/data/sharing/feeds')}
           dense={false}
         >
@@ -60,7 +60,7 @@ const SharingMenu = () => {
         </MenuItem>
         <MenuItem
           component={Link}
-          to={'/dashboard/data/sharing/taxii'}
+          to="/dashboard/data/sharing/taxii"
           selected={location.pathname.includes('/dashboard/data/sharing/taxii')}
           dense={false}
         >

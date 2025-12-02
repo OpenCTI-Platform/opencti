@@ -97,7 +97,7 @@ const dataColumns: DataColumns = {
     render: (node, { t, classes }) => (
       <Chip
         classes={{ root: classes.chipInList }}
-        color={'success'}
+        color="success"
         variant="outlined"
         label={t('Started')}
       />
@@ -194,7 +194,7 @@ const PublicTaxiiLines = () => {
       <Typography
         variant="h5"
         gutterBottom={true}
-        color={'error'}
+        color="error"
         style={{ marginTop: 20, marginBottom: 40 }}
       >
         {t_i18n('No available public taxii collections on this platform')}

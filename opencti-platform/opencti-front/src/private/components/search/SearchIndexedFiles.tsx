@@ -159,7 +159,7 @@ const SearchIndexedFilesComponent = () => {
           numberOfElements={numberOfElements}
         >
           {queryRef && (
-            <React.Suspense fallback={<Loader/>}>
+            <React.Suspense fallback={<Loader />}>
               <SearchIndexedFilesLines
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
@@ -209,7 +209,7 @@ const SearchIndexedFiles = () => {
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
     return (
-      <EnterpriseEdition feature={'File indexing'} />
+      <EnterpriseEdition feature="File indexing" />
     );
   }
   return (

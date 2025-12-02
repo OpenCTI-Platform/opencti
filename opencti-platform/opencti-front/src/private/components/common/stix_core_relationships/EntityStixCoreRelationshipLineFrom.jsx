@@ -156,7 +156,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                   }}
                 >
                   {!restricted ? getMainRepresentative(node.to) : t('Restricted')}
-                  {node.to?.draftVersion && (<DraftChip/>)}
+                  {node.to?.draftVersion && (<DraftChip />)}
                 </div>
                 {dataColumns.x_mitre_id && (
                   <div

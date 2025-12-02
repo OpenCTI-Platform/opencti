@@ -445,12 +445,12 @@ const TasksList = ({ data, options }) => {
                     />
                   </Grid>
                 </Grid>
-                <br/>
+                <br />
               </Grid>
               <Button
                 style={{ position: 'absolute', right: 10, top: 10 }}
                 variant={taskErrors.length > 0 ? 'contained' : 'outlined'}
-                color={'error'}
+                color="error"
                 disabled={taskErrors.length === 0}
                 onClick={() => handleOpenErrors(taskErrors)}
                 size="small"
@@ -464,7 +464,7 @@ const TasksList = ({ data, options }) => {
                     onClick={() => handleDeleteTask(task.id)}
                     size="small"
                   >
-                  <Delete fontSize="small"/>
+                  <Delete fontSize="small" />
                   &nbsp;&nbsp;{t_i18n('Delete')}
                 </Button>
                 : <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>

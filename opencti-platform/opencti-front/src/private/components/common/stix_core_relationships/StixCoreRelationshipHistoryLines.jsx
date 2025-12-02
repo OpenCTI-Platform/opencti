@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { graphql, usePreloadedQuery, useRefetchableFragment } from 'react-relay';
 import Paper from '@mui/material/Paper';
-import  { useFormatter } from 'src/components/i18n';
+import { useFormatter } from 'src/components/i18n';
 import { FIVE_SECONDS } from 'src/utils/Time';
 import { useTheme } from '@mui/styles';
 import useInterval from 'src/utils/hooks/useInterval';
@@ -46,7 +46,7 @@ const StixCoreRelationshipHistoryLinesFragment = graphql`
   }
 `;
 
-const StixCoreRelationshipHistoryLines= ({ queryRef, isRelationLog, paginationOptions}) => {
+const StixCoreRelationshipHistoryLines = ({ queryRef, isRelationLog, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
@@ -71,11 +71,14 @@ const StixCoreRelationshipHistoryLines= ({ queryRef, isRelationLog, paginationOp
     setSelectedLog(undefined);
   };
     return (
-      <Paper style={{
+      <Paper
+        style={{
         height: '100%',
         marginTop: theme.spacing(1),
         borderRadius: 4,
-      }} className={'paper-for-grid'} variant="outlined"
+      }}
+        className="paper-for-grid"
+        variant="outlined"
       >
         {logs.length > 0 ? (
           <List>

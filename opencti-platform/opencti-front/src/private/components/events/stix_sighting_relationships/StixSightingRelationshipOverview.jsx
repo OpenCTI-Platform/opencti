@@ -244,7 +244,7 @@ class StixSightingRelationshipContainer extends Component {
               classes={{ root: classes.paperWithoutPadding }}
               variant="outlined"
               style={{ position: 'relative' }}
-              className={'paper-for-grid'}
+              className="paper-for-grid"
             >
               <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
@@ -448,7 +448,7 @@ class StixSightingRelationshipContainer extends Component {
             <Typography variant="h4" gutterBottom={true}>
               {t('Details')}
             </Typography>
-            <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+            <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
               <Grid container={true} spacing={3}>
                 <Grid item xs={6}>
                   <Typography variant="h3" gutterBottom={true}>

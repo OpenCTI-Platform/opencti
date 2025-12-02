@@ -66,10 +66,10 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
   const isEnterpriseEdition = useEnterpriseEdition();
 
   const { subType } = usePreloadedQuery(subTypeQuery, queryRef);
-  if (!subType) return <ErrorNotFound/>;
+  if (!subType) return <ErrorNotFound />;
 
   const subTypeSettingsId = subType.settings?.id;
-  if (!subTypeSettingsId) return <ErrorNotFound/>;
+  if (!subTypeSettingsId) return <ErrorNotFound />;
 
   const config = useMemo(
     () => ({
@@ -122,7 +122,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
           <Paper
             style={paperStyle}
             variant="outlined"
-            className={'paper-for-grid'}
+            className="paper-for-grid"
           >
             <EntitySettingSettings entitySettingsData={subType.settings} />
           </Paper>
@@ -137,12 +137,12 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
           <Paper
             style={paperStyle}
             variant="outlined"
-            className={'paper-for-grid'}
+            className="paper-for-grid"
           >
             <div style={{ display: 'flex', marginTop: theme.spacing(1) }}>
               <Grid item xs={hasRequestAccessConfig ? 6 : 12}>
                 {subType.settings?.availableSettings.includes('workflow_configuration')
-                  && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false}/>
+                  && <GlobalWorkflowSettings data={subType} subTypeId={subType.id} workflowEnabled={subType.workflowEnabled ?? false} />
                 }
               </Grid>
               {hasRequestAccessConfig && (
@@ -159,7 +159,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                     />
                   </Grid>
                   <Grid item xs={6}>
-                    <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration}/>
+                    <RequestAccessSettings data={subType} subTypeId={subType.id} dataConfiguration={subType.settings.requestAccessConfiguration} />
                   </Grid>
                 </>
               )}
@@ -183,7 +183,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
             <Paper
               style={paperStyle}
               variant="outlined"
-              className={'paper-for-grid'}
+              className="paper-for-grid"
             >
               <EntitySettingAttributes
                 entitySettingsData={subType.settings}
@@ -203,7 +203,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
 const SubType = () => {
   const { subTypeId } = useParams<{ subTypeId?: string }>();
-  if (!subTypeId) return <ErrorNotFound/>;
+  if (!subTypeId) return <ErrorNotFound />;
 
   const subTypeRef = useQueryLoading<SubTypeQuery>(subTypeQuery, { id: subTypeId });
 

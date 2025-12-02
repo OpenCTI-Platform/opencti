@@ -269,7 +269,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
         />
       </Security>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         {(
           externalReferencesEdges ? externalReferencesEdges.length > 0 : false
         ) ? (
@@ -579,7 +579,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                         </MenuItem>
                       );
                     })}
-                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name}/>
+                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
                 }
                 {selectedConnector?.name === 'ImportCsv'
                     && hasUserChoiceCsvMapper

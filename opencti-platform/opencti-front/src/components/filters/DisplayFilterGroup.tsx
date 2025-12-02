@@ -79,7 +79,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
             .filter((v) => v.key === 'relationship_type')
             .flat()
             .map((value) => {
-              return (<span key={'relationship_type'}>
+              return (<span key="relationship_type">
                 <DisplayFiltersValues
                   filtersRepresentativesMap={filtersRepresentativesMap}
                   values={value.values}
@@ -103,7 +103,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
             </Box>
           }
           {values.filter((v) => v.key === 'id').flat().map((value) => {
-            return (<span key={'id'}>
+            return (<span key="id">
               <DisplayFiltersValues
                 filtersRepresentativesMap={filtersRepresentativesMap}
                 values={value.values}
@@ -111,11 +111,11 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
             </span>);
           })}
           {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
-            return (<span key={'id'}>
+            return (<span key="id">
               <DisplayFiltersFilterGroups
                 filterGroups={value.values}
                 filtersRepresentativesMap={filtersRepresentativesMap}
-                filterMode={'and'}
+                filterMode="and"
               />
             </span>);
           })}
@@ -343,7 +343,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
           </Typography>
           <CodeBlock
             code={JSON.stringify(filterObj, null, 2)}
-            language={'json'}
+            language="json"
           />
         </DialogContent>
         <DialogActions>

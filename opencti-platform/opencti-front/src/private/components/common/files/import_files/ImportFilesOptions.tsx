@@ -80,14 +80,14 @@ const ImportFilesOptions = ({
                 </>}
               >
                 <MenuItem
-                  key={'draft'}
-                  value={'draft'}
+                  key="draft"
+                  value="draft"
                 >
                   {t_i18n('Draft')}
                 </MenuItem>
                 <MenuItem
-                  key={'workbench'}
-                  value={'workbench'}
+                  key="workbench"
+                  value="workbench"
                   disabled={!isWorkbenchEnabled}
                 >
                   {t_i18n('Workbench')}

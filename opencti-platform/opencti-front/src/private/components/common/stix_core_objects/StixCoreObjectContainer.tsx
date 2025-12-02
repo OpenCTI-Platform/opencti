@@ -236,7 +236,7 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
                             onClick={handleToggleContainerCreationDrawer(true)}
                             size="small"
                           >
-                            <AddOutlined/>
+                            <AddOutlined />
                           </IconButton>
                         </InputAdornment>
                         {params.InputProps.endAdornment}

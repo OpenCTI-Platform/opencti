@@ -54,7 +54,7 @@ const StixCoreObjectSubscribers: FunctionComponent<ContainerHeaderSharedProps> =
   const [{ triggersKnowledge, triggersKnowledgeCount }] = useRefetchableFragment<TriggerQuery, FragmentKey>(stixCoreObjectTriggersFragment, triggerData);
 
   if (!triggersKnowledgeCount) {
-    return (<div/>);
+    return (<div />);
   }
 
   return (

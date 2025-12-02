@@ -139,7 +139,7 @@ JsonMapperRepresentationAttributesFormProps
             }}
           />
         </div>
-        <div/>
+        <div />
         { representationType === 'entity' && <>
           <div>
             Identifier

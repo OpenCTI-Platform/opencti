@@ -151,7 +151,7 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
             containerId={container?.id ?? null}
           />
         }
-        DummyLineComponent={<ContainerStixDomainObjectLineDummy/>}
+        DummyLineComponent={<ContainerStixDomainObjectLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         selectedElements={selectedElements}

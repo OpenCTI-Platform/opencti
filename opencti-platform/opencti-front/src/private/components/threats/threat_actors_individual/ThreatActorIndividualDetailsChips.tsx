@@ -77,7 +77,7 @@ ThreatActorIndividualDetailsChipsProps
       >
         {title}
       </CardLabel>
-      <div className="clearfix"/>
+      <div className="clearfix" />
       <FieldOrEmpty source={nodes}>
         {
         nodes.map(({ id, to }) => (

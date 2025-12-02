@@ -131,7 +131,7 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
 
   // If me user is not yet updated to be in draft, display loader
   if (!isDraftReadOnly && !draftContext) {
-    return (<Loader/>);
+    return (<Loader />);
   }
 
   return (
@@ -230,31 +230,31 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
       <Routes>
         <Route
           path="/"
-          element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true}/>}
+          element={<Navigate to={`/dashboard/data/import/draft/${draftId}/entities`} replace={true} />}
         />
         <Route
           path="/entities"
-          element={<DraftEntities entitiesType={'Stix-Domain-Object'} excludedEntitiesType={'Container'} isReadOnly={isDraftReadOnly}/>}
+          element={<DraftEntities entitiesType="Stix-Domain-Object" excludedEntitiesType="Container" isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/observables"
-          element={<DraftEntities entitiesType={'Stix-Cyber-Observable'} isReadOnly={isDraftReadOnly}/>}
+          element={<DraftEntities entitiesType="Stix-Cyber-Observable" isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/relationships"
-          element={<DraftRelationships isReadOnly={isDraftReadOnly}/>}
+          element={<DraftRelationships isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/sightings"
-          element={<DraftSightings isReadOnly={isDraftReadOnly}/>}
+          element={<DraftSightings isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/containers"
-          element={<DraftEntities entitiesType={'Container'} isReadOnly={isDraftReadOnly}/>}
+          element={<DraftEntities entitiesType="Container" isReadOnly={isDraftReadOnly} />}
         />
         <Route
           path="/files"
-          element={<ImportFilesContent inDraftOverview/>}
+          element={<ImportFilesContent inDraftOverview />}
         />
       </Routes>
     </>

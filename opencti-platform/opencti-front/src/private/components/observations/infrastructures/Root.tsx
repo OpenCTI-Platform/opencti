@@ -181,7 +181,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
           <Routes>
             <Route
               path="/"
-              element={<Infrastructure data={infrastructure}/>}
+              element={<Infrastructure data={infrastructure} />}
             />
             <Route
               path="/knowledge"
@@ -196,7 +196,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
               path="/knowledge/*"
               element={
                 <div key={forceUpdate}>
-                  <InfrastructureKnowledge infrastructure={infrastructure}/>
+                  <InfrastructureKnowledge infrastructure={infrastructure} />
                 </div>
               }
             />
@@ -235,7 +235,7 @@ const RootInfrastructureComponent = ({ queryRef, infrastructureId }) => {
           </Routes>
         </div>
       ) : (
-        <ErrorNotFound/>
+        <ErrorNotFound />
       )}
     </CreateRelationshipContextProvider>
   );

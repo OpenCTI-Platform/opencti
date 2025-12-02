@@ -106,7 +106,7 @@ const StixCoreObjectOpinionsComponent: FunctionComponent<StixCoreObjectOpinionsP
   return (
     <>
       <Typography
-        variant={'h3'}
+        variant="h3"
         gutterBottom={true}
         style={{ display: 'flex', marginTop: 20 }}
       >
@@ -154,8 +154,8 @@ const StixCoreObjectOpinions: FunctionComponent<Omit<StixCoreObjectOpinionsProps
   });
   return <div style={{ minHeight: '240px' }}>
     {queryRef && (
-      <React.Suspense fallback={<span/>}>
-        <StixCoreObjectOpinionsComponent {...props} queryVocabulariesRef={queryRef}/>
+      <React.Suspense fallback={<span />}>
+        <StixCoreObjectOpinionsComponent {...props} queryVocabulariesRef={queryRef} />
       </React.Suspense>)
     }
   </div>;

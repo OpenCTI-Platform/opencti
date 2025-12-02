@@ -155,7 +155,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -167,7 +167,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <GroupHiddenTypesChipList groupData={group}/>
+                <GroupHiddenTypesChipList groupData={group} />
               </Grid>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -194,7 +194,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Permissions')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -290,7 +290,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
             {t_i18n('Markings')}
           </Typography>
           <div className="clearfix" />
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={4}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -317,7 +317,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
 
                       >
                         <ListItemIcon>
-                          <MarkingIcon theme={theme} color={marking?.x_opencti_color}/>
+                          <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
                         </ListItemIcon>
                         <ListItemText
                           primary={truncate(marking?.definition, 40)}
@@ -341,7 +341,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
 
                       >
                         <ListItemIcon>
-                          <MarkingIcon theme={theme} color={marking?.x_opencti_color}/>
+                          <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
                         </ListItemIcon>
                         <ListItemText
                           primary={truncate(marking?.definition, 40)}
@@ -380,7 +380,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             {isMarkingAllowed
                               ? <>
                                 <ListItemIcon>
-                                  <MarkingIcon theme={theme} color={marking?.x_opencti_color}/>
+                                  <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={truncate(marking.definition, 40)}

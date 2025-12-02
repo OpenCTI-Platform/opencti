@@ -221,7 +221,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={sector.id}/>
+                  <AIInsights id={sector.id} />
                 </div>
               )}
             </Box>
@@ -229,7 +229,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               <Route
                 path="/"
                 element={(
-                  <Sector sectorData={sector}/>
+                  <Sector sectorData={sector} />
                   )}
               />
               <Route

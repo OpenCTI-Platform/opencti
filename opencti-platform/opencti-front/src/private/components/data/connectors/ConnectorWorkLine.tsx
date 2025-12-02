@@ -172,7 +172,7 @@ ConnectorWorkLineProps
             style={{ position: 'absolute', right: 10, bottom: 10 }}
             onClick={() => handleDeleteWork()}
             size="small"
-            startIcon={<Delete/>}
+            startIcon={<Delete />}
           >
             {t_i18n('Delete')}
           </Button>

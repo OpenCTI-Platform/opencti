@@ -306,7 +306,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created"/>
+                <SubscriptionFocus context={context} fieldName="created" />
               ),
             }}
           />

@@ -88,7 +88,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <>
-        <AccessesMenu/>
+        <AccessesMenu />
         <Breadcrumbs
           isSensitive={isSensitive}
           elements={[
@@ -107,7 +107,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
             >
               {group.name}
             </Typography>
-            <div className="clearfix"/>
+            <div className="clearfix" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
             <div style={{ display: 'flex' }}>
@@ -146,7 +146,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
           <Route
             path="/"
             element={
-              <Group groupData={group}/>
+              <Group groupData={group} />
             }
           />
         </Routes>

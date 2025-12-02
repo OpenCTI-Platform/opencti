@@ -326,7 +326,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
-          <IngestionSchedulingField/>
+          <IngestionSchedulingField />
           <Field
             component={TextField}
             variant="standard"
@@ -385,7 +385,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
             </div>
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '20px' }}>
               <FormControlLabel
-                control={<Switch defaultChecked={!!values.pagination_with_sub_page}/>}
+                control={<Switch defaultChecked={!!values.pagination_with_sub_page} />}
                 style={{ marginLeft: 1 }}
                 name="pagination_with_sub_page"
                 onChange={(_, checked) => setFieldValue('pagination_with_sub_page', checked)}
@@ -436,9 +436,9 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                     variant="outlined"
                     style={{ padding: '0px 10px 0px 10px' }}
                   >
-                    {t_i18n('Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
-                    <br/>
-                    {t_i18n('If the JSON mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
+                    {t_i18n('Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
+                    <br />
+                    {t_i18n('If the JSON mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
                   </Alert>
                 </Box>
                 <JsonMapperField
@@ -538,7 +538,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               variant="outlined"
               style={{ padding: '0px 10px 0px 10px' }}
             >
-              {t_i18n('Please, verify the validity of the selected JSON mapper for the given URL.')}<br/>
+              {t_i18n('Please, verify the validity of the selected JSON mapper for the given URL.')}<br />
               {t_i18n('Only successful tests allow the ingestion edition.')}
             </Alert>
           </Box>

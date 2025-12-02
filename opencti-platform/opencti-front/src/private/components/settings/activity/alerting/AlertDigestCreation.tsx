@@ -265,11 +265,11 @@ const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({
       )}
       <NotifierField name="notifiers" onChange={setFieldValue} />
       <ObjectMembersField
-        label={'Recipients'}
+        label="Recipients"
         style={fieldSpacingContainerStyle}
         onChange={setFieldValue}
         multiple={true}
-        name={'recipients'}
+        name="recipients"
       />
     </React.Fragment>
   );

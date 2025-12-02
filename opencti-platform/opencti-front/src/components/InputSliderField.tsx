@@ -68,7 +68,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
     const finalDisabled = (disabled === true || disabled === false) ? disabled : initialValue > max;
     return (
       <>
-        <Grid container={true} spacing={3} >
+        <Grid container={true} spacing={3}>
           <Grid item xs={6}>
             <Field
               component={SimpleTextField}

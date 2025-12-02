@@ -158,7 +158,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
             style={{ marginBottom: theme.spacing(0.5) }}
             to={`${resolveLink(entityType)}/${containerId}/knowledge/correlation`}
           >
-            <VectorLink fontSize="small"/>
+            <VectorLink fontSize="small" />
           </IconButton>
         </Tooltip>
       </Typography>
@@ -191,7 +191,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
                       handleOpenDetails(row);
                     }}
                   >
-                    <LoupeOutlined fontSize="small"/>
+                    <LoupeOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>
               </div>
@@ -223,7 +223,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
               size="medium"
               style={{ position: 'absolute', right: 12 }}
             >
-              <NorthEastOutlined/>
+              <NorthEastOutlined />
             </IconButton>
           </Tooltip>
         }

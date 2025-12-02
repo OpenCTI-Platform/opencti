@@ -172,7 +172,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
             style={{ marginTop: 20 }}
           />
           <ObjectMembersField
-            label={'Accessible for'}
+            label="Accessible for"
             style={fieldSpacingContainerStyle}
             onChange={setFieldValue}
             multiple={true}

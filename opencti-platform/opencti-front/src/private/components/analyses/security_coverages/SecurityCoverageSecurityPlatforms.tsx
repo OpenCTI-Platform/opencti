@@ -55,7 +55,7 @@ const SecurityCoverageSecurityPlatformsComponent: FunctionComponent<SecurityCove
                 secondaryAction={
                   <StixCoreRelationshipPopover
                     objectId={securityCoverage.id}
-                    connectionKey={'Pagination_securityPlatforms'}
+                    connectionKey="Pagination_securityPlatforms"
                     stixCoreRelationshipId={securityPlatformEdge.node.id}
                     paginationOptions={paginationOptions}
                     isCoverage={true}

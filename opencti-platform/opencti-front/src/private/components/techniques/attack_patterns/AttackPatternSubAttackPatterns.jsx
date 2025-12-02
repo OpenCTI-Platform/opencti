@@ -64,7 +64,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
             }
           />
         </Security>
-        <div className="clearfix"/>
+        <div className="clearfix" />
       </div>
       <List style={{ marginTop: -10, paddingTop: 0 }}>
         <FieldOrEmpty source={subAttackPatterns}>
@@ -82,7 +82,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
                   )}
                   size="large"
                 >
-                  <LinkOff/>
+                  <LinkOff />
                 </IconButton>
                 }
             >
@@ -91,7 +91,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
                 to={`/dashboard/techniques/attack_patterns/${subAttackPattern.id}`}
               >
                 <ListItemIcon>
-                  <LockPattern color="primary"/>
+                  <LockPattern color="primary" />
                 </ListItemIcon>
                 <ListItemText
                   primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}

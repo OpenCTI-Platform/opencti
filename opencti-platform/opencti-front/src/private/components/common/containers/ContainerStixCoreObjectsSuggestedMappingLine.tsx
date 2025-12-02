@@ -112,7 +112,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
         <IconButton
           onClick={() => handleRemoveSuggestedMappingLine(matchedEntity)}
         >
-          <CloseOutlined/>
+          <CloseOutlined />
         </IconButton>
     }
     >
@@ -152,7 +152,7 @@ ContainerStixCoreObjectsSuggestedMappingLineComponentProps
                 style={{ width: dataColumns.value.width }}
               >
                 {matchedEntity.representative?.main}
-                {matchedEntity.draftVersion && (<DraftChip/>)}
+                {matchedEntity.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -200,7 +200,7 @@ export const ContainerStixCoreObjectsSuggestedMappingLineDummy = (props: Contain
       divider={true}
       secondaryAction={
         <IconButton disabled={true} aria-haspopup="true" size="large" classes={classes.itemIconDisabled}>
-          <MoreVert/>
+          <MoreVert />
         </IconButton>
       }
     >

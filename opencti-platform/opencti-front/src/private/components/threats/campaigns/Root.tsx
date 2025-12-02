@@ -222,7 +222,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={campaign.id}/>
+                  <AIInsights id={campaign.id} />
                   <StixCoreObjectSecurityCoverage id={campaign.id} coverage={campaign.securityCoverage} />
                 </div>
               )}
@@ -231,7 +231,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               <Route
                 path="/"
                 element={
-                  <Campaign campaignData={campaign}/>
+                  <Campaign campaignData={campaign} />
                   }
               />
               <Route

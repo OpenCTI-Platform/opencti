@@ -98,7 +98,7 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
       }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <LayersClearOutlined/>
+        <LayersClearOutlined />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -173,7 +173,7 @@ export const RetentionLineDummy = ({ dataColumns }: { dataColumns: DataColumns }
       divider={true}
       secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVert/>
+          <MoreVert />
         </Box>
       }
     >

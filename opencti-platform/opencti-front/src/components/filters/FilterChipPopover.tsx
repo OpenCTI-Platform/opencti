@@ -369,7 +369,7 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
           filterValues={computedValues}
           helpers={helpers}
           label={filterLabel}
-          type={'number'}
+          type="number"
         />
       );
     }

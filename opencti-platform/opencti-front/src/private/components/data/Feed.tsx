@@ -127,7 +127,7 @@ const Feed = () => {
       }}
       >
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('CSV feeds'), current: true }]} />
-        <SharingMenu/>
+        <SharingMenu />
         {feedState.view === 'lines' ? renderLines(paginationOptions) : ''}
       </Box>
     </div>

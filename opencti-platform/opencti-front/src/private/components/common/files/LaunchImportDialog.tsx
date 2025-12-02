@@ -231,7 +231,7 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
                   ))}
                 </Field>
               ) : (
-                <ManageImportConnectorMessage name={selectedConnector?.name}/>
+                <ManageImportConnectorMessage name={selectedConnector?.name} />
               )}
               {selectedConnector?.name === 'ImportCsv' && hasUserChoiceCsvMapper && (
                 <ObjectMarkingField

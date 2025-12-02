@@ -170,7 +170,7 @@ const StreamCollectionEditionContainer: FunctionComponent<{ streamCollection: St
             />
             {!initialValues.stream_public && (
               <ObjectMembersField
-                label={'Accessible for'}
+                label="Accessible for"
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}

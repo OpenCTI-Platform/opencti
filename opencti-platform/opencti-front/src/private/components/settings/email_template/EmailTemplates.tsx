@@ -150,7 +150,7 @@ const EmailTemplates = () => {
 
   return (
     <div data-testid="email-templates-page">
-      <AccessesMenu/>
+      <AccessesMenu />
       <PageContainer withRightMenu>
         <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Email templates'), current: true }]} />
         {!isEnterpriseEdition ? (
@@ -172,7 +172,7 @@ const EmailTemplates = () => {
               disableLineSelection
               preloadedPaginationProps={preloadedPaginationProps}
               createButton={<EmailTemplateCreation paginationOptions={queryPaginationOptions} />}
-              icon={() => <ItemIcon color={'#afb505'} type="EmailTemplate" />}
+              icon={() => <ItemIcon color="#afb505" type="EmailTemplate" />}
             />
             )}
           </>

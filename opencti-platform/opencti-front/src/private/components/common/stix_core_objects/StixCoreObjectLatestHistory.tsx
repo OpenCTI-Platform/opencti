@@ -60,7 +60,7 @@ const StixCoreObjectLatestHistory = ({ stixCoreObjectId }: StixCoreObjectLatestH
               borderRadius: 4,
             }}
             variant="outlined"
-            className={'paper-for-grid'}
+            className="paper-for-grid"
                     >
             <List>
               {Array.from(Array(5), (e, i) => (

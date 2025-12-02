@@ -86,7 +86,7 @@ const BrowseMoreButton = () => {
     <GradientButton
       size="small"
       sx={{ marginLeft: 1 }}
-      href={'https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76'}
+      href="https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76"
       target="_blank"
       title={t_i18n('Browse more')}
     >

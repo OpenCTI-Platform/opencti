@@ -465,7 +465,7 @@ const DefaultDashboard = ({ timeField }) => {
           <StixCoreObjectsList
             title={t_i18n('Latest reports')}
             height={410}
-            widgetId={'default_latest_reports_widget'}
+            widgetId="default_latest_reports_widget"
             dataSelection={[{
               filters: {
                 mode: 'and',

@@ -183,7 +183,7 @@ const PlaybookPopover = ({
       >
         {paginationOptions
           ? <MoreVert />
-          : <MoreVert fontSize="small" color="primary"/>}
+          : <MoreVert fontSize="small" color="primary" />}
       </MoreVertButton>
       <Menu
         anchorEl={anchorEl}

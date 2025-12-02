@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 // TODO Remove this when V6
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
@@ -220,14 +220,14 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={region.id}/>
+                  <AIInsights id={region.id} />
                 </div>
               )}
             </Box>
             <Routes>
               <Route
                 path="/"
-                element={<Region regionData={region}/>}
+                element={<Region regionData={region} />}
               />
               <Route
                 path="/knowledge"

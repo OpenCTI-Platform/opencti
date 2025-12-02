@@ -114,14 +114,14 @@ const ConfidenceOverrideField: FunctionComponent<UserConfidenceOverridesFieldCom
         variant="outlined"
         style={{ width: '100%', marginBottom: '20px' }}
       >
-        <AccordionSummary expandIcon={<ExpandMoreOutlined/>} onClick={toggle}>
+        <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={toggle}>
           <div style={{ display: 'inline-flex', alignItems: 'center' }}>
             <Typography>
               {overrideLabel(index, value)}
             </Typography>
             <Tooltip title={t_i18n('Delete')}>
               <IconButton color="error" onClick={handleDeleteOverride}>
-                <DeleteOutlined fontSize="small"/>
+                <DeleteOutlined fontSize="small" />
               </IconButton>
             </Tooltip>
           </div>

@@ -44,7 +44,7 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
           <Chip
             key={participant.id}
             variant="outlined"
-            icon={<PersonOutline color={'primary'} />}
+            icon={<PersonOutline color="primary" />}
             label={truncate(participant.name, 25).toUpperCase()}
             style={{
               color: theme.palette.primary.main,

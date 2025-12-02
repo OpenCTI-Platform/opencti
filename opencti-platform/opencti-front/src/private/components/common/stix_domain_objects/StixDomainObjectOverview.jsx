@@ -152,7 +152,7 @@ const StixDomainObjectOverview = ({
       >
         <Grid container={false} spacing={3}>
           {isRequestAccessRFI && (
-            <ProcessingStatusOverview data={stixDomainObject}/>
+            <ProcessingStatusOverview data={stixDomainObject} />
           )}
         </Grid>
         <Grid container={true} spacing={3}>

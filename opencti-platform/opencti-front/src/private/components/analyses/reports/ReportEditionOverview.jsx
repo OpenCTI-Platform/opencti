@@ -241,7 +241,7 @@ const ReportEditionOverviewComponent = (props) => {
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="published"/>
+                <SubscriptionFocus context={context} fieldName="published" />
               ),
             }}
           />

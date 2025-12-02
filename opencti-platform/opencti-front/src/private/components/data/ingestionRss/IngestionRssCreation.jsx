@@ -154,7 +154,7 @@ const IngestionRssCreation = (props) => {
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <IngestionSchedulingField/>
+              <IngestionSchedulingField />
               <Field
                 component={TextField}
                 variant="standard"

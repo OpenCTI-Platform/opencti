@@ -76,7 +76,7 @@ AddAttackPatternsLinesContainerProps
   return (
     <StixCoreRelationshipCreationFromEntityList
       entity={dataComponent}
-      relationshipType={'detects'}
+      relationshipType="detects"
       availableDatas={data?.attackPatterns}
       existingDatas={attackPatterns}
       updaterOptions={{ path: 'attackPatterns' }}

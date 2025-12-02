@@ -486,7 +486,7 @@ const StixCyberObservableEditionOverviewComponent = ({
                             attribute.value,
                           )}
                           name={attribute.value}
-                          variant={'edit'}
+                          variant="edit"
                           onChange={handleSubmitField}
                           containerStyle={fieldSpacingContainerStyle}
                           multiple={false}

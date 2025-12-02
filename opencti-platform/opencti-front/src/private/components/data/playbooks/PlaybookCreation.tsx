@@ -118,7 +118,7 @@ const PlaybookCreation = () => {
         data-testid="ImporPlaybook"
         title={t_i18n('Import playbook')}
       >
-        <FileUploadOutlined fontSize="small" color={'primary'} />
+        <FileUploadOutlined fontSize="small" color="primary" />
       </ToggleButton>
       <CreateEntityControlledDial
         entityType="Playbook"

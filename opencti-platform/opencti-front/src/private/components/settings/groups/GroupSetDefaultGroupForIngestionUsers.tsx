@@ -104,7 +104,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
       padding: 20,
       borderRadius: 4,
     }}
-      className={'paper-for-grid'}
+      className="paper-for-grid"
       variant="outlined"
     >
       <Alert severity="info" variant="outlined">

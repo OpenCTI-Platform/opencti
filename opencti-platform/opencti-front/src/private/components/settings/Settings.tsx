@@ -344,7 +344,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                               style={{ borderColor: theme.palette.dangerZone.main }}
                             >
                               {t_i18n(getEEWarningMessage(isLtsPlatform))}
-                              <br/><br/>
+                              <br /><br />
                               <strong>{t_i18n('However, your existing data will remain intact and will not be lost.')}</strong>
                             </Alert>
                           </DialogContentText>
@@ -424,7 +424,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             </div>
             )}
           </Box>
-          <div className="clearfix"/>
+          <div className="clearfix" />
           <Paper
             className="paper-for-grid"
             style={{
@@ -450,7 +450,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
               </ListItem>
               )}
               <ListItem divider={true}>
-                <ListItemText primary={t_i18n('Start date')}/>
+                <ListItemText primary={t_i18n('Start date')} />
                 <ItemBoolean
                   variant="xlarge"
                   label={fldt(settings.platform_enterprise_edition.license_start_date)}
@@ -458,7 +458,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 />
               </ListItem>
               <ListItem divider={true}>
-                <ListItemText primary={t_i18n('Expiration date')}/>
+                <ListItemText primary={t_i18n('Expiration date')} />
                 <ItemBoolean
                   variant="xlarge"
                   label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
@@ -466,7 +466,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 />
               </ListItem>
               <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
-                <ListItemText primary={t_i18n('License type')}/>
+                <ListItemText primary={t_i18n('License type')} />
                 <ItemBoolean
                   variant="large"
                   neutralLabel={settings.platform_enterprise_edition.license_type}
@@ -619,7 +619,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
               )}
             </div>
           </Box>
-          <div className="clearfix"/>
+          <div className="clearfix" />
           <Paper
             className="paper-for-grid"
             style={{
@@ -639,11 +639,11 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 <Form>
                   <List style={{ marginTop: -20 }}>
                     <ListItem divider={true} style={{ paddingRight: 24 }}>
-                      <ListItemText primary={t_i18n('Platform identifier')}/>
-                      <ItemCopy content={settings.id} variant="inLine"/>
+                      <ListItemText primary={t_i18n('Platform identifier')} />
+                      <ItemCopy content={settings.id} variant="inLine" />
                     </ListItem>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Version')}/>
+                      <ListItemText primary={t_i18n('Version')} />
                       <ItemBoolean
                         variant="large"
                         neutralLabel={version}
@@ -651,7 +651,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       />
                     </ListItem>
                     <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Edition')}/>
+                      <ListItemText primary={t_i18n('Edition')} />
                       <ItemBoolean
                         variant="large"
                         neutralLabel={
@@ -705,7 +705,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                         primary={
                           <>
                             {t_i18n('Remove Filigran logos')}
-                            <EEChip/>
+                            <EEChip />
                           </>
                         }
                       />
@@ -732,7 +732,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         </Grid>
 
         <Grid size={8}>
-          <SettingsMessages settings={settings}/>
+          <SettingsMessages settings={settings} />
         </Grid>
         <Grid size={4}>
           <SettingsAnalytics
@@ -761,7 +761,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
               borderRadius: 4,
               height: '100%',
             }}
-            className={'paper-for-grid'}
+            className="paper-for-grid"
             variant="outlined"
           >
             <List style={{ marginTop: -20 }}>

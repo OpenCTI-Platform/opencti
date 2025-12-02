@@ -162,7 +162,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
       />
     );
   }
-  return (<EmptyFilter setHasRenderedRef={setHasRenderedRef}/>);
+  return (<EmptyFilter setHasRenderedRef={setHasRenderedRef} />);
 };
 
 export default FilterIconButton;

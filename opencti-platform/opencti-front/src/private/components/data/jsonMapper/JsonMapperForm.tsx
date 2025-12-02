@@ -184,7 +184,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   onClick={() => onAddEntityRepresentation(setFieldValue, values)}
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </div>
               <FieldArray
@@ -222,7 +222,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
                   onClick={() => onAddRelationshipRepresentation(setFieldValue, values)}
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </div>
               <FieldArray

@@ -307,7 +307,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             fullWidth={true}
             style={fieldSpacingContainerStyle}
           />
-          <IngestionSchedulingField/>
+          <IngestionSchedulingField />
           <Field
             component={TextField}
             variant="standard"
@@ -407,16 +407,16 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
           />
           {
               queryRef && (
-              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+              <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                 <Box sx={{ width: '100%', marginTop: 5 }}>
                   <Alert
                     severity="info"
                     variant="outlined"
                     style={{ padding: '0px 10px 0px 10px' }}
                   >
-                    {t_i18n('Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.')}<br/>
-                    <br/>
-                    {t_i18n('If the JSON mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br/>
+                    {t_i18n('Depending on the selected JSON mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
+                    <br />
+                    {t_i18n('If the JSON mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
                   </Alert>
                 </Box>
                 <JsonMapperField
@@ -511,7 +511,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               variant="outlined"
               style={{ padding: '0px 10px 0px 10px' }}
             >
-              {t_i18n('Please, verify the validity of the selected JSON mapper for the given URL.')}<br/>
+              {t_i18n('Please, verify the validity of the selected JSON mapper for the given URL.')}<br />
               {t_i18n('Only successful tests allow the ingestion creation.')}
             </Alert>
           </Box>

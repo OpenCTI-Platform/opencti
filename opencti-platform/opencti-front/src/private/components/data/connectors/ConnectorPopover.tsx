@@ -154,7 +154,7 @@ const ConnectorPopover = ({ connector, onRefreshData }: ConnectorPopoverProps) =
         aria-haspopup="true"
         value="popover"
         color="primary"
-        size={'small'}
+        size="small"
       >
         <MoreVert fontSize="small" color="primary" />
       </ToggleButton>

@@ -157,7 +157,7 @@ const StatusTemplates = () => {
             contextual={false}
             creationCallback={() => { }}
             handleClose={() => { }}
-            inputValueContextual={''}
+            inputValueContextual=""
             open={false}
                         />}
         />

@@ -149,7 +149,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
       )}
       <div className="clearfix" />
       {variant !== 'noPaper' ? (
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           {renderContent()}
         </Paper>
       ) : (

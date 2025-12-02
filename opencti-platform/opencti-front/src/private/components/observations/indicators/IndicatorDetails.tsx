@@ -75,7 +75,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
       </Typography>
       <Paper
         classes={{ root: classes.paper }}
-        className={'paper-for-grid'}
+        className="paper-for-grid"
         variant="outlined"
       >
         <Typography variant="h3" gutterBottom={true}>

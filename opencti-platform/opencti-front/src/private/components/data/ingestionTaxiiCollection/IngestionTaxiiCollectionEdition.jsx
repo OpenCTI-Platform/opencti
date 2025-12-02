@@ -119,7 +119,7 @@ const IngestionTaxiiCollectionEditionContainer = ({
               showConfidence
             />
             <ObjectMembersField
-              label={'Accessible for'}
+              label="Accessible for"
               style={fieldSpacingContainerStyle}
               onChange={handleSubmitFieldOptions}
               multiple={true}

@@ -144,7 +144,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
             <ListItemIcon>
               <ItemIcon type="group" />
             </ListItemIcon>
-            <ListItemText primary={member?.name}/>
+            <ListItemText primary={member?.name} />
           </ListItemButton>
         );
       })}

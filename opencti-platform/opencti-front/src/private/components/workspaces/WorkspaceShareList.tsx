@@ -163,7 +163,7 @@ const WorkspaceShareList = ({ queryRef, onDelete, onToggleEnabled }: WorkspaceSh
                       </div>
                     )}
                   >
-                    <ReportGmailerrorred fontSize={'small'} color={'error'} />
+                    <ReportGmailerrorred fontSize="small" color="error" />
                   </Tooltip>
                 )}
               </div>

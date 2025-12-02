@@ -174,13 +174,13 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
             }
           >
             <ListItemButton
-              aria-label={'stix cyber observable indicators item'}
+              aria-label="stix cyber observable indicators item"
               style={{ paddingLeft: 10, height: 50 }}
               component={Link}
               to={`/dashboard/observations/indicators/${indicatorEdge.node.id}`}
             >
               <ListItemIcon style={{ color: theme.palette.primary.main }}>
-                <ItemIcon type={indicatorEdge.node.entity_type}/>
+                <ItemIcon type={indicatorEdge.node.entity_type} />
               </ListItemIcon>
               <ListItemText
                 primary={

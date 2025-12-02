@@ -209,17 +209,17 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   >
                     <FormControlLabel
                       value=","
-                      control={<Radio/>}
+                      control={<Radio />}
                       label={t_i18n('Comma')}
                     />
                     <FormControlLabel
                       value=";"
-                      control={<Radio/>}
+                      control={<Radio />}
                       label={t_i18n('Semicolon')}
                     />
                     <FormControlLabel
-                      value={'|'}
-                      control={<Radio/>}
+                      value="|"
+                      control={<Radio />}
                       label={t_i18n('Pipe')}
                     />
                   </RadioGroup>
@@ -258,7 +258,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   }
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </div>
               <FieldArray
@@ -296,7 +296,7 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
                   }
                   size="large"
                 >
-                  <Add fontSize="small"/>
+                  <Add fontSize="small" />
                 </IconButton>
               </div>
               <FieldArray

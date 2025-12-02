@@ -305,7 +305,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
               style={{ width: dataColumns.value.width }}
             >
               {getMainRepresentative(data)}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}

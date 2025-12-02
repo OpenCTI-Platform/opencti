@@ -63,7 +63,7 @@ const SecurityPlatformKnowledgeComponent = ({
               relationshipTypes={allRelationshipsTypes}
               entityLink={link}
               allDirections
-              currentView={''}
+              currentView=""
               enableContextualView={false}
               isRelationReversed={true}
             />
@@ -78,7 +78,7 @@ const SecurityPlatformKnowledgeComponent = ({
               relationshipTypes={['related-to']}
               entityLink={link}
               allDirections
-              currentView={''}
+              currentView=""
               enableContextualView={false}
               isRelationReversed={true}
             />

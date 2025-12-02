@@ -74,9 +74,9 @@ const RootDashboard = () => {
                 </Routes>
               );
             }
-            return <ErrorNotFound/>;
+            return <ErrorNotFound />;
           }
-          return <Loader/>;
+          return <Loader />;
         }}
       />
     </div>

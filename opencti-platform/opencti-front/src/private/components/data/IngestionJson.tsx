@@ -152,7 +152,7 @@ const IngestionJson = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-        <IngestionMenu/>
+        <IngestionMenu />
       </div>
     );
   }
@@ -160,7 +160,7 @@ const IngestionJson = () => {
   return (
     <div className={classes.container} data-testid="json-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('JSON Feeds'), current: true }]} />
-      <IngestionMenu/>
+      <IngestionMenu />
       <>{renderLines()}</>
     </div>
   );

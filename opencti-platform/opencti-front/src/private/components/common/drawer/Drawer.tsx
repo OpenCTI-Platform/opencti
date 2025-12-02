@@ -138,7 +138,7 @@ const Drawer = forwardRef(({
       {variant && (
         <Fab
           onClick={() => setOpen(true)}
-          color={'primary'}
+          color="primary"
           aria-label={update ? 'Edit' : 'Add'}
           disabled={disabled}
           className={classNames({

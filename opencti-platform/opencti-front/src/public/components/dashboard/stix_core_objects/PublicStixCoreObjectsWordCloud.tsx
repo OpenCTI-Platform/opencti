@@ -79,7 +79,7 @@ const PublicStixCoreObjectsWordCloudComponent = ({
     publicStixCoreObjectsDistribution
     && publicStixCoreObjectsDistribution.length > 0
   ) {
-    return <WidgetWordCloud data={[...publicStixCoreObjectsDistribution]} groupBy={dataSelection[0].attribute ?? 'entity_type'}/>;
+    return <WidgetWordCloud data={[...publicStixCoreObjectsDistribution]} groupBy={dataSelection[0].attribute ?? 'entity_type'} />;
   }
   return <WidgetNoData />;
 };

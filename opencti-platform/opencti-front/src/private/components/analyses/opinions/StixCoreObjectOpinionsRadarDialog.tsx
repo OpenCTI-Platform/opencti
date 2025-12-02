@@ -298,7 +298,7 @@ const StixCoreObjectOpinionsDialog: FunctionComponent<Omit<StixCoreObjectOpinion
   );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <StixCoreObjectOpinionsDialogComponent {...props} queryRef={queryRef} fetchQuery={fetchQuery}/>
+      <StixCoreObjectOpinionsDialogComponent {...props} queryRef={queryRef} fetchQuery={fetchQuery} />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

@@ -209,7 +209,7 @@ const Root = () => {
               needs={[CSVMAPPERS]}
               placeholder={<Navigate to="/dashboard" />}
             >
-              <CsvMappers/>
+              <CsvMappers />
             </Security>
           }
         />
@@ -220,7 +220,7 @@ const Root = () => {
               needs={[CSVMAPPERS]}
               placeholder={<Navigate to="/dashboard" />}
             >
-              <JsonMappers/>
+              <JsonMappers />
             </Security>
             }
         />

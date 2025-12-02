@@ -370,7 +370,7 @@ export const EntityStixSightingRelationshipLineDummy = ({
       divider={true}
       secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
       }
     >

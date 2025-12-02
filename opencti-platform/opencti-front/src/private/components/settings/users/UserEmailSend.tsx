@@ -76,7 +76,7 @@ const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProp
       value="sendEmail"
       size="small"
     >
-      <SendOutline fontSize="small" color="primary"/>
+      <SendOutline fontSize="small" color="primary" />
     </ToggleButton>
   );
 
@@ -86,7 +86,7 @@ const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProp
       value="sendEmail"
       size="small"
     >
-      <Send fontSize="small" color="primary"/>
+      <Send fontSize="small" color="primary" />
     </IconButton>
   );
 
