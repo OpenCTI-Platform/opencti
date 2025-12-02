@@ -4,6 +4,10 @@ import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor } from '../database/stream/stream-handler';
+import {
+  buildCreateEvent, createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, redisGetManagerEventState,
+  redisSetManagerEventState, type StreamProcessor
+} from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { createEntity, patchAttribute, stixLoadById, storeLoadByIdWithRefs } from '../database/middleware';
@@ -37,11 +41,13 @@ const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 const SCHEDULE_TIME = 10000;
+const RULE_MANAGER_NAME = 'rule_manager';
 
 export const getManagerInfo = async (context: AuthContext, user: AuthUser): Promise<RuleManager> => {
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');
   const ruleStatus = await internalLoadById(context, user, RULE_ENGINE_ID) as unknown as BasicManagerEntity;
-  return { activated: isRuleEngineActivated, ...ruleStatus };
+  const lastEventState = await redisGetManagerEventState(RULE_MANAGER_NAME);
+  return { activated: isRuleEngineActivated, ...ruleStatus, lastEventId: lastEventState ?? ruleStatus.lastEventId };
 };
 
 export const buildInternalEvent = (type: StreamDataEventType, stix: StixCoreObject): StreamDataEvent => {
@@ -145,7 +151,7 @@ const handleRuleError = async (event: BaseEvent, error: unknown) => {
 };
 
 const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Array<RuleRuntime>) => {
-  const context = executionContext('rule_cleaner', RULE_MANAGER_USER);
+  const context = executionContext(RULE_MANAGER_NAME, RULE_MANAGER_USER);
   const filters = {
     mode: FilterMode.And,
     filters: [{ key: [`${RULE_PREFIX}*.dependencies`], values: deletionIds, operator: FilterOperator.Wildcard }],
@@ -251,7 +257,7 @@ export const rulesCleanHandler = async (
 };
 
 const ruleStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => {
-  const context = executionContext('rule_manager', RULE_MANAGER_USER);
+  const context = executionContext(RULE_MANAGER_NAME, RULE_MANAGER_USER);
   // Create list of events to process
   // Events must be in a compatible version and not inferences events
   // Inferences directly handle recursively by the manager
@@ -266,11 +272,11 @@ const ruleStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastE
   }
   // Save the last processed event
   logApp.debug(`[OPENCTI] Rule manager saving state to ${lastEventId}`);
-  await patchAttribute(context, RULE_MANAGER_USER, RULE_ENGINE_ID, ENTITY_TYPE_RULE_MANAGER, { lastEventId });
+  await redisSetManagerEventState(RULE_MANAGER_NAME, lastEventId);
 };
 
 const getInitRuleManager = async (): Promise<BasicStoreEntity> => {
-  const context = executionContext('rule_manager', RULE_MANAGER_USER);
+  const context = executionContext(RULE_MANAGER_NAME, RULE_MANAGER_USER);
   const ruleSettingsInput = { internal_id: RULE_ENGINE_ID, errors: [] };
   const created = await createEntity(context, RULE_MANAGER_USER, ruleSettingsInput, ENTITY_TYPE_RULE_MANAGER);
   return created as BasicStoreEntity;
@@ -295,11 +301,13 @@ const initRuleManager = () => {
       running = true;
       const ruleManager = await getInitRuleManager();
       const { lastEventId } = ruleManager;
-      logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
+      const lastEventState = await redisGetManagerEventState(RULE_MANAGER_NAME);
+      const lastEventDateTouse = lastEventState ?? lastEventId;
+      logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventDateTouse ?? 'start'}`);
       // Start the stream listening
       const opts = { withInternal: true, streamName: LIVE_STREAM_NAME };
       streamProcessor = createStreamProcessor('Rule manager', ruleStreamHandler, opts);
-      await streamProcessor.start(lastEventId);
+      await streamProcessor.start(lastEventDateTouse);
       while (!shutdown && streamProcessor.running()) {
         lock.signal.throwIfAborted();
         await wait(WAIT_TIME_ACTION);
