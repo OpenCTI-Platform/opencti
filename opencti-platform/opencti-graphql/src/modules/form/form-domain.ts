@@ -406,20 +406,38 @@ export const formSubmit = async (
   } catch (error) {
     throw FunctionalError('Cannot read values', { error });
   }
+  const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
 
-  if (isStixCyberObservable(form.main_entity_type)) {
-    const observableSyntaxResult = checkObservableSyntax(form.main_entity_type, values);
-    if (observableSyntaxResult !== true) {
-      throw FunctionalError('Observable is not correctly formatted',
-        {
-          type: form.main_entity_type,
-          input: values,
-          doc_code: 'INCORRECT_OBSERVABLE_FORMAT'
-        });
-    }
+  // check if any addionalEntities are present in the form
+  const additionalEntities = schema.additionalEntities ?? [];
+
+  // we need to check here the syntax of observables to be sure the format is respected
+  const observableInputs = [];
+  observableInputs.push({
+    type: form.main_entity_type,
+    value: values.value,
+  });
+  for (const additionalEntity of additionalEntities) {
+    observableInputs.push({
+      type: additionalEntity.entityType,
+      value: values[`additional_${additionalEntity.id}`].value, // stock this way in DB
+    });
   }
 
-  const schema: FormSchemaDefinition = JSON.parse(form.form_schema);
+  observableInputs.forEach((observable) => {
+    if (!isStixCyberObservable(observable.type)) {
+      return;
+    }
+    const observableSyntaxResult = checkObservableSyntax(observable.type, observable);
+    if (observableSyntaxResult !== true) {
+      throw FunctionalError('Observable is not correctly formatted', {
+        type: observable.type,
+        input: observable.value,
+        doc_code: 'INCORRECT_OBSERVABLE_FORMAT',
+      });
+    }
+  });
+
   const errors: string[] = [];
 
   // Enforce draft settings from schema
