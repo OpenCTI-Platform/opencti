@@ -137,7 +137,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
 
   const isImportActive = () => connectors && connectors.filter((x) => x.data.active).length > 0;
   const fileDeleteDraftDisabled = !!draftContext && !file?.draftVersion;
-  let deleteFileColor:OverridableStringUnion<'inherit' | 'disabled' | 'primary'> = 'primary';
+  let deleteFileColor: OverridableStringUnion<'inherit' | 'disabled' | 'primary'> = 'primary';
   if (nested) {
     deleteFileColor = 'inherit';
   } else if (fileDeleteDraftDisabled) {

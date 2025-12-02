@@ -90,7 +90,7 @@ DraftWorksComponentProps
             borderColor: status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main,
             backgroundColor: hexToRGB(status === 'progress' || status === 'wait' ? theme.palette.warn.main : theme.palette.success.main),
           }}
-        />),      
+        />),
     },
   };
 

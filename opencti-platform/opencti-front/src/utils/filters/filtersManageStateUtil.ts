@@ -100,7 +100,7 @@ export const handleRemoveFilterUtil = ({ filters, id }: FiltersLocalStorageUtilP
   };
 };
 
-export const handleChangeRepresentationFilterUtil = ({ filters, id, oldValue, newValue }:FiltersLocalStorageUtilProps<{
+export const handleChangeRepresentationFilterUtil = ({ filters, id, oldValue, newValue }: FiltersLocalStorageUtilProps<{
   id: string,
   oldValue: FilterValue,
   newValue: FilterValue,

@@ -38,7 +38,7 @@ interface ContentBlocProps {
   actions?: ReactNode
 }
 
-const ContentBloc = ({ title, actions, children }:ContentBlocProps) => {
+const ContentBloc = ({ title, actions, children }: ContentBlocProps) => {
   return (
     <div style={{ marginBottom: '24px' }}>
       <div style={{ padding: '0 16px', display: 'flex', alignItems: 'center' }}>

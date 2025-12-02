@@ -336,8 +336,8 @@ const useSearchEntities = ({
 
   const searchEntities = (
     filterKey: string,
-    cacheEntities: Record< string, { label: string; value: string | null; type: string }[] >,
-    setCacheEntities: Dispatch< Record<string, { label: string; value: string | null; type: string }[]> >,
+    cacheEntities: Record<string, { label: string; value: string | null; type: string }[]>,
+    setCacheEntities: Dispatch<Record<string, { label: string; value: string | null; type: string }[]>>,
     event: BaseSyntheticEvent,
     isSubKey?: boolean,
   ) => {

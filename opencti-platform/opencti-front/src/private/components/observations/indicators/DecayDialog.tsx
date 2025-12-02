@@ -26,7 +26,7 @@ export interface LabelledDecayHistory {
   style: SxProps<Theme>
 }
 
-const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indicator }) => {
+const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indicator }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, mhd, rd } = useFormatter();
 

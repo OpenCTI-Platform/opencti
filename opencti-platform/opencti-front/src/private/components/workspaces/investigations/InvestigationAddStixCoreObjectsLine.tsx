@@ -50,7 +50,7 @@ interface InvestigationAddStixCoreObjectsLineComponentProps {
     event: React.SyntheticEvent
   ) => void,
   addedElements: {
-    [key:string]: InvestigationAddStixCoreObjectsLine_node$data
+    [key: string]: InvestigationAddStixCoreObjectsLine_node$data
   },
 }
 

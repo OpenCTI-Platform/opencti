@@ -285,7 +285,7 @@ interface DraftSightingsProps {
   isReadOnly: boolean;
 }
 
-const DraftSightings : FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) => {
+const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) => {
   const { draftId } = useParams() as { draftId: string };
   const { t_i18n } = useFormatter();
   const computeLink = useComputeLink();

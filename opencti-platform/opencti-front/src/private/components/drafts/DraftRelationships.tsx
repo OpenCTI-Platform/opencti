@@ -194,7 +194,7 @@ interface DraftRelationshipsProps {
   isReadOnly: boolean;
 }
 
-const DraftRelationships : FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {
+const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isReadOnly }) => {
   const computeLink = useComputeLink();
   const { draftId } = useParams() as { draftId: string };
   const {

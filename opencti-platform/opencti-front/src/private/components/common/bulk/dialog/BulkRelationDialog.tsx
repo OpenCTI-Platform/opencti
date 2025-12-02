@@ -161,7 +161,7 @@ const EntityTypeWithoutBulkEntityCreation = [
   'Position',
 ];
 
-const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
+const BulkRelationDialog: FunctionComponent<BulkRelationDialogProps> = ({
   stixDomainObjectId,
   stixDomainObjectType,
   stixDomainObjectName,

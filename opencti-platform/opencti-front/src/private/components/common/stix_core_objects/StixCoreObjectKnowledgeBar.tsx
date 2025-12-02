@@ -133,7 +133,7 @@ const StixCoreObjectKnowledgeBar = ({
     stixCoreObjectsDistribution,
   } = useFragment(stixCoreObjectKnowledgeBarFragment, data);
 
-  const indexEntities = (distribution: ObjectsDistribution) : Record<string, number> => (
+  const indexEntities = (distribution: ObjectsDistribution): Record<string, number> => (
     distribution?.reduce((acc, item) => ({
       ...acc,
       ...(item?.label ? { [item.label]: item.value || 0 } : {}),

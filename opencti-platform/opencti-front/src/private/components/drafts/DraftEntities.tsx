@@ -123,7 +123,7 @@ interface DraftEntitiesProps {
   isReadOnly: boolean;
 }
 
-const DraftEntities : FunctionComponent<DraftEntitiesProps> = ({
+const DraftEntities: FunctionComponent<DraftEntitiesProps> = ({
   entitiesType = 'Stix-Core-Object',
   excludedEntitiesType,
   isReadOnly,
