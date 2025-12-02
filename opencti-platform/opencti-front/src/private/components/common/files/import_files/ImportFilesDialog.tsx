@@ -256,31 +256,31 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
   ) => {
     const variables = files.map(({ file, connectors, configuration }) => (selectedEntityId
       ? (
-        {
-          id: selectedEntityId,
-          file,
-          connectors: importMode === 'auto' ? undefined : connectors?.map(({ id: connectorId }) => ({
-            connectorId,
-            configuration,
-          })),
-          fileMarkings: fileMarkingIds,
-          validationMode,
-          draftId: newDraftId,
-          noTriggerImport: importMode === 'manual',
-        } as ImportFilesDialogEntityMutation$variables
-      ) : (
-        {
-          file,
-          connectors: importMode === 'auto' ? undefined : connectors?.map(({ id: connectorId }) => ({
-            connectorId,
-            configuration,
-          })),
-          fileMarkings: fileMarkingIds,
-          validationMode,
-          draftId: newDraftId,
-          noTriggerImport: importMode === 'manual',
-        } as ImportFilesDialogGlobalMutation$variables
-      )
+          {
+            id: selectedEntityId,
+            file,
+            connectors: importMode === 'auto' ? undefined : connectors?.map(({ id: connectorId }) => ({
+              connectorId,
+              configuration,
+            })),
+            fileMarkings: fileMarkingIds,
+            validationMode,
+            draftId: newDraftId,
+            noTriggerImport: importMode === 'manual',
+          } as ImportFilesDialogEntityMutation$variables
+        ) : (
+          {
+            file,
+            connectors: importMode === 'auto' ? undefined : connectors?.map(({ id: connectorId }) => ({
+              connectorId,
+              configuration,
+            })),
+            fileMarkings: fileMarkingIds,
+            validationMode,
+            draftId: newDraftId,
+            noTriggerImport: importMode === 'manual',
+          } as ImportFilesDialogGlobalMutation$variables
+        )
     ));
 
     setUploadedFiles(files.map(({ file: { name } }) => ({ name })));
@@ -379,15 +379,15 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       ) : (
         importMode !== 'form' && (
         // Import button for file import mode
-        <Button
-          onClick={() => {
-            optionsContext.submitForm();
-          }}
-          color="secondary"
-          disabled={!isValidImport}
-        >
-          {t_i18n('Import')}
-        </Button>
+          <Button
+            onClick={() => {
+              optionsContext.submitForm();
+            }}
+            color="secondary"
+            disabled={!isValidImport}
+          >
+            {t_i18n('Import')}
+          </Button>
         )
       );
     }
@@ -437,19 +437,18 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           >
             {t_i18n('Navigate to entity')}
           </Button>
+        ) : (
+          <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+            <Button
+              color="secondary"
+              onClick={() => handleClose()}
+              component={Link}
+              to="/dashboard/data/import/file"
+            >
+              {t_i18n('Navigate to import')}
+            </Button>
+          </Security>
         )
-          : (
-            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-              <Button
-                color="secondary"
-                onClick={() => handleClose()}
-                component={Link}
-                to="/dashboard/data/import/file"
-              >
-                {t_i18n('Navigate to import')}
-              </Button>
-            </Security>
-          )
       );
     }
 

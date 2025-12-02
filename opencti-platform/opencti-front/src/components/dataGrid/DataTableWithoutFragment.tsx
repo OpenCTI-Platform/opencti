@@ -23,9 +23,9 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'onLineClick'
   | 'isLocalStorageEnabled'
   | 'variant'> & {
-  data: unknown
-  globalCount: number
-};
+    data: unknown
+    globalCount: number
+  };
 
 interface DataTableWithoutFragmentInternalToolBarProps {
   taskScope: string,

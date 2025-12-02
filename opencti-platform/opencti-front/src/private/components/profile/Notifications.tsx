@@ -248,23 +248,23 @@ const Notifications: FunctionComponent = () => {
           <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
             <Chip
               style={{ fontSize: 12,
-              height: 20,
-              float: 'left',
-              width: 150,
-              textTransform: 'uppercase',
-              borderRadius: 4,
-              backgroundColor: hexToRGB(colors[firstOperation] ?? indigo[500], 0.08),
-              color: colors[firstOperation] ?? indigo[500],
-              border: `1px solid ${colors[firstOperation] ?? indigo[500]}`,
-            }}
+                height: 20,
+                float: 'left',
+                width: 150,
+                textTransform: 'uppercase',
+                borderRadius: 4,
+                backgroundColor: hexToRGB(colors[firstOperation] ?? indigo[500], 0.08),
+                color: colors[firstOperation] ?? indigo[500],
+                border: `1px solid ${colors[firstOperation] ?? indigo[500]}`,
+              }}
               label={
-              events.length > 1
-                ? t_i18n('Multiple')
-                : (eventTypes[firstOperation] ?? firstOperation)
-            }
+                events.length > 1
+                  ? t_i18n('Multiple')
+                  : (eventTypes[firstOperation] ?? firstOperation)
+              }
             />
           </div>
-);
+        );
       },
     },
     message: {
@@ -289,7 +289,7 @@ const Notifications: FunctionComponent = () => {
               </Tooltip>
             )}
           </div>
-);
+        );
       },
     },
     created: {
@@ -412,29 +412,29 @@ const Notifications: FunctionComponent = () => {
     <div>
       <Breadcrumbs elements={[{ label: t_i18n('Notifications'), current: true }]} />
       {queryRef && (
-      <DataTable
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        preloadedPaginationProps={preloadedPaginationProps}
-        resolvePath={(data: NotificationsLines_data$data) => data.myNotifications?.edges?.map((n) => n?.node)}
-        dataColumns={dataColumns}
-        onLineClick={handleLineClick}
-        icon={(data) => {
-          const operation = getFirstOperation(data);
-          return (
-            <Badge color="warning" variant="dot" invisible={data.is_read}>
-              {iconSelector(operation)}
-            </Badge>
-          );
-        }}
-        taskScope="USER_NOTIFICATION"
-        lineFragment={notificationsLineFragment}
-        contextFilters={contextFilters}
-        exportContext={{ entity_type: 'Notification' }}
-        availableEntityTypes={['Notification']}
-        actions={renderActions}
-        markAsReadEnabled={true}
-      />
+        <DataTable
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          preloadedPaginationProps={preloadedPaginationProps}
+          resolvePath={(data: NotificationsLines_data$data) => data.myNotifications?.edges?.map((n) => n?.node)}
+          dataColumns={dataColumns}
+          onLineClick={handleLineClick}
+          icon={(data) => {
+            const operation = getFirstOperation(data);
+            return (
+              <Badge color="warning" variant="dot" invisible={data.is_read}>
+                {iconSelector(operation)}
+              </Badge>
+            );
+          }}
+          taskScope="USER_NOTIFICATION"
+          lineFragment={notificationsLineFragment}
+          contextFilters={contextFilters}
+          exportContext={{ entity_type: 'Notification' }}
+          availableEntityTypes={['Notification']}
+          actions={renderActions}
+          markAsReadEnabled={true}
+        />
       )}
       {notificationToDelete && (
         <Dialog

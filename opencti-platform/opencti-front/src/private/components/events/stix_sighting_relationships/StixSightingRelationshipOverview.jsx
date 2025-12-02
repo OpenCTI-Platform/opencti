@@ -287,13 +287,13 @@ class StixSightingRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!fromRestricted
                         ? truncate(
-                          from.name
-                          || from.observable_value
-                          || from.attribute_abstract
-                          || from.content
-                          || t(`relationship_${from.entity_type}`),
-                          50,
-                        )
+                            from.name
+                            || from.observable_value
+                            || from.attribute_abstract
+                            || from.content
+                            || t(`relationship_${from.entity_type}`),
+                            50,
+                          )
                         : t('Restricted')}
                     </span>
                   </div>
@@ -350,13 +350,13 @@ class StixSightingRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!toRestricted
                         ? truncate(
-                          to.name
-                          || to.observable_value
-                          || to.attribute_abstract
-                          || to.content
-                          || t(`relationship_${to.entity_type}`),
-                          50,
-                        )
+                            to.name
+                            || to.observable_value
+                            || to.attribute_abstract
+                            || to.content
+                            || t(`relationship_${to.entity_type}`),
+                            50,
+                          )
                         : t('Restricted')}
                     </span>
                   </div>

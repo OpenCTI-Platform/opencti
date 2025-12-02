@@ -30,7 +30,7 @@ const XtmHubDialogConnectivityLostUnauthorizedRegister: React.FC<Props> = ({ ope
         </Button>
       </DialogActions>
     </Dialog>
-);
+  );
 };
 
 export default XtmHubDialogConnectivityLostUnauthorizedRegister;

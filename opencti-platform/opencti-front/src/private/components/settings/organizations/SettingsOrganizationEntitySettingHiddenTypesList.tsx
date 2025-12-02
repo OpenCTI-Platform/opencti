@@ -46,12 +46,12 @@ const SettingsOrganizationEntitySettingHiddenTypesList: FunctionComponent<{ targ
   return (
     <>
       {queryRef && (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <SettingsOrganizationEntitySettingHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
-      </React.Suspense>
-    )}
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <SettingsOrganizationEntitySettingHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
+        </React.Suspense>
+      )}
     </>
-);
+  );
 };
 
 export default SettingsOrganizationEntitySettingHiddenTypesList;

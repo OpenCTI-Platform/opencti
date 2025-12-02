@@ -87,7 +87,7 @@ interface ContextualViewLineProps {
 }
 
 const EntityStixCoreRelationshipsIndicatorsContextualViewLine: FunctionComponent<
-ContextualViewLineProps
+  ContextualViewLineProps
 > = ({
   node,
   dataColumns,

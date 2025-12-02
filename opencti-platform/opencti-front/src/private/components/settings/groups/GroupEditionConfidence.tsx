@@ -39,10 +39,10 @@ interface GroupEditionConfidenceProps {
   group: GroupEditionConfidence_group$data
   context:
     | readonly ({
-    readonly focusOn: string | null | undefined
-    readonly name: string
-  } | null)[]
-  | null | undefined
+      readonly focusOn: string | null | undefined
+      readonly name: string
+    } | null)[]
+    | null | undefined
 }
 
 const groupConfidenceValidation = (t: (value: string) => string) => {

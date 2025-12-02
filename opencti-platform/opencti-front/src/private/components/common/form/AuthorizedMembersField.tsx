@@ -282,13 +282,13 @@ const AuthorizedMembersField = ({
       if (!modifiedAccess) {
         modifiedAccess = id === ALL_MEMBERS_AUTHORIZED_CONFIG.id
           ? {
-            ...allMembersOption,
-            accessRight,
-          }
+              ...allMembersOption,
+              accessRight,
+            }
           : {
-            ...creatorOption,
-            accessRight,
-          };
+              ...creatorOption,
+              accessRight,
+            };
       }
       setFieldValue(name, [
         ...(value ?? []).filter((option) => option.value !== id),
@@ -521,16 +521,16 @@ const AuthorizedMembersField = ({
                   {value.map((authorizedMember, index) => (
                     !isGenericOption(authorizedMember.value)
                     && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID
-                      ) ? (
-                        <AuthorizedMembersFieldListItem
-                          key={index}
-                          authorizedMember={authorizedMember}
-                          name={`${name}[${index}].accessRight`}
-                          accessRights={accessRights}
-                          ownerId={owner?.id}
-                          onRemove={() => arrayHelpers.remove(index)}
-                        />
-                      ) : null))}
+                    ) ? (
+                          <AuthorizedMembersFieldListItem
+                            key={index}
+                            authorizedMember={authorizedMember}
+                            name={`${name}[${index}].accessRight`}
+                            accessRights={accessRights}
+                            ownerId={owner?.id}
+                            onRemove={() => arrayHelpers.remove(index)}
+                          />
+                        ) : null))}
                 </List>
               )}
             </>

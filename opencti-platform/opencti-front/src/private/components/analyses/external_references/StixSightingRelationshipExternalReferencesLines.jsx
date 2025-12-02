@@ -240,20 +240,20 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                 </IconButton>
                               </Tooltip>
                               {!isFileAttached && (
-                              <Security needs={[KNOWLEDGE_KNUPLOAD]}>
-                                <FileUploader
-                                  entityId={externalReference.id}
-                                  onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                }
-                                />
-                              </Security>
+                                <Security needs={[KNOWLEDGE_KNUPLOAD]}>
+                                  <FileUploader
+                                    entityId={externalReference.id}
+                                    onUploadSuccess={() => this.props.relay.refetchConnection(200)
+                                    }
+                                  />
+                                </Security>
                               )}
                               {!isFileAttached && (
-                              <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
-                                <ExternalReferenceEnrichment
-                                  externalReferenceId={externalReference.id}
-                                />
-                              </Security>
+                                <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
+                                  <ExternalReferenceEnrichment
+                                    externalReferenceId={externalReference.id}
+                                  />
+                                </Security>
                               )}
                               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                                 <ExternalReferencePopover
@@ -310,7 +310,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                               <FileUploader
                                 entityId={externalReference.id}
                                 onUploadSuccess={() => this.props.relay.refetchConnection(200)
-                            }
+                                }
                               />
                             </Security>
                             <Security needs={[KNOWLEDGE_KNUPDATE]}>

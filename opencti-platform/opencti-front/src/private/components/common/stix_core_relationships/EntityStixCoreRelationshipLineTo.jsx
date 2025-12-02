@@ -80,9 +80,9 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
         secondaryAction={node.is_inferred ? (
           <Tooltip
             title={
-            t('Inferred knowledge based on the rule ')
-            + R.head(node.x_opencti_inferences).rule.name
-          }
+              t('Inferred knowledge based on the rule ')
+              + R.head(node.x_opencti_inferences).rule.name
+            }
           >
             <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
           </Tooltip>
@@ -105,14 +105,14 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
             onClick={(event) => (event.shiftKey
               ? onToggleShiftEntity(index, node)
               : onToggleEntity(node, event))
-          }
+            }
           >
             <Checkbox
               edge="start"
               checked={
-              (selectAll && !(node.id in (deSelectedElements || {})))
-              || node.id in (selectedElements || {})
-            }
+                (selectAll && !(node.id in (deSelectedElements || {})))
+                || node.id in (selectedElements || {})
+              }
               disableRipple={true}
             />
           </ListItemIcon>

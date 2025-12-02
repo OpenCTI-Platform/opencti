@@ -54,11 +54,11 @@ interface AddDataSourcesLinesContainerProps {
 }
 
 const AddDataSourcesLines: FunctionComponent<
-AddDataSourcesLinesContainerProps
+  AddDataSourcesLinesContainerProps
 > = ({ dataComponentId, queryRef }) => {
   const { data } = usePreloadedPaginationFragment<
-  AddDataSourcesLinesQuery,
-  AddDataSourcesLines_data$key
+    AddDataSourcesLinesQuery,
+    AddDataSourcesLines_data$key
   >({
     linesQuery: addDataSourcesLinesQuery,
     linesFragment: addDataSourcesLinesFragment,

@@ -35,7 +35,7 @@ interface StixSightingRelationshipProps {
 }
 
 const StixSightingRelationship: FunctionComponent<
-StixSightingRelationshipProps
+  StixSightingRelationshipProps
 > = ({ entityId, paddingRight }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -77,10 +77,10 @@ StixSightingRelationshipProps
             return (
               <>
                 <Breadcrumbs elements={[
-                { label: t_i18n('Events') },
-                { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
-                { label: t_i18n('Sighting'), current: true },
-              ]}
+                  { label: t_i18n('Events') },
+                  { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
+                  { label: t_i18n('Sighting'), current: true },
+                ]}
                 />
                 <StixSightingRelationshipHeader
                   headerName={headerName}
@@ -97,7 +97,7 @@ StixSightingRelationshipProps
                   <StixSightingRelationshipEdition
                     open={editOpen}
                     stixSightingRelationshipId={sightingId}
-                  // inferred={result.props.stixSightingRelationship.x_opencti_inferences !== null}
+                    // inferred={result.props.stixSightingRelationship.x_opencti_inferences !== null}
                     inferred={false}
                     handleClose={handleCloseEdit}
                     noStoreUpdate={undefined}
@@ -112,7 +112,7 @@ StixSightingRelationshipProps
                   message={t_i18n('Do you want to delete this sighting?')}
                 />
               </>
-);
+            );
           }
           return <Loader />;
         }}

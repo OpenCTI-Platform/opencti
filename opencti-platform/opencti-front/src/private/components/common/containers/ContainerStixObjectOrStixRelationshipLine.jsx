@@ -61,8 +61,8 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
     ? node.relationship_type === 'stix-sighting-relationship'
       ? `${resolveLink(node.relationship_type)}/${node.id}`
       : !restrictedWithFrom
-        ? `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`
-        : null
+          ? `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`
+          : null
     : `${resolveLink(node.entity_type)}/${node.id}`;
   return (
     <ListItem

@@ -92,7 +92,7 @@ const RootThreatActorIndividualComponent = ({
   threatActorIndividualId,
 }: RootThreatActorIndividualProps) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
+    GraphQLSubscriptionConfig<RootThreatActorIndividualSubscription>
   >(
     () => ({
       subscription,
@@ -233,9 +233,9 @@ const RootThreatActorIndividualComponent = ({
                 />
               </Tabs>
               {isOverview && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={threatActorIndividual.id} />
-              </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+                  <AIInsights id={threatActorIndividual.id} />
+                </div>
               )}
             </Box>
             <Routes>
@@ -243,7 +243,7 @@ const RootThreatActorIndividualComponent = ({
                 path="/"
                 element={
                   <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
-                  }
+                }
               />
               <Route
                 path="/knowledge"

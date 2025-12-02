@@ -76,7 +76,7 @@ const CheckboxesField = ({
                 name={item.value}
                 onChange={() => toggle(item)}
               />
-              )}
+            )}
           />
         ))}
       </FormGroup>

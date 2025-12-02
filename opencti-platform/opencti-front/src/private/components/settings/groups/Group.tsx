@@ -227,13 +227,13 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                       dense={true}
                       divider={true}
                       secondaryAction={!canAccessDashboard && (
-                      <Tooltip
-                        title={t_i18n(
-                          'You need to authorize this group to access this dashboard in the permissions of the workspace.',
-                        )}
-                      >
-                        <WarningOutlined color="warning" />
-                      </Tooltip>
+                        <Tooltip
+                          title={t_i18n(
+                            'You need to authorize this group to access this dashboard in the permissions of the workspace.',
+                          )}
+                        >
+                          <WarningOutlined color="warning" />
+                        </Tooltip>
                       )}
                     >
                       <ListItemButton
@@ -372,38 +372,38 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                               variant="h3"
                               gutterBottom={true}
                               sx={{
-                              width: 100,
-                            }}
+                                width: 100,
+                              }}
                             >
                               {truncate(type, 40)}
                             </Typography>
                             {isMarkingAllowed
                               ? (
-                                <>
-                                  <ListItemIcon>
-                                    <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
-                                  </ListItemIcon>
-                                  <ListItemText
-                                    primary={truncate(marking.definition, 40)}
-                                  />
-                                </>
-)
+                                  <>
+                                    <ListItemIcon>
+                                      <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
+                                    </ListItemIcon>
+                                    <ListItemText
+                                      primary={truncate(marking.definition, 40)}
+                                    />
+                                  </>
+                                )
                               : (
-                                <ListItemText
-                                  primary={t_i18n('No restrictions')}
-                                />
-)
+                                  <ListItemText
+                                    primary={t_i18n('No restrictions')}
+                                  />
+                                )
                             }
                             {!isMarkingAllowed
                               && (
-                              <Tooltip
-                                title={t_i18n(
-                                  'The maximum shareable marking set for this definition type is not allowed for this group, so users can only share their allowed markings independently from the maximum shareable marking set.',
-                                )}
-                              >
-                                <WarningOutlined color="warning" />
-                              </Tooltip>
-)
+                                <Tooltip
+                                  title={t_i18n(
+                                    'The maximum shareable marking set for this definition type is not allowed for this group, so users can only share their allowed markings independently from the maximum shareable marking set.',
+                                  )}
+                                >
+                                  <WarningOutlined color="warning" />
+                                </Tooltip>
+                              )
                             }
                           </ListItem>
                         );
@@ -420,8 +420,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                               variant="h3"
                               gutterBottom={true}
                               sx={{
-                              width: 100,
-                            }}
+                                width: 100,
+                              }}
                             >
                               {truncate(type, 40)}
                             </Typography>
@@ -442,8 +442,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             variant="h3"
                             gutterBottom={true}
                             sx={{
-                            width: 100,
-                          }}
+                              width: 100,
+                            }}
                           >
                             {truncate(type, 40)}
                           </Typography>

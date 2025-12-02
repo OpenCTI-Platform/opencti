@@ -87,8 +87,8 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
   const { t_i18n, n, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
-  EntityStixCoreRelationshipsContextualViewQuery,
-  EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key
+    EntityStixCoreRelationshipsContextualViewQuery,
+    EntityStixCoreRelationshipsContextualViewFragment_stixDomainObject$key
   >({
     queryDef: contextualViewQuery,
     fragmentDef: contextualViewFragment,
@@ -277,35 +277,35 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
         {
           existEntitiesToDisplay
           && (
-          <EntityStixCoreRelationshipsContextualViewLines
-            paginationOptions={paginationOptions}
-            dataColumns={dataColumns}
-            onToggleEntity={onToggleEntity}
-            setNumberOfElements={helpers.handleSetNumberOfElements}
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            selectAll={selectAll}
-          />
-)
+            <EntityStixCoreRelationshipsContextualViewLines
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              onToggleEntity={onToggleEntity}
+              setNumberOfElements={helpers.handleSetNumberOfElements}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              selectAll={selectAll}
+            />
+          )
         }
       </ListLines>
       {existEntitiesToDisplay
         && (
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={contextFilters}
-          search={searchTerm}
-          handleClearSelectedElements={handleClearSelectedElements}
-          variant="medium"
-          warning={true}
-          warningMessage={t_i18n(
-            'Be careful, you are about to delete the selected entities',
-          )}
-        />
-)}
+          <ToolBar
+            selectedElements={selectedElements}
+            deSelectedElements={deSelectedElements}
+            numberOfSelectedElements={numberOfSelectedElements}
+            selectAll={selectAll}
+            filters={contextFilters}
+            search={searchTerm}
+            handleClearSelectedElements={handleClearSelectedElements}
+            variant="medium"
+            warning={true}
+            warningMessage={t_i18n(
+              'Be careful, you are about to delete the selected entities',
+            )}
+          />
+        )}
     </>
   );
 };

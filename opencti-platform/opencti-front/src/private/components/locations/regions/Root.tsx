@@ -82,7 +82,7 @@ const regionQuery = graphql`
 
 const RootRegionComponent = ({ queryRef, regionId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCountriesSubscription>
+    GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
     () => ({
       subscription,
@@ -233,7 +233,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/regions/${regionId}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/knowledge/*"
@@ -255,7 +255,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={region} />
-              }
+                }
               />
               <Route
                 path="/sightings"
@@ -283,7 +283,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={regionId} />
-              }
+                }
               />
             </Routes>
           </div>

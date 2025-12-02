@@ -137,35 +137,35 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
   return (
     <>
       {isDraftReadOnly && (
-      <>
-        <Breadcrumbs
-          elements={[
-            { label: t_i18n('Data') },
-            { label: t_i18n('Import'), link: '/dashboard/data/import' },
-            { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
-            { label: name, current: true },
-          ]}
-        />
-        {validationWork && (
-        <Paper
-          key={validationWork.id}
-          style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
-          variant="outlined"
-        >
-          <ConnectorWorkLine
-            workId={validationWork.id}
-            workName={validationWork.name}
-            workStatus={validationWork.status}
-            workReceivedTime={validationWork.received_time}
-            workEndTime={validationWork.completed_time}
-            workExpectedNumber={validationWork.tracking?.import_processed_number}
-            workProcessedNumber={validationWork.tracking?.import_expected_number}
-            workErrors={validationWork.errors}
-            readOnly
+        <>
+          <Breadcrumbs
+            elements={[
+              { label: t_i18n('Data') },
+              { label: t_i18n('Import'), link: '/dashboard/data/import' },
+              { label: t_i18n('Drafts'), link: '/dashboard/data/import/draft' },
+              { label: name, current: true },
+            ]}
           />
-        </Paper>
-        )}
-      </>
+          {validationWork && (
+            <Paper
+              key={validationWork.id}
+              style={{ margin: '10px 0 20px 0', padding: '15px', borderRadius: 4, position: 'relative' }}
+              variant="outlined"
+            >
+              <ConnectorWorkLine
+                workId={validationWork.id}
+                workName={validationWork.name}
+                workStatus={validationWork.status}
+                workReceivedTime={validationWork.received_time}
+                workEndTime={validationWork.completed_time}
+                workExpectedNumber={validationWork.tracking?.import_processed_number}
+                workProcessedNumber={validationWork.tracking?.import_expected_number}
+                workErrors={validationWork.errors}
+                readOnly
+              />
+            </Paper>
+          )}
+        </>
       )}
       <Box
         sx={{
@@ -219,13 +219,13 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
             }
           />
           {!isDraftReadOnly && canAskImportKnowledge && (
-          <Tab
-            component={Link}
-            to={`/dashboard/data/import/draft/${draftId}/files`}
-            value={`/dashboard/data/import/draft/${draftId}/files`}
-            label={t_i18n('Files')}
-          />
-)}
+            <Tab
+              component={Link}
+              to={`/dashboard/data/import/draft/${draftId}/files`}
+              value={`/dashboard/data/import/draft/${draftId}/files`}
+              label={t_i18n('Files')}
+            />
+          )}
         </Tabs>
       </Box>
       <Routes>

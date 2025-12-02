@@ -167,9 +167,9 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
                 <Button
                   disabled={isSubmitting}
                   onClick={() => {
-                  handleReset();
-                  handleClose();
-                }}
+                    handleReset();
+                    handleClose();
+                  }}
                 >
                   {t_i18n('Cancel')}
                 </Button>

@@ -124,8 +124,8 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
   enableReferences,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  ContainerStixDomainObjectsLinesQuery,
-  ContainerStixDomainObjectsLines_container$key
+    ContainerStixDomainObjectsLinesQuery,
+    ContainerStixDomainObjectsLines_container$key
   >({
     linesQuery: containerStixDomainObjectsLinesQuery,
     linesFragment: containerStixDomainObjectsLinesFragment,

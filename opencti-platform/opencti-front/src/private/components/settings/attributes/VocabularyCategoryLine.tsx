@@ -42,7 +42,7 @@ interface VocabularyCategoryLineProps {
 }
 
 export const VocabularyCategoryLine: FunctionComponent<
-VocabularyCategoryLineProps
+  VocabularyCategoryLineProps
 > = ({ dataColumns, node }) => {
   const classes = useStyles();
   return (

@@ -124,11 +124,11 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
             </Typography>
             <Paper
               style={{
-              flex: 1,
-              margin: '6px 0 0 0',
-              padding: '15px',
-              borderRadius: 6,
-            }}
+                flex: 1,
+                margin: '6px 0 0 0',
+                padding: '15px',
+                borderRadius: 6,
+              }}
               variant="outlined"
             >
               <Grid container={true} spacing={3}>
@@ -191,10 +191,10 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           </Typography>
           <Paper
             style={{
-            marginTop: theme.spacing(1),
-            padding: '15px',
-            borderRadius: 6,
-          }}
+              marginTop: theme.spacing(1),
+              padding: '15px',
+              borderRadius: 6,
+            }}
             variant="outlined"
           >
             {decayRule.appliedIndicatorsCount} {t_i18n('indicators currently impacted by this rule')}
@@ -204,10 +204,10 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           </Typography>
           <Paper
             style={{
-            marginTop: theme.spacing(1),
-            padding: '15px',
-            borderRadius: 6,
-          }}
+              marginTop: theme.spacing(1),
+              padding: '15px',
+              borderRadius: 6,
+            }}
             variant="outlined"
           >
             <DecayChart

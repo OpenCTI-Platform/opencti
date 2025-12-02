@@ -334,12 +334,12 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                               variant="outlined"
                               size="small"
                               style={{
-                              marginLeft: theme.spacing(1),
-                            }}
+                                marginLeft: theme.spacing(1),
+                              }}
                             />
                           </Tooltip>
                         </div>
-)}
+                      )}
                     />
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
                       <Button

@@ -190,7 +190,8 @@ const StixCoreRelationshipHistoryLine = ({ nodeRef, isRelation }) => {
             paddingTop: 4,
             fontSize: 11,
           }}
-          >{nsdt(node.timestamp)}</div>
+          >{nsdt(node.timestamp)}
+          </div>
           <Tooltip
             style={{
               maxWidth: '80%',

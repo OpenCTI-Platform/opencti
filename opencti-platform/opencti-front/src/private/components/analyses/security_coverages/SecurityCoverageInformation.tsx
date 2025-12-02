@@ -107,7 +107,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
             </Tooltip>
           </div>
         </div>
-);
+      );
     }
     return (
       <div style={{ display: 'flex' }}>
@@ -124,7 +124,7 @@ const SecurityCoverageInformation: FunctionComponent<SecurityCoverageInformation
                 </Tooltip>
               </div>
             </div>
-);
+          );
         })}
       </div>
     );

@@ -159,8 +159,8 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
         <Typography
           variant="h6"
           style={{
-          float: 'left',
-        }}
+            float: 'left',
+          }}
         >
           {t_i18n('Update a relationship')}
         </Typography>

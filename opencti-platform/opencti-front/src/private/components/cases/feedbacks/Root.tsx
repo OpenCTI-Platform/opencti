@@ -88,7 +88,7 @@ const feedbackQuery = graphql`
 
 const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootFeedbackSubscription>
+    GraphQLSubscriptionConfig<RootFeedbackSubscription>
   >(
     () => ({
       subscription,

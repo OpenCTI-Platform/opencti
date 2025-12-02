@@ -347,14 +347,14 @@ const ReportEditionOverviewComponent = (props) => {
           />
           <Stack flexDirection="row" justifyContent="flex-end" gap={2}>
             {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={report.id}
-            />
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={report.id}
+              />
             )}
           </Stack>
         </Form>

@@ -160,15 +160,15 @@ class CaseRfiKnowledgeComponent extends Component {
         data-testid="case-rfi-knowledge"
       >
         {mode !== 'graph' && (
-        <ContainerHeader
-          container={caseData}
-          link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
-          currentMode={mode}
-          knowledge={true}
-          enableSuggestions={true}
-          investigationAddFromContainer={investigationAddFromContainer}
-        />
+          <ContainerHeader
+            container={caseData}
+            link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
+            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            currentMode={mode}
+            knowledge={true}
+            enableSuggestions={true}
+            investigationAddFromContainer={investigationAddFromContainer}
+          />
         )}
         <Routes>
           <Route

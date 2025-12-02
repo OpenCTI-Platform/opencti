@@ -181,7 +181,7 @@ class RootArtifact extends Component {
                           <StixCyberObservable
                             stixCyberObservableData={stixCyberObservable}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge"
@@ -219,7 +219,7 @@ class RootArtifact extends Component {
                               'System',
                             ]}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/files"
@@ -232,7 +232,7 @@ class RootArtifact extends Component {
                             isArtifact={true}
                             directDownload={true}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/history"
@@ -240,7 +240,7 @@ class RootArtifact extends Component {
                           <StixCoreObjectHistory
                             stixCoreObjectId={observableId}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge/relations/:relationId"
@@ -248,7 +248,7 @@ class RootArtifact extends Component {
                           <StixCoreRelationship
                             entityId={observableId}
                           />
-                                )}
+                        )}
                       />
                       <Route
                         path="/knowledge/sightings/:sightingId"
@@ -257,7 +257,7 @@ class RootArtifact extends Component {
                             entityId={observableId}
                             paddingRight
                           />
-                                )}
+                        )}
                       />
                     </Routes>
                   </div>

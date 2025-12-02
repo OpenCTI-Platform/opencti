@@ -23,7 +23,7 @@ interface AddPersonaThreatActorIndividualComponentProps {
 }
 
 const AddPersonaThreatActorIndividualComponent: FunctionComponent<
-AddPersonaThreatActorIndividualComponentProps
+  AddPersonaThreatActorIndividualComponentProps
 > = ({
   threatActorIndividual,
   queryRef,
@@ -56,13 +56,13 @@ AddPersonaThreatActorIndividualComponentProps
         header={(
           <div
             style={{
-            marginLeft: 'auto',
-            marginRight: '20px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-end',
-          }}
+              marginLeft: 'auto',
+              marginRight: '20px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
+            }}
           >
             <SearchInput
               variant="inDrawer"
@@ -75,14 +75,14 @@ AddPersonaThreatActorIndividualComponentProps
               paginationOptions={paginationOptions}
               paginationKey="Pagination_tai_stixCyberObservables"
               controlledDialStyles={{
-              marginLeft: '10px',
-              marginTop: '5px',
-            }}
+                marginLeft: '10px',
+                marginTop: '5px',
+              }}
               inputValue=""
               defaultCreatedBy={undefined}
             />
           </div>
-      )}
+        )}
       >
         <AddPersonasThreatActorIndividualLines
           threatActorIndividual={threatActorIndividual}
@@ -90,7 +90,7 @@ AddPersonaThreatActorIndividualComponentProps
         />
       </Drawer>
     </div>
-);
+  );
 };
 
 interface AddPersonaThreatActorIndividualProps {

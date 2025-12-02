@@ -91,8 +91,8 @@ const DeleteOperationsLines: FunctionComponent<DeleteOperationsLinesProps> = ({
   queryRef,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  DeleteOperationsLinesPaginationQuery,
-  DeleteOperationsLines_data$key
+    DeleteOperationsLinesPaginationQuery,
+    DeleteOperationsLines_data$key
   >({
     linesQuery: deleteOperationsLinesQuery,
     linesFragment: deleteOperationsLinesFragment,

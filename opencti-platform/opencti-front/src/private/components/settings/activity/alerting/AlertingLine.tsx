@@ -153,7 +153,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 && data.notifiers
                   .map<React.ReactNode>((n) => (
                     <code key={n.id}>{n.name}</code>
-                ))
+                  ))
                   .reduce((prev, curr) => [prev, ', ', curr])}
             </div>
             {data.trigger_type === 'live' && filters && (
@@ -179,26 +179,26 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                   )}
                 />
                 {currentTime.length > 1 && (
-                <Chip
-                  classes={{ root: classes.chipInList3 }}
-                  label={(
-                    <span>
-                      <strong>{t_i18n('Day: ')}</strong>
-                      {day}
-                    </span>
-                  )}
-                />
+                  <Chip
+                    classes={{ root: classes.chipInList3 }}
+                    label={(
+                      <span>
+                        <strong>{t_i18n('Day: ')}</strong>
+                        {day}
+                      </span>
+                    )}
+                  />
                 )}
                 {data.trigger_time && data.trigger_time.length > 0 && (
-                <Chip
-                  classes={{ root: classes.chipInList3 }}
-                  label={(
-                    <span>
-                      <strong>{t_i18n('Time: ')}</strong>
-                      {nt(time)}
-                    </span>
-                  )}
-                />
+                  <Chip
+                    classes={{ root: classes.chipInList3 }}
+                    label={(
+                      <span>
+                        <strong>{t_i18n('Time: ')}</strong>
+                        {nt(time)}
+                      </span>
+                    )}
+                  />
                 )}
               </div>
             )}

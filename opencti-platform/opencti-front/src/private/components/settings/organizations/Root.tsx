@@ -72,7 +72,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
               path="/"
               element={
                 <SettingsOrganization organizationData={organization} />
-            }
+              }
             />
           </Routes>
         </>

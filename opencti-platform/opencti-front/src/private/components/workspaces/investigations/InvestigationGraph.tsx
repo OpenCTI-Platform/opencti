@@ -609,8 +609,8 @@ const InvestigationGraphLoader = ({
     loadMore,
     isLoadingMore,
   } = usePreloadedPaginationFragment<
-  InvestigationGraphObjectsQuery,
-  InvestigationGraphObjects_fragment$key
+    InvestigationGraphObjectsQuery,
+    InvestigationGraphObjects_fragment$key
   >({
     linesQuery: investigationGraphObjectsQuery,
     linesFragment: investigationGraphObjectsFragment,

@@ -102,7 +102,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                   dense={true}
                   divider={true}
                   disablePadding
-                  secondaryAction={
+                  secondaryAction={(
                     <>
                       <Tooltip title={t_i18n('Browse the link')}>
                         <IconButton
@@ -113,7 +113,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                         </IconButton>
                       </Tooltip>
                     </>
-                  }
+                  )}
                 >
                   <ListItemButton
                     style={{ margin: 0, height: 60 }}

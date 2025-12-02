@@ -90,10 +90,10 @@ const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesF
               </Button>
             </Box>
           </Box>
-);
+        );
       }}
     </Formik>
-);
+  );
 };
 
 export default ImportFilesFreeText;

@@ -72,7 +72,7 @@ interface ExternalReferencesFieldProps {
 }
 
 export const ExternalReferencesField: FunctionComponent<
-ExternalReferencesFieldProps
+  ExternalReferencesFieldProps
 > = ({
   name,
   style,
@@ -91,18 +91,18 @@ ExternalReferencesFieldProps
 
   const [externalReferenceCreation, setExternalReferenceCreation] = useState(false);
   const [externalReferences, setExternalReferences] = useState<
-  {
-    label?: string
-    value: string
-    entity?: {
-      created?: string
-      description: string | null
-      external_id: string | null
-      id: string
-      source_name: string
-      url: string | null
-    }
-  }[]
+    {
+      label?: string
+      value: string
+      entity?: {
+        created?: string
+        description: string | null
+        external_id: string | null
+        id: string
+        source_name: string
+        url: string | null
+      }
+    }[]
   >([]);
 
   const [commitExternalReference] = useApiMutation(externalReferenceLinesMutationRelationAdd);

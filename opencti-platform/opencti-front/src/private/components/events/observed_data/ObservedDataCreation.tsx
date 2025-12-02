@@ -86,7 +86,7 @@ interface ObservedDataFormProps {
 }
 
 export const ObservedDataCreationForm: FunctionComponent<
-ObservedDataFormProps
+  ObservedDataFormProps
 > = ({
   updater,
   onReset,

@@ -80,7 +80,7 @@ const administrativeAreaQuery = graphql`
 
 const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
+    GraphQLSubscriptionConfig<RootAdministrativeAreasSubscription>
   >(
     () => ({
       subscription,
@@ -219,13 +219,13 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                 path="/"
                 element={
                   <AdministrativeArea administrativeAreaData={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/administrative_areas/${administrativeArea.id}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/content/*"
@@ -247,7 +247,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={administrativeArea} />
-              }
+                }
               />
               <Route
                 path="/sightings"
@@ -275,7 +275,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={administrativeAreaId} />
-              }
+                }
               />
             </Routes>
           </div>

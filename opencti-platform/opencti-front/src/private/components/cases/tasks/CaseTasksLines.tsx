@@ -131,7 +131,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   const handleClose = () => setOpen(false);
   const [commit] = useApiMutation(caseSetTemplateQuery);
   const { data } = usePreloadedPaginationFragment<CaseTasksLinesQuery,
-  CaseTasksLines_data$key>({
+    CaseTasksLines_data$key>({
     queryRef,
     linesQuery: caseTasksLinesQuery,
     linesFragment: caseTasksLinesFragment,

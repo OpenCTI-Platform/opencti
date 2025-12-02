@@ -88,8 +88,8 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
   const classes = useStyles();
   const { t_i18n } = useFormatter();
   const { data } = usePreloadedPaginationFragment<
-  UserHistoryLinesQuery,
-  UserHistoryLines_data$key
+    UserHistoryLinesQuery,
+    UserHistoryLines_data$key
   >({
     linesQuery: userHistoryLinesQuery,
     linesFragment: userHistoryLinesFragment,

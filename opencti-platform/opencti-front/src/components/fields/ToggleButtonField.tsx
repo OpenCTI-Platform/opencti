@@ -33,7 +33,7 @@ const ToggleButtonField = ({
           >
             {item.content}
           </ToggleButton>
-))}
+        ))}
       </ToggleButtonGroup>
     </FormControl>
   );

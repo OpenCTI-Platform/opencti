@@ -80,20 +80,20 @@ interface ExternalReferenceFileImportViewerBaseProps {
   externalReference: ExternalReferenceFileImportViewer_entity$data
   disableImport: boolean
   connectors: Record<
-  string,
-  {
-    id: string
-    name: string
-    active: boolean
-    connector_scope: string[]
-    updated_at: string
-  }
+    string,
+    {
+      id: string
+      name: string
+      active: boolean
+      connector_scope: string[]
+      updated_at: string
+    }
   >
   relay: RelayRefetchProp
   connectorsImport: Connector[]
 }
 const ExternalReferenceFileImportViewerBase: FunctionComponent<
-ExternalReferenceFileImportViewerBaseProps
+  ExternalReferenceFileImportViewerBaseProps
 > = ({ externalReference, disableImport, relay, connectorsImport }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -283,28 +283,28 @@ ExternalReferenceFileImportViewerBaseProps
                   </Field>
                   {(selectedConnector?.configurations?.length ?? 0) > 0
                     ? (
-                      <Field
-                        component={SelectField}
-                        variant="standard"
-                        name="configuration"
-                        label={t_i18n('Configuration')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                        onChange={(_: string, value: CsvMapperFieldOption) => onCsvMapperSelection(value)}
-                      >
-                        {selectedConnector?.configurations.map((config) => {
-                        return (
-                          <MenuItem
-                            key={config.id}
-                            value={config.configuration}
-                          >
-                            {config.name}
-                          </MenuItem>
-                        );
-                      })}
-                      </Field>
-) : <ManageImportConnectorMessage name={selectedConnector?.name} />
-                    }
+                        <Field
+                          component={SelectField}
+                          variant="standard"
+                          name="configuration"
+                          label={t_i18n('Configuration')}
+                          fullWidth={true}
+                          containerstyle={{ marginTop: 20, width: '100%' }}
+                          onChange={(_: string, value: CsvMapperFieldOption) => onCsvMapperSelection(value)}
+                        >
+                          {selectedConnector?.configurations.map((config) => {
+                            return (
+                              <MenuItem
+                                key={config.id}
+                                value={config.configuration}
+                              >
+                                {config.name}
+                              </MenuItem>
+                            );
+                          })}
+                        </Field>
+                      ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
+                  }
                   {selectedConnector?.name === 'ImportCsv'
                     && hasUserChoiceCsvMapper
                     && (
@@ -315,7 +315,7 @@ ExternalReferenceFileImportViewerBaseProps
                           setFieldValue={setFieldValue}
                         />
                       </>
-                      )
+                    )
                   }
                 </DialogContent>
                 <DialogActions>

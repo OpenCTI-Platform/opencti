@@ -113,7 +113,7 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
             {getIcon()}
             {getLabel()}
           </>
-)}
+        )}
       />
     </Tooltip>
   );

@@ -62,13 +62,13 @@ const CreatedByField = (props) => {
 
   const [identities, setIdentities] = useState(defaultCreatedBy
     ? [
-      {
-        label: defaultCreatedBy.name,
-        value: defaultCreatedBy.id,
-        type: defaultCreatedBy.entity_type,
-        entity: defaultCreatedBy,
-      },
-    ]
+        {
+          label: defaultCreatedBy.name,
+          value: defaultCreatedBy.id,
+          type: defaultCreatedBy.entity_type,
+          entity: defaultCreatedBy,
+        },
+      ]
     : []);
 
   const searchIdentities = () => {

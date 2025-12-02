@@ -130,18 +130,18 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
         </FormGroup>
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', marginLeft: 'auto' }}>
           {!hasConnectorsAvailable && (
-          <Tooltip
-            title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}
-          >
-            <InformationOutline fontSize="small" color="primary" />
-          </Tooltip>
+            <Tooltip
+              title={t_i18n('An analysis connector needs to be available to ask for a mapping suggestion.')}
+            >
+              <InformationOutline fontSize="small" color="primary" />
+            </Tooltip>
           )}
           {askingSuggestion && (
-          <Tooltip
-            title={t_i18n('An analysis is ongoing, waiting for results.')}
-          >
-            <InformationOutline fontSize="small" color="primary" />
-          </Tooltip>
+            <Tooltip
+              title={t_i18n('An analysis is ongoing, waiting for results.')}
+            >
+              <InformationOutline fontSize="small" color="primary" />
+            </Tooltip>
           )}
           <Tooltip title={t_i18n('Ask new mapping')}>
             <Button
@@ -154,29 +154,29 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
             </Button>
           </Tooltip>
           {!inSuggestedMode && (
-          <Tooltip title={t_i18n('Clear mappings')}>
-            <Button
-              variant="contained"
-              onClick={() => setOpenClearMapping(true)}
-              size="small"
-            >
-              {t_i18n('Clear mappings')}
-            </Button>
-          </Tooltip>
+            <Tooltip title={t_i18n('Clear mappings')}>
+              <Button
+                variant="contained"
+                onClick={() => setOpenClearMapping(true)}
+                size="small"
+              >
+                {t_i18n('Clear mappings')}
+              </Button>
+            </Tooltip>
           )}
           {inSuggestedMode && (
-          <Tooltip title={t_i18n('Validate suggested mapping')}>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => setOpenValidate(true)}
-              startIcon={<CheckCircleOutlined />}
-              size="small"
-              disabled={validateDisabled}
-            >
-              {t_i18n('Validate')}
-            </Button>
-          </Tooltip>
+            <Tooltip title={t_i18n('Validate suggested mapping')}>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => setOpenValidate(true)}
+                startIcon={<CheckCircleOutlined />}
+                size="small"
+                disabled={validateDisabled}
+              >
+                {t_i18n('Validate')}
+              </Button>
+            </Tooltip>
           )}
         </Box>
       </Box>

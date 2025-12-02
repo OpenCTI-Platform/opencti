@@ -332,41 +332,41 @@ const AIInsights = ({
               {tabs.includes('history') && <Tab value="history" label={t_i18n('Internal history')} />}
             </Tabs>
             {loading && (
-            <div style={{ paddingTop: 10 }}>
-              <Loader variant={LoaderVariant.inline} />
-            </div>
+              <div style={{ paddingTop: 10 }}>
+                <Loader variant={LoaderVariant.inline} />
+              </div>
             )}
           </Box>
           {currentTab === 'activity' && (
-          <AISummaryActivity
-            id={id}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <AISummaryActivity
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
           {currentTab === 'containers' && (
-          <AISummaryContainers
-            busId={containersBusId}
-            isContainer={isContainer}
-            filters={containersFilters}
-            helpers={containersFiltersHelpers}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <AISummaryContainers
+              busId={containersBusId}
+              isContainer={isContainer}
+              filters={containersFilters}
+              helpers={containersFiltersHelpers}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
           {currentTab === 'forecast' && (
-          <AISummaryForecast
-            id={id}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <AISummaryForecast
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
           {currentTab === 'history' && (
-          <AISummaryHistory
-            id={id}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <AISummaryHistory
+              id={id}
+              loading={loading}
+              setLoading={setLoading}
+            />
           )}
         </div>
       </Drawer>

@@ -81,7 +81,7 @@ const countryQuery = graphql`
 
 const RootCountryComponent = ({ queryRef, countryId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCountriesSubscription>
+    GraphQLSubscriptionConfig<RootCountriesSubscription>
   >(
     () => ({
       subscription,
@@ -231,7 +231,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/countries/${countryId}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/knowledge/*"
@@ -283,7 +283,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={countryId} />
-              }
+                }
               />
             </Routes>
           </div>

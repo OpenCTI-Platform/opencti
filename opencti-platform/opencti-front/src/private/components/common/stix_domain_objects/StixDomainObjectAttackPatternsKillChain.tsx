@@ -349,130 +349,130 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             />
           </Box>
           {currentView === 'matrix' && (
-          <>
-            <Box
-              style={{
-                float: 'left',
-                display: 'flex',
-                paddingInline: 10,
-                paddingBlock: 10,
-                gap: 1,
-              }}
-            >
-              <InputLabel style={{ paddingInlineEnd: 10 }}>
-                {t_i18n('Kill chain :')}
-              </InputLabel>
-              <FormControl>
-                <Select
-                  size="small"
-                  value={selectedKillChain}
-                  onChange={handleKillChainChange}
-                >
-                  {killChains.map((killChainName) => (
-                    <MenuItem key={killChainName} value={killChainName}>
-                      {killChainName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-            <Box
-              style={{
-                float: 'left',
-                display: 'flex',
-                marginBlockStart: -4,
-                paddingInline: 10,
-              }}
-            >
-              <Tooltip
-                title={
+            <>
+              <Box
+                style={{
+                  float: 'left',
+                  display: 'flex',
+                  paddingInline: 10,
+                  paddingBlock: 10,
+                  gap: 1,
+                }}
+              >
+                <InputLabel style={{ paddingInlineEnd: 10 }}>
+                  {t_i18n('Kill chain :')}
+                </InputLabel>
+                <FormControl>
+                  <Select
+                    size="small"
+                    value={selectedKillChain}
+                    onChange={handleKillChainChange}
+                  >
+                    {killChains.map((killChainName) => (
+                      <MenuItem key={killChainName} value={killChainName}>
+                        {killChainName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box
+                style={{
+                  float: 'left',
+                  display: 'flex',
+                  marginBlockStart: -4,
+                  paddingInline: 10,
+                }}
+              >
+                <Tooltip
+                  title={
                     isModeOnlyActive
                       ? t_i18n('Display the whole matrix')
                       : t_i18n('Display only used techniques')
                   }
-              >
-                <span>
-                  <IconButton
-                    color={isModeOnlyActive ? 'secondary' : 'primary'}
-                    onClick={() => setIsModeOnlyActive((value) => !value)}
-                    size="large"
-                  >
-                    <VisibilityOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            </Box>
+                >
+                  <span>
+                    <IconButton
+                      color={isModeOnlyActive ? 'secondary' : 'primary'}
+                      onClick={() => setIsModeOnlyActive((value) => !value)}
+                      size="large"
+                    >
+                      <VisibilityOutlined />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              </Box>
 
-            {!isSecurityPlatform && (
-            <Box
-              style={{
+              {!isSecurityPlatform && (
+                <Box
+                  style={{
                     float: 'left',
                     display: 'flex',
                     paddingInline: 10,
                   }}
-            >
-              <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300, maxWidth: 500 }}>
-                <EntitySelect
-                  multiple
-                  variant="outlined"
-                  size="small"
-                  value={selectedSecurityPlatforms}
-                  label={t_i18n('Compare with my security posture')}
-                  types={['SecurityPlatform']}
-                  onChange={(newSelectedSecurityPlatforms) => {
+                >
+                  <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300, maxWidth: 500 }}>
+                    <EntitySelect
+                      multiple
+                      variant="outlined"
+                      size="small"
+                      value={selectedSecurityPlatforms}
+                      label={t_i18n('Compare with my security posture')}
+                      types={['SecurityPlatform']}
+                      onChange={(newSelectedSecurityPlatforms) => {
                         handleSecurityPlatformsChange(newSelectedSecurityPlatforms as EntityOption[]);
                       }}
-                />
-              </FormControl>
-            </Box>
+                    />
+                  </FormControl>
+                </Box>
               )}
-          </>
+            </>
           )}
           {displayButtons
             && (
-            <div style={{ float: 'right', margin: 0 }} id="container-view-buttons">
-              <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
-                {[...viewButtons]}
-                {typeof handleToggleExports === 'function' && (
-                <Tooltip
-                  key="export"
-                  title={
-                    exportDisabled
-                      ? `${t_i18n('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`
-                      : t_i18n('Open export panel')
-                  }
-                >
-                  <ToggleButton
-                    size="small"
-                    value="export"
-                    aria-label="export"
-                    onClick={exportDisabled ? undefined : handleToggleExports}
-                    disabled={exportDisabled}
-                  >
-                    <FileDownloadOutlined
-                      fontSize="small"
-                      color={!exportDisabled && openExports ? 'secondary' : 'primary'}
-                    />
-                  </ToggleButton>
-                </Tooltip>
-                )}
-              </ToggleButtonGroup>
+              <div style={{ float: 'right', margin: 0 }} id="container-view-buttons">
+                <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
+                  {[...viewButtons]}
+                  {typeof handleToggleExports === 'function' && (
+                    <Tooltip
+                      key="export"
+                      title={
+                        exportDisabled
+                          ? `${t_i18n('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`
+                          : t_i18n('Open export panel')
+                      }
+                    >
+                      <ToggleButton
+                        size="small"
+                        value="export"
+                        aria-label="export"
+                        onClick={exportDisabled ? undefined : handleToggleExports}
+                        disabled={exportDisabled}
+                      >
+                        <FileDownloadOutlined
+                          fontSize="small"
+                          color={!exportDisabled && openExports ? 'secondary' : 'primary'}
+                        />
+                      </ToggleButton>
+                    </Tooltip>
+                  )}
+                </ToggleButtonGroup>
 
-              <div
-                style={{
-                  float: 'right',
-                  margin: '0 0 0 20px',
-                }}
-              >
-                <ExportButtons
-                  domElementId="container"
-                  name={t_i18n('Attack patterns kill chain')}
-                  csvData={csvData}
-                  csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
-                />
+                <div
+                  style={{
+                    float: 'right',
+                    margin: '0 0 0 20px',
+                  }}
+                >
+                  <ExportButtons
+                    domElementId="container"
+                    name={t_i18n('Attack patterns kill chain')}
+                    csvData={csvData}
+                    csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
+                  />
+                </div>
               </div>
-            </div>
-)}
+            )}
           <div className="clearfix" />
         </div>
       )}
@@ -551,16 +551,16 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
           </Security>
         )}
         {currentView !== 'matrix-in-line' && (
-        <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-          <StixCoreObjectsExports
-            open={openExports}
-            exportType="simple"
-            handleToggle={handleToggleExports}
-            paginationOptions={paginationOptionsForExport}
-            exportContext={exportContextWithEntityType}
-          />
-        </Security>
-)}
+          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+            <StixCoreObjectsExports
+              open={openExports}
+              exportType="simple"
+              handleToggle={handleToggleExports}
+              paginationOptions={paginationOptionsForExport}
+              exportContext={exportContextWithEntityType}
+            />
+          </Security>
+        )}
       </div>
     </>
   );

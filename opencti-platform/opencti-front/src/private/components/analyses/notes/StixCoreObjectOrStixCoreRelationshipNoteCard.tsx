@@ -76,7 +76,7 @@ interface StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps {
 }
 
 const StixCoreObjectOrStixCoreRelationshipNoteCard: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
+  StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
 > = ({ data, stixCoreObjectOrStixCoreRelationshipId, paginationOptions }) => {
   const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme<Theme>();

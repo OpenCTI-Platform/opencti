@@ -225,10 +225,10 @@ const StixCoreObjectOrStixCoreRelationshipContainers = ({
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {numberOfElements && (
-            <div>
-              <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
-              {t_i18n('entitie(s)')}
-            </div>
+              <div>
+                <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
+                {t_i18n('entitie(s)')}
+              </div>
             )}
             <ToggleButtonGroup
               size="small"

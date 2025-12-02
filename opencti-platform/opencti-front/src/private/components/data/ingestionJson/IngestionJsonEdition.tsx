@@ -248,31 +248,31 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
     })) ?? [],
     ...(ingestionJsonData.authentication_type === BEARER_AUTH
       ? {
-        token: extractToken(ingestionJsonData.authentication_value),
-      }
+          token: extractToken(ingestionJsonData.authentication_value),
+        }
       : {
-        token: '',
-      }),
+          token: '',
+        }),
     ...(ingestionJsonData.authentication_type === BASIC_AUTH
       ? {
-        username: extractUsername(ingestionJsonData.authentication_value),
-        password: extractPassword(ingestionJsonData.authentication_value),
-      }
+          username: extractUsername(ingestionJsonData.authentication_value),
+          password: extractPassword(ingestionJsonData.authentication_value),
+        }
       : {
-        username: '',
-        password: '',
-      }),
+          username: '',
+          password: '',
+        }),
     ...(ingestionJsonData.authentication_type === CERT_AUTH
       ? {
-        cert: extractCert(ingestionJsonData.authentication_value),
-        key: extractKey(ingestionJsonData.authentication_value),
-        ca: extractCA(ingestionJsonData.authentication_value),
-      }
+          cert: extractCert(ingestionJsonData.authentication_value),
+          key: extractKey(ingestionJsonData.authentication_value),
+          ca: extractCA(ingestionJsonData.authentication_value),
+        }
       : {
-        cert: '',
-        key: '',
-        ca: '',
-      }),
+          cert: '',
+          key: '',
+          ca: '',
+        }),
   };
 
   const queryRef = useQueryLoading<JsonMapperFieldSearchQuery>(jsonMapperQuery);
@@ -348,19 +348,19 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
           </Field>
 
           {values.verb === 'POST' && (
-          <>
-            <Field
-              component={TextField}
-              name="body"
-              label={t_i18n('HTTP BODY POST')}
-              required={values.verb === 'POST'}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={fieldSpacingContainerStyle}
-              askAi={false}
-            />
-          </>
+            <>
+              <Field
+                component={TextField}
+                name="body"
+                label={t_i18n('HTTP BODY POST')}
+                required={values.verb === 'POST'}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={fieldSpacingContainerStyle}
+                askAi={false}
+              />
+            </>
           )}
 
           <QueryAttributeFieldAdd
@@ -393,31 +393,31 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
               />
             </Box>
             {!!values.pagination_with_sub_page && (
-            <>
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="pagination_with_sub_page_query_verb"
-                label={t_i18n('Sub pagination verb')}
-                fullWidth={true}
-                containerstyle={{
-                  width: '100%',
-                  marginTop: 20,
-                }}
-              >
-                <MenuItem value="GET">GET</MenuItem>
-                <MenuItem value="POST">POST</MenuItem>
-              </Field>
+              <>
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="pagination_with_sub_page_query_verb"
+                  label={t_i18n('Sub pagination verb')}
+                  fullWidth={true}
+                  containerstyle={{
+                    width: '100%',
+                    marginTop: 20,
+                  }}
+                >
+                  <MenuItem value="GET">GET</MenuItem>
+                  <MenuItem value="POST">POST</MenuItem>
+                </Field>
 
-              <Field
-                component={TextField}
-                variant="standard"
-                name="pagination_with_sub_page_attribute_path"
-                label={t_i18n('Attribute path to get next uri')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-            </>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="pagination_with_sub_page_attribute_path"
+                  label={t_i18n('Attribute path to get next uri')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+              </>
             )}
           </Alert>
 

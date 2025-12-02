@@ -58,7 +58,7 @@ class ThreatActorIndividualLocationsComponent extends Component {
                 threatActorIndividual={threatActorIndividual}
               />
             </Security>
-        )}
+          )}
         >
           {t('Located at')}
         </CardLabel>

@@ -71,7 +71,7 @@ const AdministrativeAreaFragment = graphql`
 `;
 
 export const AdministrativeAreaLine: FunctionComponent<
-AdministrativeAreaLineComponentProps
+  AdministrativeAreaLineComponentProps
 > = ({ dataColumns, node }) => {
   const classes = useStyles();
   const { fd } = useFormatter();

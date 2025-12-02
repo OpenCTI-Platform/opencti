@@ -185,9 +185,9 @@ const ContainerAddStixCoreObjects = (props) => {
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
         stixDomainObjectTypes={
-            targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
-              ? targetStixCoreObjectTypes
-              : []
+          targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
+            ? targetStixCoreObjectTypes
+            : []
         }
       />
     );
@@ -247,9 +247,9 @@ const ContainerAddStixCoreObjects = (props) => {
           defaultCreatedBy={defaultCreatedBy}
           defaultMarkingDefinitions={defaultMarkingDefinitions}
           stixCoreObjectTypes={
-              targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
-                ? targetStixCoreObjectTypes
-                : []
+            targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
+              ? targetStixCoreObjectTypes
+              : []
           }
           speeddial={true}
           open={openCreateEntity}

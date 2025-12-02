@@ -91,8 +91,8 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewComponent: FunctionComp
   const { t_i18n, n, nsdt } = useFormatter();
 
   const stixDomainObject = usePreloadedFragment<
-  EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
-  EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key
+    EntityStixCoreRelationshipsIndicatorsContextualViewQuery,
+    EntityStixCoreRelationshipsIndicatorsContextualViewFragment_stixDomainObject$key
   >({
     queryDef: contextualViewQuery,
     fragmentDef: contextualViewFragment,

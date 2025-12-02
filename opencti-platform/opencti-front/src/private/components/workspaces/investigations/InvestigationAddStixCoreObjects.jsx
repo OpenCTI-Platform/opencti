@@ -72,17 +72,17 @@ const InvestigationAddStixCoreObjects = (props) => {
       orderAsc: false,
       filters: targetStixCoreObjectTypes
         && !(
-        targetStixCoreObjectTypes.includes('Stix-Domain-Object')
-        || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
-      )
+          targetStixCoreObjectTypes.includes('Stix-Domain-Object')
+          || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+        )
         ? {
-          mode: 'and',
-          filters: [{
-            key: 'entity_type',
-            values: targetStixCoreObjectTypes,
-          }],
-          filterGroups: [],
-        }
+            mode: 'and',
+            filters: [{
+              key: 'entity_type',
+              values: targetStixCoreObjectTypes,
+            }],
+            filterGroups: [],
+          }
         : emptyFilterGroup,
       types: [resolveAvailableTypes()],
       numberOfElements: {

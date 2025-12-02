@@ -251,9 +251,9 @@ const StixCyberObservableEditionOverviewComponent = ({
           const createdBy = (stixCyberObservable?.createdBy?.name ?? null) === null
             ? ''
             : {
-              label: stixCyberObservable?.createdBy?.name ?? null,
-              value: stixCyberObservable?.createdBy?.id ?? null,
-            };
+                label: stixCyberObservable?.createdBy?.name ?? null,
+                value: stixCyberObservable?.createdBy?.id ?? null,
+              };
           const objectMarking = convertMarkings(stixCyberObservable);
           const initialValues = pipe(
             assoc('createdBy', createdBy),
@@ -503,10 +503,10 @@ const StixCyberObservableEditionOverviewComponent = ({
                           attributeValue={
                             artifact
                               ? {
-                                label:
+                                  label:
                                   artifact.observable_value ?? artifact.id,
-                                value: artifact.id,
-                              }
+                                  value: artifact.id,
+                                }
                               : undefined
                           }
                           onChange={handleChangeRef}

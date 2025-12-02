@@ -52,7 +52,7 @@ interface CaseTemplateTasksLineProps {
 }
 
 export const CaseTemplateTasksLine: FunctionComponent<
-CaseTemplateTasksLineProps
+  CaseTemplateTasksLineProps
 > = ({ node, dataColumns, paginationOptions }) => {
   const classes = useStyles();
   const task = useFragment(CaseTemplateTasksLineFragment, node);
@@ -95,7 +95,7 @@ interface CaseTemplateLineDummyProps {
 }
 
 export const CaseTemplateTasksLineDummy: FunctionComponent<
-CaseTemplateLineDummyProps
+  CaseTemplateLineDummyProps
 > = ({ dataColumns }) => {
   const classes = useStyles();
 

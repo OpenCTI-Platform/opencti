@@ -105,18 +105,18 @@ const InfrastructureDetails: FunctionComponent<InfrastructureDetailsProps> = ({
             </Typography>
             {data.infrastructure_types
               && data.infrastructure_types.length > 0 ? (
-                <List>
-                  {data.infrastructure_types.map((infrastructureType) => (
-                    <Chip
-                      key={infrastructureType}
-                      classes={{ root: classes.chip }}
-                      label={infrastructureType}
-                    />
-                ))}
-                </List>
-              ) : (
-                '-'
-              )}
+                  <List>
+                    {data.infrastructure_types.map((infrastructureType) => (
+                      <Chip
+                        key={infrastructureType}
+                        classes={{ root: classes.chip }}
+                        label={infrastructureType}
+                      />
+                    ))}
+                  </List>
+                ) : (
+                  '-'
+                )}
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>

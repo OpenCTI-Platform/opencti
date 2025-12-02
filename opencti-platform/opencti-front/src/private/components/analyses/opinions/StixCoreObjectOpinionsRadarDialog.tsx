@@ -67,7 +67,7 @@ interface OpinionAddSubmit {
 const OPINION_TYPE = 'Opinion';
 
 const StixCoreObjectOpinionsDialogComponent: FunctionComponent<
-StixCoreObjectOpinionsRadarDialogProps
+  StixCoreObjectOpinionsRadarDialogProps
 > = ({
   queryRef,
   stixCoreObjectId,

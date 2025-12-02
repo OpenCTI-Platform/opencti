@@ -86,25 +86,25 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
                     values={value.values}
                   />
                 </span>
-);
+              );
             })}
           {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
             && (
-            <Box
-              sx={{
-                paddingTop: 2,
-                textTransform: 'uppercase',
-                fontFamily: 'Consolas, monaco, monospace',
-                backgroundColor: 'rgba(255, 255, 255, .1)',
-                fontWeight: 'bold',
-                display: 'inline-block',
-                margin: '0 8px',
-                padding: '8px',
-              }}
-            >
-              {t_i18n('WITH')}
-            </Box>
-)
+              <Box
+                sx={{
+                  paddingTop: 2,
+                  textTransform: 'uppercase',
+                  fontFamily: 'Consolas, monaco, monospace',
+                  backgroundColor: 'rgba(255, 255, 255, .1)',
+                  fontWeight: 'bold',
+                  display: 'inline-block',
+                  margin: '0 8px',
+                  padding: '8px',
+                }}
+              >
+                {t_i18n('WITH')}
+              </Box>
+            )
           }
           {values.filter((v) => v.key === 'id').flat().map((value) => {
             return (
@@ -114,7 +114,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
                   values={value.values}
                 />
               </span>
-);
+            );
           })}
           {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
             return (
@@ -125,7 +125,7 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
                   filterMode="and"
                 />
               </span>
-);
+            );
           })}
         </>
       );

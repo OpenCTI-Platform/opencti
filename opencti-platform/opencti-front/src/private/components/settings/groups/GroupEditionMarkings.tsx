@@ -120,9 +120,9 @@ const GroupEditionMarkingsComponent = ({
     markingDefinitionId: string,
     groupMarkingDefinition:
       | {
-      id?: string
-    }
-    | undefined,
+        id?: string
+      }
+      | undefined,
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (event.target.checked) {

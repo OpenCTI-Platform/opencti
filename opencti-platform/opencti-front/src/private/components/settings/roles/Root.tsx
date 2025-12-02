@@ -108,21 +108,21 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
             <div style={{ display: 'flex' }}>
               <div style={{ marginRight: theme.spacing(0.5) }}>
                 {canDelete && (
-                <PopoverMenu>
-                  {({ closeMenu }) => (
-                    <Box>
-                      <MenuItem
-                        disabled={!isAllowed && isSensitive}
-                        onClick={() => {
-                          handleOpenDelete();
-                          closeMenu();
-                        }}
-                      >
-                        {t_i18n('Delete')}
-                      </MenuItem>
-                    </Box>
-                  )}
-                </PopoverMenu>
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <Box>
+                        <MenuItem
+                          disabled={!isAllowed && isSensitive}
+                          onClick={() => {
+                            handleOpenDelete();
+                            closeMenu();
+                          }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
+                      </Box>
+                    )}
+                  </PopoverMenu>
                 )}
               </div>
               <RoleDeletionDialog
@@ -146,14 +146,14 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
                   path="/"
                   element={(
                     <Role roleData={role} groupsQueryRef={groupsQueryRef} />
-                    )}
+                  )}
                 />
               </Routes>
             </React.Suspense>
           ) : (
             <Loader variant={LoaderVariant.inElement} />
           )
-            }
+          }
         </>
       </>
     </Security>

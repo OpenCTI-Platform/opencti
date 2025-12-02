@@ -67,7 +67,7 @@ const PasswordPolicies: FunctionComponent<{ style?: object }> = ({ style }) => {
         </div>
       </Alert>
     </div>
-);
+  );
 };
 
 export default PasswordPolicies;

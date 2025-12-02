@@ -50,8 +50,8 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
   onToggleEntity,
 }) => {
   const data = usePreloadedFragment<
-  SubTypesLinesQuery,
-  SubTypesLines_subTypes$key
+    SubTypesLinesQuery,
+    SubTypesLines_subTypes$key
   >({
     queryDef: subTypesLinesQuery,
     fragmentDef: subTypesLinesFragment,

@@ -92,9 +92,9 @@ const PirOverviewHistory = ({ dataHistory, dataPir }: PirOverviewHistoryProps) =
     >
       <div style={{ display: 'flex', gap: theme.spacing(0.5), flexDirection: 'column' }}>
         {history.length === 0 && (
-        <Typography variant="body2">
-          {t_i18n('No recent history for this PIR')}
-        </Typography>
+          <Typography variant="body2">
+            {t_i18n('No recent history for this PIR')}
+          </Typography>
         )}
 
         {history.map((historyItem) => {

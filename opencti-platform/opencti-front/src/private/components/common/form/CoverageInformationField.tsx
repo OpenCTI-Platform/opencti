@@ -87,18 +87,18 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                 <div
                   key={index}
                   style={{
-                  marginTop: index === 0 ? 10 : 20,
-                  width: '100%',
-                  position: 'relative',
-                  paddingRight: 50,
-                }}
+                    marginTop: index === 0 ? 10 : 20,
+                    width: '100%',
+                    position: 'relative',
+                    paddingRight: 50,
+                  }}
                 >
                   <div
                     style={{
-                    display: 'grid',
-                    gap: 20,
-                    gridTemplateColumns: '1fr 1fr',
-                  }}
+                      display: 'grid',
+                      gap: 20,
+                      gridTemplateColumns: '1fr 1fr',
+                    }}
                   >
                     <OpenVocabField
                       label={t_i18n('Coverage name')}
@@ -106,8 +106,8 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                       name={`${name}.${index}.coverage_name`}
                       required={true}
                       onChange={(__, value) => {
-                      arrayHelpers.replace(index, { ...values[index], coverage_name: value.toString() });
-                    }}
+                        arrayHelpers.replace(index, { ...values[index], coverage_name: value.toString() });
+                      }}
                       disabledOptions={disabledOptions}
                       containerStyle={{ marginTop: 3, width: '100%' }}
                       multiple={false}
@@ -121,28 +121,28 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                       fullWidth
                       required
                       slotProps={{
-                      input: {
-                        inputProps: {
-                          min: 0,
-                          max: 100,
+                        input: {
+                          inputProps: {
+                            min: 0,
+                            max: 100,
+                          },
                         },
-                      },
-                    }}
+                      }}
                     />
                   </div>
                   <IconButton
                     id={`deleteCoverageInfo_${index}`}
                     aria-label="Delete"
                     onClick={() => {
-                    arrayHelpers.remove(index);
-                  }}
+                      arrayHelpers.remove(index);
+                    }}
                     size="large"
                     style={{ position: 'absolute', right: -10, top: 5 }}
                   >
                     <DeleteOutlined />
                   </IconButton>
                 </div>
-            ))}
+              ))}
               <Button
                 size="small"
                 startIcon={<AddOutlined />}
@@ -151,15 +151,15 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                 aria-label="Add"
                 id="addCoverageInfo"
                 onClick={() => {
-                arrayHelpers.push({ coverage_name: '', coverage_score: '' });
-              }}
+                  arrayHelpers.push({ coverage_name: '', coverage_score: '' });
+                }}
                 style={{ marginTop: 20 }}
               >
                 {t_i18n('Add coverage metric')}
               </Button>
             </div>
           </>
-      )}
+        )}
       />
     </div>
   );

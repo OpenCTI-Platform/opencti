@@ -80,14 +80,14 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
   const { t_i18n } = useFormatter();
   const [triggerCreation, setTriggerCreation] = useState(false);
   const [triggers, setTriggers] = useState<
-  {
-    label?: string
-    value: string
-    entity?: {
-      id: string
-      name: string
-    }
-  }[]
+    {
+      label?: string
+      value: string
+      entity?: {
+        id: string
+        name: string
+      }
+    }[]
   >([]);
   const handleOpenTriggerCreation = () => {
     setTriggerCreation(true);

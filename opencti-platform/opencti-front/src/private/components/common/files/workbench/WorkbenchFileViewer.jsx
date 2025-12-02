@@ -65,17 +65,17 @@ const WorkbenchFileViewerBase = ({
           {t('Analyst workbenches')}
         </Typography>
         {!draftContext && (
-        <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }} />}>
-          <IconButton
-            color="primary"
-            aria-label="Add"
-            onClick={() => setOpenCreate(true)}
-            classes={{ root: classes.createButton }}
-            size="large"
-          >
-            <Add fontSize="small" />
-          </IconButton>
-        </Security>
+          <Security needs={[KNOWLEDGE_KNASKIMPORT]} placeholder={<div style={{ height: 28 }} />}>
+            <IconButton
+              color="primary"
+              aria-label="Add"
+              onClick={() => setOpenCreate(true)}
+              classes={{ root: classes.createButton }}
+              size="large"
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Security>
         )}
         <WorkbenchFileCreator
           handleCloseCreate={() => setOpenCreate(false)}

@@ -161,7 +161,7 @@ const StatusTemplates = () => {
               inputValueContextual=""
               open={false}
             />
-)}
+          )}
         />
       )}
     </div>

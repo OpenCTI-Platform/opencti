@@ -96,22 +96,22 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
         disableRipple={needEE || nothingToUpdate}
         sx={needEE || nothingToUpdate
           ? {
-            '&:hover': {
-              cursor: 'default',
-              backgroundColor: 'transparent',
-            },
-          }
+              '&:hover': {
+                cursor: 'default',
+                backgroundColor: 'transparent',
+              },
+            }
           : {}
         }
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {attribute.name === INPUT_AUTHORIZED_MEMBERS
             ? (
-              <LockPersonOutlined
-                fontSize="small"
-                color={!needEE ? 'warning' : 'ee'}
-              />
-)
+                <LockPersonOutlined
+                  fontSize="small"
+                  color={!needEE ? 'warning' : 'ee'}
+                />
+              )
             : <ShortTextOutlined />
           }
         </ListItemIcon>

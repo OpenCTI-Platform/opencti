@@ -126,7 +126,7 @@ interface ThreatActorIndividualFormProps {
 }
 
 export const ThreatActorIndividualCreationForm: FunctionComponent<
-ThreatActorIndividualFormProps
+  ThreatActorIndividualFormProps
 > = ({
   updater,
   onReset,

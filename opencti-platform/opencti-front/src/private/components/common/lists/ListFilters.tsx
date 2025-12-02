@@ -118,33 +118,33 @@ const ListFilters = ({
 
   const options = isNotUniqEntityTypes
     ? availableFilterKeys
-      .map((key) => {
-        const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
-        const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
-        const isFilterKeyForAllTypes = (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
-          || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
-        return {
-          value: key,
-          label: t_i18n(filterDefinition?.label ?? key),
-          numberOfOccurences: subEntityTypes.length,
-          // eslint-disable-next-line no-nested-ternary
-          groupLabel: isFilterKeyForAllTypes
-            ? t_i18n('Most used filters')
-            : t_i18n('All other filters'),
-          groupOrder: isFilterKeyForAllTypes ? 1 : 0,
-        };
-      })
-      .sort((a, b) => a.label.localeCompare(b.label))
-      .sort((a, b) => b.groupOrder - a.groupOrder) // 'Most used filters' before 'All other filters'
+        .map((key) => {
+          const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
+          const subEntityTypes = filterDefinition?.subEntityTypes ?? [];
+          const isFilterKeyForAllTypes = (entityTypes.length === 1 && subEntityTypes.some((subType) => entityTypes.includes(subType)))
+            || (entityTypes.length > 1 && entityTypes.every((subType) => subEntityTypes.includes(subType)));
+          return {
+            value: key,
+            label: t_i18n(filterDefinition?.label ?? key),
+            numberOfOccurences: subEntityTypes.length,
+            // eslint-disable-next-line no-nested-ternary
+            groupLabel: isFilterKeyForAllTypes
+              ? t_i18n('Most used filters')
+              : t_i18n('All other filters'),
+            groupOrder: isFilterKeyForAllTypes ? 1 : 0,
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .sort((a, b) => b.groupOrder - a.groupOrder) // 'Most used filters' before 'All other filters'
     : availableFilterKeys
-      .map((key) => {
-        const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
-        return {
-          value: key,
-          label: t_i18n(filterDefinition?.label ?? key),
-        };
-      })
-      .sort((a, b) => a.label.localeCompare(b.label));
+        .map((key) => {
+          const filterDefinition = getFilterDefinitionFromFilterKeysMap(key, filterKeysMap);
+          return {
+            value: key,
+            label: t_i18n(filterDefinition?.label ?? key),
+          };
+        })
+        .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <>

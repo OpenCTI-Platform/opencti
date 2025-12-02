@@ -561,8 +561,8 @@ const GraphContainerKnowledge = ({
     loadMore,
     isLoadingMore,
   } = usePreloadedPaginationFragment<
-  GraphContainerKnowledgeObjectsQuery,
-  GraphContainerKnowledgeObjects_fragment$key
+    GraphContainerKnowledgeObjectsQuery,
+    GraphContainerKnowledgeObjects_fragment$key
   >({
     linesQuery: graphContainerKnowledgeObjectsQuery,
     linesFragment: graphContainerKnowledgeObjectsFragment,

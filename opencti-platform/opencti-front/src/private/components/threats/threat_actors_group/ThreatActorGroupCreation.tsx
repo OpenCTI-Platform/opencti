@@ -75,7 +75,7 @@ interface ThreatActorGroupFormProps {
 }
 
 export const ThreatActorGroupCreationForm: FunctionComponent<
-ThreatActorGroupFormProps
+  ThreatActorGroupFormProps
 > = ({
   updater,
   onReset,

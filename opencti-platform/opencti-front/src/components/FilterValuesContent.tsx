@@ -30,16 +30,8 @@ interface FilterValuesContentProps {
 }
 
 const FilterValuesContent: FunctionComponent<
-FilterValuesContentProps
-> = ({
-  redirection,
-  isFilterTooltip,
-  filterKey,
-  id,
-  value,
-  filterDefinition,
-  filterOperator,
-}) => {
+  FilterValuesContentProps
+> = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition, filterOperator }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes } = useAttributes();
   const completedStixCoreObjectTypes = stixCoreObjectTypes.concat(['Stix-Core-Object', 'Stix-Cyber-Observable']);
@@ -68,7 +60,7 @@ FilterValuesContentProps
           <InformationOutline color="primary" />
         </Tooltip>
       </div>
-);
+    );
   }
   const isRedirectableFilter = filterDefinition
     && filterType === 'id'

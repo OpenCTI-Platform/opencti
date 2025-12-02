@@ -76,28 +76,28 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
               <Tab label={t_i18n('Capabilities')} />
               {isCapabilitiesInDraftEnabled
                 && (
-                <Tab
-                  disabled={!isEnterpriseEdition}
-                  label={(
-                    <Box>
-                      {t_i18n('Capabilities in Draft')}
-                      <EEChip clickable={false} />
-                    </Box>
-                )}
-                />
-)
-            }
+                  <Tab
+                    disabled={!isEnterpriseEdition}
+                    label={(
+                      <Box>
+                        {t_i18n('Capabilities in Draft')}
+                        <EEChip clickable={false} />
+                      </Box>
+                    )}
+                  />
+                )
+              }
             </Tabs>
           </Box>
           {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
           {currentTab === 1 && queryRef && (
-          <RoleEditionCapabilities role={role} queryRef={queryRef} />
-        )}
+            <RoleEditionCapabilities role={role} queryRef={queryRef} />
+          )}
           {currentTab === 2 && queryRef && (
-          <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />
-        )}
+            <RoleEditionCapabilities role={role} queryRef={queryRef} isCapabilitiesInDraft />
+          )}
         </>
-)
+      )
         : (<Loader />)}
     </Drawer>
   );

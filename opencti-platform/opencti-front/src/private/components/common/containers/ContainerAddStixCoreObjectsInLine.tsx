@@ -149,7 +149,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
 
   const LOCAL_STORAGE_KEY = `container-${containerId}-add-${targetStixCoreObjectTypes}`;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<
-  ContainerAddStixCoreObjectsLinesQuery$variables
+    ContainerAddStixCoreObjectsLinesQuery$variables
   >(
     LOCAL_STORAGE_KEY,
     {
@@ -225,41 +225,41 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
       <>
         <div
           style={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
         >
           <Typography variant="subtitle2">
             {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
           </Typography>
           <div style={{ marginRight: '10px' }}>
             {showSDOCreation && (
-            <Button
-              style={{ fontSize: 'small' }}
-              variant="contained"
-              disableElevation
-              size="small"
-              aria-label={t_i18n('Create an entity')}
-              onClick={() => setOpenCreateEntity(true)}
-            >
-              {t_i18n('Create an entity')}
-            </Button>
-          )}
+              <Button
+                style={{ fontSize: 'small' }}
+                variant="contained"
+                disableElevation
+                size="small"
+                aria-label={t_i18n('Create an entity')}
+                onClick={() => setOpenCreateEntity(true)}
+              >
+                {t_i18n('Create an entity')}
+              </Button>
+            )}
             {showSCOCreation && (
-            <Button
-              style={{ fontSize: 'small', marginLeft: '3px' }}
-              variant="contained"
-              disableElevation
-              size="small"
-              aria-label={t_i18n('Create an observable')}
-              onClick={() => setOpenCreateObservable(true)}
-            >
-              {t_i18n('Create an observable')}
-            </Button>
-          )}
+              <Button
+                style={{ fontSize: 'small', marginLeft: '3px' }}
+                variant="contained"
+                disableElevation
+                size="small"
+                aria-label={t_i18n('Create an observable')}
+                onClick={() => setOpenCreateObservable(true)}
+              >
+                {t_i18n('Create an observable')}
+              </Button>
+            )}
           </div>
         </div>
         <StixDomainObjectCreation
@@ -291,7 +291,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
           defaultCreatedBy={undefined}
         />
       </>
-);
+    );
   };
 
   const Dial = showSDOCreation

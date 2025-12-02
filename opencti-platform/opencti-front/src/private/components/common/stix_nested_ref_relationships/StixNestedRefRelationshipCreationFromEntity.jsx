@@ -357,16 +357,16 @@ const StixNestedRefRelationshipCreationFromEntity = ({
   ];
   const initialFilters = actualTypeFilter.length > 0
     ? {
-      mode: 'and',
-      filterGroups: [],
-      filters: [{
-        id: uuid(),
-        key: 'entity_type',
-        values: actualTypeFilter,
-        operator: 'eq',
-        mode: 'or',
-      }],
-    }
+        mode: 'and',
+        filterGroups: [],
+        filters: [{
+          id: uuid(),
+          key: 'entity_type',
+          values: actualTypeFilter,
+          operator: 'eq',
+          mode: 'or',
+        }],
+      }
     : emptyFilterGroup;
   const [filters, helpers] = useFiltersState(initialFilters, initialFilters);
   const virtualEntityTypes = actualTypeFilter.length > 0 ? actualTypeFilter : ['Stix-Domain-Object', 'Stix-Cyber-Observable'];
@@ -947,24 +947,24 @@ const StixNestedRefRelationshipCreationFromEntity = ({
           }
           {step === 1
             ? (
-              <QueryRenderer
-                query={stixNestedRefRelationshipResolveTypes}
-                variables={{
-                  id: entityId,
-                  toType: targetEntities[0].entity_type,
-                }}
-                render={({ props }) => {
-                  if (props && props.stixSchemaRefRelationships) {
-                    return (
-                      <div>
-                        {renderForm(props.stixSchemaRefRelationships)}
-                      </div>
-                    );
-                  }
-                  return renderLoader();
-                }}
-              />
-)
+                <QueryRenderer
+                  query={stixNestedRefRelationshipResolveTypes}
+                  variables={{
+                    id: entityId,
+                    toType: targetEntities[0].entity_type,
+                  }}
+                  render={({ props }) => {
+                    if (props && props.stixSchemaRefRelationships) {
+                      return (
+                        <div>
+                          {renderForm(props.stixSchemaRefRelationships)}
+                        </div>
+                      );
+                    }
+                    return renderLoader();
+                  }}
+                />
+              )
             : null
           }
         </>

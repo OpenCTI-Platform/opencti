@@ -34,7 +34,7 @@ interface EntityStixCoreRelationshipsProps {
 }
 
 const EntityStixCoreRelationships: FunctionComponent<
-EntityStixCoreRelationshipsProps
+  EntityStixCoreRelationshipsProps
 > = ({
   entityId,
   entityLink,

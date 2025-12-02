@@ -100,12 +100,12 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             </Typography>
             {takedownTypes.length > 0
               ? takedownTypes.map((takedownType) => (
-                <Chip
-                  key={takedownType}
-                  classes={{ root: classes.chip }}
-                  label={takedownType}
-                />
-              ))
+                  <Chip
+                    key={takedownType}
+                    classes={{ root: classes.chip }}
+                    label={takedownType}
+                  />
+                ))
               : '-'}
           </Grid>
           <Grid item xs={6}>

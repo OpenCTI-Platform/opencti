@@ -39,13 +39,13 @@ const AttackPatternKnowledgeComponent = ({
           path="/relations/:relationId"
           element={
             <StixCoreRelationship entityId={attackPattern.id} paddingRight />
-            }
+          }
         />
         <Route
           path="/sightings/:sightingId"
           element={
             <StixSightingRelationship entityId={attackPattern.id} />
-            }
+          }
         />
         <Route
           path="/overview"

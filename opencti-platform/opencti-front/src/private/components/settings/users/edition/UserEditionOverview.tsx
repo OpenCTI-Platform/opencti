@@ -86,14 +86,14 @@ interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data
   context:
     | readonly ({
-    readonly focusOn: string | null | undefined
-    readonly name: string
-  } | null)[]
-  | null | undefined
+      readonly focusOn: string | null | undefined
+      readonly name: string
+    } | null)[]
+    | null | undefined
 }
 
 const UserEditionOverviewComponent: FunctionComponent<
-UserEditionOverviewComponentProps
+  UserEditionOverviewComponentProps
 > = ({ user, context }) => {
   const { t_i18n } = useFormatter();
   const { me, settings } = useAuth();
@@ -195,7 +195,7 @@ UserEditionOverviewComponentProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
-                }
+            }
           />
           <Field
             component={TextField}
@@ -209,7 +209,7 @@ UserEditionOverviewComponentProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="user_email" />
-                }
+            }
           />
           <Field
             component={TextField}
@@ -222,7 +222,7 @@ UserEditionOverviewComponentProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="firstname" />
-                }
+            }
           />
           <Field
             component={TextField}
@@ -235,7 +235,7 @@ UserEditionOverviewComponentProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="lastname" />
-                }
+            }
           />
           <Field
             component={MarkdownField}
@@ -249,7 +249,7 @@ UserEditionOverviewComponentProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
-                }
+            }
           />
           <Field
             component={SelectField}
@@ -291,7 +291,7 @@ UserEditionOverviewComponentProps
             style={{ marginTop: 20 }}
             helperText={
               <SubscriptionFocus context={context} fieldName="api_token" />
-              }
+            }
           />
           <Field
             component={SelectField}

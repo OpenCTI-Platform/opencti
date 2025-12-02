@@ -75,8 +75,8 @@ const CaseTemplateLines: FunctionComponent<CaseTemplatesLinesProps> = ({
   setNumberOfElements,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  CaseTemplateLinesPaginationQuery,
-  CaseTemplateLines_data$key
+    CaseTemplateLinesPaginationQuery,
+    CaseTemplateLines_data$key
   >({
     linesQuery: caseTemplatesLinesQuery,
     linesFragment: caseTemplatesLinesFragment,

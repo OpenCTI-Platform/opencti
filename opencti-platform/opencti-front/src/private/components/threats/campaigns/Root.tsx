@@ -232,7 +232,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                 path="/"
                 element={
                   <Campaign campaignData={campaign} />
-                  }
+                }
               />
               <Route
                 path="/knowledge"

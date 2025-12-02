@@ -82,55 +82,55 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
         }}
       >
         {
-        overviewLayoutCustomization.map(({ key, width }) => {
-          switch (key) {
-            case 'details':
-              return (
-                <Grid key={key} item xs={width}>
-                  <NoteDetails note={note} />
-                </Grid>
-              );
-            case 'basicInformation':
-              return (
-                <Grid key={key} item xs={width}>
-                  <StixDomainObjectOverview stixDomainObject={note} />
-                </Grid>
-              );
-            case 'relatedEntities':
-              return (
-                <Grid key={key} item xs={width}>
-                  <ContainerStixObjectsOrStixRelationships
-                    isSupportParticipation={true}
-                    container={note}
-                    enableReferences={enableReferences}
-                  />
-                </Grid>
-              );
-            case 'externalReferences':
-              return (
-                <Grid key={key} item xs={width}>
-                  <StixCoreObjectExternalReferences
-                    stixCoreObjectId={note.id}
-                  />
-                </Grid>
-              );
-            case 'mostRecentHistory':
-              return (
-                <Grid key={key} item xs={width}>
-                  <StixCoreObjectLatestHistory
-                    stixCoreObjectId={note.id}
-                  />
-                </Grid>
-              );
-            default:
-              return null;
-          }
-        })
-      }
+          overviewLayoutCustomization.map(({ key, width }) => {
+            switch (key) {
+              case 'details':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <NoteDetails note={note} />
+                  </Grid>
+                );
+              case 'basicInformation':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixDomainObjectOverview stixDomainObject={note} />
+                  </Grid>
+                );
+              case 'relatedEntities':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ContainerStixObjectsOrStixRelationships
+                      isSupportParticipation={true}
+                      container={note}
+                      enableReferences={enableReferences}
+                    />
+                  </Grid>
+                );
+              case 'externalReferences':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectExternalReferences
+                      stixCoreObjectId={note.id}
+                    />
+                  </Grid>
+                );
+              case 'mostRecentHistory':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <StixCoreObjectLatestHistory
+                      stixCoreObjectId={note.id}
+                    />
+                  </Grid>
+                );
+              default:
+                return null;
+            }
+          })
+        }
       </Grid>
 
     </div>
-);
+  );
 };
 
 export default NoteComponent;

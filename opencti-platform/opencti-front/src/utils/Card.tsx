@@ -44,5 +44,5 @@ export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | 
         <DraftChip style={{ marginLeft: 10 }} />
       )}
     </div>
-);
+  );
 };

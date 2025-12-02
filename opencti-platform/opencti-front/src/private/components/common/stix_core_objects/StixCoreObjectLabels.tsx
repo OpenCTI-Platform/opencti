@@ -88,39 +88,39 @@ const StixCoreObjectLabels = ({
           variant="outlined"
           label={t_i18n('Revoked')}
           style={{
-          ...variantStyle,
-          color: '#d32f2f',
-          borderColor: '#d32f2f',
-          backgroundColor: 'rgba(211, 47, 47, .1)',
-        }}
+            ...variantStyle,
+            color: '#d32f2f',
+            borderColor: '#d32f2f',
+            backgroundColor: 'rgba(211, 47, 47, .1)',
+          }}
           onClick={(e: SyntheticEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onClick?.('objectLabel', null, 'eq');
-        }}
+            e.preventDefault();
+            e.stopPropagation();
+            onClick?.('objectLabel', null, 'eq');
+          }}
         />
-    ) : (
-      <Chip
-        variant="outlined"
-        label={t_i18n('No label')}
-        style={{
-          ...variantStyle,
-          color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-          borderColor:
+      ) : (
+        <Chip
+          variant="outlined"
+          label={t_i18n('No label')}
+          style={{
+            ...variantStyle,
+            color: theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
+            borderColor:
             theme.palette.mode === 'dark' ? '#ffffff' : '#000000',
-          backgroundColor: hexToRGB(
-            theme.palette.mode === 'dark' ? '#ffffff' : 'transparent',
-          ),
-        }}
-        onClick={(e: SyntheticEvent) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onClick?.('objectLabel', null, 'eq');
-        }}
-      />
-    )}
+            backgroundColor: hexToRGB(
+              theme.palette.mode === 'dark' ? '#ffffff' : 'transparent',
+            ),
+          }}
+          onClick={(e: SyntheticEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClick?.('objectLabel', null, 'eq');
+          }}
+        />
+      )}
     </>
-);
+  );
 };
 
 export default StixCoreObjectLabels;

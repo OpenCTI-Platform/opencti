@@ -64,14 +64,14 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
       </Typography>
       <div>
         {works.length === 0 && (
-        <Paper
-          classes={{ root: classes.paper }}
-          variant="outlined"
-        >
-          <Typography align="center">
-            {t_i18n('No work')}
-          </Typography>
-        </Paper>
+          <Paper
+            classes={{ root: classes.paper }}
+            variant="outlined"
+          >
+            <Typography align="center">
+              {t_i18n('No work')}
+            </Typography>
+          </Paper>
         )}
         {works.map((workEdge) => {
           const work = workEdge?.node;

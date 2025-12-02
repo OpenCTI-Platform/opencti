@@ -76,7 +76,7 @@ const dataComponentQuery = graphql`
 const RootDataComponent = () => {
   const { dataComponentId } = useParams() as { dataComponentId: string };
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootDataComponentSubscription>
+    GraphQLSubscriptionConfig<RootDataComponentSubscription>
   >(
     () => ({
       subscription,

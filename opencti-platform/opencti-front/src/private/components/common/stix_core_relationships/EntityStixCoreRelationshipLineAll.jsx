@@ -109,14 +109,14 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
             onClick={(event) => (event.shiftKey
               ? onToggleShiftEntity(index, node)
               : onToggleEntity(node, event))
-          }
+            }
           >
             <Checkbox
               edge="start"
               checked={
-              (selectAll && !(node.id in (deSelectedElements || {})))
-              || node.id in (selectedElements || {})
-            }
+                (selectAll && !(node.id in (deSelectedElements || {})))
+                || node.id in (selectedElements || {})
+              }
               disableRipple={true}
             />
           </ListItemIcon>

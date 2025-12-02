@@ -87,9 +87,9 @@ export const handleRemoveRepresentationFilterUtil = ({ filters, id, value }: Fil
 }>): FilterGroup => {
   return updateFilters(filters, (f) => (f.id === id
     ? {
-      ...f,
-      values: f.values.filter((v) => v !== value),
-    }
+        ...f,
+        values: f.values.filter((v) => v !== value),
+      }
     : f));
 };
 

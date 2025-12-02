@@ -230,7 +230,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                 path="/"
                 element={(
                   <Sector sectorData={sector} />
-                  )}
+                )}
               />
               <Route
                 path="/knowledge"

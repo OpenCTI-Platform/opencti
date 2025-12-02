@@ -219,7 +219,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                 path="/knowledge"
                 element={
                   <Navigate to={`/dashboard/locations/cities/${cityId}/knowledge/overview`} replace={true} />
-              }
+                }
               />
               <Route
                 path="/knowledge/*"
@@ -241,7 +241,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                 path="/analyses"
                 element={
                   <StixCoreObjectOrStixCoreRelationshipContainers stixDomainObjectOrStixCoreRelationship={city} />
-              }
+                }
               />
               <Route
                 path="/sightings"
@@ -269,7 +269,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                 path="/history"
                 element={
                   <StixCoreObjectHistory stixCoreObjectId={cityId} />
-              }
+                }
               />
             </Routes>
           </div>

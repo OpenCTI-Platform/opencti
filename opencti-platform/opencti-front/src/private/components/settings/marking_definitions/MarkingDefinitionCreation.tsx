@@ -39,7 +39,7 @@ interface MarkingDefinitionCreationProps {
 }
 
 const MarkingDefinitionCreation: FunctionComponent<
-MarkingDefinitionCreationProps
+  MarkingDefinitionCreationProps
 > = ({
   paginationOptions,
 }) => {

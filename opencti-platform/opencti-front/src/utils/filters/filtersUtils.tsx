@@ -626,14 +626,14 @@ export const constructHandleAddFilter = (
   };
   return filters
     ? {
-      ...filters,
-      filters: [...filters.filters, newFilterElement], // add new filter
-    }
+        ...filters,
+        filters: [...filters.filters, newFilterElement], // add new filter
+      }
     : {
-      mode: 'and',
-      filterGroups: [],
-      filters: [newFilterElement],
-    };
+        mode: 'and',
+        filterGroups: [],
+        filters: [newFilterElement],
+      };
 };
 
 // remove a filter (k, op, id) in a filterGroup smartly, for usage in forms
@@ -986,7 +986,7 @@ export const getSelectedOptions = (
   entitiesOptions: FilterOptionValue[],
   filterValues: string[],
   filtersRepresentativesMap: Map<string,
-  FilterRepresentative>,
+    FilterRepresentative>,
   t_i18n: (s: string) => string,
 ): FilterOptionValue[] => {
   // we try to get first the element from the search

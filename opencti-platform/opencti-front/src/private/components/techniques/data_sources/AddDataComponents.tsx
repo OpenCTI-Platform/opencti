@@ -85,14 +85,14 @@ const AddDataComponents: FunctionComponent<{
         )}
       >
         {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
-          <AddDataComponentsLines
-            dataSource={dataSource}
-            queryRef={queryRef}
-          />
-        </React.Suspense>
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <AddDataComponentsLines
+              dataSource={dataSource}
+              queryRef={queryRef}
+            />
+          </React.Suspense>
         )}
       </Drawer>
     </div>

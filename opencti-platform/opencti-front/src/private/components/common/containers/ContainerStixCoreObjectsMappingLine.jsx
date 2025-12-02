@@ -94,7 +94,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
           />
         </Security>
       )
-    }
+      }
     >
       <ListItemButton
         classes={{ root: classes.item }}
@@ -149,10 +149,10 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 <Chip
                   classes={{ root: classes.chipInList }}
                   label={
-                  (mappedString && contentMappingCount[mappedString])
-                    ? contentMappingCount[mappedString]
-                    : '0'
-                }
+                    (mappedString && contentMappingCount[mappedString])
+                      ? contentMappingCount[mappedString]
+                      : '0'
+                  }
                 />
               </div>
             </>

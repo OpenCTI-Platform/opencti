@@ -79,8 +79,8 @@ const IngestionCsvLines: FunctionComponent<IngestionCsvLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  IngestionCsvLinesPaginationQuery,
-  IngestionCsvLines_data$key>({
+    IngestionCsvLinesPaginationQuery,
+    IngestionCsvLines_data$key>({
     queryRef,
     linesQuery: ingestionCsvLinesQuery,
     linesFragment: ingestionCsvLinesFragment,

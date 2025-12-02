@@ -23,7 +23,7 @@ interface AddIndividualsThreatActorIndividualComponentProps {
 }
 
 const AddIndividualsThreatActorIndividualComponent: FunctionComponent<
-AddIndividualsThreatActorIndividualComponentProps
+  AddIndividualsThreatActorIndividualComponentProps
 > = ({
   threatActorIndividual,
   queryRef,
@@ -56,13 +56,13 @@ AddIndividualsThreatActorIndividualComponentProps
         header={(
           <div
             style={{
-            marginLeft: 'auto',
-            marginRight: '20px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-end',
-          }}
+              marginLeft: 'auto',
+              marginRight: '20px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
+            }}
           >
             <SearchInput
               variant="inDrawer"
@@ -73,7 +73,7 @@ AddIndividualsThreatActorIndividualComponentProps
               paginationOptions={paginationOptions}
             />
           </div>
-      )}
+        )}
       >
         <AddIndividualsThreatActorIndividualLines
           threatActorIndividual={threatActorIndividual}
@@ -81,7 +81,7 @@ AddIndividualsThreatActorIndividualComponentProps
         />
       </Drawer>
     </div>
-);
+  );
 };
 
 interface AddIndividualsThreatActorIndividualProps {

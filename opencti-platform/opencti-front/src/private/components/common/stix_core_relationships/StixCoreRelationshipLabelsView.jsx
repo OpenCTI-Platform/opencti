@@ -62,7 +62,7 @@ const StixCoreRelationshipLabelsView = (props) => {
       mutationRelationDelete={stixCoreRelationshipMutationRelationsDelete}
       enableReferences={useIsEnforceReference('stix-core-relationship')}
     />
-);
+  );
 };
 
 StixCoreRelationshipLabelsView.propTypes = {

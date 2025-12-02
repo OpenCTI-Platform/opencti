@@ -143,19 +143,19 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
       />
       <IngestionCsvCreationContainer
         ingestionCsvData={{
-        ...ingestCSVData,
-      } as unknown as IngestionCsvEditionFragment_ingestionCsv$data}
+          ...ingestCSVData,
+        } as unknown as IngestionCsvEditionFragment_ingestionCsv$data}
         triggerButton={false}
         handleClose={() => setOpen(false)}
         open={open}
         paginationOptions={paginationOptions}
         drawerSettings={{
-        title: t_i18n('Import a CSV Feed'),
-        button: t_i18n('Create'),
-      }}
+          title: t_i18n('Import a CSV Feed'),
+          button: t_i18n('Create'),
+        }}
       />
     </>
-);
+  );
 };
 
 export default IngestionCsvImport;

@@ -174,19 +174,19 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
         <span>
           <Box
             sx={{
-            display: 'flex',
-            gap: 1,
-            marginTop: '20px',
-          }}
+              display: 'flex',
+              gap: 1,
+              marginTop: '20px',
+            }}
           >
             <Filters
               availableFilterKeys={[
-              'event_type',
-              'event_scope',
-              'members_user',
-              'members_group',
-              'members_organization',
-            ]}
+                'event_type',
+                'event_scope',
+                'members_user',
+                'members_group',
+                'members_organization',
+              ]}
               helpers={helpers}
               searchContext={{ entityTypes: ['History'] }}
             />
@@ -194,7 +194,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
           <div className="clearfix" />
         </span>
       </>
-);
+    );
   };
 
   const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerActivityLiveAddInput) => (

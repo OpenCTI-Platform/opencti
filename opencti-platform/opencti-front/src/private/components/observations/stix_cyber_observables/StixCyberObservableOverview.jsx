@@ -250,23 +250,23 @@ class StixCyberObservableOverview extends Component {
             <List>
               {stixIds.map(
                 (stixId) => stixId.length > 0 && (
-                <ListItem
-                  key={stixId}
-                  disableGutters={true}
-                  dense={true}
-                  secondaryAction={(
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={this.deleteStixId.bind(this, stixId)}
-                      size="large"
-                    >
-                      <Delete />
-                    </IconButton>
-                  )}
-                >
-                  <ListItemText primary={stixId} />
-                </ListItem>
+                  <ListItem
+                    key={stixId}
+                    disableGutters={true}
+                    dense={true}
+                    secondaryAction={(
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={this.deleteStixId.bind(this, stixId)}
+                        size="large"
+                      >
+                        <Delete />
+                      </IconButton>
+                    )}
+                  >
+                    <ListItemText primary={stixId} />
+                  </ListItem>
                 ),
               )}
             </List>

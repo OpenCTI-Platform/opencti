@@ -31,7 +31,7 @@ const XtmHubDialogConnectivityLost: React.FC<Props> = ({ status, onCancel, onCon
         onCancel={onCancel}
       />
     </>
-);
+  );
 };
 
 export default XtmHubDialogConnectivityLost;

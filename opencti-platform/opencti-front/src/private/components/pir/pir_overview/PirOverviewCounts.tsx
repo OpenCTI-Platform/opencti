@@ -197,10 +197,10 @@ const PirOverviewCounts = ({ data }: PirOverviewCountsProps) => {
       <Grid container spacing={3}>
         <Suspense fallback={<PirOverviewCountsDummy />}>
           {countsQueryRef && counts24hQueryRef && (
-          <PirOverviewCountsComponent
-            countsQueryRef={countsQueryRef}
-            counts24hQueryRef={counts24hQueryRef}
-          />
+            <PirOverviewCountsComponent
+              countsQueryRef={countsQueryRef}
+              counts24hQueryRef={counts24hQueryRef}
+            />
           )}
         </Suspense>
       </Grid>

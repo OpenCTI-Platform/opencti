@@ -135,7 +135,7 @@ interface AdministrativeAreaEditionFormValues {
 
 // eslint-disable-next-line max-len
 const AdministrativeAreaEditionOverview: FunctionComponent<
-AdministrativeAreaEditionOverviewProps
+  AdministrativeAreaEditionOverviewProps
 > = ({
   administrativeAreaRef,
   context,

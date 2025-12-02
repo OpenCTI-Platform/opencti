@@ -126,19 +126,19 @@ const ContainerStixCyberObservableLineComponent = (props) => {
           style={{ minWidth: 40 }}
           onClick={(event) => !isOnlyThroughInference
             && (event.shiftKey
-            ? onToggleShiftEntity(index, node, event)
-            : onToggleEntity(node, event))
-        }
+              ? onToggleShiftEntity(index, node, event)
+              : onToggleEntity(node, event))
+          }
         >
           <Checkbox
             edge="start"
             disabled={isOnlyThroughInference}
             checked={
-            (selectAll
-              && !isOnlyThroughInference
-              && !(node.id in deSelectedElements))
-            || node.id in selectedElements
-          }
+              (selectAll
+                && !isOnlyThroughInference
+                && !(node.id in deSelectedElements))
+              || node.id in selectedElements
+            }
             disableRipple={true}
           />
         </ListItemIcon>
@@ -193,18 +193,18 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                   'Data-Component',
                   'Data-Source',
                 ].includes(node.entity_type) ? (
-                  <Chip
-                    classes={{ root: classes.chipNoLink }}
-                    label={n(node.containersNumber.total)}
-                  />
-                  ) : (
-                    <Chip
-                      classes={{ root: classes.chip }}
-                      label={n(node.containersNumber.total)}
-                      component={Link}
-                      to={linkAnalyses}
-                    />
-                  )}
+                      <Chip
+                        classes={{ root: classes.chipNoLink }}
+                        label={n(node.containersNumber.total)}
+                      />
+                    ) : (
+                      <Chip
+                        classes={{ root: classes.chip }}
+                        label={n(node.containersNumber.total)}
+                        component={Link}
+                        to={linkAnalyses}
+                      />
+                    )}
               </div>
               <div
                 className={classes.bodyItem}

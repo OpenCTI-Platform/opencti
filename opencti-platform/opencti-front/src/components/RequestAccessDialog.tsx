@@ -153,7 +153,7 @@ const RequestAccessDialog: React.FC<RequestAccessDialogProps> = ({ open, onClose
           </Formik>
         </DialogContent>
       </Dialog>
-)}
+    )}
     </>
   );
 };

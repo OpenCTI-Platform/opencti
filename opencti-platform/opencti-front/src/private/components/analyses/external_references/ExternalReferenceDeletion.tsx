@@ -25,7 +25,7 @@ interface ExternalReferenceDeletionProps {
 }
 
 const ExternalReferenceDeletion: FunctionComponent<
-ExternalReferenceDeletionProps
+  ExternalReferenceDeletionProps
 > = ({ id, objectId, isOpen, handleClose, handleRemove, isExternalReferenceAttachment }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();

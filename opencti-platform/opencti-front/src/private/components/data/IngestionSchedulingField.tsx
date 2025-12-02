@@ -30,7 +30,7 @@ const IngestionSchedulingField = ({ handleSubmitField }: IngestionSchedulingProp
       <MenuItem value="PT12H">{t_i18n('12 hours')}</MenuItem>
       <MenuItem value="PT1D">{t_i18n('24 hours')}</MenuItem>
     </Field>
-);
+  );
 };
 
 export default IngestionSchedulingField;

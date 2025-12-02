@@ -143,9 +143,9 @@ const SettingsOrganizationEdition = ({
     contact_information: organization.contact_information ?? null,
     default_dashboard: organization.default_dashboard
       ? {
-        value: organization.default_dashboard.id,
-        label: organization.default_dashboard.name,
-      }
+          value: organization.default_dashboard.id,
+          label: organization.default_dashboard.name,
+        }
       : null,
     grantable_groups: convertGrantableGroups(organization),
   };

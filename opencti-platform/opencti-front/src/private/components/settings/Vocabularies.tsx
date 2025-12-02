@@ -179,7 +179,7 @@ const Vocabularies = () => {
               category={category}
               paginationOptions={queryPaginationOptions}
             />
-)}
+          )}
         />
       )}
     </div>

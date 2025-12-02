@@ -39,7 +39,7 @@ interface FintelDesignEditionFormValues {
 }
 
 const FintelDesignEditionOverviewComponent: FunctionComponent<
-FintelDesignEditionOverviewProps
+  FintelDesignEditionOverviewProps
 > = ({ data }) => {
   const { t_i18n } = useFormatter();
   const fintelDesign = useFragment(fintelDesignOverviewFragment, data);

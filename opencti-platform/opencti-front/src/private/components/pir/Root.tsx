@@ -30,11 +30,11 @@ const PirRoot = () => {
     <Suspense fallback={<Loader />}>
       {isEnterpriseEdition
         ? (
-          <Routes>
-            <Route path="/" element={boundaryWrapper(Pirs)} />
-            <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
-          </Routes>
-)
+            <Routes>
+              <Route path="/" element={boundaryWrapper(Pirs)} />
+              <Route path="/:pirId/*" element={boundaryWrapper(Pir)} />
+            </Routes>
+          )
         : <EnterpriseEdition feature={t_i18n('PIR')} />}
     </Suspense>
   );

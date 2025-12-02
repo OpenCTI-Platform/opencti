@@ -32,7 +32,7 @@ interface EntitySettingScaleTickLineProps {
 }
 
 const ScaleConfigurationLine: FunctionComponent<
-EntitySettingScaleTickLineProps
+  EntitySettingScaleTickLineProps
 > = ({
   tick,
   tickLabel,

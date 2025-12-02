@@ -91,7 +91,7 @@ const ImportFilesDropzone = ({
         )}
       </Box>
     </Box>
-);
+  );
 };
 
 export default ImportFilesDropzone;

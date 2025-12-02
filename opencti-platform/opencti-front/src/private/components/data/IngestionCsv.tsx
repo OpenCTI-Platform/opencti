@@ -123,10 +123,10 @@ const IngestionCsv = () => {
               <IngestionCsvCreationContainer
                 paginationOptions={paginationOptions}
                 drawerSettings={
-                {
-                  title: t_i18n('Create a CSV Feed'),
-                  button: t_i18n('Create'),
-                }
+                  {
+                    title: t_i18n('Create a CSV Feed'),
+                    button: t_i18n('Create'),
+                  }
                 }
               />
             </>

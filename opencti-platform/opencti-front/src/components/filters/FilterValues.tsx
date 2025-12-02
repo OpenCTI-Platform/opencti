@@ -60,11 +60,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
   const labelStyle = deactivatePopoverMenu
     ? undefined
     : {
-      cursor: 'pointer',
-      '&:hover': {
-        textDecorationLine: 'underline',
-      },
-    };
+        cursor: 'pointer',
+        '&:hover': {
+          textDecorationLine: 'underline',
+        },
+      };
 
   // special case for nil/not_nil
   if (isOperatorNil) {
@@ -112,28 +112,28 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       && isFilterEditable(filtersRestrictions, filterKey, filterValues);
     const localModeStyle = isLocalModeSwitchable
       ? {
-        display: 'inline-block',
-        height: '100%',
-        borderRadius: 0,
-        margin: '0 5px 0 5px',
-        padding: '0 5px 0 5px',
-        cursor: 'pointer',
-        backgroundColor: theme.palette.action?.disabled,
-        fontFamily: 'Consolas, monaco, monospace',
-        '&:hover': {
-          textDecorationLine: 'underline',
-          backgroundColor: theme.palette.text?.disabled,
-        },
-      }
+          display: 'inline-block',
+          height: '100%',
+          borderRadius: 0,
+          margin: '0 5px 0 5px',
+          padding: '0 5px 0 5px',
+          cursor: 'pointer',
+          backgroundColor: theme.palette.action?.disabled,
+          fontFamily: 'Consolas, monaco, monospace',
+          '&:hover': {
+            textDecorationLine: 'underline',
+            backgroundColor: theme.palette.text?.disabled,
+          },
+        }
       : {
-        display: 'inline-block',
-        height: '100%',
-        borderRadius: 0,
-        margin: '0 5px 0 5px',
-        padding: '0 5px 0 5px',
-        backgroundColor: theme.palette.action?.disabled,
-        fontFamily: 'Consolas, monaco, monospace',
-      };
+          display: 'inline-block',
+          height: '100%',
+          borderRadius: 0,
+          margin: '0 5px 0 5px',
+          padding: '0 5px 0 5px',
+          backgroundColor: theme.palette.action?.disabled,
+          fontFamily: 'Consolas, monaco, monospace',
+        };
     const operatorOnClick = isLocalModeSwitchable ? () => handleSwitchLocalMode(currentFilter) : undefined;
     const value = filtersRepresentativesMap.get(id) ? filtersRepresentativesMap.get(id)?.value : id;
     const isRegardingOfFilter = parentFilter?.key === 'regardingOf' || parentFilter?.key === 'dynamicRegardingOf';
@@ -141,57 +141,57 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <Fragment key={id}>
         {filterOperator === 'within'
           ? (
-            <>
-              {filterValues[0] === id && <span>[</span>}
-              <FilterValuesContent
-                isFilterTooltip={!!tooltip}
-                filterKey={filterKey}
-                id={id}
-                value={value}
-                filterDefinition={filterDefinition}
-                filterOperator={filterOperator}
-              />
-              <span>
-                {last(filterValues) === id ? ']' : ', '}
-              </span>
-            </>
-)
+              <>
+                {filterValues[0] === id && <span>[</span>}
+                <FilterValuesContent
+                  isFilterTooltip={!!tooltip}
+                  filterKey={filterKey}
+                  id={id}
+                  value={value}
+                  filterDefinition={filterDefinition}
+                  filterOperator={filterOperator}
+                />
+                <span>
+                  {last(filterValues) === id ? ']' : ', '}
+                </span>
+              </>
+            )
           : (
-            <>
-              <FilterValuesContent
-                redirection={tooltip ? false : redirection}
-                isFilterTooltip={!!tooltip}
-                filterKey={filterKey}
-                id={id}
-                value={value}
-                filterDefinition={filterDefinition}
-                filterOperator={filterOperator}
-              />
-              {last(filterValues) !== id && isRegardingOfFilter
-                && (
-                <div
-                  style={{
-                  display: 'inline-block',
-                  height: '100%',
-                  borderRadius: 0,
-                  margin: '0 2px 0 0',
-                  fontFamily: 'Consolas, monaco, monospace',
-                }}
-                  onClick={operatorOnClick}
-                >
-                  ,
-                </div>
-)
-            }
-              {last(filterValues) !== id && !isRegardingOfFilter
-                && (
-                <div style={localModeStyle} onClick={operatorOnClick}>
-                  {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
-                </div>
-)
-            }
-            </>
-)
+              <>
+                <FilterValuesContent
+                  redirection={tooltip ? false : redirection}
+                  isFilterTooltip={!!tooltip}
+                  filterKey={filterKey}
+                  id={id}
+                  value={value}
+                  filterDefinition={filterDefinition}
+                  filterOperator={filterOperator}
+                />
+                {last(filterValues) !== id && isRegardingOfFilter
+                  && (
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        height: '100%',
+                        borderRadius: 0,
+                        margin: '0 2px 0 0',
+                        fontFamily: 'Consolas, monaco, monospace',
+                      }}
+                      onClick={operatorOnClick}
+                    >
+                      ,
+                    </div>
+                  )
+                }
+                {last(filterValues) !== id && !isRegardingOfFilter
+                  && (
+                    <div style={localModeStyle} onClick={operatorOnClick}>
+                      {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
+                    </div>
+                  )
+                }
+              </>
+            )
         }
       </Fragment>
     );
@@ -214,7 +214,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=regarding#the-regardingof-filter-key">
                     {t_i18n('read documentation')}
                   </Link>
-),
+                ),
               },
             })
           }

@@ -52,7 +52,7 @@ interface CsvMapperRepresentationAttributeRefFormProps
 }
 
 const CsvMapperRepresentationAttributeRefForm: FunctionComponent<
-CsvMapperRepresentationAttributeRefFormProps
+  CsvMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

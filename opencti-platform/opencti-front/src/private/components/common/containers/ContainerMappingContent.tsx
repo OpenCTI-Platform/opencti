@@ -182,7 +182,7 @@ interface ContainerMappingContentComponentProps {
 export type MappedEntityType = NonNullable<NonNullable<ContainerStixCoreObjectsSuggestedMappingQuery$data['stixCoreObjectAnalysis']>['mappedEntities']>[number];
 
 const ContainerMappingContentComponent: FunctionComponent<
-ContainerMappingContentComponentProps
+  ContainerMappingContentComponentProps
 > = ({ containerData, queryRef, loadQuery, currentMode }) => {
   const { t_i18n } = useFormatter();
   const enableReferences = useIsEnforceReference(containerData.entity_type);
@@ -482,23 +482,23 @@ ContainerMappingContentComponentProps
             />
             <div style={{ margin: 0, padding: '15px 0 0 0' }}>
               {!inSuggestedMode && (
-              <ContainerStixCoreObjectsMapping
-                container={containerData}
-                height={listHeight}
-                contentMappingData={contentMappingData}
-                contentMappingCount={mappedStringsCount}
-                enableReferences={enableReferences}
-              />
+                <ContainerStixCoreObjectsMapping
+                  container={containerData}
+                  height={listHeight}
+                  contentMappingData={contentMappingData}
+                  contentMappingCount={mappedStringsCount}
+                  enableReferences={enableReferences}
+                />
               )}
               {inSuggestedMode && (
-              <ContainerStixCoreObjectsSuggestedMapping
-                container={containerData}
-                suggestedEntities={filteredSuggestedMappedEntities}
-                suggestedMappingCount={suggestedMappingCount}
-                height={listHeight}
-                askingSuggestion={askingSuggestion}
-                handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
-              />
+                <ContainerStixCoreObjectsSuggestedMapping
+                  container={containerData}
+                  suggestedEntities={filteredSuggestedMappedEntities}
+                  suggestedMappingCount={suggestedMappingCount}
+                  height={listHeight}
+                  askingSuggestion={askingSuggestion}
+                  handleRemoveSuggestedMappingLine={handleRemoveSuggestedMappingLine}
+                />
               )}
             </div>
           </Paper>

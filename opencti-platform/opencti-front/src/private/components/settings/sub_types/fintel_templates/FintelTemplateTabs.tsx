@@ -53,7 +53,7 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
             <Tabs value={index} onChange={(_, i) => setIndex(i)}>
               <Tab label={t_i18n('Template Editor')} />
             </Tabs>
-        )}
+          )}
         >
           <Tabs value={index} onChange={(_, i) => setIndex(i)}>
             <Tab label={t_i18n('Template Editor')} />

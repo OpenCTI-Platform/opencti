@@ -28,13 +28,13 @@ const IngestionCsvInlineWrapper: FunctionComponent<IngestionCsvInlineWrapperProp
   );
 
   return queryRefMappers && queryRefSchemaAttributes && (
-  <CsvMappersProvider
-    mappersQueryRef={queryRefMappers}
-    schemaAttributesQueryRef={queryRefSchemaAttributes}
-  >
-    {children}
-  </CsvMappersProvider>
-);
+    <CsvMappersProvider
+      mappersQueryRef={queryRefMappers}
+      schemaAttributesQueryRef={queryRefSchemaAttributes}
+    >
+      {children}
+    </CsvMappersProvider>
+  );
 };
 
 export default IngestionCsvInlineWrapper;

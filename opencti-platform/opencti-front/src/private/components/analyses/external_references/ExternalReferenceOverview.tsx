@@ -25,7 +25,7 @@ interface ExternalReferenceOverviewComponentProps {
 }
 
 const ExternalReferenceOverviewComponent: FunctionComponent<
-ExternalReferenceOverviewComponentProps
+  ExternalReferenceOverviewComponentProps
 > = ({ externalReference }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();

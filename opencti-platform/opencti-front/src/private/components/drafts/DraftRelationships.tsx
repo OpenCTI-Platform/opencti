@@ -288,18 +288,18 @@ const DraftRelationships: FunctionComponent<DraftRelationshipsProps> = ({ isRead
   return (
     <span data-testid="draft-relationships-page">
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        getComputeLink={getRedirectionLink}
-        contextFilters={contextFilters}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={draftRelationshipsLineFragment}
-        entityTypes={['stix-core-relationship']}
-        removeFromDraftEnabled
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftRelationshipsLines_data$data) => data.draftWorkspaceRelationships?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          getComputeLink={getRedirectionLink}
+          contextFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={draftRelationshipsLineFragment}
+          entityTypes={['stix-core-relationship']}
+          removeFromDraftEnabled
+        />
       )}
     </span>
   );

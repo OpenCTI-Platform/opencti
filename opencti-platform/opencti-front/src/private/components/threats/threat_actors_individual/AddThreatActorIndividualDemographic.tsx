@@ -26,7 +26,7 @@ interface AddThreatActorIndividualDemographicComponentProps {
 }
 
 const AddThreatActorIndividualDemographicComponent: FunctionComponent<
-AddThreatActorIndividualDemographicComponentProps
+  AddThreatActorIndividualDemographicComponentProps
 > = ({
   threatActorIndividual,
   relType,
@@ -60,13 +60,13 @@ AddThreatActorIndividualDemographicComponentProps
         header={(
           <div
             style={{
-            marginLeft: 'auto',
-            marginRight: '20px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-            alignItems: 'flex-end',
-          }}
+              marginLeft: 'auto',
+              marginRight: '20px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-end',
+            }}
           >
             <SearchInput
               variant="inDrawer"
@@ -76,7 +76,7 @@ AddThreatActorIndividualDemographicComponentProps
               paginationOptions={paginationOptions}
             />
           </div>
-      )}
+        )}
       >
         <AddThreatActorIndividualDemographicLines
           threatActorIndividual={threatActorIndividual}
@@ -85,7 +85,7 @@ AddThreatActorIndividualDemographicComponentProps
         />
       </Drawer>
     </div>
-);
+  );
 };
 
 interface AddThreatActorIndividualDemographicProps {

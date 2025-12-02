@@ -100,22 +100,22 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         message={t_i18n('Do you want to delete this trigger?')}
       />
       {displayEdit && (
-      <Drawer
-        open={true}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={() => setDisplayEdit(false)}
-      >
-        {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
-          {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
-        </React.Suspense>
-        )}
-      </Drawer>
-)}
+        <Drawer
+          open={true}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={() => setDisplayEdit(false)}
+        >
+          {queryRef && (
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+              {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+            </React.Suspense>
+          )}
+        </Drawer>
+      )}
     </div>
   );
 };

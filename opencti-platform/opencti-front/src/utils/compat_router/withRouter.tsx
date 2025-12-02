@@ -25,7 +25,7 @@ const withRouter = <Props extends WithRouterProps>(
         params={params}
         navigate={navigate}
       />
-);
+    );
   };
 };
 

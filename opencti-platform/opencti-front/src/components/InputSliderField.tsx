@@ -13,10 +13,10 @@ interface InputSliderFieldProps {
   onFocus?: (name: string, value: string) => void
   editContext?:
     | readonly ({
-    readonly focusOn: string | null
-    readonly name: string
-  } | null)[]
-  | null
+      readonly focusOn: string | null
+      readonly name: string
+    } | null)[]
+    | null
   containerStyle?: Record<string, string | number>
   entityType: string
   attributeName: string

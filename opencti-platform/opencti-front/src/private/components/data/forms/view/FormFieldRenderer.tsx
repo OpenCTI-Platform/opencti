@@ -447,7 +447,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
               </div>
             ) : null}
             {field.description && (
-            <FormHelperText>{field.description}</FormHelperText>
+              <FormHelperText>{field.description}</FormHelperText>
             )}
           </div>
         );

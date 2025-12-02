@@ -75,11 +75,11 @@ const administrativeAreasLinesFragment = graphql`
 `;
 
 const AdministrativeAreasLines: FunctionComponent<
-AdministrativeAreasLinesProps
+  AdministrativeAreasLinesProps
 > = ({ setNumberOfElements, dataColumns, queryRef, paginationOptions }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  AdministrativeAreasLinesPaginationQuery,
-  AdministrativeAreasLines_data$key
+    AdministrativeAreasLinesPaginationQuery,
+    AdministrativeAreasLines_data$key
   >({
     linesQuery: administrativeAreasLinesQuery,
     linesFragment: administrativeAreasLinesFragment,

@@ -81,12 +81,12 @@ class StixDomainObjectVictimologyRegionsList extends Component {
         cities: {},
         region: n.node.to.region
           ? {
-            id: n.node.to.region.id,
-            name: n.node.to.region.name,
-            countries: {},
-            countries_text: '',
-            relations: [],
-          }
+              id: n.node.to.region.id,
+              name: n.node.to.region.name,
+              countries: {},
+              countries_text: '',
+              relations: [],
+            }
           : null,
         relations: [],
       })),
@@ -102,18 +102,18 @@ class StixDomainObjectVictimologyRegionsList extends Component {
         name: n.node.to.name,
         country: n.node.to.country
           ? {
-            id: n.node.to.country.id,
-            name: n.node.to.country.name,
-            region: n.node.to.country.region
-              ? {
-                id: n.node.to.country.region.id,
-                name: n.node.to.country.region.name,
-                countries: {},
-              }
-              : null,
-            cities: {},
-            relations: [],
-          }
+              id: n.node.to.country.id,
+              name: n.node.to.country.name,
+              region: n.node.to.country.region
+                ? {
+                    id: n.node.to.country.region.id,
+                    name: n.node.to.country.region.name,
+                    countries: {},
+                  }
+                : null,
+              cities: {},
+              relations: [],
+            }
           : null,
         relations: [],
       })),
@@ -345,25 +345,25 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                           </ListItemIcon>
                           <ListItemText
                             primary={
-                            stixCoreRelationship.to.id === region.id ? (
-                              <em>{t('Direct targeting of this region')}</em>
-                            ) : (
-                              stixCoreRelationship.to.name
-                            )
-                          }
+                              stixCoreRelationship.to.id === region.id ? (
+                                <em>{t('Direct targeting of this region')}</em>
+                              ) : (
+                                stixCoreRelationship.to.name
+                              )
+                            }
                             secondary={
                             // eslint-disable-next-line no-nested-ternary
-                            stixCoreRelationship.description
-                            && stixCoreRelationship.description.length > 0 ? (
-                              <MarkdownDisplay
-                                content={stixCoreRelationship.description}
-                                remarkGfmPlugin={true}
-                                commonmark={true}
-                              />
-                              ) : (
-                                t('No description of this targeting')
-                              )
-                          }
+                              stixCoreRelationship.description
+                              && stixCoreRelationship.description.length > 0 ? (
+                                    <MarkdownDisplay
+                                      content={stixCoreRelationship.description}
+                                      remarkGfmPlugin={true}
+                                      commonmark={true}
+                                    />
+                                  ) : (
+                                    t('No description of this targeting')
+                                  )
+                            }
                           />
                           <ItemMarkings
                             variant="inList"
@@ -473,35 +473,35 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                     </ListItemIcon>
                                     <ListItemText
                                       primary={
-                                      stixCoreRelationship.to.id
-                                      === country.id ? (
-                                        <em>
-                                          {t(
-                                            'Direct targeting of this country',
-                                          )}
-                                        </em>
-                                        ) : (
-                                          stixCoreRelationship.to.name
-                                        )
-                                    }
+                                        stixCoreRelationship.to.id
+                                        === country.id ? (
+                                              <em>
+                                                {t(
+                                                  'Direct targeting of this country',
+                                                )}
+                                              </em>
+                                            ) : (
+                                              stixCoreRelationship.to.name
+                                            )
+                                      }
                                       secondary={
                                       // eslint-disable-next-line no-nested-ternary
-                                      stixCoreRelationship.description
-                                      && stixCoreRelationship.description.length
-                                      > 0 ? (
-                                        <MarkdownDisplay
-                                          content={
-                                            stixCoreRelationship.description
-                                          }
-                                          remarkGfmPlugin={true}
-                                          commonmark={true}
-                                        />
-                                        ) : stixCoreRelationship.inferred ? (
-                                          <i>{t('This relation is inferred')}</i>
-                                        ) : (
-                                          t('No description of this targeting')
-                                        )
-                                    }
+                                        stixCoreRelationship.description
+                                        && stixCoreRelationship.description.length
+                                        > 0 ? (
+                                              <MarkdownDisplay
+                                                content={
+                                                  stixCoreRelationship.description
+                                                }
+                                                remarkGfmPlugin={true}
+                                                commonmark={true}
+                                              />
+                                            ) : stixCoreRelationship.inferred ? (
+                                              <i>{t('This relation is inferred')}</i>
+                                            ) : (
+                                              t('No description of this targeting')
+                                            )
+                                      }
                                     />
                                     <ItemMarkings
                                       variant="inList"
@@ -574,48 +574,48 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                             >
                                               <ItemIcon
                                                 type={
-                                                stixCoreRelationship.to
-                                                  .entity_type
-                                              }
+                                                  stixCoreRelationship.to
+                                                    .entity_type
+                                                }
                                               />
                                             </ListItemIcon>
                                             <ListItemText
                                               primary={
-                                              stixCoreRelationship.to.id
-                                              === country.id ? (
-                                                <em>
-                                                  {t(
-                                                    'Direct targeting of this country',
-                                                  )}
-                                                </em>
-                                                ) : (
-                                                  stixCoreRelationship.to.name
-                                                )
-                                            }
+                                                stixCoreRelationship.to.id
+                                                === country.id ? (
+                                                      <em>
+                                                        {t(
+                                                          'Direct targeting of this country',
+                                                        )}
+                                                      </em>
+                                                    ) : (
+                                                      stixCoreRelationship.to.name
+                                                    )
+                                              }
                                               secondary={
                                               // eslint-disable-next-line no-nested-ternary
-                                              stixCoreRelationship.description
-                                              && stixCoreRelationship.description
-                                                .length > 0 ? (
-                                                  <MarkdownDisplay
-                                                    content={
-                                                    stixCoreRelationship.description
-                                                  }
-                                                    remarkGfmPlugin={true}
-                                                    commonmark={true}
-                                                  />
-                                                ) : stixCoreRelationship.inferred ? (
-                                                  <i>
-                                                    {t(
-                                                      'This relation is inferred',
-                                                    )}
-                                                  </i>
-                                                ) : (
-                                                  t(
-                                                    'No description of this targeting',
-                                                  )
-                                                )
-                                            }
+                                                stixCoreRelationship.description
+                                                && stixCoreRelationship.description
+                                                  .length > 0 ? (
+                                                      <MarkdownDisplay
+                                                        content={
+                                                          stixCoreRelationship.description
+                                                        }
+                                                        remarkGfmPlugin={true}
+                                                        commonmark={true}
+                                                      />
+                                                    ) : stixCoreRelationship.inferred ? (
+                                                      <i>
+                                                        {t(
+                                                          'This relation is inferred',
+                                                        )}
+                                                      </i>
+                                                    ) : (
+                                                      t(
+                                                        'No description of this targeting',
+                                                      )
+                                                    )
+                                              }
                                             />
                                             <ItemMarkings
                                               variant="inList"

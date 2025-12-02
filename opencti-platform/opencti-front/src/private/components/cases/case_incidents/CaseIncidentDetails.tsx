@@ -124,12 +124,12 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
             </Typography>
             {responseTypes.length > 0
               ? (data.response_types ?? []).map((responseType) => (
-                <Chip
-                  key={responseType}
-                  classes={{ root: classes.chip }}
-                  label={responseType}
-                />
-              ))
+                  <Chip
+                    key={responseType}
+                    classes={{ root: classes.chip }}
+                    label={responseType}
+                  />
+                ))
               : '-'}
           </Grid>
           <Grid item xs={12}>

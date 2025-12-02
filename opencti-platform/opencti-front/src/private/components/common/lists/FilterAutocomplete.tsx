@@ -78,7 +78,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     },
   );
   const [cacheEntities, setCacheEntities] = useState<
-  Record<string, { label: string, value: string, type: string }[]>
+    Record<string, { label: string, value: string, type: string }[]>
   >({});
   const [entities, searchEntities] = useSearchEntities({
     searchContext,
@@ -91,11 +91,11 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
     (
       filterKey: string,
       cacheEntities: Record<
-      string,
-      { label: string, value: string, type: string }[]
+        string,
+        { label: string, value: string, type: string }[]
       >,
       setCacheEntities: Dispatch<
-      Record<string, { label: string, value: string, type: string }[]>
+        Record<string, { label: string, value: string, type: string }[]>
       >,
       event: SyntheticEvent,
     ) => Record<string, FilterOptionValue[]>,

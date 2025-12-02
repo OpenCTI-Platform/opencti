@@ -46,12 +46,12 @@ const GroupEntitySettingHiddenTypesList: FunctionComponent<{ targetType: string 
   return (
     <>
       {queryRef && (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <GroupHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
-      </React.Suspense>
-    )}
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <GroupHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
+        </React.Suspense>
+      )}
     </>
-);
+  );
 };
 
 export default GroupEntitySettingHiddenTypesList;

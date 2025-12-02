@@ -251,22 +251,22 @@ class StixCoreRelationshipContainer extends Component {
               {t('Relationship')}{stixCoreRelationship.draftVersion && (<DraftChip />)}
             </Typography>
             {!stixCoreRelationship.is_inferred && (
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <IconButton
-                color="primary"
-                onClick={this.handleOpenEdition.bind(this)}
-                size="large"
-                sx={{ margin: '-15px 0px 0px -2px', float: 'left' }}
-              >
-                <EditOutlined fontSize="small" />
-              </IconButton>
-              <StixCoreRelationshipEdition
-                open={this.state.openEdit}
-                stixCoreRelationshipId={stixCoreRelationship.id}
-                handleClose={this.handleCloseEdition.bind(this)}
-                handleDelete={this.handleOpenDelete.bind(this)}
-              />
-            </Security>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <IconButton
+                  color="primary"
+                  onClick={this.handleOpenEdition.bind(this)}
+                  size="large"
+                  sx={{ margin: '-15px 0px 0px -2px', float: 'left' }}
+                >
+                  <EditOutlined fontSize="small" />
+                </IconButton>
+                <StixCoreRelationshipEdition
+                  open={this.state.openEdit}
+                  stixCoreRelationshipId={stixCoreRelationship.id}
+                  handleClose={this.handleCloseEdition.bind(this)}
+                  handleDelete={this.handleOpenDelete.bind(this)}
+                />
+              </Security>
             )}
             <Paper
               classes={{ root: classes.paperRelationships }}
@@ -314,11 +314,11 @@ class StixCoreRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!fromRestricted
                         ? truncate(
-                          getMainRepresentative(from) !== 'Unknown'
-                            ? getMainRepresentative(from)
-                            : t(`relationship_${from.entity_type}`),
-                          50,
-                        )
+                            getMainRepresentative(from) !== 'Unknown'
+                              ? getMainRepresentative(from)
+                              : t(`relationship_${from.entity_type}`),
+                            50,
+                          )
                         : t('Restricted')}
                       {!fromRestricted && stixCoreRelationship.from.draftVersion && (<DraftChip />)}
                     </span>
@@ -380,11 +380,11 @@ class StixCoreRelationshipContainer extends Component {
                     <span className={classes.name}>
                       {!toRestricted
                         ? truncate(
-                          getMainRepresentative(to) !== 'Unknown'
-                            ? getMainRepresentative(to)
-                            : t(`relationship_${to.entity_type}`),
-                          50,
-                        )
+                            getMainRepresentative(to) !== 'Unknown'
+                              ? getMainRepresentative(to)
+                              : t(`relationship_${to.entity_type}`),
+                            50,
+                          )
                         : t('Restricted')}
                       {!toRestricted && stixCoreRelationship.to.draftVersion && (<DraftChip />)}
                     </span>

@@ -69,10 +69,10 @@ class ThreatActorGroupLocationsComponent extends Component {
               const link = resolveLink(location.entity_type);
               const flag = location.entity_type === 'Country'
                 && R.head(
-                (location.x_opencti_aliases ?? []).filter(
-                  (n) => n?.length === 2,
-                ),
-              );
+                  (location.x_opencti_aliases ?? []).filter(
+                    (n) => n?.length === 2,
+                  ),
+                );
               return (
                 <ListItem
                   key={location.id}
@@ -80,15 +80,15 @@ class ThreatActorGroupLocationsComponent extends Component {
                   divider={true}
                   disablePadding
                   secondaryAction={types.includes('manual') && (
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                    <IconButton
-                      aria-label="Remove"
-                      onClick={() => this.removeLocation(locationEdge)}
-                      size="large"
-                    >
-                      <LinkOff />
-                    </IconButton>
-                  </Security>
+                    <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                      <IconButton
+                        aria-label="Remove"
+                        onClick={() => this.removeLocation(locationEdge)}
+                        size="large"
+                      >
+                        <LinkOff />
+                      </IconButton>
+                    </Security>
                   )}
                 >
                   <ListItemButton

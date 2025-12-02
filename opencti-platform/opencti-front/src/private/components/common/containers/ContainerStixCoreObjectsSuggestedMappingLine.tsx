@@ -97,7 +97,7 @@ const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`
   `;
 
 export const ContainerStixCoreObjectsSuggestedMappingLine: FunctionComponent<
-ContainerStixCoreObjectsSuggestedMappingLineComponentProps
+  ContainerStixCoreObjectsSuggestedMappingLineComponentProps
 > = ({ dataColumns, contentMappingCount, node, handleRemoveSuggestedMappingLine }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

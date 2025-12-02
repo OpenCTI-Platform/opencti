@@ -328,19 +328,19 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             <MenuItem value="POST">POST</MenuItem>
           </Field>
           {values.verb === 'POST' && (
-          <>
-            <Field
-              component={TextField}
-              name="body"
-              label={t_i18n('HTTP BODY POST')}
-              required={values.verb === 'POST'}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={fieldSpacingContainerStyle}
-              askAi={false}
-            />
-          </>
+            <>
+              <Field
+                component={TextField}
+                name="body"
+                label={t_i18n('HTTP BODY POST')}
+                required={values.verb === 'POST'}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={fieldSpacingContainerStyle}
+                askAi={false}
+              />
+            </>
           )}
           <QueryAttributeFieldAdd
             id="query_attributes"
@@ -370,31 +370,31 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
               />
             </Box>
             {!!values.pagination_with_sub_page && (
-            <>
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="pagination_with_sub_page_query_verb"
-                label={t_i18n('Sub pagination verb')}
-                fullWidth={true}
-                containerstyle={{
-                  width: '100%',
-                  marginTop: 20,
-                }}
-              >
-                <MenuItem value="GET">GET</MenuItem>
-                <MenuItem value="POST">POST</MenuItem>
-              </Field>
+              <>
+                <Field
+                  component={SelectField}
+                  variant="standard"
+                  name="pagination_with_sub_page_query_verb"
+                  label={t_i18n('Sub pagination verb')}
+                  fullWidth={true}
+                  containerstyle={{
+                    width: '100%',
+                    marginTop: 20,
+                  }}
+                >
+                  <MenuItem value="GET">GET</MenuItem>
+                  <MenuItem value="POST">POST</MenuItem>
+                </Field>
 
-              <Field
-                component={TextField}
-                variant="standard"
-                name="pagination_with_sub_page_attribute_path"
-                label={t_i18n('Attribute path to get next uri')}
-                fullWidth={true}
-                style={fieldSpacingContainerStyle}
-              />
-            </>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  name="pagination_with_sub_page_attribute_path"
+                  label={t_i18n('Attribute path to get next uri')}
+                  fullWidth={true}
+                  style={fieldSpacingContainerStyle}
+                />
+              </>
             )}
           </Alert>
 
@@ -406,7 +406,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             showConfidence
           />
           {
-              queryRef && (
+            queryRef && (
               <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
                 <Box sx={{ width: '100%', marginTop: 5 }}>
                   <Alert
@@ -426,10 +426,10 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                   queryRef={queryRef}
                 />
               </React.Suspense>
-              )
+            )
           }
           {
-              hasUserChoiceJsonMapper && (
+            hasUserChoiceJsonMapper && (
               <ObjectMarkingField
                 name="markings"
                 label={t_i18n('Marking definition levels')}
@@ -437,7 +437,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
                 allowedMarkingOwnerId={isGranted ? creatorId : undefined}
                 setFieldValue={setFieldValue}
               />
-              )
+            )
           }
           <Field
             component={SelectField}
@@ -460,20 +460,20 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             </MenuItem>
           </Field>
           {values.authentication_type === 'basic' && (
-          <>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="username"
-              label={t_i18n('Username')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-            <PasswordTextField
-              name="password"
-              label={t_i18n('Password')}
-            />
-          </>
+            <>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="username"
+                label={t_i18n('Username')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+              <PasswordTextField
+                name="password"
+                label={t_i18n('Password')}
+              />
+            </>
           )}
           {values.authentication_type === 'bearer' && (
             <PasswordTextField
@@ -482,28 +482,28 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
             />
           )}
           {values.authentication_type === 'certificate' && (
-          <>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="cert"
-              label={t_i18n('Certificate (base64)')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-            <PasswordTextField
-              name="key"
-              label={t_i18n('Key (base64)')}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="ca"
-              label={t_i18n('CA certificate (base64)')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-          </>
+            <>
+              <Field
+                component={TextField}
+                variant="standard"
+                name="cert"
+                label={t_i18n('Certificate (base64)')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+              <PasswordTextField
+                name="key"
+                label={t_i18n('Key (base64)')}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="ca"
+                label={t_i18n('CA certificate (base64)')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+            </>
           )}
           <Box sx={{ width: '100%', marginTop: 5 }}>
             <Alert

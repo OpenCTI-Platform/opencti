@@ -214,7 +214,7 @@ interface StixCoreRelationshipAddInput {
 }
 
 const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<
-Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
+  Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
 > = ({ handleClose, handleDelete, stixCoreRelationship, noStoreUpdate, isCoverage = false }) => {
   const stixCoreRelationshipType = 'stix-core-relationship';
 
@@ -498,7 +498,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
 };
 
 const StixCoreRelationshipEditionOverview: FunctionComponent<
-Omit<StixCoreRelationshipEditionOverviewProps, 'stixCoreRelationship'>
+  Omit<StixCoreRelationshipEditionOverviewProps, 'stixCoreRelationship'>
 > = (props) => {
   const queryData = usePreloadedQuery(
     stixCoreRelationshipEditionOverviewQuery,

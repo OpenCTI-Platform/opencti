@@ -103,8 +103,8 @@ class StixDomainObjectTimelineComponent extends Component {
                             sx={{
                               borderColor: !restricted
                                 ? itemColor(
-                                  stixRelationship.targetEntity.entity_type,
-                                )
+                                    stixRelationship.targetEntity.entity_type,
+                                  )
                                 : theme.palette.primary.main,
                             }}
                             variant="outlined"
@@ -131,8 +131,8 @@ class StixDomainObjectTimelineComponent extends Component {
                           sx={{
                             borderColor: !restricted
                               ? itemColor(
-                                stixRelationship.targetEntity.entity_type,
-                              )
+                                  stixRelationship.targetEntity.entity_type,
+                                )
                               : theme.palette.primary.main,
                           }}
                           variant="outlined"
@@ -154,9 +154,9 @@ class StixDomainObjectTimelineComponent extends Component {
                       <Typography variant="h2">
                         {!restricted
                           ? truncate(
-                            getMainRepresentative(stixRelationship.targetEntity),
-                            50,
-                          )
+                              getMainRepresentative(stixRelationship.targetEntity),
+                              50,
+                            )
                           : t('Restricted')}
                       </Typography>
                       <span style={{ color: '#a8a8a8' }}>
@@ -166,10 +166,10 @@ class StixDomainObjectTimelineComponent extends Component {
                           && stixRelationship.description.length > 0
                             ? stixRelationship.description
                             : !restricted
-                              ? getSecondaryRepresentative(
-                                stixRelationship.targetEntity,
-                              )
-                              : t('Restricted'),
+                                ? getSecondaryRepresentative(
+                                    stixRelationship.targetEntity,
+                                  )
+                                : t('Restricted'),
                           100,
                         )}
                       </span>

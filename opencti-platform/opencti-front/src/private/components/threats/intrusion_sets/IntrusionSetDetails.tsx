@@ -164,29 +164,29 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
             </Typography>
             <FieldOrEmpty source={intrusionSet.secondary_motivations}>
               {intrusionSet.secondary_motivations && (
-              <List>
-                {intrusionSet.secondary_motivations.map(
-                  (secondaryMotivation) => (
-                    <ListItem
-                      key={secondaryMotivation}
-                      dense
-                      divider
-                    >
-                      <ListItemIcon>
-                        <ArmFlexOutline />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={(
-                          <ItemOpenVocab
-                            type="attack-motivation-ov"
-                            value={secondaryMotivation}
-                          />
-                        )}
-                      />
-                    </ListItem>
-                  ),
-                )}
-              </List>
+                <List>
+                  {intrusionSet.secondary_motivations.map(
+                    (secondaryMotivation) => (
+                      <ListItem
+                        key={secondaryMotivation}
+                        dense
+                        divider
+                      >
+                        <ListItemIcon>
+                          <ArmFlexOutline />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={(
+                            <ItemOpenVocab
+                              type="attack-motivation-ov"
+                              value={secondaryMotivation}
+                            />
+                          )}
+                        />
+                      </ListItem>
+                    ),
+                  )}
+                </List>
               )}
             </FieldOrEmpty>
           </Grid>

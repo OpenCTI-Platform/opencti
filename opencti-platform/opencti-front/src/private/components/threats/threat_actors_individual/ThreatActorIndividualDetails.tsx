@@ -106,7 +106,7 @@ interface ThreatActorIndividualDetailsProps {
 }
 
 const ThreatActorIndividualDetails: FunctionComponent<
-ThreatActorIndividualDetailsProps
+  ThreatActorIndividualDetailsProps
 > = ({ threatActorIndividualData }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();

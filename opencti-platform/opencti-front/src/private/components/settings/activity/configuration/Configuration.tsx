@@ -101,7 +101,7 @@ interface ConfigurationComponentProps {
 }
 
 const ConfigurationComponent: FunctionComponent<
-ConfigurationComponentProps
+  ConfigurationComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -138,10 +138,10 @@ ConfigurationComponentProps
         needs={[SETTINGS_SECURITYACTIVITY]}
         placeholder={(
           <span>{t_i18n(
-        'You do not have any access to the audit activity of this OpenCTI instance.',
-      )}
+            'You do not have any access to the audit activity of this OpenCTI instance.',
+          )}
           </span>
-)}
+        )}
       >
         <div className={classes.container}>
           <ActivityMenu />

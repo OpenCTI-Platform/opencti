@@ -224,27 +224,27 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
           )}
         >
           {queryRef && (
-          <React.Suspense
-            fallback={(
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((_, idx) => (
-                    <EntityStixSightingRelationshipLineDummy key={idx} dataColumns={dataColumns} />
-                  ))}
-              </>
-            )}
-          >
-            <EntityStixSightingRelationshipsLines
-              queryRef={queryRef}
-              paginationOptions={finalPaginationOptions}
-              entityLink={entityLink}
-              dataColumns={dataColumns}
-              isTo={isTo}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
-              onLabelClick={helpers.handleAddFilter}
-            />
-          </React.Suspense>
+            <React.Suspense
+              fallback={(
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((_, idx) => (
+                      <EntityStixSightingRelationshipLineDummy key={idx} dataColumns={dataColumns} />
+                    ))}
+                </>
+              )}
+            >
+              <EntityStixSightingRelationshipsLines
+                queryRef={queryRef}
+                paginationOptions={finalPaginationOptions}
+                entityLink={entityLink}
+                dataColumns={dataColumns}
+                isTo={isTo}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+                onLabelClick={helpers.handleAddFilter}
+              />
+            </React.Suspense>
           )}
         </ListLines>
       </div>

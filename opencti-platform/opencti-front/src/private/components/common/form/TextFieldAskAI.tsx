@@ -278,22 +278,22 @@ const TextFieldAskAI: FunctionComponent<TextFieldAskAiProps> = ({
           </MenuItem>
         </Menu>
         {busId && (
-        <ResponseDialog
-          id={busId}
-          isDisabled={disableResponse}
-          isOpen={displayAskAI}
-          handleClose={handleCloseAskAI}
-          content={content}
-          setContent={setContent}
-          handleAccept={(value) => {
-            setFieldValue(value);
-            handleCloseAskAI();
-          }}
-          handleFollowUp={handleCloseAskAI}
-          followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
-          format={format}
-          isAcceptable={isAcceptable}
-        />
+          <ResponseDialog
+            id={busId}
+            isDisabled={disableResponse}
+            isOpen={displayAskAI}
+            handleClose={handleCloseAskAI}
+            content={content}
+            setContent={setContent}
+            handleAccept={(value) => {
+              setFieldValue(value);
+              handleCloseAskAI();
+            }}
+            handleFollowUp={handleCloseAskAI}
+            followUpActions={[{ key: 'retry', label: t_i18n('Retry') }]}
+            format={format}
+            isAcceptable={isAcceptable}
+          />
         )}
         <Dialog
           slotProps={{ paper: { elevation: 1 } }}

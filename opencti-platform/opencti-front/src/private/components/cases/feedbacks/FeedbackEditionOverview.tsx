@@ -147,7 +147,7 @@ interface FeedbackEditionFormValues {
 const FEEDBACK_TYPE = 'Feedback';
 
 const FeedbackEditionOverviewComponent: FunctionComponent<
-FeedbackEditionOverviewProps
+  FeedbackEditionOverviewProps
 > = ({ feedbackRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const feedbackData = useFragment(feedbackEditionOverviewFragment, feedbackRef);

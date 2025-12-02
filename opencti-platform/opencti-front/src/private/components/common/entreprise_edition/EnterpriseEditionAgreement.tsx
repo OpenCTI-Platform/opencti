@@ -30,7 +30,7 @@ interface EnterpriseEditionAgreementProps {
 }
 
 const EnterpriseEditionAgreement: FunctionComponent<
-EnterpriseEditionAgreementProps
+  EnterpriseEditionAgreementProps
 > = ({ open, onClose, settingsId }) => {
   const { t_i18n } = useFormatter();
   const [enterpriseLicense, setEnterpriseLicense] = useState('');

@@ -32,7 +32,7 @@ interface EntityStixCoreRelationshipsEntitiesViewProps {
 }
 
 const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<
-EntityStixCoreRelationshipsEntitiesViewProps
+  EntityStixCoreRelationshipsEntitiesViewProps
 > = ({
   entityId,
   defaultStartTime,
@@ -206,26 +206,26 @@ EntityStixCoreRelationshipsEntitiesViewProps
         availableRelationFilterTypes={{
           targets: isRelationReversed
             ? [
-              'Position',
-              'City',
-              'Country',
-              'Region',
-              'Individual',
-              'System',
-              'Organization',
-              'Sector',
-              'Event',
-              'Vulnerability',
-            ]
+                'Position',
+                'City',
+                'Country',
+                'Region',
+                'Individual',
+                'System',
+                'Organization',
+                'Sector',
+                'Event',
+                'Vulnerability',
+              ]
             : [
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Incident',
-              'Malware',
-              'Tool',
-              'Malware-Analysis',
-            ],
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Incident',
+                'Malware',
+                'Tool',
+                'Malware-Analysis',
+              ],
         }}
         availableEntityTypes={stixCoreObjectTypes}
         availableRelationshipTypes={relationshipTypes}

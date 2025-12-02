@@ -335,14 +335,14 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
   // When we have a preselected entity, we skip the "Select entity" step
   const steps = preSelectedEntityId
     ? [
-      t_i18n('Choose type'),
-      t_i18n('Coverage details'),
-    ]
+        t_i18n('Choose type'),
+        t_i18n('Coverage details'),
+      ]
     : [
-      t_i18n('Choose type'),
-      t_i18n('Select entity to cover'),
-      t_i18n('Coverage details'),
-    ];
+        t_i18n('Choose type'),
+        t_i18n('Select entity to cover'),
+        t_i18n('Coverage details'),
+      ];
 
   const buildColumns = () => {
     return {

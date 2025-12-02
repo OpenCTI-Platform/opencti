@@ -219,10 +219,10 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
     return (
       <div
         className={
-              navOpen
-                ? classes.documentContainerNavOpen
-                : classes.documentContainer
-            }
+          navOpen
+            ? classes.documentContainerNavOpen
+            : classes.documentContainer
+        }
       >
         {isNotEmptyField(description) && (
           <>

@@ -38,7 +38,7 @@ interface FileImportViewerComponentProps {
 }
 
 const FileImportViewerComponent: FunctionComponent<
-FileImportViewerComponentProps
+  FileImportViewerComponentProps
 > = ({
   entity,
   disableImport,

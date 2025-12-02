@@ -77,7 +77,7 @@ const caseRftQuery = graphql`
 
 const RootCaseRftComponent = ({ queryRef, caseId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>
+    GraphQLSubscriptionConfig<RootCaseRftCaseSubscription>
   >(
     () => ({
       subscription,
@@ -194,7 +194,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               container={caseData}
               enableReferences={enableReferences}
             />
-              )}
+          )}
         />
         <Route
           path="/observables"
@@ -203,7 +203,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               container={caseData}
               enableReferences={enableReferences}
             />
-              )}
+          )}
         />
         <Route
           path="/content/*"
@@ -230,7 +230,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               caseData={caseData}
               enableReferences={enableReferences}
             />
-              )}
+          )}
         />
         <Route
           path="/files"
@@ -243,7 +243,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               withoutRelations={true}
               bypassEntityId={true}
             />
-              )}
+          )}
         />
         <Route
           path="/history"

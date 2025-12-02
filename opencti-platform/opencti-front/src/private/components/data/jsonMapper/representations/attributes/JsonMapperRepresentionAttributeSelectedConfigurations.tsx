@@ -22,20 +22,20 @@ FunctionComponent<JsonMapperRepresentationAttributeSelectedConfigurationsProps> 
       {
         configuration.pattern_date
         && (
-        <div style={flexStyle}>
-          <SubdirectoryArrowRight />{t_i18n('Date pattern')}:
-          <span>{configuration.pattern_date}</span>
-        </div>
-)
+          <div style={flexStyle}>
+            <SubdirectoryArrowRight />{t_i18n('Date pattern')}:
+            <span>{configuration.pattern_date}</span>
+          </div>
+        )
       }
       {
         configuration.separator
         && (
-        <div style={flexStyle}>
-          <SubdirectoryArrowRight /> {t_i18n('List separator')}:
-          <span>{configuration.separator}</span>
-        </div>
-)
+          <div style={flexStyle}>
+            <SubdirectoryArrowRight /> {t_i18n('List separator')}:
+            <span>{configuration.separator}</span>
+          </div>
+        )
       }
     </div>
   );

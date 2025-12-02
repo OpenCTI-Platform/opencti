@@ -100,12 +100,12 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
             </Typography>
             {informationTypes.length > 0
               ? (data.information_types ?? []).map((informationType) => (
-                <Chip
-                  key={informationType}
-                  classes={{ root: classes.chip }}
-                  label={informationType}
-                />
-              ))
+                  <Chip
+                    key={informationType}
+                    classes={{ root: classes.chip }}
+                    label={informationType}
+                  />
+                ))
               : '-'}
           </Grid>
           <Grid item xs={6}>

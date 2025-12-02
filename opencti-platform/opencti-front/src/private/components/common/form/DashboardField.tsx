@@ -93,7 +93,7 @@ const DashboardFieldComponent: FunctionComponent<DashboardFieldProps> = ({
 };
 
 const DashboardField: FunctionComponent<
-Omit<DashboardFieldProps, 'queryRef'>
+  Omit<DashboardFieldProps, 'queryRef'>
 > = (props) => {
   const queryRef = useQueryLoading<DashboardFieldQuery>(workspaceQuery);
   return queryRef ? (

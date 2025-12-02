@@ -134,21 +134,21 @@ const ItemMarkings = ({
       <span>
         {markings.length === 0
           ? (
-            <ChipMarking
-              markingDefinition={{ definition: 'NONE', id: 'NONE' }}
-              withTooltip
-              variant={variant}
-            />
-)
+              <ChipMarking
+                markingDefinition={{ definition: 'NONE', id: 'NONE' }}
+                withTooltip
+                variant={variant}
+              />
+            )
           : markings.map((markingDefinition) => (
-            <ChipMarking
-              key={markingDefinition.id}
-              markingDefinition={markingDefinition}
-              withTooltip
-              variant={variant}
-              onClick={onClick}
-            />
-          ))}
+              <ChipMarking
+                key={markingDefinition.id}
+                markingDefinition={markingDefinition}
+                withTooltip
+                variant={variant}
+                onClick={onClick}
+              />
+            ))}
       </span>
     );
   }

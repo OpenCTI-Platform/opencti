@@ -132,7 +132,7 @@ interface FilterIconButtonContainerProps {
 }
 
 const FilterIconButtonContainer: FunctionComponent<
-FilterIconButtonContainerProps
+  FilterIconButtonContainerProps
 > = ({
   filters,
   handleSwitchGlobalMode,
@@ -312,17 +312,17 @@ FilterIconButtonContainerProps
                 filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
                   ? undefined
                   : (
-                    <FilterValues
-                      label={keyLabel}
-                      tooltip={true}
-                      currentFilter={currentFilter}
-                      handleSwitchLocalMode={handleSwitchLocalMode}
-                      filtersRepresentativesMap={filtersRepresentativesMap}
-                      redirection={redirection}
-                      entityTypes={entityTypes}
-                      filtersRestrictions={filtersRestrictions}
-                    />
-)
+                      <FilterValues
+                        label={keyLabel}
+                        tooltip={true}
+                        currentFilter={currentFilter}
+                        handleSwitchLocalMode={handleSwitchLocalMode}
+                        filtersRepresentativesMap={filtersRepresentativesMap}
+                        redirection={redirection}
+                        entityTypes={entityTypes}
+                        filtersRestrictions={filtersRestrictions}
+                      />
+                    )
               }
             >
               <Box
@@ -362,10 +362,10 @@ FilterIconButtonContainerProps
                   onDelete={
                     (isReadWriteFilter && authorizeFilterRemoving)
                       ? () => manageRemoveFilter(
-                        currentFilter.id,
-                        filterKey,
-                        filterOperator,
-                      )
+                          currentFilter.id,
+                          filterKey,
+                          filterOperator,
+                        )
                       : undefined
                   }
                 />

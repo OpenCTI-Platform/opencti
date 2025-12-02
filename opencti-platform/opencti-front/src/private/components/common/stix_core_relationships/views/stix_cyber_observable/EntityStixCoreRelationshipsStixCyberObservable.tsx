@@ -52,34 +52,34 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
       <div className={classes.container}>
         {view === 'entities'
           && (
-          <EntityStixCoreRelationshipsEntitiesView
-            entityId={entityId}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-            localStorage={localStorage}
-            relationshipTypes={relationshipTypes}
-            stixCoreObjectTypes={entityTypes}
-            isRelationReversed={isRelationReversed}
-            currentView={view}
-            enableContextualView
-          />
-)}
+            <EntityStixCoreRelationshipsEntitiesView
+              entityId={entityId}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+              localStorage={localStorage}
+              relationshipTypes={relationshipTypes}
+              stixCoreObjectTypes={entityTypes}
+              isRelationReversed={isRelationReversed}
+              currentView={view}
+              enableContextualView
+            />
+          )}
 
         {view === 'relationships'
           && (
-          <EntityStixCoreRelationshipsRelationshipsView
-            entityId={entityId}
-            entityLink={entityLink}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-            localStorage={localStorage}
-            relationshipTypes={relationshipTypes}
-            stixCoreObjectTypes={entityTypes}
-            isRelationReversed={isRelationReversed}
-            currentView={view}
-            enableContextualView
-          />
-)}
+            <EntityStixCoreRelationshipsRelationshipsView
+              entityId={entityId}
+              entityLink={entityLink}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+              localStorage={localStorage}
+              relationshipTypes={relationshipTypes}
+              stixCoreObjectTypes={entityTypes}
+              isRelationReversed={isRelationReversed}
+              currentView={view}
+              enableContextualView
+            />
+          )}
 
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsContextualView

@@ -170,9 +170,9 @@ const AccordionAttackPattern = ({
         {!isCoverage && attackPatternIdsToOverlap?.length !== undefined
           && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
           && (
-          <AttackPatternsMatrixShouldCoverIcon
-            isOverlapping={attackPattern.isOverlapping || false}
-          />
+            <AttackPatternsMatrixShouldCoverIcon
+              isOverlapping={attackPattern.isOverlapping || false}
+            />
           )}
       </MuiAccordionSummary>
       <AccordionDetails

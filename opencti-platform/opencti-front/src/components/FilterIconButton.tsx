@@ -133,10 +133,10 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   };
   const displayedFilters = filters
     ? {
-      ...filters,
-      filters:
+        ...filters,
+        filters:
         filters.filters.filter((f) => !availableFilterKeys || availableFilterKeys?.some((k) => f.key === k)),
-    } : undefined;
+      } : undefined;
   if (displayedFilters && isFilterGroupNotEmpty(displayedFilters)) { // to avoid running the FiltersRepresentatives query if filters are empty
     return (
       <FilterIconButtonWithRepresentativesQuery

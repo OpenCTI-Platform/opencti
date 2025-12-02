@@ -45,7 +45,7 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
                 <Link target="_blank" to="https://docs.opencti.io/latest/administration/entities/#fintel-templates">
                   {t_i18n('documentation')}
                 </Link>
-),
+              ),
             },
           })}
         </Typography>
@@ -106,9 +106,9 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
               }
               variableName={isSelfAttributeWidget
                 ? t_i18n('', {
-                  id: 'Attributes of the instance',
-                  values: { type: subTypeId ?? '' },
-                })
+                    id: 'Attributes of the instance',
+                    values: { type: subTypeId ?? '' },
+                  })
                 : variable_name
               }
             />

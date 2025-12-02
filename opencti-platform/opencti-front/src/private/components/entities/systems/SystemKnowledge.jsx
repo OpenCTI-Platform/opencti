@@ -65,7 +65,7 @@ const SystemKnowledgeComponent = ({
               stixDomainObjectType="System"
             />
           ))
-            }
+          }
         />
         <Route
           path="/all"
