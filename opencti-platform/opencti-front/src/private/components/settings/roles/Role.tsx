@@ -91,7 +91,7 @@ const Role = ({
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
@@ -129,7 +129,25 @@ const Role = ({
               </Grid>
             </Grid>
           </Paper>
-          <Grid item xs={12} style={{ marginTop: 20 }}>
+        </Grid>
+        <Grid container={true} item xs={12} spacing={3}>
+          <Grid item xs={6}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t_i18n('Capabilities')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
+              <Grid container={true} spacing={3}>
+                <Grid item xs={12} style={{ paddingTop: 10 }}>
+                  {queryRef && (
+                    <React.Suspense>
+                      <CapabilitiesList queryRef={queryRef} role={role} />
+                    </React.Suspense>
+                  )}
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+          <Grid item xs={6}>
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Capabilities in Draft')}
               <EEChip feature={t_i18n('Capabilities in Draft')} />
@@ -146,22 +164,6 @@ const Role = ({
               </Grid>
             </Paper>
           </Grid>
-        </Grid>
-        <Grid item xs={6}>
-          <Typography variant="h4" gutterBottom={true}>
-            {t_i18n('Capabilities')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            <Grid container={true} spacing={3}>
-              <Grid item xs={12} style={{ paddingTop: 10 }}>
-                {queryRef && (
-                  <React.Suspense>
-                    <CapabilitiesList queryRef={queryRef} role={role} />
-                  </React.Suspense>
-                )}
-              </Grid>
-            </Grid>
-          </Paper>
         </Grid>
       </Grid>
     </div>
