@@ -81,7 +81,7 @@ import { cleanMarkings } from '../utils/markingDefinition-utils';
 import { UnitSystem } from '../generated/graphql';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../modules/draftWorkspace/draftWorkspace-types';
-import { addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
+import { addCapabilitiesInDraftUpdatedCount, addServiceAccountIntoUserCount, addUserEmailSendCount, addUserIntoServiceAccountCount } from '../manager/telemetryManager';
 import { sendMail, smtpComputeFrom } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
@@ -860,6 +860,9 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input: finalInput }
   });
   await roleUsersCacheRefresh(context, user, roleId);
+  if (input.relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
+    await addCapabilitiesInDraftUpdatedCount();
+  }
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
 };
 
@@ -882,6 +885,9 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
     context_data: { id: roleId, entity_type: ENTITY_TYPE_ROLE, input }
   });
   await roleUsersCacheRefresh(context, user, roleId);
+  if (input.relationship_type === RELATION_HAS_CAPABILITY_IN_DRAFT) {
+    await addCapabilitiesInDraftUpdatedCount();
+  }
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 

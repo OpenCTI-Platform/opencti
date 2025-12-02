@@ -51,6 +51,7 @@ export const TELEMETRY_GAUGE_NLQ = 'nlqQueryCount';
 export const TELEMETRY_GAUGE_REQUEST_ACCESS = 'requestAccessCreationCount';
 export const TELEMETRY_GAUGE_DRAFT_CREATION = 'draftCreationCount';
 export const TELEMETRY_GAUGE_DRAFT_VALIDATION = 'draftValidationCount';
+export const TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED = 'capabilitiesInDraftUpdateCount';
 export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
 export const TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION = 'workbenchDraftConvertionCount';
 export const TELEMETRY_GAUGE_WORKBENCH_VALIDATION = 'workbenchValidationCount';
@@ -81,6 +82,9 @@ export const addDraftCreationCount = async () => {
 };
 export const addDraftValidationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DRAFT_VALIDATION, 1);
+};
+export const addCapabilitiesInDraftUpdatedCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED, 1);
 };
 export const addWorkbenchUploadCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_WORKBENCH_UPLOAD, 1);
@@ -294,6 +298,8 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setDraftCreationCount(draftCreationCountInRedis);
     const draftValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_VALIDATION);
     manager.setDraftValidationCount(draftValidationCountInRedis);
+    const capabilitiesInDraftUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);
+    manager.setCapabilitiesInDraftUpdatedCount(capabilitiesInDraftUpdatedCountInRedis);
     const workbenchUploadCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_UPLOAD);
     manager.setWorkbenchUploadCount(workbenchUploadCountInRedis);
     const workbenchDraftConvertionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_WORKBENCH_DRAFT_CONVERTION);
