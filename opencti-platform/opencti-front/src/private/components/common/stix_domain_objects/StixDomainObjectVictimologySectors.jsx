@@ -613,7 +613,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                               }
                                                 remarkGfmPlugin={true}
                                                 commonmark={true}
-                                              ></MarkdownDisplay>
+                                              >
+                                              </MarkdownDisplay>
                                             ) : stixCoreRelationship.inferred ? (
                                               <i>
                                                 {t('This relation is inferred')}

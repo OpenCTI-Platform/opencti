@@ -99,15 +99,11 @@ export default defineConfig([
       },
     },
     rules: {
-      '@stylistic/multiline-ternary': 'off',
-
-      // =========
-
       '@stylistic/indent': 'off',
-      '@stylistic/brace-style': 'off',
       '@stylistic/jsx-curly-newline': 'off',
       '@stylistic/jsx-one-expression-per-line': 'off',
-      '@stylistic/jsx-closing-tag-location': 'off',
+      '@stylistic/multiline-ternary': 'off',
+      '@stylistic/brace-style': ['error', '1tbs'],
       '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/space-before-blocks': 'error',
       '@stylistic/quote-props': ['error', 'as-needed'],

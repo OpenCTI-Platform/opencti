@@ -174,16 +174,16 @@ const ThreatActorsIndividual = () => {
             lineFragment={ThreatActorIndividualCardFragment}
             exportContext={{ entity_type: 'Threat-Actor-Individual' }}
             additionalHeaderButtons={[
-              (<ToggleButton key="cards" value="cards" aria-label="cards">
+              <ToggleButton key="cards" value="cards" aria-label="cards">
                 <Tooltip title={t_i18n('Cards view')}>
                   <ViewModuleOutlined fontSize="small" color="primary" />
                 </Tooltip>
-              </ToggleButton>),
-              (<ToggleButton key="lines" value="lines" aria-label="lines">
+              </ToggleButton>,
+              <ToggleButton key="lines" value="lines" aria-label="lines">
                 <Tooltip title={t_i18n('Lines view')}>
                   <ViewListOutlined color="secondary" fontSize="small" />
                 </Tooltip>
-              </ToggleButton>),
+              </ToggleButton>,
             ]}
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>

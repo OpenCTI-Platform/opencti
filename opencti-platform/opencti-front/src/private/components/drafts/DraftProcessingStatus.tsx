@@ -29,7 +29,9 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
       {!isCurrentDraftProcessing && (
         <Tooltip title={t_i18n('No processes running')}>
           <CheckCircleOutlined
-            onClick={() => { setDisplayProcesses(true); }}
+            onClick={() => {
+              setDisplayProcesses(true);
+            }}
             color="success"
             style={{ cursor: 'pointer' }}
           />
@@ -56,7 +58,9 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
       <Drawer
         title={t_i18n('Draft processes')}
         open={displayProcesses}
-        onClose={() => { setDisplayProcesses(false); }}
+        onClose={() => {
+          setDisplayProcesses(false);
+        }}
       >
         <>
           <Alert severity="info">{t_i18n('This page lists the most recent works and tasks of the current draft')}</Alert>

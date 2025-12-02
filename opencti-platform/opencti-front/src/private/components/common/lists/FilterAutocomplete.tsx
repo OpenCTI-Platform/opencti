@@ -205,7 +205,8 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
             flexGrow: 1,
             marginLeft: 10,
           }}
-          >{option.label}</div>
+          >{option.label}
+          </div>
         </li>
       )}
     />

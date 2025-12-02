@@ -302,7 +302,7 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
           removeSelectAll
           icon={(data: UserHistoryLine_node$data) => renderIcon(data.event_scope, data.context_data?.message, data.context_data?.commit)}
           additionalHeaderButtons={[
-            (<Tooltip title={t_i18n('View all entities created by user')} key="entities">
+            <Tooltip title={t_i18n('View all entities created by user')} key="entities">
               <IconButton
                 component={Link}
                 to={`/dashboard/search/knowledge/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
@@ -311,8 +311,8 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
               >
                 <StorageOutlined fontSize="small" />
               </IconButton>
-            </Tooltip>),
-            (<Tooltip title={t_i18n('View all relationships created by user')} key="relations">
+            </Tooltip>,
+            <Tooltip title={t_i18n('View all relationships created by user')} key="relations">
               <IconButton
                 component={Link}
                 to={`/dashboard/data/relationships/?filters=${encodeURIComponent(technicalCreatorFilters)}`}
@@ -321,7 +321,7 @@ const UserHistoryTab: FunctionComponent<UserHistoryTabProps> = ({
               >
                 <VectorRadius fontSize="small" />
               </IconButton>
-            </Tooltip>),
+            </Tooltip>,
           ]}
         />
       )}

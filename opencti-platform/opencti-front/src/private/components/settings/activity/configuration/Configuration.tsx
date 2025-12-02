@@ -139,7 +139,8 @@ ConfigurationComponentProps
         placeholder={(
           <span>{t_i18n(
         'You do not have any access to the audit activity of this OpenCTI instance.',
-      )}</span>
+      )}
+          </span>
 )}
       >
         <div className={classes.container}>

@@ -134,7 +134,9 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
               fullWidth={true}
               keepMounted={true}
               slots={{ transition: Transition }}
-              onClose={() => { setOpenDialog(false); }}
+              onClose={() => {
+                setOpenDialog(false);
+              }}
             >
               <DialogTitle>
                 {t_i18n('Create an automatic user')}
@@ -167,7 +169,12 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
                 >
                   {t_i18n('Cancel')}
                 </Button>
-                <Button color="secondary" onClick={() => { submitForm(); }}>
+                <Button
+                  color="secondary"
+                  onClick={() => {
+                    submitForm();
+                  }}
+                >
                   {t_i18n('Confirm')}
                 </Button>
               </DialogActions>

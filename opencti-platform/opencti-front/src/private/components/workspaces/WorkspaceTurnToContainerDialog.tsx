@@ -223,7 +223,9 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
                 display: 'inline-block',
                 flexGrow: 1,
               }}
-              >{option.label}</div>
+              >
+                {option.label}
+              </div>
             </li>
           )}
           disableClearable

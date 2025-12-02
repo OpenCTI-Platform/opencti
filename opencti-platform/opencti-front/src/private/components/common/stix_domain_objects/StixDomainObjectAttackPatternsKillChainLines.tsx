@@ -276,7 +276,8 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                                     }
                                                   remarkGfmPlugin={true}
                                                   commonmark={true}
-                                                ></MarkdownDisplay>
+                                                >
+                                                </MarkdownDisplay>
                                               ) : (
                                                 t_i18n(
                                                   'No description of this course of action',

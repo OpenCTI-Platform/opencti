@@ -53,37 +53,38 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
   const hasConnectorsAvailable = suggestedMappingData.connectorsForAnalysis?.length ? suggestedMappingData.connectorsForAnalysis.length > 0 : false;
 
   return (
-    <><Dialog
-      slotProps={{ paper: { elevation: 1 } }}
-      open={openValidate}
-      keepMounted
-      slots={{ transition: Transition }}
-      onClose={() => setOpenValidate(false)}
+    <>
+      <Dialog
+        slotProps={{ paper: { elevation: 1 } }}
+        open={openValidate}
+        keepMounted
+        slots={{ transition: Transition }}
+        onClose={() => setOpenValidate(false)}
       >
-      <DialogTitle>
-        {t_i18n('Are you sure?')}
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText>
-          {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
-        </DialogContentText>
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => setOpenValidate(false)}
-          disabled={validating}
-        >
-          {t_i18n('Cancel')}
-        </Button>
-        <Button
-          color="secondary"
-          onClick={handleValidateMapping}
-          disabled={validating}
-        >
-          {t_i18n('Validate')}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        <DialogTitle>
+          {t_i18n('Are you sure?')}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {t_i18n('You are about to validate this mapping, it will add suggested entities to your container.')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setOpenValidate(false)}
+            disabled={validating}
+          >
+            {t_i18n('Cancel')}
+          </Button>
+          <Button
+            color="secondary"
+            onClick={handleValidateMapping}
+            disabled={validating}
+          >
+            {t_i18n('Validate')}
+          </Button>
+        </DialogActions>
+      </Dialog>
       <Dialog
         slotProps={{ paper: { elevation: 1 } }}
         open={openClearMapping}
@@ -118,7 +119,9 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
             control={(
               <Switch
                 checked={inSuggestedMode}
-                onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
+                onChange={() => {
+                  setInSuggestedMode(!inSuggestedMode);
+                }}
                 disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete'}
               />
             )}

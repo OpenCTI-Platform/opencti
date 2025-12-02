@@ -390,7 +390,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                   </Tooltip>
                 )}
               </>
-              </Security>
+            </Security>
             )}
           </div>
         )}

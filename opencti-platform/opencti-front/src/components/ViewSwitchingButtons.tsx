@@ -43,7 +43,7 @@ const ViewSwitchingButtons: FunctionComponent<ViewSwitchingButtonsProps> = ({
         <ToggleButton value="cards" aria-label="cards">
           <ViewModuleOutlined fontSize="small" color="primary" />
         </ToggleButton>
-        </Tooltip>
+      </Tooltip>
       )}
       {typeof handleChangeView === 'function'
         && enableEntitiesView && (
