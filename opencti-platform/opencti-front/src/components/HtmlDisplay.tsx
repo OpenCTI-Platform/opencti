@@ -6,8 +6,8 @@ import FieldOrEmpty from './FieldOrEmpty';
 import { isEmptyField } from '../utils/utils';
 
 interface HtmlDisplayProps {
-  content: string | null;
-  limit?: number;
+  content: string | null
+  limit?: number
 }
 
 const HtmlDisplay: FunctionComponent<HtmlDisplayProps> = ({ content, limit }) => {

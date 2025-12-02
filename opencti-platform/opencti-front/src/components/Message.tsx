@@ -14,16 +14,16 @@ import useHelper from '../utils/hooks/useHelper';
 import useEnterpriseEdition from '../utils/hooks/useEnterpriseEdition';
 
 type FullError = {
-  message?: string;
+  message?: string
   extensions?: {
-    code?: string;
+    code?: string
     data?: {
-      http_status?: number;
-      genre?: string;
-      entityIds?: string[];
-    };
-    stacktrace?: string[];
-  };
+      http_status?: number
+      genre?: string
+      entityIds?: string[]
+    }
+    stacktrace?: string[]
+  }
 };
 
 const Message = () => {

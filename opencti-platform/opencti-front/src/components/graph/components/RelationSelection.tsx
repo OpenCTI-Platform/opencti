@@ -27,7 +27,7 @@ interface RelationSelectionProps {
 }
 
 interface Coord {
-  x: number,
+  x: number
   y: number
 }
 

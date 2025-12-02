@@ -5,9 +5,9 @@ import { resolveLink } from '../utils/Entity';
 
 interface ItemAuthorProps {
   createdBy: {
-    id: string,
-    name: string,
-    entity_type: string,
+    id: string
+    name: string
+    entity_type: string
   } | null | undefined
 }
 

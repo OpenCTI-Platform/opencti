@@ -50,7 +50,7 @@ export interface SchemaAttribute {
 }
 
 interface CsvMapperRepresentationAttributesFormProps {
-  handleErrors: (key: string, value: string | null) => void;
+  handleErrors: (key: string, value: string | null) => void
   representation: CsvMapperRepresentationFormData
   representationName: string
 }

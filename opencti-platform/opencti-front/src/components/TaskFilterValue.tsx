@@ -42,9 +42,9 @@ const TaskFilterValue = ({
   queryRef,
   entityTypes,
 }: {
-  filters: FilterGroup;
-  queryRef: PreloadedQuery<FilterValuesContentQuery>;
-  entityTypes?: string[];
+  filters: FilterGroup
+  queryRef: PreloadedQuery<FilterValuesContentQuery>
+  entityTypes?: string[]
 }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();

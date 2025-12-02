@@ -9,10 +9,10 @@ import { useFormatter } from '../../../../components/i18n';
 import { NO_DATA_WIDGET_MESSAGE } from '../../../../components/dashboard/WidgetNoData';
 
 interface ContainerStixObjectsOrStixRelationshipsLinesProps {
-  dataColumns: DataColumns;
-  container: ContainerStixObjectsOrStixRelationshipsLines_container$data;
-  paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables;
-  enableReferences: boolean;
+  dataColumns: DataColumns
+  container: ContainerStixObjectsOrStixRelationshipsLines_container$data
+  paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables
+  enableReferences: boolean
 }
 
 const ContainerStixObjectsOrStixRelationshipsLines: FunctionComponent<

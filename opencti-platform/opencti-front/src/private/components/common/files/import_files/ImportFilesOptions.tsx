@@ -14,8 +14,8 @@ import SelectField from '../../../../../components/fields/SelectField';
 import { DraftContext } from '../../../../../utils/hooks/useDraftContext';
 
 interface ImportFilesOptionsProps {
-  optionsFormikContext: FormikContextType<OptionsFormValues>;
-  draftContext?: DraftContext | null;
+  optionsFormikContext: FormikContextType<OptionsFormValues>
+  draftContext?: DraftContext | null
 }
 
 const ImportFilesOptions = ({

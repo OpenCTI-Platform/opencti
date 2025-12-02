@@ -101,15 +101,15 @@ const caseTasksLinesFragment = graphql`
 `;
 
 interface CaseTasksLinesProps {
-  caseId: string;
-  queryRef: PreloadedQuery<CaseTasksLinesQuery>;
-  paginationOptions: CaseTasksLinesQuery$variables;
-  defaultMarkings?: FieldOption[];
-  sortBy: string | undefined;
-  orderAsc: boolean | undefined;
-  handleSort?: (field: string, order: boolean) => void;
-  containerRef: MutableRefObject<GridTypeMap | null>;
-  enableReferences: boolean;
+  caseId: string
+  queryRef: PreloadedQuery<CaseTasksLinesQuery>
+  paginationOptions: CaseTasksLinesQuery$variables
+  defaultMarkings?: FieldOption[]
+  sortBy: string | undefined
+  orderAsc: boolean | undefined
+  handleSort?: (field: string, order: boolean) => void
+  containerRef: MutableRefObject<GridTypeMap | null>
+  enableReferences: boolean
 }
 
 const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({

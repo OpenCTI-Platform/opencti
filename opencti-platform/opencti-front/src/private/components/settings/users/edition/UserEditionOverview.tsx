@@ -83,13 +83,13 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
 });
 
 interface UserEditionOverviewComponentProps {
-  user: UserEditionOverview_user$data;
+  user: UserEditionOverview_user$data
   context:
     | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
+    readonly focusOn: string | null | undefined
+    readonly name: string
   } | null)[]
-  | null | undefined;
+  | null | undefined
 }
 
 const UserEditionOverviewComponent: FunctionComponent<
@@ -149,7 +149,7 @@ UserEditionOverviewComponentProps
 
   const handleChangeObjectOrganization = (
     name: string,
-    values: { label: string; value: string }[],
+    values: { label: string, value: string }[],
   ) => {
     const currentValues = (user?.objectAssignedOrganization?.edges ?? []).map((n) => ({
       label: n.node.name,

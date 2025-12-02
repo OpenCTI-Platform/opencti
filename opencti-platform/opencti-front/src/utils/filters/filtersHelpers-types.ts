@@ -3,18 +3,18 @@
 export type FilterValue = any;
 
 export type FilterGroup = {
-  mode: string;
-  filters: Filter[];
-  filterGroups: FilterGroup[];
+  mode: string
+  filters: Filter[]
+  filterGroups: FilterGroup[]
 };
 
 // TODO: import from graphql generated types
 export type Filter = {
-  id?: string;
-  key: string; // key is a string in front
-  values: FilterValue[];
-  operator?: string;
-  mode?: string;
+  id?: string
+  key: string // key is a string in front
+  values: FilterValue[]
+  operator?: string
+  mode?: string
 };
 
 export type HandleOperatorFilter = (
@@ -23,16 +23,16 @@ export type HandleOperatorFilter = (
 ) => void;
 
 export interface handleFilterHelpers {
-  handleSwitchGlobalMode: () => void;
-  handleSwitchLocalMode: (filter: Filter) => void;
-  handleRemoveRepresentationFilter: (id: string, valueId: string | Filter | undefined | null) => void;
-  handleRemoveFilterById: (id: string) => void;
-  handleChangeOperatorFilters: HandleOperatorFilter;
-  handleAddSingleValueFilter: (id: string, valueId?: string) => void;
-  handleAddRepresentationFilter: (id: string, valueId: string | null) => void;
-  handleAddFilterWithEmptyValue: (filter: Filter) => void;
-  handleClearAllFilters: (filters?: Filter[]) => void;
-  getLatestAddFilterId: () => string | undefined;
-  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void;
-  handleReplaceFilterValues: (id: string, values: string[] | FilterGroup[]) => void;
+  handleSwitchGlobalMode: () => void
+  handleSwitchLocalMode: (filter: Filter) => void
+  handleRemoveRepresentationFilter: (id: string, valueId: string | Filter | undefined | null) => void
+  handleRemoveFilterById: (id: string) => void
+  handleChangeOperatorFilters: HandleOperatorFilter
+  handleAddSingleValueFilter: (id: string, valueId?: string) => void
+  handleAddRepresentationFilter: (id: string, valueId: string | null) => void
+  handleAddFilterWithEmptyValue: (filter: Filter) => void
+  handleClearAllFilters: (filters?: Filter[]) => void
+  getLatestAddFilterId: () => string | undefined
+  handleChangeRepresentationFilter: (id: string, oldValue: FilterValue, newValue: FilterValue) => void
+  handleReplaceFilterValues: (id: string, values: string[] | FilterGroup[]) => void
 }

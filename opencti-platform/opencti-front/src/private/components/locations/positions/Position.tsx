@@ -25,7 +25,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface PositionComponentProps {
-  position: Position_position$data;
+  position: Position_position$data
 }
 
 const PositionComponent: FunctionComponent<PositionComponentProps> = ({

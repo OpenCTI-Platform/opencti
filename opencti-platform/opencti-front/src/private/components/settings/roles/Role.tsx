@@ -58,8 +58,8 @@ const Role = ({
   roleData,
   groupsQueryRef,
 }: {
-  roleData: Role_role$key;
-  groupsQueryRef: PreloadedQuery<GroupsSearchQuery>;
+  roleData: Role_role$key
+  groupsQueryRef: PreloadedQuery<GroupsSearchQuery>
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

@@ -11,10 +11,10 @@ import { CitiesLines_data$key } from './__generated__/CitiesLines_data.graphql';
 const nbOfRowsToLoad = 50;
 
 interface CitiesLinesProps {
-  paginationOptions?: CitiesLinesPaginationQuery$variables;
-  dataColumns: DataColumns;
-  queryRef: PreloadedQuery<CitiesLinesPaginationQuery>;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  paginationOptions?: CitiesLinesPaginationQuery$variables
+  dataColumns: DataColumns
+  queryRef: PreloadedQuery<CitiesLinesPaginationQuery>
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 export const citiesLinesQuery = graphql`

@@ -51,27 +51,27 @@ const channelMutation = graphql`
 const CHANNEL_TYPE = 'Channel';
 
 interface ChannelAddInput {
-  name: string;
-  channel_types: string[];
-  description: string;
-  createdBy: FieldOption | null;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: { value: string }[];
-  confidence: number | null;
-  file: File | null;
+  name: string
+  channel_types: string[]
+  description: string
+  createdBy: FieldOption | null
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: { value: string }[]
+  confidence: number | null
+  file: File | null
 }
 
 interface ChannelFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
@@ -317,7 +317,7 @@ const CreateChannelControlledDial = (props: DrawerControlledDialProps) => (
 const ChannelCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: ChannelsLinesPaginationQuery$variables;
+  paginationOptions: ChannelsLinesPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');

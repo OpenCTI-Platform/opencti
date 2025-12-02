@@ -41,13 +41,13 @@ import { getDefaultAiLanguage } from '../../../../utils/ai/Common';
 
 // region types
 interface StixCoreObjectAskAiProps {
-  instanceId: string;
-  instanceName: string;
-  instanceType: string;
-  instanceMarkings?: string[];
-  type: 'container' | 'threat' | 'victim' | 'unsupported';
-  optionsOpen: boolean;
-  handleCloseOptions: () => void;
+  instanceId: string
+  instanceName: string
+  instanceType: string
+  instanceMarkings?: string[]
+  type: 'container' | 'threat' | 'victim' | 'unsupported'
+  optionsOpen: boolean
+  handleCloseOptions: () => void
 }
 
 const isContainerWithContent = (type: string) => ['Report', 'Grouping', 'Case-Incident', 'Case-Rfi', 'Case-Rft'].includes(type);

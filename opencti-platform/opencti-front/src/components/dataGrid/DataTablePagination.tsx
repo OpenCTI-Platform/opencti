@@ -17,10 +17,10 @@ const DataTablePagination = ({
   numberOfElements: unstoreNOE,
   redirectionModeEnabled = false,
 }: {
-  page: number,
-  setPage: Dispatch<SetStateAction<number>>,
-  numberOfElements?: NumberOfElements,
-  redirectionModeEnabled?: boolean,
+  page: number
+  setPage: Dispatch<SetStateAction<number>>
+  numberOfElements?: NumberOfElements
+  redirectionModeEnabled?: boolean
 }) => {
   const { t_i18n } = useFormatter();
 

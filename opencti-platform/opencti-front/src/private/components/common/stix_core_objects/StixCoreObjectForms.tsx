@@ -9,11 +9,11 @@ import { useFormatter } from '../../../../components/i18n';
 
 // region types
 interface StixCoreObjectFormsProps {
-  entityType: string;
+  entityType: string
 }
 
 interface StixCoreObjectFormsComponentProps {
-  queryRef: PreloadedQuery<StixCoreObjectFormsFormsQuery>;
+  queryRef: PreloadedQuery<StixCoreObjectFormsFormsQuery>
 }
 // endregion
 

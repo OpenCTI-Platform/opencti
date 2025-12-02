@@ -72,9 +72,9 @@ const threatActorIndividualEditionBiographicsFragment = graphql`
 `;
 
 interface ThreatActorIndividualEditionBiographicsComponentProps {
-  threatActorIndividualRef: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key;
-  enableReferences: boolean;
-  context?: readonly (GenericContext | null)[] | null;
+  threatActorIndividualRef: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$key
+  enableReferences: boolean
+  context?: readonly (GenericContext | null)[] | null
 }
 
 const ThreatActorIndividualEditionBiographicsComponent: React.FunctionComponent<

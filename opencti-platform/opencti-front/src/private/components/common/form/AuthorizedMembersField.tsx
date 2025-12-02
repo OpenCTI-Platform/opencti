@@ -43,27 +43,27 @@ export type AuthorizedMembersFieldValue = AuthorizedMemberOption[] | null;
 
 interface AuthorizedMembersFieldProps
   extends FieldProps<AuthorizedMembersFieldValue> {
-  owner?: Creator;
-  showAllMembersLine?: boolean;
-  showCreatorLine?: boolean;
-  canDeactivate?: boolean;
-  addMeUserWithAdminRights?: boolean;
-  enableAccesses?: boolean;
-  hideInfo?: boolean;
-  adminDefault?: boolean;
-  dynamicKeysForPlaybooks?: boolean;
-  isCanUseEnable?: boolean;
-  customInfoMessage?: string;
+  owner?: Creator
+  showAllMembersLine?: boolean
+  showCreatorLine?: boolean
+  canDeactivate?: boolean
+  addMeUserWithAdminRights?: boolean
+  enableAccesses?: boolean
+  hideInfo?: boolean
+  adminDefault?: boolean
+  dynamicKeysForPlaybooks?: boolean
+  isCanUseEnable?: boolean
+  customInfoMessage?: string
 }
 
 // Type of data for internal form, not exposed to others.
 interface AuthorizedMembersFieldInternalValue {
-  applyAccesses: boolean;
-  newAccessMember: FieldOption | null;
-  newAccessRight: AccessRight;
-  allAccessRight: AccessRight;
-  creatorAccessRight: AccessRight;
-  groupsRestriction: OptionMember[];
+  applyAccesses: boolean
+  newAccessMember: FieldOption | null
+  newAccessRight: AccessRight
+  allAccessRight: AccessRight
+  creatorAccessRight: AccessRight
+  groupsRestriction: OptionMember[]
 }
 
 // Validation for the internal formik form.

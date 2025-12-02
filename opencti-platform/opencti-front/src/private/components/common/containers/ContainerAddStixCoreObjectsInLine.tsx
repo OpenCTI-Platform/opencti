@@ -57,9 +57,9 @@ const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
 };
 
 type scoEdge = {
-  types: string[],
+  types: string[]
   node: {
-    id: string,
+    id: string
   }
 };
 
@@ -111,18 +111,18 @@ const ContainerAddStixCreObjectsInLineLoader: FunctionComponent<ContainerAddStix
 };
 
 interface ContainerAddStixCoreObjectsInLineProps {
-  containerId: string,
-  targetStixCoreObjectTypes: string[],
-  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables,
-  containerStixCoreObjects: unknown[],
-  onAdd?: (node: { id: string }) => void,
-  onDelete?: (node: { id: string }) => void,
-  confidence?: number,
-  defaultCreatedBy?: unknown,
-  defaultMarkingDefinitions?: unknown[],
-  selectedText?: string,
-  enableReferences?: boolean | undefined,
-  knowledgeGraph?: boolean | undefined,
+  containerId: string
+  targetStixCoreObjectTypes: string[]
+  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables | ContainerStixCyberObservablesLinesQuery$variables
+  containerStixCoreObjects: unknown[]
+  onAdd?: (node: { id: string }) => void
+  onDelete?: (node: { id: string }) => void
+  confidence?: number
+  defaultCreatedBy?: unknown
+  defaultMarkingDefinitions?: unknown[]
+  selectedText?: string
+  enableReferences?: boolean | undefined
+  knowledgeGraph?: boolean | undefined
 }
 
 const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreObjectsInLineProps> = ({

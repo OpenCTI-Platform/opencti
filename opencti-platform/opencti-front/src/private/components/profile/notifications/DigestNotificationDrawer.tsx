@@ -5,9 +5,9 @@ import { NotificationsLine_node$data } from '@components/profile/__generated__/N
 import { useFormatter } from '../../../../components/i18n';
 
 interface DigestNotificationDrawerProps {
-  notification: NotificationsLine_node$data | undefined;
-  open: boolean;
-  onClose: () => void;
+  notification: NotificationsLine_node$data | undefined
+  open: boolean
+  onClose: () => void
 }
 
 const DigestNotificationDrawer: FunctionComponent<DigestNotificationDrawerProps> = ({ notification, open, onClose }) => {

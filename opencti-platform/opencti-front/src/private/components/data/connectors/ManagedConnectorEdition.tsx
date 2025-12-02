@@ -48,7 +48,7 @@ const updateManagedConnector = graphql`
 
 interface ManagedConnectorValues {
   name: string
-  display_name: string;
+  display_name: string
   creator?: FieldOption
 }
 
@@ -62,7 +62,7 @@ const customRenderers = [
 
 type ManagedConnectorEditionProps = {
   connector: Connector_connector$data
-  open: boolean;
+  open: boolean
   onClose: () => void
 };
 

@@ -245,9 +245,9 @@ const stixCyberObservableNestedEntitiesTableFragment = graphql`
 `;
 
 interface StixCyberObservableNestedEntitiesTableProps {
-  stixCyberObservableId: string;
-  searchTerm: string;
-  isInLine: boolean;
+  stixCyberObservableId: string
+  searchTerm: string
+  isInLine: boolean
 }
 
 const StixCyberObservableNestedEntitiesTable: React.FC<StixCyberObservableNestedEntitiesTableProps> = ({

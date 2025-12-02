@@ -6,8 +6,8 @@ import { MESSAGING$ } from '../../../../../relay/environment';
 import { useFormatter } from '../../../../../components/i18n';
 
 type UseIngestionCatalogFiltersProps = {
-  catalogs: NonNullable<IngestionConnectorsCatalogsQuery['response']['catalogs']>;
-  searchParams: URLSearchParams;
+  catalogs: NonNullable<IngestionConnectorsCatalogsQuery['response']['catalogs']>
+  searchParams: URLSearchParams
 };
 
 const useIngestionCatalogFilters = ({ catalogs, searchParams }: UseIngestionCatalogFiltersProps) => {

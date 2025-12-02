@@ -10,9 +10,9 @@ import { useFormatter } from '../../../../components/i18n';
 
 type WorkspaceWidgetConfigProps = {
   handleImportWidget: (widgetFile: File) => void
-  widget?: Widget,
-  onComplete: (value: Widget, variableName?: string) => void,
-  closeMenu?: () => void;
+  widget?: Widget
+  onComplete: (value: Widget, variableName?: string) => void
+  closeMenu?: () => void
 };
 
 const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidget }: WorkspaceWidgetConfigProps) => {

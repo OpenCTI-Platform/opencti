@@ -11,7 +11,7 @@ interface ToolEditionContainerProps {
   queryRef: PreloadedQuery<ToolEditionContainerQuery>
   handleClose: () => void
   open?: boolean
-  controlledDial?: DrawerControlledDialType;
+  controlledDial?: DrawerControlledDialType
 }
 
 export const toolEditionQuery = graphql`

@@ -70,8 +70,8 @@ const securityCoverageQuery = graphql`
 `;
 
 type RootSecurityCoverageProps = {
-  securityCoverageId: string;
-  queryRef: PreloadedQuery<RootSecurityCoverageQuery>;
+  securityCoverageId: string
+  queryRef: PreloadedQuery<RootSecurityCoverageQuery>
 };
 
 const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCoverageProps) => {
@@ -221,7 +221,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
 };
 
 const Root = () => {
-  const { securityCoverageId } = useParams() as { securityCoverageId: string; };
+  const { securityCoverageId } = useParams() as { securityCoverageId: string };
   const queryRef = useQueryLoading<RootSecurityCoverageQuery>(securityCoverageQuery, {
     id: securityCoverageId,
   });

@@ -34,8 +34,8 @@ const aISummaryForecastQuery = graphql`
 
 interface AISummaryForecastComponentProps {
   refetch: () => void
-  language: string;
-  setLanguage: (language: string) => void;
+  language: string
+  setLanguage: (language: string) => void
   content: string
   loading: boolean
   result: AISummaryForecastStixCoreObjectAskAiForecastQuery$data | null

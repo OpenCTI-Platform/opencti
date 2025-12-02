@@ -48,13 +48,13 @@ const workspaceValidation = (t_i18n: (s: string) => string) => Yup.object().shap
 });
 
 interface WorkspaceCreationForm {
-  name: string,
-  description: string,
+  name: string
+  description: string
 }
 
 interface WorkspaceCreationProps {
-  paginationOptions: WorkspacesLinesPaginationQuery$variables,
-  type: string,
+  paginationOptions: WorkspacesLinesPaginationQuery$variables
+  type: string
 }
 
 const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) => {

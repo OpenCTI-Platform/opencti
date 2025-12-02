@@ -9,8 +9,8 @@ import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 interface securityPlatformContainerProps {
-  handleClose: () => void;
-  securityPlatform: SecurityPlatformEditionContainer_securityPlatform$data,
+  handleClose: () => void
+  securityPlatform: SecurityPlatformEditionContainer_securityPlatform$data
   controlledDial?: DrawerControlledDialType
 }
 

@@ -16,12 +16,12 @@ export const externalReferenceDeletionDeleteMutation = graphql`
 `;
 
 interface ExternalReferenceDeletionProps {
-  id: string;
+  id: string
   isOpen: boolean
-  handleClose: () => void;
-  objectId?: string;
-  handleRemove?: (() => void) | undefined;
-  isExternalReferenceAttachment?: boolean;
+  handleClose: () => void
+  objectId?: string
+  handleRemove?: (() => void) | undefined
+  isExternalReferenceAttachment?: boolean
 }
 
 const ExternalReferenceDeletion: FunctionComponent<

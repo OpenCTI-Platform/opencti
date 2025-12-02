@@ -21,9 +21,9 @@ export const stixCyberObservableEditionQuery = graphql`
 `;
 
 interface StixCyberObservableEditionProps {
-  stixCyberObservableId: string,
-  open?: boolean,
-  handleClose?: () => void,
+  stixCyberObservableId: string
+  open?: boolean
+  handleClose?: () => void
 }
 
 const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionProps> = ({

@@ -55,9 +55,9 @@ const inlineStyles = {
 };
 
 interface ItemSeverityProps {
-  label: string;
-  severity?: string | null;
-  variant?: 'inList' | 'high';
+  label: string
+  severity?: string | null
+  variant?: 'inList' | 'high'
 }
 
 const computeSeverityStyle = (severity: string | undefined | null) => {

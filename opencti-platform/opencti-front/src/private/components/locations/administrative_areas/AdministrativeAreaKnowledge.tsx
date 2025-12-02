@@ -25,7 +25,7 @@ const administrativeAreaKnowledgeFragment = graphql`
 const AdministrativeAreaKnowledge = ({
   administrativeAreaData,
 }: {
-  administrativeAreaData: AdministrativeAreaKnowledge_administrativeArea$key;
+  administrativeAreaData: AdministrativeAreaKnowledge_administrativeArea$key
 }) => {
   const administrativeArea = useFragment<AdministrativeAreaKnowledge_administrativeArea$key>(
     administrativeAreaKnowledgeFragment,

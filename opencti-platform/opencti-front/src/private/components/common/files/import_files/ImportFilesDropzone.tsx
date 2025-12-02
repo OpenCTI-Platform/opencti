@@ -8,9 +8,9 @@ import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 
 interface ImportFilesDropzoneProps {
-  fullSize?: boolean;
-  onChange: (files: File[]) => void;
-  openFreeText?: (value: boolean) => void;
+  fullSize?: boolean
+  onChange: (files: File[]) => void
+  openFreeText?: (value: boolean) => void
 }
 
 const ImportFilesDropzone = ({

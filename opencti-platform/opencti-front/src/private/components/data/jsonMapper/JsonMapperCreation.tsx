@@ -32,7 +32,7 @@ interface JsonMapperCreationFormProps {
   paginationOptions: jsonMappers_MappersQuery$variables
   isDuplicated?: boolean
   onClose?: () => void
-  mappingJson?: JsonMapperEditionContainerFragment_jsonMapper$key | null,
+  mappingJson?: JsonMapperEditionContainerFragment_jsonMapper$key | null
 }
 
 const JsonMapperCreation: FunctionComponent<JsonMapperCreationFormProps> = ({

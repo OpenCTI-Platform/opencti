@@ -11,9 +11,9 @@ import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 
 interface StixSightingRelationshipHeaderProps {
-  headerName?: string,
-  onOpenDelete: () => void,
-  onOpenEdit: () => void,
+  headerName?: string
+  onOpenDelete: () => void
+  onOpenEdit: () => void
 }
 
 const StixSightingRelationshipHeader = ({

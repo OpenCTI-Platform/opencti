@@ -23,10 +23,10 @@ import useSchema, { AvailableEntityOption } from '../../../../../utils/hooks/use
 
 interface UserConfidenceOverridesFieldComponentProps
   extends FieldProps<OverrideFormData> {
-  index: number;
-  onDelete: () => void;
-  onSubmit: (index: number, value: OverrideFormData | null) => void;
-  currentOverrides: OverrideFormData[];
+  index: number
+  onDelete: () => void
+  onSubmit: (index: number, value: OverrideFormData | null) => void
+  currentOverrides: OverrideFormData[]
 }
 
 const filterOverridableEntityTypes = (entity_type: string | null) => {

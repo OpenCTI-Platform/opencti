@@ -67,7 +67,7 @@ const i18n: { messages: Record<PlatformLang, Record<string, string>> } = {
   },
 };
 
-export const availableLanguage: { value: PlatformLang; label: string; name: string }[] = [
+export const availableLanguage: { value: PlatformLang, label: string, name: string }[] = [
   { value: 'de-de', label: 'Deutsch', name: 'German' },
   { value: 'en-us', label: 'English', name: 'English' },
   { value: 'es-es', label: 'Español', name: 'Spanish' },
@@ -80,14 +80,14 @@ export const availableLanguage: { value: PlatformLang; label: string; name: stri
 ];
 
 // list of available languages for Ai text generation (minimal support : platform languages)
-export const aiLanguage: { value: string; label: string; name: string }[] = [
+export const aiLanguage: { value: string, label: string, name: string }[] = [
   ...availableLanguage,
   // Add new languages which are only supported for ia, not for the platform
 ];
 
 interface AppIntlProviderProps {
-  settings: AppIntlProvider_settings$data | { platform_language: string; platform_translations: string };
-  children: ReactNode;
+  settings: AppIntlProvider_settings$data | { platform_language: string, platform_translations: string }
+  children: ReactNode
 }
 
 const AppIntlProvider: FunctionComponent<AppIntlProviderProps> = ({ settings, children }) => {

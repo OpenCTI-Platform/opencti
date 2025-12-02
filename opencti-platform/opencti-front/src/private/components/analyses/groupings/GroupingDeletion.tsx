@@ -15,8 +15,8 @@ const GroupingDeletionDeleteMutation = graphql`
 `;
 
 interface GroupingDeletionProps {
-  groupingId: string;
-  handleClose?: () => void;
+  groupingId: string
+  handleClose?: () => void
   isOpen: boolean
 }
 

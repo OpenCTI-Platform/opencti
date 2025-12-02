@@ -31,7 +31,7 @@ interface EntityStixCoreRelationshipsRelationshipsViewProps {
   enableEntitiesView?: boolean
   enableNestedView?: boolean
   paddingRightButtonAdd?: number
-  role?: string,
+  role?: string
   handleChangeView?: (viewMode: string) => void
   allowCreation?: boolean
   isCoverage?: boolean

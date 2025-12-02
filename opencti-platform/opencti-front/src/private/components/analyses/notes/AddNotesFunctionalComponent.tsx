@@ -14,9 +14,9 @@ import { NoteCreationForm } from './NoteCreation';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 
 interface AddNotesFunctionalComponentProps {
-  stixCoreObjectOrStixCoreRelationshipId: string,
-  stixCoreObjectOrStixCoreRelationshipNotes: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data,
-  paginationOptions: NotesLinesPaginationQuery$variables,
+  stixCoreObjectOrStixCoreRelationshipId: string
+  stixCoreObjectOrStixCoreRelationshipNotes: StixCoreObjectOrStixCoreRelationshipNotesCards_data$data
+  paginationOptions: NotesLinesPaginationQuery$variables
 }
 
 // TODO: Rename to AddNotes and replace AddNotes.jsx

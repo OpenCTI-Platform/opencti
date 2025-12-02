@@ -11,12 +11,12 @@ import AppIntlProvider from '../../components/AppIntlProvider';
 
 // 'unknown' to facilitate mocking partial context without having TS errors
 interface CreateUserContextOptions {
-  me?: unknown,
-  settings?: unknown,
-  bannerSettings?: unknown,
-  entitySettings?: unknown,
-  platformModuleHelpers?: unknown,
-  schema?: unknown,
+  me?: unknown
+  settings?: unknown
+  bannerSettings?: unknown
+  entitySettings?: unknown
+  platformModuleHelpers?: unknown
+  schema?: unknown
 }
 
 /**
@@ -85,8 +85,8 @@ export const ProvidersWrapper = ({ children, relayEnv, userContext }: ProvidersW
 };
 
 interface TestRenderOptions {
-  relayConfig?: Partial<EnvironmentConfig>,
-  userContext?: Partial<UserContextType>,
+  relayConfig?: Partial<EnvironmentConfig>
+  userContext?: Partial<UserContextType>
 }
 
 /**

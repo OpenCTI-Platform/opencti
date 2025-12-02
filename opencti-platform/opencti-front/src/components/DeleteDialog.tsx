@@ -17,10 +17,10 @@ type DeleteDialogProps = {
   onClose?: () => void
   message: React.ReactNode
   warning?: {
-    title?: string,
-    message: string,
-  },
-  isOpen?: boolean;
+    title?: string
+    message: string
+  }
+  isOpen?: boolean
 };
 
 const DeleteDialog: React.FC<DeleteDialogProps> = ({

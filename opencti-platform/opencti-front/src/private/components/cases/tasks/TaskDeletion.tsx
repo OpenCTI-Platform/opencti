@@ -21,11 +21,11 @@ const TaskDeletion = ({
   objectId,
   paginationOptions,
 }: {
-  id: string;
-  isOpen: boolean;
-  handleClose: () => void;
-  objectId?: string;
-  paginationOptions?: CaseTasksLinesQuery$variables;
+  id: string
+  isOpen: boolean
+  handleClose: () => void
+  objectId?: string
+  paginationOptions?: CaseTasksLinesQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();

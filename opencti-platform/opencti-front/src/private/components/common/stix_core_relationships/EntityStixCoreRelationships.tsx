@@ -16,21 +16,21 @@ const useStyles = makeStyles(() => ({
   },
 }));
 interface EntityStixCoreRelationshipsProps {
-  entityId: string;
-  entityLink: string;
-  defaultStartTime?: string;
-  defaultStopTime?: string;
-  relationshipTypes: string[];
-  stixCoreObjectTypes?: string[];
-  currentView: string;
-  enableNestedView?: boolean;
-  enableContextualView: boolean;
-  enableEntitiesView?: boolean;
-  isRelationReversed: boolean;
-  allDirections?: boolean;
-  role?: string;
-  paddingRightButtonAdd?: number;
-  handleChangeView?: (viewMode: string) => void;
+  entityId: string
+  entityLink: string
+  defaultStartTime?: string
+  defaultStopTime?: string
+  relationshipTypes: string[]
+  stixCoreObjectTypes?: string[]
+  currentView: string
+  enableNestedView?: boolean
+  enableContextualView: boolean
+  enableEntitiesView?: boolean
+  isRelationReversed: boolean
+  allDirections?: boolean
+  role?: string
+  paddingRightButtonAdd?: number
+  handleChangeView?: (viewMode: string) => void
 }
 
 const EntityStixCoreRelationships: FunctionComponent<

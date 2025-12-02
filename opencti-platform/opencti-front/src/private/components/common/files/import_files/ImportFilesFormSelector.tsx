@@ -34,11 +34,11 @@ const importFilesFormSelectorQuery = graphql`
 `;
 
 interface ImportFilesFormSelectorContentProps {
-  queryRef: PreloadedQuery<ImportFilesFormSelectorQuery>;
-  selectedFormId?: string;
-  onSelectForm: (formId: string) => void;
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
+  queryRef: PreloadedQuery<ImportFilesFormSelectorQuery>
+  selectedFormId?: string
+  onSelectForm: (formId: string) => void
+  searchTerm: string
+  onSearchChange: (value: string) => void
 }
 
 const ImportFilesFormSelectorContent: React.FC<ImportFilesFormSelectorContentProps> = ({

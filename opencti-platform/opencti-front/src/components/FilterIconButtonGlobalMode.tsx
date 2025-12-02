@@ -2,9 +2,9 @@ import React, { FunctionComponent } from 'react';
 import { useFormatter } from './i18n';
 
 interface FilterIconButtonGlobalModeProps {
-  classOperator: string;
-  globalMode: string;
-  handleSwitchGlobalMode?: () => void;
+  classOperator: string
+  globalMode: string
+  handleSwitchGlobalMode?: () => void
 }
 const FilterIconButtonGlobalMode: FunctionComponent<
 FilterIconButtonGlobalModeProps

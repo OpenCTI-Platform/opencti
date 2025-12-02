@@ -28,12 +28,12 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 // region types
 interface ContainerHeaderSharedProps {
-  elementId: string;
-  variant: string;
+  elementId: string
+  variant: string
 }
 
 interface OrganizationForm {
-  objectOrganization: { value: string; label: string };
+  objectOrganization: { value: string, label: string }
 }
 
 // endregion
@@ -229,7 +229,7 @@ ContainerHeaderSharedProps
       query={containerHeaderSharedQuery}
       variables={{ id: elementId }}
       render={(result: {
-        props: StixSightingRelationshipSharingQuery$data;
+        props: StixSightingRelationshipSharingQuery$data
       }) => {
         if (result.props) {
           return render(result.props);

@@ -15,9 +15,9 @@ export const ingestionTaxiiEditionContainerQuery = graphql`
 `;
 
 interface IngestionTaxiiEditionContainerProps {
-  queryRef: PreloadedQuery<IngestionTaxiiEditionContainerQuery>;
-  open: boolean;
-  handleClose?: () => void;
+  queryRef: PreloadedQuery<IngestionTaxiiEditionContainerQuery>
+  open: boolean
+  handleClose?: () => void
 }
 
 const IngestionTaxiiEditionContainer: FunctionComponent<IngestionTaxiiEditionContainerProps> = ({

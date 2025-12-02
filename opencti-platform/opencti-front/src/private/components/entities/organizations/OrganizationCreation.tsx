@@ -68,13 +68,13 @@ interface OrganizationAddInput {
 
 interface OrganizationFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: FieldOption;
-  defaultMarkingDefinitions?: FieldOption[];
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: FieldOption
+  defaultMarkingDefinitions?: FieldOption[]
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> = ({

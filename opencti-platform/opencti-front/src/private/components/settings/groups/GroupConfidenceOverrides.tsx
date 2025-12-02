@@ -3,9 +3,9 @@ import { useFormatter } from '../../../../components/i18n';
 
 type GroupOverridesProps = {
   overrides: ReadonlyArray<{
-    entity_type: string;
-    max_confidence: number;
-  }> | undefined;
+    entity_type: string
+    max_confidence: number
+  }> | undefined
 };
 
 const GroupConfidenceOverrides: React.FC<GroupOverridesProps> = ({ overrides }) => {

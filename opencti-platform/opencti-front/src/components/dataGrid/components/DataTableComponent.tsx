@@ -231,7 +231,9 @@ const DataTableComponent = ({
       resize(tableRef.current);
       observer = callbackResizeObserver(tableRef.current, resize);
     }
-    return () => { observer?.disconnect(); };
+    return () => {
+      observer?.disconnect();
+    };
   }, [tableRef.current, tableWidth, endsWithAction, startsWithAction, startsWithIcon]);
 
   return (

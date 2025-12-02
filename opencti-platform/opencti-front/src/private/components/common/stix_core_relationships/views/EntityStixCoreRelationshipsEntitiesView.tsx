@@ -16,18 +16,18 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers-types';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
-  entityId: string;
-  defaultStartTime?: string;
-  defaultStopTime?: string;
-  localStorage: PaginationLocalStorage<PaginationOptions>;
-  relationshipTypes: string[];
-  stixCoreObjectTypes?: string[];
-  isRelationReversed: boolean;
-  currentView: string;
-  enableNestedView?: boolean;
-  enableContextualView: boolean;
-  paddingRightButtonAdd?: number;
-  handleChangeView?: (viewMode: string) => void;
+  entityId: string
+  defaultStartTime?: string
+  defaultStopTime?: string
+  localStorage: PaginationLocalStorage<PaginationOptions>
+  relationshipTypes: string[]
+  stixCoreObjectTypes?: string[]
+  isRelationReversed: boolean
+  currentView: string
+  enableNestedView?: boolean
+  enableContextualView: boolean
+  paddingRightButtonAdd?: number
+  handleChangeView?: (viewMode: string) => void
 }
 
 const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<

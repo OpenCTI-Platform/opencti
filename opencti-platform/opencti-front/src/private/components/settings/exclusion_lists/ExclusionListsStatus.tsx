@@ -28,8 +28,8 @@ export const exclusionListsStatusQuery = graphql`
 `;
 
 interface ExclusionListsStatusComponentProps {
-  queryRef: PreloadedQuery<ExclusionListsStatusQuery>;
-  refetch: () => void;
+  queryRef: PreloadedQuery<ExclusionListsStatusQuery>
+  refetch: () => void
 }
 
 const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusComponentProps> = ({ queryRef, refetch }) => {
@@ -127,9 +127,9 @@ const ExclusionListsStatusComponent: FunctionComponent<ExclusionListsStatusCompo
 };
 
 interface ExclusionListsStatusProps {
-  queryRef: PreloadedQuery<ExclusionListsStatusQuery> | null | undefined;
-  refetch: () => void;
-  loadQuery: (variables: ExclusionListsStatusQuery$variables, options?: UseQueryLoaderLoadQueryOptions) => void;
+  queryRef: PreloadedQuery<ExclusionListsStatusQuery> | null | undefined
+  refetch: () => void
+  loadQuery: (variables: ExclusionListsStatusQuery$variables, options?: UseQueryLoaderLoadQueryOptions) => void
 }
 
 const ExclusionListsStatus: FunctionComponent<ExclusionListsStatusProps> = ({ refetch, queryRef, loadQuery }) => {

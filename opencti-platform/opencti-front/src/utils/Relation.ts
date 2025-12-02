@@ -68,13 +68,13 @@ export const resolveTypesForRelationshipRef = (
  * @param schemaRelationsTypesMapping
  */
 export interface RelationsDataFromEntity {
-  allPossibleRelations: string[],
-  allRelationsToEntity: RelationsToEntity[],
+  allPossibleRelations: string[]
+  allRelationsToEntity: RelationsToEntity[]
 }
 export interface RelationsToEntity {
-  toEntitytype: string; // TODO rename to toDomainAndObserble or anything that says both of them.
-  legitRelations: string[];
-  isObservable?: boolean;
+  toEntitytype: string // TODO rename to toDomainAndObserble or anything that says both of them.
+  legitRelations: string[]
+  isObservable?: boolean
 }
 
 /**

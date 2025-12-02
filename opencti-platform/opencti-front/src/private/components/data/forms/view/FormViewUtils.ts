@@ -536,7 +536,8 @@ export const formatFormDataForSubmission = (
               || field.type === 'objectLabel' || field.type === 'externalReferences'
               || field.type === 'files') {
               return Array.isArray(value) && value.length > 0;
-            } if (field.type === 'checkbox' || field.type === 'toggle') {
+            }
+            if (field.type === 'checkbox' || field.type === 'toggle') {
               // For boolean fields, only consider it filled if it's true
               // or if it has a default value that differs from the current value
               if (field.defaultValue !== undefined && field.defaultValue !== null) {
@@ -545,9 +546,11 @@ export const formatFormDataForSubmission = (
               }
               // Otherwise, only consider true as meaningful
               return value === true || value === 'true' || value === '1';
-            } if (field.type === 'createdBy') {
+            }
+            if (field.type === 'createdBy') {
               return value && typeof value === 'object' && Object.keys(value).length > 0;
-            } if (field.type === 'number') {
+            }
+            if (field.type === 'number') {
               // Check if it's a meaningful number (not empty string or NaN)
               const numValue = typeof value === 'number' ? value : parseFloat(value as string);
               return !Number.isNaN(numValue) && value !== '';

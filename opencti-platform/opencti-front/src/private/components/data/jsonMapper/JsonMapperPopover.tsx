@@ -35,8 +35,8 @@ const jsonMapperExportQuery = graphql`
 `;
 
 interface JsonMapperPopoverProps {
-  jsonMapperId: string;
-  paginationOptions: jsonMappers_MappersQuery$variables;
+  jsonMapperId: string
+  paginationOptions: jsonMappers_MappersQuery$variables
 }
 
 const JsonMapperPopover: FunctionComponent<JsonMapperPopoverProps> = ({

@@ -16,9 +16,9 @@ export const ingestionJsonEditionContainerQuery = graphql`
 `;
 
 interface IngestionJsonEditionContainerProps {
-  queryRef: PreloadedQuery<IngestionJsonEditionContainerQuery>;
-  open: boolean;
-  handleClose?: () => void;
+  queryRef: PreloadedQuery<IngestionJsonEditionContainerQuery>
+  open: boolean
+  handleClose?: () => void
 }
 
 const IngestionJsonEditionContainer: FunctionComponent<IngestionJsonEditionContainerProps> = ({

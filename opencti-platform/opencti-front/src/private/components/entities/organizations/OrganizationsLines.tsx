@@ -14,11 +14,11 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 const nbOfRowsToLoad = 50;
 
 interface OrganizationsLinesProps {
-  queryRef: PreloadedQuery<OrganizationsLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions?: OrganizationsLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: HandleAddFilter;
+  queryRef: PreloadedQuery<OrganizationsLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions?: OrganizationsLinesPaginationQuery$variables
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  onLabelClick: HandleAddFilter
 }
 
 export const organizationsLinesQuery = graphql`

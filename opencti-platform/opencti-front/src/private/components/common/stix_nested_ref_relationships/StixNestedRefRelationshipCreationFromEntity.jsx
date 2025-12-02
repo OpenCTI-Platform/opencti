@@ -470,7 +470,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
         stop_time: parse(values.stop_time).format(),
       };
       try {
-        // eslint-disable-next-line no-await-in-loop
         await commit(finalValues);
       } catch (_error) {
         setSubmitting(false);
@@ -613,7 +612,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                         selectAll={false}
                       />
                     );
-                  } return (<></>);
+                  }
+                  return (<></>);
                 }}
               />
             </ListLines>
@@ -894,7 +894,6 @@ const StixNestedRefRelationshipCreationFromEntity = ({
     );
   };
 
-  // eslint-disable-next-line
   const renderLoader = () => {
     return (
       <div style={{ display: 'table', height: '100%', width: '100%' }}>

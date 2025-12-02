@@ -70,14 +70,14 @@ interface InfrastructureAddInput {
 
 interface InfrastructureFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void;
-  onCompleted?: () => void;
+  onReset?: () => void
+  onCompleted?: () => void
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number;
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  defaultConfidence?: number
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormProps> = ({

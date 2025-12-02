@@ -34,7 +34,7 @@ const CreateCaseTemplateControlledDial = (
 );
 
 interface CaseTemplateCreationProps {
-  paginationOptions?: CaseTemplateLinesPaginationQuery$variables;
+  paginationOptions?: CaseTemplateLinesPaginationQuery$variables
 }
 
 const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
@@ -55,8 +55,8 @@ const CaseTemplateCreation: FunctionComponent<CaseTemplateCreationProps> = ({
   const onSubmit = (
     values: typeof initialValues,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void,
-      resetForm: () => void,
+      setSubmitting: (flag: boolean) => void
+      resetForm: () => void
     },
   ) => {
     const finalValues = {

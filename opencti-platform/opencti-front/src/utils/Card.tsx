@@ -5,10 +5,10 @@ import { DraftVersion } from '@components/common/cards/GenericAttackCard';
 import { APP_BASE_PATH } from '../relay/environment';
 
 export interface toEdgesLocated {
-  edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null; name?: string } | null } }>;
+  edges: ReadonlyArray<{ node: { to: { x_opencti_aliases?: ReadonlyArray<string | null> | null, name?: string } | null } }>
 }
 
-export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | undefined; name: string; draftVersion?: DraftVersion | null }) => {
+export const renderCardTitle = (entity: { countryFlag?: toEdgesLocated | null | undefined, name: string, draftVersion?: DraftVersion | null }) => {
   if ((entity.countryFlag?.edges ?? []).length > 0) {
     const country = entity.countryFlag?.edges[0]?.node?.to;
     const flag = country?.x_opencti_aliases

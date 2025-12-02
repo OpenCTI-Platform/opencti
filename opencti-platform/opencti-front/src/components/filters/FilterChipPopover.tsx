@@ -40,27 +40,27 @@ import FilterFiltersInput from './FilterFiltersInput';
 import stopEvent from '../../utils/domEvent';
 
 interface FilterChipMenuProps {
-  handleClose: () => void;
-  open: boolean;
-  params: FilterChipsParameter;
-  filters: Filter[];
-  helpers?: handleFilterHelpers;
-  availableRelationFilterTypes?: Record<string, string[]>;
-  filtersRepresentativesMap: Map<string, FilterRepresentative>;
-  entityTypes?: string[];
-  searchContext?: FilterSearchContext;
-  availableEntityTypes?: string[];
-  availableRelationshipTypes?: string[];
-  fintelTemplatesContext?: boolean;
+  handleClose: () => void
+  open: boolean
+  params: FilterChipsParameter
+  filters: Filter[]
+  helpers?: handleFilterHelpers
+  availableRelationFilterTypes?: Record<string, string[]>
+  filtersRepresentativesMap: Map<string, FilterRepresentative>
+  entityTypes?: string[]
+  searchContext?: FilterSearchContext
+  availableEntityTypes?: string[]
+  availableRelationshipTypes?: string[]
+  fintelTemplatesContext?: boolean
 }
 
 export interface FilterChipsParameter {
-  filterId?: string;
-  anchorEl?: HTMLElement;
+  filterId?: string
+  anchorEl?: HTMLElement
 }
 
 const OperatorKeyValues: {
-  [key: string]: string;
+  [key: string]: string
 } = {
   eq: 'Equals',
   not_eq: 'Not equals',
@@ -105,9 +105,9 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
   const { typesWithFintelTemplates } = useAttributes();
 
   const [inputValues, setInputValues] = useState<{
-    key: string;
-    values: string[];
-    operator?: string;
+    key: string
+    values: string[]
+    operator?: string
   }[]>(filter ? [filter] : []);
   const [cacheEntities, setCacheEntities] = useState<Record<string, FilterOptionValue[]>>({});
   const [searchScope, setSearchScope] = useState<Record<string, string[]>>(

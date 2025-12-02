@@ -74,16 +74,16 @@ interface CourseOfActionAddInput {
 }
 
 interface CourseOfActionFormProps {
-  updater?: (store: RecordSourceSelectorProxy, key: string) => void;
-  paginationOptions?: CoursesOfActionLinesPaginationQuery$variables;
-  display?: boolean;
-  contextual?: boolean;
-  onReset?: () => void;
-  inputValue?: string;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
+  updater?: (store: RecordSourceSelectorProxy, key: string) => void
+  paginationOptions?: CoursesOfActionLinesPaginationQuery$variables
+  display?: boolean
+  contextual?: boolean
+  onReset?: () => void
+  inputValue?: string
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
 }
 
 export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormProps> = ({

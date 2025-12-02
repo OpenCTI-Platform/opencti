@@ -102,19 +102,19 @@ export const ingestionCsvCreationUsersQuery = graphql`
 `;
 
 interface IngestionCsvCreationProps {
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
-  handleClose?: () => void;
-  ingestionCsvData?: IngestionCsvEditionFragment_ingestionCsv$data | null;
-  triggerButton?: boolean;
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined
+  handleClose?: () => void
+  ingestionCsvData?: IngestionCsvEditionFragment_ingestionCsv$data | null
+  triggerButton?: boolean
   drawerSettings?: {
-    title: string;
-    button: string;
+    title: string
+    button: string
   }
 }
 
 interface IngestionCsvCreationContainerProps extends IngestionCsvCreationProps {
-  queryRef?: PreloadedQuery<IngestionCsvEditionContainerQuery>,
-  open?: boolean,
+  queryRef?: PreloadedQuery<IngestionCsvEditionContainerQuery>
+  open?: boolean
 
 }
 
@@ -143,7 +143,7 @@ export interface IngestionCsvAddInput extends BasicUserHandlingValues {
 }
 
 const resolveHasUserChoiceCsvMapper = (option: FieldOption & {
-  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
+  representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[]
 }) => {
   return option.representations.some(
     (representation) => representation.attributes.some(
@@ -184,13 +184,13 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
   };
   const onCsvMapperSelection = async (
     option: FieldOption & {
-      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
+      representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[]
     },
     {
       setFieldValue,
       values,
     }: {
-      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>);
+      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>)
       values: IngestionCsvAddInput
     },
   ) => {

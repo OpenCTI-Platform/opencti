@@ -15,15 +15,15 @@ export const connectorManagerStatusQuery = graphql`
 `;
 
 interface ConnectorManagerStatusContextValue {
-  connectorManagers: readonly { id: string; active: boolean }[] | null;
-  hasRegisteredManagers: boolean;
-  hasActiveManagers: boolean;
+  connectorManagers: readonly { id: string, active: boolean }[] | null
+  hasRegisteredManagers: boolean
+  hasActiveManagers: boolean
 }
 
 const ConnectorManagerStatusContext = createContext<ConnectorManagerStatusContextValue | null>(null);
 
 interface ConnectorManagerStatusProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export const ConnectorManagerStatusProvider: React.FC<ConnectorManagerStatusProviderProps> = ({

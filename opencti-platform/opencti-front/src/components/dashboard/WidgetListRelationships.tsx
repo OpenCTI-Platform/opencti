@@ -9,8 +9,8 @@ interface WidgetListRelationshipsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any[]
   publicWidget?: boolean
-  widgetId: string;
-  rootRef: DataTableProps['rootRef'],
+  widgetId: string
+  rootRef: DataTableProps['rootRef']
   columns: WidgetColumn[]
 }
 

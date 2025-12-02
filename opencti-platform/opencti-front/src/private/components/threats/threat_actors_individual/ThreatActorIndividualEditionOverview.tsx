@@ -121,20 +121,20 @@ const threatActorIndividualEditionOverviewFragment = graphql`
 const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
 
 interface ThreatActorIndividualEditionOverviewProps {
-  threatActorIndividualRef: ThreatActorIndividualEditionOverview_ThreatActorIndividual$key;
-  context?: readonly (GenericContext | null)[] | null;
-  enableReferences: boolean;
-  handleClose: () => void;
+  threatActorIndividualRef: ThreatActorIndividualEditionOverview_ThreatActorIndividual$key
+  context?: readonly (GenericContext | null)[] | null
+  enableReferences: boolean
+  handleClose: () => void
 }
 
 interface ThreatActorIndividualEditionFormValues {
-  message?: string;
-  references?: FieldOption[];
-  createdBy: FieldOption | undefined;
-  x_opencti_workflow_id: FieldOption;
-  objectMarking?: FieldOption[];
-  objectAssignee?: FieldOption[];
-  killChainPhases?: FieldOption[];
+  message?: string
+  references?: FieldOption[]
+  createdBy: FieldOption | undefined
+  x_opencti_workflow_id: FieldOption
+  objectMarking?: FieldOption[]
+  objectAssignee?: FieldOption[]
+  killChainPhases?: FieldOption[]
 }
 
 const ThreatActorIndividualEditionOverviewComponent: FunctionComponent<

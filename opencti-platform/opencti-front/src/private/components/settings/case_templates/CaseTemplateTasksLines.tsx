@@ -10,10 +10,10 @@ import { CaseTemplateTasksLinesPaginationQuery } from './__generated__/CaseTempl
 import { CaseTemplateTasksLine, CaseTemplateTasksLineDummy } from './CaseTemplateTasksLine';
 
 export interface TasksLinesProps {
-  paginationOptions: CaseTemplateTasksLines_DataQuery$variables;
-  dataColumns: DataColumns;
-  queryRef: PreloadedQuery<CaseTemplateTasksLinesPaginationQuery>;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  paginationOptions: CaseTemplateTasksLines_DataQuery$variables
+  dataColumns: DataColumns
+  queryRef: PreloadedQuery<CaseTemplateTasksLinesPaginationQuery>
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 export const tasksLinesQuery = graphql`

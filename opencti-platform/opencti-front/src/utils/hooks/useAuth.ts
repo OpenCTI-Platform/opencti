@@ -5,22 +5,22 @@ import { RootSettings$data } from '../../private/__generated__/RootSettings.grap
 import { RootMe_data$data } from '../../private/__generated__/RootMe_data.graphql';
 
 export interface BannerSettings {
-  bannerLevel?: string | null;
-  bannerText?: string | null;
-  idleLimit: number;
-  sessionLimit: number;
-  bannerHeight: string;
-  bannerHeightNumber: number;
+  bannerLevel?: string | null
+  bannerText?: string | null
+  idleLimit: number
+  sessionLimit: number
+  bannerHeight: string
+  bannerHeightNumber: number
 }
 
 export type FilterDefinition = {
-  filterKey: string;
-  label: string;
-  type: string; // boolean, date, integer, float, id, string, text, or object
-  multiple: boolean;
-  subEntityTypes: string[];
-  elementsForFilterValuesSearch: string[]; // not empty if type = 'id', type = 'enum' or type = 'vocabulary'
-  subFilters?: FilterDefinition[] | null;
+  filterKey: string
+  label: string
+  type: string // boolean, date, integer, float, id, string, text, or object
+  multiple: boolean
+  subEntityTypes: string[]
+  elementsForFilterValuesSearch: string[] // not empty if type = 'id', type = 'enum' or type = 'vocabulary'
+  subFilters?: FilterDefinition[] | null
 };
 
 export type SchemaType = {
@@ -34,14 +34,14 @@ export type SchemaType = {
 };
 
 export interface UserContextType {
-  me: RootMe_data$data | undefined;
-  settings: RootSettings$data | undefined;
-  bannerSettings: BannerSettings | undefined;
-  entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
-  platformModuleHelpers: ModuleHelper | undefined;
-  schema: SchemaType | undefined;
-  isXTMHubAccessible: boolean | null | undefined;
-  about: RootPrivateQuery$data['about'] | undefined;
+  me: RootMe_data$data | undefined
+  settings: RootSettings$data | undefined
+  bannerSettings: BannerSettings | undefined
+  entitySettings: RootPrivateQuery$data['entitySettings'] | undefined
+  platformModuleHelpers: ModuleHelper | undefined
+  schema: SchemaType | undefined
+  isXTMHubAccessible: boolean | null | undefined
+  about: RootPrivateQuery$data['about'] | undefined
 }
 
 const defaultContext = {

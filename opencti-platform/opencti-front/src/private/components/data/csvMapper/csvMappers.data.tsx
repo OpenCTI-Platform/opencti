@@ -29,8 +29,8 @@ export const schemaAttributesQuery = graphql`
 `;
 
 type CsvMappersContextType = {
-  csvMappers?: csvMappers_MappersQuery$data,
-  schemaAttributes?: csvMappers_SchemaAttributesQuery$data,
+  csvMappers?: csvMappers_MappersQuery$data
+  schemaAttributes?: csvMappers_SchemaAttributesQuery$data
 };
 const CsvMappersContext = createContext<CsvMappersContextType>({});
 

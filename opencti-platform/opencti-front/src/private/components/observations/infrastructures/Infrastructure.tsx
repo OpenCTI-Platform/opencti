@@ -74,7 +74,7 @@ const infrastructureFragment = graphql`
 const Infrastructure = ({
   data,
 }: {
-  data: Infrastructure_infrastructure$key;
+  data: Infrastructure_infrastructure$key
 }) => {
   const classes = useStyles();
   const infrastructureData = useFragment<Infrastructure_infrastructure$key>(

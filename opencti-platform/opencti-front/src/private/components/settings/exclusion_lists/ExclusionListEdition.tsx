@@ -12,7 +12,8 @@ import { now } from 'src/utils/Time';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { availableEntityTypes, exclusionListUpdateValidator } from '@components/settings/exclusion_lists/ExclusionListUtils';
-import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment'; import AutocompleteField from '../../../../components/AutocompleteField';
+import { APP_BASE_PATH, handleErrorInForm } from '../../../../relay/environment';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import MarkdownField from '../../../../components/fields/MarkdownField';
@@ -31,18 +32,18 @@ export const exclusionListMutationFieldPatch = graphql`
 `;
 
 interface ExclusionListEditionComponentProps {
-  data: ExclusionListsLine_node$data;
-  isOpen: boolean;
-  refetchStatus: () => void,
-  onClose: () => void;
+  data: ExclusionListsLine_node$data
+  isOpen: boolean
+  refetchStatus: () => void
+  onClose: () => void
 }
 
 interface ExclusionListEditionFormData {
-  name: string;
-  description?: string | null;
-  exclusion_list_entity_types: FieldOption[];
-  fileContent?: string;
-  file?: File | null;
+  name: string
+  description?: string | null
+  exclusion_list_entity_types: FieldOption[]
+  fileContent?: string
+  file?: File | null
 }
 
 const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps> = ({

@@ -43,15 +43,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface InvestigationAddStixCoreObjectsLineComponentProps {
   dataColumns: DataColumns
-  node: InvestigationAddStixCoreObjectsLine_node$data,
-  onLabelClick: HandleAddFilter,
+  node: InvestigationAddStixCoreObjectsLine_node$data
+  onLabelClick: HandleAddFilter
   onToggleEntity: (
     entity: InvestigationAddStixCoreObjectsLine_node$data,
     event: React.SyntheticEvent,
-  ) => void,
+  ) => void
   addedElements: {
     [key: string]: InvestigationAddStixCoreObjectsLine_node$data
-  },
+  }
 }
 
 const InvestigationAddStixCoreObjectsLineComponent = ({

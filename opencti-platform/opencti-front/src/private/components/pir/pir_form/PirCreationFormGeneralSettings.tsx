@@ -37,7 +37,7 @@ export const redisStreamQuery = graphql`
 `;
 
 interface PirCreationFormGeneralSettingsProps {
-  redisQueryRef: PreloadedQuery<PirCreationFormGeneralSettingsRedisStreamQuery>;
+  redisQueryRef: PreloadedQuery<PirCreationFormGeneralSettingsRedisStreamQuery>
 }
 
 const PirCreationFormGeneralSettings = ({ redisQueryRef }: PirCreationFormGeneralSettingsProps) => {

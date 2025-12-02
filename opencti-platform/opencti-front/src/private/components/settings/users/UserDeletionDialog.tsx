@@ -15,7 +15,7 @@ const userDeletionMutation = graphql`
 `;
 
 interface UserDeletionDialogProps {
-  userId: string,
+  userId: string
   isOpen: boolean
   handleClose: () => void
 }

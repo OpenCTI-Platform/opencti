@@ -9,13 +9,13 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 
 type DrawerContainerPropsType = {
-  isOpen: boolean;
-  isOnlyStixCyberObservablesTypes: boolean;
-  onClose: () => void;
-  onSubmit: () => void;
-  isContainer: boolean;
-  promoteToContainer: boolean;
-  togglePromoteToContainer: () => void;
+  isOpen: boolean
+  isOnlyStixCyberObservablesTypes: boolean
+  onClose: () => void
+  onSubmit: () => void
+  isContainer: boolean
+  promoteToContainer: boolean
+  togglePromoteToContainer: () => void
 };
 
 const PromoteDrawer = ({ isOpen, onClose, isOnlyStixCyberObservablesTypes, onSubmit, isContainer, promoteToContainer, togglePromoteToContainer }: DrawerContainerPropsType) => {

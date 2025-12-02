@@ -166,24 +166,24 @@ export const stixSightingRelationshipEditionOverviewQuery = graphql`
 const STIX_SIGHTING_TYPE = 'stix-sighting-relationship';
 
 interface StixSightingRelationshipEditionOverviewProps {
-  handleClose: () => void;
-  handleDelete: () => void;
-  queryRef: PreloadedQuery<StixSightingRelationshipEditionOverviewQuery>;
-  stixSightingRelationship: StixSightingRelationshipEditionOverview_stixSightingRelationship$data;
+  handleClose: () => void
+  handleDelete: () => void
+  queryRef: PreloadedQuery<StixSightingRelationshipEditionOverviewQuery>
+  stixSightingRelationship: StixSightingRelationshipEditionOverview_stixSightingRelationship$data
   inferred: boolean
   noStoreUpdate: boolean
 }
 
 interface StixSightingRelationshipAddInput {
-  attribute_count: number;
-  confidence: number | null;
-  first_seen: null | Date;
-  last_seen: null | Date;
-  description: string | null,
-  x_opencti_negative: boolean | null,
-  x_opencti_workflow_id: FieldOption;
-  createdBy: FieldOption | undefined;
-  objectMarking: FieldOption[];
+  attribute_count: number
+  confidence: number | null
+  first_seen: null | Date
+  last_seen: null | Date
+  description: string | null
+  x_opencti_negative: boolean | null
+  x_opencti_workflow_id: FieldOption
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
   message?: string
   references?: FieldOption[]
 }

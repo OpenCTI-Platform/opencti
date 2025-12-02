@@ -25,34 +25,34 @@ const useStyles = makeStyles(() => ({
 }));
 
 type ListFiltersProps = {
-  handleOpenFilters: (event: SyntheticEvent) => void;
-  handleCloseFilters: (event: SyntheticEvent) => void;
-  isOpen: boolean;
-  anchorEl: Element | null;
-  availableFilterKeys: string[];
-  filterElement: ReactNode;
-  variant?: string;
-  type?: string;
-  helpers?: handleFilterHelpers;
-  required?: boolean;
-  entityTypes: string[];
-  isDatatable?: boolean;
-  disabled?: boolean;
+  handleOpenFilters: (event: SyntheticEvent) => void
+  handleCloseFilters: (event: SyntheticEvent) => void
+  isOpen: boolean
+  anchorEl: Element | null
+  availableFilterKeys: string[]
+  filterElement: ReactNode
+  variant?: string
+  type?: string
+  helpers?: handleFilterHelpers
+  required?: boolean
+  entityTypes: string[]
+  isDatatable?: boolean
+  disabled?: boolean
 };
 
 type ParametersType = {
-  icon: ReactNode;
-  tooltip: string;
-  placeholder: string;
+  icon: ReactNode
+  tooltip: string
+  placeholder: string
   color: 'primary' | 'success' | 'warning'
 };
 
 type OptionType = {
-  value: string;
-  label: string;
-  groupLabel?: string;
-  groupOrder?: number;
-  numberOfOccurences?: number;
+  value: string
+  label: string
+  groupLabel?: string
+  groupOrder?: number
+  numberOfOccurences?: number
 };
 
 const ListFilters = ({

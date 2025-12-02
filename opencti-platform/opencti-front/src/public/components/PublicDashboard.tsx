@@ -25,8 +25,8 @@ const publicDashboardQuery = graphql`
 `;
 
 interface PublicDashboardComponentProps {
-  queryRef: PreloadedQuery<PublicDashboardQuery>;
-  uriKey: string;
+  queryRef: PreloadedQuery<PublicDashboardQuery>
+  uriKey: string
 }
 
 const PublicDashboardComponent = ({

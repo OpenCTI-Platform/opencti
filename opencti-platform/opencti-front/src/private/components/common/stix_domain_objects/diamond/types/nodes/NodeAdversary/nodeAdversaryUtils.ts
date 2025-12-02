@@ -8,16 +8,16 @@ export type StixDomainObjectFromDiamond = StixDomainObjectDiamond_data$data['sti
 
 export interface NodeAdversaryUtilsProps {
   data: {
-    stixDomainObject: StixDomainObjectFromDiamond;
-    entityLink: string;
-  };
+    stixDomainObject: StixDomainObjectFromDiamond
+    entityLink: string
+  }
 }
 export interface NodeAdversaryUtilsReturns {
-  entityLink: string;
-  generatedFilters: string;
-  aliases?: string;
-  isArsenal: boolean;
-  lastAttributions: React.ReactNode;
+  entityLink: string
+  generatedFilters: string
+  aliases?: string
+  isArsenal: boolean
+  lastAttributions: React.ReactNode
 }
 
 export const nodeAdversaryUtils = ({ data }: NodeAdversaryUtilsProps): NodeAdversaryUtilsReturns => {

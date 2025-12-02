@@ -75,8 +75,8 @@ const vulnerabilityQuery = graphql`
 `;
 
 type RootVulnerabilityProps = {
-  vulnerabilityId: string;
-  queryRef: PreloadedQuery<RootVulnerabilityQuery>;
+  vulnerabilityId: string
+  queryRef: PreloadedQuery<RootVulnerabilityQuery>
 };
 
 const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps) => {
@@ -273,7 +273,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
 };
 
 const Root = () => {
-  const { vulnerabilityId } = useParams() as { vulnerabilityId: string; };
+  const { vulnerabilityId } = useParams() as { vulnerabilityId: string };
   const queryRef = useQueryLoading<RootVulnerabilityQuery>(vulnerabilityQuery, {
     id: vulnerabilityId,
   });

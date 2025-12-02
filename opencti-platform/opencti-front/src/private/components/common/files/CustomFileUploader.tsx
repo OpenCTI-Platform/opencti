@@ -15,19 +15,19 @@ interface CustomFileUploadProps extends Partial<FieldProps<File | null | undefin
     field: string,
     value: File | string | null | undefined,
     shouldValidate?: boolean | undefined,
-  ) => Promise<unknown>;
-  isEmbeddedInExternalReferenceCreation?: boolean;
-  label?: string;
+  ) => Promise<unknown>
+  isEmbeddedInExternalReferenceCreation?: boolean
+  label?: string
   formikErrors?: {
-    file?: string,
+    file?: string
   }
-  acceptMimeTypes?: string; // html input "accept" with MIME types only
-  sizeLimit?: number; // in bytes
-  disabled?: boolean;
+  acceptMimeTypes?: string // html input "accept" with MIME types only
+  sizeLimit?: number // in bytes
+  disabled?: boolean
   noFileSelectedLabel?: string
   noMargin?: boolean
-  required?: boolean;
-  onChange?: (key: string, value: File | undefined) => void;
+  required?: boolean
+  onChange?: (key: string, value: File | undefined) => void
 }
 
 // Deprecated - https://mui.com/system/styles/basics/

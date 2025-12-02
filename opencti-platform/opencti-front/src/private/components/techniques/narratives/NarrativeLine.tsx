@@ -19,23 +19,23 @@ import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { emptyFilled } from '../../../../utils/String';
 
 interface NarrativeLineProps {
-  node: NarrativeLine_node$key;
-  dataColumns: DataColumns;
-  onLabelClick: HandleAddFilter;
-  selectedElements: Record<string, NarrativeLine_node$data>;
-  deSelectedElements: Record<string, NarrativeLine_node$data>;
+  node: NarrativeLine_node$key
+  dataColumns: DataColumns
+  onLabelClick: HandleAddFilter
+  selectedElements: Record<string, NarrativeLine_node$data>
+  deSelectedElements: Record<string, NarrativeLine_node$data>
   onToggleEntity: (
     entity: NarrativeLine_node$data,
     event?: React.SyntheticEvent,
-  ) => void;
-  selectAll: boolean;
+  ) => void
+  selectAll: boolean
   onToggleShiftEntity: (
     index: number,
     entity: NarrativeLine_node$data,
     event?: React.SyntheticEvent,
-  ) => void;
-  index: number;
-  redirectionMode: string;
+  ) => void
+  index: number
+  redirectionMode: string
 }
 
 export const narrativeLineFragment = graphql`
@@ -177,7 +177,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
 export const NarrativeLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }) => {
   const theme = useTheme();
 

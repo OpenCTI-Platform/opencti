@@ -64,8 +64,8 @@ const systemFragment = graphql`
 `;
 
 interface SystemProps {
-  systemData: System_system$key;
-  viewAs: string;
+  systemData: System_system$key
+  viewAs: string
 }
 
 const System: React.FC<SystemProps> = ({ systemData, viewAs }) => {

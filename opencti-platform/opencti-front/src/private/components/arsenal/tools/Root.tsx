@@ -76,8 +76,8 @@ const toolQuery = graphql`
 `;
 
 type RootToolProps = {
-  toolId: string;
-  queryRef: PreloadedQuery<RootToolQuery>;
+  toolId: string
+  queryRef: PreloadedQuery<RootToolQuery>
 };
 
 const RootTool = ({ queryRef, toolId }: RootToolProps) => {
@@ -270,7 +270,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
 };
 
 const Root = () => {
-  const { toolId } = useParams() as { toolId: string; };
+  const { toolId } = useParams() as { toolId: string };
   const queryRef = useQueryLoading<RootToolQuery>(toolQuery, {
     id: toolId,
   });

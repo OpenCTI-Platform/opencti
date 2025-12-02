@@ -41,9 +41,9 @@ interface EntitySelectBaseProps {
 }
 
 interface EntitySelectComponentProps extends EntitySelectBaseProps {
-  multiple: boolean;
-  value: EntityOption | EntityOption[] | null;
-  onChange?: (val: EntityOption | EntityOption[] | null) => void;
+  multiple: boolean
+  value: EntityOption | EntityOption[] | null
+  onChange?: (val: EntityOption | EntityOption[] | null) => void
 }
 
 const EntitySelectComponent = ({

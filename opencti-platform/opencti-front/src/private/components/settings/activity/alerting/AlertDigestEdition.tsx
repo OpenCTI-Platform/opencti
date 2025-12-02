@@ -34,10 +34,10 @@ interface AlertDigestEditionProps {
 
 interface AlertDigestFormValues {
   name?: string
-  notifiers: FieldOption[];
-  recipients: FieldOption[];
-  trigger_ids: { value: string }[];
-  period: string;
+  notifiers: FieldOption[]
+  recipients: FieldOption[]
+  trigger_ids: { value: string }[]
+  period: string
 }
 
 const alertDigestEditionFragment = graphql`

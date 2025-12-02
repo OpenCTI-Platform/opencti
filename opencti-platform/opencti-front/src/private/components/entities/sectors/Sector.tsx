@@ -64,7 +64,7 @@ const sectorFragment = graphql`
 `;
 
 interface SectorProps {
-  sectorData: Sector_sector$key;
+  sectorData: Sector_sector$key
 }
 
 const Sector: React.FC<SectorProps> = ({ sectorData }) => {

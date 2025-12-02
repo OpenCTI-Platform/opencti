@@ -13,8 +13,8 @@ import ItemIcon from '../../../../components/ItemIcon';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 interface CapabilitiesListProps {
-  queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
-  role: Role_role$data;
+  queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>
+  role: Role_role$data
 }
 
 const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({

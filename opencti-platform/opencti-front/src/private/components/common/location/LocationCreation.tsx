@@ -69,13 +69,13 @@ interface LocationAddInput {
 }
 
 interface LocationCreationFormProps {
-  updater: (store: RecordSourceSelectorProxy) => void;
-  onReset?: () => void;
+  updater: (store: RecordSourceSelectorProxy) => void
+  onReset?: () => void
   display?: boolean
   contextual?: boolean
-  onCompleted?: () => void;
+  onCompleted?: () => void
   inputValue: string
-  creationCallback?: (data: LocationCreationMutation$data) => void;
+  creationCallback?: (data: LocationCreationMutation$data) => void
   onlyAuthors?: boolean
 }
 

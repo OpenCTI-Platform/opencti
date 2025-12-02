@@ -15,7 +15,7 @@ export const roleDeletionMutation = graphql`
 `;
 
 interface RoleDeletionDialogProps {
-  roleId: string,
+  roleId: string
   isOpen: boolean
   handleClose: () => void
 }

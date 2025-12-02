@@ -29,13 +29,13 @@ interface DraftFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-  ) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
+  ) => void
+  onReset?: () => void
+  onCompleted?: () => void
 }
 
 interface DraftAddInput {
-  name: string;
+  name: string
 }
 
 const DraftCreationForm: React.FC<DraftFormProps> = ({ updater, onCompleted, onReset }) => {

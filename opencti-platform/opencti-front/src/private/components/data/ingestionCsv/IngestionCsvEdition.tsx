@@ -210,31 +210,31 @@ export const ingestionCsvEditionFragment = graphql`
 `;
 
 interface IngestionCsvEditionProps {
-  ingestionCsv: IngestionCsvEditionFragment_ingestionCsv$key;
-  handleClose: () => void;
+  ingestionCsv: IngestionCsvEditionFragment_ingestionCsv$key
+  handleClose: () => void
   enableReferences?: boolean
 }
 
 export interface IngestionCsvEditionForm {
   message?: string | null
   references?: ExternalReferencesValues
-  name: string,
-  description?: string | null,
-  scheduling_period?: string | null,
-  uri: string,
-  authentication_type: string,
-  authentication_value?: string | null,
-  token?: string,
-  username?: string,
-  password?: string,
-  cert?: string,
-  key?: string,
-  ca?: string,
-  ingestion_running?: boolean | null,
-  csv_mapper_id: string | FieldOption | null,
-  user_id: string | FieldOption,
-  markings: FieldOption[],
-  csv_mapper?: CsvMapperAddInput,
+  name: string
+  description?: string | null
+  scheduling_period?: string | null
+  uri: string
+  authentication_type: string
+  authentication_value?: string | null
+  token?: string
+  username?: string
+  password?: string
+  cert?: string
+  key?: string
+  ca?: string
+  ingestion_running?: boolean | null
+  csv_mapper_id: string | FieldOption | null
+  user_id: string | FieldOption
+  markings: FieldOption[]
+  csv_mapper?: CsvMapperAddInput
   csv_mapper_type: boolean
 }
 

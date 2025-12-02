@@ -8,15 +8,15 @@ import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { useIsHiddenEntities } from '../../../../utils/hooks/useEntitySettings';
 
 interface StixCoreObjectOrStixCoreRelationshipNotesProps {
-  stixCoreObjectOrStixCoreRelationshipId: string;
-  marginTop?: number;
-  isRelationship?: boolean;
+  stixCoreObjectOrStixCoreRelationshipId: string
+  marginTop?: number
+  isRelationship?: boolean
   readonly defaultMarkings?: readonly {
-    readonly definition: string | null | undefined;
-    readonly definition_type: string | null | undefined;
-    readonly id: string;
-    readonly x_opencti_color: string | null | undefined;
-    readonly x_opencti_order?: number;
+    readonly definition: string | null | undefined
+    readonly definition_type: string | null | undefined
+    readonly id: string
+    readonly x_opencti_color: string | null | undefined
+    readonly x_opencti_order?: number
   }[]
 }
 

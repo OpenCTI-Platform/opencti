@@ -53,14 +53,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FileIndexingConfigurationProps {
-  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
 }
 
 interface FileIndexingConfigurationFormValues {
-  accept_mime_types: string[];
-  include_global_files: boolean;
-  max_file_size: number;
-  entity_types: string[];
+  accept_mime_types: string[]
+  include_global_files: boolean
+  max_file_size: number
+  entity_types: string[]
 }
 
 const FileIndexingConfiguration: FunctionComponent<

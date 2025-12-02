@@ -115,9 +115,9 @@ const computeValidationProgress = (validationWork: Drafts_node$data['validationW
 };
 
 interface DraftsProps {
-  entityId?: string;
-  openCreate?: boolean;
-  setOpenCreate?: () => void;
+  entityId?: string
+  openCreate?: boolean
+  setOpenCreate?: () => void
   emptyStateMessage?: string
 }
 

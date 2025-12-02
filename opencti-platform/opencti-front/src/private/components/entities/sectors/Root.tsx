@@ -76,8 +76,8 @@ const sectorQuery = graphql`
 `;
 
 type RootSectorProps = {
-  sectorId: string;
-  queryRef: PreloadedQuery<RootSectorQuery>;
+  sectorId: string
+  queryRef: PreloadedQuery<RootSectorQuery>
 };
 
 const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
@@ -305,7 +305,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
   );
 };
 const Root = () => {
-  const { sectorId } = useParams() as { sectorId: string; };
+  const { sectorId } = useParams() as { sectorId: string };
   const queryRef = useQueryLoading<RootSectorQuery>(sectorQuery, {
     id: sectorId,
   });

@@ -4,9 +4,9 @@ import { IngestionConnector } from '@components/data/IngestionCatalog';
 import { resolveLink } from '../../../../../utils/Entity';
 
 interface CatalogState {
-  selectedConnector: IngestionConnector | null;
-  selectedCatalogId: string;
-  hasActiveManagers: boolean;
+  selectedConnector: IngestionConnector | null
+  selectedCatalogId: string
+  hasActiveManagers: boolean
   deploymentCount: number
 }
 

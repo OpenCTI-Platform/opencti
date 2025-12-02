@@ -95,7 +95,7 @@ export const userHistoryLineFragment = graphql`
 `;
 
 interface UserHistoryLineProps {
-  node: UserHistoryLine_node$key,
+  node: UserHistoryLine_node$key
 }
 
 const UserHistoryLine: FunctionComponent<UserHistoryLineProps> = ({ node }) => {

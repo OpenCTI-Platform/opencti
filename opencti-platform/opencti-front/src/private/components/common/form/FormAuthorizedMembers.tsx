@@ -12,22 +12,22 @@ import { useFormatter } from '../../../../components/i18n';
 import { Creator } from '../../../../utils/authorizedMembers';
 
 export interface FormAuthorizedMembersInputs {
-  authorizedMembers: AuthorizedMembersFieldValue;
+  authorizedMembers: AuthorizedMembersFieldValue
 }
 
 interface FormAuthorizedMembersProps {
-  open: boolean;
-  handleClose: () => void;
-  existingAccessRules: FormAuthorizedMembersInputs['authorizedMembers'];
+  open: boolean
+  handleClose: () => void
+  existingAccessRules: FormAuthorizedMembersInputs['authorizedMembers']
   onSubmit: (
     values: FormAuthorizedMembersInputs,
     helpers: FormikHelpers<FormAuthorizedMembersInputs>,
-  ) => void;
-  owner?: Creator;
-  canDeactivate?: boolean;
-  showAllMembersLine?: boolean;
-  isCanUseEnable?: boolean;
-  customInfoMessage?: string;
+  ) => void
+  owner?: Creator
+  canDeactivate?: boolean
+  showAllMembersLine?: boolean
+  isCanUseEnable?: boolean
+  customInfoMessage?: string
 }
 
 const FormAuthorizedMembers = ({

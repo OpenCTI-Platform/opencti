@@ -34,8 +34,8 @@ const aISummaryHistoryQuery = graphql`
 
 interface AISummaryHistoryComponentProps {
   refetch: () => void
-  language: string;
-  setLanguage: (language: string) => void;
+  language: string
+  setLanguage: (language: string) => void
   content: string
   loading: boolean
   result: AISummaryHistoryStixCoreObjectAskAiHistoryQuery$data | null

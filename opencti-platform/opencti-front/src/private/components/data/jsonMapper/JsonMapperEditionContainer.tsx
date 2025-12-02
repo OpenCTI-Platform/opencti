@@ -62,9 +62,9 @@ export const jsonMapperEditionContainerQuery = graphql`
 `;
 
 interface JsonMapperEditionProps {
-  queryRef: PreloadedQuery<JsonMapperEditionContainerQuery>;
-  open: boolean;
-  onClose?: () => void;
+  queryRef: PreloadedQuery<JsonMapperEditionContainerQuery>
+  open: boolean
+  onClose?: () => void
 }
 
 const JsonMapperEditionContainer: FunctionComponent<JsonMapperEditionProps> = ({

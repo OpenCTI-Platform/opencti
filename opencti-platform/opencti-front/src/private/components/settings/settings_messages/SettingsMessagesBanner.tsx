@@ -128,7 +128,7 @@ export const useSettingsMessagesBannerHeight = () => {
 const SettingsMessagesBannerComponent = ({
   queryRef,
 }: {
-  queryRef: PreloadedQuery<SettingsMessagesBannerQuery>;
+  queryRef: PreloadedQuery<SettingsMessagesBannerQuery>
 }) => {
   const classes = useStyles();
   const { settings } = usePreloadedQuery<SettingsMessagesBannerQuery>(

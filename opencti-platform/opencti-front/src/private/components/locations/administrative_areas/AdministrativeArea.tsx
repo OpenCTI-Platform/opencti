@@ -77,7 +77,7 @@ const administrativeAreaFragment = graphql`
 const AdministrativeArea = ({
   administrativeAreaData,
 }: {
-  administrativeAreaData: AdministrativeArea_administrativeArea$key;
+  administrativeAreaData: AdministrativeArea_administrativeArea$key
 }) => {
   const classes = useStyles();
   const administrativeArea = useFragment<AdministrativeArea_administrativeArea$key>(

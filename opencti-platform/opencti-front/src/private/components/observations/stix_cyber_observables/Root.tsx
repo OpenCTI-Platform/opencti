@@ -74,7 +74,7 @@ const stixCyberObservableQuery = graphql`
 `;
 
 type RootStixCyberObservableProps = {
-  observableId: string;
+  observableId: string
   queryRef: PreloadedQuery<RootStixCyberObservableQuery>
 };
 
@@ -275,7 +275,7 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
 };
 
 const Root = () => {
-  const { observableId } = useParams() as { observableId: string; };
+  const { observableId } = useParams() as { observableId: string };
   const queryRef = useQueryLoading<RootStixCyberObservableQuery>(stixCyberObservableQuery, { id: observableId });
 
   return (

@@ -69,7 +69,7 @@ const stixMetaObjectDetailsQuery = graphql`
 `;
 
 interface StixMetaObjectDetailsComponentProps {
-  queryRef: PreloadedQuery<StixMetaObjectDetailsQuery>;
+  queryRef: PreloadedQuery<StixMetaObjectDetailsQuery>
 }
 
 const StixMetaObjectDetailsComponent: FunctionComponent<
@@ -119,8 +119,8 @@ StixMetaObjectDetailsComponentProps
 };
 
 interface StixMetaObjectDetailsProps {
-  entity: GraphNode;
-  queryRef: PreloadedQuery<StixMetaObjectDetailsQuery>;
+  entity: GraphNode
+  queryRef: PreloadedQuery<StixMetaObjectDetailsQuery>
 }
 
 const StixMetaObjectDetails: FunctionComponent<

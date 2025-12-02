@@ -11,8 +11,8 @@ const nbOfRowsToLoad = 50;
 interface GroupsLinesProps {
   initialLoading: boolean
   dataColumns: DataColumns
-  relay: RelayPaginationProp,
-  paginationOptions: PaginationOptions,
+  relay: RelayPaginationProp
+  paginationOptions: PaginationOptions
   data: GroupsLines_data$data
 }
 

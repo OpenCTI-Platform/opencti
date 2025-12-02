@@ -9,16 +9,16 @@ import SearchInput from '../../../../components/SearchInput';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 
 export interface ConnectorsStatusFilterState {
-  search: string;
-  slug: string;
+  search: string
+  slug: string
   isManaged: boolean | null
 }
 
 interface ConnectorsStatusFiltersProps {
-  managedConnectorOptions: { label: string; value: string }[];
-  filters: ConnectorsStatusFilterState;
-  onFiltersChange: (filters: ConnectorsStatusFilterState) => void;
-  showManagedFilters: boolean;
+  managedConnectorOptions: { label: string, value: string }[]
+  filters: ConnectorsStatusFilterState
+  onFiltersChange: (filters: ConnectorsStatusFilterState) => void
+  showManagedFilters: boolean
 }
 
 const INPUT_WIDTH = 200; // same as defined in ListFilters

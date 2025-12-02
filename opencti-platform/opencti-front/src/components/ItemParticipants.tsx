@@ -15,8 +15,8 @@ interface ItemParticipantsProps {
     readonly entity_type: string
     readonly id: string
     readonly name: string
-  }[];
-  stixDomainObjectId: string;
+  }[]
+  stixDomainObjectId: string
 }
 
 const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participants, stixDomainObjectId }) => {

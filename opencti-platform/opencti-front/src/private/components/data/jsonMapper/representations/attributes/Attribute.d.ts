@@ -9,9 +9,9 @@ export type JsonMapperRepresentationAttributeEdit = Omit<JsonMapperRepresentatio
 };
 
 export interface JsonAttrPathConfiguration {
-  pattern_date: string | null | undefined;
-  separator: string | null | undefined;
-  timezone: string | null | undefined;
+  pattern_date: string | null | undefined
+  separator: string | null | undefined
+  timezone: string | null | undefined
 }
 
 export interface JsonMapperRepresentationAttributeFormData {

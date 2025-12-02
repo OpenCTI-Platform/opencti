@@ -110,30 +110,30 @@ export const ingestionTaxiiEditionFragment = graphql`
 `;
 
 interface IngestionTaxiiEditionProps {
-  ingestionTaxii: IngestionTaxiiEditionFragment_ingestionTaxii$key;
-  handleClose: () => void;
-  enableReferences?: boolean;
+  ingestionTaxii: IngestionTaxiiEditionFragment_ingestionTaxii$key
+  handleClose: () => void
+  enableReferences?: boolean
 }
 
 export interface IngestionTaxiiEditionForm {
-  message?: string | null;
-  references?: ExternalReferencesValues;
-  name: string;
-  description?: string | null | undefined;
-  uri: string;
-  version: string;
-  collection: string;
-  authentication_type: string;
-  authentication_value?: string | null | undefined;
-  token?: string;
-  username?: string;
-  password?: string;
-  cert?: string;
-  key?: string;
-  ca?: string;
-  user_id: string | FieldOption | null | undefined;
-  added_after_start: Date | null | undefined;
-  confidence_to_score: boolean | null | undefined;
+  message?: string | null
+  references?: ExternalReferencesValues
+  name: string
+  description?: string | null | undefined
+  uri: string
+  version: string
+  collection: string
+  authentication_type: string
+  authentication_value?: string | null | undefined
+  token?: string
+  username?: string
+  password?: string
+  cert?: string
+  key?: string
+  ca?: string
+  user_id: string | FieldOption | null | undefined
+  added_after_start: Date | null | undefined
+  confidence_to_score: boolean | null | undefined
 }
 
 const IngestionTaxiiEdition: FunctionComponent<IngestionTaxiiEditionProps> = ({

@@ -40,18 +40,18 @@ const CreateExclusionListControlledDial = (
 );
 
 interface ExclusionListCreationFormData {
-  name: string;
-  description: string;
-  exclusion_list_entity_types: FieldOption[];
-  file: File | null;
-  content: string | null;
+  name: string
+  description: string
+  exclusion_list_entity_types: FieldOption[]
+  file: File | null
+  content: string | null
 }
 
 interface ExclusionListCreationFormProps {
-  updater: (store: RecordSourceSelectorProxy, rootField: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  refetchStatus: () => void;
+  updater: (store: RecordSourceSelectorProxy, rootField: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  refetchStatus: () => void
 }
 
 const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProps> = ({
@@ -219,8 +219,8 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
 };
 
 interface ExclusionListCreationProps {
-  paginationOptions: ExclusionListsLinesPaginationQuery$variables;
-  refetchStatus: () => void;
+  paginationOptions: ExclusionListsLinesPaginationQuery$variables
+  refetchStatus: () => void
 }
 
 const ExclusionListCreation: FunctionComponent<ExclusionListCreationProps> = ({

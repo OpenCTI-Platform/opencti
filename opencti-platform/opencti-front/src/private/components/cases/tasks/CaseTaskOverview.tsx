@@ -57,8 +57,8 @@ const CaseTaskOverviewFragment = graphql`
 `;
 
 interface CaseTaskOverviewProps {
-  tasksData: CaseTaskOverview_task$key;
-  enableReferences: boolean;
+  tasksData: CaseTaskOverview_task$key
+  enableReferences: boolean
 }
 
 const CaseTaskOverview: FunctionComponent<CaseTaskOverviewProps> = ({

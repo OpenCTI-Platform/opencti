@@ -118,18 +118,18 @@ const organizationMutationRelationDelete = graphql`
 const ORGANIZATION_TYPE = 'Organization';
 
 interface OrganizationEditionOverviewComponentProps {
-  organizationRef: OrganizationEditionOverview_organization$key;
-  enableReferences: boolean;
-  context?: readonly (GenericContext | null)[] | null;
-  handleClose: () => void;
+  organizationRef: OrganizationEditionOverview_organization$key
+  enableReferences: boolean
+  context?: readonly (GenericContext | null)[] | null
+  handleClose: () => void
 }
 
 interface OrganizationEditionFormValues {
-  message?: string;
-  createdBy?: FieldOption;
-  objectMarking?: FieldOption[];
-  x_opencti_workflow_id: FieldOption;
-  references: ExternalReferencesValues | undefined;
+  message?: string
+  createdBy?: FieldOption
+  objectMarking?: FieldOption[]
+  x_opencti_workflow_id: FieldOption
+  references: ExternalReferencesValues | undefined
 }
 
 const OrganizationEditionOverview: FunctionComponent<OrganizationEditionOverviewComponentProps> = ({

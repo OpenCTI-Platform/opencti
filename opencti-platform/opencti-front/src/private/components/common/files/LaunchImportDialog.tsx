@@ -23,11 +23,11 @@ import { useFormatter } from '../../../../components/i18n';
 import stopEvent from '../../../../utils/domEvent';
 
 interface LaunchImportDialogProps {
-  file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data;
-  open: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
-  isDraftContext?: boolean;
+  file: ImportWorkbenchesContentFileLine_file$data | ImportFilesContentFileLine_file$data
+  open: boolean
+  onClose: () => void
+  onSuccess?: () => void
+  isDraftContext?: boolean
   queryRef: PreloadedQuery<ImportWorksDrawerQuery>
 }
 
@@ -67,12 +67,12 @@ const LaunchImportDialog: React.FC<LaunchImportDialogProps> = ({
 
   const onSubmitImport = (
     values: {
-      connector_id: string;
-      configuration: string;
-      objectMarking: FieldOption[];
+      connector_id: string
+      configuration: string
+      objectMarking: FieldOption[]
       validation_mode: string
     },
-    { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void; resetForm: () => void },
+    { setSubmitting, resetForm }: { setSubmitting: (isSubmitting: boolean) => void, resetForm: () => void },
   ) => {
     const { connector_id, configuration, objectMarking, validation_mode } = values;
     let config = configuration;

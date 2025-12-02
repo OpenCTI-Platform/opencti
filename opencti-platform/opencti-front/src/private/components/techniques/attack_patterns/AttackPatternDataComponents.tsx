@@ -19,7 +19,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
 const AttackPatternDataComponentsComponent: FunctionComponent<{
-  attackPattern: AttackPatternDataComponents_attackPattern$data;
+  attackPattern: AttackPatternDataComponents_attackPattern$data
 }> = ({ attackPattern }) => {
   const { t_i18n } = useFormatter();
 

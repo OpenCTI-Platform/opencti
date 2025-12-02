@@ -11,10 +11,10 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 const nbOfRowsToLoad = 50;
 
 interface PositionsLinesProps {
-  queryRef: PreloadedQuery<PositionsLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions?: PositionsLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  queryRef: PreloadedQuery<PositionsLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions?: PositionsLinesPaginationQuery$variables
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 export const positionsLinesQuery = graphql`

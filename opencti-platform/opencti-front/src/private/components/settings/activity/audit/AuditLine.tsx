@@ -44,9 +44,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface AuditLineProps {
-  node: AuditLine_node$key;
-  dataColumns: DataColumns;
-  onLabelClick: HandleAddFilter;
+  node: AuditLine_node$key
+  dataColumns: DataColumns
+  onLabelClick: HandleAddFilter
 }
 
 const AuditLineFragment = graphql`
@@ -180,7 +180,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
 export const AuditLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }) => {
   const classes = useStyles();
   return (

@@ -98,13 +98,13 @@ interface AttackPatternAddInput {
 }
 
 interface AttackPatternFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
-  inputValue?: string;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+  inputValue?: string
 }
 
 export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps> = ({
@@ -289,10 +289,10 @@ const AttackPatternCreation = ({
   inputValue,
   paginationOptions,
 }: {
-  contextual?: boolean;
-  display?: boolean;
-  inputValue?: string;
-  paginationOptions: AttackPatternsLinesPaginationQuery$variables;
+  contextual?: boolean
+  display?: boolean
+  inputValue?: string
+  paginationOptions: AttackPatternsLinesPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);

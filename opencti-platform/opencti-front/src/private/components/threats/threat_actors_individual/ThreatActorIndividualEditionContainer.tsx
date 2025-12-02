@@ -26,10 +26,10 @@ import { ThreatActorIndividualEditionContainerQuery } from './__generated__/Thre
 import ThreatActorIndividualEditionDetails from './ThreatActorIndividualEditionDetails';
 
 interface ThreatActorIndividualEditionContainerProps {
-  queryRef: PreloadedQuery<ThreatActorIndividualEditionContainerQuery>;
-  handleClose: () => void;
-  open?: boolean;
-  controlledDial?: DrawerControlledDialType;
+  queryRef: PreloadedQuery<ThreatActorIndividualEditionContainerQuery>
+  handleClose: () => void
+  open?: boolean
+  controlledDial?: DrawerControlledDialType
 }
 
 export const ThreatActorIndividualEditionQuery = graphql`

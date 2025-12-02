@@ -10,7 +10,7 @@ import { now } from '../../../../../utils/Time';
 
 type FileFreeTextType = { content: string };
 
-const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => void; onClose: () => void }) => {
+const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => void, onClose: () => void }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 

@@ -11,10 +11,10 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 const nbOfRowsToLoad = 50;
 
 interface CountriesLinesProps {
-  queryRef: PreloadedQuery<CountriesLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions?: CountriesLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  queryRef: PreloadedQuery<CountriesLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions?: CountriesLinesPaginationQuery$variables
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 export const countriesLinesQuery = graphql`

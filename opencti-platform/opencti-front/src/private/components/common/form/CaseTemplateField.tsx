@@ -86,7 +86,7 @@ const CaseTemplateFieldComponent: FunctionComponent<CaseTemplateFieldComponentPr
         options={caseTemplates}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: { color: string; label: string },
+          option: { color: string, label: string },
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>

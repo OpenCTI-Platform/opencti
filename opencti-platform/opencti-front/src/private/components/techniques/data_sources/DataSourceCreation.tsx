@@ -52,35 +52,35 @@ const dataSourceMutation = graphql`
 `;
 
 interface DataSourceAddInput {
-  name: string;
-  description: string;
-  createdBy: FieldOption | null;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: FieldOption[];
-  confidence: number | null;
-  x_mitre_platforms: string[];
-  collection_layers: string[];
-  file: File | null;
+  name: string
+  description: string
+  createdBy: FieldOption | null
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: FieldOption[]
+  confidence: number | null
+  x_mitre_platforms: string[]
+  collection_layers: string[]
+  file: File | null
 }
 
 interface DataSourceCreationProps {
-  contextual?: boolean;
-  display?: boolean;
-  inputValue?: string;
-  paginationOptions: DataSourcesLinesPaginationQuery$variables;
+  contextual?: boolean
+  display?: boolean
+  inputValue?: string
+  paginationOptions: DataSourcesLinesPaginationQuery$variables
 }
 
 interface DataSourceFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  inputValue?: string;
-  defaultCreatedBy?: FieldOption;
-  defaultMarkingDefinitions?: FieldOption[];
-  defaultConfidence?: number;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  inputValue?: string
+  defaultCreatedBy?: FieldOption
+  defaultMarkingDefinitions?: FieldOption[]
+  defaultConfidence?: number
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 const DATA_SOURCE_TYPE = 'Data-Source';

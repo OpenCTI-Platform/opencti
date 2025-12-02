@@ -52,26 +52,26 @@ const systemMutation = graphql`
 const SYSTEM_TYPE = 'System';
 
 interface SystemAddInput {
-  name: string;
-  description: string;
-  confidence: number | null;
-  x_opencti_reliability: string | undefined;
-  createdBy: FieldOption | undefined;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: { value: string }[];
-  file: File | null;
+  name: string
+  description: string
+  confidence: number | null
+  x_opencti_reliability: string | undefined
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: { value: string }[]
+  file: File | null
 }
 
 interface SystemFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
@@ -323,7 +323,7 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
 const SystemCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: SystemsLinesPaginationQuery$variables;
+  paginationOptions: SystemsLinesPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

@@ -6,14 +6,14 @@ import { useFormatter } from 'src/components/i18n';
 import { TargetEntity } from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 type BulkRelationDialogContainerProps = {
-  stixDomainObjectId: string;
-  stixDomainObjectName: string;
-  stixDomainObjectType: string;
-  selectedEntities: TargetEntity[];
-  defaultRelationshipType?: string;
-  paginationKey: string;
-  paginationOptions: PaginationOptions;
-  targetObjectTypes: string[];
+  stixDomainObjectId: string
+  stixDomainObjectName: string
+  stixDomainObjectType: string
+  selectedEntities: TargetEntity[]
+  defaultRelationshipType?: string
+  paginationKey: string
+  paginationOptions: PaginationOptions
+  targetObjectTypes: string[]
 };
 
 const inlinedStyle = {

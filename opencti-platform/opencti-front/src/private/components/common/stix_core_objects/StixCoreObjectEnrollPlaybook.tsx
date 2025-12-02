@@ -12,9 +12,9 @@ import { AUTOMATION } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 interface StixCoreObjectEnrollPlaybookLinesProps {
-  stixCoreObjectId: string,
-  handleClose?: () => void,
-  open?: boolean,
+  stixCoreObjectId: string
+  handleClose?: () => void
+  open?: boolean
 }
 
 const StixCoreObjectEnrollPlaybook: FunctionComponent<StixCoreObjectEnrollPlaybookLinesProps> = ({

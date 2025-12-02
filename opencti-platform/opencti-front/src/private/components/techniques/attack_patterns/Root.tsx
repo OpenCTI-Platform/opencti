@@ -75,8 +75,8 @@ const attackPatternQuery = graphql`
 `;
 
 type RootAttackPatternProps = {
-  attackPatternId: string;
-  queryRef: PreloadedQuery<RootAttackPatternQuery>;
+  attackPatternId: string
+  queryRef: PreloadedQuery<RootAttackPatternQuery>
 };
 const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootAttackPatternSubscription>>(() => ({
@@ -258,7 +258,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
   );
 };
 const Root = () => {
-  const { attackPatternId } = useParams() as { attackPatternId: string; };
+  const { attackPatternId } = useParams() as { attackPatternId: string };
   const queryRef = useQueryLoading<RootAttackPatternQuery>(attackPatternQuery, {
     id: attackPatternId,
   });

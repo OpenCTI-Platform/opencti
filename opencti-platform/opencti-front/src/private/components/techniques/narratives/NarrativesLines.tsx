@@ -12,19 +12,19 @@ import { NarrativeLine_node$data } from './__generated__/NarrativeLine_node.grap
 const nbOfRowsToLoad = 50;
 
 interface NarrativesLinesProps {
-  queryRef: PreloadedQuery<NarrativesLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions: NarrativesLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  selectedElements: Record<string, NarrativeLine_node$data>;
-  deSelectedElements: Record<string, NarrativeLine_node$data>;
+  queryRef: PreloadedQuery<NarrativesLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions: NarrativesLinesPaginationQuery$variables
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  selectedElements: Record<string, NarrativeLine_node$data>
+  deSelectedElements: Record<string, NarrativeLine_node$data>
   onToggleEntity: (
     entity: NarrativeLine_node$data,
     event: React.SyntheticEvent,
-  ) => void;
-  selectAll: boolean;
-  onLabelClick?: HandleAddFilter;
-  redirectionMode?: string;
+  ) => void
+  selectAll: boolean
+  onLabelClick?: HandleAddFilter
+  redirectionMode?: string
 }
 
 export const narrativesLinesQuery = graphql`

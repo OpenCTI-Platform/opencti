@@ -67,9 +67,9 @@ interface DecayRuleCreationFormData {
 }
 
 interface DecayRuleCreationFormProps {
-  updater: (store: RecordSourceSelectorProxy) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
+  updater: (store: RecordSourceSelectorProxy) => void
+  onReset?: () => void
+  onCompleted?: () => void
 }
 const DecayRuleCreationForm: FunctionComponent<DecayRuleCreationFormProps> = ({
   updater,
@@ -288,7 +288,7 @@ const CreateDecayRuleControlledDial = (props: DrawerControlledDialProps) => (
 );
 
 interface DecayRuleCreationProps {
-  paginationOptions: DecayRulesLinesPaginationQuery$variables;
+  paginationOptions: DecayRulesLinesPaginationQuery$variables
 }
 
 const DecayRuleCreation: FunctionComponent<DecayRuleCreationProps> = ({

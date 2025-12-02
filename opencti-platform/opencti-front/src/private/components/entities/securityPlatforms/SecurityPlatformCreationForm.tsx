@@ -27,7 +27,7 @@ import MarkdownField from '../../../../components/fields/MarkdownField';
 import { useIsMandatoryAttribute } from '../../../../utils/hooks/useEntitySettings';
 
 interface SecurityPlatformCreationFormData {
-  name: string;
+  name: string
   description: string
   security_platform_type: string | undefined
   createdBy: FieldOption | undefined
@@ -37,13 +37,13 @@ interface SecurityPlatformCreationFormData {
 
 interface SecurityPlatformCreationFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: FieldOption;
-  defaultMarkingDefinitions?: FieldOption[];
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: FieldOption
+  defaultMarkingDefinitions?: FieldOption[]
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFormProps> = ({

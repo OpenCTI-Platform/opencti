@@ -14,8 +14,8 @@ const useStyles = makeStyles({
 });
 
 interface EEFieldProps {
-  children: React.ReactElement;
-  featureLabel: string;
+  children: React.ReactElement
+  featureLabel: string
 }
 
 const EEField: FunctionComponent<EEFieldProps> = ({

@@ -104,8 +104,8 @@ const caseRfiFragment = graphql`
 `;
 
 interface CaseRfiProps {
-  caseRfiData: CaseRfi_caseRfi$key;
-  enableReferences: boolean;
+  caseRfiData: CaseRfi_caseRfi$key
+  enableReferences: boolean
 }
 
 const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {

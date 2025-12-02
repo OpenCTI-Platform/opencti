@@ -42,8 +42,8 @@ export const jsonMapperLinesFragment = graphql`
 `;
 
 export interface JsonMapperLinesProps {
-  paginationOptions: jsonMappers_MappersQuery$variables;
-  dataColumns: DataColumns;
+  paginationOptions: jsonMappers_MappersQuery$variables
+  dataColumns: DataColumns
 }
 
 const JsonMapperLines: FunctionComponent<JsonMapperLinesProps> = ({

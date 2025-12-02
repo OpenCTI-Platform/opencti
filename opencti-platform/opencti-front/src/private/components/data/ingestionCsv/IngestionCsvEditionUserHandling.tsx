@@ -56,7 +56,7 @@ export interface EditionCsvAddAutoUserInput {
 interface IngestionCsvEditionUserHandlingProps {
   feedName: string
   ingestionCsvDataId: string
-  onAutoUserCreated: () => void;
+  onAutoUserCreated: () => void
 }
 const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUserHandlingProps> = ({ feedName, ingestionCsvDataId, onAutoUserCreated }) => {
   const { t_i18n } = useFormatter();
@@ -159,7 +159,12 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
                 </Box>
               </DialogContent>
               <DialogActions>
-                <Button onClick={() => { setOpenDialog(false); resetForm(); }}>
+                <Button
+                  onClick={() => {
+                    setOpenDialog(false);
+                    resetForm();
+                  }}
+                >
                   {t_i18n('Cancel')}
                 </Button>
                 <Button color="secondary" onClick={() => { submitForm(); }}>

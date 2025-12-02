@@ -10,13 +10,13 @@ import { isValidDate, RELATIVE_DATE_REGEX } from '../../utils/String';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface RelativeDateInputProps {
-  filter?: Filter;
-  filterKey: string;
-  helpers?: handleFilterHelpers;
-  label: string;
-  valueOrder: number;
-  dateInput: string[];
-  setDateInput: (value: string[]) => void;
+  filter?: Filter
+  filterKey: string
+  helpers?: handleFilterHelpers
+  label: string
+  valueOrder: number
+  dateInput: string[]
+  setDateInput: (value: string[]) => void
 }
 
 const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({

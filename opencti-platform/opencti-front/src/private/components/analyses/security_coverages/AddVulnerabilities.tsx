@@ -5,8 +5,8 @@ import {
 import StixCoreRelationshipCreationFromEntity, { TargetEntity } from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 interface AddVulnerabilitiesProps {
-  securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data;
-  paginationOptions: Record<string, unknown>;
+  securityCoverage: SecurityCoverageVulnerabilities_securityCoverage$data
+  paginationOptions: Record<string, unknown>
 }
 
 const AddVulnerabilities: FunctionComponent<AddVulnerabilitiesProps> = ({ securityCoverage, paginationOptions }) => {

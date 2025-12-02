@@ -12,19 +12,19 @@ import { RenderOption } from '../../../../components/list_lines';
 import { FieldOption } from '../../../../utils/field';
 
 interface OpenVocabProps {
-  type: string;
-  name: string;
-  label: string;
-  required?: boolean;
-  variant?: string;
-  onFocus?: (name: string, value: FieldOption) => void;
-  containerStyle?: Record<string, string | number>;
-  editContext?: unknown;
-  disabled?: boolean;
-  queryRef: PreloadedQuery<OpenVocabFieldQuery>;
-  onChange?: (name: string, value: string | string[]) => void;
-  onSubmit?: (name: string, value: string | string[]) => void;
-  multiple?: boolean;
+  type: string
+  name: string
+  label: string
+  required?: boolean
+  variant?: string
+  onFocus?: (name: string, value: FieldOption) => void
+  containerStyle?: Record<string, string | number>
+  editContext?: unknown
+  disabled?: boolean
+  queryRef: PreloadedQuery<OpenVocabFieldQuery>
+  onChange?: (name: string, value: string | string[]) => void
+  onSubmit?: (name: string, value: string | string[]) => void
+  multiple?: boolean
   disabledOptions?: string[]
 }
 

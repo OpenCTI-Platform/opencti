@@ -34,20 +34,20 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface EntityNode {
-  id: string;
-  entity_type: string;
-  representative?: { main?: string };
-  createdBy?: { name?: string };
-  objectLabel?: Array<{ value: string; color: string; id: string; }>;
-  objectMarking?: Array<{ id: string; definition_type: string; definition: string }>;
+  id: string
+  entity_type: string
+  representative?: { main?: string }
+  createdBy?: { name?: string }
+  objectLabel?: Array<{ value: string, color: string, id: string }>
+  objectMarking?: Array<{ id: string, definition_type: string, definition: string }>
 }
 
 interface SecurityCoverageEntityLineProps {
-  dataColumns: DataColumns;
-  node: { node?: EntityNode } | EntityNode;
-  onLabelClick: HandleAddFilter;
-  onToggleEntity: (entity: EntityNode) => void;
-  selectedEntity: EntityNode | null;
+  dataColumns: DataColumns
+  node: { node?: EntityNode } | EntityNode
+  onLabelClick: HandleAddFilter
+  onToggleEntity: (entity: EntityNode) => void
+  selectedEntity: EntityNode | null
 }
 
 const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({

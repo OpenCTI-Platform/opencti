@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 const AddDataComponents: FunctionComponent<{
-  attackPattern: AttackPatternDataComponents_attackPattern$data;
+  attackPattern: AttackPatternDataComponents_attackPattern$data
 }> = ({ attackPattern }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();

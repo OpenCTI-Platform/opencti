@@ -41,7 +41,7 @@ export const draftWorksQuery = graphql`
 const LOCAL_STORAGE_KEY = 'draft_works';
 
 interface DraftWorksComponentProps {
-  queryRef: PreloadedQuery<DraftWorksQuery>;
+  queryRef: PreloadedQuery<DraftWorksQuery>
 }
 const DraftWorksComponent: FunctionComponent<
 DraftWorksComponentProps
@@ -112,7 +112,7 @@ DraftWorksComponentProps
 };
 
 type DraftWorksProps = {
-  draftId: string,
+  draftId: string
 };
 
 const DraftWorks = (props: DraftWorksProps) => {

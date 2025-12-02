@@ -9,9 +9,9 @@ import JsonMapperRepresentationAttributeOption from './JsonMapperRepresentationA
 import { useFormatter } from '../../../../../../components/i18n';
 
 interface JsonMapperRepresentationAttributeOptionsProps {
-  schemaAttribute: SchemaAttribute;
-  baseAttributeName: string;
-  configurationAttributeName: string;
+  schemaAttribute: SchemaAttribute
+  baseAttributeName: string
+  configurationAttributeName: string
   form: FormikProps<JsonMapperFormData>
 }
 

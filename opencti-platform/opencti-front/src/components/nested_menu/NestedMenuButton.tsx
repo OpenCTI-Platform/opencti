@@ -35,20 +35,20 @@ const pointInTriangle = (
 };
 
 type Option = {
-  value: string;
-  menuLevel: number;
-  label?: string; // if not present, value is used
-  onClick?: () => void; // individual click handler
-  selected?: boolean;
-  nestedOptions?: Option[];
+  value: string
+  menuLevel: number
+  label?: string // if not present, value is used
+  onClick?: () => void // individual click handler
+  selected?: boolean
+  nestedOptions?: Option[]
 };
 
 type NestedMenuProps = {
-  menuButtonChildren?: React.ReactNode;
-  menuButtonProps?: ButtonProps;
-  options: Array<Option>;
-  menuLevels: number;
-  onClick?: (option: Option) => void; // global click handler
+  menuButtonChildren?: React.ReactNode
+  menuButtonProps?: ButtonProps
+  options: Array<Option>
+  menuLevels: number
+  onClick?: (option: Option) => void // global click handler
 };
 
 const NestedMenuButton: React.FC<NestedMenuProps> = ({
@@ -59,8 +59,8 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
   onClick,
 }: NestedMenuProps) => {
   const [anchors, setAnchors] = React.useState<{
-    elements: Array<null | HTMLElement>;
-    options: Array<null | typeof options>;
+    elements: Array<null | HTMLElement>
+    options: Array<null | typeof options>
   }>({
     elements: new Array(menuLevels).fill(null),
     options: new Array(menuLevels).fill(null),

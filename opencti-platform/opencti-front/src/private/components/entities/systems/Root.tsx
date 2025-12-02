@@ -76,8 +76,8 @@ const systemQuery = graphql`
 `;
 
 type RootSystemProps = {
-  systemId: string;
-  queryRef: PreloadedQuery<RootSystemQuery>;
+  systemId: string
+  queryRef: PreloadedQuery<RootSystemQuery>
 };
 
 const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
@@ -330,7 +330,7 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
   );
 };
 const Root = () => {
-  const { systemId } = useParams() as { systemId: string; };
+  const { systemId } = useParams() as { systemId: string };
   const queryRef = useQueryLoading<RootSystemQuery>(systemQuery, {
     id: systemId,
   });

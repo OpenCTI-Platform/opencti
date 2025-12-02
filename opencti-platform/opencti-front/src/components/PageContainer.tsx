@@ -5,8 +5,8 @@ import type { Theme } from './Theme';
 export const PageContainerContext = React.createContext({ inPageContainer: false });
 
 interface PageContainerProps {
-  children: React.ReactNode,
-  withRightMenu?: boolean,
+  children: React.ReactNode
+  withRightMenu?: boolean
   withGap?: boolean
   style?: CSSProperties
 }

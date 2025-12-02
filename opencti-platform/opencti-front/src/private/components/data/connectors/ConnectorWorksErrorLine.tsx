@@ -19,7 +19,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 
 interface ConnectorWorksErrorLineProps {
-  error: ParsedWorkMessage;
+  error: ParsedWorkMessage
 }
 
 const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> = ({ error }) => {

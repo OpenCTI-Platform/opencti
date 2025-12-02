@@ -28,10 +28,10 @@ const useStyles = makeStyles(() => ({
 
 interface NotifierFieldProps {
   label?: string
-  name: string;
-  style?: { marginTop: number };
-  helpertext?: string;
-  onChange: (name: string, value: FieldOption[]) => void;
+  name: string
+  style?: { marginTop: number }
+  helpertext?: string
+  onChange: (name: string, value: FieldOption[]) => void
   required?: boolean
 }
 

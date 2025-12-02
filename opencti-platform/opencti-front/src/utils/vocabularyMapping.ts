@@ -2,10 +2,10 @@
 // This constant is used to identify which attributes should use OpenVocabField in forms
 
 export interface VocabularyMapping {
-  attribute: string;
-  vocabularyType: string;
-  label?: string;
-  multiple?: boolean;
+  attribute: string
+  vocabularyType: string
+  label?: string
+  multiple?: boolean
 }
 
 export const OPENVOCAB_FIELD_MAPPINGS: VocabularyMapping[] = [

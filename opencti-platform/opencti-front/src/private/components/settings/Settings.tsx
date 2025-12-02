@@ -128,7 +128,7 @@ const settingsQuery = graphql`
 `;
 
 interface SettingsComponentProps {
-  queryRef: PreloadedQuery<SettingsQuery>;
+  queryRef: PreloadedQuery<SettingsQuery>
 }
 
 export const settingsMutationFieldPatch = graphql`

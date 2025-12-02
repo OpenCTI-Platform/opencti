@@ -30,12 +30,12 @@ export const individualHeightMutation = graphql`
 `;
 
 interface HeightFieldEditProps {
-  id: string;
-  name: string;
-  values: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height'];
-  containerStyle: { marginTop: number; width: string };
-  setFieldValue?: (name: string, value: unknown) => void;
-  editContext?: readonly (GenericContext | null)[] | null;
+  id: string
+  name: string
+  values: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['height']
+  containerStyle: { marginTop: number, width: string }
+  setFieldValue?: (name: string, value: unknown) => void
+  editContext?: readonly (GenericContext | null)[] | null
 }
 export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
   name,
@@ -186,11 +186,11 @@ export const HeightFieldEdit: FunctionComponent<HeightFieldEditProps> = ({
 };
 
 interface HeightFieldAddProps {
-  id: string;
-  name: string;
-  values: MeasureInput[];
-  containerStyle: { marginTop: number; width: string };
-  setFieldValue?: (name: string, value: unknown) => void;
+  id: string
+  name: string
+  values: MeasureInput[]
+  containerStyle: { marginTop: number, width: string }
+  setFieldValue?: (name: string, value: unknown) => void
 }
 export const HeightFieldAdd: FunctionComponent<HeightFieldAddProps> = ({
   name,

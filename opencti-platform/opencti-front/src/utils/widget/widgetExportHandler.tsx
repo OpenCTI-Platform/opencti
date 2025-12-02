@@ -4,8 +4,8 @@ import { fetchQuery } from '../../relay/environment';
 import { widgetExportHandlerQuery$data } from './__generated__/widgetExportHandlerQuery.graphql';
 
 interface widgetToExport {
-  id: string;
-  type: string;
+  id: string
+  type: string
 }
 
 const widgetExportHandlerQuery = graphql`

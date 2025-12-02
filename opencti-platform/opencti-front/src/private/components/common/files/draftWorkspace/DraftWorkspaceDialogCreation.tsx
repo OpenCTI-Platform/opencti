@@ -28,14 +28,14 @@ const draftWorkspaceDialogCreationMutation = graphql`
 `;
 
 interface DraftWorkspaceCreationProps {
-  openCreate?: boolean;
+  openCreate?: boolean
   handleCloseCreate?: () => void
-  entityId?: string;
+  entityId?: string
   paginationOptions: DraftsLinesPaginationQuery$variables
 }
 
 interface DraftAddInput {
-  name: string;
+  name: string
 }
 
 const DraftWorkspaceDialogCreation: FunctionComponent<DraftWorkspaceCreationProps> = ({

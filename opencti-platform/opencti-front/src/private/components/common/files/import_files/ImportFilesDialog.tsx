@@ -101,17 +101,17 @@ const importFilesDialogEntityMutation = graphql`
 `;
 
 interface ImportFilesDialogProps {
-  open: boolean;
-  handleClose: () => void;
-  entityId?: string;
-  draftId?: string;
+  open: boolean
+  handleClose: () => void
+  entityId?: string
+  draftId?: string
 }
 
 export type OptionsFormValues = {
-  fileMarkings: FieldOption[];
-  associatedEntity: AssociatedEntityOption | null;
-  validationMode?: 'draft' | 'workbench';
-  name: string;
+  fileMarkings: FieldOption[]
+  associatedEntity: AssociatedEntityOption | null
+  validationMode?: 'draft' | 'workbench'
+  name: string
 };
 
 const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
@@ -133,7 +133,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
     selectedFormId,
   } = useImportFilesContext();
 
-  const [uploadedFiles, setUploadedFiles] = useState<{ name: string; status?: 'success' | 'error' }[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{ name: string, status?: 'success' | 'error' }[]>([]);
   const { stixCoreObject: entity, connectorsForImport } = usePreloadedQuery<ImportFilesContextQuery>(
     importFilesQuery,
     queryRef,
@@ -234,10 +234,10 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
       validationMode,
       newDraftId,
     }: {
-      selectedEntityId?: string,
-      fileMarkingIds: string[],
-      validationMode?: 'workbench' | 'draft',
-      newDraftId?: string,
+      selectedEntityId?: string
+      fileMarkingIds: string[]
+      validationMode?: 'workbench' | 'draft'
+      newDraftId?: string
     },
     setErrors: (errors: FormikErrors<OptionsFormValues>) => void,
   ) => {

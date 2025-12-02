@@ -50,26 +50,26 @@ const campaignMutation = graphql`
 const CAMPAIGN_TYPE = 'Campaign';
 
 interface CampaignAddInput {
-  name: string;
-  description: string;
-  confidence: number | null;
-  createdBy: FieldOption | null;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: { value: string }[];
-  file: File | null;
+  name: string
+  description: string
+  confidence: number | null
+  createdBy: FieldOption | null
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: { value: string }[]
+  file: File | null
 }
 
 interface CampaignFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
@@ -302,7 +302,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
 const CampaignCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CampaignsCardsPaginationQuery$variables;
+  paginationOptions: CampaignsCardsPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

@@ -44,10 +44,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IngestionJsonLineProps {
-  node: IngestionJsonLine_node$key;
-  dataColumns: DataColumns;
-  onLabelClick: HandleAddFilter;
-  paginationOptions?: IngestionJsonLinesPaginationQuery$variables;
+  node: IngestionJsonLine_node$key
+  dataColumns: DataColumns
+  onLabelClick: HandleAddFilter
+  paginationOptions?: IngestionJsonLinesPaginationQuery$variables
 }
 
 const ingestionJsonLineFragment = graphql`

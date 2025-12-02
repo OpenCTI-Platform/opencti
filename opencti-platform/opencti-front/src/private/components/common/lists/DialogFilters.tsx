@@ -13,19 +13,19 @@ import { Filter, FilterGroup } from '../../../../utils/filters/filtersHelpers-ty
 import { FilterSearchContext } from '../../../../utils/filters/filtersUtils';
 
 interface DialogFiltersProps {
-  handleOpenFilters: (event: React.SyntheticEvent) => void;
-  disabled?: boolean;
-  open: boolean;
-  filters?: FilterGroup;
-  handleCloseFilters: () => void;
-  defaultHandleRemoveFilter: (key: string, id?: string) => void;
-  handleSwitchGlobalMode?: () => void;
-  handleSwitchLocalMode?: (filter: Filter) => void;
-  handleSearch: () => void;
-  filterElement: ReactElement;
-  searchContext?: FilterSearchContext;
-  availableEntityTypes?: string[];
-  availableRelationshipTypes?: string[];
+  handleOpenFilters: (event: React.SyntheticEvent) => void
+  disabled?: boolean
+  open: boolean
+  filters?: FilterGroup
+  handleCloseFilters: () => void
+  defaultHandleRemoveFilter: (key: string, id?: string) => void
+  handleSwitchGlobalMode?: () => void
+  handleSwitchLocalMode?: (filter: Filter) => void
+  handleSearch: () => void
+  filterElement: ReactElement
+  searchContext?: FilterSearchContext
+  availableEntityTypes?: string[]
+  availableRelationshipTypes?: string[]
 }
 
 const DialogFilters: FunctionComponent<DialogFiltersProps> = ({

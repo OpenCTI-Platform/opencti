@@ -1,22 +1,22 @@
 export type StixCoreResultsType = {
-  searchTerm: string;
-  stixCoreObjects: EdgesType;
+  searchTerm: string
+  stixCoreObjects: EdgesType
 };
 export type EdgesType = {
-  edges: NodesType[];
+  edges: NodesType[]
 };
 export type NodesType = {
-  node: StixCoreEntityType;
+  node: StixCoreEntityType
 };
 export type StixCoreEntityType = {
-  entity_type: string;
-  id: string;
-  name: string;
+  entity_type: string
+  id: string
+  name: string
   representative: StixRepresentative
 };
 
 export type StixRepresentative = {
-  main: string;
+  main: string
 };
 
 export const allEntitiesKeyList = [

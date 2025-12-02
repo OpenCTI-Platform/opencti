@@ -56,14 +56,14 @@ const CreateStatusTemplateControlledDial = (
 );
 
 interface StatusTemplateCreationProps {
-  contextual: boolean;
-  inputValueContextual: string;
+  contextual: boolean
+  inputValueContextual: string
   creationCallback: (
     data: StatusTemplateCreationContextualMutation$data,
-  ) => void;
-  handleClose: () => void;
-  open: boolean;
-  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
+  ) => void
+  handleClose: () => void
+  open: boolean
+  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables
 }
 
 const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = ({
@@ -88,8 +88,8 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
   const onSubmit = (
     values: typeof initialValues,
     { setSubmitting, resetForm }: {
-      setSubmitting: (flag: boolean) => void,
-      resetForm: () => void,
+      setSubmitting: (flag: boolean) => void
+      resetForm: () => void
     },
   ) => {
     const finalValues = {

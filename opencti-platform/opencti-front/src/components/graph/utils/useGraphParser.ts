@@ -91,7 +91,8 @@ const useGraphParser = () => {
   const getNodeLabel = (data: ObjectToParse) => {
     if (data.parent_types.includes('basic-relationship')) {
       return t_i18n(`relationship_${data.relationship_type}`);
-    } if (data.entity_type === 'StixFile' && data.observable_value) {
+    }
+    if (data.entity_type === 'StixFile' && data.observable_value) {
       return truncate(data.observable_value, 20);
     }
     return truncate(
@@ -110,7 +111,8 @@ const useGraphParser = () => {
   const getNodeName = (data: ObjectToParse) => {
     if (data.relationship_type) {
       return getRelationshipName(data, true);
-    } if (data.entity_type === 'StixFile' && data.observable_value) {
+    }
+    if (data.entity_type === 'StixFile' && data.observable_value) {
       const hashAlgorithms = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
       // Find if the observable_value matches one of the hashes
       let displayValue = data.observable_value;

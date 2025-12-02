@@ -52,8 +52,8 @@ const groupQuery = graphql`
 `;
 
 interface RootGroupComponentProps {
-  queryRef: PreloadedQuery<RootGroupQuery>,
-  groupId: string,
+  queryRef: PreloadedQuery<RootGroupQuery>
+  groupId: string
 }
 
 const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryRef, groupId }) => {

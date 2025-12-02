@@ -64,7 +64,7 @@ const intrusionSetFragment = graphql`
 `;
 
 interface IntrusionSetProps {
-  intrusionSetData: IntrusionSet_intrusionSet$key;
+  intrusionSetData: IntrusionSet_intrusionSet$key
 }
 
 const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {

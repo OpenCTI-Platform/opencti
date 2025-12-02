@@ -45,10 +45,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IngestionTaxiiCollectionLineProps {
-  node: IngestionTaxiiCollectionLine_node$key;
-  dataColumns: DataColumns;
-  onLabelClick: HandleAddFilter;
-  paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables;
+  node: IngestionTaxiiCollectionLine_node$key
+  dataColumns: DataColumns
+  onLabelClick: HandleAddFilter
+  paginationOptions?: IngestionTaxiiCollectionLinesPaginationQuery$variables
 }
 
 const ingestionTaxiiCollectionLineFragment = graphql`

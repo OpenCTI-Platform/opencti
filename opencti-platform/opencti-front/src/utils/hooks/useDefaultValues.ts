@@ -20,7 +20,7 @@ export const useComputeDefaultValues = () => {
     attributeName: string,
     multiple: boolean,
     type: string,
-    defaultValues: readonly { id: string; name: string }[],
+    defaultValues: readonly { id: string, name: string }[],
   ) => {
     const ovCategory = fieldToCategory(entityType, attributeName);
     // Handle createdBy
@@ -109,9 +109,9 @@ const useDefaultValues = <Values extends FormikValues>(
   let enableDefaultMarking = false;
   defaultValuesAttributes.forEach(
     (attr: {
-      name: string;
-      type: string;
-      defaultValues: readonly { id: string; name: string }[];
+      name: string
+      type: string
+      defaultValues: readonly { id: string, name: string }[]
     }) => {
       if (attr.name === 'objectMarking') {
         enableDefaultMarking = head(attr.defaultValues)?.id === 'true';

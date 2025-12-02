@@ -26,11 +26,11 @@ interface UserEmailFormInputs {
   emailTemplate: EmailTemplateFieldOption
 }
 interface UserEmailSendProps {
-  userId: string;
-  outlined?: boolean;
-  onSubmit?: (value: EmailTemplate) => void;
-  onClose: () => void;
-  isOpen?: boolean;
+  userId: string
+  outlined?: boolean
+  onSubmit?: (value: EmailTemplate) => void
+  onClose: () => void
+  isOpen?: boolean
 }
 const UserEmailSend = ({ userId, isOpen, onSubmit, outlined }: UserEmailSendProps) => {
   const { t_i18n } = useFormatter();

@@ -3,8 +3,8 @@ import useAuth from './useAuth';
 import { FieldOption } from '../field';
 
 export interface AvailableEntityOption extends FieldOption {
-  type: string;
-  id: string;
+  type: string
+  id: string
 }
 
 const useSchema = () => {

@@ -142,10 +142,10 @@ const sourcesFlaggedListQuery = graphql`
 `;
 
 interface PirKnowledgeEntitiesProps {
-  pirId: string;
-  localStorage: PaginationLocalStorage<PaginationOptions>;
-  initialValues: LocalStorage;
-  additionalHeaderButtons: ReactNode[];
+  pirId: string
+  localStorage: PaginationLocalStorage<PaginationOptions>
+  initialValues: LocalStorage
+  additionalHeaderButtons: ReactNode[]
 }
 
 type PirInformation = NonNullable<PirKnowledgeEntities_SourceFlaggedFragment$data['pirInformation']>;

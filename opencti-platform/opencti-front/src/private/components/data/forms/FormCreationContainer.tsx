@@ -35,20 +35,20 @@ const formImportMutation = graphql`
 `;
 
 interface FormCreationContainerProps {
-  queryRef?: PreloadedQuery<FormEditionContainerQuery>;
-  open?: boolean;
-  handleClose?: () => void;
-  onOpen?: () => void;
-  paginationOptions?: FormLinesPaginationQuery$variables;
-  triggerButton?: boolean;
+  queryRef?: PreloadedQuery<FormEditionContainerQuery>
+  open?: boolean
+  handleClose?: () => void
+  onOpen?: () => void
+  paginationOptions?: FormLinesPaginationQuery$variables
+  triggerButton?: boolean
   drawerSettings?: {
-    title: string;
-    button: string;
-  };
+    title: string
+    button: string
+  }
 }
 
 interface CreateFormControlledDialProps extends DrawerControlledDialProps {
-  paginationOptions?: FormLinesPaginationQuery$variables;
+  paginationOptions?: FormLinesPaginationQuery$variables
 }
 
 const CreateFormControlledDial = (props: CreateFormControlledDialProps) => {

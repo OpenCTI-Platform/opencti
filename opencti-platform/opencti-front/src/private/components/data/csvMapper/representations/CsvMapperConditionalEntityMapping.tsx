@@ -16,8 +16,8 @@ import { FieldOption } from '../../../../../utils/field';
 
 interface CsvMapperConditionalEntityMappingProps
   extends FieldProps<CsvMapperColumnBasedFormData> {
-  representation: CsvMapperRepresentationFormData;
-  representationName: string;
+  representation: CsvMapperRepresentationFormData
+  representationName: string
 }
 
 const CsvMapperConditionalEntityMapping: FunctionComponent<

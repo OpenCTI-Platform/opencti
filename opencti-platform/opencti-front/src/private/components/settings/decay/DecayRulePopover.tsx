@@ -11,7 +11,7 @@ import PopoverMenu from '../../../../components/PopoverMenu';
 import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
 interface DecayRulePopoverProps {
-  decayRule: DecayRule_decayRule$data;
+  decayRule: DecayRule_decayRule$data
 }
 const DecayRulePopover = ({ decayRule }: DecayRulePopoverProps) => {
   const { t_i18n } = useFormatter();

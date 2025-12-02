@@ -4,8 +4,8 @@ import ApexCharts from 'apexcharts';
 import ChartExportPopover from './ChartExportPopover';
 
 interface OpenCTIChartProps extends ApexProps {
-  withExportPopover?: boolean;
-  isReadOnly?: boolean;
+  withExportPopover?: boolean
+  isReadOnly?: boolean
 }
 
 const Chart = ({

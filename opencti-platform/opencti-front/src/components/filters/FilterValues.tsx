@@ -59,19 +59,19 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FilterValuesProps {
-  label: string | React.JSX.Element;
-  tooltip?: boolean;
-  currentFilter: Filter;
-  parentFilter?: Filter;
-  filtersRepresentativesMap: Map<string, FilterRepresentative>;
-  redirection?: boolean;
-  handleSwitchLocalMode?: (filter: Filter) => void;
-  onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  isReadWriteFilter?: boolean;
-  chipColor?: ChipOwnProps['color'];
-  noLabelDisplay?: boolean;
-  entityTypes?: string[];
-  filtersRestrictions?: FiltersRestrictions;
+  label: string | React.JSX.Element
+  tooltip?: boolean
+  currentFilter: Filter
+  parentFilter?: Filter
+  filtersRepresentativesMap: Map<string, FilterRepresentative>
+  redirection?: boolean
+  handleSwitchLocalMode?: (filter: Filter) => void
+  onClickLabel?: (event: React.MouseEvent<HTMLButtonElement>) => void
+  isReadWriteFilter?: boolean
+  chipColor?: ChipOwnProps['color']
+  noLabelDisplay?: boolean
+  entityTypes?: string[]
+  filtersRestrictions?: FiltersRestrictions
 }
 
 const FilterValues: FunctionComponent<FilterValuesProps> = ({

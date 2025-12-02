@@ -364,7 +364,7 @@ const computeBannerSettings = (settings: RootSettings$data) => {
   };
 };
 interface RootComponentProps {
-  queryRef: PreloadedQuery<RootPrivateQuery>;
+  queryRef: PreloadedQuery<RootPrivateQuery>
 }
 
 const RootComponent: FunctionComponent<RootComponentProps> = ({ queryRef }) => {

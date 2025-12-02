@@ -80,7 +80,7 @@ const ThreatActorIndividualQuery = graphql`
 const THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-of', 'impersonates', 'known-as'];
 
 type RootThreatActorIndividualProps = {
-  threatActorIndividualId: string;
+  threatActorIndividualId: string
   queryRef: PreloadedQuery<RootThreatActorIndividualQuery>
 };
 
@@ -295,7 +295,7 @@ const RootThreatActorIndividualComponent = ({
 
 const Root = () => {
   const { threatActorIndividualId } = useParams() as {
-    threatActorIndividualId: string;
+    threatActorIndividualId: string
   };
   const queryRef = useQueryLoading<RootThreatActorIndividualQuery>(
     ThreatActorIndividualQuery,

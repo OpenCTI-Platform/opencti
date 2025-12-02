@@ -30,10 +30,10 @@ export const individualWeightMutation = graphql`
 `;
 
 interface WeightFieldAddProps {
-  name: string;
-  values: MeasureInput[];
-  containerStyle: { marginTop: number; width: string };
-  setFieldValue?: (name: string, value: unknown) => void;
+  name: string
+  values: MeasureInput[]
+  containerStyle: { marginTop: number, width: string }
+  setFieldValue?: (name: string, value: unknown) => void
 }
 export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
   name,
@@ -114,15 +114,15 @@ export const WeightFieldAdd: FunctionComponent<WeightFieldAddProps> = ({
 };
 
 interface WeightFieldEditProps {
-  id: string;
-  name: string;
-  values: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight'];
+  id: string
+  name: string
+  values: ThreatActorIndividualEditionBiographics_ThreatActorIndividual$data['weight']
   containerStyle: {
-    marginTop: number;
-    width: string;
-  };
-  setFieldValue?: (name: string, value: unknown) => void;
-  editContext?: readonly (GenericContext | null)[] | null;
+    marginTop: number
+    width: string
+  }
+  setFieldValue?: (name: string, value: unknown) => void
+  editContext?: readonly (GenericContext | null)[] | null
 }
 export const WeightFieldEdit: FunctionComponent<WeightFieldEditProps> = ({
   id,

@@ -57,7 +57,7 @@ const useEntityTypes = () => {
   );
 
   const { t_i18n } = useFormatter();
-  const optionBuilder = (type: string, d: { id: string; label: string }[]) => {
+  const optionBuilder = (type: string, d: { id: string, label: string }[]) => {
     return d
       .map(({ id, label }) => ({
         label: t_i18n(`${type}_${label}`),

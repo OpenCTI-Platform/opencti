@@ -58,14 +58,14 @@ const formEditionMutation = graphql`
 
 interface FormEditionInnerProps {
   form: {
-    id: string;
-    name: string;
-    description?: string | null;
-    form_schema: string;
-    active: boolean;
-  };
-  handleClose: () => void;
-  queryRef: PreloadedQuery<FormCreationQuery>;
+    id: string
+    name: string
+    description?: string | null
+    form_schema: string
+    active: boolean
+  }
+  handleClose: () => void
+  queryRef: PreloadedQuery<FormCreationQuery>
 }
 
 const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
@@ -287,8 +287,8 @@ const FormEditionInner: FunctionComponent<FormEditionInnerProps> = ({
 };
 
 interface FormEditionProps {
-  form: FormEditionFragment_form$key;
-  handleClose: () => void;
+  form: FormEditionFragment_form$key
+  handleClose: () => void
 }
 
 const FormEdition: FunctionComponent<FormEditionProps> = ({

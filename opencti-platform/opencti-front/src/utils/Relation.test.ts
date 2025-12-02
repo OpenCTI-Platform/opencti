@@ -90,14 +90,18 @@ describe('Test schema utilities functions', () => {
     expect(relations.length).toBe(3);
 
     // contains all expected values
-    const matchesAll = relations.filter((relation) => { return relation === 'related-to' || relation === 'originates-from' || relation === 'targets'; });
+    const matchesAll = relations.filter((relation) => {
+      return relation === 'related-to' || relation === 'originates-from' || relation === 'targets';
+    });
     expect(matchesAll.length).toBe(3);
   });
 
   it('should get all relationType with from entity Campaign', () => {
     const result = getRelationsFromOneEntityToAny('Campaign', testSchema);
     expect(result.allPossibleRelations.length).toBe(4);
-    const matchesAll = result.allPossibleRelations.filter((relation) => { return relation === 'uses' || relation === 'related-to' || relation === 'originates-from' || relation === 'targets'; });
+    const matchesAll = result.allPossibleRelations.filter((relation) => {
+      return relation === 'uses' || relation === 'related-to' || relation === 'originates-from' || relation === 'targets';
+    });
     expect(matchesAll.length).toBe(4);
 
     expect(result.allRelationsToEntity.length).toBe(20);

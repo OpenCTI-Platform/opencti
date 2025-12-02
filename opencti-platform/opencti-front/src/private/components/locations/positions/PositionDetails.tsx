@@ -35,8 +35,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface PositionDetailsProps {
-  position: Position_position$data;
-  queryRef: PreloadedQuery<PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery>;
+  position: Position_position$data
+  queryRef: PreloadedQuery<PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery>
 }
 
 export const positionDetailsLocationRelationshipsLinesQuery = graphql`

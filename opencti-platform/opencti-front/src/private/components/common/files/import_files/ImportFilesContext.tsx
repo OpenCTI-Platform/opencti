@@ -156,32 +156,32 @@ export type ImportMode = 'auto' | 'manual' | 'form';
 export type UploadStatus = 'uploading' | 'success' | undefined;
 
 interface InitialValues {
-  entityId?: string;
+  entityId?: string
 }
 
 type ImportFilesContextProps = InitialValues & {
-  canSelectImportMode: boolean;
-  activeStep: number;
-  setActiveStep: (step: number) => void;
-  importMode: ImportMode | undefined;
-  setImportMode: (mode: ImportMode) => void;
-  files: FileWithConnectors[];
-  setFiles: (files: FileWithConnectors[]) => void;
-  uploadStatus: UploadStatus;
-  setUploadStatus: (uploadStatus: UploadStatus) => void;
-  draftId?: string;
-  setDraftId: (draftId?: string) => void;
-  selectedFormId?: string;
-  setSelectedFormId: (formId?: string) => void;
-  inDraftContext: boolean;
-  guessMimeType: (fileId: string) => Promise<string | null>;
-  queryRef: PreloadedQuery<ImportFilesContextQuery>;
+  canSelectImportMode: boolean
+  activeStep: number
+  setActiveStep: (step: number) => void
+  importMode: ImportMode | undefined
+  setImportMode: (mode: ImportMode) => void
+  files: FileWithConnectors[]
+  setFiles: (files: FileWithConnectors[]) => void
+  uploadStatus: UploadStatus
+  setUploadStatus: (uploadStatus: UploadStatus) => void
+  draftId?: string
+  setDraftId: (draftId?: string) => void
+  selectedFormId?: string
+  setSelectedFormId: (formId?: string) => void
+  inDraftContext: boolean
+  guessMimeType: (fileId: string) => Promise<string | null>
+  queryRef: PreloadedQuery<ImportFilesContextQuery>
 };
 
 const ImportFilesContext = createContext<ImportFilesContextProps | undefined>(undefined);
 
 export const ImportFilesProvider = ({ children, initialValue }: {
-  children: ReactNode;
+  children: ReactNode
   initialValue: InitialValues
 }) => {
   const canSelectImportMode = useGranted(['KNOWLEDGE_KNASKIMPORT']); // Check capability to set connectors and validation mode

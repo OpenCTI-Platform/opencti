@@ -72,8 +72,8 @@ export const stixNestedRefRelationshipEditionQuery = graphql`
 `;
 
 interface StixNestedRefRelationshipEditionOverviewProps {
-  handleClose?: () => void,
-  queryRef: PreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>,
+  handleClose?: () => void
+  queryRef: PreloadedQuery<StixNestedRefRelationshipEditionOverviewQuery>
 }
 
 const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefRelationshipEditionOverviewProps> = ({

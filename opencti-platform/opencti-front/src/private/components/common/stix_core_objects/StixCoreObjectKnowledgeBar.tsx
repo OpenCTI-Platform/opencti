@@ -75,27 +75,27 @@ type ObjectsDistribution = StixCoreObjectKnowledgeBar_stixCoreObject$data['relat
   | StixCoreObjectKnowledgeBar_stixCoreObject$data['stixCoreObjectsDistribution'];
 
 interface StixCoreObjectKnowledgeBarProps {
-  stixCoreObjectLink: string;
-  availableSections: string[];
-  data: StixCoreObjectKnowledgeBar_stixCoreObject$key;
-  attribution?: string[];
+  stixCoreObjectLink: string
+  availableSections: string[]
+  data: StixCoreObjectKnowledgeBar_stixCoreObject$key
+  attribution?: string[]
 }
 
 interface SectionConfig {
-  title: string;
+  title: string
   items: {
-    label: string;
-    iconType: string;
-    path: string;
-    count?: number;
-  }[];
+    label: string
+    iconType: string
+    path: string
+    count?: number
+  }[]
 }
 
 interface KnowledgeBarProps {
-  to: string;
-  iconType: string;
-  label: string;
-  count: number;
+  to: string
+  iconType: string
+  label: string
+  count: number
 }
 
 const KnowledgeBarItem = ({ to, iconType, label, count }: KnowledgeBarProps) => {

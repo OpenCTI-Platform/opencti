@@ -66,7 +66,7 @@ const campaignFragment = graphql`
 const CampaignComponent = ({
   campaignData,
 }: {
-  campaignData: Campaign_campaign$key;
+  campaignData: Campaign_campaign$key
 }) => {
   const campaign = useFragment<Campaign_campaign$key>(campaignFragment, campaignData);
   const overviewLayoutCustomization = useOverviewLayoutCustomization(campaign.entity_type);

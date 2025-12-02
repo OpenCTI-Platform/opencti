@@ -5,8 +5,8 @@ import { GraphLink } from '../graph.types';
 export interface GraphTimeRange {
   interval: [Date, Date]
   values: {
-    index: number,
-    time: number,
+    index: number
+    time: number
     value: number
   }[]
 }

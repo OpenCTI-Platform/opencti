@@ -108,9 +108,9 @@ interface WidgetAttributesInputValue {
 }
 
 interface WidgetCreationAttributesProps {
-  value: readonly WidgetColumn[],
-  onChange: (value: WidgetColumn[]) => void,
-  queryRef: PreloadedQuery<WidgetAttributesInputContainerInstanceQuery>,
+  value: readonly WidgetColumn[]
+  onChange: (value: WidgetColumn[]) => void
+  queryRef: PreloadedQuery<WidgetAttributesInputContainerInstanceQuery>
 }
 
 const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = ({

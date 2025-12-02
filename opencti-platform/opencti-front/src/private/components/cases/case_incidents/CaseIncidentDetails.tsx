@@ -76,7 +76,7 @@ const CaseIncidentDetailsFragment = graphql`
 `;
 
 interface CaseIncidentDetailsProps {
-  caseIncidentData: CaseIncidentDetails_case$key;
+  caseIncidentData: CaseIncidentDetails_case$key
 }
 
 const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({

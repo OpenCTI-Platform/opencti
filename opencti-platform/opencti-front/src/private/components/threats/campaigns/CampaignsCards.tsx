@@ -71,9 +71,9 @@ export const campaignsCardsFragment = graphql`
 `;
 
 interface CampaignsCardsProps {
-  queryRef: PreloadedQuery<CampaignsCardsPaginationQuery>;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: HandleAddFilter;
+  queryRef: PreloadedQuery<CampaignsCardsPaginationQuery>
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  onLabelClick: HandleAddFilter
 }
 
 const CampaignsCards: FunctionComponent<CampaignsCardsProps> = ({

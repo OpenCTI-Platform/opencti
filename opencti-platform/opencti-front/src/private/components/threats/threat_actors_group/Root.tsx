@@ -80,7 +80,7 @@ const ThreatActorGroupQuery = graphql`
 const THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES = ['related-to', 'part-of'];
 
 type RootThreatActorGroupProps = {
-  threatActorGroupId: string;
+  threatActorGroupId: string
   queryRef: PreloadedQuery<RootThreatActorGroupQuery>
 };
 
@@ -280,7 +280,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
 };
 
 const Root = () => {
-  const { threatActorGroupId } = useParams() as { threatActorGroupId: string; };
+  const { threatActorGroupId } = useParams() as { threatActorGroupId: string };
   const queryRef = useQueryLoading<RootThreatActorGroupQuery>(ThreatActorGroupQuery, {
     id: threatActorGroupId,
     relatedRelationshipTypes: THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES,

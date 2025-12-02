@@ -54,10 +54,10 @@ const notifierMutation = graphql`
 `;
 
 interface NotifierAddInput {
-  name: string;
-  description: string;
-  notifier_connector_id?: FieldOption;
-  authorized_members: FieldOption[];
+  name: string
+  description: string
+  notifier_connector_id?: FieldOption
+  authorized_members: FieldOption[]
 }
 
 interface NotifierFormProps {
@@ -85,7 +85,7 @@ export const NotifierCreationForm: FunctionComponent<NotifierFormProps> = ({
   const { t_i18n } = useFormatter();
   const formRef = createRef<CoreForm>();
   const [open, setOpen] = useState(false);
-  const [connector, setCurrentConnector] = useState<FieldOption & { schema?: string; ui_schema?: string }>();
+  const [connector, setCurrentConnector] = useState<FieldOption & { schema?: string, ui_schema?: string }>();
   const initialValues: NotifierAddInput = {
     name: inputValue || '',
     description: '',
@@ -268,10 +268,10 @@ const CreateNotifierControlledDial = (props: DrawerControlledDialProps) => (
 );
 
 const NotifierCreation: FunctionComponent<{
-  contextual?: boolean;
-  display?: boolean;
-  inputValue?: string;
-  paginationOptions: NotifiersLinesPaginationQuery$variables;
+  contextual?: boolean
+  display?: boolean
+  inputValue?: string
+  paginationOptions: NotifiersLinesPaginationQuery$variables
 }> = ({ inputValue, paginationOptions }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_notifiers', paginationOptions, 'notifierAdd');

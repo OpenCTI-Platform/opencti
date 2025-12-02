@@ -13,10 +13,10 @@ import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { isEmptyObject } from '../../../../../utils/object';
 
 export interface FintelTemplatePreviewFormInputs {
-  entity: EntityOption | null;
-  fintelDesign: FintelDesignFieldOption | null;
-  contentMaxMarkings: FieldOption[];
-  fileMarkings: FieldOption[];
+  entity: EntityOption | null
+  fintelDesign: FintelDesignFieldOption | null
+  contentMaxMarkings: FieldOption[]
+  fileMarkings: FieldOption[]
 }
 
 interface FintelTemplatePreviewFormProps {

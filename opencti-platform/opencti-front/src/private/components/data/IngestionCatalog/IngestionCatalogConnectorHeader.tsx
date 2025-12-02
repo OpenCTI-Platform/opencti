@@ -15,8 +15,8 @@ import Security from '../../../../utils/Security';
 import ItemBoolean from '../../../../components/ItemBoolean';
 
 type IngestionCatalogConnectorHeaderProps = {
-  connector: IngestionConnector,
-  isEnterpriseEdition: boolean,
+  connector: IngestionConnector
+  isEnterpriseEdition: boolean
   onClickDeploy: () => void
 };
 

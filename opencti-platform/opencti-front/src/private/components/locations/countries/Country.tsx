@@ -90,7 +90,7 @@ export const countryFragment = graphql`
 const CountryComponent = ({
   countryData,
 }: {
-  countryData: Country_country$key;
+  countryData: Country_country$key
 }) => {
   const classes = useStyles();
   const country = useFragment<Country_country$key>(

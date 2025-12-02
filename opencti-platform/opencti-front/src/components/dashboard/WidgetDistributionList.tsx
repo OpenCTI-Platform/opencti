@@ -47,10 +47,10 @@ const WidgetDistributionList = ({
           let link: string | undefined;
           if (!publicWidget && (entry.type !== 'User' || hasSettingAccess)) {
             const node: {
-              id: string;
-              entity_type: string;
-              relationship_type?: string;
-              from?: { entity_type: string; id: string };
+              id: string
+              entity_type: string
+              relationship_type?: string
+              from?: { entity_type: string, id: string }
             } = {
               id: entry.id,
               entity_type: entry.type,

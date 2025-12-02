@@ -120,28 +120,28 @@ const dataSourceEditionOverviewFragment = graphql`
 const DATA_SOURCE_TYPE = 'Data-Source';
 
 interface DataSourceEditionOverviewProps {
-  data: DataSourceEditionOverview_dataSource$key;
+  data: DataSourceEditionOverview_dataSource$key
   context:
     | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
+    readonly focusOn: string | null | undefined
+    readonly name: string
   } | null)[]
-  | null | undefined;
-  enableReferences?: boolean;
-  handleClose: () => void;
+  | null | undefined
+  enableReferences?: boolean
+  handleClose: () => void
 }
 
 interface DataSourceEditionFormValues {
-  name: string;
-  description: string | null;
-  x_opencti_workflow_id: FieldOption;
-  createdBy: FieldOption | undefined;
-  confidence: number | null;
-  x_mitre_platforms: string[] | null;
-  collection_layers: string[];
-  objectMarking: FieldOption[];
-  message?: string;
-  references?: FieldOption[];
+  name: string
+  description: string | null
+  x_opencti_workflow_id: FieldOption
+  createdBy: FieldOption | undefined
+  confidence: number | null
+  x_mitre_platforms: string[] | null
+  collection_layers: string[]
+  objectMarking: FieldOption[]
+  message?: string
+  references?: FieldOption[]
 }
 
 const DataSourceEditionOverview: FunctionComponent<

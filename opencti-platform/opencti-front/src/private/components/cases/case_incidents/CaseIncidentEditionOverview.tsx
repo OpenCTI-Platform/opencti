@@ -160,7 +160,7 @@ const caseIncidentMutationRelationDelete = graphql`
 
 interface CaseIncidentEditionOverviewProps {
   caseRef: CaseIncidentEditionOverview_case$key
-  context?: readonly (GenericContext | null)[] | null;
+  context?: readonly (GenericContext | null)[] | null
   enableReferences?: boolean
   handleClose: () => void
 }

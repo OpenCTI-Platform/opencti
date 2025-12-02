@@ -38,9 +38,9 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TaskTemplateFieldProps {
-  caseTemplateId?: string;
-  onChange: (name: string, values: FieldOption[]) => void;
-  values?: readonly FieldOption[];
+  caseTemplateId?: string
+  onChange: (name: string, values: FieldOption[]) => void
+  values?: readonly FieldOption[]
 }
 
 const CaseTemplateTasksQuery = graphql`

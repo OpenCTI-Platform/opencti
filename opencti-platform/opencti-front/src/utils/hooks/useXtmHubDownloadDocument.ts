@@ -13,7 +13,7 @@ interface Props {
 }
 
 interface Return {
-  dialogConnectivityLostStatus: DialogConnectivityLostStatus;
+  dialogConnectivityLostStatus: DialogConnectivityLostStatus
 }
 
 const useXtmHubDownloadDocument = ({ serviceInstanceId, fileId, onSuccess, onError }: Props): Return => {

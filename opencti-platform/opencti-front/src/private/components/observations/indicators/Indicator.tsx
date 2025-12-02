@@ -64,7 +64,7 @@ const indicatorFragment = graphql`
 `;
 
 interface IndicatorProps {
-  indicatorData: Indicator_indicator$key;
+  indicatorData: Indicator_indicator$key
 }
 
 const Indicator: React.FC<IndicatorProps> = ({ indicatorData }) => {

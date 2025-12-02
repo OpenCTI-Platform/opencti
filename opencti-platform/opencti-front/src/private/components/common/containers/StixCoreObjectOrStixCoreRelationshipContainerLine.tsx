@@ -51,10 +51,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
-  node: StixCoreObjectOrStixCoreRelationshipContainerLine_node$data;
-  dataColumns: DataColumns;
-  onLabelClick: HandleAddFilter;
-  redirectionMode: string;
+  node: StixCoreObjectOrStixCoreRelationshipContainerLine_node$data
+  dataColumns: DataColumns
+  onLabelClick: HandleAddFilter
+  redirectionMode: string
 }
 
 export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
@@ -393,7 +393,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
 export const StixCoreObjectOrStixCoreRelationshipContainerLine = StixCoreObjectOrStixCoreRelationshipContainerLineFragment;
 
 interface StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }
 
 export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionComponent<

@@ -55,22 +55,22 @@ const stixCoreObjectContainerContainersQuery = graphql`
 `;
 
 type StixCoreObjectContainerProps = {
-  elementId: string;
+  elementId: string
 };
 
 type OptionListType = {
-  label: string;
-  type: string;
-  id: string;
+  label: string
+  type: string
+  id: string
 };
 
 type StixDomainObjectCreationCallbackType = {
-  id: string;
-  entity_type: string;
+  id: string
+  entity_type: string
   representative?: {
-    main: string;
+    main: string
   }
-  name: string;
+  name: string
 };
 
 const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) => {

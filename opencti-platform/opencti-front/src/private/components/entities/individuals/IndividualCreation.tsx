@@ -65,13 +65,13 @@ interface IndividualAddInput {
 
 interface IndividualFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: FieldOption;
-  defaultMarkingDefinitions?: FieldOption[];
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: FieldOption
+  defaultMarkingDefinitions?: FieldOption[]
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({

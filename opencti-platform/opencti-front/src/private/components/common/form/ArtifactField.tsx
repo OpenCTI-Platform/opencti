@@ -7,9 +7,9 @@ import { GqlFilterGroup } from '../../../../utils/filters/filtersUtils';
 import { FieldOption } from '../../../../utils/field';
 
 interface ArtifactFieldProps {
-  attributeName: string;
-  attributeValue?: FieldOption;
-  onChange: (name: string, value: FieldOption) => void;
+  attributeName: string
+  attributeValue?: FieldOption
+  onChange: (name: string, value: FieldOption) => void
 }
 
 export const artifactQuery = graphql`
@@ -29,11 +29,11 @@ export const artifactQuery = graphql`
 `;
 
 interface ArtifactFieldComponentProps {
-  queryRef: PreloadedQuery<ArtifactFieldGetQuery>;
-  attributeName: string;
-  attributeValue?: FieldOption;
-  onChange: (name: string, value: FieldOption) => void;
-  setSearch: Dispatch<SetStateAction<string | null>>;
+  queryRef: PreloadedQuery<ArtifactFieldGetQuery>
+  attributeName: string
+  attributeValue?: FieldOption
+  onChange: (name: string, value: FieldOption) => void
+  setSearch: Dispatch<SetStateAction<string | null>>
 }
 
 const ArtifactFieldComponent: FunctionComponent<

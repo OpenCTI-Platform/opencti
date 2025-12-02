@@ -4,10 +4,10 @@ import { CancelOutlined, CheckCircleOutlined, UploadFileOutlined } from '@mui/ic
 import { useImportFilesContext } from '@components/common/files/import_files/ImportFilesContext';
 
 interface ImportFilesUploadProgressProps {
-  currentCount: number;
-  totalCount: number;
-  uploadedFiles: { name: string; status?: 'success' | 'error' }[];
-  BulkResult: React.FC<{ variablesToString: (variables: { file: File }) => string }>;
+  currentCount: number
+  totalCount: number
+  uploadedFiles: { name: string, status?: 'success' | 'error' }[]
+  BulkResult: React.FC<{ variablesToString: (variables: { file: File }) => string }>
 }
 
 const ImportFilesUploadProgress: React.FC<ImportFilesUploadProgressProps> = ({

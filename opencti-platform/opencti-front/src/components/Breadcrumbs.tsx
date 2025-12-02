@@ -7,9 +7,9 @@ import { truncate } from '../utils/String';
 import type { Theme } from './Theme';
 
 interface element {
-  label: string;
-  link?: string;
-  current?: boolean;
+  label: string
+  link?: string
+  current?: boolean
 }
 
 interface BreadcrumbsProps {

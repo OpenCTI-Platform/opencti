@@ -52,16 +52,16 @@ interface StixCoreObjectOpinionsRadarDialogProps {
 }
 
 interface OpinionAddInput {
-  id?: string;
-  opinion: string;
-  explanation: string;
-  confidence: number;
+  id?: string
+  opinion: string
+  explanation: string
+  confidence: number
 }
 interface OpinionAddSubmit {
-  opinion: string;
-  explanation: string;
-  confidence: number;
-  objects?: string[];
+  opinion: string
+  explanation: string
+  confidence: number
+  objects?: string[]
 }
 
 const OPINION_TYPE = 'Opinion';

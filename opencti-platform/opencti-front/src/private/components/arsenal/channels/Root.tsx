@@ -75,8 +75,8 @@ const channelQuery = graphql`
 `;
 
 type RootChannelProps = {
-  channelId: string;
-  queryRef: PreloadedQuery<RootChannelQuery>;
+  channelId: string
+  queryRef: PreloadedQuery<RootChannelQuery>
 };
 
 const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {

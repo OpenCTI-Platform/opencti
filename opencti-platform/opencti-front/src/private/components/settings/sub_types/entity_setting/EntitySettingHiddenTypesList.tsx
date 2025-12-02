@@ -9,9 +9,9 @@ import ItemIcon from '../../../../../components/ItemIcon';
 import FieldOrEmpty from '../../../../../components/FieldOrEmpty';
 
 export interface Entity {
-  readonly id: string;
-  readonly name: string;
-  readonly default_hidden_types?: ReadonlyArray<string> | null;
+  readonly id: string
+  readonly name: string
+  readonly default_hidden_types?: ReadonlyArray<string> | null
 }
 
 const computeHiddenEntities = (nodes: Array<Entity | undefined>, targetType: string) => {

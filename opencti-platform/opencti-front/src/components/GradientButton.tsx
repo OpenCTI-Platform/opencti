@@ -10,8 +10,8 @@ export enum GradientVariant {
 }
 
 interface GradientButtonProps extends ButtonProps {
-  gradientVariant?: GradientVariant;
-  target?: string;
+  gradientVariant?: GradientVariant
+  target?: string
 }
 
 const GradientButton = ({

@@ -10,15 +10,15 @@ export const CAPABILITY_INFORMATION = {
 };
 
 interface SecurityProps {
-  children: ReactElement;
-  needs: string[];
-  hasAccess?: boolean;
-  matchAll?: boolean;
-  placeholder?: ReactElement;
+  children: ReactElement
+  needs: string[]
+  hasAccess?: boolean
+  matchAll?: boolean
+  placeholder?: ReactElement
 }
 
 interface DataSecurityProps extends SecurityProps {
-  data: { createdBy: { id: string } | null | undefined };
+  data: { createdBy: { id: string } | null | undefined }
 }
 
 // DEPECRATED

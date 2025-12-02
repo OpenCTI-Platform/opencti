@@ -89,22 +89,22 @@ const objectMarkingFieldAllowedMarkingQuery = graphql`
 `;
 
 interface ObjectMarkingFieldProps {
-  name: string;
-  required?: boolean;
-  style?: React.CSSProperties;
+  name: string
+  required?: boolean
+  style?: React.CSSProperties
   onChange?: (
     name: string,
     values: FieldOption[],
     operation?: string | undefined,
-  ) => void;
-  isOptionEqualToValue?: (option: FieldOption, value: FieldOption) => boolean;
-  helpertext?: unknown;
-  disabled?: boolean;
-  label?: string;
-  allowedMarkingOwnerId?: string;
-  setFieldValue?: (name: string, values: FieldOption[]) => void;
-  limitToMaxSharing?: boolean;
-  filterTargetIds?: string[];
+  ) => void
+  isOptionEqualToValue?: (option: FieldOption, value: FieldOption) => boolean
+  helpertext?: unknown
+  disabled?: boolean
+  label?: string
+  allowedMarkingOwnerId?: string
+  setFieldValue?: (name: string, values: FieldOption[]) => void
+  limitToMaxSharing?: boolean
+  filterTargetIds?: string[]
 }
 
 interface MarkingOption extends FieldOption {
@@ -113,8 +113,8 @@ interface MarkingOption extends FieldOption {
 }
 
 interface OptionValues {
-  currentValues: MarkingOption[];
-  valueToReplace: MarkingOption;
+  currentValues: MarkingOption[]
+  valueToReplace: MarkingOption
 }
 
 const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({

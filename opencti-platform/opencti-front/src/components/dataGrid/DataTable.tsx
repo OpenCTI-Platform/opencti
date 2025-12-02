@@ -114,7 +114,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   | 'entityTypes'
 > & {
   taskScope?: string
-  globalSearch?: string;
+  globalSearch?: string
 };
 
 const DataTableInternalToolbar = ({
@@ -194,9 +194,9 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'createButton'
   | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
-  preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
+  preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>
   exportContext?: { entity_type: string, entity_id?: string }
-  globalSearch?: string;
+  globalSearch?: string
   createButton?: ReactNode
 } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 

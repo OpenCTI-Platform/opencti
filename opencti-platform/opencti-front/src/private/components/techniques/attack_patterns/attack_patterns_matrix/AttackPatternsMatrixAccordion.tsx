@@ -21,13 +21,13 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 
 interface AccordionAttackPatternProps {
-  attackPattern: FilteredAttackPattern;
-  handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
-  attackPatternIdsToOverlap?: string[];
-  isSecurityPlatform: boolean;
-  isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number; }>>;
-  entityId?: string;
+  attackPattern: FilteredAttackPattern
+  handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void
+  attackPatternIdsToOverlap?: string[]
+  isSecurityPlatform: boolean
+  isCoverage?: boolean
+  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string, readonly coverage_score: number }>>
+  entityId?: string
 }
 
 const AccordionAttackPattern = ({

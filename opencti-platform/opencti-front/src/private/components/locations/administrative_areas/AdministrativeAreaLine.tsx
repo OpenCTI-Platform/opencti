@@ -41,8 +41,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface AdministrativeAreaLineComponentProps {
-  dataColumns: DataColumns;
-  node: AdministrativeAreaLine_node$key;
+  dataColumns: DataColumns
+  node: AdministrativeAreaLine_node$key
 }
 
 const AdministrativeAreaFragment = graphql`
@@ -121,7 +121,7 @@ AdministrativeAreaLineComponentProps
 export const AdministrativeAreaLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }) => {
   const classes = useStyles();
   return (

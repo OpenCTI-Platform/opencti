@@ -3,7 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
 import { useFormatter } from '../../../../../components/i18n';
 
 interface Props {
-  open: boolean;
+  open: boolean
   onCancel: () => void
 }
 

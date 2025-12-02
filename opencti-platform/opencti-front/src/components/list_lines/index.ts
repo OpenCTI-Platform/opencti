@@ -7,11 +7,11 @@ interface ListLineOption extends FieldOption {
 }
 
 export interface DataColumn {
-  isSortable: boolean;
-  label: string;
-  width?: string | number;
+  isSortable: boolean
+  label: string
+  width?: string | number
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  render?: (v: any, helpers?: any) => ReactNode;
+  render?: (v: any, helpers?: any) => ReactNode
 }
 
 export type DataColumns = Record<string, DataColumn>;

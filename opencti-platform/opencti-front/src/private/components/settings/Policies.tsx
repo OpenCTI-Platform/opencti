@@ -120,8 +120,8 @@ const policiesValidation = () => Yup.object().shape({
 });
 
 interface PoliciesComponentProps {
-  keyword?: string;
-  queryRef: PreloadedQuery<PoliciesQuery>;
+  keyword?: string
+  queryRef: PreloadedQuery<PoliciesQuery>
 }
 
 const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({

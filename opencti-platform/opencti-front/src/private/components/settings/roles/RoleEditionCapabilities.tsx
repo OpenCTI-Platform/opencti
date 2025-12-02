@@ -76,8 +76,8 @@ export const roleEditionCapabilitiesLinesSearch = graphql`
 `;
 
 interface RoleEditionCapabilitiesComponentProps {
-  role: RoleEditionCapabilities_role$data;
-  queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
+  role: RoleEditionCapabilities_role$data
+  queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>
 }
 
 const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitiesComponentProps> = ({ role, queryRef }) => {

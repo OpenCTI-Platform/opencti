@@ -56,7 +56,7 @@ interface PlaybookEditionFormData {
 }
 
 interface PlaybookEditionFormProps {
-  queryRef: PreloadedQuery<PlaybookEditionFormQuery>,
+  queryRef: PreloadedQuery<PlaybookEditionFormQuery>
 }
 
 const PlaybookEditionForm: FunctionComponent<PlaybookEditionFormProps> = ({ queryRef }) => {

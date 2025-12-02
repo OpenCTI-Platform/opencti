@@ -42,10 +42,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IngestionTaxiiLineProps {
-  node: IngestionTaxiiLine_node$key;
-  dataColumns: DataColumns;
-  onLabelClick: HandleAddFilter;
-  paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables;
+  node: IngestionTaxiiLine_node$key
+  dataColumns: DataColumns
+  onLabelClick: HandleAddFilter
+  paginationOptions?: IngestionTaxiiLinesPaginationQuery$variables
 }
 
 const ingestionTaxiiLineFragment = graphql`

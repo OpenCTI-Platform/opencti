@@ -47,12 +47,12 @@ import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 
 interface InstanceTriggerEditionFormValues {
-  id: string;
-  name: string;
-  description: string | null;
-  event_types: readonly FieldOption[];
-  notifiers: readonly FieldOption[];
-  filters: string | null;
+  id: string
+  name: string
+  description: string | null
+  event_types: readonly FieldOption[]
+  notifiers: readonly FieldOption[]
+  filters: string | null
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -89,9 +89,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 interface StixCoreObjectQuickSubscriptionContentProps {
   triggerData: stixCoreObjectTriggersUtilsPaginationQuery$data
-  paginationOptions: stixCoreObjectTriggersUtilsPaginationQuery$variables;
-  instanceId: string;
-  instanceName: string;
+  paginationOptions: stixCoreObjectTriggersUtilsPaginationQuery$variables
+  instanceId: string
+  instanceName: string
 }
 
 const StixCoreObjectQuickSubscription: FunctionComponent<
@@ -330,7 +330,7 @@ StixCoreObjectQuickSubscriptionContentProps
                 onChange={setFieldValue}
                 renderOption={(
                   props: React.HTMLAttributes<HTMLLIElement>,
-                  option: { value: string; label: string },
+                  option: { value: string, label: string },
                 ) => (
                   <MenuItem value={option.value} {...props}>
                     <Checkbox

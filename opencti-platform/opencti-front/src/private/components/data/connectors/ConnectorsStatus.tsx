@@ -73,8 +73,8 @@ const useStyles = makeStyles<Theme>({
 });
 
 interface ConnectorsStatusContentProps {
-  connectorsListData: ConnectorsListQuery['response'];
-  connectorsStateData: ConnectorsStateQuery['response'];
+  connectorsListData: ConnectorsListQuery['response']
+  connectorsStateData: ConnectorsStateQuery['response']
 }
 
 const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> = ({

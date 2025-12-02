@@ -70,8 +70,8 @@ export const draftContextBannerValidateDraftMutation = graphql`
 `;
 
 interface DraftContextBannerComponentProps {
-  queryRef: PreloadedQuery<DraftContextBannerQuery>;
-  refetch: () => void;
+  queryRef: PreloadedQuery<DraftContextBannerQuery>
+  refetch: () => void
 }
 
 const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponentProps> = ({ queryRef, refetch }) => {

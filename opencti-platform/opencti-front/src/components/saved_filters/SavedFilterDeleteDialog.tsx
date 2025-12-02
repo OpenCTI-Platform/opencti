@@ -15,10 +15,10 @@ const savedFilterDeleteDialogMutation = graphql`
 `;
 
 type SavedFilterDeleteDialogProps = {
-  savedFilterToDelete: string;
-  onClose: () => void;
-  onReset: () => void;
-  shouldResetFilters: boolean;
+  savedFilterToDelete: string
+  onClose: () => void
+  onReset: () => void
+  shouldResetFilters: boolean
 };
 
 const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, shouldResetFilters }: SavedFilterDeleteDialogProps) => {

@@ -39,27 +39,27 @@ export const coverageRelationInformationMutation = graphql`
 `;
 
 interface CoverageInformationInput {
-  coverage_name: string;
-  coverage_score: number | string;
+  coverage_name: string
+  coverage_score: number | string
 }
 
 interface CoverageInformationFieldAddProps {
-  name: string;
-  values: CoverageInformationInput[];
-  containerStyle?: React.CSSProperties;
-  setFieldValue?: (name: string, value: unknown) => void;
+  name: string
+  values: CoverageInformationInput[]
+  containerStyle?: React.CSSProperties
+  setFieldValue?: (name: string, value: unknown) => void
 }
 
 interface CoverageInformationFieldEditProps {
-  id: string;
-  name: string;
-  mode: 'entity' | 'relation';
+  id: string
+  name: string
+  mode: 'entity' | 'relation'
   values: ReadonlyArray<{
-    readonly coverage_name: string;
-    readonly coverage_score: number;
-  }> | null | undefined;
-  containerStyle?: React.CSSProperties;
-  editContext?: readonly (GenericContext | null)[] | null;
+    readonly coverage_name: string
+    readonly coverage_score: number
+  }> | null | undefined
+  containerStyle?: React.CSSProperties
+  editContext?: readonly (GenericContext | null)[] | null
 }
 
 export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationFieldAddProps> = ({

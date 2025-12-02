@@ -7,13 +7,13 @@ import { useImportFilesContext } from '@components/common/files/import_files/Imp
 import { ImportFilesContextQuery$data } from '@components/common/files/import_files/__generated__/ImportFilesContextQuery.graphql';
 
 export type FileWithConnectors = {
-  file: File;
-  connectors?: { id: string; name: string; }[];
-  configuration?: string;
+  file: File
+  connectors?: { id: string, name: string }[]
+  configuration?: string
 };
 
 interface ImportFilesUploaderProps {
-  connectorsForImport: ImportFilesContextQuery$data['connectorsForImport'];
+  connectorsForImport: ImportFilesContextQuery$data['connectorsForImport']
 }
 
 const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) => {

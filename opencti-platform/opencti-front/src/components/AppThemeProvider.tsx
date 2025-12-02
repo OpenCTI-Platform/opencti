@@ -9,8 +9,8 @@ import { useDocumentFaviconModifier, useDocumentThemeModifier } from '../utils/h
 import { AppThemeProvider_settings$data } from './__generated__/AppThemeProvider_settings.graphql';
 
 interface AppThemeProviderProps {
-  children: React.ReactNode;
-  settings: AppThemeProvider_settings$data;
+  children: React.ReactNode
+  settings: AppThemeProvider_settings$data
 }
 
 const themeBuilder = (

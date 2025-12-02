@@ -45,9 +45,9 @@ const StixCoreObjectHistoryLinesFragment = graphql`
 `;
 
 interface StixCoreObjectHistoryLinesProps {
-  queryRef: PreloadedQuery<StixCoreObjectHistoryLinesQuery>,
-  isRelationLog: boolean,
-  paginationOptions: StixCoreObjectHistoryLinesQuery$variables,
+  queryRef: PreloadedQuery<StixCoreObjectHistoryLinesQuery>
+  isRelationLog: boolean
+  paginationOptions: StixCoreObjectHistoryLinesQuery$variables
 }
 
 const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesProps> = ({

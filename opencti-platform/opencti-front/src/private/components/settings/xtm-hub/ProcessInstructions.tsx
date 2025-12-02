@@ -3,8 +3,8 @@ import { Box, Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 
 interface ProcessInstructionsProps {
-  onContinue: () => void;
-  instructionKey: string;
+  onContinue: () => void
+  instructionKey: string
 }
 
 const ProcessInstructions: FunctionComponent<ProcessInstructionsProps> = ({

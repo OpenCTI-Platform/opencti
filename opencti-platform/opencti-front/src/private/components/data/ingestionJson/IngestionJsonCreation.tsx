@@ -63,11 +63,11 @@ const ingestionJsonCreationMutation = graphql`
 `;
 
 interface IngestionJsonCreationContainerProps {
-  queryRef?: PreloadedQuery<IngestionJsonEditionContainerQuery>,
-  handleClose: () => void,
-  open: boolean,
-  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined,
-  isDuplicated: boolean,
+  queryRef?: PreloadedQuery<IngestionJsonEditionContainerQuery>
+  handleClose: () => void
+  open: boolean
+  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined
+  isDuplicated: boolean
 }
 
 export interface IngestionJsonHeader {
@@ -76,12 +76,12 @@ export interface IngestionJsonHeader {
 }
 
 export interface IngestionJsonAttributes {
-  type: string,
-  from: string,
-  to: string,
-  data_operation: string,
-  state_operation: string,
-  default: string,
+  type: string
+  from: string
+  to: string
+  data_operation: string
+  state_operation: string
+  default: string
   exposed: string
 }
 
@@ -111,14 +111,14 @@ export interface IngestionJsonAddInput {
 }
 
 interface IngestionJsonCreationProps {
-  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined;
+  paginationOptions?: IngestionJsonLinesPaginationQuery$variables | null | undefined
   isDuplicated: boolean
   handleClose: () => void
   ingestionJson?: IngestionJsonEditionFragment_ingestionJson$key | null
 }
 
 const resolveHasUserChoiceJsonMapper = (option: FieldOption & {
-  representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
+  representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[]
 }) => {
   return option.representations.some(
     (representation) => representation.attributes.some(
@@ -151,13 +151,13 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
   };
   const onJsonMapperSelection = async (
     option: FieldOption & {
-      representations: { attributes: { key: string; default_values: { name: string }[] | string[] }[] }[]
+      representations: { attributes: { key: string, default_values: { name: string }[] | string[] }[] }[]
     },
     {
       setFieldValue,
       values,
     }: {
-      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>);
+      setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>)
       values: IngestionJsonAddInput
     },
   ) => {

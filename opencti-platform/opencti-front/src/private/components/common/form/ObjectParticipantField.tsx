@@ -58,17 +58,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface OptionParticipant extends FieldOption {
-  type: string;
-  group: string;
+  type: string
+  group: string
 }
 interface ObjectParticipantFieldProps {
-  name: string;
-  required?: boolean;
-  onChange?: (name: string, values: OptionParticipant[]) => void;
-  style?: Record<string, string | number>;
-  helpertext?: unknown;
-  label?: string,
-  disabled?: boolean,
+  name: string
+  required?: boolean
+  onChange?: (name: string, values: OptionParticipant[]) => void
+  style?: Record<string, string | number>
+  helpertext?: unknown
+  label?: string
+  disabled?: boolean
 }
 const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = ({
   name,
@@ -138,7 +138,7 @@ const ObjectParticipantField: FunctionComponent<ObjectParticipantFieldProps> = (
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(
         fieldProps: React.HTMLAttributes<HTMLLIElement>,
-        option: { type: string; label: string },
+        option: { type: string, label: string },
       ) => (
         <li {...fieldProps}>
           <div className={classes.icon}>

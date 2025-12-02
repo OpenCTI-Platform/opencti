@@ -29,12 +29,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface StatusTemplateFieldProps {
-  name: string;
-  setFieldValue: (field: string, value: FieldOption) => void;
-  helpertext: string;
-  required?: boolean;
-  onChange?: (field: string, value: FieldOption) => void;
-  style?: Record<string, string | number>;
+  name: string
+  setFieldValue: (field: string, value: FieldOption) => void
+  helpertext: string
+  required?: boolean
+  onChange?: (field: string, value: FieldOption) => void
+  style?: Record<string, string | number>
 }
 
 export const StatusTemplateFieldQuery = graphql`
@@ -65,9 +65,9 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
   const [statusTemplateInput, setStatusTemplateInput] = useState<string>('');
   const [statusTemplates, setStatusTemplates] = useState<
   {
-    label: string | undefined;
-    value: string | undefined;
-    color: string | undefined;
+    label: string | undefined
+    value: string | undefined
+    color: string | undefined
   }[]
   >([]);
 
@@ -124,7 +124,7 @@ const StatusTemplateField: FunctionComponent<StatusTemplateFieldProps> = ({
         openCreate={handleOpenStatusTemplateCreation}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: { color: string; label: string },
+          option: { color: string, label: string },
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>

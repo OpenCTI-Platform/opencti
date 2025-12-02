@@ -46,9 +46,9 @@ export const CaseTemplateTasksLineFragment = graphql`
 `;
 
 interface CaseTemplateTasksLineProps {
-  node: CaseTemplateTasksLine_node$key;
-  dataColumns: DataColumns;
-  paginationOptions: CaseTemplateTasksLinesPaginationQuery$data;
+  node: CaseTemplateTasksLine_node$key
+  dataColumns: DataColumns
+  paginationOptions: CaseTemplateTasksLinesPaginationQuery$data
 }
 
 export const CaseTemplateTasksLine: FunctionComponent<
@@ -91,7 +91,7 @@ CaseTemplateTasksLineProps
 };
 
 interface CaseTemplateLineDummyProps {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }
 
 export const CaseTemplateTasksLineDummy: FunctionComponent<

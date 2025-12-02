@@ -74,7 +74,7 @@ export interface SchemaAttribute {
 }
 
 interface JsonMapperRepresentationAttributesFormProps {
-  handleErrors: (key: string, value: string | null) => void;
+  handleErrors: (key: string, value: string | null) => void
   representation: JsonMapperRepresentationFormData
   representationType: string
   representationName: string

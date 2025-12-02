@@ -29,8 +29,8 @@ export const schemaAttributesQuery = graphql`
 `;
 
 type JsonMappersContextType = {
-  jsonMappers?: jsonMappers_MappersQuery$data,
-  schemaAttributes?: jsonMappers_SchemaAttributesQuery$data,
+  jsonMappers?: jsonMappers_MappersQuery$data
+  schemaAttributes?: jsonMappers_SchemaAttributesQuery$data
 };
 const JsonMappersContext = createContext<JsonMappersContextType>({});
 

@@ -11,14 +11,14 @@ import FieldOrEmpty from './FieldOrEmpty';
 import { commitMutation, defaultCommitMutation } from '../relay/environment';
 
 type Node = {
-  readonly entity_type: string;
-  readonly id: string;
-  readonly name: string;
+  readonly entity_type: string
+  readonly id: string
+  readonly name: string
 };
 
 type Props = {
-  assignees: ReadonlyArray<Node>;
-  stixDomainObjectId: string;
+  assignees: ReadonlyArray<Node>
+  stixDomainObjectId: string
 };
 
 const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId }) => {

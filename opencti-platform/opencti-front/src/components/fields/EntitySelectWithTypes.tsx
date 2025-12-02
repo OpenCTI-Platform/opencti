@@ -9,10 +9,10 @@ import useSearchEntities, { EntityValue } from '../../utils/filters/useSearchEnt
 import { getOptionsFromEntities } from '../../utils/filters/SearchEntitiesUtil';
 
 interface EntitySelectWithTypesProps {
-  label?: string,
-  handleChange: (value: EntityValue) => void,
-  value: EntityValue | null,
-  entitiesToExclude: string[],
+  label?: string
+  handleChange: (value: EntityValue) => void
+  value: EntityValue | null
+  entitiesToExclude: string[]
   disabled?: boolean
 }
 

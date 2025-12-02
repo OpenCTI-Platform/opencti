@@ -198,7 +198,7 @@ export const getAttributesForEntityType = (
   if (fieldType === 'openvocab') {
     return (entity.attributes || [])
       .filter((attr: { name: string }) => openVocabAttributeNames.includes(attr.name))
-      .map((attr: { type?: string; name: string; label?: string; mandatory?: boolean }) => ({
+      .map((attr: { type?: string, name: string, label?: string, mandatory?: boolean }) => ({
         value: attr.name,
         name: attr.name,
         label: attr.label || attr.name,
@@ -211,7 +211,7 @@ export const getAttributesForEntityType = (
 
   // Filter attributes based on their type
   return (entity.attributes || [])
-    .filter((attr: { type?: string; name: string; label?: string; mandatory?: boolean; multiple?: boolean }) => {
+    .filter((attr: { type?: string, name: string, label?: string, mandatory?: boolean, multiple?: boolean }) => {
       // Skip 'ref' and 'object' type attributes as they need special handling
       const attrType = attr.type || 'string';
       if (attrType === 'ref' || attrType === 'refs' || attrType === 'object') {
@@ -252,7 +252,7 @@ export const getAttributesForEntityType = (
 export const getAvailableRelationships = (
   mainEntityType: string,
   additionalEntityTypes: string[],
-  schema: { scrs?: Array<{ id: string; label?: string }>; schemaRelationsTypesMapping?: Map<string, readonly string[]> },
+  schema: { scrs?: Array<{ id: string, label?: string }>, schemaRelationsTypesMapping?: Map<string, readonly string[]> },
   t_i18n: (key: string) => string,
 ): RelationshipTypeOption[] => {
   if (!mainEntityType || !schema) return [];
@@ -260,7 +260,7 @@ export const getAvailableRelationships = (
   const { scrs, schemaRelationsTypesMapping } = schema;
   if (!scrs || !schemaRelationsTypesMapping) return [];
 
-  const allRelationshipTypes = scrs.map((s: { id: string; label?: string }) => ({
+  const allRelationshipTypes = scrs.map((s: { id: string, label?: string }) => ({
     value: s.id,
     label: t_i18n(`relationship_${s.id}`),
   }));
@@ -318,7 +318,7 @@ export const getInitialMandatoryFields = (
   const mandatoryAttributes = entity.attributes.filter((attr: AttributeOption & { mandatoryType?: string }) => attr.mandatory || attr.mandatoryType === 'external');
 
   // Pre-populate fields for mandatory attributes with default values if available
-  return mandatoryAttributes.map((attr: AttributeOption & { defaultValues?: Array<{ id: string; name: string }> | null; mandatoryType?: string; type?: string }) => {
+  return mandatoryAttributes.map((attr: AttributeOption & { defaultValues?: Array<{ id: string, name: string }> | null, mandatoryType?: string, type?: string }) => {
     const defaultValue = (attr.defaultValues && attr.defaultValues.length && attr.defaultValues.length > 0) ? attr.defaultValues[0] : null;
 
     // Convert attribute type to appropriate field type
@@ -355,21 +355,21 @@ export const getInitialMandatoryFields = (
  * @returns List of entity type options
  */
 type EntitySettingNode = {
-  target_type: string;
-  mandatoryAttributes?: ReadonlyArray<string>;
+  target_type: string
+  mandatoryAttributes?: ReadonlyArray<string>
   attributesDefinitions?: ReadonlyArray<{
-    type: string;
-    name: string;
-    label?: string | null;
-    mandatory: boolean;
-    mandatoryType?: string;
-    multiple?: boolean | null;
-    defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
-  }>;
+    type: string
+    name: string
+    label?: string | null
+    mandatory: boolean
+    mandatoryType?: string
+    multiple?: boolean | null
+    defaultValues?: ReadonlyArray<{ id: string, name: string }> | null
+  }>
 };
 
 export const buildEntityTypes = (
-  schema: { scos?: Array<{ id: string; label?: string }>; sdos?: Array<{ id: string; label?: string }>; smos?: Array<{ id: string; label?: string }> },
+  schema: { scos?: Array<{ id: string, label?: string }>, sdos?: Array<{ id: string, label?: string }>, smos?: Array<{ id: string, label?: string }> },
   entitySettings: { edges: ReadonlyArray<{ node: EntitySettingNode }> },
   t_i18n: (key: string) => string,
 ): EntityTypeOption[] => {
@@ -383,7 +383,7 @@ export const buildEntityTypes = (
     }
   });
 
-  const processEntityType = (s: { id: string; label?: string }) => {
+  const processEntityType = (s: { id: string, label?: string }) => {
     const settings = settingsMap.get(s.id);
 
     // Use attributesDefinitions from the query which contains full attribute info
@@ -399,7 +399,7 @@ export const buildEntityTypes = (
       mandatory: attr.mandatory,
       mandatoryType: attr.mandatoryType,
       multiple: attr.multiple === null ? undefined : attr.multiple,
-      defaultValues: attr.defaultValues as { id: string; name: string }[] | null | undefined,
+      defaultValues: attr.defaultValues as { id: string, name: string }[] | null | undefined,
     }));
 
     return {

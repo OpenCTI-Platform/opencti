@@ -94,22 +94,22 @@ const importValidation = (t: (value: string) => string) => Yup.object().shape({
 });
 
 interface StixCoreObjectExternalReferencesLinesContainerProps {
-  stixCoreObjectId: string;
-  data: StixCoreObjectExternalReferencesLines_data$data;
-  relay: RelayPaginationProp;
+  stixCoreObjectId: string
+  data: StixCoreObjectExternalReferencesLines_data$data
+  relay: RelayPaginationProp
 }
 
 interface Connector {
-  readonly active: boolean | null | undefined;
-  readonly connector_scope: ReadonlyArray<string> | null | undefined;
-  readonly id: string;
-  readonly name: string;
-  readonly updated_at: null | undefined;
+  readonly active: boolean | null | undefined
+  readonly connector_scope: ReadonlyArray<string> | null | undefined
+  readonly id: string
+  readonly name: string
+  readonly updated_at: null | undefined
   readonly configurations: ReadonlyArray<{
-    readonly configuration: string;
-    readonly id: string;
-    readonly name: string;
-  }> | null | undefined;
+    readonly configuration: string
+    readonly id: string
+    readonly name: string
+  }> | null | undefined
 }
 
 const StixCoreObjectExternalReferencesLinesContainer: FunctionComponent<

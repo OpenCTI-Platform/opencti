@@ -33,21 +33,21 @@ const emailTemplateFieldQuery = graphql`
 `;
 
 export type EmailTemplate = {
-  id: string;
+  id: string
   name: string
 };
 
 export type EmailTemplateFieldOption = {
-  label: string;
+  label: string
   value: EmailTemplate
 };
 
 interface EmailTemplateFieldComponentProps {
   label?: string
-  name: string;
-  style?: React.CSSProperties,
-  helperText?: string;
-  onChange?: (name: string, value: FieldOption[]) => void;
+  name: string
+  style?: React.CSSProperties
+  helperText?: string
+  onChange?: (name: string, value: FieldOption[]) => void
   required?: boolean
   queryRef: PreloadedQuery<EmailTemplateFieldQuery>
 }

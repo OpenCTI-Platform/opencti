@@ -9,10 +9,10 @@ import { useFormatter } from './i18n';
 import Transition from './Transition';
 
 interface ExternalLinkPopoverProps {
-  displayExternalLink: boolean;
-  externalLink: string | URL | undefined;
-  setDisplayExternalLink: (value: boolean) => void;
-  setExternalLink?: (value: string | URL | undefined) => void;
+  displayExternalLink: boolean
+  externalLink: string | URL | undefined
+  setDisplayExternalLink: (value: boolean) => void
+  setExternalLink?: (value: string | URL | undefined) => void
 }
 
 const ExternalLinkPopover: FunctionComponent<ExternalLinkPopoverProps> = ({

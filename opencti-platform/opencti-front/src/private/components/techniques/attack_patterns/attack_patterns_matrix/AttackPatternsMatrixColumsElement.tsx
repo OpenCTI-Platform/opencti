@@ -13,13 +13,13 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import SecurityCoverageInformation from '../../../analyses/security_coverages/SecurityCoverageInformation';
 
 interface AttackPatternsMatrixColumnsElementProps {
-  attackPattern: FilteredAttackPattern | FilteredSubAttackPattern;
-  handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void;
-  attackPatternIdsToOverlap?: string[];
-  isSecurityPlatform: boolean;
-  isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number; }>>;
-  entityId?: string;
+  attackPattern: FilteredAttackPattern | FilteredSubAttackPattern
+  handleOpen: (element: MinimalAttackPattern, event: React.MouseEvent) => void
+  attackPatternIdsToOverlap?: string[]
+  isSecurityPlatform: boolean
+  isCoverage?: boolean
+  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string, readonly coverage_score: number }>>
+  entityId?: string
 }
 
 const AttackPatternsMatrixColumnsElement = ({

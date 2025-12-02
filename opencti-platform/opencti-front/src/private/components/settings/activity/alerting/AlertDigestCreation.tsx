@@ -77,14 +77,14 @@ const triggerDigestCreationMutation = graphql`
 `;
 
 interface TriggerDigestActivityAddInput {
-  name: string;
-  description: string;
-  period: string;
-  notifiers: { value: string }[];
-  trigger_ids: { value: string }[];
-  day: string;
-  time: string;
-  recipients: { value: string }[];
+  name: string
+  description: string
+  period: string
+  notifiers: { value: string }[]
+  trigger_ids: { value: string }[]
+  day: string
+  time: string
+  recipients: { value: string }[]
 }
 
 export const digestTriggerValidation = (t: (message: string) => string) => Yup.object().shape({
@@ -99,12 +99,12 @@ export const digestTriggerValidation = (t: (message: string) => string) => Yup.o
 });
 
 interface TriggerDigestCreationProps {
-  contextual?: boolean;
-  open?: boolean;
-  handleClose?: () => void;
-  inputValue?: string;
-  recipientId?: string;
-  paginationOptions?: AlertingPaginationQuery$variables;
+  contextual?: boolean
+  open?: boolean
+  handleClose?: () => void
+  inputValue?: string
+  recipientId?: string
+  paginationOptions?: AlertingPaginationQuery$variables
 }
 
 const AlertDigestCreation: FunctionComponent<TriggerDigestCreationProps> = ({

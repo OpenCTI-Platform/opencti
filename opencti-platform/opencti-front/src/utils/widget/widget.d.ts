@@ -51,8 +51,8 @@ interface WidgetLayout {
 }
 
 export interface Widget {
-  id: string;
-  type: string;
+  id: string
+  type: string
   perspective?: WidgetPerspective | null
   dataSelection: WidgetDataSelection[]
   parameters?: WidgetParameters | null
@@ -60,5 +60,5 @@ export interface Widget {
 }
 
 interface PirWidgetDataSelection extends WidgetDataSelection {
-  pirId: string,
+  pirId: string
 }

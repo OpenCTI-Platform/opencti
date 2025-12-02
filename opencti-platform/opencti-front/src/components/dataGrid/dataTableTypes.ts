@@ -43,14 +43,14 @@ export type DataTableColumns = DataTableColumn[];
 export interface DataTableContextProps {
   storageKey: string
   columns: DataTableColumns
-  availableFilterKeys?: string[] | undefined;
+  availableFilterKeys?: string[] | undefined
   initialValues: DataTableProps['initialValues']
   setColumns: Dispatch<SetStateAction<DataTableColumns>>
   resolvePath: (data: any) => any
   redirectionModeEnabled?: boolean
   useLineData: DataTableProps['useLineData']
-  dataQueryArgs: UsePreloadedPaginationFragment<OperationType>,
-  data: unknown,
+  dataQueryArgs: UsePreloadedPaginationFragment<OperationType>
+  data: unknown
   useDataCellHelpers: DataTableProps['useDataCellHelpers']
   useDataTableToggle: ReturnType<DataTableProps['useDataTableToggle']>
   getComputeLink: (entity: any) => string | undefined
@@ -91,7 +91,7 @@ export interface DataTableProps {
   lineFragment?: GraphQLTaggedNode
   dataQueryArgs: any
   data?: unknown
-  availableFilterKeys?: string[] | undefined;
+  availableFilterKeys?: string[] | undefined
   redirectionModeEnabled?: boolean
   additionalFilters?: FilterGroup
   additionalFilterKeys?: string[]
@@ -166,18 +166,18 @@ export interface DataTableBodyProps {
 export interface DataTableDisplayFiltersProps {
   entityTypes?: string[]
   availableRelationFilterTypes?: Record<string, string[]> | undefined
-  availableFilterKeys?: string[] | undefined;
-  availableEntityTypes?: string[];
-  searchContext?: FilterSearchContext;
+  availableFilterKeys?: string[] | undefined
+  availableEntityTypes?: string[]
+  searchContext?: FilterSearchContext
 }
 
 export interface DataTableFiltersProps {
-  additionalFilters?: DataTableProps['additionalFilters'];
-  availableFilterKeys?: string[] | undefined;
+  additionalFilters?: DataTableProps['additionalFilters']
+  availableFilterKeys?: string[] | undefined
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableEntityTypes?: string[]
   availableRelationshipTypes?: string[]
-  searchContextFinal?: { entityTypes: string[]; elementId?: string[] | undefined; } | undefined
+  searchContextFinal?: { entityTypes: string[], elementId?: string[] | undefined } | undefined
   exportContext?: { entity_type: string, entity_id?: string }
   paginationOptions: any
   currentView?: string

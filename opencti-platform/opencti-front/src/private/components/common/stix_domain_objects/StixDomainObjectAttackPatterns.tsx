@@ -17,11 +17,11 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { containerTypes } from '../../../../utils/hooks/useAttributes';
 
 interface StixDomainObjectAttackPatternsProps {
-  stixDomainObjectId: string,
-  defaultStartTime?: string,
-  defaultStopTime?: string,
-  disableExport: boolean,
-  entityType: string,
+  stixDomainObjectId: string
+  defaultStartTime?: string
+  defaultStopTime?: string
+  disableExport: boolean
+  entityType: string
 }
 
 const StixDomainObjectAttackPatterns: FunctionComponent<StixDomainObjectAttackPatternsProps> = ({

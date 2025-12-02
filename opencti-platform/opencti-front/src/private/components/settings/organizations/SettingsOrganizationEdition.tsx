@@ -78,19 +78,19 @@ const organizationMutationRelationDelete = graphql`
 `;
 
 interface SettingsOrganizationFormValues {
-  name: string;
-  description: string | null;
-  x_opencti_organization_type: string | null;
-  contact_information: string | null;
-  default_dashboard: FieldOption | null;
-  message?: string;
-  references?: FieldOption[];
-  grantable_groups: { label: string; value: string; }[];
+  name: string
+  description: string | null
+  x_opencti_organization_type: string | null
+  contact_information: string | null
+  default_dashboard: FieldOption | null
+  message?: string
+  references?: FieldOption[]
+  grantable_groups: { label: string, value: string }[]
 }
 
 interface SettingsOrganizationEditionProps {
   organization: SettingsOrganization_organization$data
-  context?: readonly (GenericContext | null)[] | null;
+  context?: readonly (GenericContext | null)[] | null
   enableReferences?: boolean
 }
 
