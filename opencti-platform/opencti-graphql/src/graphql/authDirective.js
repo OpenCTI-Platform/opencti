@@ -6,6 +6,7 @@ import { defaultFieldResolver } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation, UnsupportedError } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { BYPASS, SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../utils/access';
+import { getDraftContext } from '../utils/draftContext';
  
 export const authDirectiveBuilder = (directiveName) => {
   const typeDirectiveArgumentMaps = {};
@@ -77,8 +78,9 @@ export const authDirectiveBuilder = (directiveName) => {
               }
               let userCapabilities = [];
 
+              const isInDraftContext = !!getDraftContext(context, user);
               // If the user is in draft mode, add capabilities in draft to the base capabilities 
-              if (user.draft_context) {
+              if (isInDraftContext) {
                 const userCapabilitiesInDraft = map((c) => c.name, user.capabilitiesInDraft);
                 userCapabilities = Array.from(new Set([...userBaseCapabilities, ...userCapabilitiesInDraft]));
               } else {
