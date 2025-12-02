@@ -169,7 +169,7 @@ const ThreatActorsIndividual = () => {
             resolvePath={(data: ThreatActorsIndividualCards_data$data) => data.threatActorsIndividuals?.edges?.map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY_THREAT_ACTORS_INDIVIDUAL}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={ThreatActorIndividualCardFragment}
             exportContext={{ entity_type: 'Threat-Actor-Individual' }}

@@ -190,7 +190,7 @@ const ObservedDatas: FunctionComponent = () => {
           resolvePath={(data: ObservedDatasLines_data$data) => data.observedDatas?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={observedDataFragment}
           exportContext={{ entity_type: 'Observed-Data' }}

@@ -165,7 +165,7 @@ const Campaigns = () => {
             resolvePath={(data: CampaignsCards_data$data) => data.campaigns?.edges?.map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             preloadedPaginationProps={preloadedPaginationProps}
             lineFragment={CampaignCardFragment}
             exportContext={{ entity_type: 'Campaign' }}

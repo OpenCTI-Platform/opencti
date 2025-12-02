@@ -178,7 +178,7 @@ const FintelDesigns = () => {
               resolvePath={(data: FintelDesignsLines_data$data) => data.fintelDesigns?.edges?.map((n) => n?.node)}
               storageKey={LOCAL_STORAGE_KEY}
               initialValues={initialValues}
-              toolbarFilters={contextFilters}
+              contextFilters={contextFilters}
               getComputeLink={getRedirectionLink}
               lineFragment={fintelDesignsLineFragment}
               disableLineSelection

@@ -198,7 +198,7 @@ const SecurityCoverages: FunctionComponent = () => {
           resolvePath={(data: SecurityCoveragesLines_data$data) => data.securityCoverages?.edges?.map((n) => n.node)}
           storageKey={LOCAL_STORAGE_KEY}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={securityCoverageFragment}
           exportContext={{ entity_type: 'Security-Coverage' }}

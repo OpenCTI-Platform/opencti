@@ -200,7 +200,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           resolvePath={(data: CaseIncidentsLinesCases_data$data) => data.caseIncidents?.edges?.map((n) => n?.node)}
           storageKey={LOCAL_STORAGE_KEY_CASE_INCIDENT}
           initialValues={initialValues}
-          toolbarFilters={contextFilters}
+          contextFilters={contextFilters}
           preloadedPaginationProps={preloadedPaginationProps}
           lineFragment={caseIncidentFragment}
           exportContext={{ entity_type: 'Case-Incident' }}

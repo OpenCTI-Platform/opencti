@@ -232,7 +232,7 @@ const Users = () => {
             resolvePath={(data) => data.users?.edges?.map(({ node }: { node: UsersLine_node$data }) => node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             lineFragment={usersLineFragment}
             preloadedPaginationProps={preloadedPaginationProps}
             createButton={userCreateButton}

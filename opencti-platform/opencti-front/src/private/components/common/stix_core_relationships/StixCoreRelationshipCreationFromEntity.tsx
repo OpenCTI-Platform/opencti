@@ -807,7 +807,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
                       storageKey={LOCAL_STORAGE_KEY}
                       lineFragment={stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment}
                       initialValues={{}}
-                      toolbarFilters={contextFilters}
+                      contextFilters={contextFilters}
                       preloadedPaginationProps={preloadedPaginationProps}
                       entityTypes={virtualEntityTypes}
                       availableEntityTypes={virtualEntityTypes}

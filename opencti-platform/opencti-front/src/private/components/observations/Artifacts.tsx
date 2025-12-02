@@ -191,7 +191,7 @@ const Artifacts: FunctionComponent = () => {
             resolvePath={(data: ArtifactsLines_data$data) => data.stixCyberObservables?.edges?.map((n) => n?.node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             lineFragment={artifactLineFragment}
             preloadedPaginationProps={preloadedPaginationOptions}
             exportContext={{ entity_type: 'Artifact' }}

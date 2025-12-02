@@ -235,7 +235,7 @@ const ExclusionLists = () => {
             resolvePath={(data) => data.exclusionLists?.edges?.map(({ node }: { node: ExclusionListsLine_node$data }) => node)}
             storageKey={LOCAL_STORAGE_KEY}
             initialValues={initialValues}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             lineFragment={exclusionListsLineFragment}
             disableLineSelection
             disableNavigation

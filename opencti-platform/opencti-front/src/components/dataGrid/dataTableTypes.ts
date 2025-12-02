@@ -86,7 +86,7 @@ export interface DataTableProps {
   resolvePath: (data: any) => any
   storageKey: string
   initialValues: LocalStorage
-  toolbarFilters?: FilterGroup
+  contextFilters?: FilterGroup
   handleCopy?: () => void
   lineFragment?: GraphQLTaggedNode
   dataQueryArgs: any
@@ -171,7 +171,7 @@ export interface DataTableDisplayFiltersProps {
 }
 
 export interface DataTableFiltersProps {
-  toolbarFilters?: DataTableProps['toolbarFilters'];
+  contextFilters?: DataTableProps['contextFilters'];
   availableFilterKeys?: string[] | undefined;
   availableRelationFilterTypes?: Record<string, string[]> | undefined
   availableEntityTypes?: string[]

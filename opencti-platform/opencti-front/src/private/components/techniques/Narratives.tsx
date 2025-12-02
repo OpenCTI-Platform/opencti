@@ -177,7 +177,7 @@ const Narratives: FunctionComponent = () => {
             lineFragment={narrativeLineFragment}
             resolvePath={(data: NarrativesLines_data$data) => data.narratives?.edges?.map(({ node }) => node)}
             preloadedPaginationProps={preloadedPaginationProps}
-            toolbarFilters={contextFilters}
+            contextFilters={contextFilters}
             additionalHeaderButtons={[
               (
                 <Tooltip key={'lines'} title={t_i18n('Lines view')}>

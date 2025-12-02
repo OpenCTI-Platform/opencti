@@ -17,7 +17,7 @@ import { useDataTableContext } from './components/DataTableContext';
 import { FilterSearchContext, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
-| 'toolbarFilters'
+| 'contextFilters'
 | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
@@ -31,7 +31,7 @@ type DataTableInternalFiltersProps = Pick<DataTableProps,
 };
 
 const DataTableInternalFilters = ({
-  toolbarFilters,
+  contextFilters,
   entityTypes,
   hideSearch,
   hideFilters,
@@ -78,7 +78,7 @@ const DataTableInternalFilters = ({
 
           {!hideFilters && (
             <DataTableFilters
-              toolbarFilters={toolbarFilters}
+              contextFilters={contextFilters}
               availableFilterKeys={availableFilterKeys}
               searchContextFinal={searchContextFinal}
               availableEntityTypes={availableEntityTypes}
@@ -106,7 +106,7 @@ const DataTableInternalFilters = ({
 };
 
 type DataTableInternalToolbarProps = Pick<DataTableProps,
-| 'toolbarFilters'
+| 'contextFilters'
 | 'handleCopy'
 | 'removeAuthMembersEnabled'
 | 'removeFromDraftEnabled'
@@ -120,7 +120,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
 const DataTableInternalToolbar = ({
   taskScope,
   handleCopy,
-  toolbarFilters,
+  contextFilters,
   globalSearch,
   removeAuthMembersEnabled,
   removeFromDraftEnabled,
@@ -156,7 +156,7 @@ const DataTableInternalToolbar = ({
         numberOfSelectedElements={numberOfSelectedElements}
         selectAll={selectAll}
         search={searchTerm ?? globalSearch}
-        filters={toolbarFilters}
+        filters={contextFilters}
         types={entityTypes}
         handleClearSelectedElements={handleClearSelectedElements}
         taskScope={taskScope}
@@ -177,7 +177,7 @@ type OCTIDataTableProps = Pick<DataTableProps,
 | 'availableFilterKeys'
 | 'redirectionModeEnabled'
 | 'additionalFilterKeys'
-| 'toolbarFilters'
+| 'contextFilters'
 | 'variant'
 | 'actions'
 | 'hideHeaders'
@@ -213,7 +213,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     lineFragment,
     exportContext,
     entityTypes,
-    toolbarFilters,
+    contextFilters,
     handleCopy,
     additionalHeaderButtons,
     currentView,
@@ -250,7 +250,7 @@ const DataTable = (props: OCTIDataTableProps) => {
         filtersComponent={(
           <DataTableInternalFilters
             entityTypes={entityTypes}
-            toolbarFilters={toolbarFilters}
+            contextFilters={contextFilters}
             additionalHeaderButtons={additionalHeaderButtons}
             availableEntityTypes={availableEntityTypes}
             availableRelationFilterTypes={availableRelationFilterTypes}
@@ -267,7 +267,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             entityTypes={entityTypes}
             handleCopy={handleCopy}
             taskScope={taskScope}
-            toolbarFilters={toolbarFilters}
+            contextFilters={contextFilters}
             globalSearch={globalSearch}
             removeAuthMembersEnabled={removeAuthMembersEnabled}
             removeFromDraftEnabled={removeFromDraftEnabled}
