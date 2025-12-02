@@ -88,7 +88,6 @@ describe('buildChanges standard behavior', async () => {
   it('should build changes for mutliple attribute update ("authorized members" added)', async () => {
     const inputs = [{
       key:"restricted_members",
-      previsou:[],
       previous:[{
           access_right:"admin",
           id:"88ec0c6a-13ce-5e39-b486-354fe4a7084f"
@@ -120,5 +119,18 @@ describe('buildChanges standard behavior', async () => {
         }]
       }]
     );
+  })
+  it('should build changes for mutliple attribute update ("participant" added)', async () => {
+    const inputs = [{
+      "key":"objectParticipant",
+      "operation":"add",
+      "value":[{
+        "entity_type":"User",
+        "id":"9b854803-7158-4e4e-a492-f8845ac33aad",
+        "name":"User 1",
+        "user_email":"user1@user1.com"}]}];
+
+    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs)
+    expect(changes).toEqual([{"field":"Participants","previous":[],"new":['User 1']}]);
   })
 });

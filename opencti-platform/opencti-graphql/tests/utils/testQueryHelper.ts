@@ -248,3 +248,29 @@ export const enableCEAndUnSetOrganization = async () => {
   const settingsResult = await settingsEditField(testContext, ADMIN_USER, platformSettings.id, input);
   expect(settingsResult.platform_organization).toBeUndefined();
 };
+
+/**
+ * @param conditionPromise A function checking if the condition is verified.
+ * @param sleepTimeBetweenLoop Time to wait between each loop in ms.
+ * @param loopCount Max loop to do.
+ * @param expectToBeTrue The expecting result of the condition.
+ */
+export const awaitUntilCondition = async (
+  conditionPromise: () => Promise<boolean>,
+  sleepTimeBetweenLoop = 1000,
+  loopCount = 10,
+  expectToBeTrue = true,
+) => {
+  let isConditionOk = await conditionPromise();
+  let loopCurrent = 0;
+
+  while (!isConditionOk === expectToBeTrue && loopCurrent < loopCount) {
+    await new Promise(resolve => setTimeout(resolve, sleepTimeBetweenLoop));
+    isConditionOk = await conditionPromise();
+    loopCurrent += 1;
+  }
+
+  if (!isConditionOk === expectToBeTrue) {
+    throw new Error(`Condition not met after ${loopCount} attempts`);
+  }
+};

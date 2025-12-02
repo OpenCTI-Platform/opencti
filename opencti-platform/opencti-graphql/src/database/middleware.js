@@ -2059,8 +2059,13 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
   return generateUpdatePatchMessage(patchElements, entityType, { members, creators });
 };
 
+const buildAttribute = (array) => {
+return array.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250)))).filter((item) => item !== null && item !== undefined)
+};
+
 export const buildChanges = (entityType, inputs) => {
   const changes = [];
+  logApp.info('inputs====', {inputs})
   inputs.forEach((input) => {
     const { key, previous, value } = input;
     if (!key) return;
@@ -2087,8 +2092,8 @@ export const buildChanges = (entityType, inputs) => {
     else if (isMultiple === false) {
       changes.push({
         field,
-        previous: previousArray.map((item) => item ?? (typeof item === 'string' ? item : item?.id)).filter((item) => item !== null && item !== undefined),
-        new: valueArray.map((item) => item ?? (typeof item === 'string' ? item : item?.id)).filter((item) => item !== null && item !== undefined)
+        previous: previousArray.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250)))).filter((item) => item !== null && item !== undefined),
+        new: valueArray.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250)))).filter((item) => item !== null && item !== undefined)
       });
     }
   });

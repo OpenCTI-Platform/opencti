@@ -3,8 +3,9 @@ import gql from "graphql-tag";
 import {addReport, findById} from "../../../src/domain/report";
 import {ADMIN_USER, testContext} from "../../utils/testQuery";
 import {stixDomainObjectDelete, stixDomainObjectEditField} from "../../../src/domain/stixDomainObject";
-import {queryAsAdminWithSuccess} from "../../utils/testQueryHelper";
+import {awaitUntilCondition, queryAsAdminWithSuccess} from "../../utils/testQueryHelper";
 import {utcDate} from "../../../src/utils/format";
+import {waitInSec} from "../../../src/database/utils";
 
 const READ_QUERY = gql`
   query Logs($first: Int, $filters: FilterGroup) {
@@ -30,7 +31,7 @@ const READ_QUERY = gql`
   }
 `;
 
-describe.skip('Log resolver standard behavior', async () => {
+describe('Log resolver standard behavior', async () => {
   let reportInternalId: string;
 
   beforeAll(async () => {
@@ -47,6 +48,29 @@ describe.skip('Log resolver standard behavior', async () => {
   it('should log previous and value for description update', async () => {
     // Update description
     await stixDomainObjectEditField(testContext, ADMIN_USER, reportInternalId, [{key: 'description', value: ['new description']}])
+
+    // Wait until the log is available
+    await awaitUntilCondition(async () => {
+      const queryResult = await queryAsAdminWithSuccess({
+        query: READ_QUERY,
+        variables: {
+          "filters": {
+            "mode": "and",
+            "filterGroups": [],
+            "filters": [
+              {
+                "key": [
+                  "context_data.id"
+                ],
+                "values": [reportInternalId]
+              }
+            ]
+          }
+        }
+      });
+      return queryResult?.data?.logs.edges.length > 0;
+    }, 1000, 5);
+
     const queryResult = await queryAsAdminWithSuccess({
       query: READ_QUERY,
       variables: {
@@ -64,12 +88,13 @@ describe.skip('Log resolver standard behavior', async () => {
         }
       }
     })
-    console.log({queryResult: JSON.stringify(queryResult)})
     expect(queryResult?.data?.logs.edges[0].node.event_scope).toEqual('update');
     expect(queryResult?.data?.logs.edges[0].node.context_data.changes[0]).toEqual({
-        "field": "Description",
-        "previous": [],
-        "new": ['new description'],
+      field: "Description",
+      previous: [],
+      new: ['new description'],
+      added: null,
+      removed: null,
       });
   });
 });
