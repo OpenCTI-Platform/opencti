@@ -101,12 +101,6 @@ export default defineConfig([
     rules: {
       '@stylistic/jsx-wrap-multilines': 'off',
       '@stylistic/no-mixed-operators': 'off',
-      '@stylistic/arrow-parens': 'off',
-      '@stylistic/brace-style': 'off',
-      '@stylistic/indent': 'off',
-      '@stylistic/lines-between-class-members': 'off',
-      '@stylistic/no-extra-parens': 'off',
-      '@stylistic/operator-linebreak': 'off',
       '@stylistic/comma-dangle': 'off',
       '@stylistic/indent-binary-ops': 'off',
       '@stylistic/spaced-comment': 'off',
@@ -116,9 +110,12 @@ export default defineConfig([
 
       // =========
 
+      '@stylistic/indent': 'off',
+      '@stylistic/brace-style': 'off',
       '@stylistic/jsx-curly-newline': 'off',
       '@stylistic/jsx-one-expression-per-line': 'off',
       '@stylistic/jsx-closing-tag-location': 'off',
+      '@stylistic/arrow-parens': ['error', 'always'],
       '@stylistic/space-before-blocks': 'error',
       '@stylistic/quote-props': ['error', 'as-needed'],
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],

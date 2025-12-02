@@ -238,8 +238,8 @@ export interface IngestionCsvEditionForm {
   csv_mapper_type: boolean
 }
 
-type FieldValue =
-  FieldOption
+type FieldValue
+  = FieldOption
   | FieldOption[]
   | CsvMapperFieldOption
   | string

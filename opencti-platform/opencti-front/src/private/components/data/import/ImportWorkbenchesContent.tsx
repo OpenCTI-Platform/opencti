@@ -179,7 +179,7 @@ const ImportWorkbenchesContent = () => {
     createdBy: {
       label: 'Creator',
       percentWidth: 10,
-      render: (({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
+      render: ({ metaData }: ImportWorkbenchesContentFileLine_file$data) => metaData?.creator?.name ?? '-',
     },
     objectLabel: {
       percentWidth: 10,

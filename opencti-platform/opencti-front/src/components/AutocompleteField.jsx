@@ -62,9 +62,9 @@ const AutocompleteField = (props) => {
     fieldProps.value = null;
   }
   const defaultOptionToValue = (option, value) => option.value === value.value;
-  const defaultGetOptionLabel = ((option) => (
+  const defaultGetOptionLabel = (option) => (
     typeof option === 'object' ? truncate(option.label, optionLength) : truncate(option, optionLength)
-  ));
+  );
 
   const showError = !isNil(meta.error) && (meta.touched || submitCount > 0);
 

@@ -30,8 +30,8 @@ import messages_ru_back from '../../lang/back/ru.json';
 
 import { useDocumentLangModifier } from '../utils/hooks/useDocumentModifier';
 
-type PlatformLang =
-  | 'de-de'
+type PlatformLang
+  = | 'de-de'
   | 'en-us'
   | 'es-es'
   | 'fr-fr'

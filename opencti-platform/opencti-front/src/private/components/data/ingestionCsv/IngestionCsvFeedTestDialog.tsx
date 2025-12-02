@@ -82,7 +82,7 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
         },
       },
       onCompleted: (data) => {
-        const resultTest = (data as IngestionCsvFeedTestDialogMutation$data);
+        const resultTest = data as IngestionCsvFeedTestDialogMutation$data;
         if (resultTest) {
           setResult(resultTest);
           if (setIsCreateDisabled) {

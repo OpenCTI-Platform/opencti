@@ -148,7 +148,7 @@ const resolveHasUserChoiceCsvMapper = (option: FieldOption & {
   return option.representations.some(
     (representation) => representation.attributes.some(
       (attribute) => attribute.key === 'objectMarking' && attribute.default_values.some(
-        ((value) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value?.name === USER_CHOICE_MARKING_CONFIG)),
+        (value) => (typeof value === 'string' ? value === USER_CHOICE_MARKING_CONFIG : value?.name === USER_CHOICE_MARKING_CONFIG),
       ),
     ),
   );

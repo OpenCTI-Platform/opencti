@@ -657,6 +657,7 @@ class DataTableToolBar extends Component {
     }
     this.setState({ actionsInputs });
   }
+
   handleLaunchRead(read) {
     const actions = [{
       type: 'REPLACE',
@@ -670,24 +671,28 @@ class DataTableToolBar extends Component {
       this.handleOpenTask();
     });
   }
+
   handleLaunchDelete() {
     const actions = [{ type: 'DELETE', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
   }
+
   handleLaunchRemoveAuthMembers() {
     const actions = [{ type: 'REMOVE_AUTH_MEMBERS', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
   }
+
   handleLaunchRemoveFromDraft() {
     const actions = [{ type: 'REMOVE_FROM_DRAFT', context: null }];
     this.setState({ actions }, () => {
       this.handleOpenTask();
     });
   }
+
   handleLaunchRemove() {
     const actions = [
       {

@@ -1,5 +1,5 @@
-export type IngestionConnectorType =
-  | 'INTERNAL_ENRICHMENT'
+export type IngestionConnectorType
+  = | 'INTERNAL_ENRICHMENT'
   | 'INTERNAL_INGESTION'
   | 'EXTERNAL_IMPORT'
   | 'INTERNAL_EXPORT_FILE'

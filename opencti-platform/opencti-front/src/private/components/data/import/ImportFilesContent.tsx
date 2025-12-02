@@ -178,7 +178,7 @@ const ImportFilesContent = ({ inDraftOverview }: ImportFilesContentProps) => {
     createdBy: {
       label: 'Creator',
       percentWidth: 15,
-      render: (({ metaData }: ImportFilesContentFileLine_file$data) => metaData?.creator?.name ?? '-'),
+      render: ({ metaData }: ImportFilesContentFileLine_file$data) => metaData?.creator?.name ?? '-',
     },
     objectMarking: {
       percentWidth: 15,
