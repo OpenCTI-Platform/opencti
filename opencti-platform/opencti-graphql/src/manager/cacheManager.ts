@@ -115,8 +115,8 @@ export const extractResolvedFiltersFromInstance = (instance: BasicStoreCommon) =
       .flat();
     filteringIds.push(...pirFilterIds, ...pirCriteriaIds);
   } else if (instance.entity_type === ENTITY_TYPE_DECAY_EXCLUSION_RULE) {
-    const decayExclusionRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityDecayExclusionRule).decay_exclusion_filters))
-    filteringIds.push(...decayExclusionRuleIds)
+    const decayExclusionRuleIds = extractFilterGroupValuesToResolveForCache(JSON.parse((instance as BasicStoreEntityDecayExclusionRule).decay_exclusion_filters));
+    filteringIds.push(...decayExclusionRuleIds);
   } else {
     throw FunctionalError(
       'Resolved filters are only saved in cache for streams, triggers, connectors and playbooks, not for this entity type',
@@ -182,9 +182,9 @@ const platformDecayRules = (context: AuthContext) => {
 const platformDecayExclusionRules = (context: AuthContext) => {
   const reloadDecayExclusionRules = () => {
     return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_DECAY_EXCLUSION_RULE]);
-  }
+  };
   return { value: null, fn: reloadDecayExclusionRules };
-}
+};
 const platformMarkings = (context: AuthContext) => {
   const reloadMarkings = () => {
     return fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_MARKING_DEFINITION]);
