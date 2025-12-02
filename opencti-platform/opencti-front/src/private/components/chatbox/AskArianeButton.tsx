@@ -41,7 +41,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
   const isCGUStatusPending = filigran_chatbot_ai_cgu_status === CGUStatus.pending;
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [openValidateTermsOfUse, setOpenValidateTermsOfUse] = useState(false);
-  const chatbotRef = useRef<{ onClose:() => void }>(null);
+  const chatbotRef = useRef<{ onClose: () => void }>(null);
 
   const openChatbot = () => {
     setIsChatbotOpen(true);

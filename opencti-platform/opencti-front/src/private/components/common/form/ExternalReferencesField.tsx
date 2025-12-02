@@ -67,7 +67,7 @@ interface ExternalReferencesFieldProps {
   noStoreUpdate?: boolean;
   id?: string;
   dryrun?: boolean;
-  required?:boolean;
+  required?: boolean;
   noCreation?: boolean; // Disable inline creation to avoid nested forms
 }
 

@@ -19,7 +19,7 @@ export interface NarrativeNode {
   isSubNarrative: boolean | null | undefined;
   name: string;
   // subNarratives?: { edges: { node: SubNarrativeNode }[] }
-  subNarratives?:SubNarrativeNode[];
+  subNarratives?: SubNarrativeNode[];
   subNarrativesText: string;
 }
 

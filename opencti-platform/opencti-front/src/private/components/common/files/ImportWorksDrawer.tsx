@@ -277,8 +277,7 @@ const FileWorksComponent = ({
             />
           </Tooltip>
         );
-      }
-      ,
+      },      
     },
   };
 

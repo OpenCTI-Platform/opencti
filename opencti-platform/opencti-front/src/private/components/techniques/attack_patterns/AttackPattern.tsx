@@ -64,7 +64,7 @@ export const attackPatternFragment = graphql`
   `;
 
 interface AttackPatternProps {
-  attackPatternData : AttackPattern_attackPattern$key
+  attackPatternData: AttackPattern_attackPattern$key
 }
 
 const AttackPattern: React.FC<AttackPatternProps> = ({ attackPatternData }) => {

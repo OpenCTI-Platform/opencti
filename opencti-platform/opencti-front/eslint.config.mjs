@@ -100,10 +100,6 @@ export default defineConfig([
     },
     rules: {
       '@stylistic/jsx-wrap-multilines': 'off',
-      '@stylistic/semi-spacing': 'off',
-      '@stylistic/curly-spacing': 'off',
-      '@stylistic/key-spacing': 'off',
-      '@stylistic/comma-style': 'off',
       '@stylistic/eol-last': 'off',
       '@stylistic/no-mixed-operators': 'off',
       '@stylistic/type-annotation-spacing': 'off',

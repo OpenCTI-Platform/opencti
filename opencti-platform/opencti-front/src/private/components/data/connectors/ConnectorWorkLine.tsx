@@ -36,7 +36,7 @@ interface ConnectorWorkLineProps {
   workEndTime: string;
   workExpectedNumber: number | null | undefined;
   workProcessedNumber: number | null | undefined;
-  workErrors: WorkMessages | null | undefined ;
+  workErrors: WorkMessages | null | undefined;
   readOnly?: boolean | undefined;
 }
 const ConnectorWorkLine: FunctionComponent<
