@@ -38,18 +38,19 @@ import PlaybookFlowFieldActions from './playbookFlowFields/playbookFlowFieldsAct
 import TextField from '../../../../../components/TextField';
 import type { Theme } from '../../../../../components/Theme';
 import type { PlaybookComponentConfigSchema, PlaybookComponents, PlaybookConfig, PlaybookNode } from '../types/playbook-types';
-import { PlaybookUpdateAction } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
+import { PlaybookUpdateAction, PlaybookUpdateActionsForm } from './playbookFlowFields/playbookFlowFieldsActions/playbookAction-types';
 
-export interface PlaybookFlowFormData {
-  // Common for every component
-  name: string
+export type PlaybookFlowFormData = 
   // Component: update knowledge
-  actions?: PlaybookUpdateAction[]
-  // Component: CRON
-  time?: string
-  period?: string
-  day?: string
-}
+  PlaybookUpdateActionsForm & 
+  {
+    // Common for every component
+    name: string
+    // Component: CRON
+    time?: string
+    period?: string
+    day?: string
+  };
 
 interface PlaybookFlowFormProps {
   action: string | null
@@ -85,14 +86,19 @@ const PlaybookFlowForm = ({
     ? JSON.parse(selectedComponent.configuration_schema) as PlaybookComponentConfigSchema
     : null;
 
+  // Submit function that formats correctly the data for the backend.
   const onSubmit: FormikConfig<PlaybookFlowFormData>['onSubmit'] = (values, { resetForm }) => {
-    const { name, ...config } = values;
+    const { name, actionsFormValues, ...config } = values;
     let finalConfig: PlaybookConfig = config;
 
+    // Special work in case of filters,
+    // (get filters from React state and and them in config).
     if (configurationSchema?.properties?.filters) {
       const jsonFilters = serializeFilterGroupForBackend(filtersState[0]);
       finalConfig = { ...finalConfig, filters: jsonFilters };
     }
+    // Special work in case of CRON component,
+    // (format trigger time to have correct format).
     if (configurationSchema?.properties?.triggerTime) {
       // Important to translate to UTC before formatting
       let triggerTime = `${parse(values.time).utc().format('HH:mm:00.000')}Z`;
@@ -101,6 +107,15 @@ const PlaybookFlowForm = ({
         triggerTime = `${day}-${triggerTime}`;
       }
       finalConfig = { ...finalConfig, triggerTime };
+    }
+    // Special work in case of update knowledge actions,
+    // (transform the array to object keys, needed to keep same format as before refactoring).
+    if (actionsFormValues) {
+      actionsFormValues.forEach((value, i) => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        finalConfig[`actions-${i}-value`] = value;
+      });
     }
 
     resetForm();
@@ -115,24 +130,42 @@ const PlaybookFlowForm = ({
     name: Yup.string().trim().required(t_i18n('This field is required')),
   });
 
-  const defaultConfig: PlaybookConfig = {};
-  Object.entries(configurationSchema?.properties ?? {}).forEach(([propName, property]) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    defaultConfig[propName] = property.default;
-  });
+  // region initial values
 
-  const initialValues = currentConfig
-    ? {
-      name: nodeData?.component?.id === selectedComponent?.id 
-        ? nodeData?.name ?? '' 
-        : selectedComponent?.name ?? '',
-      ...currentConfig,
-    }
-    : {
-      name: selectedComponent?.name ?? '',
-      ...defaultConfig,
-    };
+  const initialValues: PlaybookFlowFormData = {
+    name: ''
+  };
+
+  if (!currentConfig) {
+    // Get default values from schema.
+    initialValues.name = selectedComponent?.name ?? '';
+    Object.entries(configurationSchema?.properties ?? {})
+    .forEach(([propName, property]) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      initialValues[propName] = property.default;
+      if (propName === 'actions') initialValues.actionsFormValues = [];
+    });
+  } else {
+    // Get values from saved config.
+    initialValues.name = nodeData?.component?.id === selectedComponent?.id 
+      ? nodeData?.name ?? '' 
+      : selectedComponent?.name ?? '';
+    const actionsFormValues: PlaybookUpdateAction['value'][] = [];
+    Object.entries(currentConfig)
+    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+    .forEach(([key, value]) => {
+      if (/actions-\d-value/.test(key)) actionsFormValues.push(value);
+      else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        initialValues[key] = value;
+      }
+      initialValues.actionsFormValues = actionsFormValues;
+    });
+  }
+
+  // endregion
 
   return (
     <div style={{ padding: '0px 0px 20px 0px' }}>

@@ -38,9 +38,11 @@ const PlaybookFlowFieldActions = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const getActionFieldOptions = useActionFieldOptions();
-  const { values } = useFormikContext<PlaybookUpdateActionsForm>();
+  const { values, setFieldValue } = useFormikContext<PlaybookUpdateActionsForm>();
+  const actions = values.actions ?? [];
+  const formActionsValues = values.actionsFormValues ?? [];
 
-  const actionsAreValid = values.actions.every((a) => {
+  const actionsAreValid = actions.every((a) => {
     if (a.attribute === 'x_opencti_detection') return true;
     return a.op && a.attribute && a.value && a.value.length > 0;
   });
@@ -50,7 +52,7 @@ const PlaybookFlowFieldActions = ({
       name="actions"
       render={(arrayHelpers) => (
         <div style={fieldSpacingContainerStyle}>
-          {values.actions.map((action, i) => {
+          {actions.map((action, i) => {
             const fieldOptions = getActionFieldOptions(action);
 
             return (
@@ -70,8 +72,13 @@ const PlaybookFlowFieldActions = ({
                   <IconButton
                     size="small"
                     aria-label="Delete"
-                    disabled={values.actions.length === 1}
-                    onClick={() => arrayHelpers.remove(i)}
+                    disabled={actions.length === 1}
+                    onClick={() => {
+                      arrayHelpers.remove(i);
+                      const newFormvalues = [...formActionsValues];
+                      newFormvalues.splice(i, 1);
+                      setFieldValue('actionsFormValues', newFormvalues);
+                    }}
                     sx={{ position: 'absolute', top: -18, right: -18 }}
                   >
                     <CancelOutlined fontSize="small" />
@@ -126,9 +133,11 @@ const PlaybookFlowFieldActions = ({
             size="small"
             color="secondary"
             variant="contained"
-            onClick={() => arrayHelpers.push({})}
             disabled={!actionsAreValid}
             style={{ width: '100%', height: 20 }}
+            onClick={() => {
+              arrayHelpers.push({});
+            }}
           >
             <AddOutlined fontSize="small" />
           </Button>
