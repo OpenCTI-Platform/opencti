@@ -19,10 +19,9 @@ import { DatabaseError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
 import { rawJoinedRedisRabbitStreamClient } from './joined-redis-rabbit-stream';
 import { isFeatureEnabled } from '../../config/conf';
-import { rawRedisStreamClient } from '../redis-stream';
 
 const isDecayExclusionRuleEnabled = isFeatureEnabled('RABBIT_STREAM_ENABLED');
-const streamClient: RawStreamClient = isDecayExclusionRuleEnabled? rawJoinedRedisRabbitStreamClient : rawRedisStreamClient;
+const streamClient: RawStreamClient = isDecayExclusionRuleEnabled? rawJoinedRedisRabbitStreamClient : rawJoinedRedisRabbitStreamClient;
 
 export const initializeStreamStack = async () => {
   if (streamClient.initializeStreams) {
