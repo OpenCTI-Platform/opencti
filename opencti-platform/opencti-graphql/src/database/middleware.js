@@ -2072,28 +2072,27 @@ export const buildChanges = (entityType, inputs) => {
     const field = getKeyName(entityType, key);
     const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
     const isMultiple = schemaAttributesDefinition.isMultipleAttribute(entityType, (attributeDefinition?.name ?? ''));
-    // all values as arrays
+
     const previousArray = Array.isArray(previous) ? previous : [previous];
     const valueArray = Array.isArray(value) ? value : [value];
 
     if (isMultiple) {
-
       const added = valueArray.filter((item) => !previousArray.includes(item));
       const removed = previousArray.filter((item) => !valueArray.includes(item));
 
       if (added.length > 0 || removed.length > 0) {
         changes.push({
           field,
-          added: added.map((item) => item ?? typeof item === 'string' ? item : item?.id).filter((item) => item !== null && item !== undefined),
-          removed: removed.map((item) => item ?? typeof item === 'string' ? item : item?.id).filter((item) => item !== null && item !== undefined)
+          added: buildAttribute(added),
+          removed: buildAttribute(removed),
         });
       }
     }
     else if (isMultiple === false) {
       changes.push({
         field,
-        previous: previousArray.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250)))).filter((item) => item !== null && item !== undefined),
-        new: valueArray.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250)))).filter((item) => item !== null && item !== undefined)
+        previous: buildAttribute(previousArray),
+        new: buildAttribute(valueArray),
       });
     }
   });
