@@ -22687,6 +22687,7 @@ export type QueryFileArgs = {
 
 export type QueryFiltersRepresentativesArgs = {
   filters: FilterGroup;
+  isMeValueForbidden?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 

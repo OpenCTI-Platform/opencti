@@ -49,20 +49,25 @@ const PlaybookFlowFieldFilters = ({
     ? ['Stix-Core-Object', 'stix-core-relationship']
     : ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'];
 
+  const searchContext = {
+    entityTypes,
+    elementType: componentId === 'PLAYBOOK_INTERNAL_DATA_CRON' ? undefined : 'Playbook-Stix-Component',
+  };
+
   return (
     <div>
       <Box sx={{ display: 'flex', gap: 1, marginTop: 4 }}>
         <Filters
           helpers={helpers}
           availableFilterKeys={availableFilterKeys}
-          searchContext={{ entityTypes }}
+          searchContext={searchContext}
         />
       </Box>
       <FilterIconButton
         filters={filters}
         helpers={helpers}
         entityTypes={entityTypes}
-        searchContext={{ entityTypes }}
+        searchContext={searchContext}
         styleNumber={2}
         redirection
       />

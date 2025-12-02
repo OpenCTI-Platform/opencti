@@ -61,6 +61,7 @@ const FilterIconButtonWithRepresentativesQuery: FunctionComponent<FilterIconButt
     filterValuesContentQuery,
     {
       filters: removeIdFromFilterGroupObject(filters) as unknown as GqlFilterGroup,
+      isMeValueForbidden: searchContext?.elementType === 'Playbook-Stix-Component',
     },
   );
   return (

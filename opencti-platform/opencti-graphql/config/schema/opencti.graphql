@@ -13814,7 +13814,10 @@ type Query {
     order: String
     distributionParameters: StixCoreObjectsDistributionParameters
   ): [MultiDistribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  filtersRepresentatives(filters: FilterGroup!): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
+  filtersRepresentatives(
+    filters: FilterGroup!
+    isMeValueForbidden: Boolean
+  ): [RepresentativeWithId!]! @auth(for: [KNOWLEDGE, SETTINGS_SECURITYACTIVITY, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
 
   ######## STIX DOMAIN OBJECT ENTITIES
 

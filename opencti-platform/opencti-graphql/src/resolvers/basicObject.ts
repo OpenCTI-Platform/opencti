@@ -3,7 +3,7 @@ import type { Resolvers } from '../generated/graphql';
 
 const basicObjectResolvers: Resolvers = {
   Query: {
-    filtersRepresentatives: (_, { filters }, context) => findFiltersRepresentatives(context, context.user, filters),
+    filtersRepresentatives: (_, { filters, isMeValueForbidden }, context) => findFiltersRepresentatives(context, context.user, filters, { isMeValueForbidden }),
   },
   BasicObject: {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
