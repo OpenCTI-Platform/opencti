@@ -99,9 +99,6 @@ export default defineConfig([
       },
     },
     rules: {
-      '@stylistic/jsx-curly-newline': 'off',
-      '@stylistic/jsx-curly-spacing': 'off',
-      '@stylistic/jsx-max-props-per-line': 'off',
       '@stylistic/jsx-curly-brace-presence': 'off',
       '@stylistic/jsx-closing-tag-location': 'off',
       '@stylistic/jsx-tag-spacing': 'off',
@@ -130,6 +127,7 @@ export default defineConfig([
 
       // =========
 
+      '@stylistic/jsx-curly-newline': 'off',
       '@stylistic/jsx-one-expression-per-line': 'off',
       '@stylistic/space-before-blocks': 'error',
       '@stylistic/quote-props': ['error', 'as-needed'],

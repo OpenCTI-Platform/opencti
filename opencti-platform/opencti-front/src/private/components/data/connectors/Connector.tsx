@@ -277,7 +277,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 4,
-          }} className={'paper-for-grid'} variant="outlined"
+          }}
+            className={'paper-for-grid'}
+            variant="outlined"
           >
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
@@ -528,7 +530,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
             marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 4,
-          }} className={'paper-for-grid'} variant="outlined"
+          }}
+            className={'paper-for-grid'}
+            variant="outlined"
           >
             <Grid container={true} spacing={3}>
               {connector.connector_info?.buffering && (

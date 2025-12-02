@@ -419,7 +419,8 @@ const StixDomainObjectOverview = ({
             {stixIds.map(
               (stixId) => stixId.length > 0 && (
               <ListItem
-                key={stixId}disableGutters={true}
+                key={stixId}
+                disableGutters={true}
                 dense={true}
                 secondaryAction={
                   <IconButton

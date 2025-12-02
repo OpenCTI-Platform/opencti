@@ -28,7 +28,7 @@ class AddSubSectorsLinesContainer extends Component {
         relationshipType={'part-of'}
         availableDatas={data?.sectors}
         existingDatas={sectorSubSectors}
-        updaterOptions={ { path: 'subSectors' } }
+        updaterOptions={{ path: 'subSectors' }}
         isRelationReversed={true}
       />
     );

@@ -145,7 +145,8 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
                     name="user_name"
                     label={t_i18n('Service account responsible for data creation')}
                     containerStyle={fieldSpacingContainerStyle}
-                    showConfidence disabled={true}
+                    showConfidence
+                    disabled={true}
                   />
                 </Box>
                 <Box sx={{ margin: '20px 70px 0' }}>

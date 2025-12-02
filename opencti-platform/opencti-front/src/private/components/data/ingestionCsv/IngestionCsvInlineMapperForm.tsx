@@ -152,7 +152,7 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
           }, [values, dirty, hasError]);
           return (
             <Form>
-              <Box sx={ {
+              <Box sx={{
                 display: 'flex',
                 alignItems: 'center',
                 marginTop: 2.5,

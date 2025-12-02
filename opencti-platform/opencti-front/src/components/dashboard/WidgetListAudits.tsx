@@ -33,7 +33,8 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
 
   return (
     <div
-      id="container" style={{
+      id="container"
+      style={{
       width: '100%',
       height: '100%',
       overflow: 'auto',

@@ -203,7 +203,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
             <Routes>
               <Route
                 path="/"
-                element={ (
+                element={(
                   <Tool toolData={tool} />
                 )}
               />
@@ -253,7 +253,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={toolId}
                   />

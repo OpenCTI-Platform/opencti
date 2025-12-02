@@ -994,7 +994,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             classes={{ root: classes.chipInList }}
             color="primary"
             variant="outlined"
-            label={ t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown') }
+            label={t_i18n(`relationship_${relationship_type}`) ?? t_i18n('Unknown')}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();

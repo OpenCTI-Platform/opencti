@@ -128,7 +128,8 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
               margin: '6px 0 0 0',
               padding: '15px',
               borderRadius: 6,
-            }} variant="outlined"
+            }}
+              variant="outlined"
             >
               <Grid container={true} spacing={3}>
                 <Grid item xs={12}>
@@ -193,7 +194,8 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
             marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 6,
-          }} variant="outlined"
+          }}
+            variant="outlined"
           >
             {decayRule.appliedIndicatorsCount} {t_i18n('indicators currently impacted by this rule')}
           </Paper>
@@ -205,7 +207,8 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
             marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 6,
-          }} variant="outlined"
+          }}
+            variant="outlined"
           >
             <DecayChart
               decayCurvePoint={chartCurvePoints}

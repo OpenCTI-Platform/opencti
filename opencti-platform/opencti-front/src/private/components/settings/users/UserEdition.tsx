@@ -128,7 +128,7 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
   };
   return (
     <Drawer
-      title={isServiceAccount ? t_i18n('Update Service account') : t_i18n('Update User') }
+      title={isServiceAccount ? t_i18n('Update Service account') : t_i18n('Update User')}
       open={open}
       onClose={handleClose}
       context={user?.editContext}
@@ -145,7 +145,8 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             <Tab label={t_i18n('Groups')} />
             {hasSetAccess
               && <Tab
-                disabled={user.objectAssignedOrganization?.edges.length === 0 } label={
+                disabled={user.objectAssignedOrganization?.edges.length === 0}
+                label={
                   <div style={{ alignItems: 'center', display: 'flex' }}>
                     {t_i18n('Organizations admin')}<EEChip />
                   </div>}

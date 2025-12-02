@@ -50,7 +50,7 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
             updateFiles([file]);
             setIsTextView(false);
           }}
-            onClose={ () => setIsTextView(false) }
+            onClose={() => setIsTextView(false)}
           />
         )}
       </Grid>

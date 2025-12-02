@@ -150,7 +150,8 @@ const ImportFilesList: React.FC<ImportFilesListProps> = ({ connectorsForImport }
                                 </MenuItem>
                                 {connectorsForImport?.map((connector) => (
                                   <MenuItem
-                                    key={connector?.id} value={connector?.id}
+                                    key={connector?.id}
+                                    value={connector?.id}
                                     disabled={!connector?.active || !connector?.connector_scope?.includes(file.type)}
                                   >
                                     {connector?.name}

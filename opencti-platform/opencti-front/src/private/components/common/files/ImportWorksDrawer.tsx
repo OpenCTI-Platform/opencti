@@ -248,7 +248,8 @@ const FileWorksComponent = ({
         }, [isError, status]);
         return (
           <Tooltip
-            title={messageToDisplay} slotProps={{
+            title={messageToDisplay}
+            slotProps={{
             tooltip: {
               sx: {
                 maxWidth: 'none',

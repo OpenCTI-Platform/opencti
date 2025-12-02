@@ -200,7 +200,7 @@ const ResponseDialog: FunctionComponent<ResponseDialogProps> = ({
             )}
           </div>
           <div className="clearfix" />
-          <Alert severity="warning" variant="outlined" style={ format === 'html' ? { marginTop: 30 } : {}}>
+          <Alert severity="warning" variant="outlined" style={format === 'html' ? { marginTop: 30 } : {}}>
             {t_i18n('Generative AI is a beta feature as we are currently fine-tuning our models. Consider checking important information.')}
           </Alert>
         </DialogContent>

@@ -354,7 +354,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
   return (
     <Drawer
       title={isDuplicated ? (t_i18n('Duplicate a feed')) : (t_i18n('Create a feed'))}
-      controlledDial={!isDuplicated ? CreateFeedControlledDial : undefined }
+      controlledDial={!isDuplicated ? CreateFeedControlledDial : undefined}
       open={open}
       onClose={onHandleClose}
     >

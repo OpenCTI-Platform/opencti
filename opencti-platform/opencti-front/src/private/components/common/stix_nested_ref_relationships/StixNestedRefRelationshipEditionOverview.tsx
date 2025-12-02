@@ -157,7 +157,8 @@ const StixNestedRefRelationshipEditionOverview: FunctionComponent<StixNestedRefR
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography
-          variant="h6" style={{
+          variant="h6"
+          style={{
           float: 'left',
         }}
         >

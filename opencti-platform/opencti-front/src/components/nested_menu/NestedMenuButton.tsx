@@ -267,8 +267,8 @@ const NestedMenuButton: React.FC<NestedMenuProps> = ({
                               : undefined
                           }
                         onClick={() => handleClickOption(option)}
-                        onMouseMove={(event) => handleMouseMove(event, option, optIndex) }
-                        onMouseLeave={(event) => handleMouseLeave(event, option, optIndex) }
+                        onMouseMove={(event) => handleMouseMove(event, option, optIndex)}
+                        onMouseLeave={(event) => handleMouseLeave(event, option, optIndex)}
                         onKeyDown={(event) => handleKeyDown(event, option)}
                       >
                         <Box

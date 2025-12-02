@@ -35,7 +35,9 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
         </Typography>
         {emptyFilled(usedIPs)}
         <Typography
-          variant="h3" gutterBottom sx={{
+          variant="h3"
+          gutterBottom
+          sx={{
           marginTop: '20px',
         }}
         >
@@ -43,7 +45,9 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
         </Typography>
         {emptyFilled(usedDomains)}
         <Typography
-          variant="h3" gutterBottom sx={{
+          variant="h3"
+          gutterBottom
+          sx={{
           marginTop: '20px',
         }}
         >

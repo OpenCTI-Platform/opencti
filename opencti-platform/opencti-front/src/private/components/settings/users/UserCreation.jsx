@@ -159,7 +159,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
           </Alert>
           <br />
           <Formik
-            initialValues={ initialValues }
+            initialValues={initialValues}
             validationSchema={userValidation(t_i18n)}
             onSubmit={onSubmit}
             onReset={onClose}

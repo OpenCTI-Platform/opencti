@@ -411,7 +411,10 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Paper
                       style={{
                       marginTop: 10,
-                    }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
+                    }}
+                      classes={{ root: classes.paper }}
+                      className={'paper-for-grid'}
+                      variant="outlined"
                     >
                       <List style={{ marginTop: -20 }}>
                         {authProviders.map((provider) => (

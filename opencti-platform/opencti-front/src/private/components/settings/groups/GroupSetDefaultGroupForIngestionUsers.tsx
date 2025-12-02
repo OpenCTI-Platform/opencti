@@ -103,7 +103,9 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
       marginTop: 8,
       padding: 20,
       borderRadius: 4,
-    }} className={'paper-for-grid'} variant="outlined"
+    }}
+      className={'paper-for-grid'}
+      variant="outlined"
     >
       <Alert severity="info" variant="outlined">
         {t_i18n('Define a group that will be assigned to each service account created on the fly for each ingestion type. \n'

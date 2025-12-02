@@ -249,7 +249,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               />
               <Route
                 path="/analyses"
-                element={ (
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={sector}
                   />
@@ -257,7 +257,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               />
               <Route
                 path="/sightings"
-                element={ (
+                element={(
                   <EntityStixSightingRelationships
                     entityId={sector.id}
                     entityLink={link}

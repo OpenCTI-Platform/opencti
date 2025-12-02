@@ -117,7 +117,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
             />
           </ListItemIcon>
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null } />
+            <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null} />
           </ListItemIcon>
           <ListItemText
             primary={
