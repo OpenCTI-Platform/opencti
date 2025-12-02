@@ -58,6 +58,38 @@ Example: `manager.logger.level` becomes `MANAGER__LOGGER__LEVEL`
 | opencti:with_proxy             | OPENCTI__WITH_PROXY              | `false`                        | Use system proxy settings for connection             |
 | opencti:logs_schedule          | OPENCTI__LOGS_SCHEDULE           | 10                             | Maximum interval in seconds between log reports      |
 
+#### Proxy configuration
+
+| Parameter                         | Environment variable             | Default value | Description                                                                                       |
+|:----------------------------------|:---------------------------------|:--------------|:--------------------------------------------------------------------------------------------------|
+| http_proxy                        | HTTP_PROXY                       |               | Proxy URL for HTTP requests (e.g., `http://proxy:8080`)                                           |
+| https_proxy                       | HTTPS_PROXY                      |               | Proxy URL for HTTPS requests (e.g., `http://proxy:8080`)                                          |
+| no_proxy                          | NO_PROXY                         |               | Comma-separated list of hosts excluded from proxy (e.g., `localhost,127.0.0.1,internal.domain`)   |
+| https_proxy_ca                    | HTTPS_PROXY_CA                   |               | CA certificates used to validate HTTPS proxy connections                                          |
+| https_proxy_reject_unauthorized   | HTTPS_PROXY_REJECT_UNAUTHORIZED  | `false`       | If not false, validates the proxy certificate against the provided CA list                        |
+
+!!! note "Proxy certificate separation"
+
+    Proxy TLS certificates are **independent** from OpenCTI HTTPS server certificates.
+
+    - For proxy connections → use `https_proxy_ca` and `https_proxy_reject_unauthorized`
+    - For OpenCTI platform HTTPS → use `app:https_cert:*` variables in the main OpenCTI configuration
+
+### Registry authentication
+
+| Parameter                     | Environment variable         | Default value | Description                                                                 |
+|:------------------------------|:------------------------------|:--------------|:----------------------------------------------------------------------------|
+| registry:enable               | REGISTRY__ENABLE              | `false`       | Enable authentication to a container registry                               |
+| registry:url                  | REGISTRY__URL                 |               | Registry endpoint (e.g., `https://registry.hub.docker.com`)                 |
+| registry:username             | REGISTRY__USERNAME            |               | Username for registry authentication                                        |
+| registry:password             | REGISTRY__PASSWORD            |               | Password or token for registry authentication                               |
+| registry:cache_ttl            | REGISTRY__CACHE_TTL           | 3600          | Time (in seconds) for caching registry authorization tokens                  |
+
+!!! note "Authentication cache"
+
+    Composer caches registry authentication tokens to reduce the number of login requests.  
+    Tokens are refreshed automatically when expired.
+
 #### OpenBAS (Coming Soon)
 
 !!! note "OpenBAS Integration"
