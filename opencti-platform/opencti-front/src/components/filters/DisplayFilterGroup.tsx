@@ -79,15 +79,18 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
             .filter((v) => v.key === 'relationship_type')
             .flat()
             .map((value) => {
-              return (<span key="relationship_type">
-                <DisplayFiltersValues
-                  filtersRepresentativesMap={filtersRepresentativesMap}
-                  values={value.values}
-                />
-              </span>);
+              return (
+                <span key="relationship_type">
+                  <DisplayFiltersValues
+                    filtersRepresentativesMap={filtersRepresentativesMap}
+                    values={value.values}
+                  />
+                </span>
+);
             })}
           {values.filter((v) => v.key === 'id' || v.key === 'dynamic').length > 0
-            && <Box
+            && (
+            <Box
               sx={{
                 paddingTop: 2,
                 textTransform: 'uppercase',
@@ -98,26 +101,31 @@ const DisplayFiltersFilterGroups: FunctionComponent<DisplayFilterGroupsProps> = 
                 margin: '0 8px',
                 padding: '8px',
               }}
-               >
+            >
               {t_i18n('WITH')}
             </Box>
+)
           }
           {values.filter((v) => v.key === 'id').flat().map((value) => {
-            return (<span key="id">
-              <DisplayFiltersValues
-                filtersRepresentativesMap={filtersRepresentativesMap}
-                values={value.values}
-              />
-            </span>);
+            return (
+              <span key="id">
+                <DisplayFiltersValues
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  values={value.values}
+                />
+              </span>
+);
           })}
           {values.filter((v) => v.key === 'dynamic').flat().map((value) => {
-            return (<span key="id">
-              <DisplayFiltersFilterGroups
-                filterGroups={value.values}
-                filtersRepresentativesMap={filtersRepresentativesMap}
-                filterMode="and"
-              />
-            </span>);
+            return (
+              <span key="id">
+                <DisplayFiltersFilterGroups
+                  filterGroups={value.values}
+                  filtersRepresentativesMap={filtersRepresentativesMap}
+                  filterMode="and"
+                />
+              </span>
+);
           })}
         </>
       );
@@ -297,7 +305,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
         classes={{ root: classFilter, label: classChipLabel }}
         color="warning"
         onClick={handleClickOpen}
-        label={
+        label={(
           <>
             {t_i18n('Filters are not fully displayed')}
             <InformationOutline
@@ -305,7 +313,7 @@ const DisplayFilterGroup: FunctionComponent<DisplayFilterGroupProps> = ({
               color="secondary"
             />
           </>
-        }
+        )}
       />
 
       <Dialog

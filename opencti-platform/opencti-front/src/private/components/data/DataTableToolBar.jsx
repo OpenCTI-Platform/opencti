@@ -1946,13 +1946,13 @@ class DataTableToolBar extends Component {
       case 'x_opencti_detection':
         return (
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 onChange={(event) => this.handleChangeSwitchInput(i, 'values', event.target.checked)}
                 name={`actions-${i}-value`}
                 color="primary"
               />
-            }
+            )}
             label={t('Value')}
           />
         );
@@ -2679,11 +2679,11 @@ class DataTableToolBar extends Component {
                                   <span>
                                     <Chip
                                       classes={{ root: classes.filter }}
-                                      label={
+                                      label={(
                                         <div>
                                           <strong>{t('Search')}</strong>: {search}
                                         </div>
-                                      }
+                                      )}
                                     />
                                     {filters.filters.length > 0 && (
                                       <Chip
@@ -2901,7 +2901,7 @@ class DataTableToolBar extends Component {
                         key={element.id}
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <Radio
                             checked={
                                       keptEntityId
@@ -2916,7 +2916,7 @@ class DataTableToolBar extends Component {
                             name="keptEntityID"
                             inputProps={{ 'aria-label': 'keptEntityID' }}
                           />
-                          }
+                        )}
                       >
                         <ListItemIcon>
                           <ItemIcon type={element.entity_type} />
@@ -3067,7 +3067,7 @@ class DataTableToolBar extends Component {
                         key={connector.id}
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <MuiSwitch
                             checked={this.state.enrichSelected.includes(
                               connector.id,
@@ -3078,7 +3078,7 @@ class DataTableToolBar extends Component {
                             )}
                             inputProps={{ 'aria-label': 'controlled' }}
                           />
-                      }
+                        )}
                       >
                         <ListItemIcon>
                           <CloudRefreshOutline />
@@ -3225,7 +3225,7 @@ class DataTableToolBar extends Component {
                   />
                   <FormControlLabel
                     style={{ marginTop: 20 }}
-                    control={
+                    control={(
                       <Checkbox
                         checked={
                           actionsInputs[0]?.options?.includeNeighbours || false
@@ -3236,7 +3236,7 @@ class DataTableToolBar extends Component {
                           'includeNeighbours',
                         )}
                       />
-                    }
+                    )}
                     label={t('Also include first neighbours')}
                   />
                   <IconButton

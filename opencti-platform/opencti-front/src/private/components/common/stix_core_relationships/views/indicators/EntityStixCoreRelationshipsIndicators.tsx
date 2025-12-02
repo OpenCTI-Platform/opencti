@@ -50,7 +50,8 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
     <ExportContextProvider>
       <div className={classes.container}>
         {view === 'entities'
-          && <EntityStixCoreRelationshipsIndicatorsEntitiesView
+          && (
+          <EntityStixCoreRelationshipsIndicatorsEntitiesView
             entityId={entityId}
             relationshipTypes={relationshipTypes}
             defaultStartTime={defaultStartTime}
@@ -58,10 +59,12 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             localStorage={localStorage}
             isRelationReversed
             currentView={view}
-             />}
+          />
+)}
 
         {view === 'relationships'
-          && <EntityStixCoreRelationshipsRelationshipsView
+          && (
+          <EntityStixCoreRelationshipsRelationshipsView
             entityId={entityId}
             entityLink={entityLink}
             defaultStartTime={defaultStartTime}
@@ -72,7 +75,8 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
             isRelationReversed
             currentView={view}
             enableContextualView
-             />}
+          />
+)}
 
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsIndicatorsContextualView

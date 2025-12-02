@@ -83,9 +83,11 @@ const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => 
                 {t_i18n('Create file')}
               </Button>
             </Box>
-          </Box>);
+          </Box>
+);
       }}
-    </Formik>);
+    </Formik>
+);
 };
 
 export default ImportFilesFreeText;

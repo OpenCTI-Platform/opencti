@@ -222,7 +222,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
         >
           {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -230,7 +230,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
                     <EntityStixSightingRelationshipLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <EntityStixSightingRelationshipsLines
               queryRef={queryRef}

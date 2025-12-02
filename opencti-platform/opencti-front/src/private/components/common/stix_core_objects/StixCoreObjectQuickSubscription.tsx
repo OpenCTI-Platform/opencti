@@ -443,7 +443,7 @@ StixCoreObjectQuickSubscriptionContentProps
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={handleToggleLine}
                     aria-haspopup="true"
@@ -451,7 +451,7 @@ StixCoreObjectQuickSubscriptionContentProps
                   >
                     {expandedLines ? <ExpandLess /> : <ExpandMore />}
                   </IconButton>
-              }
+                )}
               >
                 <ListItemButton
                   classes={{ root: classes.nested }}

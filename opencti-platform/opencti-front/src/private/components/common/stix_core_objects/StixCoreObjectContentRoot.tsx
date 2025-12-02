@@ -39,7 +39,7 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
       <Routes>
         <Route
           path="/mapping"
-          element={
+          element={(
             <QueryRenderer
               query={containerContentQuery}
               variables={{ id: stixCoreObject.id }}
@@ -55,27 +55,29 @@ const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProp
                 );
               }}
             />
-          }
+          )}
         />
         <Route
           path="/editor"
-          element={
+          element={(
             <StixCoreObjectContent
               currentMode={currentMode}
               stixCoreObject={stixCoreObject}
               setMappingHeaderDisabled={setMappingHeaderDisabled}
               setEditorHeaderDisabled={setEditorHeaderDisabled}
-            />}
+            />
+          )}
         />
         <Route
           path="/"
-          element={
+          element={(
             <StixCoreObjectContent
               currentMode={currentMode}
               stixCoreObject={stixCoreObject}
               setMappingHeaderDisabled={setMappingHeaderDisabled}
               setEditorHeaderDisabled={setEditorHeaderDisabled}
-            />}
+            />
+          )}
         />
       </Routes>
     </>

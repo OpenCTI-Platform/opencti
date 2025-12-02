@@ -109,14 +109,14 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                   return (
                     <ListItemText
                       key={idx}
-                      primary={
+                      primary={(
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
                           width="90%"
                           height="100%"
                         />
-                      }
+                      )}
                     />
                   );
                 }
@@ -124,12 +124,12 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                   <ListItem
                     key={status.id}
                     divider={true}
-                    secondaryAction={
+                    secondaryAction={(
                       <SubTypeWorkflowStatusPopover
                         subTypeId={subType.id}
                         statusId={status.id}
                       />
-                    }
+                    )}
                   >
                     <ListItemAvatar>
                       <Avatar
@@ -145,7 +145,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
-                      primary={
+                      primary={(
                         <>
                           <div
                             className={classes.bodyItem}
@@ -160,7 +160,7 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
                             <ItemCopy content={status.id} variant="inLine" />
                           </div>
                         </>
-                      }
+                      )}
                     />
                   </ListItem>
                 );

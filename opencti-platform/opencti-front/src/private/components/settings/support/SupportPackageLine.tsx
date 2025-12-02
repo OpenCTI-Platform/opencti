@@ -162,16 +162,19 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
       <ListItem
         divider={true}
         style={{ ...styles.item }}
-        secondaryAction={
+        secondaryAction={(
           <>
-            {!isReady && <Tooltip title={t_i18n('Force download on this support package')}>
+            {!isReady && (
+            <Tooltip title={t_i18n('Force download on this support package')}>
               <span>
                 <IconButton disabled={!isTooLong} onClick={handleForceZip}>
                   <DownloadingOutlined fontSize="small" />
                 </IconButton>
               </span>
-            </Tooltip>}
-            {isReady && <Tooltip title={t_i18n('Download this support package')}>
+            </Tooltip>
+)}
+            {isReady && (
+            <Tooltip title={t_i18n('Download this support package')}>
               <span>
                 <IconButton
                   disabled={!data.package_url}
@@ -182,7 +185,8 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                   <GetAppOutlined fontSize="small" />
                 </IconButton>
               </span>
-            </Tooltip>}
+            </Tooltip>
+)}
             <Tooltip title={t_i18n('Delete this support package')}>
               <span>
                 <IconButton
@@ -196,7 +200,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               </span>
             </Tooltip>
           </>
-        }
+        )}
       >
         <ListItemIcon>
           {isProgress && !isTimeout && (
@@ -217,7 +221,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
           )}
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div style={{ width: dataColumns.name.width, ...styles.bodyItem }}>
                 {data.name}
@@ -240,7 +244,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
                 {fndt(data.created_at)}
               </div>
             </>
-          }
+          )}
         />
       </ListItem>
       <DeleteDialog

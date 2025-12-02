@@ -664,13 +664,13 @@ const ProfileOverviewComponent = (props) => {
               }}
             >
               <ItemCopy
-                content={
+                content={(
                   <>
                     Content-Type: application/json
                     <br />
                     Authorization: Bearer {showToken ? me.api_token : maskString(me.api_token)}
                   </>
-                  }
+                )}
                 value={`Content-Type: application/json\nAuthorization: Bearer ${me.api_token}`}
               />
             </span>

@@ -77,7 +77,7 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
         <ItemIcon type="Case-Template" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -89,7 +89,7 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
               </div>
             ))}
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

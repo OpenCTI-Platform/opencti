@@ -83,12 +83,12 @@ const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {
                 {tool.tool_types.map((tool_type) => (
                   <ListItem key={tool_type} dense={true} divider={true}>
                     <ListItemText
-                      primary={
+                      primary={(
                         <ItemOpenVocab
                           type="tool_types_ov"
                           value={tool_type}
                         />
-                        }
+                      )}
                     />
                   </ListItem>
                 ))}

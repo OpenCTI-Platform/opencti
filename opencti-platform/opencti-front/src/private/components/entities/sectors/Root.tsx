@@ -108,7 +108,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,7 +125,7 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
                   ]}
                   data={sector}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -224,12 +224,12 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/entities/sectors/${sectorId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
@@ -241,11 +241,11 @@ const RootSector = ({ sectorId, queryRef }: RootSectorProps) => {
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={sector}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"

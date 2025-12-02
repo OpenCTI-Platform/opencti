@@ -43,13 +43,15 @@ const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionCompone
 };
 const SettingsOrganizationEntitySettingHiddenTypesList: FunctionComponent<{ targetType: string }> = ({ targetType }) => {
   const queryRef = useQueryLoading<SettingsOrganizationEntitySettingHiddenTypesListQuery>(settingsOrganizationEntitySettingHiddenTypesListQuery, {});
-  return <>
-    {queryRef && (
+  return (
+    <>
+      {queryRef && (
       <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <SettingsOrganizationEntitySettingHiddenTypesListComponent queryRef={queryRef} targetType={targetType} />
       </React.Suspense>
     )}
-  </>;
+    </>
+);
 };
 
 export default SettingsOrganizationEntitySettingHiddenTypesList;

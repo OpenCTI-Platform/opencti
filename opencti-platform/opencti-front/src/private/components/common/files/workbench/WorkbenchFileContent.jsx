@@ -2998,14 +2998,14 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeaderContainer('ttype', 'Type', true)}
                   {sortHeaderContainer('default_value', 'Default value', true)}
                   {sortHeaderContainer('labels', 'Labels', true)}
                   {sortHeaderContainer('markings', 'Marking definitions', true)}
                 </div>
-              }
+              )}
             />
           </ListItemButton>
           {sortedObjects.map((object) => {
@@ -3055,7 +3055,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3090,7 +3090,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </div>
-                  }
+                  )}
                 />
               </ListItem>
             );
@@ -3250,7 +3250,7 @@ const WorkbenchFileContentComponent = ({
                 </span>
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div>
                     {sortHeader('ttype', 'Type', true)}
                     {sortHeader('default_value', 'Default value', true)}
@@ -3258,7 +3258,7 @@ const WorkbenchFileContentComponent = ({
                     {sortHeader('markings', 'Marking definitions', true)}
                     {sortHeader('in_platform', 'Already in plat.', false)}
                   </div>
-                }
+                )}
               />
             </ListItemButton>
           </ListItem>
@@ -3294,14 +3294,14 @@ const WorkbenchFileContentComponent = ({
                     ? null
                     : () => handleOpenEntity(object.type, object.id)
                 }
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >
                     <DeleteOutlined />
                   </IconButton>
-                }
+                )}
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -3322,7 +3322,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3371,7 +3371,7 @@ const WorkbenchFileContentComponent = ({
                         )}
                       </div>
                     </div>
-                  }
+                  )}
                 />
               </ListItem>
             );
@@ -3448,7 +3448,7 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
@@ -3456,7 +3456,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
-              }
+              )}
             />
           </ListItem>
           {sortedStixCyberObservables.map((object) => {
@@ -3472,14 +3472,14 @@ const WorkbenchFileContentComponent = ({
                     ? null
                     : () => handleOpenObservable(object.type, object.id)
                 }
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >
                     <DeleteOutlined />
                   </IconButton>
-                }
+                )}
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -3500,7 +3500,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3610,7 +3610,7 @@ const WorkbenchFileContentComponent = ({
                         )}
                       </div>
                     </div>
-                  }
+                  )}
                 />
               </ListItem>
             );
@@ -3688,14 +3688,14 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                 </div>
-              }
+              )}
             />
           </ListItem>
           {sortedStixCoreRelationships.map((object) => (
@@ -3703,14 +3703,14 @@ const WorkbenchFileContentComponent = ({
               key={object.id}
               divider
               disablePadding
-              secondaryAction={
+              secondaryAction={(
                 <IconButton
                   onClick={() => handleDeleteObject(object)}
                   aria-haspopup="true"
                 >
                   <DeleteOutlined />
                 </IconButton>
-              }
+              )}
             >
               <ListItemButton
                 classes={{ root: classes.item }}
@@ -3734,7 +3734,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={object.relationship_type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3768,7 +3768,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </div>
-                }
+                  )}
                 />
               </ListItemButton>
             </ListItem>
@@ -3843,14 +3843,14 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
                   {sortHeader('labels', 'Labels', false)}
                   {sortHeader('markings', 'Marking definitions', true)}
                 </div>
-              }
+              )}
             />
           </ListItem>
           {sortedStixSightings.map((object) => (
@@ -3858,14 +3858,14 @@ const WorkbenchFileContentComponent = ({
               key={object.id}
               divider
               disablePadding
-              secondaryAction={
+              secondaryAction={(
                 <IconButton
                   onClick={() => handleDeleteObject(object)}
                   aria-haspopup="true"
                 >
                   <DeleteOutlined />
                 </IconButton>
-              }
+              )}
             >
               <ListItemButton
                 classes={{ root: classes.item }}
@@ -3888,7 +3888,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type="sighting" />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -3922,7 +3922,7 @@ const WorkbenchFileContentComponent = ({
                         />
                       </div>
                     </div>
-                }
+                  )}
                 />
               </ListItemButton>
             </ListItem>
@@ -4011,7 +4011,7 @@ const WorkbenchFileContentComponent = ({
               </span>
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <div>
                   {sortHeader('ttype', 'Type', true)}
                   {sortHeader('default_value', 'Default value', true)}
@@ -4019,7 +4019,7 @@ const WorkbenchFileContentComponent = ({
                   {sortHeader('markings', 'Marking definitions', true)}
                   {sortHeader('in_platform', 'Already in plat.', false)}
                 </div>
-              }
+              )}
             />
 
           </ListItem>
@@ -4032,14 +4032,14 @@ const WorkbenchFileContentComponent = ({
                 divider
                 button={object.type !== 'marking-definition'}
                 onClick={() => handleOpenContainer(object.type, object.id)}
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={() => handleDeleteObject(object)}
                     aria-haspopup="true"
                   >
                     <DeleteOutlined />
                   </IconButton>
-                }
+                )}
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -4060,7 +4060,7 @@ const WorkbenchFileContentComponent = ({
                   <ItemIcon type={type} />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div
                         className={classes.bodyItem}
@@ -4153,7 +4153,7 @@ const WorkbenchFileContentComponent = ({
                         )}
                       </div>
                     </div>
-                  }
+                  )}
                 />
               </ListItem>
             );

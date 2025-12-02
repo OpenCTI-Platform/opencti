@@ -191,21 +191,21 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         />
         <Route
           path="/entities"
-          element={
+          element={(
             <ContainerStixDomainObjects
               container={caseData}
               enableReferences={enableReferences}
             />
-              }
+          )}
         />
         <Route
           path="/observables"
-          element={
+          element={(
             <ContainerStixCyberObservables
               container={caseData}
               enableReferences={enableReferences}
             />
-              }
+          )}
         />
         <Route
           path="/knowledge"
@@ -215,25 +215,25 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         />
         <Route
           path="/content/*"
-          element={
+          element={(
             <StixCoreObjectContentRoot
               stixCoreObject={caseData}
               isContainer={true}
             />
-              }
+          )}
         />
         <Route
           path="/knowledge/*"
-          element={
+          element={(
             <CaseRfiKnowledge
               caseData={caseData}
               enableReferences={enableReferences}
             />
-              }
+          )}
         />
         <Route
           path="/files"
-          element={
+          element={(
             <StixCoreObjectFilesAndHistory
               id={caseId}
               connectorsExport={connectorsForExport}
@@ -242,15 +242,15 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
               withoutRelations={true}
               bypassEntityId={true}
             />
-              }
+          )}
         />
         <Route
           path="/history"
-          element={
+          element={(
             <StixCoreObjectHistory
               stixCoreObjectId={caseId}
             />
-              }
+          )}
         />
       </Routes>
     </div>

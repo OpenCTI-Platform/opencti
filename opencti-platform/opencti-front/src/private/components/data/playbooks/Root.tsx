@@ -62,12 +62,12 @@ const RootPlaybook = () => {
               <Routes>
                 <Route
                   path="/"
-                  element={
+                  element={(
                     <Playbook
                       playbook={props.playbook}
                       playbookComponents={props.playbookComponents}
                     />
-                  }
+                  )}
                 />
               </Routes>
             );

@@ -358,7 +358,8 @@ const StixCoreObjectFilesAndHistory = ({
                   </Field>
                 )}
                 {selectedConnector?.configurations?.length > 0
-                  ? <Field
+                  ? (
+                    <Field
                       component={SelectField}
                       variant="standard"
                       name="configuration"
@@ -367,7 +368,7 @@ const StixCoreObjectFilesAndHistory = ({
                       containerstyle={{ marginTop: 20, width: '100%' }}
                       onChange={(_, value) => onCsvMapperSelection(value)}
                     >
-                    {selectedConnector.configurations.map((config) => {
+                      {selectedConnector.configurations.map((config) => {
                       return (
                         <MenuItem
                           key={config.id}
@@ -377,7 +378,8 @@ const StixCoreObjectFilesAndHistory = ({
                         </MenuItem>
                       );
                     })}
-                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
+                    </Field>
+) : <ManageImportConnectorMessage name={selectedConnector?.name} />
                 }
                 {selectedConnector?.name === 'ImportCsv'
                   && hasUserChoiceCsvMapper

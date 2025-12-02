@@ -55,11 +55,11 @@ const ItemAssignees: FunctionComponent<Props> = ({ assignees, stixDomainObjectId
               borderRadius: theme.borderRadius,
             }}
             onDelete={canUpdateKnowledge ? () => (handleRemoveAssignee(assignee.id)) : undefined}
-            deleteIcon={
+            deleteIcon={(
               <CancelOutlined
                 style={{ color: theme.palette.primary.main }}
               />
-            }
+            )}
           />
         </Tooltip>
       ))}

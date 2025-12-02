@@ -13,10 +13,12 @@ const Root = () => {
       <Route
         path="/"
         element={draftContext?.id
-          ? <Navigate
+          ? (
+            <Navigate
               to={`/dashboard/data/import/draft/${draftContext.id}/`}
               replace={true}
             />
+)
           : boundaryWrapper(Drafts)
         }
       />

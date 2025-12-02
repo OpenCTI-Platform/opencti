@@ -276,21 +276,23 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
 
       {hasOutcomesTemplate && (
         <ContentBloc
-          title={
+          title={(
             <>
               {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip />}
               {isEnterpriseEdition
-                && <Tooltip
+                && (
+                <Tooltip
                   title={t_i18n('Files generated from a template')}
-                   >
+                >
                   <InformationOutline
                     fontSize="small"
                     color="primary"
                     style={{ marginLeft: 5 }}
                   />
-                </Tooltip>}
+                </Tooltip>
+)}
             </>
-          }
+          )}
           actions={!draftContext && isEnterpriseEdition && (
             <StixCoreObjectFileExport
               scoId={stixCoreObjectId}

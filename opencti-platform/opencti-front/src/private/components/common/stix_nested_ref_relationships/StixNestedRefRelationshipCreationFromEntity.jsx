@@ -946,7 +946,8 @@ const StixNestedRefRelationshipCreationFromEntity = ({
             : null
           }
           {step === 1
-            ? <QueryRenderer
+            ? (
+              <QueryRenderer
                 query={stixNestedRefRelationshipResolveTypes}
                 variables={{
                   id: entityId,
@@ -963,6 +964,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
                   return renderLoader();
                 }}
               />
+)
             : null
           }
         </>

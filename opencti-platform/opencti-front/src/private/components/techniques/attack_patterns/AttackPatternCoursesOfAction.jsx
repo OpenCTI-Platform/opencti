@@ -64,7 +64,7 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                 dense={true}
                 divider={true}
                 disablePadding={true}
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     aria-label="Remove"
                     onClick={() => removeCourseOfAction(courseOfActionEdge)}
@@ -72,7 +72,7 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                   >
                     <LinkOff />
                   </IconButton>
-                  }
+                )}
               >
                 <ListItemButton
                   component={Link}

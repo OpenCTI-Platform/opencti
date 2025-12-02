@@ -311,7 +311,8 @@ FilterIconButtonContainerProps
               title={
                 filterKey === 'regardingOf' || filterKey === 'dynamicRegardingOf'
                   ? undefined
-                  : <FilterValues
+                  : (
+                    <FilterValues
                       label={keyLabel}
                       tooltip={true}
                       currentFilter={currentFilter}
@@ -321,6 +322,7 @@ FilterIconButtonContainerProps
                       entityTypes={entityTypes}
                       filtersRestrictions={filtersRestrictions}
                     />
+)
               }
             >
               <Box
@@ -339,7 +341,7 @@ FilterIconButtonContainerProps
                   classes={{ root: classFilter, label: classes.chipLabel }}
                   variant={chipVariant}
                   sx={{ ...chipSx, borderRadius: 1 }}
-                  label={
+                  label={(
                     <FilterValues
                       label={keyLabel}
                       tooltip={false}
@@ -353,7 +355,7 @@ FilterIconButtonContainerProps
                       entityTypes={entityTypes}
                       filtersRestrictions={filtersRestrictions}
                     />
-                  }
+                  )}
                   disabled={
                     disabledPossible ? displayedFilters.length === 1 : undefined
                   }

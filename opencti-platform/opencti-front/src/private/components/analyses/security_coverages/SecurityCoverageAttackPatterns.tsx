@@ -237,7 +237,7 @@ const SecurityCoverageAttackPatterns = ({
                       dense={true}
                       divider={true}
                       disablePadding={true}
-                      secondaryAction={
+                      secondaryAction={(
                         <StixCoreRelationshipPopover
                           objectId={securityCoverage.id}
                           connectionKey="Pagination_attPatterns"
@@ -245,7 +245,7 @@ const SecurityCoverageAttackPatterns = ({
                           paginationOptions={paginationOptions}
                           isCoverage={true}
                         />
-                                  }
+                      )}
                     >
                       <ListItemButton
                         component={Link}
@@ -256,7 +256,7 @@ const SecurityCoverageAttackPatterns = ({
                           <ItemIcon color={theme.palette.primary.main} type="attack-pattern" />
                         </ListItemIcon>
                         <ListItemText
-                          primary={
+                          primary={(
                             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                               <Typography variant="body2" component="span" sx={{ flex: '1 1 10%' }}>{attackPattern?.name}</Typography>
                               <Box sx={{ flex: '1 1 auto', display: 'flex', justifyContent: 'center' }}>
@@ -266,7 +266,7 @@ const SecurityCoverageAttackPatterns = ({
                                 />
                               </Box>
                             </Box>
-                                          }
+                          )}
                         />
                       </ListItemButton>
                     </ListItem>

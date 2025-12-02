@@ -74,7 +74,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
               dense={true}
               divider={true}
               disablePadding={true}
-              secondaryAction={
+              secondaryAction={(
                 <IconButton
                   aria-label="Remove"
                   onClick={() => removeSubAttackPattern(
@@ -84,7 +84,7 @@ const AttackPatternSubAttackPatternsComponent = ({ attackPattern }) => {
                 >
                   <LinkOff />
                 </IconButton>
-                }
+              )}
             >
               <ListItemButton
                 component={Link}

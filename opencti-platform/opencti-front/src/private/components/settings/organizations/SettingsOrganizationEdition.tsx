@@ -238,12 +238,12 @@ const SettingsOrganizationEdition = ({
                 style={{ marginTop: 20 }}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={context}
                     fieldName="description"
                   />
-                }
+                )}
               />
               <OpenVocabField
                 label={t_i18n('Organization type')}
@@ -268,12 +268,12 @@ const SettingsOrganizationEdition = ({
                 style={{ marginTop: 20 }}
                 onFocus={editor.changeFocus}
                 onSubmit={handleSubmitField}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={context}
                     fieldName="contact_information"
                   />
-                }
+                )}
               />
               <DashboardField
                 onChange={editor.changeField}

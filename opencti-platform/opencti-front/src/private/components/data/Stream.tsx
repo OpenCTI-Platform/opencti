@@ -107,11 +107,11 @@ const Stream = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <StreamCollectionCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={StreamLinesQuery}

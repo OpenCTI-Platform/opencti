@@ -93,11 +93,11 @@ const Taxii = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <TaxiiCollectionCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={TaxiiLinesQuery}
@@ -108,7 +108,8 @@ const Taxii = () => {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-            />)}
+            />
+)}
         />
       </ListLines>
     );

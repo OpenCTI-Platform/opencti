@@ -203,7 +203,7 @@ const Audit = () => {
     <div style={{ marginLeft: 10 }}>
       <FormControlLabel
         value="start"
-        control={
+        control={(
           <Checkbox
             style={{ padding: 7 }}
             onChange={() => {
@@ -212,7 +212,7 @@ const Audit = () => {
             }}
             checked={types?.length === 2}
           />
-          }
+        )}
         label={t_i18n('Include knowledge')}
         labelPlacement="end"
       />
@@ -255,7 +255,7 @@ const Audit = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -263,7 +263,7 @@ const Audit = () => {
                     <AuditLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <AuditLines
               queryRef={queryRef}

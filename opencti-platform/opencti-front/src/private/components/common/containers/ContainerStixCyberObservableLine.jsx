@@ -146,7 +146,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -217,7 +217,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                 />
               </div>
             </div>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -293,11 +293,11 @@ export const ContainerStixCyberObservableLineDummy = (props) => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true" size="large">
           <MoreVert />
         </IconButton>
-      }
+      )}
     >
       <ListItemIcon
         classes={{ root: classes.itemIconDisabled }}
@@ -309,7 +309,7 @@ export const ContainerStixCyberObservableLineDummy = (props) => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -389,7 +389,7 @@ export const ContainerStixCyberObservableLineDummy = (props) => {
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

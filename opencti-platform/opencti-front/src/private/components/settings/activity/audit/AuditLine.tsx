@@ -131,7 +131,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -170,7 +170,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 </span>
               </div>
             </div>
-          }
+          )}
         />
       </ListItemButton>
     </>
@@ -189,7 +189,7 @@ export const AuditLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -247,7 +247,7 @@ export const AuditLineDummy = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

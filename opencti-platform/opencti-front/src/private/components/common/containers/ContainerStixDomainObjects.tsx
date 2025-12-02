@@ -207,7 +207,7 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
     >
       {queryRef && (
         <React.Suspense
-          fallback={
+          fallback={(
             <>
               {Array(20)
                 .fill(0)
@@ -218,7 +218,7 @@ const ContainerStixDomainObjects = ({ container, enableReferences }: {
                   />
                 ))}
             </>
-          }
+          )}
         >
           <ContainerStixDomainObjectsLines
             queryRef={queryRef}

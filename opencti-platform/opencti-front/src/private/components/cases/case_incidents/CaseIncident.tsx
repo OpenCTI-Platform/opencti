@@ -98,7 +98,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                   <Grid key={key} item xs={width} ref={ref}>
                     {queryRef && (
                       <React.Suspense
-                        fallback={
+                        fallback={(
                           <div style={{ height: '100%' }}>
                             <Typography
                               variant="h4"
@@ -131,7 +131,7 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
                               </ListLines>
                             </Paper>
                           </div>
-                        }
+                        )}
                       >
                         <CaseTasksLines
                           queryRef={queryRef}

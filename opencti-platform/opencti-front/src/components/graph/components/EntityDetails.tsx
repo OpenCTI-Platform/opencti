@@ -448,16 +448,16 @@ EntityDetailsComponentProps
                     <ItemIcon type={report.entity_type} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <Tooltip title={report.name}>
                         <div className={classes.bodyItem}>{report.name}</div>
                       </Tooltip>
-                    }
-                    secondary={
+                    )}
+                    secondary={(
                       <div className={classes.bodyItem}>
                         {report.createdBy?.name ?? '-'}
                       </div>
-                    }
+                    )}
                   />
                 </ListItemButton>
               );
@@ -505,16 +505,16 @@ EntityDetailsComponentProps
                       <ItemIcon type="External-Reference" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={
+                      primary={(
                         <div className={classes.bodyItem}>
                           {`${externalReference.node.source_name} ${externalReferenceId}`}
                         </div>
-                      }
-                      secondary={
+                      )}
+                      secondary={(
                         <div className={classes.bodyItem}>
                           {externalReferenceSecondary}
                         </div>
-                      }
+                      )}
                     />
                   </ListItemButton>
                 </React.Fragment>

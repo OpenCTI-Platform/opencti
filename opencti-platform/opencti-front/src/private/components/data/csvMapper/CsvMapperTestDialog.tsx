@@ -132,7 +132,8 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
           )}
         </Box>
         {result
-          && <Box
+          && (
+          <Box
             sx={{
               paddingTop: '8px',
               fontSize: '1rem',
@@ -140,11 +141,12 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
               justifyContent: 'center',
               display: 'flex',
             }}
-             >
+          >
             <span>{t_i18n('Objects found')} : </span>
             <span><strong>{result?.csvMapperTest?.nbEntities} </strong> {t_i18n('Entities')}</span>
             <span><strong>{result?.csvMapperTest?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
           </Box>
+)
         }
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock

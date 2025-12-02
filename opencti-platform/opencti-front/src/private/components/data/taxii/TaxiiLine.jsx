@@ -86,14 +86,14 @@ class TaxiiLineLineComponent extends Component {
       <ListItem
         divider={true}
         disablePadding
-        secondaryAction={
+        secondaryAction={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <TaxiiPopover
               taxiiCollectionId={node.id}
               paginationOptions={paginationOptions}
             />
           </Security>
-        }
+        )}
       >
         <ListItemButton
           classes={{ root: classes.item }}
@@ -105,7 +105,7 @@ class TaxiiLineLineComponent extends Component {
             <DatabaseExportOutline />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 <div
                   className={classes.bodyItem}
@@ -130,15 +130,17 @@ class TaxiiLineLineComponent extends Component {
                   style={{ width: dataColumns.filters.width }}
                 >
                   {isFilterGroupNotEmpty(filters)
-                    ? <FilterIconButton
+                    ? (
+                      <FilterIconButton
                         filters={filters}
                         dataColumns={dataColumns}
                         styleNumber={3}
                       />
+)
                     : '-'}
                 </div>
               </>
-          }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -189,7 +191,7 @@ class TaxiiDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 className={classes.bodyItem}
@@ -236,7 +238,7 @@ class TaxiiDummyComponent extends Component {
                 />
               </div>
             </>
-          }
+          )}
         />
       </ListItem>
     );

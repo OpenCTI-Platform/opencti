@@ -94,7 +94,7 @@ class IntrusionSetLocationsComponent extends Component {
                   dense={true}
                   divider={true}
                   disablePadding
-                  secondaryAction={
+                  secondaryAction={(
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <IconButton
                         aria-label="Remove"
@@ -104,7 +104,7 @@ class IntrusionSetLocationsComponent extends Component {
                         <LinkOff />
                       </IconButton>
                     </Security>
-                  }
+                  )}
                 >
                   <ListItemButton
                     component={Link}

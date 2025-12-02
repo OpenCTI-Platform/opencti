@@ -50,15 +50,17 @@ const RelatedContainersDetailsDistribution: React.FC<{
     data: [objectDistribution?.value],
   })) as ApexAxisChartSeries;
 
-  return (<div style={{ height: 150 }}>
-    <WidgetHorizontalBars
-      series={series}
-      distributed={false}
-      stacked
-      stackType="100%"
-      legend={true}
-    />
-  </div>);
+  return (
+    <div style={{ height: 150 }}>
+      <WidgetHorizontalBars
+        series={series}
+        distributed={false}
+        stacked
+        stackType="100%"
+        legend={true}
+      />
+    </div>
+);
 };
 
 interface RelatedContainersDetailsProps {

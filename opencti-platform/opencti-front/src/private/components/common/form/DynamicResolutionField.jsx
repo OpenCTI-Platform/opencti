@@ -191,7 +191,7 @@ const DynamicResolutionField = ({
                     <ItemIcon type={convertFromStixType(item.type)} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <div>
                         <div style={inlineStyles.type}>
                           {item.in_platform ? (
@@ -235,7 +235,7 @@ const DynamicResolutionField = ({
                           />
                         </div>
                       </div>
-                    }
+                    )}
                   />
                 </ListItem>
               ))}

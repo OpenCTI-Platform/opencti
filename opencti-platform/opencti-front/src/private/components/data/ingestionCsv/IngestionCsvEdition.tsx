@@ -511,12 +511,14 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 showConfidence
               />
               {ingestionCsvData.user?.name === 'SYSTEM'
-                && <IngestionCsvEditionUserHandling
+                && (
+                <IngestionCsvEditionUserHandling
                   key={values.name}
                   feedName={values.name}
                   onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
                   ingestionCsvDataId={ingestionCsvData.id}
-                   />
+                />
+)
               }
               <Box sx={{
                 marginTop: 2,

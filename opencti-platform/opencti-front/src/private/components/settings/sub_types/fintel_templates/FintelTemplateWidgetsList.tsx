@@ -41,9 +41,11 @@ const FintelTemplateWidgetsList: FunctionComponent<FintelTemplateWidgetsListProp
           {t_i18n('', {
             id: 'Find examples on our documentation.',
             values: {
-              link: <Link target="_blank" to="https://docs.opencti.io/latest/administration/entities/#fintel-templates">
-                {t_i18n('documentation')}
-              </Link>,
+              link: (
+                <Link target="_blank" to="https://docs.opencti.io/latest/administration/entities/#fintel-templates">
+                  {t_i18n('documentation')}
+                </Link>
+),
             },
           })}
         </Typography>

@@ -108,10 +108,12 @@ const ItemEntityType: FunctionComponent<ItemEntityTypeProps> = ({
           ...getStyle(),
           ...style,
         }}
-        label={<>
-          {getIcon()}
-          {getLabel()}
-        </>}
+        label={(
+          <>
+            {getIcon()}
+            {getLabel()}
+          </>
+)}
       />
     </Tooltip>
   );

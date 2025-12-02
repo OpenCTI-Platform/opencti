@@ -18,18 +18,20 @@ const XtmHubDialogConnectivityLost: React.FC<Props> = ({ status, onCancel, onCon
   const isAuthorizedDialogOpen = status === DialogConnectivityLostStatus.authorized;
   const isUnauthorizedDialogOpen = status === DialogConnectivityLostStatus.unauthorized;
 
-  return <>
-    <XtmHubDialogConnectivityLostAuthorizedRegister
-      open={isAuthorizedDialogOpen}
-      onCancel={onCancel}
-      onConfirm={onConfirm}
-    />
+  return (
+    <>
+      <XtmHubDialogConnectivityLostAuthorizedRegister
+        open={isAuthorizedDialogOpen}
+        onCancel={onCancel}
+        onConfirm={onConfirm}
+      />
 
-    <XtmHubDialogConnectivityLostUnauthorizedRegister
-      open={isUnauthorizedDialogOpen}
-      onCancel={onCancel}
-    />
-  </>;
+      <XtmHubDialogConnectivityLostUnauthorizedRegister
+        open={isUnauthorizedDialogOpen}
+        onCancel={onCancel}
+      />
+    </>
+);
 };
 
 export default XtmHubDialogConnectivityLost;

@@ -94,7 +94,7 @@ const SettingsOrganizations = () => {
         {queryRef && (
           <>
             <React.Suspense
-              fallback={
+              fallback={(
                 <>
                   {Array(20)
                     .fill(0)
@@ -102,7 +102,7 @@ const SettingsOrganizations = () => {
                       <SettingsOrganizationLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>
-            }
+              )}
             >
               <SettingsOrganizationsLines
                 queryRef={queryRef}

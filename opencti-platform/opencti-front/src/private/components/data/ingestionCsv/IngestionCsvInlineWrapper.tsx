@@ -27,12 +27,14 @@ const IngestionCsvInlineWrapper: FunctionComponent<IngestionCsvInlineWrapperProp
     paginationOptions,
   );
 
-  return queryRefMappers && queryRefSchemaAttributes && <CsvMappersProvider
+  return queryRefMappers && queryRefSchemaAttributes && (
+  <CsvMappersProvider
     mappersQueryRef={queryRefMappers}
     schemaAttributesQueryRef={queryRefSchemaAttributes}
-                                                        >
+  >
     {children}
-  </CsvMappersProvider>;
+  </CsvMappersProvider>
+);
 };
 
 export default IngestionCsvInlineWrapper;

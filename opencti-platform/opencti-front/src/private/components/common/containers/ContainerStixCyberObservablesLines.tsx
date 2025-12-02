@@ -158,12 +158,12 @@ ContainerStixCyberObservablesLinesProps
         dataList={data?.container?.objects?.edges ?? []}
         paginationOptions={paginationOptions}
         globalCount={numberOfElements ?? nbOfRowsToLoad}
-        LineComponent={
+        LineComponent={(
           <ContainerStixCyberObservableLine
             containerId={data?.container?.id}
             setSelectedElements={setSelectedElements}
           />
-        }
+        )}
         DummyLineComponent={<ContainerStixCyberObservableLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}

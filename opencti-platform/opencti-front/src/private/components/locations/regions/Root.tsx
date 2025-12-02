@@ -103,7 +103,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -124,7 +124,7 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
                   ]}
                   data={region}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -227,19 +227,19 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <RegionKnowledge regionData={region} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={region}
                   />
-              }
+                )}
               />
               <Route
                 path="/analyses"
@@ -249,25 +249,25 @@ const RootRegionComponent = ({ queryRef, regionId }) => {
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={region.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={regionId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={region}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"

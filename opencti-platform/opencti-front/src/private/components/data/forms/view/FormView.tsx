@@ -907,13 +907,13 @@ const FormViewInner: FunctionComponent<FormViewInnerProps> = ({ queryRef, embedd
 
                 <FormControlLabel
                   className={classes.draftCheckbox}
-                  control={
+                  control={(
                     <Checkbox
                       checked={isDraft}
                       onChange={(e) => setIsDraft(e.target.checked)}
                       disabled={isSubmitting || (schema.isDraftByDefault === true && schema.allowDraftOverride === false)}
                     />
-                  }
+                  )}
                   label={t_i18n('Create as draft')}
                 />
                 <Button

@@ -225,7 +225,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                           dense={true}
                           divider={true}
                           disablePadding
-                          secondaryAction={
+                          secondaryAction={(
                             <>
                               <Tooltip title={t('Browse the link')}>
                                 <IconButton
@@ -268,7 +268,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                                 />
                               </Security>
                             </>
-      }
+                          )}
                         >
                           <ListItemButton
                             component={Link}
@@ -304,7 +304,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                       <ListItem
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <>
                             <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                               <FileUploader
@@ -325,7 +325,7 @@ class StixSightingRelationshipExternalReferencesLinesContainer extends Component
                               />
                             </Security>
                           </>
-                      }
+                        )}
                       >
                         <ListItemButton
                           component={Link}

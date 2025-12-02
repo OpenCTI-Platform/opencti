@@ -329,12 +329,13 @@ const FileWorksComponent = ({
         </div>
 
       )}
-      {!!displayDelete && (<Dialog
+      {!!displayDelete && (
+      <Dialog
         open={!!displayDelete}
         slotProps={{ paper: { elevation: 1 } }}
         slots={{ transition: Transition }}
         onClose={() => setDisplayDelete(undefined)}
-                           >
+      >
         <DialogContent>
           <DialogContentText>
             {t_i18n('Do you want to remove this job?')}
@@ -352,7 +353,8 @@ const FileWorksComponent = ({
             {t_i18n('Delete')}
           </Button>
         </DialogActions>
-      </Dialog>)}
+      </Dialog>
+)}
     </div>
   );
 };
@@ -420,7 +422,7 @@ const ImportWorksDrawer = ({
     <>
       <Drawer
         title={t_i18n('File imports')}
-        header={
+        header={(
           <>
             {!isWorkbench && (
               <Button
@@ -436,7 +438,7 @@ const ImportWorksDrawer = ({
               </Button>
             )}
           </>
-        }
+        )}
         open={open}
         onClose={onClose}
       >

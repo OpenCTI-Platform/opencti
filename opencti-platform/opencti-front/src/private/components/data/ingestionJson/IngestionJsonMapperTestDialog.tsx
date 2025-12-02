@@ -121,7 +121,8 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
             </Box>
           )}
           {result
-            && <Box
+            && (
+            <Box
               sx={{
                 paddingTop: '8px',
                 marginLeft: '12px',
@@ -130,11 +131,12 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
                 justifyContent: 'center',
                 display: 'flex',
               }}
-               >
+            >
               <span>{t_i18n('Objects found')} : </span>
               <span><strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
               <span><strong>{result?.ingestionJsonTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
             </Box>
+)
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>

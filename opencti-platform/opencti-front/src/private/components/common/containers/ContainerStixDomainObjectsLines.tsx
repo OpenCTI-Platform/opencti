@@ -146,11 +146,11 @@ const ContainerStixDomainObjectsLines: FunctionComponent<ContainerStixDomainObje
         globalCount={
           container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
         }
-        LineComponent={
+        LineComponent={(
           <ContainerStixDomainObjectLine
             containerId={container?.id ?? null}
           />
-        }
+        )}
         DummyLineComponent={<ContainerStixDomainObjectLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}

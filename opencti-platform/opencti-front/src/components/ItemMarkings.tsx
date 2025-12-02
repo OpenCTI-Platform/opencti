@@ -133,11 +133,13 @@ const ItemMarkings = ({
     return (
       <span>
         {markings.length === 0
-          ? <ChipMarking
+          ? (
+            <ChipMarking
               markingDefinition={{ definition: 'NONE', id: 'NONE' }}
               withTooltip
               variant={variant}
             />
+)
           : markings.map((markingDefinition) => (
             <ChipMarking
               key={markingDefinition.id}

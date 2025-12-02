@@ -131,15 +131,17 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           </div>
           <div className="clearfix" />
           {objectsQueryRef
-            && <React.Suspense
+            && (
+            <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
-               >
+            >
               <StixCoreObjectHistoryLines
                 queryRef={objectsQueryRef}
                 isRelationLog={false}
                 paginationOptions={objectsPaginationOptions}
               />
             </React.Suspense>
+)
             }
         </Grid>
         {!withoutRelations && (
@@ -160,15 +162,17 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
             </div>
             <div className="clearfix" />
             {relationsQueryRef
-              && <React.Suspense
+              && (
+              <React.Suspense
                 fallback={<Loader variant={LoaderVariant.inElement} />}
-                 >
+              >
                 <StixCoreObjectHistoryLines
                   queryRef={relationsQueryRef}
                   isRelationLog={true}
                   paginationOptions={relationsPaginationOptions}
                 />
               </React.Suspense>
+)
             }
           </Grid>
         )}

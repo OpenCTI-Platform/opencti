@@ -105,7 +105,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -122,7 +122,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
                   ]}
                   data={event}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -211,36 +211,36 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/entities/events/${eventId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <EventKnowledge eventData={event} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={event}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
-                element={
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={event}
                   />
-                }
+                )}
               />
               <Route
                 path="/sightings"

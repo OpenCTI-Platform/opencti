@@ -107,7 +107,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,7 +125,7 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
                   ]}
                   data={tool}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -209,28 +209,28 @@ const RootTool = ({ queryRef, toolId }: RootToolProps) => {
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ToolKnowledge toolData={tool} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={tool}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses/*"

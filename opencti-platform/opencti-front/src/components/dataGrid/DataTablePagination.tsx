@@ -162,12 +162,12 @@ const DataTablePagination = ({
           <ArrowLeft />
         </Button>
         <Tooltip
-          title={
+          title={(
             <div>
               <strong>{`${numberOfElements.original}`}</strong>{' '}
               {t_i18n('entitie(s)')}
             </div>
-            }
+          )}
         >
           <Box
             sx={{

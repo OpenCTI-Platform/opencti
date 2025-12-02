@@ -134,41 +134,46 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
       context={user?.editContext}
       controlledDial={UpdateUserControlledDial}
     >
-      {user ? (<>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={currentTab}
-            onChange={(event, value) => handleChangeTab(value)}
-          >
-            <Tab label={t_i18n('Overview')} />
-            <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
-            <Tab label={t_i18n('Groups')} />
-            {hasSetAccess
-              && <Tab
-                disabled={user.objectAssignedOrganization?.edges.length === 0}
-                label={
-                  <div style={{ alignItems: 'center', display: 'flex' }}>
-                    {t_i18n('Organizations admin')}<EEChip />
-                  </div>}
-                 />
+      {user ? (
+        <>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={currentTab}
+              onChange={(event, value) => handleChangeTab(value)}
+            >
+              <Tab label={t_i18n('Overview')} />
+              <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
+              <Tab label={t_i18n('Groups')} />
+              {hasSetAccess
+                && (
+                <Tab
+                  disabled={user.objectAssignedOrganization?.edges.length === 0}
+                  label={(
+                    <div style={{ alignItems: 'center', display: 'flex' }}>
+                      {t_i18n('Organizations admin')}<EEChip />
+                    </div>
+                )}
+                />
+)
             }
-            {hasSetAccess && <Tab label={t_i18n('Confidences')} />}
-          </Tabs>
-        </Box>
-        {currentTab === 0 && (
+              {hasSetAccess && <Tab label={t_i18n('Confidences')} />}
+            </Tabs>
+          </Box>
+          {currentTab === 0 && (
           <UserEditionOverview user={user} context={user.editContext} />
         )}
-        {currentTab === 1 && (
+          {currentTab === 1 && (
           <UserEditionPassword user={user} context={user.editContext} />
         )}
-        {currentTab === 2 && <UserEditionGroups user={user} />}
-        {hasSetAccess && currentTab === 3 && (
+          {currentTab === 2 && <UserEditionGroups user={user} />}
+          {hasSetAccess && currentTab === 3 && (
           <UserEditionOrganizationsAdmin user={user} />
         )}
-        {hasSetAccess && currentTab === 4 && (
+          {hasSetAccess && currentTab === 4 && (
           <UserEditionConfidence user={user} context={user.editContext} />
         )}
-      </>)
+        </>
+)
         : (<Loader />)}
     </Drawer>
   );

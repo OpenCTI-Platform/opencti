@@ -266,12 +266,12 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
+            helperText={(
               <SubscriptionFocus
                 context={context}
                 fieldName="x_opencti_threat_hunting"
               />
-            }
+            )}
           />
           <Field
             component={TextField}
@@ -284,12 +284,12 @@ const CourseOfActionEditionOverviewComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
+            helperText={(
               <SubscriptionFocus
                 context={context}
                 fieldName="x_opencti_log_sources"
               />
-            }
+            )}
           />
           {courseOfAction.workflowEnabled && (
             <StatusField
@@ -299,12 +299,12 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

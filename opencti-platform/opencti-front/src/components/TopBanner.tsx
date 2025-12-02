@@ -50,7 +50,8 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
       <span>
         {bannerText}
       </span>
-      { buttonText && <Button
+      { buttonText && (
+      <Button
         variant="contained"
         onClick={onButtonClick}
         sx={{
@@ -66,9 +67,10 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
           },
         }}
         endIcon={<ArrowForwardIcon />}
-                      >
+      >
         {buttonText}
-      </Button>}
+      </Button>
+)}
     </div>
   );
 };

@@ -190,7 +190,8 @@ const RetentionEditionContainer = (props) => {
               }}
             />
             {retentionRule.scope === 'knowledge'
-              && <>
+              && (
+              <>
                 <Box
                   sx={{
                     paddingTop: 4,
@@ -234,6 +235,7 @@ const RetentionEditionContainer = (props) => {
                   searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
               </>
+)
             }
             <div className={classes.buttons}>
               <Button

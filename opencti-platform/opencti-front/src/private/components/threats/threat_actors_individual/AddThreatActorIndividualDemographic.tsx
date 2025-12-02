@@ -45,20 +45,21 @@ AddThreatActorIndividualDemographicComponentProps
     queryRef,
   );
 
-  return (<div>
-    <IconButton
-      color="primary"
-      onClick={handleOpen}
-    >
-      <Add fontSize="small" />
-    </IconButton>
-    <Drawer
-      open={open}
-      onClose={handleClose}
-      title={title}
-      header={
-        <div
-          style={{
+  return (
+    <div>
+      <IconButton
+        color="primary"
+        onClick={handleOpen}
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={title}
+        header={(
+          <div
+            style={{
             marginLeft: 'auto',
             marginRight: '20px',
             display: 'flex',
@@ -66,24 +67,25 @@ AddThreatActorIndividualDemographicComponentProps
             justifyContent: 'flex-end',
             alignItems: 'flex-end',
           }}
-        >
-          <SearchInput
-            variant="inDrawer"
-            onSubmit={onSearch}
-          />
-          <CountryCreation
-            paginationOptions={paginationOptions}
-          />
-        </div>
-      }
-    >
-      <AddThreatActorIndividualDemographicLines
-        threatActorIndividual={threatActorIndividual}
-        fragmentKey={data}
-        relType={relType}
-      />
-    </Drawer>
-  </div>);
+          >
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={onSearch}
+            />
+            <CountryCreation
+              paginationOptions={paginationOptions}
+            />
+          </div>
+      )}
+      >
+        <AddThreatActorIndividualDemographicLines
+          threatActorIndividual={threatActorIndividual}
+          fragmentKey={data}
+          relType={relType}
+        />
+      </Drawer>
+    </div>
+);
 };
 
 interface AddThreatActorIndividualDemographicProps {

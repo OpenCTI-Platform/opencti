@@ -316,13 +316,13 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
             <div className={classes.date}>{nsdt(node.timestamp)}</div>
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
-              title={
+              title={(
                 <MarkdownDisplay
                   content={`\`${node.user.name}\` ${node.context_data.message}`}
                   remarkGfmPlugin={true}
                   commonmark={true}
                 />
-              }
+              )}
             >
               <div className={classes.description}>
                 <MarkdownDisplay
@@ -358,7 +358,7 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
                             key={externalReference.id}
                             dense={true}
                             divider={true}
-                            secondaryAction={
+                            secondaryAction={(
                               <Tooltip title={t('Browse the link')}>
                                 <IconButton
                                   onClick={this.handleOpenExternalLink.bind(
@@ -371,7 +371,7 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
                                   <OpenInBrowserOutlined />
                                 </IconButton>
                               </Tooltip>
-                            }
+                            )}
                           >
                             <ListItemButton
                               component={Link}

@@ -91,7 +91,7 @@ const Triggers: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array.from(Array(20).keys()).map((idx) => (
                   <TriggerLineDummy
@@ -100,7 +100,7 @@ const Triggers: FunctionComponent = () => {
                   />
                 ))}
               </>
-            }
+            )}
           >
             <TriggersLines
               queryRef={queryRef}

@@ -283,11 +283,11 @@ class CaseRftKnowledgeComponent extends Component {
           />
           <Route
             path="/relations/:relationId"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={caseData.id}
               />
-            }
+            )}
           />
         </Routes>
       </div>

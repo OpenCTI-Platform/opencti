@@ -177,12 +177,12 @@ class ThreatActorGroupDetailsComponent extends Component {
                           <DramaMasks />
                         </ListItemIcon>
                         <ListItemText
-                          primary={
+                          primary={(
                             <ItemOpenVocab
                               type="threat-actor-group-role-ov"
                               value={role}
                             />
-                          }
+                          )}
                         />
                       </ListItem>
                     ))}
@@ -207,13 +207,13 @@ class ThreatActorGroupDetailsComponent extends Component {
                           <BullseyeArrow />
                         </ListItemIcon>
                         <ListItemText
-                          primary={
+                          primary={(
                             <pre className={classes.smallPre}>
                               <Tooltip title={goal}>
                                 {truncate(goal, 12)}
                               </Tooltip>
                             </pre>
-                          }
+                          )}
                         />
                       </ListItem>
                     ))}
@@ -243,12 +243,12 @@ class ThreatActorGroupDetailsComponent extends Component {
                             <ArmFlexOutline />
                           </ListItemIcon>
                           <ListItemText
-                            primary={
+                            primary={(
                               <ItemOpenVocab
                                 type="attack-motivation-ov"
                                 value={secondaryMotivation}
                               />
-                            }
+                            )}
                           />
                         </ListItem>
                       ),

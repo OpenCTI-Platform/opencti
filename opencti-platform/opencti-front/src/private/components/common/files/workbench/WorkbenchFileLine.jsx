@@ -147,7 +147,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
         divider={true}
         dense={dense === true}
         disablePadding
-        secondaryAction={
+        secondaryAction={(
           <>
             {!directDownload && !isFail && (
             <Tooltip title={t_i18n('Download this file')}>
@@ -179,7 +179,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
               </span>
             </Tooltip>
           </>
-          }
+        )}
       >
         <ListItemButton
           classes={{ root: nested ? classes.itemNested : classes.item }}
@@ -205,7 +205,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
             )}
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 <div className={classes.bodyItem} style={inlineStyles.name}>
                   {file.name.replace('.json', '')}
@@ -231,7 +231,7 @@ const WorkbenchFileLineComponent = ({ classes, file, dense, directDownload, nest
                   {nsdt(file.lastModified)}
                 </div>
               </>
-            }
+            )}
           />
         </ListItemButton>
       </ListItem>

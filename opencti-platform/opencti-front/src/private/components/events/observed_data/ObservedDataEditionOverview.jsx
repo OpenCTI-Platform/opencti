@@ -254,12 +254,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
               style={{ marginTop: 20 }}
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
-              helperText={
+              helperText={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="number_observed"
                 />
-              }
+              )}
             />
             <ConfidenceField
               onFocus={editor.changeFocus}
@@ -277,12 +277,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={context}
                     fieldName="x_opencti_workflow_id"
                   />
-                }
+                )}
               />
             )}
             <CreatedByField
@@ -299,12 +299,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
               name="objectMarking"
               required={(mandatoryAttributes.includes('objectMarking'))}
               style={fieldSpacingContainerStyle}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldname="objectMarking"
                 />
-              }
+              )}
               setFieldValue={setFieldValue}
               onChange={editor.changeMarking}
             />

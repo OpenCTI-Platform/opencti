@@ -392,12 +392,12 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

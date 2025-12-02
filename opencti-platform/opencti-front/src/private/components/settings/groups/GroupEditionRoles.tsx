@@ -103,7 +103,7 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
           <ListItem
             key={group.id}
             divider={true}
-            secondaryAction={
+            secondaryAction={(
               <Checkbox
                 onChange={(event) => handleToggle(
                   role.id,
@@ -112,7 +112,7 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
                 )}
                 checked={groupRole !== undefined}
               />
-            }
+            )}
           >
             <ListItemIcon color="primary">
               <Security />

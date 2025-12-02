@@ -82,7 +82,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -123,7 +123,7 @@ const InvestigationAddStixCoreObjectsLineComponent = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItemButton>
   );
@@ -350,7 +350,7 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -408,7 +408,7 @@ export const InvestigationAddStixCoreObjecstLineDummy = (
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

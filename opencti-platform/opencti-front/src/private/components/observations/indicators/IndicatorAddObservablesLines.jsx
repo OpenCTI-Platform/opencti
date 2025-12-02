@@ -179,15 +179,18 @@ const IndicatorAddObservablesLinesContainer = (props) => {
   return (
     <div className={classes.container}>
       {showForm
-        ? <StixCoreRelationshipCreationForm
+        ? (
+          <StixCoreRelationshipCreationForm
             fromEntities={[indicator]}
             toEntities={[selected]}
             relationshipTypes={['based-on']}
             onSubmit={createRelation}
             handleClose={handleCloseForm}
           />
-        : <>
-          {stixCyberObservablesTypes.length > 0 ? (
+)
+        : (
+          <>
+            {stixCyberObservablesTypes.length > 0 ? (
             stixCyberObservablesTypes.map((type) => {
               const expanded = isExpanded(
                 type,
@@ -247,7 +250,8 @@ const IndicatorAddObservablesLinesContainer = (props) => {
               {t_i18n('No entities were found for this search.')}
             </div>
           )}
-        </>
+          </>
+)
         }
     </div>
   );

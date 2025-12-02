@@ -477,14 +477,14 @@ const TopBar: FunctionComponent<Omit<TopBarProps, 'queryRef'>> = () => {
     <>
       {queryRef && (
         <React.Suspense
-          fallback={
+          fallback={(
             <AppBar
               position="fixed"
               className={classes.appBar}
               variant="elevation"
               elevation={1}
             />
-          }
+          )}
         >
           <TopBarComponent queryRef={queryRef} />
         </React.Suspense>

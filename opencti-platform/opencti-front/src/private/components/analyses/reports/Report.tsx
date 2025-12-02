@@ -84,13 +84,14 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
 
   const reportOverviewLayoutCustomization = useOverviewLayoutCustomization(report.entity_type);
 
-  return (<>
-    <Grid
-      container={true}
-      spacing={3}
-      style={{ marginBottom: 20 }}
-    >
-      {
+  return (
+    <>
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginBottom: 20 }}
+      >
+        {
         reportOverviewLayoutCustomization.map(({ key, width }) => {
           switch (key) {
             case 'details':
@@ -139,8 +140,9 @@ const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {
           }
         })
       }
-    </Grid>
-  </>);
+      </Grid>
+    </>
+);
 };
 
 export default Report;

@@ -51,7 +51,8 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
     <ExportContextProvider>
       <div className={classes.container}>
         {view === 'entities'
-          && <EntityStixCoreRelationshipsEntitiesView
+          && (
+          <EntityStixCoreRelationshipsEntitiesView
             entityId={entityId}
             defaultStartTime={defaultStartTime}
             defaultStopTime={defaultStopTime}
@@ -61,10 +62,12 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             isRelationReversed={isRelationReversed}
             currentView={view}
             enableContextualView
-             />}
+          />
+)}
 
         {view === 'relationships'
-          && <EntityStixCoreRelationshipsRelationshipsView
+          && (
+          <EntityStixCoreRelationshipsRelationshipsView
             entityId={entityId}
             entityLink={entityLink}
             defaultStartTime={defaultStartTime}
@@ -75,7 +78,8 @@ const EntityStixCoreRelationshipsStixCyberObservable: FunctionComponent<EntitySt
             isRelationReversed={isRelationReversed}
             currentView={view}
             enableContextualView
-             />}
+          />
+)}
 
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsContextualView

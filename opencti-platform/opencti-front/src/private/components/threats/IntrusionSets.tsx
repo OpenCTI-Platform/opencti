@@ -104,7 +104,7 @@ const IntrusionSets = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
@@ -118,7 +118,7 @@ const IntrusionSets = () => {
                     </Grid>
                   ))}
               </Grid>
-            }
+            )}
           >
             <IntrusionSetsCards
               queryRef={queryRef}

@@ -1021,11 +1021,13 @@ const StixCyberObservableCreation = ({
             </IconButton>
             <Typography variant="subtitle2">{t_i18n('Create an observable')}</Typography>
             {!isFromBulkRelation && status.type
-              ? <BulkTextModalButton
+              ? (
+                <BulkTextModalButton
                   onClick={() => setBulkOpen(true)}
                   title={t_i18n('Create multiple observables')}
                   disabled={!bulkConf}
                 />
+)
               : <></>
             }
           </div>
@@ -1074,12 +1076,14 @@ const StixCyberObservableCreation = ({
           <DialogTitle style={{ display: 'flex' }}>
             {t_i18n('Create an observable')}
             {!isFromBulkRelation && status.type
-              ? <BulkTextModalButton
+              ? (
+                <BulkTextModalButton
                   sx={{ marginRight: 0 }}
                   onClick={() => setBulkOpen(true)}
                   title={t_i18n('Create multiple observables')}
                   disabled={!bulkConf}
                 />
+)
               : <></>
             }
           </DialogTitle>

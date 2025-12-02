@@ -263,12 +263,12 @@ const StixCoreObjectContainer = ({ elementId }: StixCoreObjectContainerProps) =>
           />
           <FormControlLabel
             style={{ marginTop: 20 }}
-            control={
+            control={(
               <Checkbox
                 checked={includeNeighbours}
                 onChange={handleChangeIncludeNeighboursOption}
               />
-            }
+            )}
             label={t_i18n('Also include first neighbours')}
           />
         </DialogContent>

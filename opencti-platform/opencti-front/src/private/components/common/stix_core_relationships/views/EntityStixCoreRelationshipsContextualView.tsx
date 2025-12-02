@@ -276,7 +276,8 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
       >
         {
           existEntitiesToDisplay
-          && <EntityStixCoreRelationshipsContextualViewLines
+          && (
+          <EntityStixCoreRelationshipsContextualViewLines
             paginationOptions={paginationOptions}
             dataColumns={dataColumns}
             onToggleEntity={onToggleEntity}
@@ -284,11 +285,13 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
             selectedElements={selectedElements}
             deSelectedElements={deSelectedElements}
             selectAll={selectAll}
-             />
+          />
+)
         }
       </ListLines>
       {existEntitiesToDisplay
-        && <ToolBar
+        && (
+        <ToolBar
           selectedElements={selectedElements}
           deSelectedElements={deSelectedElements}
           numberOfSelectedElements={numberOfSelectedElements}
@@ -301,7 +304,8 @@ const EntityStixCoreRelationshipsContextualViewComponent: FunctionComponent<Enti
           warningMessage={t_i18n(
             'Be careful, you are about to delete the selected entities',
           )}
-           />}
+        />
+)}
     </>
   );
 };

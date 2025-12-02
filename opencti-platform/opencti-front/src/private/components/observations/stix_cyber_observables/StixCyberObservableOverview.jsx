@@ -254,7 +254,7 @@ class StixCyberObservableOverview extends Component {
                   key={stixId}
                   disableGutters={true}
                   dense={true}
-                  secondaryAction={
+                  secondaryAction={(
                     <IconButton
                       edge="end"
                       aria-label="delete"
@@ -263,7 +263,7 @@ class StixCyberObservableOverview extends Component {
                     >
                       <Delete />
                     </IconButton>
-                  }
+                  )}
                 >
                   <ListItemText primary={stixId} />
                 </ListItem>

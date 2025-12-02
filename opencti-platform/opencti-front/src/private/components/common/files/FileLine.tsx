@@ -268,7 +268,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         divider={true}
         dense={dense}
         disablePadding
-        secondaryAction={
+        secondaryAction={(
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {!isProgress && !isFail && !isOutdated && (
             <ItemMarkings
@@ -393,7 +393,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
               </Security>
             )}
           </div>
-        }
+        )}
       >
         <ListItemButton
           classes={{ root: nested ? classes.itemNested : classes.item }}
@@ -429,11 +429,11 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
                 secondary: classes.fileName,
               }}
               primary={`${truncate(fileNameWithoutExtension, 80)}${fileExtension}`}
-              secondary={
+              secondary={(
                 <>
                   {`${truncate(status, 80 - lastModifiedDate.length)} (${lastModifiedDate})`}
                 </>
-              }
+              )}
             />
           </Tooltip>
         </ListItemButton>

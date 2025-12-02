@@ -251,7 +251,7 @@ const IngestionCatalogConnectorCreation = ({
       title={t_i18n('Deploy a new connector')}
       open={open}
       onClose={onClose}
-      header={
+      header={(
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
           <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
             <Button
@@ -296,7 +296,7 @@ const IngestionCatalogConnectorCreation = ({
             </span>
           </Tooltip>
         </div>
-      }
+      )}
     >
       <Stack gap={1}>
         <ConnectorDeploymentBanner hasActiveManagers={hasActiveManagers} />

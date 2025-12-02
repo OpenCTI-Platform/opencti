@@ -133,7 +133,7 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
                       />
                     </ListItemIcon>
                     <ListItemText
-                      primary={
+                      primary={(
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
@@ -141,15 +141,15 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
                           height={15}
                           style={{ marginBottom: 10 }}
                         />
-                      }
-                      secondary={
+                      )}
+                      secondary={(
                         <Skeleton
                           animation="wave"
                           variant="rectangular"
                           width="90%"
                           height={15}
                         />
-                      }
+                      )}
                     />
                   </ListItem>
                 ))}

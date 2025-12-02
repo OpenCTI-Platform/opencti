@@ -62,18 +62,20 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
       disabled={disabled}
       controlledDial={UpdateRoleControlledDial}
     >
-      {role ? (<>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
-            <Tab label={t_i18n('Overview')} />
-            <Tab label={t_i18n('Capabilities')} />
-          </Tabs>
-        </Box>
-        {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
-        {currentTab === 1 && queryRef && (
+      {role ? (
+        <>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value)}>
+              <Tab label={t_i18n('Overview')} />
+              <Tab label={t_i18n('Capabilities')} />
+            </Tabs>
+          </Box>
+          {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
+          {currentTab === 1 && queryRef && (
           <RoleEditionCapabilities role={role} queryRef={queryRef} />
         )}
-      </>)
+        </>
+)
         : (<Loader />)}
     </Drawer>
   );

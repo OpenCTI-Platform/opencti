@@ -187,11 +187,11 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={indicator}
                 />
-              }
+              )}
             />
             <Route
               path="/analyses"

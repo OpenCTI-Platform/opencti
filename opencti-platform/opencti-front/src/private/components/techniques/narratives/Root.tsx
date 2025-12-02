@@ -105,7 +105,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -119,7 +119,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
                   ]}
                   data={narrative}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -206,19 +206,19 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <NarrativeKnowledge narrativeData={narrative} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={narrative}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -228,14 +228,14 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={narrativeId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={narrative}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"

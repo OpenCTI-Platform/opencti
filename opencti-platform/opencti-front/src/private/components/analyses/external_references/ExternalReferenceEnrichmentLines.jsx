@@ -157,7 +157,7 @@ const ExternalReferenceEnrichment = (props) => {
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <div style={{ right: 0 }}>
                       <Tooltip
@@ -176,7 +176,7 @@ const ExternalReferenceEnrichment = (props) => {
                       </Tooltip>
                     </div>
                   </Security>
-                  }
+                )}
               >
                 <ListItemButton
                   classes={{ root: classes.item }}
@@ -229,7 +229,7 @@ const ExternalReferenceEnrichment = (props) => {
                       <ListItem
                         dense={true}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <div style={{ right: 0 }}>
                             <IconButton
                               onClick={() => deleteWork(work.id)}
@@ -238,7 +238,7 @@ const ExternalReferenceEnrichment = (props) => {
                               <Delete />
                             </IconButton>
                           </div>
-                      }
+                        )}
                       >
                         <ListItemButton
                           classes={{ root: classes.nested }}

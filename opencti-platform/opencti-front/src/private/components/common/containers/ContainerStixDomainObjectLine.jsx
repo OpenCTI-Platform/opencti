@@ -141,7 +141,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -214,7 +214,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                 />
               </div>
             </div>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -373,11 +373,11 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <IconButton disabled={true} aria-haspopup="true" size="large" classes={classes.itemIconDisabled}>
           <MoreVert />
         </IconButton>
-      }
+      )}
     >
       <ListItemIcon
         classes={{ root: classes.itemIconDisabled }}
@@ -389,7 +389,7 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -469,7 +469,7 @@ export const ContainerStixDomainObjectLineDummy = (props) => {
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

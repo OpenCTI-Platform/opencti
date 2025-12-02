@@ -32,7 +32,8 @@ const ToggleButtonField = ({
             onClick={() => setFieldValue(name, (item.value === value) ? null : item.value)}
           >
             {item.content}
-          </ToggleButton>))}
+          </ToggleButton>
+))}
       </ToggleButtonGroup>
     </FormControl>
   );

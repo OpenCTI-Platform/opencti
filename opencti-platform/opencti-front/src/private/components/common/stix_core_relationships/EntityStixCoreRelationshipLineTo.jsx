@@ -120,7 +120,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
             <ItemIcon type={node.entity_type} color={node.draftVersion ? getDraftModeColor(theme) : null} />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <div>
                 {dataColumns.relationship_type && (
                   <div
@@ -234,7 +234,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   </div>
                 )}
               </div>
-          }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -629,11 +629,11 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={
+        secondaryAction={(
           <Box sx={{ root: classes.itemIconDisabled }}>
             <MoreVertOutlined />
           </Box>
-        }
+        )}
       >
         <ListItemIcon
           classes={{ root: classes.itemIconDisabled }}
@@ -650,7 +650,7 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               {dataColumns.relationship_type && (
                 <div
@@ -803,7 +803,7 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
                 </div>
               )}
             </div>
-          }
+          )}
         />
       </ListItem>
     );

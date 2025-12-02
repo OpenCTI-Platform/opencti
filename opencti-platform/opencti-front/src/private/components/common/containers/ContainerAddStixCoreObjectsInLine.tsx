@@ -221,21 +221,22 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
   const Header = () => {
     const [openCreateEntity, setOpenCreateEntity] = useState<boolean>(false);
     const [openCreateObservable, setOpenCreateObservable] = useState<boolean>(false);
-    return (<>
-      <div
-        style={{
+    return (
+      <>
+        <div
+          style={{
           width: '100%',
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
-      >
-        <Typography variant="subtitle2">
-          {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
-        </Typography>
-        <div style={{ marginRight: '10px' }}>
-          {showSDOCreation && (
+        >
+          <Typography variant="subtitle2">
+            {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
+          </Typography>
+          <div style={{ marginRight: '10px' }}>
+            {showSDOCreation && (
             <Button
               style={{ fontSize: 'small' }}
               variant="contained"
@@ -247,7 +248,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
               {t_i18n('Create an entity')}
             </Button>
           )}
-          {showSCOCreation && (
+            {showSCOCreation && (
             <Button
               style={{ fontSize: 'small', marginLeft: '3px' }}
               variant="contained"
@@ -259,37 +260,38 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
               {t_i18n('Create an observable')}
             </Button>
           )}
+          </div>
         </div>
-      </div>
-      <StixDomainObjectCreation
-        display={true}
-        inputValue=""
-        speeddial={true}
-        open={openCreateEntity}
-        handleClose={() => setOpenCreateEntity(false)}
-        creationCallback={undefined}
-        onCompleted={undefined}
-        isFromBulkRelation={undefined}
-        confidence={confidence}
-        defaultCreatedBy={defaultCreatedBy}
-        defaultMarkingDefinitions={defaultMarkingDefinitions}
-        stixDomainObjectTypes={targetStixCoreObjectTypes}
-        paginationKey="Pagination_stixCoreObjects"
-        paginationOptions={searchPaginationOptions}
-      />
-      <StixCyberObservableCreation
-        display={true}
-        contextual={true}
-        inputValue=""
-        paginationKey="Pagination_stixCoreObjects"
-        paginationOptions={searchPaginationOptions}
-        speeddial={true}
-        open={openCreateObservable}
-        handleClose={() => setOpenCreateObservable(false)}
-        type={undefined}
-        defaultCreatedBy={undefined}
-      />
-    </>);
+        <StixDomainObjectCreation
+          display={true}
+          inputValue=""
+          speeddial={true}
+          open={openCreateEntity}
+          handleClose={() => setOpenCreateEntity(false)}
+          creationCallback={undefined}
+          onCompleted={undefined}
+          isFromBulkRelation={undefined}
+          confidence={confidence}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
+          stixDomainObjectTypes={targetStixCoreObjectTypes}
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={searchPaginationOptions}
+        />
+        <StixCyberObservableCreation
+          display={true}
+          contextual={true}
+          inputValue=""
+          paginationKey="Pagination_stixCoreObjects"
+          paginationOptions={searchPaginationOptions}
+          speeddial={true}
+          open={openCreateObservable}
+          handleClose={() => setOpenCreateObservable(false)}
+          type={undefined}
+          defaultCreatedBy={undefined}
+        />
+      </>
+);
   };
 
   const Dial = showSDOCreation

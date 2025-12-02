@@ -100,7 +100,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -120,7 +120,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
                   ]}
                   data={administrativeArea}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -219,19 +219,19 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={administrativeArea}
                   />
-              }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <AdministrativeAreaKnowledge administrativeAreaData={administrativeArea} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -241,25 +241,25 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={administrativeArea.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={administrativeAreaId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={administrativeArea}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"

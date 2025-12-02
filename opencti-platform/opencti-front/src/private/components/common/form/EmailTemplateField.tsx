@@ -129,7 +129,7 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
   }
 
   return queryRef ? (
-    <React.Suspense fallback={
+    <React.Suspense fallback={(
       <Field
         component={AutocompleteField}
         name={name}
@@ -141,7 +141,7 @@ const EmailTemplateField = ({ ...props }: EmailTemplateFieldProps) => {
           label,
         }}
       />
-    }
+    )}
     >
       <EmailTemplateFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>

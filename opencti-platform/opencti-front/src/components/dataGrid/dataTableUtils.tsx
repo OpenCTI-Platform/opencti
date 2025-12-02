@@ -762,8 +762,10 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Nb.',
     percentWidth: 8,
     isSortable: true,
-    render: ({ number_observed }, { n }) => (<Tooltip title={number_observed}><>{n(number_observed)}</>
-    </Tooltip>),
+    render: ({ number_observed }, { n }) => (
+      <Tooltip title={number_observed}><>{n(number_observed)}</>
+      </Tooltip>
+),
   },
   objectAssignee: {
     id: 'objectAssignee',
@@ -861,7 +863,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
         title={operatingSystem?.name}
       >
         <>{operatingSystem?.name ?? '-'}</>
-      </Tooltip>),
+      </Tooltip>
+),
   },
   opinions_metrics_mean: {
     id: 'opinions_metrics_mean',

@@ -544,12 +544,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     fullWidth
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_title"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -560,12 +560,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     style={{ marginTop: 20 }}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_favicon"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -577,12 +577,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     style={{ marginTop: 20 }}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_email"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={SelectField}
@@ -593,12 +593,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                    helpertext={
+                    helpertext={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme"
                       />
-                      }
+                    )}
                   >
                     <MenuItem value="dark">{t_i18n('Dark')}</MenuItem>
                     <MenuItem value="light">{t_i18n('Light')}</MenuItem>
@@ -612,12 +612,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                    helpertext={
+                    helpertext={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_language"
                       />
-                      }
+                    )}
                   >
                     <MenuItem value="auto">
                       <em>{t_i18n('Automatic')}</em>
@@ -724,12 +724,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     </ListItem>
                     <ListItem divider={true}>
                       <ListItemText
-                        primary={
+                        primary={(
                           <>
                             {t_i18n('Remove Filigran logos')}
                             <EEChip />
                           </>
-                        }
+                        )}
                       />
                       <Field
                         component={Switch}
@@ -798,12 +798,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_background"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -818,12 +818,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_paper"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -838,12 +838,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_nav"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -858,12 +858,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_primary"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -878,12 +878,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_secondary"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -898,12 +898,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_accent"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -918,12 +918,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     style={{ marginTop: 20 }}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_logo"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -939,12 +939,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_logo_collapsed"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -960,12 +960,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_dark_logo_login"
                       />
-                      }
+                    )}
                   />
                 </Form>
               )}
@@ -1008,12 +1008,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_background"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -1029,12 +1029,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_paper"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -1050,12 +1050,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_nav"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -1071,12 +1071,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_primary"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -1092,12 +1092,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_secondary"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={ColorPickerField}
@@ -1113,12 +1113,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_accent"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -1134,12 +1134,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_logo"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -1155,12 +1155,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_logo_collapsed"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -1176,12 +1176,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)
                       }
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme_light_logo_login"
                       />
-                      }
+                    )}
                   />
                 </Form>
               )}

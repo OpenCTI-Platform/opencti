@@ -105,13 +105,13 @@ const SecurityCoverageDetails: FunctionComponent<SecurityCoverageDetailsProps> =
             {isNotEmptyField(data.external_uri) && (
               <Button
                 color="primary"
-                startIcon={
+                startIcon={(
                   <img
                     style={{ width: 20 }}
                     src={fileUri(theme.palette.mode === 'dark' ? obasDark : obasLight)}
                     alt="OBAS"
                   />
-                }
+                )}
                 variant="outlined"
                 onClick={() => setDisplayExternalLink(true)}
                 title={data.external_uri} // tooltip on hover

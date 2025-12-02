@@ -253,7 +253,7 @@ const GroupEditionMarkingsComponent = ({
                       <ListItem
                         key={markingDefinition.id}
                         divider={true}
-                        secondaryAction={
+                        secondaryAction={(
                           <Checkbox
                             onChange={(event) => handleToggleAllowedMarkings(
                               markingDefinition.id,
@@ -263,7 +263,7 @@ const GroupEditionMarkingsComponent = ({
                             }
                             checked={groupMarkingDefinition !== undefined}
                           />
-                        }
+                        )}
                       >
                         <ListItemIcon>
                           <MarkingIcon theme={theme} color={markingDefinition.x_opencti_color} />

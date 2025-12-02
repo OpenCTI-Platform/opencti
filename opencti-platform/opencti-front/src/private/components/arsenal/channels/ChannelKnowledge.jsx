@@ -36,35 +36,35 @@ const ChannelKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={channel.id}
               paddingRight={true}
             />
-            }
+          )}
         />
         <Route
           path="/sightings/:sightingId"
-          element={
+          element={(
             <StixSightingRelationship
               entityId={channel.id}
               paddingRight={true}
             />
-            }
+          )}
         />
         <Route
           path="/overview"
-          element={
+          element={(
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={channel.id}
               stixDomainObjectName={channel.name}
               stixDomainObjectType="Channel"
             />
-            }
+          )}
         />
         <Route
           path="/all"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -74,11 +74,11 @@ const ChannelKnowledgeComponent = ({
               defaultStopTime={channel.stopTime}
               allDirections
             />
-            }
+          )}
         />
         <Route
           path="/related"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -86,20 +86,20 @@ const ChannelKnowledgeComponent = ({
               entityLink={link}
               allDirections={true}
             />
-            }
+          )}
         />
         <Route
           path="/victimology"
-          element={
+          element={(
             <StixDomainObjectVictimology
               stixDomainObjectId={channel.id}
               entityLink={link}
             />
-            }
+          )}
         />
         <Route
           path="/threats"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               allDirections
@@ -116,11 +116,11 @@ const ChannelKnowledgeComponent = ({
                 'Tool',
               ]}
             />
-            }
+          )}
         />
         <Route
           path="/threat_actors"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -130,11 +130,11 @@ const ChannelKnowledgeComponent = ({
               isRelationReversed={true}
               allDirections
             />
-          }
+          )}
         />
         <Route
           path="/intrusion_sets"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -144,11 +144,11 @@ const ChannelKnowledgeComponent = ({
               isRelationReversed={true}
               allDirections
             />
-          }
+          )}
         />
         <Route
           path="/campaigns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -157,11 +157,11 @@ const ChannelKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-            }
+          )}
         />
         <Route
           path="/attack_patterns"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -170,11 +170,11 @@ const ChannelKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-            }
+          )}
         />
         <Route
           path="/channels"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -184,11 +184,11 @@ const ChannelKnowledgeComponent = ({
               isRelationReversed={false}
               allDirections
             />
-            }
+          )}
         />
         <Route
           path="/malwares"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -197,11 +197,11 @@ const ChannelKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-            }
+          )}
         />
         <Route
           path="/vulnerabilities"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -210,11 +210,11 @@ const ChannelKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={false}
             />
-            }
+          )}
         />
         <Route
           path="/incidents"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={channel.id}
@@ -223,11 +223,11 @@ const ChannelKnowledgeComponent = ({
               entityLink={link}
               isRelationReversed={true}
             />
-            }
+          )}
         />
         <Route
           path="/observables"
-          element={
+          element={(
             <EntityStixCoreRelationshipsStixCyberObservable
               entityId={channel.id}
               entityLink={link}
@@ -241,11 +241,11 @@ const ChannelKnowledgeComponent = ({
                 'belongs-to',
               ]}
             />
-            }
+          )}
         />
         <Route
           path="/sightings"
-          element={
+          element={(
             <EntityStixSightingRelationships
               entityId={channel.id}
               entityLink={link}
@@ -261,7 +261,7 @@ const ChannelKnowledgeComponent = ({
                 'System',
               ]}
             />
-            }
+          )}
         />
       </Routes>
     </div>

@@ -78,7 +78,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
         <ItemIcon type={node.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -141,7 +141,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
               />
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -407,7 +407,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -487,7 +487,7 @@ StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

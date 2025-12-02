@@ -82,16 +82,18 @@ const FintelTemplateForm = ({
               component={SwitchField}
               type="checkbox"
               name="published"
-              label={<>
-                <span>{t_i18n('Template published')}</span>
-                <Tooltip title={t_i18n('If false, the template won\'t be available to generate files')}>
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ margin: '0 0 -5px 10px' }}
-                  />
-                </Tooltip>
-              </>}
+              label={(
+                <>
+                  <span>{t_i18n('Template published')}</span>
+                  <Tooltip title={t_i18n('If false, the template won\'t be available to generate files')}>
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ margin: '0 0 -5px 10px' }}
+                    />
+                  </Tooltip>
+                </>
+)}
               containerstyle={{ marginTop: 20 }}
               onChange={onUpdate}
             />

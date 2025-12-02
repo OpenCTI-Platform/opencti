@@ -104,12 +104,12 @@ const NotifierTestDialog: FunctionComponent<NotifierTestDialogProps> = ({
         <div className={classes.container}>
           {!queryRef && <Typography>Result</Typography>}
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 <Typography>Result</Typography>
                 <Loader variant={LoaderVariant.inElement} />
               </>
-            }
+            )}
           >
             {queryRef && <NotifierTestResult queryRef={queryRef} />}
           </React.Suspense>

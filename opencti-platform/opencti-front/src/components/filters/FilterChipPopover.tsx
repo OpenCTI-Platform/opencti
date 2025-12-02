@@ -392,7 +392,8 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
     const finalFilterDefinition = useFilterDefinition(fKey, entityTypes, subKey);
     return (
       <>
-        { availableOperators.length > 0 && <Select
+        { availableOperators.length > 0 && (
+        <Select
           labelId="change-operator-select-label"
           id="change-operator-select"
           value={filterOperator}
@@ -417,13 +418,14 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
               onMouseDown: stopEvent,
             },
           }}
-                                           >
+        >
           {availableOperators.map((value) => (
             <MenuItem key={value} value={value}>
               {t_i18n(OperatorKeyValues[value])}
             </MenuItem>
           ))}
-        </Select>}
+        </Select>
+)}
         {noValueOperator && isSpecificFilter(finalFilterDefinition) && (
           <>{getSpecificFilter(finalFilterDefinition, subKey, disabled)}</>
         )}
@@ -479,45 +481,51 @@ export const FilterChipPopover: FunctionComponent<FilterChipMenuProps> = ({
       }}
     >
       {filterDefinition?.subFilters && filterDefinition.subFilters.length > 1
-        ? <div
-            style={{
-              width: 250,
-              padding: 8,
-            }}
-          >
-          {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
-          <Chip
-            style={{
-              fontFamily: 'Consolas, monaco, monospace',
-              margin: '10px 10px 15px 0',
-            }}
-            label={t_i18n('WITH')}
-          />
-          {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
-        </div>
-        : <div style={{ display: 'inline-flex' }}>
+        ? (
           <div
             style={{
               width: 250,
               padding: 8,
             }}
           >
-            {displayOperatorAndFilter(filterKey)}
+            {displayOperatorAndFilter(filterKey, filterDefinition?.subFilters[0].filterKey, disableSubfilter1)}
+            <Chip
+              style={{
+              fontFamily: 'Consolas, monaco, monospace',
+              margin: '10px 10px 15px 0',
+            }}
+              label={t_i18n('WITH')}
+            />
+            {displayOperatorAndFilter(filterKey, filterDefinition.subFilters[1].filterKey, disableSubfilter2)}
           </div>
-          {filterOperator === 'within'
-            && <div style={{ width: 150, display: 'inline-flex' }}>
-              <div style={{
+)
+        : (
+          <div style={{ display: 'inline-flex' }}>
+            <div
+              style={{
+              width: 250,
+              padding: 8,
+            }}
+            >
+              {displayOperatorAndFilter(filterKey)}
+            </div>
+            {filterOperator === 'within'
+              && (
+              <div style={{ width: 150, display: 'inline-flex' }}>
+                <div style={{
                 color: theme.palette.text.disabled,
                 borderLeft: '0.5px solid',
                 marginLeft: '10px',
                 marginTop: '10px',
                 marginBottom: '10px',
               }}
-              />
-              <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
-            </div>
+                />
+                <QuickRelativeDateFiltersButtons filter={filter} helpers={helpers} handleClose={handleClose} />
+              </div>
+)
           }
-        </div>
+          </div>
+)
       }
     </Popover>
   );

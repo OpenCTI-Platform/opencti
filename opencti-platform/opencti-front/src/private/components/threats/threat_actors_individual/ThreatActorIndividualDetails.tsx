@@ -245,13 +245,13 @@ ThreatActorIndividualDetailsProps
                         <DramaMasks />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <ItemOpenVocab
                             type="threat-actor-individual-role-ov"
                             value={role}
                             small
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}
@@ -297,13 +297,13 @@ ThreatActorIndividualDetailsProps
                         <ArmFlexOutline />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <ItemOpenVocab
                             type="attack-motivation-ov"
                             value={secondaryMotivation}
                             small
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}
@@ -328,13 +328,13 @@ ThreatActorIndividualDetailsProps
                         <ArmFlexOutline />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <ItemOpenVocab
                             type="attack-motivation-ov"
                             value={personalMotivation}
                             small
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}

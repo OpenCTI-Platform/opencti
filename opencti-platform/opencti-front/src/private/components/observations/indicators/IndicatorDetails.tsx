@@ -216,12 +216,14 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
               <List>
                 {indicator.x_mitre_platforms?.map((platform) => (
                   platform
-                  && <ListItem key={platform} dense={true} divider={true}>
+                  && (
+                  <ListItem key={platform} dense={true} divider={true}>
                     <ListItemIcon>
                       <SettingsApplications />
                     </ListItemIcon>
                     <ListItemText primary={platform} />
                   </ListItem>
+)
                 ))}
               </List>
             </FieldOrEmpty>

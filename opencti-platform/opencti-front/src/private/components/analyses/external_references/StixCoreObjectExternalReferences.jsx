@@ -79,7 +79,7 @@ class StixCoreObjectExternalReferences extends Component {
                         </Avatar>
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
@@ -87,15 +87,15 @@ class StixCoreObjectExternalReferences extends Component {
                             height={15}
                             style={{ marginBottom: 10 }}
                           />
-                        }
-                        secondary={
+                        )}
+                        secondary={(
                           <Skeleton
                             animation="wave"
                             variant="rectangular"
                             width="90%"
                             height={15}
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}

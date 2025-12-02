@@ -63,7 +63,7 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
         open={open}
         onClose={handleClose}
         title={t_i18n('Add locations')}
-        header={
+        header={(
           <div
             style={{
               marginLeft: 'auto',
@@ -75,7 +75,7 @@ const AddLocationsThreatActorIndividualComponent: FunctionComponent<AddLocations
               onSubmit={onSearch}
             />
           </div>
-          }
+        )}
       >
         {queryRef && (
           <React.Suspense

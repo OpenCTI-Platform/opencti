@@ -58,11 +58,11 @@ const SearchContainer: FunctionComponent<SearchRootComponentProps> = ({ children
             component={Link}
             to={`/dashboard/search/files/${keyword ?? ''}`}
             value="files"
-            label={
+            label={(
               <Badge badgeContent={filesCount} color="primary">
                 <div style={{ padding: '0px 12px', display: 'flex' }}>{t_i18n('Files search')}<EEChip /></div>
               </Badge>
-            }
+            )}
           />
         </Tabs>
       </Box>

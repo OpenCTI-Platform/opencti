@@ -60,7 +60,7 @@ class TimeRange extends React.Component {
     const { value: startInterval } = source;
     const { value: endInterval } = target;
 
-    if (startInterval > start && endInterval <= end || startInterval >= start && endInterval < end) {
+    if ((startInterval > start && endInterval <= end) || (startInterval >= start && endInterval < end)) {
       return true;
     }
     if (start >= startInterval && end <= endInterval) return true;

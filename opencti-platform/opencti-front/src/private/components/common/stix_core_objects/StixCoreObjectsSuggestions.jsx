@@ -354,7 +354,7 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                             key={suggestion.type}
                             disableGutters={true}
                             divider={true}
-                            secondaryAction={
+                            secondaryAction={(
                               <Tooltip title={t_i18n('Apply the suggestion')}>
                                 <IconButton
                                   edge="end"
@@ -390,17 +390,17 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                                   )}
                                 </IconButton>
                               </Tooltip>
-                            }
+                            )}
                           >
                             <ListItemText
-                              primary={
+                              primary={(
                                 <MarkdownDisplay
                                   content={t_i18n(`suggestion_${suggestion.type}`)}
                                   remarkGfmPlugin={true}
                                   commonmark={true}
                                   markdownComponents={true}
                                 />
-                          }
+                              )}
                             />
                             <Select
                               style={{ width: 200, minWidth: 200, margin: '0 0 0 15px' }}

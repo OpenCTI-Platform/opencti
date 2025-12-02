@@ -172,7 +172,7 @@ const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
   });
   return queryRef ? (
     <React.Suspense
-      fallback={
+      fallback={(
         <Field
           component={AutocompleteField}
           name={name}
@@ -187,7 +187,7 @@ const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
             label,
           }}
         />
-      }
+      )}
     >
       <OpenVocabFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>

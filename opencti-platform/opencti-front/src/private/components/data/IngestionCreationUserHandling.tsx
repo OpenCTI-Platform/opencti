@@ -117,11 +117,11 @@ const IngestionCreationUserHandlingComponent = ({ queryRef, default_confidence_l
           {isSensitive && (
             <FormControlLabel
               control={<Switch onChange={handleEditConfidence} />}
-              label={
+              label={(
                 <>
                   {t_i18n('Edit confidence level')}
                 </>
-              }
+              )}
             />
           )}
           <ConfidenceField

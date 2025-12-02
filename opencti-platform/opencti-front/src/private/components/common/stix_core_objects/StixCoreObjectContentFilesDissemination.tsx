@@ -116,13 +116,13 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
           <FormControlLabel
             style={{ marginBottom: theme.spacing(2) }}
-            control={
+            control={(
               <Switch
                 checked={useOctiTemplate}
                 onChange={() => setUseOctiTemplate(!useOctiTemplate)}
                 color="primary"
               />
-              }
+            )}
             label={t_i18n('Use OpenCTI template')}
           />
           <DisseminationListField />
@@ -139,13 +139,13 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               style={{
                 marginTop: theme.spacing(2),
               }}
-              control={
+              control={(
                 <Switch
                   checked={useFileContent}
                   onChange={() => setUseFileContent(!useFileContent)}
                   color="primary"
                 />
-                }
+              )}
               label={t_i18n('Use file content as email body')}
             />
           )}

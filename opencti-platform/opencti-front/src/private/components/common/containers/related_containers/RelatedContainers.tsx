@@ -196,25 +196,26 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
                 </Tooltip>
               </div>
             )}
-          />) : (
-            <div style={{
+          />
+) : (
+  <div style={{
               display: 'flex',
               height: '100%',
               alignItems: 'center',
               justifyContent: 'center',
             }}
-            >
-              <span>
-                {t_i18n('No correlated containers has been found.')}
-              </span>
-            </div>
+  >
+    <span>
+      {t_i18n('No correlated containers has been found.')}
+    </span>
+  </div>
         )}
       </div>
       <Drawer
         title={selectedContainer?.name ?? '-'}
         open={!!selectedContainer}
         onClose={() => setSelectedContainer(undefined)}
-        header={
+        header={(
           <Tooltip title={t_i18n('Go to container')}>
             <IconButton
               color="primary"
@@ -226,7 +227,7 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
               <NorthEastOutlined />
             </IconButton>
           </Tooltip>
-        }
+        )}
       >
         <>
           {selectedContainer && (

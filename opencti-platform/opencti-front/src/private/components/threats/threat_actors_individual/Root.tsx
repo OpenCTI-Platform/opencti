@@ -119,7 +119,7 @@ const RootThreatActorIndividualComponent = ({
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -143,7 +143,7 @@ const RootThreatActorIndividualComponent = ({
                   ]}
                   data={threatActorIndividual}
                 />
-             }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -243,22 +243,22 @@ const RootThreatActorIndividualComponent = ({
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ThreatActorIndividualKnowledge
                       threatActorIndividualData={threatActorIndividual}
                       relatedRelationshipTypes={THREAT_ACTOR_INDIVIDUAL_RELATED_RELATIONSHIP_TYPES}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={threatActorIndividual}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -268,14 +268,14 @@ const RootThreatActorIndividualComponent = ({
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={threatActorIndividualId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={threatActorIndividual}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"

@@ -170,14 +170,14 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
           />
           <FormControlLabel
             style={fieldSpacingContainerStyle}
-            control={
+            control={(
               <Switch
                 defaultChecked
                 onChange={(_, isChecked) => {
                   setIsUploadFileChecked(isChecked);
                 }}
               />
-            }
+            )}
             label={t_i18n('Upload file')}
           />
           {isUploadFileChecked ? (

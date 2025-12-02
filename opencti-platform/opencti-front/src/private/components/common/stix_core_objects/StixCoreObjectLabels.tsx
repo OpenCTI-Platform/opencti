@@ -81,23 +81,24 @@ const StixCoreObjectLabels = ({
     );
   }
 
-  return <>
-    {revoked ? (
-      <Chip
-        variant="outlined"
-        label={t_i18n('Revoked')}
-        style={{
+  return (
+    <>
+      {revoked ? (
+        <Chip
+          variant="outlined"
+          label={t_i18n('Revoked')}
+          style={{
           ...variantStyle,
           color: '#d32f2f',
           borderColor: '#d32f2f',
           backgroundColor: 'rgba(211, 47, 47, .1)',
         }}
-        onClick={(e: SyntheticEvent) => {
+          onClick={(e: SyntheticEvent) => {
           e.preventDefault();
           e.stopPropagation();
           onClick?.('objectLabel', null, 'eq');
         }}
-      />
+        />
     ) : (
       <Chip
         variant="outlined"
@@ -118,7 +119,8 @@ const StixCoreObjectLabels = ({
         }}
       />
     )}
-  </>;
+    </>
+);
 };
 
 export default StixCoreObjectLabels;

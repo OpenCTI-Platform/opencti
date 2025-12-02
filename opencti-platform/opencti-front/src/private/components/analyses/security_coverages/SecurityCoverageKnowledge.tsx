@@ -28,12 +28,12 @@ const SecurityCoverageKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={securityCoverage.id}
               paddingRight={false}
             />
-        }
+          )}
         />
       </Routes>
     </div>

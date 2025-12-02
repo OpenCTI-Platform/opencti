@@ -267,7 +267,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
         <ItemIcon type={stixCoreObject.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -325,7 +325,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />
@@ -351,7 +351,7 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -435,7 +435,7 @@ export const EntityStixCoreRelationshipsEntitiesLineDummy = ({
               />
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />

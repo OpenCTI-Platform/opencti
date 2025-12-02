@@ -90,14 +90,14 @@ AddDataSourcesLinesContainerProps
             return (
               <ListItemText
                 key={idx}
-                primary={
+                primary={(
                   <Skeleton
                     animation="wave"
                     variant="rectangular"
                     width="90%"
                     height="100%"
                   />
-                }
+                )}
               />
             );
           }

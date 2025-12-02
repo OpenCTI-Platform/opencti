@@ -123,7 +123,7 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
       classes={{ root: classes.item }}
       color="primary"
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your Taxii client')}>
             <span>
@@ -140,13 +140,13 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
             </span>
           </Tooltip>
         </>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="taxiicollection" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -158,7 +158,7 @@ const PublicTaxiiLine = ({ node }: { node: PublicTaxiiLines_node$key }) => {
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

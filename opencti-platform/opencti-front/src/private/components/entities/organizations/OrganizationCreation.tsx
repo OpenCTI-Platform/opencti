@@ -189,15 +189,16 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     },
   );
 
-  return <Formik<OrganizationAddInput>
-    initialValues={initialValues}
-    validationSchema={organizationValidator}
-    validateOnChange={false}
-    validateOnBlur={false}
-    onSubmit={onSubmit}
-    onReset={onReset}
-         >
-    {({
+  return (
+    <Formik<OrganizationAddInput>
+      initialValues={initialValues}
+      validationSchema={organizationValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({
       submitForm,
       handleReset,
       isSubmitting,
@@ -345,7 +346,8 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
         </Form>
       </>
     )}
-  </Formik>;
+    </Formik>
+);
 };
 
 const OrganizationCreation = ({ paginationOptions }: {

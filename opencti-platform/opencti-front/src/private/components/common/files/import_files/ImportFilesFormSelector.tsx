@@ -136,11 +136,11 @@ const ImportFilesFormSelector = () => {
   };
 
   return (
-    <React.Suspense fallback={
+    <React.Suspense fallback={(
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 400 }}>
         <Loader />
       </Box>
-    }
+    )}
     >
       <ImportFilesFormSelectorContent
         queryRef={queryRef}

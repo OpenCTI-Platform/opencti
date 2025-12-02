@@ -422,7 +422,7 @@ const StixDomainObjectOverview = ({
                 key={stixId}
                 disableGutters={true}
                 dense={true}
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     edge="end"
                     aria-label="delete"
@@ -431,7 +431,7 @@ const StixDomainObjectOverview = ({
                   >
                     <Delete />
                   </IconButton>
-                }
+                )}
               >
                 <ListItemText primary={stixId} />
               </ListItem>

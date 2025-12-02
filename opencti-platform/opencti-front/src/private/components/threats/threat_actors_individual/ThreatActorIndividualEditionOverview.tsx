@@ -317,12 +317,12 @@ ThreatActorIndividualEditionOverviewProps
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   field="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

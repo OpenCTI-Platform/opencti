@@ -175,46 +175,47 @@ const RootFeedbackComponent = ({ queryRef, caseId }) => {
       <Routes>
         <Route
           path="/"
-          element={
+          element={(
             <Feedback
               feedbackData={feedbackData}
               enableReferences={enableReferences}
-            />}
+            />
+          )}
         />
         <Route
           path="/content/*"
-          element={
+          element={(
             <StixCoreObjectContentRoot
               stixCoreObject={feedbackData}
             />
-              }
+          )}
         />
         <Route
           path="/files"
-          element={
+          element={(
             <FileManager
               id={caseId}
               connectorsExport={connectorsForExport}
               connectorsImport={connectorsForImport}
               entity={feedbackData}
             />
-              }
+          )}
         />
         <Route
           path="/history"
-          element={
+          element={(
             <StixCoreObjectHistory
               stixCoreObjectId={caseId}
             />
-              }
+          )}
         />
         <Route
           path="/knowledge/relations/:relationId"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={feedbackData.id}
             />
-              }
+          )}
         />
       </Routes>
     </div>

@@ -176,22 +176,22 @@ class RootCourseOfAction extends Component {
                       />
                       <Route
                         path="/content/*"
-                        element={
+                        element={(
                           <StixCoreObjectContentRoot
                             stixCoreObject={courseOfAction}
                           />
-                        }
+                        )}
                       />
                       <Route
                         path="/files"
-                        element={
+                        element={(
                           <FileManager
                             id={courseOfActionId}
                             connectorsImport={props.connectorsForImport}
                             connectorsExport={props.connectorsForExport}
                             entity={props.courseOfAction}
                           />
-                        }
+                        )}
                       />
                       <Route
                         path="/history"

@@ -150,7 +150,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                     <ItemIcon type={node.entity_type} isReversed={isReversed} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <div>
                         {displayRelation && (
                         <div
@@ -222,7 +222,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           />
                         </div>
                       </div>
-                  }
+                    )}
                   />
                 </ListItemButton>
               </ListItem>

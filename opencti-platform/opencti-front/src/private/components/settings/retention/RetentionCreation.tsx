@@ -232,16 +232,21 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 }}
               />
               {formValues.scope?.value === 'file'
-                && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                && (
+                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
                   {`${t_i18n('The retention policy will be applied on global files (files contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
                 </Alert>
+)
               }
               {formValues.scope?.value === 'workbench'
-                && <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
-                    {`${t_i18n('The retention policy will be applied on global workbenches (workbenches contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
+                && (
+                <Alert severity="info" style={{ margin: '15px 15px 0 15px' }}>
+                  {`${t_i18n('The retention policy will be applied on global workbenches (workbenches contained in')} ${t_i18n('Data')}/${t_i18n('Import')})`}
                 </Alert>
+)
               }
-              {formValues.scope?.value === 'knowledge' && <>
+              {formValues.scope?.value === 'knowledge' && (
+              <>
                 <Box sx={{
                   paddingTop: 4,
                   display: 'flex',
@@ -261,7 +266,8 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                   redirection
                   searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                 />
-              </>}
+              </>
+)}
               <div className={classes.buttons}>
                 <Button
                   variant="contained"

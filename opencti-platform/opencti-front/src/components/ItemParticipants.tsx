@@ -53,11 +53,11 @@ const ItemParticipants: FunctionComponent<ItemParticipantsProps> = ({ participan
               borderRadius: theme.borderRadius,
             }}
             onDelete={canUpdateKnowledge ? () => (handleRemoveParticipant(participant.id)) : undefined}
-            deleteIcon={
+            deleteIcon={(
               <CancelOutlined
                 style={{ color: theme.palette.primary.main }}
               />
-            }
+            )}
           />
         </Tooltip>
       ))}

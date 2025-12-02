@@ -284,7 +284,7 @@ const SyncCreation = ({ paginationOptions }) => {
                               key={value}
                               value={value}
                               style={{ overflow: 'hidden' }}
-                              title={
+                              title={(
                                 <Grid
                                   container
                                   spacing={1}
@@ -303,7 +303,7 @@ const SyncCreation = ({ paginationOptions }) => {
                                     />
                                   </Grid>
                                 </Grid>
-                                        }
+                              )}
                               placement="bottom-start"
                             >
                               <MenuItem key={value} value={value}>

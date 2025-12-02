@@ -120,7 +120,7 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
       classes={{ root: classes.item }}
       color="primary"
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <>
           <Tooltip title={t_i18n('Copy uri to clipboard for your csv client')}>
             <span>
@@ -137,13 +137,13 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
             </span>
           </Tooltip>
         </>
-    }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="feed" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -155,7 +155,7 @@ const PublicFeedLine = ({ node }: { node: PublicFeedLines_node$key }) => {
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

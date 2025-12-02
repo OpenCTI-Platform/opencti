@@ -155,33 +155,33 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             />
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <DataSourceKnowledgeComponent
                   data={dataSource}
                   enableReferences={settings?.platform_enable_reference?.includes(
                     'Data-Source',
                   )}
                 />
-              }
+              )}
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={dataSource}
                 />
-              }
+              )}
             />
             <Route
               path="/files"
-              element={
+              element={(
                 <FileManager
                   id={dataSourceId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={dataSource}
                 />
-              }
+              )}
             />
             <Route
               path="/history"

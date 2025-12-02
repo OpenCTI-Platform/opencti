@@ -123,7 +123,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
             <div key={element.id}>
               <ListItem
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={() => handleToggleLine(element.id)}
                     aria-haspopup="true"
@@ -136,7 +136,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                         <ExpandLess />
                       )}
                   </IconButton>
-              }
+                )}
               >
                 <ListItemButton
                   divider={true}
@@ -161,7 +161,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                             divider={true}
                             dense={true}
                             disablePadding
-                            secondaryAction={
+                            secondaryAction={(
                               <div
                                 style={{
                                   paddingLeft: theme.spacing(4),
@@ -181,7 +181,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                 </IconButton>
                                 )}
                               </div>
-                            }
+                            )}
                           >
                             <ListItemButton
                               style={{
@@ -199,14 +199,14 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                 <LockPattern color="primary" role="img" />
                               </ListItemIcon>
                               <ListItemText
-                                primary={
+                                primary={(
                                   <span>
                                     <strong>
                                       {attackPattern.x_mitre_id}
                                     </strong>{' '}
                                     - {attackPattern.name}
                                   </span>
-                                        }
+                                )}
                                 secondary={
                                 attackPattern.description
                                 && attackPattern.description.length > 0 ? (

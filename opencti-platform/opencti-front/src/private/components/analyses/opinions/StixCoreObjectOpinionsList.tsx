@@ -82,14 +82,16 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                 divider={true}
                 disablePadding
                 secondaryAction={opinion
-                  && <OpinionPopover
+                  && (
+                  <OpinionPopover
                     opinion={opinion}
                     variant="inList"
                     onDelete={() => {
                       onDelete();
                       handleClose();
                     }}
-                     />
+                  />
+)
                 }
               >
                 <ListItemButton
@@ -101,11 +103,11 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                   </ListItemIcon>
                   <ListItemText
                     primary={opinion?.opinion}
-                    secondary={
+                    secondary={(
                       <Tooltip title={opinion?.explanation}>
                         <span>{truncate(opinion?.explanation, 80)}</span>
                       </Tooltip>
-                  }
+                    )}
                     sx={{
                       flex: 'none',
                       width: '400px',

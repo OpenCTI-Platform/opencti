@@ -318,13 +318,13 @@ class StixCoreObjectHistoryLineComponent extends Component {
             <div className={classes.date}>{nsdt(node.timestamp)}</div>
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
-              title={
+              title={(
                 <MarkdownDisplay
                   content={`\`${node.user.name}\` ${node.context_data.message}`}
                   remarkGfmPlugin={true}
                   commonmark={true}
                 />
-              }
+              )}
             >
               <div className={classes.description}>
                 <MarkdownDisplay
@@ -361,7 +361,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
                             dense={true}
                             divider={true}
                             disablePadding
-                            secondaryAction={
+                            secondaryAction={(
                               <Tooltip title={t('Browse the link')}>
                                 <IconButton
                                   onClick={this.handleOpenExternalLink.bind(
@@ -374,7 +374,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
                                   <OpenInBrowserOutlined />
                                 </IconButton>
                               </Tooltip>
-                          }
+                            )}
                           >
                             <ListItemButton
                               component={Link}

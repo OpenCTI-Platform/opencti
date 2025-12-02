@@ -41,20 +41,21 @@ AddPersonaThreatActorIndividualComponentProps
     queryRef,
   );
 
-  return (<div>
-    <IconButton
-      color="primary"
-      onClick={handleOpen}
-    >
-      <Add fontSize="small" />
-    </IconButton>
-    <Drawer
-      open={open}
-      onClose={handleClose}
-      title={t_i18n('Add persona')}
-      header={
-        <div
-          style={{
+  return (
+    <div>
+      <IconButton
+        color="primary"
+        onClick={handleOpen}
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Add persona')}
+        header={(
+          <div
+            style={{
             marginLeft: 'auto',
             marginRight: '20px',
             display: 'flex',
@@ -62,33 +63,34 @@ AddPersonaThreatActorIndividualComponentProps
             justifyContent: 'flex-end',
             alignItems: 'flex-end',
           }}
-        >
-          <SearchInput
-            variant="inDrawer"
-            onSubmit={onSearch}
-          />
-          <div style={{ height: 5 }} />
-          <StixCyberObservableCreation
-            contextual={false}
-            type="Persona"
-            paginationOptions={paginationOptions}
-            paginationKey="Pagination_tai_stixCyberObservables"
-            controlledDialStyles={{
+          >
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={onSearch}
+            />
+            <div style={{ height: 5 }} />
+            <StixCyberObservableCreation
+              contextual={false}
+              type="Persona"
+              paginationOptions={paginationOptions}
+              paginationKey="Pagination_tai_stixCyberObservables"
+              controlledDialStyles={{
               marginLeft: '10px',
               marginTop: '5px',
             }}
-            inputValue=""
-            defaultCreatedBy={undefined}
-          />
-        </div>
-      }
-    >
-      <AddPersonasThreatActorIndividualLines
-        threatActorIndividual={threatActorIndividual}
-        fragmentKey={data}
-      />
-    </Drawer>
-  </div>);
+              inputValue=""
+              defaultCreatedBy={undefined}
+            />
+          </div>
+      )}
+      >
+        <AddPersonasThreatActorIndividualLines
+          threatActorIndividual={threatActorIndividual}
+          fragmentKey={data}
+        />
+      </Drawer>
+    </div>
+);
 };
 
 interface AddPersonaThreatActorIndividualProps {

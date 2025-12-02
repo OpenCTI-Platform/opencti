@@ -72,7 +72,7 @@ class SyncLineLineComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={
+        secondaryAction={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <SyncPopover
               syncId={node.id}
@@ -80,13 +80,13 @@ class SyncLineLineComponent extends Component {
               running={node.running}
             />
           </Security>
-        }
+        )}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <DatabaseImportOutline />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -123,7 +123,7 @@ class SyncLineLineComponent extends Component {
                 {nsdt(node.current_state_date)}
               </div>
             </div>
-          }
+          )}
         />
       </ListItem>
     );
@@ -179,7 +179,7 @@ class SyncDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -237,7 +237,7 @@ class SyncDummyComponent extends Component {
                 />
               </div>
             </div>
-          }
+          )}
         />
       </ListItem>
     );

@@ -584,7 +584,7 @@ const SearchBulk = () => {
                   </span>
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       {SortHeader('type', 'Type', true)}
                       {SortHeader('value', 'Value', true)}
@@ -595,7 +595,7 @@ const SearchBulk = () => {
                       {SortHeader('analyses', 'Analyses', true)}
                       {SortHeader('markings', 'Markings', true)}
                     </div>
-                }
+                  )}
                 />
                 <ListItemIcon classes={{ root: classes.goIcon }}>
                 &nbsp;
@@ -619,7 +619,7 @@ const SearchBulk = () => {
                         <ItemIcon type={entity.type} />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <>
                             <div className={classes.bodyItem} style={inlineStyles.type}>
                               <Chip
@@ -665,7 +665,7 @@ const SearchBulk = () => {
                               <ItemMarkings variant="inList" markingDefinitions={entity.markings ?? []} limit={1} />
                             </div>
                           </>
-                        }
+                        )}
                       />
                       <ListItemIcon classes={{ root: classes.goIcon }}>
                         <KeyboardArrowRightOutlined />
@@ -686,7 +686,7 @@ const SearchBulk = () => {
                       <ItemIcon type={entity.type} />
                     </ListItemIcon>
                     <ListItemText
-                      primary={
+                      primary={(
                         <>
                           <div className={classes.bodyItem} style={inlineStyles.type}>
                             <Chip
@@ -700,7 +700,7 @@ const SearchBulk = () => {
                             {entity.value}
                           </div>
                         </>
-                        }
+                      )}
                     />
                   </ListItem>
                 );

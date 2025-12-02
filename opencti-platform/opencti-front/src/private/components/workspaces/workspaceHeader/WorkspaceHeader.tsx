@@ -114,7 +114,8 @@ const WorkspaceHeader = ({
             handleExportDashboard={handleExportDashboard}
           />
           <WorkspaceKebabMenu data={workspace} />
-          {variant === 'dashboard' && (<>
+          {variant === 'dashboard' && (
+          <>
             <Security
               needs={[EXPLORE_EXUPDATE]}
               hasAccess={canEdit}
@@ -124,7 +125,8 @@ const WorkspaceHeader = ({
                 handleImportWidget={handleImportWidget}
               />
             </Security>
-          </>)}
+          </>
+)}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
             <Button
               variant="contained"

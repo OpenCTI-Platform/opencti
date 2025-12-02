@@ -73,7 +73,7 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[INGESTION_SETINGESTIONS]}>
           <IngestionTaxiiCollectionPopover
             ingestionTaxiiId={data.id}
@@ -81,13 +81,13 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
             running={data.ingestion_running}
           />
         </Security>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <AccessPoint />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -112,7 +112,7 @@ export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<Ingest
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -135,7 +135,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
               <Skeleton
@@ -157,7 +157,7 @@ export const IngestionTaxiiCollectionLineDummy = ({ dataColumns }: { dataColumns
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

@@ -488,11 +488,13 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               }}
               >
                 {!instanceTrigger
-                  && <Filters
+                  && (
+                  <Filters
                     availableFilterKeys={stixFilters}
                     helpers={helpers}
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
-                     />
+                  />
+)
                 }
               </Box>
 
@@ -517,7 +519,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                     searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
                     entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
                     styleNumber={2}
-                  />)
+                  />
+)
               }
             </span>
           )}

@@ -58,7 +58,8 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
               style={{ cursor: 'pointer' }}
             />
           </Badge>
-        </Tooltip>)}
+        </Tooltip>
+)}
     </div>
   );
 };

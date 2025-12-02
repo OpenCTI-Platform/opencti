@@ -115,13 +115,13 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <FormGroup>
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 checked={inSuggestedMode}
                 onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
                 disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete'}
               />
-              }
+            )}
             label={t_i18n('Show suggested mapping')}
           />
         </FormGroup>

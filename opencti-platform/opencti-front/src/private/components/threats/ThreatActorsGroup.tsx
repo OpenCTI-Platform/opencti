@@ -106,7 +106,7 @@ const ThreatActorsGroup = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <Grid container={true} spacing={3} style={{ paddingLeft: 17 }}>
                 {Array(20)
                   .fill(0)
@@ -120,7 +120,7 @@ const ThreatActorsGroup = () => {
                     </Grid>
                   ))}
               </Grid>
-            }
+            )}
           >
             <ThreatActorsGroupCards
               queryRef={queryRef}

@@ -283,12 +283,12 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
               onSelect={handleTextSelection}
               disabled={!editionMode}
               askAi={askAi}
-              helperText={
+              helperText={(
                 <SubscriptionFocus
                   context={containerData.editContext}
                   fieldName="description"
                 />
-                      }
+              )}
               controlledSelectedTab={selectedTab}
               controlledSetSelectTab={handleChangeSelectedTab}
               height={400}
@@ -307,12 +307,12 @@ const StixCoreObjectMappableContent: FunctionComponent<StixCoreObjectMappableCon
                 minHeight: enrichedEditorHeight,
                 height: enrichedEditorHeight,
               }}
-              helperText={
+              helperText={(
                 <SubscriptionFocus
                   context={containerData.editContext}
                   fieldName="content"
                 />
-                      }
+              )}
             />
             {editionMode && enableReferences && (
               <CommitMessage

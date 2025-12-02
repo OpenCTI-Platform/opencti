@@ -278,11 +278,11 @@ class ReportKnowledgeComponent extends Component {
           />
           <Route
             path="/relations/:relationId"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={report.id}
               />
-            }
+            )}
           />
         </Routes>
       </div>

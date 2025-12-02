@@ -110,7 +110,7 @@ const Narratives: FunctionComponent = () => {
         <div className="clearfix" />
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -118,7 +118,7 @@ const Narratives: FunctionComponent = () => {
                     <NarrativeWithSubnarrativeLineDummy key={idx} />
                   ))}
               </>
-            }
+            )}
           >
             <NarrativesWithSubnarrativesLines
               queryRef={queryRef}

@@ -88,13 +88,13 @@ const SubTypes = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array.from(Array(20).keys()).map((idx) => (
                   <SubTypeLineDummy key={idx} dataColumns={dataColumns} />
                 ))}
               </>
-            }
+            )}
           >
             <SubTypesLines
               queryRef={queryRef}

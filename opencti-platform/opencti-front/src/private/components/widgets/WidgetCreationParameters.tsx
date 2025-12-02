@@ -725,12 +725,12 @@ const WidgetCreationParameters = () => {
 
                     {dataSelection[i].perspective === 'relationships' && (
                       <FormControlLabel
-                        control={
+                        control={(
                           <Switch
                             onChange={() => handleToggleDataValidationIsTo(i)}
                             checked={!dataSelection[i].isTo}
                           />
-                        }
+                        )}
                         label={t_i18n('Display the source')}
                       />
                     )}
@@ -758,34 +758,34 @@ const WidgetCreationParameters = () => {
       <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
         {getCurrentAvailableParameters(type).includes('stacked') && (
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 onChange={() => handleToggleParameter('stacked')}
                 checked={parameters.stacked ?? undefined}
               />
-            }
+            )}
             label={t_i18n('Stacked')}
           />
         )}
         {getCurrentAvailableParameters(type).includes('distributed') && (
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 onChange={() => handleToggleParameter('distributed')}
                 checked={parameters.distributed ?? undefined}
               />
-            }
+            )}
             label={t_i18n('Distributed')}
           />
         )}
         {getCurrentAvailableParameters(type).includes('legend') && (
           <FormControlLabel
-            control={
+            control={(
               <Switch
                 onChange={() => handleToggleParameter('legend')}
                 checked={parameters.legend ?? undefined}
               />
-            }
+            )}
             label={t_i18n('Display legend')}
           />
         )}

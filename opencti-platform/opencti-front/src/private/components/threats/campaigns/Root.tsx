@@ -112,7 +112,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -133,7 +133,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
                   data={campaign}
                   attribution={['Intrusion-Set', 'Threat-Actor-Individual', 'Threat-Actor-Group']}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -232,19 +232,19 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <CampaignKnowledge campaignData={campaign} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={campaign}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -254,14 +254,14 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={campaignId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={campaign}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
