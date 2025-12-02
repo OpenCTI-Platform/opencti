@@ -138,7 +138,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <IconButton
           ref={AddOrCreateIndicatorsButtonRef}
-          aria-label='Add or create indicators button'
+          aria-label="Add or create indicators button"
           color="primary"
           onClick={handleOpenAddOrCreateIndicatorMenu}
           style={{ float: 'left', margin: '-15px 0 0 -2px' }}
@@ -160,7 +160,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
         </Menu>
       </Security>
       <div className="clearfix" />
-      <List style={{ marginTop: -15 }} aria-label='Stix cyber observable indicators list'>
+      <List style={{ marginTop: -15 }} aria-label="Stix cyber observable indicators list">
         {stixCyberObservable.indicators.edges.map((indicatorEdge) => (
           <ListItem
             key={indicatorEdge.node.id}

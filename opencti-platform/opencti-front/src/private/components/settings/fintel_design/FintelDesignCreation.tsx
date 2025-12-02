@@ -34,7 +34,7 @@ const CreateFintelDesignControlledDial = (
   props: DrawerControlledDialProps,
 ) => (
   <CreateEntityControlledDial
-    entityType='FintelDesign'
+    entityType="FintelDesign"
     {...props}
   />
 );

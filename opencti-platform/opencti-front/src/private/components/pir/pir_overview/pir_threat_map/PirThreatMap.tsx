@@ -112,7 +112,7 @@ const PirThreatMap = ({ data }: PirThreatMapProps) => {
       {t_i18n('Threat map')}
       <Tooltip title={t_i18n('Threat map explanations...')}>
         <InfoOutlined
-          color='primary'
+          color="primary"
           fontSize="small"
           style={{ paddingBottom: 4, paddingTop: 1 }}
         />

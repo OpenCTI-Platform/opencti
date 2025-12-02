@@ -116,7 +116,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
 
   const createInvestigationButton = (props: { onOpen: () => void }) => (
     <Security needs={[INVESTIGATION_INUPDATE]}>
-      <CreateEntityControlledDial entityType='Investigation' {...props} />
+      <CreateEntityControlledDial entityType="Investigation" {...props} />
     </Security>
   );
 
@@ -128,7 +128,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           size="small"
           onClick={() => inputRef.current?.click()}
           sx={{ marginLeft: theme.spacing(1) }}
-          data-testid='ImportDashboard'
+          data-testid="ImportDashboard"
           title={t_i18n('Import dashboard')}
         >
           <FileUploadOutlined fontSize="small" color={'primary'} />
@@ -144,7 +144,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           {t_i18n('Import from Hub')}
         </GradientButton>
         )}
-        <CreateEntityControlledDial entityType='Dashboard' {...props} />
+        <CreateEntityControlledDial entityType="Dashboard" {...props} />
       </>
     </Security>
   );

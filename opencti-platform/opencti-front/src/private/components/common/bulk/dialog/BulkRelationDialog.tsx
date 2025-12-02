@@ -481,7 +481,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
 
   return (
     <>
-      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll='paper' sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
+      <Dialog open={isOpen} slotProps={{ paper: { elevation: 1 } }} scroll="paper" sx={{ overflowY: 'hidden', ...classes.dialog, ...classes.dialogContent }} onClose={onClose} maxWidth="xl">
         {isSubmitting && renderLoader()}
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '70px' }}>
           <div>{t_i18n('Create relations in bulk for')}: {t_i18n(`entity_${stixDomainObjectType}`)}</div>
@@ -491,7 +491,7 @@ const BulkRelationDialog : FunctionComponent<BulkRelationDialogProps> = ({
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <Typography sx={{ height: '25px', paddingLeft: '10px' }}>{t_i18n('relationship_from')}</Typography>
             <Box sx={{ display: 'flex' }}>
-              <Box id='entityCard' sx={{ display: 'flex', justifyContent: 'center', padding: '0 10px', flexDirection: 'column' }}>
+              <Box id="entityCard" sx={{ display: 'flex', justifyContent: 'center', padding: '0 10px', flexDirection: 'column' }}>
                 <EntityRelationshipCard
                   entityName={stixDomainObjectName}
                   entityType={stixDomainObjectType}

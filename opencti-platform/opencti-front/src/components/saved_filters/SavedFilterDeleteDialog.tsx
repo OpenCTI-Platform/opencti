@@ -63,7 +63,7 @@ const SavedFilterDeleteDialog = ({ savedFilterToDelete, onClose, onReset, should
     <DeleteDialog
       deletion={deletion}
       isOpen
-      message= {t_i18n('Do you want to delete this saved filter?')}
+      message={t_i18n('Do you want to delete this saved filter?')}
       submitDelete={handleSubmitDeleteFilter}
       onClose={onClose}
     />

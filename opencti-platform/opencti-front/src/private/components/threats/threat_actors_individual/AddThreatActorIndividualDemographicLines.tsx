@@ -108,7 +108,7 @@ const AddThreatActorIndividualDemographicLine = ({
       <ListItemIcon>
         {currentTargets.includes(id)
           ? <CheckCircle style={{ color: theme.palette.primary.main }} />
-          : <ItemIcon type='Country' />
+          : <ItemIcon type="Country" />
         }
       </ListItemIcon>
       <ListItemText

@@ -231,16 +231,16 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
           alignItems: 'center',
         }}
       >
-        <Typography variant='subtitle2'>
+        <Typography variant="subtitle2">
           {showSDOCreation ? t_i18n('Add entities') : t_i18n('Add observables')}
         </Typography>
         <div style={{ marginRight: '10px' }}>
           {showSDOCreation && (
             <Button
               style={{ fontSize: 'small' }}
-              variant='contained'
+              variant="contained"
               disableElevation
-              size='small'
+              size="small"
               aria-label={t_i18n('Create an entity')}
               onClick={() => setOpenCreateEntity(true)}
             >
@@ -250,9 +250,9 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
           {showSCOCreation && (
             <Button
               style={{ fontSize: 'small', marginLeft: '3px' }}
-              variant='contained'
+              variant="contained"
               disableElevation
-              size='small'
+              size="small"
               aria-label={t_i18n('Create an observable')}
               onClick={() => setOpenCreateObservable(true)}
             >

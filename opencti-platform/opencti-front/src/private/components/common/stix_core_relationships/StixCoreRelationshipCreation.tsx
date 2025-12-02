@@ -720,7 +720,7 @@ const StixCoreRelationshipCreation = ({
         open={displayProgress}
         value={progress}
         onClose={handleCloseProgressBar}
-        variant='determinate'
+        variant="determinate"
       />
     </>
   );

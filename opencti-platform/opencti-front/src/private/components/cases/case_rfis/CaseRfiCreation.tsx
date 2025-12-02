@@ -425,7 +425,7 @@ const CaseRfiCreation = ({
     'caseRfiAdd',
   );
   const CreateCaseRfiControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Case-Rfi' {...props} />
+    <CreateEntityControlledDial entityType="Case-Rfi" {...props} />
   );
 
   return (

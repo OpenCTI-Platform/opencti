@@ -273,7 +273,7 @@ const GraphToolbarRemoveConfirm = ({
             >
               <LinearProgress
                 style={{ flex: 1 }}
-                variant='determinate'
+                variant="determinate"
                 value={(currentDeleted / totalToDelete) * 100}
               />
               <Typography style={{ flexShrink: 0 }}>

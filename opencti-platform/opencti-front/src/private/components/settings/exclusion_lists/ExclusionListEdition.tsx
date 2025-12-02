@@ -166,7 +166,7 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                 />
                 <Field
                   component={MarkdownField}
-                  controlledSelectedTab='write'
+                  controlledSelectedTab="write"
                   name="description"
                   label={t_i18n('Description')}
                   fullWidth={true}

@@ -334,7 +334,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
 };
 
 const CreateToolControlledDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial entityType='Tool' {...props} />
+  <CreateEntityControlledDial entityType="Tool" {...props} />
 );
 
 const ToolCreation = ({

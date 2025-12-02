@@ -418,7 +418,7 @@ const ReportCreation = ({
     'reportAdd',
   );
   const CreateReportControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Report' {...props} />
+    <CreateEntityControlledDial entityType="Report" {...props} />
   );
   return (
     <Drawer

@@ -305,7 +305,7 @@ const AttackPatternCreation = ({
     'attackPatternAdd',
   );
   const CreateAttackPatternControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Attack-Pattern' {...props} />
+    <CreateEntityControlledDial entityType="Attack-Pattern" {...props} />
   );
   const CreateAttackPatternControlledDialContextual = CreateAttackPatternControlledDial({
     onOpen: handleOpen,

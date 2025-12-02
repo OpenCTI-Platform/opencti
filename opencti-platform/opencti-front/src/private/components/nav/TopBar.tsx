@@ -422,8 +422,8 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                         </Badge>
                       </a>
                     ) : (
-                      <Link className={classes.xtmItem} to='/dashboard/settings/experience' onClick={handleCloseXtm}>
-                        <Badge variant="dot" color='warning'>
+                      <Link className={classes.xtmItem} to="/dashboard/settings/experience" onClick={handleCloseXtm}>
+                        <Badge variant="dot" color="warning">
                           <img style={{ width: 200, paddingRight: 8, paddingLeft: 8 }} src={fileUri(theme.palette.mode === 'dark' ? xtmhubDark : xtmhubLight)} alt="XTM Hub" />
                         </Badge>
                       </Link>

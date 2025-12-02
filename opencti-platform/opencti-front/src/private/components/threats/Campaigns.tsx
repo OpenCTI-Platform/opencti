@@ -95,7 +95,7 @@ const Campaigns = () => {
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Campaign' />
+              <StixCoreObjectForms entityType="Campaign" />
               <CampaignCreation paginationOptions={queryPaginationOptions} />
             </div>
           </Security>
@@ -184,7 +184,7 @@ const Campaigns = () => {
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType='Campaign' />
+                  <StixCoreObjectForms entityType="Campaign" />
                   <CampaignCreation paginationOptions={queryPaginationOptions} />
                 </div>
               </Security>

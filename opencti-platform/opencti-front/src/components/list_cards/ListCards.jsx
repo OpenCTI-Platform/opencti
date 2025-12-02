@@ -121,7 +121,7 @@ class ListCards extends Component {
                         id: 'sort-by',
                       }}
                     >
-                      <MenuItem key='_score' value='_score'>
+                      <MenuItem key="_score" value="_score">
                         {t('Score')}
                       </MenuItem>
                       {toPairs(dataColumns).map((dataColumn) => (

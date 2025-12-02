@@ -139,7 +139,8 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
         </Box>
         <Box sx={{ marginTop: '8px' }}>
           <h3>State</h3>
-          <CodeBlock customHeight={'50px'}
+          <CodeBlock
+            customHeight={'50px'}
             code={result?.ingestionJsonTester?.state || t_i18n('You will find here the computed state.')}
             language={'json'}
           />

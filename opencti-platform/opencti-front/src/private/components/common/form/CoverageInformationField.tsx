@@ -78,47 +78,48 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
       <Typography variant="h4" gutterBottom>
         {t_i18n('Coverage Information')}
       </Typography>
-      <FieldArray name={name} render={(arrayHelpers) => (
-        <>
-          <div>
-            {values?.map((_, index) => (
-              <div
-                key={index}
-                style={{
+      <FieldArray
+        name={name} render={(arrayHelpers) => (
+          <>
+            <div>
+              {values?.map((_, index) => (
+                <div
+                  key={index}
+                  style={{
                   marginTop: index === 0 ? 10 : 20,
                   width: '100%',
                   position: 'relative',
                   paddingRight: 50,
                 }}
-              >
-                <div
-                  style={{
+                >
+                  <div
+                    style={{
                     display: 'grid',
                     gap: 20,
                     gridTemplateColumns: '1fr 1fr',
                   }}
-                >
-                  <OpenVocabField
-                    label={t_i18n('Coverage name')}
-                    type="coverage_ov"
-                    name={`${name}.${index}.coverage_name`}
-                    required={true}
-                    onChange={(__, value) => {
+                  >
+                    <OpenVocabField
+                      label={t_i18n('Coverage name')}
+                      type="coverage_ov"
+                      name={`${name}.${index}.coverage_name`}
+                      required={true}
+                      onChange={(__, value) => {
                       arrayHelpers.replace(index, { ...values[index], coverage_name: value.toString() });
                     }}
-                    disabledOptions={disabledOptions}
-                    containerStyle={{ marginTop: 3, width: '100%' }}
-                    multiple={false}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name={`${name}.${index}.coverage_score`}
-                    label={t_i18n('Coverage score (0-100)')}
-                    type="number"
-                    fullWidth
-                    required
-                    slotProps={{
+                      disabledOptions={disabledOptions}
+                      containerStyle={{ marginTop: 3, width: '100%' }}
+                      multiple={false}
+                    />
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name={`${name}.${index}.coverage_score`}
+                      label={t_i18n('Coverage score (0-100)')}
+                      type="number"
+                      fullWidth
+                      required
+                      slotProps={{
                       input: {
                         inputProps: {
                           min: 0,
@@ -126,37 +127,37 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                         },
                       },
                     }}
-                  />
-                </div>
-                <IconButton
-                  id={`deleteCoverageInfo_${index}`}
-                  aria-label="Delete"
-                  onClick={() => {
+                    />
+                  </div>
+                  <IconButton
+                    id={`deleteCoverageInfo_${index}`}
+                    aria-label="Delete"
+                    onClick={() => {
                     arrayHelpers.remove(index);
                   }}
-                  size="large"
-                  style={{ position: 'absolute', right: -10, top: 5 }}
-                >
-                  <DeleteOutlined />
-                </IconButton>
-              </div>
+                    size="large"
+                    style={{ position: 'absolute', right: -10, top: 5 }}
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
+                </div>
             ))}
-            <Button
-              size="small"
-              startIcon={<AddOutlined />}
-              variant="contained"
-              color="primary"
-              aria-label="Add"
-              id="addCoverageInfo"
-              onClick={() => {
+              <Button
+                size="small"
+                startIcon={<AddOutlined />}
+                variant="contained"
+                color="primary"
+                aria-label="Add"
+                id="addCoverageInfo"
+                onClick={() => {
                 arrayHelpers.push({ coverage_name: '', coverage_score: '' });
               }}
-              style={{ marginTop: 20 }}
-            >
-              {t_i18n('Add coverage metric')}
-            </Button>
-          </div>
-        </>
+                style={{ marginTop: 20 }}
+              >
+                {t_i18n('Add coverage metric')}
+              </Button>
+            </div>
+          </>
       )}
       />
     </div>

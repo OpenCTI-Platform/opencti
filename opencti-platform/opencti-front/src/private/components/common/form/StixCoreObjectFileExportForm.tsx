@@ -81,7 +81,7 @@ export interface StixCoreObjectFileExportFormProps {
 export const renderIcon = (key: string) => {
   switch (key) {
     case 'ai':
-      return <FiligranIcon icon={LogoXtmOneIcon} size='large' color="ai" />;
+      return <FiligranIcon icon={LogoXtmOneIcon} size="large" color="ai" />;
     case 'application/pdf':
       return <FilePdfBox fontSize="large" color="primary"/>;
     case 'application/json':

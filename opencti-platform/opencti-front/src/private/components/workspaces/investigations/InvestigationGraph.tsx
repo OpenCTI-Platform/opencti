@@ -651,7 +651,7 @@ const InvestigationGraphLoader = ({
       localStorageKey={localStorageKey}
       objects={objects}
       positions={positions}
-      context='investigation'
+      context="investigation"
     >
       <InvestigationGraphComponent
         currentData={dataLoaded}

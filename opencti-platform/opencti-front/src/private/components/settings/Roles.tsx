@@ -120,7 +120,7 @@ const Role = () => {
     orderMode: rolesState.orderAsc ? OrderMode.asc : OrderMode.desc,
   };
   return (
-    <div className={classes.container} data-testid='roles-settings-page'>
+    <div className={classes.container} data-testid="roles-settings-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Security') }, { label: t_i18n('Roles'), current: true }]} />
       <AccessesMenu />
       {rolesState.view === 'lines' ? renderLines(paginationOptions) : ''}

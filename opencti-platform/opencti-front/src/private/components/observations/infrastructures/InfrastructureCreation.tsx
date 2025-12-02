@@ -372,7 +372,7 @@ const InfrastructureCreation = ({ paginationOptions }: {
   );
 
   const CreateInfrastructureControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Infrastructure' {...props} />
+    <CreateEntityControlledDial entityType="Infrastructure" {...props} />
   );
 
   return (

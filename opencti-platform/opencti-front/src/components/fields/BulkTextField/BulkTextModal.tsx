@@ -59,7 +59,7 @@ const BulkTextModal = ({
       <DialogContent style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <Alert severity="info" variant="outlined">
           <Typography>
-            {t_i18n('If you are adding more than 50 values, please upload them through')} <a href='/dashboard/data/import'>{t_i18n('Imports')}</a>
+            {t_i18n('If you are adding more than 50 values, please upload them through')} <a href="/dashboard/data/import">{t_i18n('Imports')}</a>
           </Typography>
         </Alert>
 

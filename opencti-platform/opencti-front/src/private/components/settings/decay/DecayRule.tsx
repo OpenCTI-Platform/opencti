@@ -122,7 +122,8 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
             <Typography variant="h4" gutterBottom={true}>
               {t_i18n('Configuration')}
             </Typography>
-            <Paper style={{
+            <Paper
+              style={{
               flex: 1,
               margin: '6px 0 0 0',
               padding: '15px',
@@ -187,7 +188,8 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Impact')}
           </Typography>
-          <Paper style={{
+          <Paper
+            style={{
             marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 6,
@@ -198,7 +200,8 @@ const DecayRuleComponent = ({ queryRef }: DecayRuleComponentProps) => {
           <Typography variant="h4" gutterBottom={true} style={{ marginTop: 10 }}>
             {t_i18n('Life curve')}
           </Typography>
-          <Paper style={{
+          <Paper
+            style={{
             marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 6,

@@ -47,10 +47,11 @@ const FintelTemplateTabs = ({ children, data }: FintelTemplateTabsProps) => {
         justifyContent: 'space-between',
       }}
       >
-        <Security needs={[KNOWLEDGE]} placeholder={(
-          <Tabs value={index} onChange={(_, i) => setIndex(i)}>
-            <Tab label={t_i18n('Template Editor')} />
-          </Tabs>
+        <Security
+          needs={[KNOWLEDGE]} placeholder={(
+            <Tabs value={index} onChange={(_, i) => setIndex(i)}>
+              <Tab label={t_i18n('Template Editor')} />
+            </Tabs>
         )}
         >
           <Tabs value={index} onChange={(_, i) => setIndex(i)}>

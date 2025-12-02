@@ -147,7 +147,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                 />
               </div>
               <Divider className={classes.divider} orientation="vertical" />
-              <div style ={{ paddingTop: 4 }} >
+              <div style={{ paddingTop: 4 }} >
                 <Filters
                   availableFilterKeys={[
                     'entity_type',

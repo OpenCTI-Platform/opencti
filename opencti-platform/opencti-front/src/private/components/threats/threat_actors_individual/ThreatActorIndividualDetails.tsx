@@ -166,11 +166,11 @@ ThreatActorIndividualDetailsProps
           <Grid item xs={hasImages ? 5 : 6}>
             <ThreatActorIndividualDetailsChips
               data={data}
-              relType='known-as'
+              relType="known-as"
             />
             <ThreatActorIndividualDetailsChips
               data={data}
-              relType='impersonates'
+              relType="impersonates"
             />
             <ThreatActorIndividualLocation threatActorIndividual={data} />
             <CardLabel style={{ marginTop: 20 }}>

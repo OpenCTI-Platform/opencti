@@ -184,7 +184,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             {!isEnterpriseEditionByConfig && isGrantedToParameters && (
               <div style={{ float: 'right', marginTop: theme.spacing(-2.6), position: 'relative' }}>
                 <DangerZoneBlock
-                  type='ce_ee_toggle'
+                  type="ce_ee_toggle"
                   sx={{
                     root: { border: 'none', padding: 0, margin: 0 },
                     title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
@@ -195,7 +195,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                       <Button
                         size="small"
                         variant="outlined"
-                        color='dangerZone'
+                        color="dangerZone"
                         onClick={() => setOpenEEChanges(true)}
                         disabled={disabled}
                         style={{
@@ -264,7 +264,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             <Paper
               classes={{ root: classes.paper }}
               variant="outlined"
-              className='paper-for-grid'
+              className="paper-for-grid"
             >
               <List style={{ marginTop: -20 }}>
                 <ListItem divider={true}>
@@ -386,7 +386,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
             <div className="clearfix"/>
             <Paper
               classes={{ root: classes.paper }}
-              className='paper-for-grid'
+              className="paper-for-grid"
               variant="outlined"
             >
               <Box>

@@ -360,7 +360,7 @@ const GroupingCreation = ({
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   const CreateGroupingControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Grouping' {...props} />
+    <CreateEntityControlledDial entityType="Grouping" {...props} />
   );
   return (
     <Drawer

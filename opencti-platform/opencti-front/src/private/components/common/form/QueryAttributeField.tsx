@@ -40,7 +40,8 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
             <div id="total_attributes">
               {values?.map((_, index) => (
 
-                <Paper className={'paper-for-grid'} variant="outlined"
+                <Paper
+                  className={'paper-for-grid'} variant="outlined"
                   key={index}
                   style={{ marginTop: 20, padding: 20, width: '100%', position: 'relative' }}
                 >
@@ -52,7 +53,8 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                       gridTemplateColumns: 'repeat(2, 1fr)',
                     }}
                   >
-                    <Field component={SelectField}
+                    <Field
+                      component={SelectField}
                       variant="standard"
                       name={`${name}.${index}.type`}
                       label={t_i18n('Resolve from')}
@@ -63,7 +65,8 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                       <MenuItem value="header">{t_i18n('Header')}</MenuItem>
                     </Field>
 
-                    <Field component={SelectField}
+                    <Field
+                      component={SelectField}
                       variant="standard"
                       name={`${name}.${index}.exposed`}
                       label={t_i18n('Exposed attribute to')}
@@ -75,7 +78,8 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                       <MenuItem value="header">{t_i18n('Header')}</MenuItem>
                     </Field>
 
-                    <Field component={SelectField}
+                    <Field
+                      component={SelectField}
                       variant="standard"
                       name={`${name}.${index}.data_operation`}
                       label={t_i18n('Resolve operation')}
@@ -86,7 +90,8 @@ export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddPro
                       <MenuItem value="count">{t_i18n('Count')}</MenuItem>
                     </Field>
 
-                    <Field component={SelectField}
+                    <Field
+                      component={SelectField}
                       variant="standard"
                       name={`${name}.${index}.state_operation`}
                       label={t_i18n('State operation')}

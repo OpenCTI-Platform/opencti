@@ -430,7 +430,7 @@ const CaseIncidentCreation = ({
     'caseIncidentAdd',
   );
   const CreateCaseIncidentControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Case-Incident' {...props} />
+    <CreateEntityControlledDial entityType="Case-Incident" {...props} />
   );
 
   return (

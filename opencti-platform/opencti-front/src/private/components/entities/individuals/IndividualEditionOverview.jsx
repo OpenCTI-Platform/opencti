@@ -176,7 +176,8 @@ const IndividualEditionOverviewComponent = (props) => {
     ]),
   )(individual);
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={individualValidator}
       validateOnChange={true}

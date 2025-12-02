@@ -89,7 +89,7 @@ const ReportDetails = ({ report }) => {
   ];
 
   return (
-    <div style={{ height: '100%' }} data-testid='report-overview'>
+    <div style={{ height: '100%' }} data-testid="report-overview">
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Entity details')}
       </Typography>

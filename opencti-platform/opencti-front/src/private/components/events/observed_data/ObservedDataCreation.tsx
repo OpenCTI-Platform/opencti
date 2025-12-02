@@ -285,7 +285,7 @@ const ObservedDataCreation = ({
     'observedDataAdd',
   );
   const CreateObservedDataControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Observed-Data' {...props} />
+    <CreateEntityControlledDial entityType="Observed-Data" {...props} />
   );
   return (
     <Drawer

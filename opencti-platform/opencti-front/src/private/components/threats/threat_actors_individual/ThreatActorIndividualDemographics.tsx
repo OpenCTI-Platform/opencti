@@ -78,7 +78,7 @@ const ThreatActorIndividualDemographics = ({
               >
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
-                  relType='resides-in'
+                  relType="resides-in"
                   title={t_i18n('Add country of residence')}
                 />
               </Security>
@@ -107,7 +107,7 @@ const ThreatActorIndividualDemographics = ({
               >
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
-                  relType='citizen-of'
+                  relType="citizen-of"
                   title={'Add citizenship'}
                 />
               </Security>
@@ -152,7 +152,7 @@ const ThreatActorIndividualDemographics = ({
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <AddThreatActorIndividualDemographic
                   threatActorIndividual={threatActorIndividual}
-                  relType='national-of'
+                  relType="national-of"
                   title={t_i18n('Add nationality')}
                 />
               </Security>

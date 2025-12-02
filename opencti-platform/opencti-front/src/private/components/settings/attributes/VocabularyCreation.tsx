@@ -95,7 +95,7 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
   };
 
   const CreateVocabularyControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Vocabulary' {...props} />
+    <CreateEntityControlledDial entityType="Vocabulary" {...props} />
   );
 
   return (

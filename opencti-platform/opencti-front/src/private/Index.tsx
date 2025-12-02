@@ -106,7 +106,8 @@ const Index = ({ settings }: IndexProps) => {
         <Box component="main" sx={boxSx}>
           <Suspense fallback={<Loader />}>
             <Routes>
-              <Route path="/" element={draftContext?.id
+              <Route
+                path="/" element={draftContext?.id
                 ? (
                   <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true}/>
                 )

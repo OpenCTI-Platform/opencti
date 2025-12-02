@@ -320,7 +320,7 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = ({
       localStorageKey={localStorageKey}
       objects={objects}
       positions={positions}
-      context='analyses'
+      context="analyses"
     >
       <Alert
         sx={{

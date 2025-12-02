@@ -18,7 +18,8 @@ const withRouter = <Props extends WithRouterProps>(
     const params = useParams();
     const navigate = useNavigate();
 
-    return <Component {...(props as Props)}
+    return <Component
+      {...(props as Props)}
       location={location}
       params={params}
       navigate={navigate}

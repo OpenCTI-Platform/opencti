@@ -305,7 +305,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             {!isEnterpriseEditionByConfig && (
             <div style={{ marginTop: theme.spacing(-2.6), position: 'relative' }}>
               <DangerZoneBlock
-                type='ce_ee_toggle'
+                type="ce_ee_toggle"
                 sx={{
                   root: { border: 'none', padding: 0, margin: 0 },
                   title: { position: 'absolute', zIndex: 2, left: 4, top: 9, fontSize: 8 },
@@ -317,7 +317,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       <Button
                         size="small"
                         variant="outlined"
-                        color='dangerZone'
+                        color="dangerZone"
                         onClick={() => setOpenEEChanges(true)}
                         disabled={disabled}
                         style={{
@@ -377,7 +377,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           </Box>
           <div className="clearfix" />
           <Paper
-            className='paper-for-grid'
+            className="paper-for-grid"
             style={{
               marginTop: 6,
               padding: 20,
@@ -426,7 +426,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           </Box>
           <div className="clearfix"/>
           <Paper
-            className='paper-for-grid'
+            className="paper-for-grid"
             style={{
               marginTop: 6,
               padding: 20,
@@ -485,7 +485,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
             {t_i18n('Configuration')}
           </Typography>
           <Paper
-            className='paper-for-grid'
+            className="paper-for-grid"
             style={{
               marginTop: theme.spacing(1),
               padding: 20,
@@ -621,7 +621,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
           </Box>
           <div className="clearfix"/>
           <Paper
-            className='paper-for-grid'
+            className="paper-for-grid"
             style={{
               marginTop: 4,
               padding: 20,
@@ -693,7 +693,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       <ItemBoolean
                         variant="large"
                         label={
-                            // eslint-disable-next-line no-nested-ternary
+                             
                             !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
                               ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
                         status={settings.platform_ai_enabled && settings.platform_ai_has_token}

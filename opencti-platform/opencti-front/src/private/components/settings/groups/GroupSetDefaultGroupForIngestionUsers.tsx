@@ -98,7 +98,8 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
     <Typography variant="h4" gutterBottom={true}>
       { t_i18n('Service account policy')}
     </Typography>
-    <Paper style={{
+    <Paper
+      style={{
       marginTop: 8,
       padding: 20,
       borderRadius: 4,

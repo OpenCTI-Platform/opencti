@@ -127,7 +127,8 @@ const ObjectAssigneeField: FunctionComponent<ObjectAssigneeFieldProps> = ({
   };
 
   return (
-    <Field component={AutocompleteField}
+    <Field
+      component={AutocompleteField}
       style={style}
       name={name}
       disabled={disabled}

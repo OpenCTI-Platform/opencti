@@ -101,7 +101,7 @@ const ThreatActorsIndividual = () => {
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Threat-Actor-Individual' />
+              <StixCoreObjectForms entityType="Threat-Actor-Individual" />
               <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
             </div>
           </Security>
@@ -188,7 +188,7 @@ const ThreatActorsIndividual = () => {
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType='Threat-Actor-Individual' />
+                  <StixCoreObjectForms entityType="Threat-Actor-Individual" />
                   <ThreatActorIndividualCreation paginationOptions={queryPaginationOptions} />
                 </div>
               </Security>

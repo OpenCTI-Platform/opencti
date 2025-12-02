@@ -167,7 +167,7 @@ const SearchInput = (props) => {
           startAdornment: (
             <InputAdornment position="start" style={{ color: isNLQActivated ? theme.palette.ai.main : undefined }} >
               {isNLQActivated
-                ? <FiligranIcon icon={LogoXtmOneIcon} size='medium' color="ai" />
+                ? <FiligranIcon icon={LogoXtmOneIcon} size="medium" color="ai" />
                 : <Search fontSize="small"/>}
             </InputAdornment>
           ),
@@ -190,7 +190,7 @@ const SearchInput = (props) => {
                   && !isNLQActivated ? 'primary' : 'inherit'
                 }
               >
-                <BiotechOutlined fontSize='medium'/>
+                <BiotechOutlined fontSize="medium"/>
               </IconButton>
             </Tooltip>
             <Tooltip title={t_i18n('Bulk search')}>
@@ -215,7 +215,7 @@ const SearchInput = (props) => {
                 style={{ color: theme.palette.ai.main }}
                 onClick={isAIEnabled ? handleChangeAskAI : null}
               >
-                <FiligranIcon icon={LogoXtmOneIcon} size='medium' color="ai" />
+                <FiligranIcon icon={LogoXtmOneIcon} size="medium" color="ai" />
               </IconButton>
             </EETooltip>
             )}

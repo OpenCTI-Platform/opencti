@@ -109,7 +109,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element= {
+              element={
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[

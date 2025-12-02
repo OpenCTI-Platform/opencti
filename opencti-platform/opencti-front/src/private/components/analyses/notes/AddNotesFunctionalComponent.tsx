@@ -86,9 +86,9 @@ const AddNotesFunctionalComponent: FunctionComponent<AddNotesFunctionalComponent
             />
             <Button
               onClick={handleDialogOpen}
-              color='primary'
-              size='small'
-              variant='contained'
+              color="primary"
+              size="small"
+              variant="contained"
               sx={{
                 marginLeft: '10px',
                 padding: '7px 10px',

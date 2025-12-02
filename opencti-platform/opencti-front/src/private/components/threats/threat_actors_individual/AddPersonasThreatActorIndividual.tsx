@@ -43,7 +43,7 @@ AddPersonaThreatActorIndividualComponentProps
 
   return (<div>
     <IconButton
-      color='primary'
+      color="primary"
       onClick={handleOpen}
     >
       <Add fontSize="small" />
@@ -64,7 +64,7 @@ AddPersonaThreatActorIndividualComponentProps
           }}
         >
           <SearchInput
-            variant='inDrawer'
+            variant="inDrawer"
             onSubmit={onSearch}
           />
           <div style={{ height: 5 }} />

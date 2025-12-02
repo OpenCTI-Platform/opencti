@@ -330,7 +330,7 @@ const IndividualCreation = ({ paginationOptions }: {
     'individualAdd',
   );
   const CreateIndividualControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Individual' {...props} />
+    <CreateEntityControlledDial entityType="Individual" {...props} />
   );
 
   return (

@@ -208,7 +208,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
     return (
       <div>
         <Formik
-          initialValues = {{
+          initialValues={{
             name: inputValueContextual,
             color: '',
           }}

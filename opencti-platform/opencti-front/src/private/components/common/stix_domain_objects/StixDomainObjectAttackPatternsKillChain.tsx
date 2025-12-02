@@ -253,7 +253,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
 
   const matrixViewButton = (
     <Tooltip title={t_i18n('Matrix view')} key="matrix">
-      <ToggleButton aria-label="matrix"
+      <ToggleButton
+        aria-label="matrix"
         onClick={() => handleChangeView('matrix')}
         value={'matrix'}
       >
@@ -549,7 +550,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
         {currentView !== 'matrix-in-line' && <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
           <StixCoreObjectsExports
             open={openExports}
-            exportType='simple'
+            exportType="simple"
             handleToggle={handleToggleExports}
             paginationOptions={paginationOptionsForExport}
             exportContext={exportContextWithEntityType}

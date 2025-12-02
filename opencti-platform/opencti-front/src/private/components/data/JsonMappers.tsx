@@ -137,13 +137,13 @@ const JsonMappers = () => {
                       value="import"
                       size="small"
                       onClick={() => inputFileRef.current?.click()}
-                      data-testid='ImporJsonMapper'
+                      data-testid="ImporJsonMapper"
                       title={t_i18n('Import a JSON mapper')}
                     >
                       <FileUploadOutlined fontSize="small" color={'primary'} />
                     </ToggleButton>
                     <Button
-                      variant='contained'
+                      variant="contained"
                       disableElevation
                       sx={{ marginLeft: 1 }}
                       onClick={() => setOpen(true)}

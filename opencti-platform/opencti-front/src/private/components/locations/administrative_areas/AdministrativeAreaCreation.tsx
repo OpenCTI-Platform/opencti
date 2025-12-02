@@ -342,7 +342,7 @@ const AdministrativeAreaCreation = ({
   };
 
   const CreateAreaControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Administrative-Area' {...props} />
+    <CreateEntityControlledDial entityType="Administrative-Area" {...props} />
   );
   return (
     <Drawer

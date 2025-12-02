@@ -101,7 +101,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                         >
                           <ItemEntityType
                             entityType={stixCoreObject.entity_type}
-                            size='large'
+                            size="large"
                             showIcon
                           />
                         </div>

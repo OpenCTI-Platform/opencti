@@ -144,10 +144,11 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
             <Tab disabled={!!user.external || isServiceAccount === true} label={t_i18n('Password')} />
             <Tab label={t_i18n('Groups')} />
             {hasSetAccess
-              && <Tab disabled={user.objectAssignedOrganization?.edges.length === 0 } label={
-                <div style={{ alignItems: 'center', display: 'flex' }}>
-                  {t_i18n('Organizations admin')}<EEChip />
-                </div>}
+              && <Tab
+                disabled={user.objectAssignedOrganization?.edges.length === 0 } label={
+                  <div style={{ alignItems: 'center', display: 'flex' }}>
+                    {t_i18n('Organizations admin')}<EEChip />
+                  </div>}
                  />
             }
             {hasSetAccess && <Tab label={t_i18n('Confidences')} />}

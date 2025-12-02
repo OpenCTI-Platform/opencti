@@ -11,7 +11,8 @@ interface IngestionSchedulingProps {
 
 const IngestionSchedulingField = ({ handleSubmitField }: IngestionSchedulingProps) => {
   const { t_i18n } = useFormatter();
-  return <Field component={SelectField}
+  return <Field
+    component={SelectField}
     variant="standard"
     name="scheduling_period"
     label={t_i18n('Schedule period')}

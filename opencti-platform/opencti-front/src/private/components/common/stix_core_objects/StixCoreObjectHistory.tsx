@@ -106,7 +106,7 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
   );
 
   return (
-    <div style={{ height: '100%' }} data-testid='sco-history-content'>
+    <div style={{ height: '100%' }} data-testid="sco-history-content">
       <Grid
         container
         spacing={3}

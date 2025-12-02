@@ -188,7 +188,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         </Tabs>
         {!isKnowledgeOrContent && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-            <AIInsights id={caseData.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
             <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
           </div>
         )}
@@ -234,7 +234,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         <Route
           path="/knowledge/*"
           element={
-            <IncidentKnowledge caseData={caseData}
+            <IncidentKnowledge
+              caseData={caseData}
               enableReferences={enableReferences}
             />}
         />

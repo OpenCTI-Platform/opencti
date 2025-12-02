@@ -132,7 +132,7 @@ JsonMapperRepresentationAttributesFormProps
             label={t_i18n('JSON Path')}
             required={true}
             name={`${representationName}.target.path`}
-            variant='standard'
+            variant="standard"
             style={{ width: '100%' }}
             onChange={(_event: React.SyntheticEvent, newValue: string) => {
               handleErrors('target.path', isEmptyField(newValue) ? 'This field is required' : null);
@@ -149,7 +149,7 @@ JsonMapperRepresentationAttributesFormProps
               component={TextField}
               label={t_i18n('JSON Path')}
               name={`${representationName}.identifier`}
-              variant='standard'
+              variant="standard"
               style={{ width: '100%' }}
             />
           </div>

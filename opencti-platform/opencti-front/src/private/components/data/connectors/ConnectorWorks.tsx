@@ -68,7 +68,7 @@ const ConnectorWorksComponent: FunctionComponent<ConnectorWorksComponentProps> =
           classes={{ root: classes.paper }}
           variant="outlined"
         >
-          <Typography align='center'>
+          <Typography align="center">
             {t_i18n('No work')}
           </Typography>
         </Paper>

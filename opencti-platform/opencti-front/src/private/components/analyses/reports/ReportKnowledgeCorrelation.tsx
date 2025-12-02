@@ -54,7 +54,7 @@ const ReportKnowledgeCorrelation = ({
         queryObjectsRef={queryObjectsRef}
         pageSize={PAGE_SIZE}
         containerId={id}
-        containerType='report'
+        containerType="report"
         dataPositions={data}
         onPositionsChanged={savePositions}
       />

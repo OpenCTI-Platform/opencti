@@ -160,7 +160,7 @@ const feedCreationValidation = (t_i18n: (s: string) => string) => Yup.object().s
 
 const CreateFeedControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='Feed'
+    entityType="Feed"
     {...props}
   />
 );

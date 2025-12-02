@@ -71,8 +71,8 @@ const StixSightingRelationshipHeader = ({
         {canEdit && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Button
-              variant='contained'
-              size='medium'
+              variant="contained"
+              size="medium"
               aria-label={t_i18n('Update')}
               onClick={onOpenEdit}
               style={{ marginLeft: theme.spacing(0.5) }}

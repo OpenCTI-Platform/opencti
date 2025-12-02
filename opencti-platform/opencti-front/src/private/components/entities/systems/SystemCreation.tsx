@@ -329,7 +329,7 @@ const SystemCreation = ({
   const [bulkOpen, setBulkOpen] = useState(false);
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_systems', paginationOptions, 'systemAdd');
   const CreateSystemControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='System' {...props} />
+    <CreateEntityControlledDial entityType="System" {...props} />
   );
 
   return (

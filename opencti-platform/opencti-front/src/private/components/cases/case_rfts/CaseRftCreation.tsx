@@ -424,7 +424,7 @@ const CaseRftCreation = ({
     'caseRftAdd',
   );
   const CreateCaseRftControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Case-Rft' {...props} />
+    <CreateEntityControlledDial entityType="Case-Rft" {...props} />
   );
 
   return (
