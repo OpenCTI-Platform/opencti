@@ -26,13 +26,13 @@ interface NarrativeLineProps {
   deSelectedElements: Record<string, NarrativeLine_node$data>;
   onToggleEntity: (
     entity: NarrativeLine_node$data,
-    event?: React.SyntheticEvent
+    event?: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: NarrativeLine_node$data,
-    event?: React.SyntheticEvent
+    event?: React.SyntheticEvent,
   ) => void;
   index: number;
   redirectionMode: string;

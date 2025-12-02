@@ -105,13 +105,13 @@ JsonMapperRepresentationAttributeFormProps
       <div>
         {
           (schemaAttribute.type === 'date' || schemaAttribute.multiple || schemaAttribute.editDefault)
-            && <JsonMapperRepresentationDialogOption configuration={value}>
-              <JsonMapperRepresentationAttributeOptions
-                schemaAttribute={schemaAttribute}
-                baseAttributeName={name}
-                configurationAttributeName={`${name}.attr_path.configuration`}
-                form={form}
-              />
+          && <JsonMapperRepresentationDialogOption configuration={value}>
+            <JsonMapperRepresentationAttributeOptions
+              schemaAttribute={schemaAttribute}
+              baseAttributeName={name}
+              configurationAttributeName={`${name}.attr_path.configuration`}
+              form={form}
+            />
             </JsonMapperRepresentationDialogOption>
         }
       </div>

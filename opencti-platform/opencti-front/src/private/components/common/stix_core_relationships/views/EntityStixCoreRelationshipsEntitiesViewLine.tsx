@@ -215,7 +215,7 @@ interface EntityStixCoreRelationshipsEntitiesLineProps {
   selectAll: UseEntityToggle<{ id: string }>['selectAll'];
   onToggleShiftEntity: (
     index: number,
-    entity: EntityStixCoreRelationshipsEntitiesViewLine_node$data
+    entity: EntityStixCoreRelationshipsEntitiesViewLine_node$data,
   ) => void;
   index: number;
 }

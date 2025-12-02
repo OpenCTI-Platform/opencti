@@ -273,22 +273,22 @@ const ContainerAddStixCoreObjects = (props) => {
   const renderEntityCreation = (searchPaginationOptions) => {
     if (
       targetStixCoreObjectTypes
-            && isTypeDomainObject(targetStixCoreObjectTypes)
-            && !isTypeObservable(targetStixCoreObjectTypes)
+      && isTypeDomainObject(targetStixCoreObjectTypes)
+      && !isTypeObservable(targetStixCoreObjectTypes)
     ) {
       return renderDomainObjectCreation(searchPaginationOptions);
     }
     if (
       targetStixCoreObjectTypes
-            && isTypeObservable(targetStixCoreObjectTypes)
-            && !isTypeDomainObject(targetStixCoreObjectTypes)
+      && isTypeObservable(targetStixCoreObjectTypes)
+      && !isTypeDomainObject(targetStixCoreObjectTypes)
     ) {
       return renderObservableCreation(searchPaginationOptions);
     }
     if (
       !targetStixCoreObjectTypes
-            || (isTypeObservable(targetStixCoreObjectTypes)
-                && isTypeDomainObject(targetStixCoreObjectTypes))
+      || (isTypeObservable(targetStixCoreObjectTypes)
+        && isTypeDomainObject(targetStixCoreObjectTypes))
     ) {
       return renderStixCoreObjectCreation(searchPaginationOptions);
     }

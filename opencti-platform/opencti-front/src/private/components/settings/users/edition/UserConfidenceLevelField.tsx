@@ -34,7 +34,7 @@ interface UserConfidenceLevelFieldProps {
   onSubmit?: (name: string, value: string | null) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?:
-  | readonly ({
+    | readonly ({
     readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]

@@ -470,7 +470,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 );
               }
               return !stixCoreObjectTypes
-              || stixCoreObjectTypes.length === 0 ? (
+                || stixCoreObjectTypes.length === 0 ? (
                   this.renderFakeList()
                 ) : (
                   <div> &nbsp; </div>
@@ -509,8 +509,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             schema.schemaRelationsTypesMapping,
           ).filter(
             (n) => R.isNil(allowedRelationshipTypes)
-                    || allowedRelationshipTypes.length === 0
-                    || allowedRelationshipTypes.includes(n),
+              || allowedRelationshipTypes.length === 0
+              || allowedRelationshipTypes.includes(n),
           ));
           return (
             <>

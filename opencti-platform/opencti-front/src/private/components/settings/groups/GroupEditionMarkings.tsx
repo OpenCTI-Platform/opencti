@@ -119,7 +119,7 @@ const GroupEditionMarkingsComponent = ({
   const handleToggleAllowedMarkings = (
     markingDefinitionId: string,
     groupMarkingDefinition:
-    | {
+      | {
       id?: string;
     }
     | undefined,

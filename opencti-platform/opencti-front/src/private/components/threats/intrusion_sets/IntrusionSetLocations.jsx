@@ -83,7 +83,7 @@ class IntrusionSetLocationsComponent extends Component {
               const location = locationEdge.node;
               const link = resolveLink(location.entity_type);
               const flag = location.entity_type === 'Country'
-              && R.head(
+                && R.head(
                 (location.x_opencti_aliases ?? []).filter(
                   (n) => n?.length === 2,
                 ),

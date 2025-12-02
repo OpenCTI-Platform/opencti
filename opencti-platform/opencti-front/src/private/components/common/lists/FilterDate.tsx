@@ -7,7 +7,7 @@ interface FilterDateProps {
     k: string,
     id: string,
     operator?: string,
-    event?: React.KeyboardEvent
+    event?: React.KeyboardEvent,
   ) => void;
   filterKey: string;
   operator?: string;

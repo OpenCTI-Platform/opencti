@@ -74,15 +74,15 @@ const DynamicResolutionField = ({
           .map((val) => {
             const filteredStixDomainObjects = stixDomainObjects.filter(
               (n) => (types.includes(convertFromStixType(n.type))
-                  || types.includes(n.x_opencti_location_type)
-                  || types.includes(n.identity_class))
-                && (n.name === val.trim() || n.value === val.trim()),
+                || types.includes(n.x_opencti_location_type)
+                || types.includes(n.identity_class))
+              && (n.name === val.trim() || n.value === val.trim()),
             );
 
             if (filteredStixDomainObjects.length > 0) {
               const firstStixDomainObject = R.head(filteredStixDomainObjects);
               const targetSelectedType = firstStixDomainObject.x_opencti_location_type
-                  ?? filteredStixDomainObjects.identity_class ?? firstStixDomainObject.type;
+                ?? filteredStixDomainObjects.identity_class ?? firstStixDomainObject.type;
               return {
                 id: firstStixDomainObject.id,
                 type: targetSelectedType,

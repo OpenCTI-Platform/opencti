@@ -48,13 +48,13 @@ interface DeleteOperationLineComponentProps {
   deSelectedElements: Record<string, DeleteOperationLine_node$data>;
   onToggleEntity: (
     entity: DeleteOperationLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
     entity: DeleteOperationLine_node$data,
-    event?: React.SyntheticEvent
+    event?: React.SyntheticEvent,
   ) => void;
   index: number;
 }

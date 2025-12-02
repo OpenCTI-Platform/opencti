@@ -12,7 +12,7 @@ import { Filter, FilterGroup, FilterValue, handleFilterHelpers } from './filters
 import { dateFiltersValueForDisplay } from '../Time';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../widget/widgetUtils';
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export type { FilterGroup as GqlFilterGroup } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
 
@@ -35,7 +35,7 @@ export const emptyFilterGroup = {
   filterGroups: [],
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 export const SELF_ID = 'SELF_ID';
 export const SELF_ID_VALUE = 'CURRENT ENTITY';
@@ -133,7 +133,7 @@ export const stixFilters = [
   'incident_type',
 ];
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // utilities
 
 const getStringFilterKey = (key: string | string[]): string => {
@@ -417,7 +417,7 @@ export const isFilterEditable = (filtersRestrictions: FiltersRestrictions | unde
     && filtersRestrictions.preventFilterValuesEditionFor.get(filterKey)?.some((v) => filterValues.includes(v)));
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 // Serialization
 // TODO:
 //  these functions are used to sanitize the keys inside filters before serialization and saving into backend
@@ -577,7 +577,7 @@ export const deserializeDashboardManifestForFrontend = (
   };
 };
 
-//----------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------
 
 // add a filter (k, id, op) in a filterGroup smartly, for usage in forms
 // note that we're only dealing with one-level filterGroup (no nested), so we just update the 1st level filters list

@@ -78,8 +78,8 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
       },
       onCompleted: (
         result:
-        | FileUploaderEntityMutation$data
-        | FileUploaderGlobalMutation$data,
+          | FileUploaderEntityMutation$data
+          | FileUploaderGlobalMutation$data,
       ) => {
         if (uploadRef.current?.value) {
           uploadRef.current.value = ''; // Reset the upload input

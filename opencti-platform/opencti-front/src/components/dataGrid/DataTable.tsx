@@ -17,8 +17,8 @@ import { useDataTableContext } from './components/DataTableContext';
 import { FilterSearchContext, useAvailableFilterKeysForEntityTypes } from '../../utils/filters/filtersUtils';
 
 type DataTableInternalFiltersProps = Pick<DataTableProps,
-| 'additionalFilters'
-| 'entityTypes'> & {
+  | 'additionalFilters'
+  | 'entityTypes'> & {
   hideSearch?: boolean
   hideFilters?: boolean
   availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
@@ -106,12 +106,12 @@ const DataTableInternalFilters = ({
 };
 
 type DataTableInternalToolbarProps = Pick<DataTableProps,
-| 'toolbarFilters'
-| 'handleCopy'
-| 'removeAuthMembersEnabled'
-| 'removeFromDraftEnabled'
-| 'markAsReadEnabled'
-| 'entityTypes'
+  | 'toolbarFilters'
+  | 'handleCopy'
+  | 'removeAuthMembersEnabled'
+  | 'removeFromDraftEnabled'
+  | 'markAsReadEnabled'
+  | 'entityTypes'
 > & {
   taskScope?: string
   globalSearch?: string;
@@ -170,29 +170,29 @@ const DataTableInternalToolbar = ({
 };
 
 type OCTIDataTableProps = Pick<DataTableProps,
-| 'dataColumns'
-| 'resolvePath'
-| 'storageKey'
-| 'initialValues'
-| 'availableFilterKeys'
-| 'redirectionModeEnabled'
-| 'additionalFilterKeys'
-| 'additionalFilters'
-| 'variant'
-| 'actions'
-| 'hideHeaders'
-| 'emptyStateMessage'
-| 'icon'
-| 'rootRef'
-| 'onLineClick'
-| 'getComputeLink'
-| 'disableNavigation'
-| 'disableLineSelection'
-| 'disableToolBar'
-| 'removeSelectAll'
-| 'selectOnLineClick'
-| 'createButton'
-| 'entityTypes'> & {
+  | 'dataColumns'
+  | 'resolvePath'
+  | 'storageKey'
+  | 'initialValues'
+  | 'availableFilterKeys'
+  | 'redirectionModeEnabled'
+  | 'additionalFilterKeys'
+  | 'additionalFilters'
+  | 'variant'
+  | 'actions'
+  | 'hideHeaders'
+  | 'emptyStateMessage'
+  | 'icon'
+  | 'rootRef'
+  | 'onLineClick'
+  | 'getComputeLink'
+  | 'disableNavigation'
+  | 'disableLineSelection'
+  | 'disableToolBar'
+  | 'removeSelectAll'
+  | 'selectOnLineClick'
+  | 'createButton'
+  | 'entityTypes'> & {
   lineFragment: GraphQLTaggedNode
   preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>,
   exportContext?: { entity_type: string, entity_id?: string }

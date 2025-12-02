@@ -149,7 +149,7 @@ const JsonMapperForm: FunctionComponent<JsonMapperFormProps> = ({ jsonMapper, on
   // on edit mode, jsonMapper.errors might be set; on create mode backend validation is not done yet so error is null
   const [hasError, setHasError] = useState<boolean>(
     !!jsonMapper.errors?.length
-      || (jsonMapper.entity_representations.length === 0 && jsonMapper.relationship_representations.length === 0),
+    || (jsonMapper.entity_representations.length === 0 && jsonMapper.relationship_representations.length === 0),
   );
   let errors: Map<string, string> = new Map();
   const handleRepresentationErrors = (key: string, value: boolean) => {

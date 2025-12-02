@@ -100,8 +100,8 @@ JsonMapperRepresentationAttributeRefFormProps
 
   // We don't need to resolve those different types, as they can link any entity between them.
   const isGenericRelationship = representation.target?.entity_type === 'related-to'
-      || representation.target?.entity_type === 'revoked-by'
-      || representation.target?.entity_type === 'stix-sighting-relationship';
+    || representation.target?.entity_type === 'revoked-by'
+    || representation.target?.entity_type === 'stix-sighting-relationship';
   if (isRelationFromOrTo && isGenericRelationship) {
     options = filterOptions(entity_representations);
   } else if (representation.target?.entity_type) {

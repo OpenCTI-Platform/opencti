@@ -48,7 +48,7 @@ interface FintelDesignCreationFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined
+    response: { id: string; name: string } | null | undefined,
   ) => void;
   onReset?: () => void;
   onCompleted?: () => void;

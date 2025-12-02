@@ -37,5 +37,5 @@ export type ListLines = FunctionComponent<unknown>;
 
 export type RenderOption = (
   props: React.AllHTMLAttributes<never>,
-  { value, description }: ListLineOption
+  { value, description }: ListLineOption,
 ) => ReactElement;

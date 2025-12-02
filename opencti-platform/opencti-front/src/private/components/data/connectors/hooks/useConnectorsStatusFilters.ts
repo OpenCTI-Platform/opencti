@@ -5,7 +5,7 @@ import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/
 
 type Connector
   = NonNullable<ConnectorsListQuery['response']['connectors']>[number]
-  & Partial<NonNullable<ConnectorsStateQuery['response']['connectors']>[number]>;
+    & Partial<NonNullable<ConnectorsStateQuery['response']['connectors']>[number]>;
 
 type UseConnectorsStatusFiltersProps = {
   connectors: Connector[]

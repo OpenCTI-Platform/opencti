@@ -375,11 +375,11 @@ RelationshipDetailsComponentProps
           {t_i18n('Description')}
         </Typography>
         {stixRelationship.description
-        && stixRelationship.description.length > 0 ? (
-          <ExpandableMarkdown
-            source={stixRelationship.description}
-            limit={400}
-          />
+          && stixRelationship.description.length > 0 ? (
+            <ExpandableMarkdown
+              source={stixRelationship.description}
+              limit={400}
+            />
           ) : (
             '-'
           )}

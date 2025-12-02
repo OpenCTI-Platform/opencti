@@ -83,7 +83,7 @@ const WorkspaceTurnToContainerDialog: FunctionComponent<WorkspaceTurnToContainer
       filterKey: string,
       cacheEntities: Record<string, EntityValue[]>,
       setCacheEntities: Dispatch<Record<string, EntityValue[]>>,
-      event: SyntheticEvent
+      event: SyntheticEvent,
     ) => Record<string, EntityValue[]>,
   ]; // change when useSearchEntities will be in TS;
   const containersFromElements = entities.id ?? [];

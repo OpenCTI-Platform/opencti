@@ -226,7 +226,7 @@ interface StixNestedRefRelationshipCreationFromEntityLineProps {
   onLabelClick: HandleAddFilter;
   onToggleEntity: (
     entity: StixNestedRefRelationshipCreationFromEntityLine_node$data,
-    event?: React.SyntheticEvent
+    event?: React.SyntheticEvent,
   ) => void;
   selectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>;
   deSelectedElements: Record<string, StixNestedRefRelationshipCreationFromEntityLine_node$data>;
@@ -234,7 +234,7 @@ interface StixNestedRefRelationshipCreationFromEntityLineProps {
   onToggleShiftEntity: (
     index: number,
     entity: StixNestedRefRelationshipCreationFromEntityLine_node$data,
-    event?: React.SyntheticEvent
+    event?: React.SyntheticEvent,
   ) => void;
   index: number;
 }

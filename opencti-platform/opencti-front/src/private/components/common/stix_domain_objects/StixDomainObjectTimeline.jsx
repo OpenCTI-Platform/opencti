@@ -83,10 +83,10 @@ class StixDomainObjectTimelineComponent extends Component {
                     {fldt(
                       timeField === 'technical'
                         ? stixRelationship.created
-                            || stixRelationship.created_at
+                        || stixRelationship.created_at
                         : stixRelationship.start_time
-                            || stixRelationship.first_seen
-                            || stixRelationship.created_at,
+                          || stixRelationship.first_seen
+                          || stixRelationship.created_at,
                     )}
                   </TimelineOppositeContent>
                   <TimelineSeparator>
@@ -163,7 +163,7 @@ class StixDomainObjectTimelineComponent extends Component {
                         {truncate(
                           // eslint-disable-next-line no-nested-ternary
                           stixRelationship.description
-                            && stixRelationship.description.length > 0
+                          && stixRelationship.description.length > 0
                             ? stixRelationship.description
                             : !restricted
                               ? getSecondaryRepresentative(

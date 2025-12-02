@@ -272,10 +272,10 @@ const getEntityMainRepresentativeForWorkbenchChecks = (n, fallback = 'Unknown') 
         || n.hashes['SHA-1']
         || n.hashes['SHA-256']
         || n.hashes['SHA-512']))
-    || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects?.edges ?? []))?.node)
-    || n.main_entity_name
-    || n.dst_port
-    || fallback;
+      || getEntityMainRepresentativeForWorkbenchChecks((R.head(n.objects?.edges ?? []))?.node)
+      || n.main_entity_name
+      || n.dst_port
+      || fallback;
   return mainValue;
 };
 
@@ -760,7 +760,7 @@ const WorkbenchFileContentComponent = ({
       'object_refs',
       (n.object_refs || []).filter(
         (o) => !objectsToBeDeletedIds.includes(o)
-            && !stixCoreRelationshipsToRemove.includes(o),
+          && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -1114,7 +1114,7 @@ const WorkbenchFileContentComponent = ({
       'object_refs',
       (n.object_refs || []).filter(
         (o) => o !== toDeleteObject.id
-            && !stixCoreRelationshipsToRemove.includes(o),
+          && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -1213,7 +1213,7 @@ const WorkbenchFileContentComponent = ({
           newEntity.identity_class = resolveIdentityClass(currentEntityType);
         } else if (
           newEntity.type === 'location'
-            && !newEntity.x_opencti_location_type
+          && !newEntity.x_opencti_location_type
         ) {
           newEntity.x_opencti_location_type = currentEntityType;
         }
@@ -1566,7 +1566,7 @@ const WorkbenchFileContentComponent = ({
     );
     setContainerSelectAll(
       (container.object_refs || []).length
-        >= Object.keys(indexedStixObjects).length,
+      >= Object.keys(indexedStixObjects).length,
     );
     setContainerStep(1);
     setStixDomainObjects(
@@ -2947,13 +2947,13 @@ const WorkbenchFileContentComponent = ({
         ...n,
         source_ref_name: getMainRepresentative(
           indexedStixObjects[n.source_ref]
-            || indexedStixObjects[n.sighting_of_ref]
-            || {},
+          || indexedStixObjects[n.sighting_of_ref]
+          || {},
         ),
         target_ref_name: getMainRepresentative(
           indexedStixObjects[n.target_ref]
-            || indexedStixObjects[n.where_sighted_refs?.at(0)]
-            || {},
+          || indexedStixObjects[n.where_sighted_refs?.at(0)]
+          || {},
         ),
       }, null),
       markings: resolveMarkings(stixDomainObjects, n.object_marking_refs),

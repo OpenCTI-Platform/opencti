@@ -322,7 +322,7 @@ const TasksList = ({ data, options }) => {
                     </span>
                     )}
                     {task.type !== 'RULE'
-                        && (isFilterGroupNotEmpty(filters)
+                      && (isFilterGroupNotEmpty(filters)
                           ? <TasksFilterValueContainer
                               filters={filters}
                               entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
@@ -358,7 +358,7 @@ const TasksList = ({ data, options }) => {
                     />
                     )}
                     {task.actions
-                        && R.map(
+                      && R.map(
                           (action) => (
                             <div key={task.actions.indexOf(action)}>
                               <Chip
@@ -421,11 +421,11 @@ const TasksList = ({ data, options }) => {
                     {nsdt(lastTaskExecutionDate)}
                   </Grid>
                   {(task.scope ?? task.type)
-                      && <Grid item xs={2}>
-                        <Typography variant="h3" gutterBottom={true}>
-                          {t_i18n('Scope')}
-                        </Typography>
-                        <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
+                    && <Grid item xs={2}>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Scope')}
+                      </Typography>
+                      <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
                       </Grid>
                   }
                   <Grid item xs={2}>

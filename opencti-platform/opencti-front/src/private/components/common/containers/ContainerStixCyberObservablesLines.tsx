@@ -105,7 +105,7 @@ interface ContainerStixCyberObservablesLinesProps {
   onToggleEntity: (
     entity: ContainerStixCyberObservableLine_node$data,
     event: React.SyntheticEvent,
-    forceRemove: ContainerStixCyberObservableLine_node$data[]
+    forceRemove: ContainerStixCyberObservableLine_node$data[],
   ) => void;
   selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>;
   deSelectedElements: Record<
@@ -116,7 +116,7 @@ interface ContainerStixCyberObservablesLinesProps {
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
   queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>;
   setSelectedElements: (
-    selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>
+    selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>,
   ) => void;
   enableReferences?: boolean;
 }

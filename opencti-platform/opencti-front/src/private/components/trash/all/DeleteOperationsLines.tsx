@@ -20,7 +20,7 @@ interface DeleteOperationsLinesProps {
   deSelectedElements: Record<string, DeleteOperationLine_node$data>;
   onToggleEntity: (
     entity: DeleteOperationLine_node$data,
-    event: React.SyntheticEvent
+    event: React.SyntheticEvent,
   ) => void;
   selectAll: boolean;
 }

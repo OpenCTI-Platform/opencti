@@ -84,7 +84,7 @@ export type HandleAddFilter = (
   k: string,
   id: string | null,
   op?: string,
-  event?: SyntheticEvent
+  event?: SyntheticEvent,
 ) => void;
 
 const buildParamsFromHistory = (params: LocalStorage) => {

@@ -87,9 +87,9 @@ const DataTableFilters = ({
 
   const exportDisabled = !exportContext || (numberOfElements
     && ((Object.keys(selectedElements).length > export_max_size
-        && numberOfElements.number > export_max_size)
-      || (Object.keys(selectedElements).length === 0
-        && numberOfElements.number > export_max_size)));
+      && numberOfElements.number > export_max_size)
+    || (Object.keys(selectedElements).length === 0
+      && numberOfElements.number > export_max_size)));
 
   const hasFilters = availableFilterKeys && availableFilterKeys.length > 0;
 

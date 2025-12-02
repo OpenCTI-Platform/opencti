@@ -85,7 +85,7 @@ const userValidation = (t: (value: string) => string, userIsOnlyOrganizationAdmi
 interface UserEditionOverviewComponentProps {
   user: UserEditionOverview_user$data;
   context:
-  | readonly ({
+    | readonly ({
     readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]

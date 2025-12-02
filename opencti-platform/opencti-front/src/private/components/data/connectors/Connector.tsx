@@ -564,15 +564,15 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 {!connector.connector_info && (
                   connector.connector_state
                   && connectorStateConverted !== null
-                && checkLastRunExistingInState && checkLastRunIsNumber ? (
-                  <>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Last run (from State)')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom={true}>
-                      {nsdt(lastRunConverted)}
-                    </Typography>
-                  </>
+                  && checkLastRunExistingInState && checkLastRunIsNumber ? (
+                    <>
+                      <Typography variant="h3" gutterBottom={true}>
+                        {t_i18n('Last run (from State)')}
+                      </Typography>
+                      <Typography variant="body1" gutterBottom={true}>
+                        {nsdt(lastRunConverted)}
+                      </Typography>
+                    </>
                     ) : (
                       <>
                         <Typography variant="h3" gutterBottom={true}>
@@ -595,15 +595,15 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
                     </>) : (connector.connector_state
-                  && connectorStateConverted !== null
-                  && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t_i18n('Last run (from State)')}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom={true}>
-                      {nsdt(lastRunConverted)}
-                    </Typography>
-                  </>)
+                      && connectorStateConverted !== null
+                      && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
+                        <Typography variant="h3" gutterBottom={true}>
+                          {t_i18n('Last run (from State)')}
+                        </Typography>
+                        <Typography variant="body1" gutterBottom={true}>
+                          {nsdt(lastRunConverted)}
+                        </Typography>
+                      </>)
                     : (<>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Last run')}
@@ -658,11 +658,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                   {t_i18n('Server capacity')}
                 </Typography>
                 {connector.connector_info && (connector.connector_info.queue_messages_size !== 0
-                || connector.connector_info.last_run_datetime) ? (
-                  <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
-                    <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
-                    <span> / {connector.connector_info?.queue_threshold} Mo</span>
-                  </FieldOrEmpty>
+                  || connector.connector_info.last_run_datetime) ? (
+                    <FieldOrEmpty source={connector.connector_info?.queue_messages_size}>
+                      <span style={isBuffering() ? { color: theme.palette.dangerZone.main } : {}}>{connector.connector_info?.queue_messages_size.toFixed(2)}</span>
+                      <span> / {connector.connector_info?.queue_threshold} Mo</span>
+                    </FieldOrEmpty>
                   ) : (
                     <Typography variant="body1" gutterBottom={true}>
                       {t_i18n('Not provided')}

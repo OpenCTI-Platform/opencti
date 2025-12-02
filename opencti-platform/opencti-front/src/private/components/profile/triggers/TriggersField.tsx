@@ -40,7 +40,7 @@ interface TriggersFieldProps {
       label?: string;
       value: string;
       entity?: { id: string; name: string };
-    }[]
+    }[],
   ) => void;
   setFieldValue: (
     field: string,
@@ -52,7 +52,7 @@ interface TriggersFieldProps {
         name: string;
       };
     }[],
-    shouldValidate?: boolean
+    shouldValidate?: boolean,
   ) => void;
   values: {
     label?: string;

@@ -219,7 +219,7 @@ const FeedEditionContainer = (props) => {
   const areAttributesValid = () => {
     if (
       selectedTypes.length === 0
-            || Object.keys(feedAttributes).length === 0
+      || Object.keys(feedAttributes).length === 0
     ) {
       return false;
     }
@@ -227,14 +227,14 @@ const FeedEditionContainer = (props) => {
       const feedAttribute = feedAttributes[n];
       if (
         !feedAttribute
-                || !feedAttribute.attribute
-                || !feedAttribute.mappings
-                || R.values(feedAttribute.mappings).length !== selectedTypes.length
-                || R.values(feedAttribute.mappings).filter(
+        || !feedAttribute.attribute
+        || !feedAttribute.mappings
+        || R.values(feedAttribute.mappings).length !== selectedTypes.length
+        || R.values(feedAttribute.mappings).filter(
                   (m) => !m.attribute
-                        || !m.type
-                        || m.attribute.length === 0
-                        || m.type.length === 0,
+                    || !m.type
+                    || m.attribute.length === 0
+                    || m.type.length === 0,
                 ).length > 0
       ) {
         return false;
@@ -516,7 +516,7 @@ const FeedEditionContainer = (props) => {
                                                 n.value,
                                                 ignoredAttributesInFeeds,
                                               )
-                                               && !n.value.startsWith('i_'),
+                                              && !n.value.startsWith('i_'),
                                             ),
                                           )(
                                             resultProps.schemaAttributeNames.edges,

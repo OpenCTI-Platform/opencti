@@ -500,7 +500,7 @@ const PlaybookAddComponentsContent = ({
     resetForm();
     if (
       selectedNode?.data?.component?.id
-            && (action === 'config' || action === 'replace')
+      && (action === 'config' || action === 'replace')
     ) {
       onConfigReplace(selectedComponent, name, finalConfig);
     } else {
@@ -509,12 +509,12 @@ const PlaybookAddComponentsContent = ({
   };
   const renderLines = () => {
     const filterByKeyword = (n) => searchTerm === ''
-            || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-            || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
+      || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     const components = R.pipe(
       R.filter(
         (n) => n.is_entry_point
-                    === (selectedNode?.data?.component?.is_entry_point ?? false),
+          === (selectedNode?.data?.component?.is_entry_point ?? false),
       ),
       R.filter(filterByKeyword),
     )(playbookComponents);
@@ -1018,7 +1018,7 @@ const PlaybookAddComponents = ({
   };
   const open = !!(
     (action === 'config' || action === 'add' || action === 'replace')
-        && (selectedNode !== null || selectedEdge || null)
+    && (selectedNode !== null || selectedEdge || null)
   );
   return (
     <Drawer

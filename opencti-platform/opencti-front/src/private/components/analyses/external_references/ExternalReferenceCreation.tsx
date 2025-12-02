@@ -70,7 +70,7 @@ interface ExternalReferenceCreationProps {
   inputValue?: string;
   onCreate?: (
     externalReference: ExternalReferenceAddInput | null | undefined,
-    onlyCreate: boolean
+    onlyCreate: boolean,
   ) => void;
   openContextual: boolean;
   handleCloseContextual?: () => void;

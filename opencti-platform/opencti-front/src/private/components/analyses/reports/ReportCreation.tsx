@@ -101,7 +101,7 @@ interface ReportFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined
+    response: { id: string; name: string } | null | undefined,
   ) => void;
   onClose?: () => void;
   defaultCreatedBy?: { value: string; label: string };

@@ -2170,27 +2170,27 @@ class DataTableToolBar extends Component {
             : selectedTypes;
           const typesAreDifferent = elementsTypes.filter((type) => !['Stix-Core-Object', 'Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type)).length > 1;
           const preventMerge = selectedTypes.at(0) === 'Vocabulary'
-              && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+            && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
           // region update
           const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
-              || (entityTypeFilterValues.length === 1
-                  && notUpdatableTypes.includes(entityTypeFilterValues[0]));
+            || (entityTypeFilterValues.length === 1
+              && notUpdatableTypes.includes(entityTypeFilterValues[0]));
           // endregion
           // region rules
           const typesAreNotScannable = notScannableTypes.includes(selectedTypes[0])
-              || (entityTypeFilterValues.length === 1
-                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+            || (entityTypeFilterValues.length === 1
+              && notScannableTypes.includes(entityTypeFilterValues[0]));
           // endregion
           // region enrich
           const isManualEnrichSelect = !selectAll && (selectedTypes.filter((st) => !['Stix-Cyber-Observable', 'Stix-Domain-Object'].includes(st))).length === 1;
           const isAllEnrichSelect = selectAll
-              && entityTypeFilterValues.length === 1
-              && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
-              && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
+            && entityTypeFilterValues.length === 1
+            && entityTypeFilterValues[0] !== 'Stix-Cyber-Observable'
+            && entityTypeFilterValues[0] !== 'Stix-Domain-Object';
           const enrichDisable = notEnrichableTypes.includes(selectedTypes[0])
-              || (entityTypeFilterValues.length === 1
-                  && notEnrichableTypes.includes(entityTypeFilterValues[0]))
-              || (!isManualEnrichSelect && !isAllEnrichSelect);
+            || (entityTypeFilterValues.length === 1
+              && notEnrichableTypes.includes(entityTypeFilterValues[0]))
+            || (!isManualEnrichSelect && !isAllEnrichSelect);
           // endregion
           // region orgaSharing
           const isShareableType = !notShareableTypes.includes(selectedTypes[0]);
@@ -2199,8 +2199,8 @@ class DataTableToolBar extends Component {
           const typesAreNotMergable = notMergableTypes.includes(selectedTypes[0]);
           const enableMerge = !typesAreNotMergable && !mergeDisable;
           const typesAreNotAddableInContainer = notAddableTypes.includes(selectedTypes[0])
-              || (entityTypeFilterValues.length === 1
-                  && notScannableTypes.includes(entityTypeFilterValues[0]));
+            || (entityTypeFilterValues.length === 1
+              && notScannableTypes.includes(entityTypeFilterValues[0]));
           const titleCopy = this.titleCopy();
           let keptElement = null;
           let newAliases = [];

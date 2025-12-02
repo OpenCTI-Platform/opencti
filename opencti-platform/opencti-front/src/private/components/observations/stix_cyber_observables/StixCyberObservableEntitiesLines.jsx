@@ -100,7 +100,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
             if (targetEntity === null) {
               restricted = true;
             } else if (targetEntity.entity_type === 'stix_relation'
-                || targetEntity.entity_type === 'stix-relation'
+              || targetEntity.entity_type === 'stix-relation'
             ) {
               const [parentType] = targetEntity.parent_types;
               targetEntityType = parentType;

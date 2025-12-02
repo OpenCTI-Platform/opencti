@@ -488,14 +488,14 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                       // eslint-disable-next-line no-nested-ternary
                                       stixCoreRelationship.description
                                       && stixCoreRelationship.description.length
-                                        > 0 ? (
-                                          <MarkdownDisplay
-                                            content={
+                                      > 0 ? (
+                                        <MarkdownDisplay
+                                          content={
                                             stixCoreRelationship.description
                                           }
-                                            remarkGfmPlugin={true}
-                                            commonmark={true}
-                                          />
+                                          remarkGfmPlugin={true}
+                                          commonmark={true}
+                                        />
                                         ) : stixCoreRelationship.inferred ? (
                                           <i>{t('This relation is inferred')}</i>
                                         ) : (

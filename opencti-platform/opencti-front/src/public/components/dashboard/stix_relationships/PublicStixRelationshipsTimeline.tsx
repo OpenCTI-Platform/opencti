@@ -977,7 +977,7 @@ const PublicStixRelationshipsTimelineComponent = ({
       const stixRelationship = stixRelationshipEdge?.node;
       if (!stixRelationship) return [];
       const remoteNode = stixRelationship.from
-      && dataSelection[0].isTo
+        && dataSelection[0].isTo
         ? stixRelationship.to
         : stixRelationship.from;
       if (!remoteNode) return [];

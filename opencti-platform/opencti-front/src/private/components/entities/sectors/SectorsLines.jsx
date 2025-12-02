@@ -21,9 +21,9 @@ class SectorsLinesComponent extends Component {
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase())
-        !== -1
+      !== -1
       || (n.subsectors_text ?? '').toLowerCase().indexOf(keyword.toLowerCase())
-        !== -1;
+      !== -1;
     const sectors = pipe(
       pathOr([], ['sectors', 'edges']),
       map((n) => n.node),

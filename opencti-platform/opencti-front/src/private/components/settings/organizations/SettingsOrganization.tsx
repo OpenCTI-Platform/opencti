@@ -284,7 +284,7 @@ const SettingsOrganization = ({
                           {(capabilitiesPerGroup
                             .get(group.id)
                             ?.includes(SETTINGS_SETACCESSES)
-                              || capabilitiesPerGroup
+                            || capabilitiesPerGroup
                                 .get(group.id)
                                 ?.includes(BYPASS)) && (
                                 <Tooltip
@@ -305,7 +305,7 @@ const SettingsOrganization = ({
                           {(capabilitiesPerGroup
                             .get(group.id)
                             ?.includes(SETTINGS_SETACCESSES)
-                              || capabilitiesPerGroup
+                            || capabilitiesPerGroup
                                 .get(group.id)
                                 ?.includes(BYPASS)) && (
                                 <Tooltip

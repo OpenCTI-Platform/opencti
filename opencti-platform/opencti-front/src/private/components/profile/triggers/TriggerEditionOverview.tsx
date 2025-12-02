@@ -102,7 +102,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
-      ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
+    ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },

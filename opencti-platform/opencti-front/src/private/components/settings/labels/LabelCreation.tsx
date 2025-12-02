@@ -58,7 +58,7 @@ interface LabelCreationProps {
   inputValueContextual: string;
   required: boolean;
   creationCallback: (
-    data: LabelCreationContextualMutation$data
+    data: LabelCreationContextualMutation$data,
   ) => void;
   handleClose: () => void;
   open: boolean;

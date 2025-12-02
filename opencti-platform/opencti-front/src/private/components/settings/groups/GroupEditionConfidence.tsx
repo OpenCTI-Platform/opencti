@@ -38,7 +38,7 @@ export interface ConfidenceFormData {
 interface GroupEditionConfidenceProps {
   group: GroupEditionConfidence_group$data;
   context:
-  | readonly ({
+    | readonly ({
     readonly focusOn: string | null | undefined;
     readonly name: string;
   } | null)[]

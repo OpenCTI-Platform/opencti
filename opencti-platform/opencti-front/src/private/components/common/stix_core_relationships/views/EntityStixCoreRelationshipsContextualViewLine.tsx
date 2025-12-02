@@ -92,7 +92,7 @@ interface ContextualViewLineProps {
   selectAll: UseEntityToggle<EntityStixCoreRelationshipsContextualViewLine_node$data>['selectAll']
   onToggleShiftEntity: (
     index: number,
-    entity: EntityStixCoreRelationshipsContextualViewLine_node$data
+    entity: EntityStixCoreRelationshipsContextualViewLine_node$data,
   ) => void
   index: number
 }

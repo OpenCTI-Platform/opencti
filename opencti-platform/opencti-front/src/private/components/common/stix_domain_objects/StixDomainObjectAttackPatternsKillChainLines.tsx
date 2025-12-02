@@ -68,10 +68,10 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
     || (n.description ?? '')
       .toLowerCase()
       .indexOf(searchTerm.toLowerCase()) !== -1
-    || (n.x_mitre_id ?? '')
+      || (n.x_mitre_id ?? '')
       .toLowerCase()
       .indexOf(searchTerm.toLowerCase()) !== -1
-    || (n.subattackPatterns_text ?? '')
+      || (n.subattackPatterns_text ?? '')
       .toLowerCase()
       .indexOf(searchTerm.toLowerCase()) !== -1;
 
@@ -130,8 +130,8 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                     size="large"
                   >
                     {expandedLines[element.id]
-                  === false ? (
-                    <ExpandMore />
+                      === false ? (
+                        <ExpandMore />
                       ) : (
                         <ExpandLess />
                       )}

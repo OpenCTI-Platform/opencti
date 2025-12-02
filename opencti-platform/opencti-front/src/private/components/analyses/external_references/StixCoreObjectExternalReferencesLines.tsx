@@ -126,7 +126,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
     setSelectedConnector(data.connectorsForImport?.find((c) => c?.id === value) ?? null);
   };
   const invalidCsvMapper = selectedConnector?.name === 'ImportCsv'
-      && selectedConnector?.configurations?.length === 0;
+    && selectedConnector?.configurations?.length === 0;
   const [externalReferenceToRemove, setExternalReferenceToRemove] = useState<externalReferenceEdge_type | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [fileToImport, setFileToImport] = useState<FileLine_file$data | null>(null);
@@ -582,13 +582,13 @@ StixCoreObjectExternalReferencesLinesContainerProps
                   </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
                 }
                 {selectedConnector?.name === 'ImportCsv'
-                    && hasUserChoiceCsvMapper
-                    && (
-                      <ObjectMarkingField
-                        name="objectMarking"
-                        style={fieldSpacingContainerStyle}
-                        setFieldValue={setFieldValue}
-                      />
+                  && hasUserChoiceCsvMapper
+                  && (
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                  />
                     )
                 }
               </DialogContent>

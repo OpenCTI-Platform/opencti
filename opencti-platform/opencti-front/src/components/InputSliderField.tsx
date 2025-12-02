@@ -12,7 +12,7 @@ interface InputSliderFieldProps {
   onSubmit?: (name: string, value: string | number | number[]) => void;
   onFocus?: (name: string, value: string) => void;
   editContext?:
-  | readonly ({
+    | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
   } | null)[]

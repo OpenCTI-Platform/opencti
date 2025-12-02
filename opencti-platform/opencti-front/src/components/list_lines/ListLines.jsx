@@ -212,8 +212,8 @@ class ListLines extends Component {
     const exportDisabled = numberOfElements
       && ((selectedIds.length > export_max_size
         && numberOfElements.number > export_max_size)
-        || (selectedIds.length === 0
-          && numberOfElements.number > export_max_size));
+      || (selectedIds.length === 0
+        && numberOfElements.number > export_max_size));
     const searchContextFinal = {
       ...(searchContext ?? {}),
       entityTypes: entityTypes ?? [],
@@ -535,9 +535,9 @@ class ListLines extends Component {
             {children}
           </List>
           {typeof handleToggleExports === 'function' && exportContext
-          && exportContext.entity_type !== 'Stix-Core-Object'
-          && exportContext.entity_type !== 'Stix-Cyber-Observable'
-          && exportContext.entity_type !== 'stix-core-relationship' && (
+            && exportContext.entity_type !== 'Stix-Core-Object'
+            && exportContext.entity_type !== 'Stix-Cyber-Observable'
+            && exportContext.entity_type !== 'stix-core-relationship' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixDomainObjectsExports
                 open={openExports}
@@ -548,7 +548,7 @@ class ListLines extends Component {
             </Security>
           )}
           {typeof handleToggleExports === 'function' && exportContext
-          && exportContext.entity_type === 'stix-core-relationship' && (
+            && exportContext.entity_type === 'stix-core-relationship' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCoreRelationshipsExports
                 open={openExports}
@@ -559,7 +559,7 @@ class ListLines extends Component {
             </Security>
           )}
           {typeof handleToggleExports === 'function' && exportContext
-          && exportContext.entity_type === 'Stix-Core-Object' && (
+            && exportContext.entity_type === 'Stix-Core-Object' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCoreObjectsExports
                 open={openExports}
@@ -570,7 +570,7 @@ class ListLines extends Component {
             </Security>
           )}
           {typeof handleToggleExports === 'function' && exportContext
-          && exportContext.entity_type === 'Stix-Cyber-Observable' && (
+            && exportContext.entity_type === 'Stix-Cyber-Observable' && (
             <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
               <StixCyberObservablesExports
                 open={openExports}

@@ -489,7 +489,7 @@ const AuthorizedMembersField = ({
                 <List sx={{ pt: 0 }}>
                   {value.map((authorizedMember, index) => (
                     !isGenericOption(authorizedMember.value)
-                      && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID
+                    && !(adminDefault && authorizedMember.value === OPENCTI_ADMIN_UUID
                       ) ? (
                         <AuthorizedMembersFieldListItem
                           key={index}

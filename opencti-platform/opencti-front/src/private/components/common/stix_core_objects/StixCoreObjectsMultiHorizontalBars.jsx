@@ -462,7 +462,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
               }
               if (n.entity?.template?.color) {
                 color = theme.palette.mode === 'light'
-                && n.entity.template.color === '#ffffff'
+                  && n.entity.template.color === '#ffffff'
                   ? '#000000'
                   : n.entity.template.color;
               }

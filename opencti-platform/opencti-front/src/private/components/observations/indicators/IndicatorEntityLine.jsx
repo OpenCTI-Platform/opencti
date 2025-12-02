@@ -105,7 +105,7 @@ class IndicatorEntityLineComponent extends Component {
                 >
                   <ItemEntityType
                     entityType={element.entity_type === 'stix_relation'
-                    || element.entity_type === 'stix-relation'
+                      || element.entity_type === 'stix-relation'
                       ? element.parent_types[0]
                       : element.entity_type}
                     isRestricted={restricted}

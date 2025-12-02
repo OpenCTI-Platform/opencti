@@ -125,7 +125,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
           classes={{ root: classes.itemIcon }}
           style={{ minWidth: 40 }}
           onClick={(event) => !isOnlyThroughInference
-          && (event.shiftKey
+            && (event.shiftKey
             ? onToggleShiftEntity(index, node, event)
             : onToggleEntity(node, event))
         }
