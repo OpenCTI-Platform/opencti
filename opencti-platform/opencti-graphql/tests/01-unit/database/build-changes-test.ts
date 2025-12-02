@@ -63,7 +63,7 @@ describe('buildChanges standard behavior', async () => {
       }
     ]
     const changes = buildChanges(ENTITY_TYPE_MALWARE, inputs)
-    expect(changes).toEqual([{field:"Malware types",added:[],removed:['bootkit']}]);
+    expect(changes).toEqual([{field: 'Malware types', added:[], removed:['bootkit']}]);
   });
   it('should build changes for mutliple attribute update ("participant" added )', async () => {
     const inputs = [{
@@ -76,7 +76,7 @@ describe('buildChanges standard behavior', async () => {
         user_email:"user1@user1.com"}]}];
 
     const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs)
-    expect(changes).toEqual([{"field":"Participants","previous":[],"new":['User 1']}]);
+    expect(changes).toEqual([{field:'Participants',previous:[],new:['User 1']}]);
   })
   it('should build changes for mutliple attribute update (second "participant" added )', async () => {
     const inputs = [{
@@ -94,6 +94,6 @@ describe('buildChanges standard behavior', async () => {
       user_email:"user1@user1.com"}]}];
 
     const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs)
-    expect(changes).toEqual([{"field":"Participants","previous":['User 1'],"new":['User 1', 'User 2']}]);
+    expect(changes).toEqual([{field: 'Participants',previous:['User 1'],new:['User 1', 'User 2']}]);
   })
 });
