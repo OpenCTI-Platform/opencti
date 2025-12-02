@@ -114,6 +114,6 @@ describe('Playbook utils: checkPlaybookFiltersAndBuildConfigWithCorrectFilters',
       position: { x: 1, y: 1 },
     };
     await expect(async () => await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(testContext, ADMIN_USER, input, userId))
-      .rejects.toThrowError('incorrect filter keys not existing in any schema definition');
+      .rejects.toThrowError('Incorrect filter keys not existing in any schema definition');
   });
   });
