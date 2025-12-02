@@ -3,7 +3,6 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import ejs from 'ejs';
 import { DateTime } from 'luxon';
 import {
   ACCOUNT_STATUS_ACTIVE,
@@ -85,6 +84,8 @@ import { sendMail, smtpComputeFrom } from '../database/smtp';
 import { checkEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_EMAIL_TEMPLATE } from '../modules/emailTemplate/emailTemplate-types';
 import { doYield } from '../utils/eventloop-utils';
+import { sanitizeUser } from '../utils/templateContextSanitizer';
+import { safeRender } from '../utils/safeEjs.client';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -635,12 +636,10 @@ export const sendEmailToUser = async (context, user, input) => {
     .replace(/\$user\.account_lock_after_date/g, '<%= user.account_lock_after_date %>')
     .replace(/\$settings\.platform_url/g, '<%= platformUrl %>');
 
-  const platformUrl = settings.platform_url;
-
-  const renderedHtml = ejs.render(preprocessedTemplate, {
-    platformUrl,
+  const renderedHtml = await safeRender(preprocessedTemplate, {
+    platformUrl: settings.platform_url,
     user: {
-      ...targetUser,
+      ...sanitizeUser(targetUser),
       account_lock_after_date: targetUser.account_lock_after_date
         ? DateTime.fromISO(targetUser.account_lock_after_date).toFormat('yyyy-MM-dd')
         : ''

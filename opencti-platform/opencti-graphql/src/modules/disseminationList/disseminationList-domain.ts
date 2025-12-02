@@ -13,7 +13,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import ejs from 'ejs';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type DisseminationListAddInput, type DisseminationListSendInput, type EditInput, type QueryDisseminationListsArgs } from '../../generated/graphql';
@@ -36,6 +35,8 @@ import { extractEntityRepresentativeName } from '../../database/entity-represent
 import { BASIC_EMAIL_TEMPLATE } from '../../utils/emailTemplates/basicEmailTemplate';
 import { addDisseminationCount } from '../../manager/telemetryManager';
 import type { SendMailArgs } from '../../types/smtp';
+import { safeRender } from '../../utils/safeEjs.client';
+import { sanitizeSettings } from '../../utils/templateContextSanitizer';
 
 const MAX_DISSEMINATION_LIST_SIZE = conf.get('app:dissemination_list:max_list_size') || 500;
 
@@ -104,11 +105,11 @@ export const sendDisseminationEmail = async (
       throw UnsupportedError(`File type in the body must be ${allowedTypesInBody}`, { id: opts.htmlToBodyFileId });
     }
     const fileContent = await getFileContent(bodyFile.id);
-    generatedEmailBody = ejs.render(emailTemplate, { settings, body: fileContent });
+    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: fileContent });
     sentFiles.push(bodyFile);
   } else {
     const emailBodyFormatted = opts.body.replaceAll('\n', '<br/>');
-    generatedEmailBody = ejs.render(emailTemplate, { settings, body: emailBodyFormatted });
+    generatedEmailBody = await safeRender(emailTemplate, { settings: sanitizeSettings(settings), body: emailBodyFormatted });
   }
 
   const sendMailArgs: SendMailArgs = {
