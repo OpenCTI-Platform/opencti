@@ -6402,6 +6402,7 @@ export type DecayExclusionRuleEdge = {
 };
 
 export enum DecayExclusionRuleOrdering {
+  Score = '_score',
   Active = 'active',
   Name = 'name'
 }

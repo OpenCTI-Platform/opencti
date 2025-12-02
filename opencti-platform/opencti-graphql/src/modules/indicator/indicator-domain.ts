@@ -280,7 +280,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
 
   const { validFrom, validUntil, revoked, validPeriod } = await computeValidPeriod(indicator, decayRule.decay_lifetime);
 
-  const indicatorToCreate = {
+  let indicatorToCreate = {
     ...indicator,
     pattern: formattedPattern,
     x_opencti_main_observable_type: observableType,
@@ -301,6 +301,7 @@ export const addIndicator = async (context: AuthContext, user: AuthUser, indicat
     const entitySetting = await getEntitySettingFromCache(context, ENTITY_TYPE_INDICATOR);
     const resolvedIndicator = await inputResolveRefs(context, user, indicatorToCreate, ENTITY_TYPE_INDICATOR, entitySetting);
     exclusionRule = await checkDecayExclusionRules(context, user, resolvedIndicator, activeDecayExclusionRuleList);
+    indicatorToCreate = { ...resolvedIndicator }
   }
 
   let finalIndicatorToCreate;
