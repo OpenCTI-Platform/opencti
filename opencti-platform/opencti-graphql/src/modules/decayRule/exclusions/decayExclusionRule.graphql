@@ -15,6 +15,7 @@ type DecayExclusionRule implements InternalObject & BasicObject {
 enum DecayExclusionRuleOrdering {
   name
   active
+  _score
 }
 
 type DecayExclusionRuleEdge {
