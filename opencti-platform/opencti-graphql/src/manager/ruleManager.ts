@@ -1,12 +1,17 @@
-/* eslint-disable camelcase */
+ 
 import * as R from 'ramda';
 import type { Operation } from 'fast-json-patch';
 import * as jsonpatch from 'fast-json-patch';
 import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import {
-  buildCreateEvent, createStreamProcessor, EVENT_CURRENT_VERSION, REDIS_STREAM_NAME, redisGetManagerEventState,
-  redisSetManagerEventState, type StreamProcessor
+  buildCreateEvent,
+  createStreamProcessor,
+  EVENT_CURRENT_VERSION,
+  REDIS_STREAM_NAME,
+  redisGetManagerEventState,
+  redisSetManagerEventState,
+  type StreamProcessor
 } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import conf, { booleanConf, logApp } from '../config/conf';
@@ -85,7 +90,7 @@ const isAttributesImpactDependencies = (rule: RuleDefinition, operations: Operat
     .map((a) => a.name);
   const operationAttributes = R.uniq(operations.map((o) => {
     const parts = o.path.substring(1).split('/');
-    // eslint-disable-next-line no-restricted-globals
+     
     return parts.filter((p) => isNaN(Number(p))).join('.');
   }));
   return operationAttributes.filter((f) => rulesAttributes.includes(f)).length > 0;
@@ -158,7 +163,7 @@ const applyCleanupOnDependencyIds = async (deletionIds: Array<string>, rules: Ar
     filterGroups: [],
   };
   const callback = async (elements: Array<BasicStoreCommon>) => {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+     
     await rulesCleanHandler(context, RULE_MANAGER_USER, elements, rules, deletionIds);
     return true;
   };
@@ -180,7 +185,7 @@ export const rulesApplyHandler = async (context: AuthContext, user: AuthUser, ev
       if (type === EVENT_TYPE_MERGE) {
         const mergeEvent = event as MergeEvent;
         const mergeEvents = await ruleMergeHandler(mergeEvent);
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+         
         await rulesApplyHandler(context, user, mergeEvents);
       }
       // In case of deletion, call clean on every impacted elements
