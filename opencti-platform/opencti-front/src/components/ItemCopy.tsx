@@ -52,10 +52,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ItemCopyProps {
-  content: string;
-  value?: string;
-  variant?: 'default' | 'inLine' | 'wrap';
-  limit?: number;
+  content: string
+  value?: string
+  variant?: 'default' | 'inLine' | 'wrap'
+  limit?: number
 }
 
 const ItemCopy: FunctionComponent<ItemCopyProps> = ({

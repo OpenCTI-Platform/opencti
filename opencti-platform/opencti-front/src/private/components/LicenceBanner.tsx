@@ -10,9 +10,9 @@ import useHelper from '../../utils/hooks/useHelper';
 export const LICENSE_OPTION_TRIAL = 'trial';
 
 interface BannerInfo {
-  message: React.ReactNode;
-  bannerColor: TopBannerColor;
-  buttonText?: string;
+  message: React.ReactNode
+  bannerColor: TopBannerColor
+  buttonText?: string
 }
 
 const getBannerColor = (remainingDays: number) => {
@@ -29,12 +29,14 @@ const computeBannerInfo = (eeSettings: RootSettings$data['platform_enterprise_ed
       message: `The current ${eeSettings.license_type} license has expired, Enterprise Edition is disabled.`,
       bannerColor: 'red',
     };
-  } if (eeSettings.license_extra_expiration) {
+  }
+  if (eeSettings.license_extra_expiration) {
     return {
       message: `The current ${eeSettings.license_type} license has expired, Enterprise Edition will be disabled in ${eeSettings.license_extra_expiration_days} days.`,
       bannerColor: 'red',
     };
-  } if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
+  }
+  if (eeSettings.license_type === LICENSE_OPTION_TRIAL) {
     const featureFlagFreeTrials = isFeatureEnable('FREE_TRIALS');
     if (featureFlagFreeTrials) {
       const remainingDays = daysBetweenDates(now(), moment(eeSettings.license_expiration_date));

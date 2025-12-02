@@ -42,8 +42,8 @@ export const csvMapperLinesFragment = graphql`
 `;
 
 export interface CsvMapperLinesProps {
-  paginationOptions: csvMappers_MappersQuery$variables;
-  dataColumns: DataColumns;
+  paginationOptions: csvMappers_MappersQuery$variables
+  dataColumns: DataColumns
 }
 
 const CsvMapperLines: FunctionComponent<CsvMapperLinesProps> = ({

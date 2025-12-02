@@ -44,8 +44,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface UserLineComponentProps {
-  dataColumns: DataColumns,
-  node: UserLine_node$data,
+  dataColumns: DataColumns
+  node: UserLine_node$data
 }
 
 const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {

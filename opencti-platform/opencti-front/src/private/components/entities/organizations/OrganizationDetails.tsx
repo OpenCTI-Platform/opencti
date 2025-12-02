@@ -28,7 +28,7 @@ const organizationDetailsFragment = graphql`
 `;
 
 interface OrganizationDetailsComponentProps {
-  organizationData: OrganizationDetails_organization$key;
+  organizationData: OrganizationDetails_organization$key
 }
 
 const OrganizationDetails: FunctionComponent<OrganizationDetailsComponentProps> = ({ organizationData }) => {

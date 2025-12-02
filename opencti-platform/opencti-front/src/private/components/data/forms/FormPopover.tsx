@@ -31,9 +31,9 @@ const formPopoverDeletionMutation = graphql`
 `;
 
 interface FormPopoverProps {
-  formId: string;
-  paginationOptions: FormLinesPaginationQuery$variables;
-  formName?: string;
+  formId: string
+  paginationOptions: FormLinesPaginationQuery$variables
+  formName?: string
 }
 
 const FormPopover: FunctionComponent<FormPopoverProps> = ({

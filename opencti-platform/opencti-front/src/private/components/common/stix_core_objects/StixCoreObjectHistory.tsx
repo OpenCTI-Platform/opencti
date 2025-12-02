@@ -15,8 +15,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import type { Theme } from '../../../../components/Theme';
 
 type StixCoreObjectHistoryProps = {
-  stixCoreObjectId: string;
-  withoutRelations?: boolean;
+  stixCoreObjectId: string
+  withoutRelations?: boolean
 };
 
 const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreObjectHistoryProps) => {

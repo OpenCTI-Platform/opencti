@@ -45,17 +45,17 @@ const workbenchCreationMutation = graphql`
 `;
 
 interface WorkbenchCreationProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  paginationOptions: ImportWorkbenchesContentQuery$variables;
-  entity?: { id: string };
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  paginationOptions: ImportWorkbenchesContentQuery$variables
+  entity?: { id: string }
 }
 
 interface WorkbenchFileFormValues {
-  name: string;
-  labels: FieldOption[];
-  fileMarkings: FieldOption[];
+  name: string
+  labels: FieldOption[]
+  fileMarkings: FieldOption[]
 }
 
 const WorkbenchCreationForm: React.FC<WorkbenchCreationProps> = ({ onCompleted, onReset, entity, paginationOptions }) => {
@@ -249,8 +249,8 @@ const WorkbenchCreation = ({
   entity,
   paginationOptions,
 }: {
-  entity?: { id: string };
-  paginationOptions: ImportWorkbenchesContentQuery$variables;
+  entity?: { id: string }
+  paginationOptions: ImportWorkbenchesContentQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_uploadedFiles', paginationOptions, 'uploadPending');

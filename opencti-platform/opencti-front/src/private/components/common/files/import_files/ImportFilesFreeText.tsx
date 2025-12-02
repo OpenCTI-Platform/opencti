@@ -11,9 +11,9 @@ import { now } from '../../../../../utils/Time';
 type FileFreeTextType = { content: string };
 
 interface ImportFilesFreeTextProps {
-  onSubmit: (file: File) => void;
-  onClose: () => void;
-  initialContent?: string;
+  onSubmit: (file: File) => void
+  onClose: () => void
+  initialContent?: string
 }
 
 const ImportFilesFreeText = ({ onSubmit, onClose, initialContent }: ImportFilesFreeTextProps) => {

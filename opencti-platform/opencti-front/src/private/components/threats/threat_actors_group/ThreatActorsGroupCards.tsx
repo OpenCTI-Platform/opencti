@@ -70,9 +70,9 @@ export const ThreatActorsGroupCardsFragment = graphql`
 `;
 
 interface ThreatActorsGroupCardsProps {
-  queryRef: PreloadedQuery<ThreatActorsGroupCardsPaginationQuery>;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: HandleAddFilter;
+  queryRef: PreloadedQuery<ThreatActorsGroupCardsPaginationQuery>
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  onLabelClick: HandleAddFilter
 }
 
 const ThreatActorsGroupCards: FunctionComponent<

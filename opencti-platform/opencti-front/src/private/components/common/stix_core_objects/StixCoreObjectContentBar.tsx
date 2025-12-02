@@ -28,12 +28,12 @@ const Transition = React.forwardRef((props: SlideProps, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 interface StixCoreObjectContentBarProps {
-  handleZoomIn?: () => void;
-  handleZoomOut?: () => void;
-  currentZoom?: number;
-  handleSave?: () => void;
-  changed?: boolean;
-  navOpen: boolean;
+  handleZoomIn?: () => void
+  handleZoomOut?: () => void
+  currentZoom?: number
+  handleSave?: () => void
+  changed?: boolean
+  navOpen: boolean
 }
 
 const StixCoreObjectContentBar: FunctionComponent<

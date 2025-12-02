@@ -56,10 +56,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ContainerStixCoreObjectsSuggestedMappingLineComponentProps {
-  dataColumns: DataColumns;
-  node: ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key;
-  contentMappingCount: Record<string, number>;
-  handleRemoveSuggestedMappingLine: (entityToRemove: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => void;
+  dataColumns: DataColumns
+  node: ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$key
+  contentMappingCount: Record<string, number>
+  handleRemoveSuggestedMappingLine: (entityToRemove: NonNullable<ContainerStixCoreObjectsSuggestedMappingLine_mappedEntity$data['matchedEntity']>) => void
 }
 
 const ContainerStixCoreObjectsSuggestedMappingFragment = graphql`

@@ -11,11 +11,11 @@ import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks
 const nbOfRowsToLoad = 50;
 
 interface IndividualsLinesProps {
-  queryRef: PreloadedQuery<IndividualsLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions?: IndividualsLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: HandleAddFilter;
+  queryRef: PreloadedQuery<IndividualsLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions?: IndividualsLinesPaginationQuery$variables
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  onLabelClick: HandleAddFilter
 }
 
 export const individualsLinesQuery = graphql`

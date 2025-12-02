@@ -43,7 +43,7 @@ const xtmHubTabSettingsFieldPatchMutation = graphql`
 `;
 
 interface XtmHubTabProps {
-  registrationStatus?: string;
+  registrationStatus?: string
 }
 
 const XtmHubTab: React.FC<XtmHubTabProps> = ({ registrationStatus }) => {

@@ -5,7 +5,7 @@ import type { Theme } from '../../components/Theme';
 import type { ApexChartEvents, ApexChartLabels } from './apex';
 
 export interface ScatterChartOptionsArgs {
-  theme: Theme,
+  theme: Theme
   background?: string
   dataPointMouseEnter?: ApexChartEvents['dataPointMouseEnter']
   dataPointMouseLeave?: ApexChartEvents['dataPointMouseLeave']

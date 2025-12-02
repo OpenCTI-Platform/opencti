@@ -4,8 +4,8 @@ import { FormExportHandlerQuery$data } from '@components/data/forms/__generated_
 import { fetchQuery } from '../../../../relay/environment';
 
 interface formToExport {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 const FormExportHandlerQuery = graphql`

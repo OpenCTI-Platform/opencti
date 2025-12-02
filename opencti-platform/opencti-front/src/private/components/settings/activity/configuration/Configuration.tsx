@@ -97,7 +97,7 @@ export const configurationFieldPatch = graphql`
 `;
 
 interface ConfigurationComponentProps {
-  queryRef: PreloadedQuery<ConfigurationQuery>;
+  queryRef: PreloadedQuery<ConfigurationQuery>
 }
 
 const ConfigurationComponent: FunctionComponent<

@@ -34,11 +34,11 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TriggerLineTitlesProps {
-  dataColumns: DataColumns;
-  sortBy?: string;
-  orderAsc?: boolean;
-  handleSort?: (field: string, orderAsc: boolean) => void;
-  secondaryAction?: boolean;
+  dataColumns: DataColumns
+  sortBy?: string
+  orderAsc?: boolean
+  handleSort?: (field: string, orderAsc: boolean) => void
+  secondaryAction?: boolean
 }
 
 const ColumnsLinesTitles: FunctionComponent<TriggerLineTitlesProps> = ({

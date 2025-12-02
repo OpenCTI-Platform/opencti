@@ -117,9 +117,9 @@ export const draftsLinesFragment = graphql`
 const LOCAL_STORAGE_KEY = 'draftWorkspaces';
 
 interface DraftsProps {
-  entityId?: string;
-  openCreate?: boolean;
-  setOpenCreate?: () => void;
+  entityId?: string
+  openCreate?: boolean
+  setOpenCreate?: () => void
   emptyStateMessage?: string
 }
 

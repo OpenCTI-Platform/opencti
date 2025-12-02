@@ -145,7 +145,7 @@ const MarkingDefinitions = () => {
       label: 'ID',
       percentWidth: 25,
       isSortable: true,
-      render: (node: { id: string; }) => <ItemCopy content={node.id} variant="inLine" />,
+      render: (node: { id: string }) => <ItemCopy content={node.id} variant="inLine" />,
     },
     x_opencti_color: { percentWidth: 15 },
     x_opencti_order: { percentWidth: 10 },

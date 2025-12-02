@@ -29,14 +29,14 @@ const subTypesLinesFragment = graphql`
 `;
 
 interface SubTypesLinesProps {
-  queryRef: PreloadedQuery<SubTypesLinesQuery>;
-  keyword: string | undefined;
-  dataColumns: DataColumns;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  selectedElements: Record<string, { id: string }>;
-  deSelectedElements: Record<string, { id: string }>;
-  selectAll: boolean;
-  onToggleEntity: (entity: { id: string }) => void;
+  queryRef: PreloadedQuery<SubTypesLinesQuery>
+  keyword: string | undefined
+  dataColumns: DataColumns
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  selectedElements: Record<string, { id: string }>
+  deSelectedElements: Record<string, { id: string }>
+  selectAll: boolean
+  onToggleEntity: (entity: { id: string }) => void
 }
 
 const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({

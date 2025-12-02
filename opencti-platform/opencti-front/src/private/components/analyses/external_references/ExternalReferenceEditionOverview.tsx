@@ -51,8 +51,8 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
 });
 
 interface ExternalReferenceEditionOverviewComponentProps {
-  externalReference: ExternalReferenceEditionOverview_externalReference$data;
-  context?: readonly (GenericContext | null)[] | null;
+  externalReference: ExternalReferenceEditionOverview_externalReference$data
+  context?: readonly (GenericContext | null)[] | null
 }
 
 const ExternalReferenceEditionOverviewComponent: FunctionComponent<

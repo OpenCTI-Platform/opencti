@@ -53,9 +53,9 @@ const formLineFragment = graphql`
 `;
 
 interface FormLineComponentProps {
-  dataColumns: DataColumns;
-  node: FormLine_node$key;
-  paginationOptions: FormLinesPaginationQuery$variables;
+  dataColumns: DataColumns
+  node: FormLine_node$key
+  paginationOptions: FormLinesPaginationQuery$variables
 }
 
 export const FormLineComponent: FunctionComponent<FormLineComponentProps> = ({

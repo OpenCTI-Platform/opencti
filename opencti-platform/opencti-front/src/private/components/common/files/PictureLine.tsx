@@ -44,9 +44,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface PictureLineComponentProps {
-  picture: PictureManagementUtils_node$key;
-  dataColumns: DataColumns;
-  entityId: string;
+  picture: PictureManagementUtils_node$key
+  dataColumns: DataColumns
+  entityId: string
 }
 
 const PictureLine: FunctionComponent<PictureLineComponentProps> = ({

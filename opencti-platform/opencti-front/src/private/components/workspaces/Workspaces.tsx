@@ -92,7 +92,7 @@ const workspacesLineFragment = graphql`
   }
 `;
 interface WorkspacesProps {
-  type: string;
+  type: string
 }
 
 const Workspaces: FunctionComponent<WorkspacesProps> = ({

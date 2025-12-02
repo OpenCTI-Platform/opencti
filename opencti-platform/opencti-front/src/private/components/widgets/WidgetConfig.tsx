@@ -6,12 +6,12 @@ import WidgetUpsert from './WidgetUpsert';
 import { WidgetConfigProvider, WidgetConfigType } from './WidgetConfigContext';
 
 interface WidgetConfigProps {
-  onComplete: (value: Widget, variableName?: string) => void,
-  open: boolean,
-  onClose: () => void,
-  widget?: Widget,
-  context: WidgetContext,
-  initialVariableName?: string,
+  onComplete: (value: Widget, variableName?: string) => void
+  open: boolean
+  onClose: () => void
+  widget?: Widget
+  context: WidgetContext
+  initialVariableName?: string
   disabledSteps?: number[]
   fintelWidgets?: FintelTemplateWidget[] // Used to avoid identical variable names.
   fintelEntityType?: string

@@ -85,16 +85,16 @@ export const pirRelationshipsDonutsDistributionQuery = graphql`
 `;
 
 interface PirRelationshipsDonutProps {
-  title?: string,
-  variant: string,
-  height?: number,
-  field?: string,
-  startDate: string | null,
-  endDate: string | null,
-  dataSelection: PirWidgetDataSelection[],
-  parameters?: WidgetParameters,
-  withExportPopover?: boolean,
-  isReadOnly?: boolean,
+  title?: string
+  variant: string
+  height?: number
+  field?: string
+  startDate: string | null
+  endDate: string | null
+  dataSelection: PirWidgetDataSelection[]
+  parameters?: WidgetParameters
+  withExportPopover?: boolean
+  isReadOnly?: boolean
   withoutTitle?: boolean
 }
 

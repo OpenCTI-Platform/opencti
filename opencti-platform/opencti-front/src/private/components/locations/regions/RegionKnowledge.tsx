@@ -24,7 +24,7 @@ const regionKnowledgeFragment = graphql`
 const RegionKnowledgeComponent = ({
   regionData,
 }: {
-  regionData: RegionKnowledge_region$key;
+  regionData: RegionKnowledge_region$key
 }) => {
   const region = useFragment<RegionKnowledge_region$key>(
     regionKnowledgeFragment,

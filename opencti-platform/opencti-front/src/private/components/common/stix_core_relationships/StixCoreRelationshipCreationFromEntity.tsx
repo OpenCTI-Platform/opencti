@@ -454,41 +454,41 @@ export const stixCoreRelationshipCreationFromEntityToMutation = graphql`
 `;
 
 interface StixCoreRelationshipCreationFromEntityProps {
-  entityId: string;
-  objectId?: string;
-  allowedRelationshipTypes?: string[];
-  isRelationReversed?: boolean;
-  targetStixDomainObjectTypes?: string[];
-  targetStixCyberObservableTypes?: string[];
-  defaultStartTime?: string;
-  defaultStopTime?: string;
-  paginationOptions: Record<string, unknown>;
-  connectionKey?: string;
-  paddingRight: number;
-  variant?: string;
-  targetEntities?: TargetEntity[];
-  onCreate?: () => void;
-  openExports?: boolean;
-  handleReverseRelation?: () => void;
-  currentView?: string;
-  isCoverage?: boolean;
+  entityId: string
+  objectId?: string
+  allowedRelationshipTypes?: string[]
+  isRelationReversed?: boolean
+  targetStixDomainObjectTypes?: string[]
+  targetStixCyberObservableTypes?: string[]
+  defaultStartTime?: string
+  defaultStopTime?: string
+  paginationOptions: Record<string, unknown>
+  connectionKey?: string
+  paddingRight: number
+  variant?: string
+  targetEntities?: TargetEntity[]
+  onCreate?: () => void
+  openExports?: boolean
+  handleReverseRelation?: () => void
+  currentView?: string
+  isCoverage?: boolean
 }
 
 export interface StixCoreRelationshipCreationFromEntityForm {
-  confidence: string;
-  start_time: string;
-  stop_time: string;
-  createdBy: FieldOption;
-  killChainPhases: FieldOption[];
-  objectMarking: FieldOption[];
-  externalReferences: FieldOption[];
-  coverage_information?: Array<{ coverage_name: string; coverage_score: number }>;
+  confidence: string
+  start_time: string
+  stop_time: string
+  createdBy: FieldOption
+  killChainPhases: FieldOption[]
+  objectMarking: FieldOption[]
+  externalReferences: FieldOption[]
+  coverage_information?: Array<{ coverage_name: string, coverage_score: number }>
 }
 
 export interface TargetEntity {
-  id: string;
-  entity_type: string;
-  name?: string;
+  id: string
+  entity_type: string
+  name?: string
 }
 
 const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelationshipCreationFromEntityProps> = (props) => {
@@ -659,7 +659,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
         }))) : R.identity,
       )(values);
       try {
-        // eslint-disable-next-line no-await-in-loop
         await commit(finalValues);
       } catch (error) {
         setSubmitting(false);
@@ -820,7 +819,6 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     let fromEntities = [sourceEntity];
     let toEntities = targetEntities;
     if (isRelationReversed) {
-      // eslint-disable-next-line prefer-destructuring
       fromEntities = targetEntities;
       toEntities = [sourceEntity];
     }
@@ -905,7 +903,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
       {!isOnlySDOs && (
         <Button
           onClick={handleOpenCreateObservable}
-          variant='contained'
+          variant="contained"
           style={{ marginRight: '10px' }}
         >
           {t_i18n('Create an observable')}
@@ -928,7 +926,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
 
   return (
     <>
-      {/* eslint-disable-next-line no-nested-ternary */}
+      { }
       {variant === 'inLine' && (
         <IconButton
           color="primary"

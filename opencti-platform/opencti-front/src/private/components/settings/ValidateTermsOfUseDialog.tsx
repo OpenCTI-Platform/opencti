@@ -16,8 +16,8 @@ import { FieldOption } from '../../../utils/field';
 import useAuth from '../../../utils/hooks/useAuth';
 
 type ValidateTermsOfUseDialogProps = {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 };
 
 const ValidateTermsOfUseDialog = ({ open, onClose }: ValidateTermsOfUseDialogProps) => {

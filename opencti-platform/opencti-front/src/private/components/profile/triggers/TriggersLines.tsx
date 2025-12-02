@@ -12,13 +12,13 @@ import { TriggerLineComponent, TriggerLineDummy } from './TriggerLine';
 const nbOfRowsToLoad = 50;
 
 interface TriggerLinesProps {
-  queryRef: PreloadedQuery<TriggersLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
-  setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick?: HandleAddFilter;
-  containerRef?: MutableRefObject<GridTypeMap | null>;
-  bypassEditionRestriction: boolean;
+  queryRef: PreloadedQuery<TriggersLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions?: TriggersLinesPaginationQuery$variables
+  setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements']
+  onLabelClick?: HandleAddFilter
+  containerRef?: MutableRefObject<GridTypeMap | null>
+  bypassEditionRestriction: boolean
 }
 
 export const triggersLinesQuery = graphql`

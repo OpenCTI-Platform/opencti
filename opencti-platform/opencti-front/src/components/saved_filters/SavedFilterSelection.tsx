@@ -8,15 +8,15 @@ import { type AutocompleteInputChangeReason } from '@mui/material/useAutocomplet
 export type SavedFiltersSelectionData = NonNullable<NonNullable<SavedFiltersQuery$data['savedFilters']>['edges']>[0]['node'];
 
 type SavedFilterSelectionProps = {
-  isDisabled: boolean;
-  data: SavedFiltersSelectionData[];
-  currentSavedFilter?: SavedFiltersSelectionData;
-  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
+  isDisabled: boolean
+  data: SavedFiltersSelectionData[]
+  currentSavedFilter?: SavedFiltersSelectionData
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void
 };
 
 export type AutocompleteOptionType = {
-  label: string;
-  value: SavedFiltersSelectionData;
+  label: string
+  value: SavedFiltersSelectionData
 };
 
 const SavedFilterSelection = ({ isDisabled, data, currentSavedFilter, setCurrentSavedFilter }: SavedFilterSelectionProps) => {

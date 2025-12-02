@@ -50,42 +50,42 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 export interface FormFieldRendererProps {
-  field: FormFieldDefinition;
-  values: Record<string, unknown>;
-  errors: Record<string, string>;
-  touched: Record<string, boolean>;
+  field: FormFieldDefinition
+  values: Record<string, unknown>
+  errors: Record<string, string>
+  touched: Record<string, boolean>
   setFieldValue: (
     field: string,
-    value: string | number | boolean | string[] | Date | null | FieldOption[] | { name?: string; data?: string }[] | {
-      label?: string;
-      value: string;
+    value: string | number | boolean | string[] | Date | null | FieldOption[] | { name?: string, data?: string }[] | {
+      label?: string
+      value: string
       entity?: {
-        created: string;
-        description?: string | null;
-        external_id?: string | null;
-        id: string;
-        source_name: string;
-        url?: string | null;
-      };
+        created: string
+        description?: string | null
+        external_id?: string | null
+        id: string
+        source_name: string
+        url?: string | null
+      }
     }[],
-  ) => void;
+  ) => void
   entitySettings?: {
     edges: ReadonlyArray<{
       node: {
-        id: string;
-        target_type: string;
-        mandatoryAttributes: ReadonlyArray<string>;
+        id: string
+        target_type: string
+        mandatoryAttributes: ReadonlyArray<string>
         attributesDefinitions: ReadonlyArray<{
-          type: string;
-          name: string;
-          label?: string | null;
-          mandatory: boolean;
-        }>;
-      };
-    }>;
-  };
-  fieldPrefix?: string;
-  useGridLayout?: boolean;
+          type: string
+          name: string
+          label?: string | null
+          mandatory: boolean
+        }>
+      }
+    }>
+  }
+  fieldPrefix?: string
+  useGridLayout?: boolean
 }
 
 const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
@@ -135,16 +135,16 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       });
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      Promise.all(filePromises).then((fileData: { name?: string; data?: string }[]) => {
-        const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
+      Promise.all(filePromises).then((fileData: { name?: string, data?: string }[]) => {
+        const currentFiles = (fieldValue || []) as { name?: string, data?: string }[];
         setFieldValue(field.name, [...currentFiles, ...fileData]);
       });
     }
   };
 
   const handleFileRemove = (index: number) => {
-    const currentFiles = (fieldValue || []) as { name?: string; data?: string }[];
-    const newFiles = currentFiles.filter((_: { name?: string; data?: string }, i: number) => i !== index);
+    const currentFiles = (fieldValue || []) as { name?: string, data?: string }[];
+    const newFiles = currentFiles.filter((_: { name?: string, data?: string }, i: number) => i !== index);
     setFieldValue(field.name, newFiles);
   };
 
@@ -209,7 +209,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'checkbox':
         return (
           <Field name={fieldName}>
-            {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
+            {({ field: formikField, form }: { field: FieldInputProps<boolean | string>, form: FormikProps<Record<string, unknown>> }) => (
               <FormControlLabel
                 control={
                   <Checkbox
@@ -230,7 +230,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
       case 'toggle':
         return (
           <Field name={fieldName}>
-            {({ field: formikField, form }: { field: FieldInputProps<boolean | string>; form: FormikProps<Record<string, unknown>> }) => (
+            {({ field: formikField, form }: { field: FieldInputProps<boolean | string>, form: FormikProps<Record<string, unknown>> }) => (
               <SwitchField
                 label={displayLabel}
                 checked={formikField.value === true || formikField.value === 'true' || formikField.value === '1'}
@@ -399,16 +399,16 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={fieldValue as {
-              label?: string;
-              value: string;
+              label?: string
+              value: string
               entity?: {
-                created: string;
-                description?: string | null;
-                external_id?: string | null;
-                id: string;
-                source_name: string;
-                url?: string | null;
-              };
+                created: string
+                description?: string | null
+                external_id?: string | null
+                id: string
+                source_name: string
+                url?: string | null
+              }
             }[]}
             required={field.isMandatory}
           />
@@ -436,7 +436,7 @@ const FormFieldRenderer: FunctionComponent<FormFieldRendererProps> = ({
             </div>
             {fieldValue && Array.isArray(fieldValue) && fieldValue.length > 0 ? (
               <div className={classes.fileList}>
-                {(fieldValue as Array<{ name?: string; url?: string }>).map((file, index: number) => (
+                {(fieldValue as Array<{ name?: string, url?: string }>).map((file, index: number) => (
                   <Chip
                     key={index}
                     label={file.name}

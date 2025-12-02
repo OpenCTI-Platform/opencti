@@ -9,14 +9,14 @@ import { StatusTemplateFieldScopedSearchQuery$data } from './__generated__/Statu
 import { FieldOption } from '../../../../../utils/field';
 
 interface StatusTemplateFieldScopedProps {
-  name: string;
-  setFieldValue: (field: string, value: FieldOption) => void;
-  helpertext: string;
-  required?: boolean;
-  onChange?: (field: string, value: FieldOption) => void;
-  style?: Record<string, string | number>;
-  scope: string;
-  label: string;
+  name: string
+  setFieldValue: (field: string, value: FieldOption) => void
+  helpertext: string
+  required?: boolean
+  onChange?: (field: string, value: FieldOption) => void
+  style?: Record<string, string | number>
+  scope: string
+  label: string
 }
 
 export const StatusTemplateFieldScopedSearchQuery = graphql`
@@ -75,7 +75,7 @@ const StatusTemplateFieldScoped: FunctionComponent<StatusTemplateFieldScopedProp
         onInputChange={searchStatusTemplates}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: { color: string; label: string },
+          option: { color: string, label: string },
         ) => (
           <li {...props}>
             <div style={{ color: option.color, paddingTop: 4, display: 'inline-block' }}>

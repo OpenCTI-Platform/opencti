@@ -65,7 +65,7 @@ export const csvFeedImportQuery = graphql`
 `;
 
 interface IngestionCsvImportProps {
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined;
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables | null | undefined
 }
 const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ paginationOptions }) => {
   const { fileId, serviceInstanceId } = useParams();

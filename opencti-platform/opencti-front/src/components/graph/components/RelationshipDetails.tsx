@@ -312,7 +312,7 @@ const relationshipDetailsQuery = graphql`
 `;
 
 interface RelationshipDetailsComponentProps {
-  queryRef: PreloadedQuery<RelationshipDetailsQuery>;
+  queryRef: PreloadedQuery<RelationshipDetailsQuery>
 }
 
 const RelationshipDetailsComponent: FunctionComponent<
@@ -589,8 +589,8 @@ RelationshipDetailsComponentProps
 };
 
 interface RelationshipDetailsProps {
-  relation: GraphLink;
-  queryRef: PreloadedQuery<RelationshipDetailsQuery>;
+  relation: GraphLink
+  queryRef: PreloadedQuery<RelationshipDetailsQuery>
 }
 
 const RelationshipDetails: FunctionComponent<

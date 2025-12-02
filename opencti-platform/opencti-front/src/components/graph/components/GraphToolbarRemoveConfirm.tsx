@@ -29,7 +29,7 @@ import type { Theme } from '../../Theme';
 import { isGraphNode } from '../graph.types';
 
 interface ReferenceFormData {
-  message: string,
+  message: string
   references: FieldOption[]
 }
 

@@ -32,7 +32,7 @@ const ToolDetailsFragment = graphql`
 `;
 
 interface ToolDetailsProps {
-  tools: ToolDetails_tool$key;
+  tools: ToolDetails_tool$key
 }
 
 const ToolDetails: FunctionComponent<ToolDetailsProps> = ({ tools }) => {

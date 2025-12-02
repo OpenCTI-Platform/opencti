@@ -46,9 +46,9 @@ const inlineStyles = {
 };
 
 interface ItemPriorityProps {
-  label: string;
-  priority?: string | null;
-  variant?: 'inList';
+  label: string
+  priority?: string | null
+  variant?: 'inList'
 }
 
 const computePriorityStyle = (priority: string | undefined | null) => {

@@ -23,9 +23,9 @@ const savedFiltersQuery = graphql`
 `;
 
 type SavedFiltersComponentProps = {
-  queryRef: PreloadedQuery<SavedFiltersQuery>;
-  currentSavedFilter?: SavedFiltersSelectionData;
-  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
+  queryRef: PreloadedQuery<SavedFiltersQuery>
+  currentSavedFilter?: SavedFiltersSelectionData
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void
 };
 
 const SavedFiltersComponent = ({ queryRef, currentSavedFilter, setCurrentSavedFilter }: SavedFiltersComponentProps) => {
@@ -42,8 +42,8 @@ const SavedFiltersComponent = ({ queryRef, currentSavedFilter, setCurrentSavedFi
 };
 
 type SavedFiltersProps = {
-  currentSavedFilter?: SavedFiltersSelectionData;
-  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void;
+  currentSavedFilter?: SavedFiltersSelectionData
+  setCurrentSavedFilter: (savedFilter: SavedFiltersSelectionData | undefined) => void
 };
 
 const SavedFilters = ({ currentSavedFilter, setCurrentSavedFilter }: SavedFiltersProps) => {

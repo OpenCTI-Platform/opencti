@@ -130,10 +130,10 @@ const feedbackMutationRelationDelete = graphql`
 `;
 
 interface FeedbackEditionOverviewProps {
-  feedbackRef: FeedbackEditionOverview_case$key;
-  context?: readonly (GenericContext | null)[] | null;
-  enableReferences?: boolean;
-  handleClose: () => void;
+  feedbackRef: FeedbackEditionOverview_case$key
+  context?: readonly (GenericContext | null)[] | null
+  enableReferences?: boolean
+  handleClose: () => void
 }
 
 interface FeedbackEditionFormValues {

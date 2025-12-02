@@ -48,15 +48,15 @@ export type ConnectorOption = FieldOption & {
 };
 
 export interface StixCoreObjectFileExportFormInputs {
-  connector: ConnectorOption | null;
-  format: string;
-  type: string | null;
-  fileToExport: FileOption | null;
-  template: FieldOption | null;
-  exportFileName: string | null;
-  contentMaxMarkings: FieldOption[];
-  fileMarkings: FieldOption[];
-  fintelDesign: FintelDesignFieldOption | null;
+  connector: ConnectorOption | null
+  format: string
+  type: string | null
+  fileToExport: FileOption | null
+  template: FieldOption | null
+  exportFileName: string | null
+  contentMaxMarkings: FieldOption[]
+  fileMarkings: FieldOption[]
+  fintelDesign: FintelDesignFieldOption | null
 }
 
 export interface StixCoreObjectFileExportFormProps {
@@ -71,7 +71,7 @@ export interface StixCoreObjectFileExportFormProps {
     format: string
     template?: string
     fileToExport?: string
-    fintelDesign?: FintelDesignFieldOption,
+    fintelDesign?: FintelDesignFieldOption
   }
   scoName?: string
   handleOpenAskAi: () => void

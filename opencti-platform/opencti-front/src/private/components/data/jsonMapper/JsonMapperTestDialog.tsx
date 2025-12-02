@@ -25,9 +25,9 @@ const jsonMapperTestQuery = graphql`
 `;
 
 interface JsonMapperTestDialogProps {
-  open: boolean;
-  onClose: () => void;
-  configuration: string;
+  open: boolean
+  onClose: () => void
+  configuration: string
 }
 
 const JsonMapperTestDialog: FunctionComponent<JsonMapperTestDialogProps> = ({

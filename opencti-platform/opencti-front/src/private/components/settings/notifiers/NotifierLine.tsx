@@ -47,8 +47,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface NotifierLineProps {
-  node: NotifierLine_node$key | NotifierLine_node$data;
-  dataColumns: DataColumns;
+  node: NotifierLine_node$key | NotifierLine_node$data
+  dataColumns: DataColumns
   paginationOptions: NotifiersLinesPaginationQuery$variables
 }
 
@@ -107,7 +107,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
   );
 };
 
-export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns; }) => {
+export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>

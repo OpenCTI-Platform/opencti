@@ -9,13 +9,13 @@ import { fetchQuery } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 
 interface FilesFieldProps {
-  stixCoreObjectId: string;
-  name: string;
-  label: string;
-  currentValue: { label: string, value: string }[];
-  onChange?: (value: { label: string, value: string }[] | null) => void;
-  containerStyle?: Record<string, string | number>;
-  helperText?: string;
+  stixCoreObjectId: string
+  name: string
+  label: string
+  currentValue: { label: string, value: string }[]
+  onChange?: (value: { label: string, value: string }[] | null) => void
+  containerStyle?: Record<string, string | number>
+  helperText?: string
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -76,8 +76,8 @@ const FilesNativeField: FunctionComponent<FilesFieldProps> = ({
 }) => {
   const classes = useStyles();
   const [files, setFiles] = useState<{
-    label: string;
-    value: string;
+    label: string
+    value: string
   }[]
   >([]);
   const searchFiles = () => {

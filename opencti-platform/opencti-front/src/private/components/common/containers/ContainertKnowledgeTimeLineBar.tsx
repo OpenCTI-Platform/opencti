@@ -29,17 +29,17 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ContentKnowledgeTimeLineBarProps {
-  handleTimeLineSearch: (search: string) => void;
-  timeLineSearchTerm: string;
-  timeLineDisplayRelationships: boolean;
-  handleToggleTimeLineDisplayRelationships: () => void;
-  timeLineFunctionalDate: boolean;
-  handleToggleTimeLineFunctionalDate: () => void;
-  timeLineFilters: FilterGroup;
-  handleAddTimeLineFilter: (filterKeysSchema: Map<string, Map<string, FilterDefinition>>, key: string, id: string | null, op?: string, event?: SyntheticEvent) => void;
-  handleRemoveTimeLineFilter: (key: string, id?: string) => void;
-  handleSwitchFilterLocalMode: (filter: Filter) => void;
-  handleSwitchFilterGlobalMode: () => void;
+  handleTimeLineSearch: (search: string) => void
+  timeLineSearchTerm: string
+  timeLineDisplayRelationships: boolean
+  handleToggleTimeLineDisplayRelationships: () => void
+  timeLineFunctionalDate: boolean
+  handleToggleTimeLineFunctionalDate: () => void
+  timeLineFilters: FilterGroup
+  handleAddTimeLineFilter: (filterKeysSchema: Map<string, Map<string, FilterDefinition>>, key: string, id: string | null, op?: string, event?: SyntheticEvent) => void
+  handleRemoveTimeLineFilter: (key: string, id?: string) => void
+  handleSwitchFilterLocalMode: (filter: Filter) => void
+  handleSwitchFilterGlobalMode: () => void
 }
 
 // TODO Fix ContentKnowledge

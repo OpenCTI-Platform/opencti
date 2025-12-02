@@ -78,8 +78,8 @@ const indicatorQuery = graphql`
 `;
 
 type RootIndicatorProps = {
-  indicatorId: string;
-  queryRef: PreloadedQuery<RootIndicatorQuery>;
+  indicatorId: string
+  queryRef: PreloadedQuery<RootIndicatorQuery>
 };
 
 const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
@@ -290,7 +290,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
 };
 
 const Root = () => {
-  const { indicatorId } = useParams() as { indicatorId: string; };
+  const { indicatorId } = useParams() as { indicatorId: string };
   const queryRef = useQueryLoading<RootIndicatorQuery>(indicatorQuery, {
     id: indicatorId,
   });

@@ -6,7 +6,7 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../utils/field';
 import { useFormatter } from '../../../components/i18n';
 
 interface IngestionSchedulingProps {
-  handleSubmitField?: (name: string, value: FieldOption[]) => void | null;
+  handleSubmitField?: (name: string, value: FieldOption[]) => void | null
 }
 
 const IngestionSchedulingField = ({ handleSubmitField }: IngestionSchedulingProps) => {

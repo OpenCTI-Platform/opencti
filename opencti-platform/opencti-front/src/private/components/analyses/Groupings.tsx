@@ -20,7 +20,7 @@ import Security from '../../../utils/Security';
 const LOCAL_STORAGE_KEY = 'groupings';
 
 interface GroupingsProps {
-  match: { params: { groupingContext: string } };
+  match: { params: { groupingContext: string } }
 }
 
 const groupingLineFragment = graphql`

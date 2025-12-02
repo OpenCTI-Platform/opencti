@@ -17,20 +17,20 @@ import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 
 interface ContainerStixCoreObjectsMappingHeaderProps {
-  suggestedMappingData: ContainerStixCoreObjectsSuggestedMappingQuery$data;
-  validateDisabled: boolean,
-  openValidate: boolean,
-  setOpenValidate: (openValidate: boolean) => void,
-  handleValidateMapping: () => void;
-  validating: boolean;
-  openClearMapping: boolean,
-  setOpenClearMapping: (openClearMapping: boolean) => void,
-  handleClearMapping: () => void;
-  clearing: boolean;
-  inSuggestedMode: boolean,
-  setInSuggestedMode: (inSuggestedMode: boolean) => void;
-  askingSuggestion: boolean,
-  handleAskNewSuggestion: () => void;
+  suggestedMappingData: ContainerStixCoreObjectsSuggestedMappingQuery$data
+  validateDisabled: boolean
+  openValidate: boolean
+  setOpenValidate: (openValidate: boolean) => void
+  handleValidateMapping: () => void
+  validating: boolean
+  openClearMapping: boolean
+  setOpenClearMapping: (openClearMapping: boolean) => void
+  handleClearMapping: () => void
+  clearing: boolean
+  inSuggestedMode: boolean
+  setInSuggestedMode: (inSuggestedMode: boolean) => void
+  askingSuggestion: boolean
+  handleAskNewSuggestion: () => void
 }
 
 const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCoreObjectsMappingHeaderProps> = ({

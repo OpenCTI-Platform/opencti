@@ -48,7 +48,7 @@ export const requestAccessConfigurationFragment = graphql`
 `;
 
 interface RequestAccessWorkflowProps {
-  handleClose: () => void;
+  handleClose: () => void
   data: RequestAccessConfigurationEdition_requestAccess$key
   open?: boolean
 }

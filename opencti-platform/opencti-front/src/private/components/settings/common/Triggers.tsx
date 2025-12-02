@@ -36,8 +36,8 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TriggersProps {
-  recipientId: string;
-  filterKey: string;
+  recipientId: string
+  filterKey: string
 }
 const Triggers: FunctionComponent<TriggersProps> = ({
   recipientId,

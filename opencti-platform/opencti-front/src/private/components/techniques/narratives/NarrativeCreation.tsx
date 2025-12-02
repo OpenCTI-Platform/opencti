@@ -87,15 +87,15 @@ interface NarrativeAddInput {
 }
 
 interface NarrativeFormProps {
-  updater?: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  inputValue?: string;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater?: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  inputValue?: string
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
@@ -321,10 +321,10 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
 };
 
 interface NarrativeCreationProps {
-  paginationOptions?: NarrativesLinesPaginationQuery$variables;
-  display?: boolean;
-  contextual?: boolean;
-  inputValue?: string;
+  paginationOptions?: NarrativesLinesPaginationQuery$variables
+  display?: boolean
+  contextual?: boolean
+  inputValue?: string
 }
 
 const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({

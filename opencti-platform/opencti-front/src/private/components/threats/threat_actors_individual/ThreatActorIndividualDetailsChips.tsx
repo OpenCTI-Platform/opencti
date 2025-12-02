@@ -12,10 +12,10 @@ type SupportedTypes = 'known-as' | 'impersonates';
 type SupportedFields = 'observable_value' | 'name';
 
 interface MappingFields {
-  title: string,
-  field: SupportedFields,
-  path: string,
-  AddComponent: React.FunctionComponent<{ threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data }>,
+  title: string
+  field: SupportedFields
+  path: string
+  AddComponent: React.FunctionComponent<{ threatActorIndividual: ThreatActorIndividualDetails_ThreatActorIndividual$data }>
 }
 
 const typeMappings: Record<SupportedTypes, MappingFields> = {
@@ -34,8 +34,8 @@ const typeMappings: Record<SupportedTypes, MappingFields> = {
 };
 
 interface ThreatActorIndividualDetailsChipsProps {
-  data: ThreatActorIndividualDetails_ThreatActorIndividual$data,
-  relType: SupportedTypes,
+  data: ThreatActorIndividualDetails_ThreatActorIndividual$data
+  relType: SupportedTypes
 }
 
 const ThreatActorIndividualDetailsChips: FunctionComponent<

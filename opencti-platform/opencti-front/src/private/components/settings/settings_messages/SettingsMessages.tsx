@@ -42,7 +42,7 @@ const settingsMessagesFragment = graphql`
 const SettingsMessages = ({
   settings,
 }: {
-  settings: SettingsMessages_settingsMessages$key & { readonly id: string };
+  settings: SettingsMessages_settingsMessages$key & { readonly id: string }
 }) => {
   const { t_i18n } = useFormatter();
   const ref = useRef(null);

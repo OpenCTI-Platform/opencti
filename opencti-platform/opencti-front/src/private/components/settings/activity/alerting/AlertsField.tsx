@@ -33,38 +33,38 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface TriggersFieldProps {
-  name: string;
-  style?: { marginTop: number; width: string };
+  name: string
+  style?: { marginTop: number, width: string }
   onChange?: (
     name: string,
     value: {
-      label?: string;
-      value: string;
-      entity?: { id: string; name: string };
+      label?: string
+      value: string
+      entity?: { id: string, name: string }
     }[],
-  ) => void;
+  ) => void
   setFieldValue: (
     field: string,
     value: {
-      label?: string;
-      value: string;
+      label?: string
+      value: string
       entity?: {
-        id: string;
-        name: string;
-      };
+        id: string
+        name: string
+      }
     }[],
     shouldValidate?: boolean,
-  ) => void;
+  ) => void
   values: {
-    label?: string;
-    value: string;
+    label?: string
+    value: string
     entity?: {
-      id: string;
-      name: string;
-    };
-  }[];
-  helpertext?: string;
-  paginationOptions?: AlertingPaginationQuery$variables;
+      id: string
+      name: string
+    }
+  }[]
+  helpertext?: string
+  paginationOptions?: AlertingPaginationQuery$variables
 }
 
 const AlertsField: FunctionComponent<TriggersFieldProps> = ({
@@ -81,12 +81,12 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
   const [triggerCreation, setTriggerCreation] = useState(false);
   const [triggers, setTriggers] = useState<
   {
-    label?: string;
-    value: string;
+    label?: string
+    value: string
     entity?: {
-      id: string;
-      name: string;
-    };
+      id: string
+      name: string
+    }
   }[]
   >([]);
   const handleOpenTriggerCreation = () => {
@@ -107,15 +107,15 @@ const AlertsField: FunctionComponent<TriggersFieldProps> = ({
         const newTriggersEdges = ((data as TriggersQueriesSearchActivityQuery$data)
           ?.triggersActivity?.edges ?? []) as {
           node: {
-            created: string | null;
-            description: string | null;
-            event_types: Array<TriggerEventType>;
-            id: string;
-            modified: string | null;
-            name: string;
-            notifiers: Array<{ id: string }>;
-            trigger_type: TriggerType;
-          };
+            created: string | null
+            description: string | null
+            event_types: Array<TriggerEventType>
+            id: string
+            modified: string | null
+            name: string
+            notifiers: Array<{ id: string }>
+            trigger_type: TriggerType
+          }
         }[];
         const newTriggers = newTriggersEdges
           .slice()

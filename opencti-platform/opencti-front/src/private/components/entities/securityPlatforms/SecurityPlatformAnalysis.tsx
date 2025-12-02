@@ -4,7 +4,7 @@ import { SecurityPlatformAnalysis_securityPlatform$key } from '@components/entit
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 interface SecurityPlatformAnalysisComponentProps {
-  securityPlatform: SecurityPlatformAnalysis_securityPlatform$key;
+  securityPlatform: SecurityPlatformAnalysis_securityPlatform$key
 }
 const SecurityPlatformAnalysisFragment = graphql`
     fragment SecurityPlatformAnalysis_securityPlatform on SecurityPlatform {

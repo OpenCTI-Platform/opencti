@@ -83,8 +83,8 @@ const securityPlatformQuery = graphql`
 `;
 
 type RootSecurityPlatformProps = {
-  securityPlatformId: string;
-  queryRef: PreloadedQuery<RootSecurityPlatformQuery>;
+  securityPlatformId: string
+  queryRef: PreloadedQuery<RootSecurityPlatformQuery>
 };
 
 const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlatformProps) => {
@@ -278,7 +278,7 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
   );
 };
 const Root = () => {
-  const { securityPlatformId } = useParams() as { securityPlatformId: string; };
+  const { securityPlatformId } = useParams() as { securityPlatformId: string };
   const queryRef = useQueryLoading<RootSecurityPlatformQuery>(securityPlatformQuery, {
     id: securityPlatformId,
   });

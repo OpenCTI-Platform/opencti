@@ -6,20 +6,20 @@ import { useFormatter } from './i18n';
 import { hexToRGB } from '../utils/Colors';
 
 export interface StatusTemplateType {
-  id: string,
-  color: string,
-  name: string,
+  id: string
+  color: string
+  name: string
 }
 
 export interface StatusType {
-  template: StatusTemplateType,
-  id: string,
+  template: StatusTemplateType
+  id: string
   order: number
 }
 
 interface ItemStatusTemplateProps {
-  statuses: StatusType[],
-  disabled: boolean,
+  statuses: StatusType[]
+  disabled: boolean
 }
 
 const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => {

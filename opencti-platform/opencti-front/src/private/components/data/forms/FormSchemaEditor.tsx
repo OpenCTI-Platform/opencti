@@ -71,27 +71,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FormSchemaEditorProps {
-  initialValues?: FormBuilderData;
+  initialValues?: FormBuilderData
   entitySettings: {
     edges: ReadonlyArray<{
       node: {
-        id?: string;
-        target_type: string;
-        mandatoryAttributes?: ReadonlyArray<string>;
+        id?: string
+        target_type: string
+        mandatoryAttributes?: ReadonlyArray<string>
         attributesDefinitions?: ReadonlyArray<{
-          type: string;
-          name: string;
-          label?: string | null;
-          mandatory: boolean;
-          multiple?: boolean | null;
-          upsert?: boolean;
-          defaultValues?: ReadonlyArray<{ id: string; name: string }> | null;
-        }>;
-      };
-    }>;
-  };
-  onChange?: (values: FormBuilderData) => void;
-  onSchemaChange?: (schema: string) => void;
+          type: string
+          name: string
+          label?: string | null
+          mandatory: boolean
+          multiple?: boolean | null
+          upsert?: boolean
+          defaultValues?: ReadonlyArray<{ id: string, name: string }> | null
+        }>
+      }
+    }>
+  }
+  onChange?: (values: FormBuilderData) => void
+  onSchemaChange?: (schema: string) => void
 }
 
 const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
@@ -209,7 +209,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
     });
   };
 
-  const handleFieldChange = (path: string, value: string | number | boolean | string[] | Date | null | Array<{ label: string; value: string }>) => {
+  const handleFieldChange = (path: string, value: string | number | boolean | string[] | Date | null | Array<{ label: string, value: string }>) => {
     updateFormData((prev) => {
       const keys = path.split('.');
       // Prevent prototype pollution by blocking dangerous property names
@@ -756,7 +756,7 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
                   {t_i18n('This field uses predefined vocabulary values.')}
                 </Typography>
                 <Box style={{ marginTop: 10, paddingLeft: 10 }}>
-                  {attribute.defaultValues?.map((value: { id: string; name: string }) => (
+                  {attribute.defaultValues?.map((value: { id: string, name: string }) => (
                     <Typography key={value.id} variant="body2" style={{ marginTop: 5 }}>
                       • {value.name}
                     </Typography>

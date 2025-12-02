@@ -24,9 +24,9 @@ export interface FilterSearchContext {
 }
 
 export type FiltersRestrictions = {
-  preventLocalModeSwitchingFor?: string[], // filter keys whose local mode can't be changed
-  preventRemoveFor?: string[], // filter keys whose filter can't be removed
-  preventFilterValuesEditionFor?: Map<string, string[]>, // Map<filter key, values[]> indicating the not removable value for the given filter key
+  preventLocalModeSwitchingFor?: string[] // filter keys whose local mode can't be changed
+  preventRemoveFor?: string[] // filter keys whose filter can't be removed
+  preventFilterValuesEditionFor?: Map<string, string[]> // Map<filter key, values[]> indicating the not removable value for the given filter key
 };
 
 export const emptyFilterGroup = {
@@ -691,7 +691,8 @@ export const getDefaultOperatorFilter = (
   if (isBasicTextFilter(filterDefinition)) {
     if (filterDefinition.type === 'string') {
       return 'starts_with';
-    } if (filterDefinition.type === 'text') {
+    }
+    if (filterDefinition.type === 'text') {
       if (type === 'text') {
         return 'search';
       }
@@ -744,7 +745,8 @@ export const getAvailableOperatorForFilterKey = (
     if (filterDefinition.type === 'string') {
       return ['eq', 'not_eq', 'nil', 'not_nil', 'contains', 'not_contains',
         'starts_with', 'not_starts_with', 'ends_with', 'not_ends_with', 'search'];
-    } if (filterDefinition.type === 'text') {
+    }
+    if (filterDefinition.type === 'text') {
       if (filterDefinition.type === 'text') {
         return ['search', 'nil', 'not_nil'];
       }
@@ -1082,10 +1084,12 @@ export const isRegardingOfFilterWarning = (
     if (relationshipTypes.includes('located-at')
       && entityTypes.some((type) => ['City', 'IPv4-Addr', 'IPv6-Addr'].includes(type))) {
       return true;
-    } if (relationshipTypes.includes('related-to')
+    }
+    if (relationshipTypes.includes('related-to')
       && entityTypes.some((type) => [...observablesTypes, 'Stix-Cyber-Observable'].includes(type))) {
       return true;
-    } if (relationshipTypes.includes('indicates')
+    }
+    if (relationshipTypes.includes('indicates')
       && entityTypes.some((type) => ['Indicator'].includes(type))) {
       return true;
     }

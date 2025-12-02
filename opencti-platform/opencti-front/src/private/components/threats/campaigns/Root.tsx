@@ -87,7 +87,7 @@ const campaignQuery = graphql`
 `;
 
 type RootCampaignProps = {
-  campaignId: string;
+  campaignId: string
   queryRef: PreloadedQuery<RootCampaignQuery>
 };
 
@@ -290,7 +290,7 @@ const RootCampaign = ({ campaignId, queryRef }: RootCampaignProps) => {
 };
 
 const Root = () => {
-  const { campaignId } = useParams() as { campaignId: string; };
+  const { campaignId } = useParams() as { campaignId: string };
   const queryRef = useQueryLoading<RootCampaignQuery>(campaignQuery, {
     id: campaignId,
   });

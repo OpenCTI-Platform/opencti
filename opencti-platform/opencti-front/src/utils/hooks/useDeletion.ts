@@ -3,9 +3,9 @@ import stopEvent from '../domEvent';
 
 export interface Deletion {
   deleting: boolean
-  handleOpenDelete: (e?: UIEvent) => void;
+  handleOpenDelete: (e?: UIEvent) => void
   displayDelete: boolean
-  handleCloseDelete: (e?: UIEvent) => void;
+  handleCloseDelete: (e?: UIEvent) => void
   setDeleting: (value: (((prevState: boolean) => boolean) | boolean)) => void
 }
 

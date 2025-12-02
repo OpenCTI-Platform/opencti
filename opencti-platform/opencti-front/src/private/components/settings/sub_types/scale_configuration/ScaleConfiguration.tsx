@@ -109,16 +109,16 @@ const isTickDefinitionValid = (
 };
 
 interface EntitySettingScaleProps {
-  initialValues: ScaleConfig;
-  fieldName: string;
+  initialValues: ScaleConfig
+  fieldName: string
   setFieldValue: (
     field: string,
     value: ScaleConfig,
     shouldValidate?: boolean,
-  ) => void;
-  setErrors: (errors: FormikErrors<FormikValues>) => void;
-  customScale?: ScaleConfig | null;
-  style?: Record<string, string | number>;
+  ) => void
+  setErrors: (errors: FormikErrors<FormikValues>) => void
+  customScale?: ScaleConfig | null
+  style?: Record<string, string | number>
 }
 
 const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({

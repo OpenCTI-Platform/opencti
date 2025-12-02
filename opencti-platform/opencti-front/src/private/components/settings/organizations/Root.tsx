@@ -39,8 +39,8 @@ const organizationQuery = graphql`
   }
 `;
 interface RootSettingsOrganizationComponentProps {
-  queryRef: PreloadedQuery<RootSettingsOrganizationQuery>,
-  organizationId: string,
+  queryRef: PreloadedQuery<RootSettingsOrganizationQuery>
+  organizationId: string
 }
 const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizationComponentProps> = ({ queryRef, organizationId }) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootSettingsOrganizationSubscription>>(

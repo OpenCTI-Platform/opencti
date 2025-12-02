@@ -4,17 +4,17 @@ import { resolveLink } from '../Entity';
 import useSchema from './useSchema';
 
 export type ComputeLinkNode = {
-  id: string;
-  entity_type: string;
-  relationship_type?: string;
-  from?: { entity_type: string; id: string };
-  to?: { entity_type: string; id: string };
-  type?: string;
+  id: string
+  entity_type: string
+  relationship_type?: string
+  from?: { entity_type: string, id: string }
+  to?: { entity_type: string, id: string }
+  type?: string
 };
 
 export type AppDataProps = {
-  computeLink: (node: ComputeLinkNode) => string | undefined;
-  metricsDefinition: MetricsDefinition[];
+  computeLink: (node: ComputeLinkNode) => string | undefined
+  metricsDefinition: MetricsDefinition[]
 };
 
 const useComputeLinkFn = () => {
@@ -64,8 +64,8 @@ export const useComputeLink = (): AppDataProps['computeLink'] => {
 };
 
 type PrivateAppDataProviderProps = {
-  children: ReactNode;
-  metricsDefinition: MetricsDefinition[];
+  children: ReactNode
+  metricsDefinition: MetricsDefinition[]
 };
 
 const PrivateAppDataProvider: React.FC<PrivateAppDataProviderProps> = ({ children, metricsDefinition }) => {
@@ -84,9 +84,9 @@ const PrivateAppDataProvider: React.FC<PrivateAppDataProviderProps> = ({ childre
 };
 
 type AppDataProviderProps = {
-  isPublicRoute: boolean;
-  metricsDefinition?: MetricsDefinition[];
-  children: ReactNode;
+  isPublicRoute: boolean
+  metricsDefinition?: MetricsDefinition[]
+  children: ReactNode
 };
 
 export const AppDataProvider = ({

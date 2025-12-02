@@ -92,7 +92,7 @@ const HiddenTypesIndicatorComponent: FunctionComponent<HiddenTypesIndicatorCompo
 };
 
 interface HiddenTypesIndicatorProps {
-  platformHiddenTargetType: string,
+  platformHiddenTargetType: string
 }
 
 const HiddenTypesIndicator: FunctionComponent<HiddenTypesIndicatorProps> = ({

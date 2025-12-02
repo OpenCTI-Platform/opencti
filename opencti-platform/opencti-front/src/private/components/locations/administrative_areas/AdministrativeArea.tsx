@@ -78,7 +78,7 @@ const administrativeAreaFragment = graphql`
 const AdministrativeArea = ({
   administrativeAreaData,
 }: {
-  administrativeAreaData: AdministrativeArea_administrativeArea$key;
+  administrativeAreaData: AdministrativeArea_administrativeArea$key
 }) => {
   useInitCreateRelationshipContext();
 

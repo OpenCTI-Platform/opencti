@@ -77,9 +77,9 @@ const noteMutationRelationDelete = graphql`
 `;
 
 interface NoteEditionOverviewProps {
-  note: NoteEditionOverview_note$data;
-  context?: readonly (GenericContext | null)[] | null;
-  handleClose: () => void;
+  note: NoteEditionOverview_note$data
+  context?: readonly (GenericContext | null)[] | null
+  handleClose: () => void
 }
 
 const NOTE_TYPE = 'Note';

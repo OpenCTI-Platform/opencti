@@ -43,8 +43,8 @@ interface DecayRuleEditionFormData {
 }
 
 interface DecayRuleEditionFormProps {
-  decayRuleId: string;
-  initialValues: DecayRuleEditionFormData;
+  decayRuleId: string
+  initialValues: DecayRuleEditionFormData
 }
 const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   decayRuleId,
@@ -227,7 +227,7 @@ const DecayRuleEditionForm: FunctionComponent<DecayRuleEditionFormProps> = ({
   );
 };
 interface DecayRuleEditionProps {
-  decayRule: DecayRule_decayRule$data;
+  decayRule: DecayRule_decayRule$data
 }
 
 const DecayRuleEdition: FunctionComponent<DecayRuleEditionProps> = ({

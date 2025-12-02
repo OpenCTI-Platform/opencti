@@ -66,16 +66,16 @@ const fileValidation = (t: (value: string) => string) => Yup.object().shape({
 });
 
 interface WorkbenchFileCreatorFormValues {
-  name: string;
-  labels: FieldOption[];
-  fileMarkings: FieldOption[];
+  name: string
+  labels: FieldOption[]
+  fileMarkings: FieldOption[]
 }
 
 interface WorkbenchFileCreatorProps {
-  openCreate: boolean;
-  handleCloseCreate: () => void;
-  onCompleted?: () => void;
-  entity?: WorkbenchFileViewer_entity$data;
+  openCreate: boolean
+  handleCloseCreate: () => void
+  onCompleted?: () => void
+  entity?: WorkbenchFileViewer_entity$data
 }
 
 export const workbenchFileCreatorStixCoreObjectQuery = graphql`

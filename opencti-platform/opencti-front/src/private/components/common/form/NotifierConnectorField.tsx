@@ -26,15 +26,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface NotifierConnectorFieldProps {
-  name: string;
-  style?: { marginTop: number };
-  helpertext?: string;
-  disabled?: boolean;
+  name: string
+  style?: { marginTop: number }
+  helpertext?: string
+  disabled?: boolean
   onChange?: (
     name: string,
-    value: { label: string; value: string; schema: string },
-  ) => void;
-  required?: boolean;
+    value: { label: string, value: string, schema: string },
+  ) => void
+  required?: boolean
 }
 
 const NotifierConnectorFieldQuery = graphql`
@@ -55,7 +55,7 @@ NotifierConnectorFieldProps
   const { t_i18n } = useFormatter();
 
   const [connectors, setConnectors] = useState<
-  { label: string | undefined; value: string | undefined }[]
+  { label: string | undefined, value: string | undefined }[]
   >([]);
 
   const searchNotifierConnectors = (

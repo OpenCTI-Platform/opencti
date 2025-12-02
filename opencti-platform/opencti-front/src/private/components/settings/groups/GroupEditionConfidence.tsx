@@ -26,23 +26,23 @@ export const groupConfidenceMutationFieldPatch = graphql`
   }
 `;
 export interface OverrideFormData {
-  max_confidence: string;
-  entity_type: string;
+  max_confidence: string
+  entity_type: string
 }
 
 export interface ConfidenceFormData {
-  group_confidence_level: number | null | undefined;
+  group_confidence_level: number | null | undefined
   overrides: OverrideFormData[]
 }
 
 interface GroupEditionConfidenceProps {
-  group: GroupEditionConfidence_group$data;
+  group: GroupEditionConfidence_group$data
   context:
     | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
+    readonly focusOn: string | null | undefined
+    readonly name: string
   } | null)[]
-  | null | undefined;
+  | null | undefined
 }
 
 const groupConfidenceValidation = (t: (value: string) => string) => {

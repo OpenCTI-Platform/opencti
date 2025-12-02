@@ -23,18 +23,18 @@ const loginValidation = (t: (v: string) => string) => Yup.object().shape({
 });
 
 interface LoginFormValues {
-  email: string;
-  password: string;
+  email: string
+  password: string
 }
 
 interface RelayResponseError extends Error {
-  res?: RelayResponsePayload;
+  res?: RelayResponsePayload
 }
 
 interface LoginFormProps {
-  onClickForgotPassword: () => void;
-  email: string;
-  setEmail: (value: string) => void;
+  onClickForgotPassword: () => void
+  email: string
+  setEmail: (value: string) => void
 }
 
 const LoginForm: FunctionComponent<LoginFormProps> = ({ onClickForgotPassword, email, setEmail }) => {

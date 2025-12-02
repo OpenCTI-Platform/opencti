@@ -14,14 +14,14 @@ import useGranted, { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGra
 import { FieldOption } from '../../../../utils/field';
 
 interface CreatorFieldProps {
-  name: string;
-  label: string;
-  onChange?: (name: string, value: FieldOption) => void;
-  containerStyle?: Record<string, string | number>;
-  showConfidence?: boolean;
-  helpertext?: string;
-  required?: boolean;
-  disabled?: boolean;
+  name: string
+  label: string
+  onChange?: (name: string, value: FieldOption) => void
+  containerStyle?: Record<string, string | number>
+  showConfidence?: boolean
+  helpertext?: string
+  required?: boolean
+  disabled?: boolean
 }
 
 const CreatorFieldQuery = graphql`
@@ -48,7 +48,7 @@ const CreatorFieldQuery = graphql`
 type CreatorNode = NonNullable<CreatorFieldSearchQuery$data['members']>['edges'][number]['node'];
 
 type CreatorOption = FieldOption & {
-  extra?: ReactNode,
+  extra?: ReactNode
 };
 
 const CreatorField: FunctionComponent<CreatorFieldProps> = ({

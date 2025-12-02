@@ -44,10 +44,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IngestionCsvLineProps {
-  node: IngestionCsvLine_node$key;
-  dataColumns: DataColumns;
-  onLabelClick: HandleAddFilter;
-  paginationOptions?: IngestionCsvLinesPaginationQuery$variables;
+  node: IngestionCsvLine_node$key
+  dataColumns: DataColumns
+  onLabelClick: HandleAddFilter
+  paginationOptions?: IngestionCsvLinesPaginationQuery$variables
 }
 
 const ingestionCsvLineFragment = graphql`

@@ -48,18 +48,18 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ConnectorConfiguration {
-  configuration: string;
-  id: string;
-  name: string;
+  configuration: string
+  id: string
+  name: string
 }
 interface Connector {
-  id: string;
-  name: string;
-  active: boolean;
-  only_contextual: boolean;
-  connector_scope: string[];
-  updated_at: string;
-  configurations: ConnectorConfiguration[];
+  id: string
+  name: string
+  active: boolean
+  only_contextual: boolean
+  connector_scope: string[]
+  updated_at: string
+  configurations: ConnectorConfiguration[]
 }
 
 const importValidation = (t: (value: string) => string, configurations: boolean) => {
@@ -77,20 +77,20 @@ const importValidation = (t: (value: string) => string, configurations: boolean)
 };
 
 interface ExternalReferenceFileImportViewerBaseProps {
-  externalReference: ExternalReferenceFileImportViewer_entity$data;
-  disableImport: boolean;
+  externalReference: ExternalReferenceFileImportViewer_entity$data
+  disableImport: boolean
   connectors: Record<
   string,
   {
-    id: string;
-    name: string;
-    active: boolean;
-    connector_scope: string[];
-    updated_at: string;
+    id: string
+    name: string
+    active: boolean
+    connector_scope: string[]
+    updated_at: string
   }
-  >;
-  relay: RelayRefetchProp;
-  connectorsImport: Connector[];
+  >
+  relay: RelayRefetchProp
+  connectorsImport: Connector[]
 }
 const ExternalReferenceFileImportViewerBase: FunctionComponent<
 ExternalReferenceFileImportViewerBaseProps
@@ -200,12 +200,12 @@ ExternalReferenceFileImportViewerBaseProps
                 (
                   file: {
                     node: {
-                      id: string;
+                      id: string
                       metaData: {
-                        mimetype: string | null | undefined;
-                      } | null | undefined;
-                      ' $fragmentSpreads': FragmentRefs<'FileLine_file'>;
-                    };
+                        mimetype: string | null | undefined
+                      } | null | undefined
+                      ' $fragmentSpreads': FragmentRefs<'FileLine_file'>
+                    }
                   } | null | undefined,
                 ) => file?.node && (
                   <FileLine

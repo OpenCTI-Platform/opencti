@@ -30,15 +30,15 @@ const workspaceDuplicationFragment = graphql`
 `;
 
 interface WorkspaceDuplicationDialogProps {
-  data: WorkspaceDuplicationDialogFragment$key;
-  displayDuplicate: boolean;
-  duplicating: boolean;
-  handleCloseDuplicate: () => void;
-  setDuplicating: (value: boolean) => void;
+  data: WorkspaceDuplicationDialogFragment$key
+  displayDuplicate: boolean
+  duplicating: boolean
+  handleCloseDuplicate: () => void
+  setDuplicating: (value: boolean) => void
   updater?: (
     store: RecordSourceSelectorProxy<WorkspaceDuplicationDialogDuplicatedWorkspaceCreationMutation$data>,
-  ) => void;
-  paginationOptions?: WorkspacesLinesPaginationQuery$variables;
+  ) => void
+  paginationOptions?: WorkspacesLinesPaginationQuery$variables
 }
 
 const workspaceDuplicationDialogDuplicatedWorkspaceCreation = graphql`

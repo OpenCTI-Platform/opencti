@@ -71,43 +71,43 @@ const caseRfiMutation = graphql`
 `;
 
 interface FormikCaseRfiAddInput {
-  name: string;
-  confidence: number | undefined;
-  description: string;
-  content: string;
-  file: File | undefined;
-  createdBy: FieldOption | undefined;
-  objectMarking: FieldOption[];
-  objectAssignee: FieldOption[];
-  objectParticipant: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: FieldOption[];
-  created: Date | null;
-  information_types: string[];
-  severity: string;
-  priority: string;
-  caseTemplates?: FieldOption[];
+  name: string
+  confidence: number | undefined
+  description: string
+  content: string
+  file: File | undefined
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  objectAssignee: FieldOption[]
+  objectParticipant: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: FieldOption[]
+  created: Date | null
+  information_types: string[]
+  severity: string
+  priority: string
+  caseTemplates?: FieldOption[]
   authorized_members: {
-    value: string,
-    accessRight: string,
+    value: string
+    accessRight: string
     groupsRestriction: {
-      label: string,
-      value: string,
+      label: string
+      value: string
       type: string
-    }[] }[] | undefined;
+    }[] }[] | undefined
 }
 
 interface CaseRfiFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined,
-  ) => void;
-  onClose?: () => void;
-  defaultConfidence?: number;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  inputValue?: string;
+    response: { id: string, name: string } | null | undefined,
+  ) => void
+  onClose?: () => void
+  defaultConfidence?: number
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  inputValue?: string
 }
 
 const CASE_RFI_TYPE = 'Case-Rfi';
@@ -415,7 +415,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
 const CaseRfiCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CaseRfisLinesCasesPaginationQuery$variables;
+  paginationOptions: CaseRfisLinesCasesPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(

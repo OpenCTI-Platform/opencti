@@ -14,13 +14,13 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
-  nestedRelationExist: boolean,
-  openCreateNested: boolean,
-  nestedEnabled: boolean,
-  relationFromObjects: NodeObject[],
-  relationToObjects: NodeObject[],
-  handleSetNestedRelationExist: (val: boolean) => void,
-  handleOpenCreateNested: () => void,
+  nestedRelationExist: boolean
+  openCreateNested: boolean
+  nestedEnabled: boolean
+  relationFromObjects: NodeObject[]
+  relationToObjects: NodeObject[]
+  handleSetNestedRelationExist: (val: boolean) => void
+  handleOpenCreateNested: () => void
 }
 const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
   nestedRelationExist,

@@ -30,14 +30,14 @@ import { MESSAGING$ } from '../../../../relay/environment';
 type WorkMessages = NonNullable<NonNullable<NonNullable<ConnectorWorks_data$data['works']>['edges']>[0]>['node']['errors'];
 interface ConnectorWorkLineProps {
   workId: string
-  workName: string | null | undefined;
-  workStatus: State;
-  workReceivedTime: string;
-  workEndTime: string;
-  workExpectedNumber: number | null | undefined;
-  workProcessedNumber: number | null | undefined;
-  workErrors: WorkMessages | null | undefined;
-  readOnly?: boolean | undefined;
+  workName: string | null | undefined
+  workStatus: State
+  workReceivedTime: string
+  workEndTime: string
+  workExpectedNumber: number | null | undefined
+  workProcessedNumber: number | null | undefined
+  workErrors: WorkMessages | null | undefined
+  readOnly?: boolean | undefined
 }
 const ConnectorWorkLine: FunctionComponent<
 ConnectorWorkLineProps

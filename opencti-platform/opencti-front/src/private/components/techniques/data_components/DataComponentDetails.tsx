@@ -26,7 +26,7 @@ const DataComponentDetailsFragment = graphql`
 `;
 
 interface DataComponentDetailsProps {
-  dataComponent: DataComponentDetails_dataComponent$key;
+  dataComponent: DataComponentDetails_dataComponent$key
 }
 
 const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({

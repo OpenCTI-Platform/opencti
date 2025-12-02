@@ -73,7 +73,7 @@ const reportComponentFragment = graphql`
 `;
 
 interface ReportComponentProps {
-  reportFragment: Report_report$key;
+  reportFragment: Report_report$key
 }
 
 const Report: React.FC<ReportComponentProps> = ({ reportFragment }) => {

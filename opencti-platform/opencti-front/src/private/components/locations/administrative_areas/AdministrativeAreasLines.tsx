@@ -11,10 +11,10 @@ import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage'
 const nbOfRowsToLoad = 50;
 
 interface AdministrativeAreasLinesProps {
-  paginationOptions?: AdministrativeAreasLinesPaginationQuery$variables;
-  dataColumns: DataColumns;
-  queryRef: PreloadedQuery<AdministrativeAreasLinesPaginationQuery>;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  paginationOptions?: AdministrativeAreasLinesPaginationQuery$variables
+  dataColumns: DataColumns
+  queryRef: PreloadedQuery<AdministrativeAreasLinesPaginationQuery>
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 export const administrativeAreasLinesQuery = graphql`

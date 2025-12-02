@@ -3,28 +3,28 @@ import * as R from 'ramda';
 import useBus from './useBus';
 
 export interface UseEntityToggle<T> {
-  selectedElements: Record<string, T>;
-  deSelectedElements: Record<string, T>;
-  selectAll: boolean;
-  numberOfSelectedElements: number;
+  selectedElements: Record<string, T>
+  deSelectedElements: Record<string, T>
+  selectAll: boolean
+  numberOfSelectedElements: number
   onToggleEntity: (
     entity: T | T[],
     _?: React.SyntheticEvent,
     forceRemove?: T[],
-  ) => void;
-  handleClearSelectedElements: () => void;
-  handleToggleSelectAll: () => void;
-  setSelectedElements: (selectedElements: Record<string, T>) => void;
+  ) => void
+  handleClearSelectedElements: () => void
+  handleToggleSelectAll: () => void
+  setSelectedElements: (selectedElements: Record<string, T>) => void
 }
 
 type UseEntityToggleType = {
-  id: string,
-  name?: string | null,
-  observable_value?: string | null,
+  id: string
+  name?: string | null
+  observable_value?: string | null
   entity_type?: string | null
   representative?: {
-    main: string;
-  };
+    main: string
+  }
 };
 
 const useEntityToggle = <T extends UseEntityToggleType>(
@@ -38,9 +38,9 @@ const useEntityToggle = <T extends UseEntityToggleType>(
 
   const busKey = `${key}_entityToggle`;
   const callback = useCallback((values: {
-    selectAll?: boolean,
-    selectedElements?: Record<string, T>,
-    deSelectedElements?: Record<string, T>,
+    selectAll?: boolean
+    selectedElements?: Record<string, T>
+    deSelectedElements?: Record<string, T>
   }) => {
     if (values.selectAll != null) {
       setSelectAll(values.selectAll);

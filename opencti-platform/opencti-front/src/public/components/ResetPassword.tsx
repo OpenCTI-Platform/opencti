@@ -17,9 +17,9 @@ import { ResetPasswordAskSendOtpMutation } from './__generated__/ResetPasswordAs
 import { ResetPasswordChangePasswordMutation } from './__generated__/ResetPasswordChangePasswordMutation.graphql';
 
 interface ResetProps {
-  onCancel: () => void;
-  email: string;
-  setEmail: (value: string) => void;
+  onCancel: () => void
+  email: string
+  setEmail: (value: string) => void
 }
 
 export const AskSendOtpMutation = graphql`
@@ -60,16 +60,16 @@ const passwordValidation = (t: (v: string) => string) => Yup.object().shape({
 });
 
 interface ResetFormValues {
-  email: string;
+  email: string
 }
 
 interface ValidateOtpFormValues {
-  otp: string;
+  otp: string
 }
 
 interface ResetPasswordFormValues {
-  password: string;
-  password_validation: string;
+  password: string
+  password_validation: string
 }
 
 enum Step {

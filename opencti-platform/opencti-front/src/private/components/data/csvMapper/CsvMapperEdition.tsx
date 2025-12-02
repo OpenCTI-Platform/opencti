@@ -24,8 +24,8 @@ const csvMapperEditionPatch = graphql`
 `;
 
 interface CsvMapperEditionProps {
-  csvMapper: CsvMapperEditionContainerFragment_csvMapper$data;
-  onClose?: () => void;
+  csvMapper: CsvMapperEditionContainerFragment_csvMapper$data
+  onClose?: () => void
 }
 
 const CsvMapperEdition: FunctionComponent<CsvMapperEditionProps> = ({

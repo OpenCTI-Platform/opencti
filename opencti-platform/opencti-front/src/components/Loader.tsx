@@ -53,10 +53,10 @@ export enum LoaderVariant {
 }
 
 interface LoaderProps {
-  variant?: LoaderVariant;
-  withRightPadding?: boolean;
-  withTopMargin?: boolean;
-  rotatingTexts?: Array<string>;
+  variant?: LoaderVariant
+  withRightPadding?: boolean
+  withTopMargin?: boolean
+  rotatingTexts?: Array<string>
 }
 
 const Loader: FunctionComponent<LoaderProps> = ({

@@ -123,7 +123,7 @@ interface AIInsightProps {
   defaultTab?: 'activity' | 'containers' | 'forecast' | 'history'
   floating?: boolean
   onlyIcon?: boolean
-  isContainer?: boolean;
+  isContainer?: boolean
 }
 
 const AIInsights = ({

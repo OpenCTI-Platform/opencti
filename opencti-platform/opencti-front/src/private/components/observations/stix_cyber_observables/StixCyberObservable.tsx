@@ -51,7 +51,7 @@ const stixCyberObservableFragment = graphql`
 `;
 
 interface StixCyberObservableProps {
-  stixCyberObservableData: StixCyberObservable_stixCyberObservable$key;
+  stixCyberObservableData: StixCyberObservable_stixCyberObservable$key
 }
 
 const StixCyberObservable: React.FC<StixCyberObservableProps> = ({

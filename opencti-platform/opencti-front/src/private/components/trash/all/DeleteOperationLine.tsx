@@ -41,22 +41,22 @@ const DeleteOperationFragment = graphql`
 `;
 
 interface DeleteOperationLineComponentProps {
-  dataColumns: DataColumns;
-  node: DeleteOperationLine_node$key;
-  paginationOptions: DeleteOperationsLinesPaginationQuery$variables;
-  selectedElements: Record<string, DeleteOperationLine_node$data>;
-  deSelectedElements: Record<string, DeleteOperationLine_node$data>;
+  dataColumns: DataColumns
+  node: DeleteOperationLine_node$key
+  paginationOptions: DeleteOperationsLinesPaginationQuery$variables
+  selectedElements: Record<string, DeleteOperationLine_node$data>
+  deSelectedElements: Record<string, DeleteOperationLine_node$data>
   onToggleEntity: (
     entity: DeleteOperationLine_node$data,
     event: React.SyntheticEvent,
-  ) => void;
-  selectAll: boolean;
+  ) => void
+  selectAll: boolean
   onToggleShiftEntity: (
     index: number,
     entity: DeleteOperationLine_node$data,
     event?: React.SyntheticEvent,
-  ) => void;
-  index: number;
+  ) => void
+  index: number
 }
 
 const cellSx = {
@@ -147,7 +147,7 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
 };
 
 interface DeleteOperationLineDummyProps {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }
 
 export const DeleteOperationLineDummy: React.FC<DeleteOperationLineDummyProps> = ({ dataColumns }) => {

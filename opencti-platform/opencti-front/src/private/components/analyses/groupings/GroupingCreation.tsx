@@ -69,37 +69,37 @@ const groupingMutation = graphql`
 const GROUPING_TYPE = 'Grouping';
 
 interface GroupingAddInput {
-  name: string;
-  confidence: number | undefined;
-  context: string;
-  description: string;
-  content: string;
-  createdBy: FieldOption | undefined;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  name: string
+  confidence: number | undefined
+  context: string
+  description: string
+  content: string
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: { value: string }[]
+  file: File | undefined
   authorized_members: {
-    value: string,
-    accessRight: string,
+    value: string
+    accessRight: string
     groupsRestriction: {
-      label: string,
-      value: string,
+      label: string
+      value: string
       type: string
-    }[] }[] | undefined;
+    }[] }[] | undefined
 }
 
 interface GroupingFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined,
-  ) => void;
-  onClose?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
-  inputValue?: string;
+    response: { id: string, name: string } | null | undefined,
+  ) => void
+  onClose?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+  inputValue?: string
 }
 
 export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
@@ -355,7 +355,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
 const GroupingCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: GroupingsLinesPaginationQuery$variables;
+  paginationOptions: GroupingsLinesPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');

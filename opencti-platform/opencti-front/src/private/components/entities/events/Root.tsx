@@ -77,8 +77,8 @@ const eventQuery = graphql`
 `;
 
 type RootEventProps = {
-  eventId: string;
-  queryRef: PreloadedQuery<RootEventQuery>;
+  eventId: string
+  queryRef: PreloadedQuery<RootEventQuery>
 };
 
 const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
@@ -302,7 +302,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
   );
 };
 const Root = () => {
-  const { eventId } = useParams() as { eventId: string; };
+  const { eventId } = useParams() as { eventId: string };
   const queryRef = useQueryLoading<RootEventQuery>(eventQuery, {
     id: eventId,
   });

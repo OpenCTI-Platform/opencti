@@ -27,9 +27,9 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface DashboardFieldProps {
-  onChange: (name: string, value: string) => void;
-  context?: readonly (GenericContext | null)[] | null;
-  queryRef: PreloadedQuery<DashboardFieldQuery>;
+  onChange: (name: string, value: string) => void
+  context?: readonly (GenericContext | null)[] | null
+  queryRef: PreloadedQuery<DashboardFieldQuery>
 }
 
 const workspaceQuery = graphql`

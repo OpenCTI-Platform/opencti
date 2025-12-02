@@ -53,8 +53,8 @@ export const stixCoreObjectOpinionsListQuery = graphql`
 
 interface StixCoreObjectOpinionsListProps {
   queryRef: PreloadedQuery<StixCoreObjectOpinionsListQuery>
-  open: boolean,
-  handleClose: () => void,
+  open: boolean
+  handleClose: () => void
   onDelete: () => void
 }
 

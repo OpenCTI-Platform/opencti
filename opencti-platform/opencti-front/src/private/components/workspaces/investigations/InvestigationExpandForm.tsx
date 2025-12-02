@@ -86,23 +86,23 @@ const useStyles = makeStyles(() => ({
 }));
 
 type FormData = {
-  entity_types: FieldOption[];
-  relationship_types: FieldOption[];
-  reset_filters: boolean;
+  entity_types: FieldOption[]
+  relationship_types: FieldOption[]
+  reset_filters: boolean
 };
 
 export type InvestigationExpandFormProps = {
-  links: GraphLink[];
-  selectedNodes: GraphNode[];
-  onSubmit: (data: FormData, helpers: FormikHelpers<FormData>) => void;
-  onReset: () => void;
+  links: GraphLink[]
+  selectedNodes: GraphNode[]
+  onSubmit: (data: FormData, helpers: FormikHelpers<FormData>) => void
+  onReset: () => void
 };
 
 // Refs of queries instantiated by the wrapper (bottom of the file).
 type InvestigationExpandFormContentProps = InvestigationExpandFormProps & {
-  distributionRelQueryRef: PreloadedQuery<InvestigationExpandFormRelDistributionQuery>;
-  distributionFromQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionFromQuery>;
-  distributionToQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionToQuery>;
+  distributionRelQueryRef: PreloadedQuery<InvestigationExpandFormRelDistributionQuery>
+  distributionFromQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionFromQuery>
+  distributionToQueryRef: PreloadedQuery<InvestigationExpandFormTargetsDistributionToQuery>
 };
 
 const InvestigationExpandFormContent = ({
@@ -306,7 +306,7 @@ const InvestigationExpandFormContent = ({
     });
 
     // Merge both 'from' relationships and 'to' relationships.
-    const distribution: { label: string; value: number }[] = [];
+    const distribution: { label: string, value: number }[] = [];
     [distributionFrom, distributionTo].forEach(
       ({ stixRelationshipsDistribution }) => {
         stixRelationshipsDistribution?.forEach((newTarget) => {

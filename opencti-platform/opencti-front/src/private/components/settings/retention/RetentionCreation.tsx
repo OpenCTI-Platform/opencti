@@ -72,11 +72,11 @@ const CreateRetentionControlledDial = (props: DrawerControlledDialProps) => (
 );
 
 interface RetentionFormValues {
-  name: string,
-  max_retention: string,
-  retention_unit: 'minutes' | 'hours' | 'days',
-  scope: { value: string, label: string },
-  filters: string,
+  name: string
+  max_retention: string
+  retention_unit: 'minutes' | 'hours' | 'days'
+  scope: { value: string, label: string }
+  filters: string
 }
 
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {

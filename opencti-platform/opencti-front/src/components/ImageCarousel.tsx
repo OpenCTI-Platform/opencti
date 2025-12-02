@@ -51,33 +51,33 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface ImageMetaData {
-  description: string | null;
-  inCarousel: boolean | null;
-  mimetype: string | null;
-  order: number | null;
+  description: string | null
+  inCarousel: boolean | null
+  mimetype: string | null
+  order: number | null
 }
 
 export interface ImagesData {
   edges: ReadonlyArray<{
     node: {
-      id: string;
-      metaData: ImageMetaData | null;
-      name: string;
-    };
-  } | null> | null;
+      id: string
+      metaData: ImageMetaData | null
+      name: string
+    }
+  } | null> | null
 }
 
 interface ImageCarouselProps {
   data: {
-    images: ImagesData | null;
-  };
+    images: ImagesData | null
+  }
 }
 
 interface CarouselImage {
-  tooltipTitle: string;
-  imageSrc: string;
-  altText: string;
-  id: string;
+  tooltipTitle: string
+  imageSrc: string
+  altText: string
+  id: string
 }
 
 const modalStyle = {

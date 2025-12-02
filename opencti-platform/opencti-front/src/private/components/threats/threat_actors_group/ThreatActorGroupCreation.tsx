@@ -51,27 +51,27 @@ const ThreatActorGroupMutation = graphql`
 const THREAT_ACTOR_GROUP_TYPE = 'Threat-Actor-Group';
 
 interface ThreatActorGroupAddInput {
-  name: string;
-  threat_actor_types: string[];
-  confidence: number | null;
-  description: string;
-  createdBy: FieldOption | null;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: { value: string }[];
-  file: File | null;
+  name: string
+  threat_actor_types: string[]
+  confidence: number | null
+  description: string
+  createdBy: FieldOption | null
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: { value: string }[]
+  file: File | null
 }
 
 interface ThreatActorGroupFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const ThreatActorGroupCreationForm: FunctionComponent<
@@ -320,7 +320,7 @@ ThreatActorGroupFormProps
 const ThreatActorGroupCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: ThreatActorsGroupCardsPaginationQuery$variables;
+  paginationOptions: ThreatActorsGroupCardsPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

@@ -46,11 +46,11 @@ export const dashboardsQuery = graphql`
 `;
 
 export interface PublicDashboardCreationFormData {
-  name: string;
-  enabled: boolean;
-  uri_key: string;
-  max_markings: FieldOption[];
-  dashboard_id: string;
+  name: string
+  enabled: boolean
+  uri_key: string
+  max_markings: FieldOption[]
+  dashboard_id: string
 }
 
 interface PublicDashboardCreationFormComponentProps {

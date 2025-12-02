@@ -289,7 +289,7 @@ const RootAdministrativeAreaComponent = ({ queryRef, administrativeAreaId }) => 
 
 const RootAdministrativeArea = () => {
   const { administrativeAreaId } = useParams() as {
-    administrativeAreaId: string;
+    administrativeAreaId: string
   };
   const queryRef = useQueryLoading<RootAdministrativeAreaQuery>(
     administrativeAreaQuery,

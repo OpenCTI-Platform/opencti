@@ -44,8 +44,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface SettingsOrganizationLineProps {
-  node: SettingsOrganizationLine_node$key;
-  dataColumns: DataColumns;
+  node: SettingsOrganizationLine_node$key
+  dataColumns: DataColumns
 }
 
 const SettingsOrganizationFragment = graphql`
@@ -102,7 +102,7 @@ export const SettingsOrganizationLine: FunctionComponent<SettingsOrganizationLin
 export const SettingsOrganizationLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }) => {
   const classes = useStyles();
   return (

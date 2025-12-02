@@ -9,7 +9,7 @@ type Connector
 
 type UseConnectorsStatusFiltersProps = {
   connectors: Connector[]
-  searchParams: URLSearchParams;
+  searchParams: URLSearchParams
 };
 
 const parseBooleanParam = (value: string | null): boolean | null => {

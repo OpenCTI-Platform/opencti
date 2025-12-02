@@ -4,14 +4,14 @@ import { useVocabularyCategoryQuery, VocabularyCategory } from './__generated__/
 import { ApplicationError, environment } from '../../relay/environment';
 
 export interface VocabularyDefinition {
-  key: string;
-  description: string;
-  entity_types: string[];
+  key: string
+  description: string
+  entity_types: string[]
   fields: {
-    key: string;
-    required: boolean;
-    multiple: boolean;
-  }[];
+    key: string
+    required: boolean
+    multiple: boolean
+  }[]
 }
 
 export const vocabCategoriesQuery = graphql`

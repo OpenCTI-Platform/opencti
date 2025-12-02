@@ -109,9 +109,9 @@ export const RelatedContainersFragment = graphql`
 export type RelatedContainerNode = NonNullable<NonNullable<RelatedContainersFragment_container_connection$data['edges']>[number]>['node'];
 
 interface RelatedContainersProps {
-  relatedContainers: RelatedContainersFragment_container_connection$key | null | undefined;
-  containerId: string;
-  entityType: string;
+  relatedContainers: RelatedContainersFragment_container_connection$key | null | undefined
+  containerId: string
+  entityType: string
 }
 
 const RelatedContainers: React.FC<RelatedContainersProps> = ({

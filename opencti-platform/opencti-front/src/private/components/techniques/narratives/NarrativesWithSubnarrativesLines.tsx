@@ -9,22 +9,22 @@ import NarrativeWithSubnarrativeLine, { NarrativeWithSubnarrativeLineDummy } fro
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 
 export interface SubNarrativeNode {
-  description: string | null | undefined;
-  id: string;
-  name: string;
+  description: string | null | undefined
+  id: string
+  name: string
 }
 export interface NarrativeNode {
-  description: string | null | undefined;
-  id: string;
-  isSubNarrative: boolean | null | undefined;
-  name: string;
+  description: string | null | undefined
+  id: string
+  isSubNarrative: boolean | null | undefined
+  name: string
   // subNarratives?: { edges: { node: SubNarrativeNode }[] }
-  subNarratives?: SubNarrativeNode[];
-  subNarrativesText: string;
+  subNarratives?: SubNarrativeNode[]
+  subNarrativesText: string
 }
 
 interface NarrativesWithSubnarrativesLinesProps {
-  queryRef: PreloadedQuery<NarrativesLinesPaginationQuery>;
+  queryRef: PreloadedQuery<NarrativesLinesPaginationQuery>
 }
 
 const NarrativesWithSubnarrativesLines: FunctionComponent<NarrativesWithSubnarrativesLinesProps> = ({

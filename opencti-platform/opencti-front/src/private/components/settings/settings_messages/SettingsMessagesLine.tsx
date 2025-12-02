@@ -57,9 +57,9 @@ const SettingsMessagesLine = ({
   node,
   dataColumns,
 }: {
-  entityId: string;
-  node: SettingsMessagesLine_settingsMessage$key;
-  dataColumns: DataColumns;
+  entityId: string
+  node: SettingsMessagesLine_settingsMessage$key
+  dataColumns: DataColumns
 }) => {
   const classes = useStyles();
   const message = useFragment(settingsMessageFragment, node);
@@ -100,7 +100,7 @@ export default SettingsMessagesLine;
 export const SettingsMessagesLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }) => {
   const classes = useStyles();
   return (

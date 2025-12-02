@@ -11,10 +11,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 const nbOfRowsToLoad = 50;
 
 interface RegionsLinesProps {
-  queryRef: PreloadedQuery<RegionsLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions?: RegionsLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  queryRef: PreloadedQuery<RegionsLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions?: RegionsLinesPaginationQuery$variables
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 export const regionsLinesQuery = graphql`

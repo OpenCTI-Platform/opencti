@@ -72,43 +72,43 @@ const caseIncidentMutation = graphql`
 `;
 
 interface FormikCaseIncidentAddInput {
-  name: string;
-  confidence: number | undefined;
-  severity: string;
-  priority: string;
-  description: string;
-  content: string;
-  file: File | undefined;
-  createdBy: FieldOption | undefined;
-  objectMarking: FieldOption[];
-  objectAssignee: FieldOption[];
-  objectParticipant: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: FieldOption[];
-  created: Date | null;
-  response_types: string[];
-  caseTemplates?: FieldOption[];
+  name: string
+  confidence: number | undefined
+  severity: string
+  priority: string
+  description: string
+  content: string
+  file: File | undefined
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  objectAssignee: FieldOption[]
+  objectParticipant: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: FieldOption[]
+  created: Date | null
+  response_types: string[]
+  caseTemplates?: FieldOption[]
   authorized_members: {
-    value: string,
-    accessRight: string,
+    value: string
+    accessRight: string
     groupsRestriction: {
-      label: string,
-      value: string,
+      label: string
+      value: string
       type: string
-    }[] }[] | undefined;
+    }[] }[] | undefined
 }
 
 interface IncidentFormProps {
   updater: (
     store: RecordSourceSelectorProxy,
     key: string,
-    response: { id: string; name: string } | null | undefined,
-  ) => void;
-  onClose?: () => void;
-  defaultConfidence?: number;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  inputValue?: string;
+    response: { id: string, name: string } | null | undefined,
+  ) => void
+  onClose?: () => void
+  defaultConfidence?: number
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  inputValue?: string
 }
 
 const CASE_INCIDENT_TYPE = 'Case-Incident';
@@ -420,7 +420,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
 const CaseIncidentCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables;
+  paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(

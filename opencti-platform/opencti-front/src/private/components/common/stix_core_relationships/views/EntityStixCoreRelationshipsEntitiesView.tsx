@@ -17,18 +17,18 @@ import { Filter, FilterGroup } from '../../../../../utils/filters/filtersHelpers
 import { CreateRelationshipContext, useInitCreateRelationshipContext } from '../CreateRelationshipContextProvider';
 
 interface EntityStixCoreRelationshipsEntitiesViewProps {
-  entityId: string;
-  defaultStartTime?: string;
-  defaultStopTime?: string;
-  localStorage: PaginationLocalStorage<PaginationOptions>;
-  relationshipTypes: string[];
-  stixCoreObjectTypes?: string[];
-  isRelationReversed: boolean;
-  currentView: string;
-  enableNestedView?: boolean;
-  enableContextualView: boolean;
-  paddingRightButtonAdd?: number;
-  handleChangeView?: (viewMode: string) => void;
+  entityId: string
+  defaultStartTime?: string
+  defaultStopTime?: string
+  localStorage: PaginationLocalStorage<PaginationOptions>
+  relationshipTypes: string[]
+  stixCoreObjectTypes?: string[]
+  isRelationReversed: boolean
+  currentView: string
+  enableNestedView?: boolean
+  enableContextualView: boolean
+  paddingRightButtonAdd?: number
+  handleChangeView?: (viewMode: string) => void
 }
 
 const EntityStixCoreRelationshipsEntitiesView: FunctionComponent<

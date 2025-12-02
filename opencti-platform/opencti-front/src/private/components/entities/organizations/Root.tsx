@@ -92,8 +92,8 @@ const organizationQuery = graphql`
 `;
 
 type RootOrganizationProps = {
-  organizationId: string;
-  queryRef: PreloadedQuery<RootOrganizationQuery>;
+  organizationId: string
+  queryRef: PreloadedQuery<RootOrganizationQuery>
 };
 
 const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) => {
@@ -359,7 +359,7 @@ const RootOrganization = ({ organizationId, queryRef }: RootOrganizationProps) =
   );
 };
 const Root = () => {
-  const { organizationId } = useParams() as { organizationId: string; };
+  const { organizationId } = useParams() as { organizationId: string };
   const queryRef = useQueryLoading<RootOrganizationQuery>(organizationQuery, {
     id: organizationId,
   });

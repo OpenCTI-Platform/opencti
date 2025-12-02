@@ -36,10 +36,10 @@ const deleteOperationPopoverRestoreMutation = graphql`
 `;
 
 interface DeleteOperationPopoverProps {
-  mainEntityId: string;
-  deletedCount: number;
-  disabled?: boolean;
-  paginationOptions: DeleteOperationsLinesPaginationQuery$variables;
+  mainEntityId: string
+  deletedCount: number
+  disabled?: boolean
+  paginationOptions: DeleteOperationsLinesPaginationQuery$variables
 }
 
 const DeleteOperationPopover: React.FC<DeleteOperationPopoverProps> = ({ mainEntityId, deletedCount, disabled, paginationOptions }) => {

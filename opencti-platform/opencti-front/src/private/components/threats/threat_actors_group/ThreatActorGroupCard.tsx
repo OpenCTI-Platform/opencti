@@ -126,9 +126,9 @@ export const ThreatActorGroupCardFragment = graphql`
 `;
 
 interface ThreatActorGroupCardProps {
-  node: ThreatActorGroupCard_node$key;
-  onLabelClick: HandleAddFilter;
-  bookmarksIds?: string[];
+  node: ThreatActorGroupCard_node$key
+  onLabelClick: HandleAddFilter
+  bookmarksIds?: string[]
 }
 const ThreatActorGroupCard: FunctionComponent<ThreatActorGroupCardProps> = ({
   node,

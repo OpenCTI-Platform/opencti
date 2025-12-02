@@ -138,20 +138,20 @@ const incidentEditionOverviewFragment = graphql`
 const INCIDENT_TYPE = 'Incident';
 
 interface IncidentEditionOverviewProps {
-  incidentRef: IncidentEditionOverview_incident$key;
-  context?: readonly (GenericContext | null)[] | null;
-  enableReferences?: boolean;
-  handleClose: () => void;
+  incidentRef: IncidentEditionOverview_incident$key
+  context?: readonly (GenericContext | null)[] | null
+  enableReferences?: boolean
+  handleClose: () => void
 }
 
 interface IncidentEditionFormValues {
-  message?: string;
-  references?: FieldOption[];
-  createdBy: FieldOption | undefined;
-  x_opencti_workflow_id: FieldOption;
-  objectMarking?: FieldOption[];
-  objectAssignee?: FieldOption[];
-  objectParticipant?: FieldOption[];
+  message?: string
+  references?: FieldOption[]
+  createdBy: FieldOption | undefined
+  x_opencti_workflow_id: FieldOption
+  objectMarking?: FieldOption[]
+  objectAssignee?: FieldOption[]
+  objectParticipant?: FieldOption[]
 
 }
 

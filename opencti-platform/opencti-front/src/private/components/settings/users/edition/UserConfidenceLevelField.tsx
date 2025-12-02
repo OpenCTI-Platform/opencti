@@ -29,19 +29,19 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface UserConfidenceLevelFieldProps {
-  name: string;
-  label?: string;
-  onSubmit?: (name: string, value: string | null) => void;
-  onFocus?: (name: string, value: string) => void;
+  name: string
+  label?: string
+  onSubmit?: (name: string, value: string | null) => void
+  onFocus?: (name: string, value: string) => void
   editContext?:
     | readonly ({
-    readonly focusOn: string | null | undefined;
-    readonly name: string;
+    readonly focusOn: string | null | undefined
+    readonly name: string
   } | null)[]
-  | null;
-  containerStyle?: Record<string, string | number>;
-  disabled?: boolean;
-  user?: UserEdition_user$data; // only for edition
+  | null
+  containerStyle?: Record<string, string | number>
+  disabled?: boolean
+  user?: UserEdition_user$data // only for edition
 }
 
 const UserConfidenceLevelField: FunctionComponent<UserConfidenceLevelFieldProps> = ({

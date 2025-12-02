@@ -26,11 +26,11 @@ const locationFieldSearchQuery = graphql`
 `;
 
 interface LocationFieldProps {
-  name: string;
-  label: string;
-  containerStyle?: Record<string, string | number>;
-  helperText?: string;
-  required?: boolean;
+  name: string
+  label: string
+  containerStyle?: Record<string, string | number>
+  helperText?: string
+  required?: boolean
 }
 
 const LocationField = ({

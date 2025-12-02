@@ -36,9 +36,9 @@ const ingestionCatalogConnectorQuery = graphql`
 `;
 
 interface IngestionCatalogConnectorComponentProps {
-  queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>;
-  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void;
-  openConfig?: boolean;
+  queryRef: PreloadedQuery<IngestionCatalogConnectorQuery>
+  onClickDeploy: (connector: IngestionConnector, catalogId: string, hasActiveManagers: boolean, deploymentCount: number) => void
+  openConfig?: boolean
 }
 
 const IngestionCatalogConnectorComponent = ({

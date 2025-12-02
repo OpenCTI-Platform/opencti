@@ -147,7 +147,7 @@ const caseRftMutationRelationDelete = graphql`
 
 interface CaseRftEditionOverviewProps {
   caseRef: CaseRftEditionOverview_case$key
-  context?: readonly (GenericContext | null)[] | null;
+  context?: readonly (GenericContext | null)[] | null
   enableReferences?: boolean
   handleClose: () => void
 }

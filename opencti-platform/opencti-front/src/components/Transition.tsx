@@ -11,7 +11,7 @@ const Transition = React.forwardRef(
       children: React.ReactElement<
       unknown,
       string | JSXElementConstructor<unknown>
-      >;
+      >
     },
     ref: React.Ref<unknown>,
   ) => {

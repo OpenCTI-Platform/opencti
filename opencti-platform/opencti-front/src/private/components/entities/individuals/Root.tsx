@@ -82,8 +82,8 @@ const individualQuery = graphql`
 `;
 
 type RootIndividualProps = {
-  individualId: string;
-  queryRef: PreloadedQuery<RootIndividualQuery>;
+  individualId: string
+  queryRef: PreloadedQuery<RootIndividualQuery>
 };
 
 const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
@@ -347,7 +347,7 @@ const RootIndividual = ({ individualId, queryRef }: RootIndividualProps) => {
   );
 };
 const Root = () => {
-  const { individualId } = useParams() as { individualId: string; };
+  const { individualId } = useParams() as { individualId: string };
   const queryRef = useQueryLoading<RootIndividualQuery>(individualQuery, {
     id: individualId,
   });

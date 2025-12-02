@@ -37,7 +37,7 @@ export const relatedContainersDetailsQuery = graphql`
 `;
 
 const RelatedContainersDetailsDistribution: React.FC<{
-  queryRef: PreloadedQuery<RelatedContainersDetailsQuery>;
+  queryRef: PreloadedQuery<RelatedContainersDetailsQuery>
 }> = ({ queryRef }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<RelatedContainersDetailsQuery>(
@@ -62,8 +62,8 @@ const RelatedContainersDetailsDistribution: React.FC<{
 };
 
 interface RelatedContainersDetailsProps {
-  containerId: string;
-  relatedContainer: RelatedContainerNode;
+  containerId: string
+  relatedContainer: RelatedContainerNode
 }
 
 const RelatedContainersDetails: React.FC<RelatedContainersDetailsProps> = ({ containerId, relatedContainer }) => {

@@ -15,26 +15,26 @@ export const addVulnerabilitiesLinesQuery = graphql`
 
 export interface AddVulnerabilitiesLinesProps {
   securityCoverage: {
-    id: string;
-  };
+    id: string
+  }
   securityCoverageVulnerabilities: Array<{
     node: {
-      id: string;
-    };
-  }>;
+      id: string
+    }
+  }>
   data: {
     vulnerabilities: {
       edges: Array<{
         node: {
-          id: string;
-          entity_type: string;
-          parent_types: string[];
-          name: string;
-          description?: string;
-        };
-      }>;
-    };
-  } | null;
+          id: string
+          entity_type: string
+          parent_types: string[]
+          name: string
+          description?: string
+        }
+      }>
+    }
+  } | null
 }
 
 const AddVulnerabilitiesLinesContainer: FunctionComponent<AddVulnerabilitiesLinesProps> = ({

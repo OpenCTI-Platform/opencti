@@ -30,15 +30,15 @@ interface ingestionCsvFeedTestDialogProps {
   open: boolean
   onClose: () => void
   values: {
-    name: string,
-    description?: string | null,
-    authentication_type: string,
-    csv_mapper?: CsvMapperAddInput,
-    csv_mapper_type?: string,
-    authentication_value?: string | null,
-    uri: string,
-    ingestion_running?: boolean | null,
-    csv_mapper_id?: string | FieldOption | null,
+    name: string
+    description?: string | null
+    authentication_type: string
+    csv_mapper?: CsvMapperAddInput
+    csv_mapper_type?: string
+    authentication_value?: string | null
+    uri: string
+    ingestion_running?: boolean | null
+    csv_mapper_id?: string | FieldOption | null
     user_id: string | FieldOption
     markings: FieldOption[]
   }

@@ -565,12 +565,12 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = graph
 `;
 
 interface SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineProps {
-  dataColumns: DataColumns,
-  node: NonNullable<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data['stixCoreRelationships']>['edges'][0]['node'],
-  paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables,
-  entityId: string,
-  entityLink: string,
-  connectionKey: string,
+  dataColumns: DataColumns
+  node: NonNullable<SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data$data['stixCoreRelationships']>['edges'][0]['node']
+  paginationOptions: SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery$variables
+  entityId: string
+  entityLink: string
+  connectionKey: string
 }
 
 const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({

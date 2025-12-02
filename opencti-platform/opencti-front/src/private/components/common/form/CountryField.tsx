@@ -27,13 +27,13 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface CountryFieldProps {
-  id: string;
-  name: string;
-  label: string;
-  onChange?: (name: string, value: FieldOption) => void;
-  containerStyle?: Record<string, string | number>;
-  helpertext?: string;
-  required?: boolean;
+  id: string
+  name: string
+  label: string
+  onChange?: (name: string, value: FieldOption) => void
+  containerStyle?: Record<string, string | number>
+  helpertext?: string
+  required?: boolean
 }
 
 const CountryFieldQuery = graphql`
@@ -62,8 +62,8 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
   const { t_i18n } = useFormatter();
   const [countries, setCountries] = useState<
   {
-    label: string | undefined;
-    value: string | undefined;
+    label: string | undefined
+    value: string | undefined
   }[]
   >([]);
 
@@ -111,7 +111,7 @@ const CountryField: FunctionComponent<CountryFieldProps> = ({
         onInputChange={searchCountries}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: { color: string; label: string },
+          option: { color: string, label: string },
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>

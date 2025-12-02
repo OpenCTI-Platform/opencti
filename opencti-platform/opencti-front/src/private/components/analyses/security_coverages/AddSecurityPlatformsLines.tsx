@@ -15,26 +15,26 @@ export const addSecurityPlatformsLinesQuery = graphql`
 
 export interface AddSecurityPlatformsLinesProps {
   securityCoverage: {
-    id: string;
-  };
+    id: string
+  }
   securityCoverageSecurityPlatforms: Array<{
     node: {
-      id: string;
-    };
-  }>;
+      id: string
+    }
+  }>
   data: {
     securityPlatforms: {
       edges: Array<{
         node: {
-          id: string;
-          entity_type: string;
-          parent_types: string[];
-          name: string;
-          description?: string;
-        };
-      }>;
-    };
-  } | null;
+          id: string
+          entity_type: string
+          parent_types: string[]
+          name: string
+          description?: string
+        }
+      }>
+    }
+  } | null
 }
 
 const AddSecurityPlatformsLinesContainer: FunctionComponent<AddSecurityPlatformsLinesProps> = ({

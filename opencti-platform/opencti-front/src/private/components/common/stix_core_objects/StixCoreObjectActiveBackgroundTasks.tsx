@@ -22,9 +22,9 @@ const stixCoreObjectActiveBackgroundTasksQuery = graphql`
 const interval$ = interval(TEN_SECONDS);
 
 interface StixCoreObjectBackgroundTaskComponentProps {
-  queryRef: PreloadedQuery<StixCoreObjectActiveBackgroundTasksQuery>;
-  refetch: () => void;
-  actionsFilter: string[];
+  queryRef: PreloadedQuery<StixCoreObjectActiveBackgroundTasksQuery>
+  refetch: () => void
+  actionsFilter: string[]
 }
 
 const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBackgroundTaskComponentProps> = ({ actionsFilter, queryRef, refetch }) => {
@@ -64,8 +64,8 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
 };
 
 type StixCoreObjectBackgroundTaskProps = {
-  id: string,
-  actionsFilter: string[],
+  id: string
+  actionsFilter: string[]
 };
 
 const StixCoreObjectBackgroundTasks: FunctionComponent<StixCoreObjectBackgroundTaskProps> = ({ id, actionsFilter }) => {

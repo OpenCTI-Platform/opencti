@@ -12,18 +12,18 @@ import { parseEmailList } from '../../../../utils/email';
 import { MESSAGING$ } from '../../../../relay/environment';
 
 export interface DisseminationListFormData {
-  name: string;
-  emails: string;
-  description: string;
+  name: string
+  emails: string
+  description: string
 }
 
 export type DisseminationListFormInputKeys = keyof DisseminationListFormData;
 
 interface DisseminationListFormProps {
-  onSubmit: (values: DisseminationListFormData, helpers: FormikHelpers<DisseminationListFormData>) => void;
-  onSubmitField?: (field: DisseminationListFormInputKeys, value: string) => void;
-  defaultValues?: DisseminationListFormData;
-  onReset?: () => void;
+  onSubmit: (values: DisseminationListFormData, helpers: FormikHelpers<DisseminationListFormData>) => void
+  onSubmitField?: (field: DisseminationListFormInputKeys, value: string) => void
+  defaultValues?: DisseminationListFormData
+  onReset?: () => void
 }
 
 const DisseminationListForm: FunctionComponent<DisseminationListFormProps> = ({

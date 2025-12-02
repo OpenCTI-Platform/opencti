@@ -54,8 +54,8 @@ export const groupEditionRolesLinesSearchQuery = graphql`
 `;
 
 interface GroupEditionRolesComponentProps {
-  group: GroupEditionRoles_group$data,
-  queryRef: PreloadedQuery<GroupEditionRolesLinesSearchQuery>,
+  group: GroupEditionRoles_group$data
+  queryRef: PreloadedQuery<GroupEditionRolesLinesSearchQuery>
 }
 
 const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentProps> = (

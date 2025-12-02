@@ -106,7 +106,7 @@ const settingsOrganizationUsersLineFragment = graphql`
 `;
 
 interface MembersListContainerProps {
-  organization: SettingsOrganization_organization$data;
+  organization: SettingsOrganization_organization$data
 }
 
 const SettingsOrganizationUsers: FunctionComponent<MembersListContainerProps> = ({ organization }) => {

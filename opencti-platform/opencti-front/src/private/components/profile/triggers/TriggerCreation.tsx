@@ -10,13 +10,13 @@ import TriggerLiveCreation from './TriggerLiveCreation';
 import { TriggerLiveCreationKnowledgeMutation$data } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 
 interface TriggerCreationProps {
-  contextual?: boolean;
-  hideSpeedDial?: boolean;
-  open?: boolean;
-  handleClose?: () => void;
-  inputValue?: string;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
-  creationCallback?: (data: TriggerLiveCreationKnowledgeMutation$data) => void;
+  contextual?: boolean
+  hideSpeedDial?: boolean
+  open?: boolean
+  handleClose?: () => void
+  inputValue?: string
+  paginationOptions?: TriggersLinesPaginationQuery$variables
+  creationCallback?: (data: TriggerLiveCreationKnowledgeMutation$data) => void
 }
 
 const TriggerCreation: FunctionComponent<TriggerCreationProps> = ({

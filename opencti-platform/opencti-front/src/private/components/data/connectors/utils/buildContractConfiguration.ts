@@ -1,10 +1,10 @@
 import { FieldOption } from '../../../../../utils/field';
 
 export type ManagedConnectorValues = {
-  name: string;
-  user_id?: string | FieldOption;
-  automatic_user?: boolean;
-  confidence_level?: string;
+  name: string
+  user_id?: string | FieldOption
+  automatic_user?: boolean
+  confidence_level?: string
   creator?: FieldOption
 };
 

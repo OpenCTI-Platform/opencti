@@ -33,7 +33,7 @@ const ThreatActorIndividualKnowledgeComponent = ({
   threatActorIndividualData,
   relatedRelationshipTypes,
 }: {
-  threatActorIndividualData: ThreatActorIndividualKnowledge_ThreatActorIndividual$key;
+  threatActorIndividualData: ThreatActorIndividualKnowledge_ThreatActorIndividual$key
   relatedRelationshipTypes: string[]
 }) => {
   const threatActorIndividual = useFragment<ThreatActorIndividualKnowledge_ThreatActorIndividual$key>(

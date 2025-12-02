@@ -29,16 +29,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface PictureManagementEditionProps {
-  picture: PictureManagementUtils_node$data;
-  entityId: string;
-  handleClose: () => void;
+  picture: PictureManagementUtils_node$data
+  entityId: string
+  handleClose: () => void
 }
 
 interface PictureManagementEditionFormValues {
-  id: string;
-  description: string | null | undefined;
-  inCarousel: boolean | null | undefined;
-  order: number | null | undefined;
+  id: string
+  description: string | null | undefined
+  inCarousel: boolean | null | undefined
+  order: number | null | undefined
 }
 
 const PictureManagementEdition: FunctionComponent<PictureManagementEditionProps> = ({ picture, entityId, handleClose }) => {

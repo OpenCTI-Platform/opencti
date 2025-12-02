@@ -30,7 +30,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ExternalReferenceDetailsComponentProps {
-  externalReference: ExternalReferenceDetails_externalReference$data;
+  externalReference: ExternalReferenceDetails_externalReference$data
 }
 
 const ExternalReferenceDetailsComponent = ({

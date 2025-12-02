@@ -11,15 +11,15 @@ import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field
 import { useFormatter } from '../../../../components/i18n';
 
 type FileImportMarkingSelectionPopupProps = {
-  closePopup: () => void;
-  handleUpload: (fileMarkings: string[], associatedEntityId?: string) => void;
+  closePopup: () => void
+  handleUpload: (fileMarkings: string[], associatedEntityId?: string) => void
   isOpen: boolean
   entityId?: string
 };
 
 export type SubmittedFormValues = {
-  fileMarkings: FieldOption[];
-  associatedEntity: AssociatedEntityOption;
+  fileMarkings: FieldOption[]
+  associatedEntity: AssociatedEntityOption
 };
 
 const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, entityId }: FileImportMarkingSelectionPopupProps) => {

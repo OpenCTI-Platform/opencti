@@ -70,8 +70,8 @@ const feedbackFragment = graphql`
 `;
 
 interface FeedbackProps {
-  feedbackData: Feedback_case$key;
-  enableReferences: boolean;
+  feedbackData: Feedback_case$key
+  enableReferences: boolean
 }
 
 const Feedback: React.FC<FeedbackProps> = ({ feedbackData, enableReferences }) => {

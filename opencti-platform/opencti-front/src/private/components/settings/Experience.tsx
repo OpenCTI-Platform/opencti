@@ -93,7 +93,7 @@ const experienceQuery = graphql`
 `;
 
 interface ExperienceComponentProps {
-  queryRef: PreloadedQuery<ExperienceQuery>;
+  queryRef: PreloadedQuery<ExperienceQuery>
 }
 
 export const experienceFieldPatch = graphql`

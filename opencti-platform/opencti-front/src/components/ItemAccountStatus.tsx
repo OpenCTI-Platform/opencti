@@ -43,9 +43,9 @@ const inlineStyles = {
 };
 
 interface ItemAccountStatusProps {
-  label: string;
-  account_status?: string | null;
-  variant?: 'outlined' | 'filled';
+  label: string
+  account_status?: string | null
+  variant?: 'outlined' | 'filled'
 }
 
 const computeAccountStatusStyle = (

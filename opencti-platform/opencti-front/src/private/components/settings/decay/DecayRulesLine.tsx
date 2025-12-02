@@ -56,8 +56,8 @@ const decayRulesLineFragment = graphql`
 `;
 
 interface DecayRulesLineProps {
-  node: DecayRulesLine_node$key;
-  dataColumns: DataColumns;
+  node: DecayRulesLine_node$key
+  dataColumns: DataColumns
 }
 
 export const DecayRulesLine: FunctionComponent<DecayRulesLineProps> = ({
@@ -102,7 +102,7 @@ export const DecayRulesLine: FunctionComponent<DecayRulesLineProps> = ({
 export const DecayRulesLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }) => {
   const classes = useStyles();
   return (

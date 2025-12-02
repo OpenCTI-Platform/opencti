@@ -12,7 +12,7 @@ export const isValidLongitude = (lng: number | null | undefined): boolean => {
 };
 
 // Get validated coordinates, fallback to default if invalid
-export const getValidatedCenter = (position: { latitude?: number | null; longitude?: number | null }): [number, number] => {
+export const getValidatedCenter = (position: { latitude?: number | null, longitude?: number | null }): [number, number] => {
   if (isValidLatitude(position.latitude) && isValidLongitude(position.longitude)) {
     return [position.latitude as number, position.longitude as number];
   }

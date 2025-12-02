@@ -66,8 +66,8 @@ const observedDataQuery = graphql`
 `;
 
 type RootObservedDataProps = {
-  observedDataId: string;
-  queryRef: PreloadedQuery<RootObservedDataQuery>;
+  observedDataId: string
+  queryRef: PreloadedQuery<RootObservedDataQuery>
 };
 
 const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) => {
@@ -209,7 +209,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
 };
 
 const Root = () => {
-  const { observedDataId } = useParams() as { observedDataId: string; };
+  const { observedDataId } = useParams() as { observedDataId: string };
   const queryRef = useQueryLoading<RootObservedDataQuery>(observedDataQuery, {
     id: observedDataId,
   });

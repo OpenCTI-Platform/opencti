@@ -5,9 +5,9 @@ import { useFormatter } from '../i18n';
 import { Filter, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 
 interface QuickRelativeDateFiltersButtonsProps {
-  filter?: Filter;
-  helpers?: handleFilterHelpers;
-  handleClose: () => void;
+  filter?: Filter
+  helpers?: handleFilterHelpers
+  handleClose: () => void
 }
 
 const QuickRelativeDateFiltersButtons: FunctionComponent<QuickRelativeDateFiltersButtonsProps> = ({

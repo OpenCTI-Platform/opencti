@@ -139,10 +139,10 @@ const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
 `;
 
 interface StixDomainObjectThreatKnowledgeProps {
-  stixDomainObjectId: string;
-  stixDomainObjectType: string;
-  displayObservablesStats?: boolean;
-  stixDomainObjectName?: string;
+  stixDomainObjectId: string
+  stixDomainObjectType: string
+  displayObservablesStats?: boolean
+  stixDomainObjectName?: string
 }
 
 const StixDomainObjectThreatKnowledge: FunctionComponent<
@@ -294,7 +294,7 @@ StixDomainObjectThreatKnowledgeProps
               render={({
                 props,
               }: {
-                props: StixDomainObjectThreatKnowledgeContainersNumberQuery$data;
+                props: StixDomainObjectThreatKnowledgeContainersNumberQuery$data
               }) => {
                 if (props && props.containersNumber) {
                   const { total } = props.containersNumber;
@@ -342,7 +342,7 @@ StixDomainObjectThreatKnowledgeProps
               render={({
                 props,
               }: {
-                props: StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data;
+                props: StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data
               }) => {
                 if (props && props.stixCoreRelationshipsNumber) {
                   const { total } = props.stixCoreRelationshipsNumber;
@@ -398,7 +398,7 @@ StixDomainObjectThreatKnowledgeProps
               render={({
                 props,
               }: {
-                props: StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data;
+                props: StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery$data
               }) => {
                 if (props && props.stixCoreRelationshipsNumber) {
                   const { total } = props.stixCoreRelationshipsNumber;
@@ -527,7 +527,7 @@ StixDomainObjectThreatKnowledgeProps
           render={({
             props,
           }: {
-            props: StixDomainObjectThreatDiamondQuery$data;
+            props: StixDomainObjectThreatDiamondQuery$data
           }) => {
             if (props) {
               return (
@@ -544,7 +544,7 @@ StixDomainObjectThreatKnowledgeProps
           render={({
             props,
           }: {
-            props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data;
+            props: StixDomainObjectThreatKnowledgeQueryStixRelationshipsQuery$data
           }) => {
             if (props) {
               if (viewType === 'killchain') {

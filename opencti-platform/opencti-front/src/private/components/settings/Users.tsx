@@ -160,7 +160,8 @@ const Users = () => {
           <UserCreation paginationOptions={queryPaginationOptions} defaultGroupsQueryRef={defaultGroupsQueryRef} />
         </React.Suspense>
       );
-    } if (isOnlyAdminOrganization && isEnterpriseEdition) {
+    }
+    if (isOnlyAdminOrganization && isEnterpriseEdition) {
       return (
         <SettingsOrganizationUserCreation
           paginationOptions={queryPaginationOptions}

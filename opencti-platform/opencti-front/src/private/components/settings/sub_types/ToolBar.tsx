@@ -48,11 +48,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const ToolBar: FunctionComponent<{
-  keyword: string | undefined;
-  numberOfSelectedElements: number;
-  selectedElements: Record<string, { id: string }>;
-  selectAll: boolean;
-  handleClearSelectedElements: () => void;
+  keyword: string | undefined
+  numberOfSelectedElements: number
+  selectedElements: Record<string, { id: string }>
+  selectAll: boolean
+  handleClearSelectedElements: () => void
 }> = ({
   keyword,
   numberOfSelectedElements,

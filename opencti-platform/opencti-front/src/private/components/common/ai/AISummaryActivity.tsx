@@ -36,8 +36,8 @@ const aISummaryActivityQuery = graphql`
 
 interface AISummaryActivityComponentProps {
   refetch: () => void
-  language: string;
-  setLanguage: (language: string) => void;
+  language: string
+  setLanguage: (language: string) => void
   content: string
   loading: boolean
   result: AISummaryActivityStixCoreObjectAskAiActivityQuery$data | null

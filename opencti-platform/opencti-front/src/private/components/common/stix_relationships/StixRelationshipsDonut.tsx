@@ -104,16 +104,16 @@ export const stixRelationshipsDonutsDistributionQuery = graphql`
 `;
 
 interface StixRelationshipsDonutProps {
-  title?: string,
-  variant: string,
-  height?: number,
-  field?: string,
-  startDate: string | null,
-  endDate: string | null,
-  dataSelection: WidgetDataSelection[],
-  parameters?: WidgetParameters,
-  withExportPopover?: boolean,
-  isReadOnly?: boolean,
+  title?: string
+  variant: string
+  height?: number
+  field?: string
+  startDate: string | null
+  endDate: string | null
+  dataSelection: WidgetDataSelection[]
+  parameters?: WidgetParameters
+  withExportPopover?: boolean
+  isReadOnly?: boolean
   withoutTitle?: boolean
 }
 

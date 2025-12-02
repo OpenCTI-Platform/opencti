@@ -28,10 +28,10 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface FileExportViewerComponentProps {
-  entity: FileExportViewer_entity$data;
-  relay: RelayRefetchProp;
-  handleOpenExport: () => void;
-  isExportPossible: boolean;
+  entity: FileExportViewer_entity$data
+  relay: RelayRefetchProp
+  handleOpenExport: () => void
+  isExportPossible: boolean
 }
 
 const FileExportViewerComponent: FunctionComponent<FileExportViewerComponentProps> = ({ entity, relay, handleOpenExport, isExportPossible }) => {

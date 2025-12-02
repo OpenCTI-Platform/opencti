@@ -10,20 +10,20 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/fields/MarkdownField';
 
 export interface EmailTemplateFormInputs {
-  name: string;
-  description: string | null;
-  email_object: string;
-  sender_email: string;
-  template_body: string;
+  name: string
+  description: string | null
+  email_object: string
+  sender_email: string
+  template_body: string
 }
 
 export type EmailTemplateFormInputKeys = keyof EmailTemplateFormInputs;
 
 interface EmailTemplateFormProps {
   onClose: () => void
-  onSubmit: (values: EmailTemplateFormInputs, helpers: FormikHelpers<EmailTemplateFormInputs>) => void;
-  onSubmitField?: (field: EmailTemplateFormInputKeys, value: string) => void;
-  defaultValues?: EmailTemplateFormInputs;
+  onSubmit: (values: EmailTemplateFormInputs, helpers: FormikHelpers<EmailTemplateFormInputs>) => void
+  onSubmitField?: (field: EmailTemplateFormInputKeys, value: string) => void
+  defaultValues?: EmailTemplateFormInputs
 }
 
 const EmailTemplateForm: FunctionComponent<EmailTemplateFormProps> = ({

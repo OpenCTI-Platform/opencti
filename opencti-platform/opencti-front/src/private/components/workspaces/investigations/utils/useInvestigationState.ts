@@ -3,20 +3,20 @@ import { ObjectToParse } from '../../../../../components/graph/utils/useGraphPar
 
 interface InvestigationOpExpand {
   type: 'expand'
-  dateTime: number;
-  objectsIds: string[];
+  dateTime: number
+  objectsIds: string[]
 }
 
 interface InvestigationOpAdd {
   type: 'add'
-  dateTime: number;
-  objectsIds: string[];
+  dateTime: number
+  objectsIds: string[]
 }
 
 interface InvestigationOpRemove {
   type: 'remove'
-  dateTime: number;
-  objects: ObjectToParse[];
+  dateTime: number
+  objects: ObjectToParse[]
 }
 
 type AllInvestigationOps = InvestigationOpExpand | InvestigationOpAdd | InvestigationOpRemove;

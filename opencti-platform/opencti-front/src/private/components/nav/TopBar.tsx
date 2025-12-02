@@ -127,7 +127,7 @@ const topBarNotificationNumberSubscription = graphql`
 `;
 
 interface TopBarProps {
-  queryRef: PreloadedQuery<TopBarQuery>;
+  queryRef: PreloadedQuery<TopBarQuery>
 }
 
 const topBarQuery = graphql`
@@ -213,12 +213,12 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
     page();
   }, [location.pathname]);
   const [xtmOpen, setXtmOpen] = useState<{
-    open: boolean;
-    anchorEl: HTMLButtonElement | null;
+    open: boolean
+    anchorEl: HTMLButtonElement | null
   }>({ open: false, anchorEl: null });
   const [menuOpen, setMenuOpen] = useState<{
-    open: boolean;
-    anchorEl: HTMLButtonElement | null;
+    open: boolean
+    anchorEl: HTMLButtonElement | null
   }>({ open: false, anchorEl: null });
   const [openDrawer, setOpenDrawer] = useState(false);
 

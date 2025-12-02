@@ -22,15 +22,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ThreatActorIndividualDemographicsCountryRelationships {
-  country_of_residence: Array<string>;
-  citizenship: Array<string>;
-  nationality: Array<string>;
-  place_of_birth: string | undefined;
-  ethnicity: string | undefined;
+  country_of_residence: Array<string>
+  citizenship: Array<string>
+  nationality: Array<string>
+  place_of_birth: string | undefined
+  ethnicity: string | undefined
 }
 
 interface ThreatActorIndividualDemographicsProps {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data;
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data
 }
 
 const ThreatActorIndividualDemographics = ({

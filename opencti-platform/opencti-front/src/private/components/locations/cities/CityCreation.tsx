@@ -50,27 +50,27 @@ const cityMutation = graphql`
 `;
 
 interface CityAddInput {
-  name: string;
-  description: string;
-  latitude: string;
-  longitude: string;
-  confidence: number | null;
-  createdBy: FieldOption | null;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: FieldOption[];
-  file: File | null;
+  name: string
+  description: string
+  latitude: string
+  longitude: string
+  confidence: number | null
+  createdBy: FieldOption | null
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: FieldOption[]
+  file: File | null
 }
 
 interface CityFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 const CITY_TYPE = 'City';
@@ -320,7 +320,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
 const CityCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CitiesLinesPaginationQuery$variables;
+  paginationOptions: CitiesLinesPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

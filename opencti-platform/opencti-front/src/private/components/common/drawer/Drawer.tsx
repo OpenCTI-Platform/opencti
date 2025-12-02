@@ -67,23 +67,23 @@ const useStyles = makeStyles<Theme, { bannerHeightNumber: number }>((theme) => c
 }));
 
 export interface DrawerControlledDialProps {
-  onOpen: () => void;
-  onClose?: () => void;
+  onOpen: () => void
+  onClose?: () => void
 }
 export type DrawerControlledDialType = ({ onOpen, onClose }: DrawerControlledDialProps) => React.ReactElement;
 
 interface DrawerProps {
-  title: string;
+  title: string
   children?:
   | ((props: { onClose: () => void }) => React.ReactElement)
   | React.ReactElement
-  | null;
-  open?: boolean;
-  onClose?: () => void;
-  variant?: DrawerVariant;
-  context?: readonly (GenericContext | null)[] | null;
-  header?: React.ReactElement;
-  controlledDial?: DrawerControlledDialType;
+  | null
+  open?: boolean
+  onClose?: () => void
+  variant?: DrawerVariant
+  context?: readonly (GenericContext | null)[] | null
+  header?: React.ReactElement
+  controlledDial?: DrawerControlledDialType
   containerStyle?: CSSProperties
   disabled?: boolean
 }

@@ -108,27 +108,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FilterIconButtonContainerProps {
-  filters: FilterGroup;
-  handleRemoveFilter?: (key: string, op?: string) => void;
-  handleSwitchGlobalMode?: () => void;
-  handleSwitchLocalMode?: (filter: Filter) => void;
-  styleNumber?: number;
-  dataColumns?: DataColumns;
-  disabledPossible?: boolean;
-  redirection?: boolean;
-  filtersRepresentativesQueryRef: PreloadedQuery<FilterValuesContentQuery>;
-  chipColor?: ChipOwnProps['color'];
-  helpers?: handleFilterHelpers;
-  hasRenderedRef: boolean;
-  setHasRenderedRef: (value: boolean) => void;
-  availableRelationFilterTypes?: Record<string, string[]>;
-  entityTypes?: string[];
-  filtersRestrictions?: FiltersRestrictions;
-  searchContext?: FilterSearchContext;
-  availableEntityTypes?: string[];
-  availableRelationshipTypes?: string[];
-  fintelTemplatesContext?: boolean;
-  hasSavedFilters?: boolean;
+  filters: FilterGroup
+  handleRemoveFilter?: (key: string, op?: string) => void
+  handleSwitchGlobalMode?: () => void
+  handleSwitchLocalMode?: (filter: Filter) => void
+  styleNumber?: number
+  dataColumns?: DataColumns
+  disabledPossible?: boolean
+  redirection?: boolean
+  filtersRepresentativesQueryRef: PreloadedQuery<FilterValuesContentQuery>
+  chipColor?: ChipOwnProps['color']
+  helpers?: handleFilterHelpers
+  hasRenderedRef: boolean
+  setHasRenderedRef: (value: boolean) => void
+  availableRelationFilterTypes?: Record<string, string[]>
+  entityTypes?: string[]
+  filtersRestrictions?: FiltersRestrictions
+  searchContext?: FilterSearchContext
+  availableEntityTypes?: string[]
+  availableRelationshipTypes?: string[]
+  fintelTemplatesContext?: boolean
+  hasSavedFilters?: boolean
 }
 
 const FilterIconButtonContainer: FunctionComponent<

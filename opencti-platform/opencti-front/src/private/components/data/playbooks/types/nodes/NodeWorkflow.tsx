@@ -11,7 +11,7 @@ import type { Theme } from '../../../../../../components/Theme';
 import { useFormatter } from '../../../../../../components/i18n';
 
 type node = {
-  id: string;
+  id: string
 };
 
 // Deprecated - https://mui.com/system/styles/basics/

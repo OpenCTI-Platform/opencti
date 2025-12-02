@@ -20,13 +20,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface ObservableTypesFieldProps {
-  name: string;
-  label: string;
-  multiple?: boolean;
-  onChange?: (name: string, value: string | string[]) => void;
-  style?: Record<string, string | number>;
-  disabled?: boolean;
-  required?: boolean;
+  name: string
+  label: string
+  multiple?: boolean
+  onChange?: (name: string, value: string | string[]) => void
+  style?: Record<string, string | number>
+  disabled?: boolean
+  required?: boolean
 }
 const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   name,

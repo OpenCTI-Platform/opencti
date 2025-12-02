@@ -28,7 +28,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-function EdgeLabel({ transform, label }: { transform: string; label: string }) {
+function EdgeLabel({ transform, label }: { transform: string, label: string }) {
   const { t_i18n } = useFormatter();
   return (
     <div

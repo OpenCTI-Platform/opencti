@@ -29,46 +29,46 @@ const useStyles = makeStyles(() => ({
 }));
 
 export type ExternalReferencesValues = {
-  label?: string;
-  value: string;
+  label?: string
+  value: string
   entity?: {
-    created: string;
-    description?: string | null;
-    external_id?: string | null;
-    id: string;
-    source_name: string;
-    url?: string | null;
-  };
+    created: string
+    description?: string | null
+    external_id?: string | null
+    id: string
+    source_name: string
+    url?: string | null
+  }
 }[];
 
 interface ExternalReferencesFieldProps {
-  name: string;
-  label?: string;
-  style?: { marginTop: number; width: string };
-  onChange?: (name: string, values: FieldOption[]) => void;
+  name: string
+  label?: string
+  style?: { marginTop: number, width: string }
+  onChange?: (name: string, values: FieldOption[]) => void
   setFieldValue: (
     field: string,
     value: {
-      label?: string;
-      value: string;
+      label?: string
+      value: string
       entity?: {
-        created: string;
-        description?: string | null;
-        external_id?: string | null;
-        id: string;
-        source_name: string;
-        url?: string | null;
-      };
+        created: string
+        description?: string | null
+        external_id?: string | null
+        id: string
+        source_name: string
+        url?: string | null
+      }
     }[],
     shouldValidate?: boolean,
-  ) => void;
-  values?: ExternalReferencesValues;
-  helpertext?: string;
-  noStoreUpdate?: boolean;
-  id?: string;
-  dryrun?: boolean;
-  required?: boolean;
-  noCreation?: boolean; // Disable inline creation to avoid nested forms
+  ) => void
+  values?: ExternalReferencesValues
+  helpertext?: string
+  noStoreUpdate?: boolean
+  id?: string
+  dryrun?: boolean
+  required?: boolean
+  noCreation?: boolean // Disable inline creation to avoid nested forms
 }
 
 export const ExternalReferencesField: FunctionComponent<
@@ -92,16 +92,16 @@ ExternalReferencesFieldProps
   const [externalReferenceCreation, setExternalReferenceCreation] = useState(false);
   const [externalReferences, setExternalReferences] = useState<
   {
-    label?: string;
-    value: string;
+    label?: string
+    value: string
     entity?: {
-      created?: string;
-      description: string | null;
-      external_id: string | null;
-      id: string;
-      source_name: string;
-      url: string | null;
-    };
+      created?: string
+      description: string | null
+      external_id: string | null
+      id: string
+      source_name: string
+      url: string | null
+    }
   }[]
   >([]);
 
@@ -136,13 +136,13 @@ ExternalReferencesFieldProps
           data as ExternalReferencesQueriesSearchQuery$data
         )?.externalReferences?.edges ?? []) as unknown as {
           node: {
-            description: string | null;
-            external_id: string | null;
-            fileId: string | null;
-            id: string;
-            source_name: string;
-            url: string | null;
-          };
+            description: string | null
+            external_id: string | null
+            fileId: string | null
+            id: string
+            source_name: string
+            url: string | null
+          }
         }[];
         const newExternalReferences = newExternalReferencesEdges
           .slice()

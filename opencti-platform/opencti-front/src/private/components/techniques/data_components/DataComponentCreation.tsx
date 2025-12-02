@@ -61,15 +61,15 @@ interface DataComponentAddInput {
 }
 
 interface DataComponentFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  inputValue?: string;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  inputValue?: string
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 const DATA_COMPONENT_TYPE = 'Data-Component';
@@ -311,9 +311,9 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
 };
 
 const DataComponentCreation: FunctionComponent<{
-  contextual?: boolean,
-  display?: boolean,
-  inputValue?: string,
+  contextual?: boolean
+  display?: boolean
+  inputValue?: string
   paginationOptions: DataComponentsLinesPaginationQuery$variables
 }> = ({
   contextual,

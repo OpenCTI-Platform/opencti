@@ -12,10 +12,10 @@ import CaseTemplateLineDummy from './CaseTemplateLineDummy';
 const nbOfRowsToLoad = 50;
 
 interface CaseTemplatesLinesProps {
-  queryRef: PreloadedQuery<CaseTemplateLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions: CaseTemplateLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  queryRef: PreloadedQuery<CaseTemplateLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions: CaseTemplateLinesPaginationQuery$variables
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 export const caseTemplatesLinesQuery = graphql`

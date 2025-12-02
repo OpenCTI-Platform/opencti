@@ -76,8 +76,8 @@ const positionQuery = graphql`
 `;
 
 type RootPositionProps = {
-  positionId: string;
-  queryRef: PreloadedQuery<RootPositionQuery>;
+  positionId: string
+  queryRef: PreloadedQuery<RootPositionQuery>
 };
 
 const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
@@ -300,7 +300,7 @@ const RootPosition = ({ positionId, queryRef }: RootPositionProps) => {
   );
 };
 const Root = () => {
-  const { positionId } = useParams() as { positionId: string; };
+  const { positionId } = useParams() as { positionId: string };
   const queryRef = useQueryLoading<RootPositionQuery>(positionQuery, {
     id: positionId,
   });

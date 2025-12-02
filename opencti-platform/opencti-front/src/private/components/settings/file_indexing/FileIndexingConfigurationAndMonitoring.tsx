@@ -35,8 +35,8 @@ const fileIndexingConfigurationAndMonitoringQuery = graphql`
 `;
 
 interface FileIndexingConfigurationAndMonitoringComponentProps {
-  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
-  queryRef: PreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>;
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
+  queryRef: PreloadedQuery<FileIndexingConfigurationAndMonitoringQuery>
 }
 
 const FileIndexingConfigurationAndMonitoringComponent: FunctionComponent<
@@ -65,7 +65,7 @@ FileIndexingConfigurationAndMonitoringComponentProps
 };
 
 interface FileIndexingConfigurationAndMonitoringProps {
-  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId'];
+  managerConfiguration: FileIndexingConfigurationQuery$data['managerConfigurationByManagerId']
 }
 
 const FileIndexingConfigurationAndMonitoring: FunctionComponent<

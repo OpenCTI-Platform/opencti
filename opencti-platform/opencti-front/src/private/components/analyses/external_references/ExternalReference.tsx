@@ -25,14 +25,14 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ExternalReferenceComponentProps {
-  externalReference: ExternalReference_externalReference$data;
+  externalReference: ExternalReference_externalReference$data
   connectorsImport: {
-    id: string;
-    name: string;
-    active: boolean;
-    connector_scope: string[];
-    updated_at: string;
-  }[];
+    id: string
+    name: string
+    active: boolean
+    connector_scope: string[]
+    updated_at: string
+  }[]
 }
 
 const ExternalReferenceComponent: FunctionComponent<

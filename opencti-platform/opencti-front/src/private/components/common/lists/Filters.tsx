@@ -11,23 +11,23 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../../../utils/filters/filtersHelpers-types';
 
 interface FiltersProps {
-  variant?: string;
-  isDatatable?: boolean;
-  disabled?: boolean;
-  availableFilterKeys: string[];
-  availableEntityTypes?: string[];
-  availableRelationshipTypes?: string[];
-  availableRelationFilterTypes?: Record<string, string[]>;
-  handleAddFilter?: HandleAddFilter;
-  handleRemoveFilter?: (key: string, id?: string) => void;
-  handleSwitchFilter?: HandleAddFilter;
-  handleSwitchGlobalMode?: () => void;
-  handleSwitchLocalMode?: (filter: Filter) => void;
-  handleFiltersChange?: (currentFilter: FilterGroup | undefined) => void;
-  searchContext?: FilterSearchContext;
-  type?: string;
-  helpers?: handleFilterHelpers;
-  required?: boolean;
+  variant?: string
+  isDatatable?: boolean
+  disabled?: boolean
+  availableFilterKeys: string[]
+  availableEntityTypes?: string[]
+  availableRelationshipTypes?: string[]
+  availableRelationFilterTypes?: Record<string, string[]>
+  handleAddFilter?: HandleAddFilter
+  handleRemoveFilter?: (key: string, id?: string) => void
+  handleSwitchFilter?: HandleAddFilter
+  handleSwitchGlobalMode?: () => void
+  handleSwitchLocalMode?: (filter: Filter) => void
+  handleFiltersChange?: (currentFilter: FilterGroup | undefined) => void
+  searchContext?: FilterSearchContext
+  type?: string
+  helpers?: handleFilterHelpers
+  required?: boolean
 }
 
 const Filters: FunctionComponent<FiltersProps> = ({

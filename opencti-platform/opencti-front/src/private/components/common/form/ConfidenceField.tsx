@@ -23,18 +23,18 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ConfidenceFieldProps {
-  name?: string;
-  label?: string;
-  variant?: string;
-  showAlert?: boolean;
-  onSubmit?: (name: string, value: string) => void;
-  onFocus?: (name: string, value: string) => void;
-  editContext?: readonly (GenericContext | null)[] | null;
-  containerStyle?: Record<string, string | number>;
-  entityType?: string;
-  disabled?: boolean;
-  custom_max_level?: number;
-  helperText?: string;
+  name?: string
+  label?: string
+  variant?: string
+  showAlert?: boolean
+  onSubmit?: (name: string, value: string) => void
+  onFocus?: (name: string, value: string) => void
+  editContext?: readonly (GenericContext | null)[] | null
+  containerStyle?: Record<string, string | number>
+  entityType?: string
+  disabled?: boolean
+  custom_max_level?: number
+  helperText?: string
 }
 
 const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({

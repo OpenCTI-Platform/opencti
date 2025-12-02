@@ -28,7 +28,7 @@ interface LassoSelectionProps {
 }
 
 interface Coord {
-  x: number,
+  x: number
   y: number
 }
 

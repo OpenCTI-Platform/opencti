@@ -29,16 +29,16 @@ import type { Theme } from '../../../../components/Theme';
 
 // region types
 interface ContainerHeaderSharedProps {
-  elementId: string;
-  variant: string;
-  disabled?: boolean;
-  handleClose: () => void,
-  open?: boolean,
-  inContainer?: boolean,
+  elementId: string
+  variant: string
+  disabled?: boolean
+  handleClose: () => void
+  open?: boolean
+  inContainer?: boolean
 }
 
 interface OrganizationForm {
-  objectOrganization: { value: string; label: string };
+  objectOrganization: { value: string, label: string }
 }
 
 // endregion

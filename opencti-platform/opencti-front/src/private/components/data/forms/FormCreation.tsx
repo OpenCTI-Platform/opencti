@@ -44,9 +44,9 @@ const formCreationMutation = graphql`
 
 interface FormCreationProps {
   queryRef: PreloadedQuery<FormCreationQuery>
-  handleClose: () => void;
-  paginationOptions: FormLinesPaginationQuery$variables;
-  formData?: { id: string; name: string; description?: string; form_schema?: string; active?: boolean }; // For duplication
+  handleClose: () => void
+  paginationOptions: FormLinesPaginationQuery$variables
+  formData?: { id: string, name: string, description?: string, form_schema?: string, active?: boolean } // For duplication
 }
 
 export const formCreationQuery = graphql`

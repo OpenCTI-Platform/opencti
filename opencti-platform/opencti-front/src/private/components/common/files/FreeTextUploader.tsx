@@ -43,15 +43,15 @@ const freeTextValidation = (t: (arg: string) => string) => Yup.object().shape({
 });
 
 type FreeTextUploaderType = {
-  color?: IconButtonOwnProps['color'];
-  entityId?: string;
-  onUploadSuccess: () => void;
-  size?: IconButtonOwnProps['size'];
+  color?: IconButtonOwnProps['color']
+  entityId?: string
+  onUploadSuccess: () => void
+  size?: IconButtonOwnProps['size']
 };
 
 type SubmittedValuesType = {
-  content: string;
-  fileMarkings: FieldOption[];
+  content: string
+  fileMarkings: FieldOption[]
 };
 
 const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUploaderType) => {

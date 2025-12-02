@@ -56,13 +56,13 @@ class TimeRange extends React.Component {
     this.props.onChangeCallback(formattedNewTime);
   };
 
-  // eslint-disable-next-line class-methods-use-this
   checkIsSelectedIntervalNotValid = ([start, end], source, target) => {
     const { value: startInterval } = source;
     const { value: endInterval } = target;
 
-    // eslint-disable-next-line no-mixed-operators
-    if (startInterval > start && endInterval <= end || startInterval >= start && endInterval < end) { return true; }
+    if (startInterval > start && endInterval <= end || startInterval >= start && endInterval < end) {
+      return true;
+    }
     if (start >= startInterval && end <= endInterval) return true;
 
     const isStartInBlockedInterval = start > startInterval && start < endInterval && end >= endInterval;

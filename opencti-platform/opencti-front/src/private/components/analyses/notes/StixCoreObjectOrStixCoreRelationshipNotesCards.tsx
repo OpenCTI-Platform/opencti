@@ -106,30 +106,30 @@ const toOptions = (
 ) => (objectMarkings ?? []).map(convertMarking);
 
 export interface NoteAddInput {
-  attribute_abstract: string;
-  content: string;
-  confidence: number | undefined;
-  note_types: string[];
-  likelihood?: number;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
+  attribute_abstract: string
+  content: string
+  confidence: number | undefined
+  note_types: string[]
+  likelihood?: number
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
 }
 
 interface DefaultMarking {
-  readonly definition: string | null | undefined;
-  readonly definition_type: string | null | undefined;
-  readonly id: string;
-  readonly x_opencti_color: string | null | undefined;
-  readonly x_opencti_order?: number;
+  readonly definition: string | null | undefined
+  readonly definition_type: string | null | undefined
+  readonly id: string
+  readonly x_opencti_color: string | null | undefined
+  readonly x_opencti_order?: number
 }
 
 interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
-  id: string;
-  marginTop?: number;
-  queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>;
-  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
+  id: string
+  marginTop?: number
+  queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>
+  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables
   readonly defaultMarkings?: readonly DefaultMarking[]
-  title: string;
+  title: string
 }
 
 type HeaderProps = {

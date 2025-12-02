@@ -10,17 +10,17 @@ import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 
 export interface AttackPatternsMatrixProps {
-  attackPatterns: NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']>['edges'][0]['node'][];
-  searchTerm?: string;
-  handleAdd: (entity: TargetEntity) => void;
-  selectedKillChain?: string;
-  attackPatternIdsToOverlap?: string[];
-  isModeOnlyActive: boolean;
-  entityType: string;
-  inPaper?: boolean;
-  isCoverage?: boolean;
-  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string; readonly coverage_score: number; }>>;
-  entityId?: string;
+  attackPatterns: NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']>['edges'][0]['node'][]
+  searchTerm?: string
+  handleAdd: (entity: TargetEntity) => void
+  selectedKillChain?: string
+  attackPatternIdsToOverlap?: string[]
+  isModeOnlyActive: boolean
+  entityType: string
+  inPaper?: boolean
+  isCoverage?: boolean
+  coverageMap?: Map<string, ReadonlyArray<{ readonly coverage_name: string, readonly coverage_score: number }>>
+  entityId?: string
 }
 
 export const attackPatternsMatrixQuery = graphql`

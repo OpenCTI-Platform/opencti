@@ -7,7 +7,7 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
 interface IngestionCsvInlineWrapperProps {
-  children: ReactNode;
+  children: ReactNode
 }
 const IngestionCsvInlineWrapper: FunctionComponent<IngestionCsvInlineWrapperProps> = ({ children }) => {
   const { paginationOptions } = usePaginationLocalStorage<csvMappers_MappersQuery$variables>(
@@ -18,7 +18,8 @@ const IngestionCsvInlineWrapper: FunctionComponent<IngestionCsvInlineWrapperProp
       view: 'lines',
       searchTerm: '',
     },
-  ); const queryRefSchemaAttributes = useQueryLoading<csvMappers_SchemaAttributesQuery>(
+  );
+  const queryRefSchemaAttributes = useQueryLoading<csvMappers_SchemaAttributesQuery>(
     schemaAttributesQuery,
   );
   const queryRefMappers = useQueryLoading<csvMappers_MappersQuery>(

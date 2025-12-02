@@ -13,9 +13,9 @@ import ItemIcon from '../../../../components/ItemIcon';
 import useSensitiveModifications from '../../../../utils/hooks/useSensitiveModifications';
 
 interface CapabilitiesListProps {
-  queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>;
-  role: Role_role$data;
-  isCapabilitiesInDraft?: boolean;
+  queryRef: PreloadedQuery<RoleEditionCapabilitiesLinesSearchQuery>
+  role: Role_role$data
+  isCapabilitiesInDraft?: boolean
 }
 
 const CapabilitiesList: FunctionComponent<CapabilitiesListProps> = ({

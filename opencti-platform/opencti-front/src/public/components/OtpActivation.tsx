@@ -38,8 +38,8 @@ const validateOtpPatch = graphql`
 `;
 
 interface OtpProps {
-  secret: string;
-  uri: string;
+  secret: string
+  uri: string
 }
 
 const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {

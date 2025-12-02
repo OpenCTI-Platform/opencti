@@ -11,10 +11,10 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 const nbOfRowsToLoad = 50;
 
 interface FormLinesProps {
-  queryRef: PreloadedQuery<FormLinesPaginationQuery>;
-  dataColumns: DataColumns;
-  paginationOptions?: FormLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  queryRef: PreloadedQuery<FormLinesPaginationQuery>
+  dataColumns: DataColumns
+  paginationOptions?: FormLinesPaginationQuery$variables
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
 }
 
 export const formLinesQuery = graphql`

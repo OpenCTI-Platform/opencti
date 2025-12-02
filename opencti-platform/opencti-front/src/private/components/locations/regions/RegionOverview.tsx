@@ -39,7 +39,7 @@ export const regionOverviewFragment = graphql`
 `;
 
 interface RegionOverviewProps {
-  regionRef: RegionOverview_region$key;
+  regionRef: RegionOverview_region$key
 }
 
 const RegionOverview: FunctionComponent<RegionOverviewProps> = ({

@@ -81,18 +81,18 @@ const FileLineAskDeleteMutation = graphql`
 `;
 
 interface FileLineComponentProps {
-  file: FileLine_file$data | undefined;
-  connectors?: { data: { name: string; active: boolean } }[];
-  dense: boolean;
-  disableImport?: boolean;
-  directDownload?: boolean;
-  handleOpenImport?: (file: FileLine_file$data | undefined) => void;
-  nested?: boolean;
-  workNested?: boolean;
-  isExternalReferenceAttachment?: boolean;
-  onDelete?: () => void;
-  onClick?: () => void;
-  isArtifact?: boolean;
+  file: FileLine_file$data | undefined
+  connectors?: { data: { name: string, active: boolean } }[]
+  dense: boolean
+  disableImport?: boolean
+  directDownload?: boolean
+  handleOpenImport?: (file: FileLine_file$data | undefined) => void
+  nested?: boolean
+  workNested?: boolean
+  isExternalReferenceAttachment?: boolean
+  onDelete?: () => void
+  onClick?: () => void
+  isArtifact?: boolean
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({

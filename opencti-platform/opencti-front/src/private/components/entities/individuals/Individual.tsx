@@ -67,8 +67,8 @@ const individualFragment = graphql`
 `;
 
 interface IndividualProps {
-  individualData: Individual_individual$key;
-  viewAs: string;
+  individualData: Individual_individual$key
+  viewAs: string
 }
 
 const Individual: React.FC<IndividualProps> = ({

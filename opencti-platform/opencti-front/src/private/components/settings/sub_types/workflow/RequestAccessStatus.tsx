@@ -37,7 +37,7 @@ export const requestAccessFragment = graphql`
 `;
 
 interface RequestAccessStatusProps {
-  data: RequestAccessConfigurationEdition_requestAccess$key,
+  data: RequestAccessConfigurationEdition_requestAccess$key
   requestAccessWorkflowDisabled: boolean
 }
 

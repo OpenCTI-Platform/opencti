@@ -44,8 +44,8 @@ const statusTemplateValidation = (t: (name: string | object) => string) => Yup.o
 });
 
 interface StatusTemplateEditionProps {
-  handleClose: () => void;
-  statusTemplate: StatusTemplateEdition_statusTemplate$key;
+  handleClose: () => void
+  statusTemplate: StatusTemplateEdition_statusTemplate$key
 }
 
 const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({

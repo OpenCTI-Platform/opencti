@@ -1,7 +1,7 @@
 type Connection<T> = {
   readonly edges: ReadonlyArray<{
-    readonly node: T;
-  } | null | undefined> | null | undefined;
+    readonly node: T
+  } | null | undefined> | null | undefined
 } | null | undefined;
 
 // eslint-disable-next-line import/prefer-default-export

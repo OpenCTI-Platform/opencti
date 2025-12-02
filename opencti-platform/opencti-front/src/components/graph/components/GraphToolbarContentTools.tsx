@@ -123,7 +123,7 @@ const GraphToolbarContentTools = ({
           defaultCreatedBy={entity.createdBy ?? null}
           defaultMarkingDefinitions={(entity.objectMarking ?? []) as unknown[]}
           targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
-          onAdd={addNode as (node: { id: string; }) => void}
+          onAdd={addNode as (node: { id: string }) => void}
           onDelete={removeFromAddPanel}
           confidence={entity.confidence ?? undefined}
           enableReferences={enableReferences}

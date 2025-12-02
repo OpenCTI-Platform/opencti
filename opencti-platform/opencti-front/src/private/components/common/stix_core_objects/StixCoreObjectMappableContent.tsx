@@ -64,14 +64,14 @@ export const stixCoreObjectMappableContentFieldPatchMutation = graphql`
 `;
 
 interface StixCoreObjectMappableContentProps {
-  containerData: ContainerMappingContent_container$data;
-  handleDownloadPdf?: () => void;
-  handleTextSelection?: (t: string) => void;
-  askAi: boolean;
-  editionMode: boolean;
-  mappedStrings?: string[];
-  suggestedMappedStrings?: string[];
-  currentMode: 'content' | 'editor' | 'mapping';
+  containerData: ContainerMappingContent_container$data
+  handleDownloadPdf?: () => void
+  handleTextSelection?: (t: string) => void
+  askAi: boolean
+  editionMode: boolean
+  mappedStrings?: string[]
+  suggestedMappedStrings?: string[]
+  currentMode: 'content' | 'editor' | 'mapping'
 }
 
 interface StixCoreObjectMappableContentValues {

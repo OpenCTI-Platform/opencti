@@ -133,21 +133,21 @@ export const tasksDataColumns: DataColumns = {
 };
 
 interface TasksLineProps {
-  node: TasksLine_node$key;
-  onLabelClick: HandleAddFilter;
-  selectedElements: Record<string, TasksLine_node$data>;
-  deSelectedElements: Record<string, TasksLine_node$data>;
+  node: TasksLine_node$key
+  onLabelClick: HandleAddFilter
+  selectedElements: Record<string, TasksLine_node$data>
+  deSelectedElements: Record<string, TasksLine_node$data>
   onToggleEntity: (
     entity: TasksLine_node$data,
     event: React.SyntheticEvent,
-  ) => void;
-  selectAll: boolean;
+  ) => void
+  selectAll: boolean
   onToggleShiftEntity: (
     index: number,
     entity: TasksLine_node$data,
     event: React.SyntheticEvent,
-  ) => void;
-  index: number;
+  ) => void
+  index: number
 }
 
 export const TasksLine: FunctionComponent<TasksLineProps> = ({

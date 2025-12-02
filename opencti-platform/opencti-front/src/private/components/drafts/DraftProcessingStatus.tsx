@@ -13,7 +13,7 @@ import DraftWorks from './DraftWorks';
 import DraftTasks from './DraftTasks';
 
 interface DraftProcessingStatusProps {
-  forceRefetch: () => void;
+  forceRefetch: () => void
 }
 const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ forceRefetch }) => {
   const { t_i18n } = useFormatter();
@@ -42,7 +42,10 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
             color="warning"
           >
             <CircularProgress
-              onClick={() => { forceRefetch(); setDisplayProcesses(true); }}
+              onClick={() => {
+                forceRefetch();
+                setDisplayProcesses(true);
+              }}
               variant="indeterminate"
               size={25}
               style={{ cursor: 'pointer' }}

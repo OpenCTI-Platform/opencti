@@ -49,12 +49,12 @@ const jsonMapperValidation = (t_i18n: (s: string) => string) => Yup.object().sha
 });
 
 interface JsonMapperFormProps {
-  jsonMapper: JsonMapperFormData;
+  jsonMapper: JsonMapperFormData
   onSubmit: (
     values: JsonMapperFormData,
     formikHelpers: FormikHelpers<JsonMapperFormData>,
-  ) => void;
-  isDuplicated?: boolean,
+  ) => void
+  isDuplicated?: boolean
   attributes: JsonMapperRepresentationAttributesForm_allSchemaAttributes$data['csvMapperSchemaAttributes']
 }
 

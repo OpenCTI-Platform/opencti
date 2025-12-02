@@ -85,33 +85,33 @@ export const noteCreationMutation = graphql`
 `;
 
 interface NoteAddInput {
-  created: Date | null;
-  attribute_abstract: string;
-  content: string;
-  note_types: string[];
-  confidence: number | undefined;
-  likelihood?: number;
-  createdBy: FieldOption | undefined;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  created: Date | null
+  attribute_abstract: string
+  content: string
+  note_types: string[]
+  confidence: number | undefined
+  likelihood?: number
+  createdBy: FieldOption | undefined
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface NoteCreationProps {
-  inputValue?: string;
-  display?: boolean;
-  contextual?: boolean;
-  paginationOptions: NotesLinesPaginationQuery$variables;
+  inputValue?: string
+  display?: boolean
+  contextual?: boolean
+  paginationOptions: NotesLinesPaginationQuery$variables
 }
 
 interface NoteFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onClose?: () => void;
-  inputValue?: string;
-  defaultCreatedBy?: FieldOption;
-  defaultMarkingDefinitions?: FieldOption[];
-  defaultConfidence?: number;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onClose?: () => void
+  inputValue?: string
+  defaultCreatedBy?: FieldOption
+  defaultMarkingDefinitions?: FieldOption[]
+  defaultConfidence?: number
 }
 
 export const NOTE_TYPE = 'Note';

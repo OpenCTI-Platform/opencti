@@ -155,7 +155,7 @@ const analysesFragment = graphql`
 type PirContainerObjects = NonNullable<NonNullable<PirAnalyses_ContainersFragment$data['pir']>['pirContainers']>;
 
 interface PirAnalysesProps {
-  data: PirAnalysesFragment$key,
+  data: PirAnalysesFragment$key
 }
 
 const PirAnalyses = ({ data }: PirAnalysesProps) => {

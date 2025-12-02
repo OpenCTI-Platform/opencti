@@ -11,13 +11,13 @@ import useDraftContext from '../utils/hooks/useDraftContext';
 import { useGetCurrentUserAccessRight } from '../utils/authorizedMembers';
 
 interface UploadImportProps {
-  color?: 'primary' | 'inherit' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
-  size?: 'small' | 'medium' | 'large';
-  fontSize?: 'small' | 'medium' | 'large';
-  variant?: 'text' | 'contained' | 'outlined' | 'icon';
-  style?: React.CSSProperties;
-  onSuccess?: () => void;
-  entityId?: string;
+  color?: 'primary' | 'inherit' | 'secondary' | 'success' | 'error' | 'info' | 'warning'
+  size?: 'small' | 'medium' | 'large'
+  fontSize?: 'small' | 'medium' | 'large'
+  variant?: 'text' | 'contained' | 'outlined' | 'icon'
+  style?: React.CSSProperties
+  onSuccess?: () => void
+  entityId?: string
 }
 
 const UploadImport = ({

@@ -46,18 +46,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export interface RepresentationFormEntityOption extends FieldOption {
-  type: string;
-  id: string;
+  type: string
+  id: string
 }
 
 interface CsvMapperRepresentationFormProps
   extends FieldProps<CsvMapperRepresentationFormData> {
-  index: number;
-  availableTypes: { value: string; type: string; id: string; label: string }[];
-  handleRepresentationErrors: (key: string, value: boolean) => void;
-  prefixLabel: string;
-  onDelete: () => void;
-  selectedOption: string;
+  index: number
+  availableTypes: { value: string, type: string, id: string, label: string }[]
+  handleRepresentationErrors: (key: string, value: boolean) => void
+  prefixLabel: string
+  onDelete: () => void
+  selectedOption: string
 }
 
 const CsvMapperRepresentationForm: FunctionComponent<

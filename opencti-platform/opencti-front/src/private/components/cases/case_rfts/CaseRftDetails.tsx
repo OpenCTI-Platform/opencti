@@ -76,7 +76,7 @@ const CaseRftDetailsFragment = graphql`
 `;
 
 interface CaseRftDetailsProps {
-  caseRftData: CaseRftDetails_case$key;
+  caseRftData: CaseRftDetails_case$key
 }
 
 const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({

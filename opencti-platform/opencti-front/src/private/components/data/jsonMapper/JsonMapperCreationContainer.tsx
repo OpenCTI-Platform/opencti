@@ -8,11 +8,11 @@ import { JsonMapperEditionContainerQuery } from '@components/data/jsonMapper/__g
 import { useFormatter } from '../../../../components/i18n';
 
 interface JsonMapperCreationProps {
-  paginationOptions: jsonMappers_MappersQuery$variables;
-  editionQueryRef?: PreloadedQuery<JsonMapperEditionContainerQuery>,
-  isDuplicated?: boolean;
-  onClose?: () => void;
-  open: boolean;
+  paginationOptions: jsonMappers_MappersQuery$variables
+  editionQueryRef?: PreloadedQuery<JsonMapperEditionContainerQuery>
+  isDuplicated?: boolean
+  onClose?: () => void
+  open: boolean
 }
 
 const JsonMapperCreationContainer: FunctionComponent<JsonMapperCreationProps> = ({

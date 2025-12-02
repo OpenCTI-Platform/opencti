@@ -15,20 +15,20 @@ import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloaded
 const nbOfRowsToLoad = 50;
 
 interface ContainerStixDomainObjectsLinesProps {
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  dataColumns: DataColumns;
-  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables;
-  queryRef: PreloadedQuery<ContainerStixDomainObjectsLinesQuery>;
-  selectedElements: Record<string, ContainerStixDomainObjectLine_node$data>;
-  deSelectedElements: Record<string, ContainerStixDomainObjectLine_node$data>;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  dataColumns: DataColumns
+  paginationOptions: ContainerStixDomainObjectsLinesQuery$variables
+  queryRef: PreloadedQuery<ContainerStixDomainObjectsLinesQuery>
+  selectedElements: Record<string, ContainerStixDomainObjectLine_node$data>
+  deSelectedElements: Record<string, ContainerStixDomainObjectLine_node$data>
   onToggleEntity: (
     entity: ContainerStixDomainObjectLine_node$data,
     event: React.SyntheticEvent,
-  ) => void;
-  selectAll: boolean;
-  onLabelClick?: HandleAddFilter;
-  redirectionMode?: string;
-  enableReferences?: boolean;
+  ) => void
+  selectAll: boolean
+  onLabelClick?: HandleAddFilter
+  redirectionMode?: string
+  enableReferences?: boolean
 }
 
 export const containerStixDomainObjectsLinesQuery = graphql`

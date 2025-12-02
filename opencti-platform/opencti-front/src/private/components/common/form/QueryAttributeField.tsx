@@ -10,19 +10,19 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/fields/SelectField';
 
 interface QueryAttributeFieldAddProps {
-  id: string;
-  name: string;
+  id: string
+  name: string
   values: {
-    type: string,
-    from: string,
-    to: string,
-    data_operation: string,
-    state_operation: string,
-    default: string,
+    type: string
+    from: string
+    to: string
+    data_operation: string
+    state_operation: string
+    default: string
     exposed: string
-  }[];
-  containerStyle: { marginTop: number; width: string };
-  setFieldValue?: (name: string, value: unknown) => void;
+  }[]
+  containerStyle: { marginTop: number, width: string }
+  setFieldValue?: (name: string, value: unknown) => void
 }
 // eslint-disable-next-line import/prefer-default-export
 export const QueryAttributeFieldAdd: FunctionComponent<QueryAttributeFieldAddProps> = ({

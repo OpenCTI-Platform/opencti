@@ -18,12 +18,12 @@ const NoteDeletionDeleteMutation = graphql`
 `;
 
 interface NoteDeletionProps {
-  id?: string;
-  handleOpenRemoveExternal?: () => void;
+  id?: string
+  handleOpenRemoveExternal?: () => void
   isOpen: boolean
-  handleClose: () => void;
-  note?: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data;
-  paginationOptions?: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
+  handleClose: () => void
+  note?: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data
+  paginationOptions?: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables
 }
 
 const NoteDeletion: FunctionComponent<NoteDeletionProps> = ({

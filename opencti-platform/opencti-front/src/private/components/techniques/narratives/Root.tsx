@@ -78,8 +78,8 @@ const narrativeQuery = graphql`
 `;
 
 type RootNarrativeProps = {
-  narrativeId: string;
-  queryRef: PreloadedQuery<RootNarrativeQuery>;
+  narrativeId: string
+  queryRef: PreloadedQuery<RootNarrativeQuery>
 };
 const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootNarrativeSubscription>>(() => ({
@@ -264,7 +264,7 @@ const RootNarrative = ({ narrativeId, queryRef }: RootNarrativeProps) => {
 };
 
 const Root = () => {
-  const { narrativeId } = useParams() as { narrativeId: string; };
+  const { narrativeId } = useParams() as { narrativeId: string };
   const queryRef = useQueryLoading<RootNarrativeQuery>(narrativeQuery, {
     id: narrativeId,
   });

@@ -17,8 +17,8 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 interface VocabularyCreationProps {
-  paginationOptions: VocabulariesLinesPaginationQuery$variables;
-  category: VocabularyCategory;
+  paginationOptions: VocabulariesLinesPaginationQuery$variables
+  category: VocabularyCategory
 }
 
 // Deprecated - https://mui.com/system/styles/basics/
@@ -61,10 +61,10 @@ const VocabularyCreation: FunctionComponent<VocabularyCreationProps> = ({
   const [addVocab] = useApiMutation<VocabularyCreationMutation>(vocabularyAdd);
 
   interface FormInterface {
-    name: string;
-    description: string;
-    aliases: { value: string }[];
-    order: number;
+    name: string
+    description: string
+    aliases: { value: string }[]
+    order: number
   }
 
   const onSubmit: FormikConfig<FormInterface>['onSubmit'] = (

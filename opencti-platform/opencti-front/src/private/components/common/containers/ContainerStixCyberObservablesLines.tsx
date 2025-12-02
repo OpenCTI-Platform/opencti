@@ -100,25 +100,25 @@ const ContainerStixCyberObservablesLinesFragment = graphql`
 `;
 
 interface ContainerStixCyberObservablesLinesProps {
-  dataColumns: DataColumns;
-  paginationOptions: ContainerStixCyberObservablesLinesQuery$variables;
+  dataColumns: DataColumns
+  paginationOptions: ContainerStixCyberObservablesLinesQuery$variables
   onToggleEntity: (
     entity: ContainerStixCyberObservableLine_node$data,
     event: React.SyntheticEvent,
     forceRemove: ContainerStixCyberObservableLine_node$data[],
-  ) => void;
-  selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>;
+  ) => void
+  selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>
   deSelectedElements: Record<
   string,
   ContainerStixCyberObservableLine_node$data
-  >;
-  selectAll: boolean;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>;
+  >
+  selectAll: boolean
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
+  queryRef: PreloadedQuery<ContainerStixCyberObservablesLinesQuery>
   setSelectedElements: (
     selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>,
-  ) => void;
-  enableReferences?: boolean;
+  ) => void
+  enableReferences?: boolean
 }
 
 const ContainerStixCyberObservablesLines: FunctionComponent<

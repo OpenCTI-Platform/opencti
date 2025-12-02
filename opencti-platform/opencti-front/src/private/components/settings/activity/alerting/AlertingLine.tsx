@@ -67,10 +67,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface AlertingLineProps {
-  node: AlertingLine_node$key;
-  dataColumns: DataColumns;
-  onLabelClick: HandleAddFilter;
-  paginationOptions?: AlertingPaginationQuery$variables;
+  node: AlertingLine_node$key
+  dataColumns: DataColumns
+  onLabelClick: HandleAddFilter
+  paginationOptions?: AlertingPaginationQuery$variables
 }
 
 const alertingLineFragment = graphql`
@@ -215,7 +215,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
 export const AlertingLineDummy = ({
   dataColumns,
 }: {
-  dataColumns: DataColumns;
+  dataColumns: DataColumns
 }) => {
   const classes = useStyles();
   return (

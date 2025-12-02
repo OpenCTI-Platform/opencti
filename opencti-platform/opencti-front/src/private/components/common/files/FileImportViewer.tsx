@@ -28,13 +28,13 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface FileImportViewerComponentProps {
-  entity: FileImportViewer_entity$data;
-  disableImport: boolean;
-  handleOpenImport: (file: FileLine_file$data | undefined) => void;
-  connectors: { [p: string]: { data: { name: string; active: boolean } }[] };
-  relay: RelayRefetchProp;
-  isArtifact?: boolean;
-  directDownload?: boolean;
+  entity: FileImportViewer_entity$data
+  disableImport: boolean
+  handleOpenImport: (file: FileLine_file$data | undefined) => void
+  connectors: { [p: string]: { data: { name: string, active: boolean } }[] }
+  relay: RelayRefetchProp
+  isArtifact?: boolean
+  directDownload?: boolean
 }
 
 const FileImportViewerComponent: FunctionComponent<

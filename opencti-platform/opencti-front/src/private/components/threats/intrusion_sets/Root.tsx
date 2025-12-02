@@ -92,8 +92,8 @@ const intrusionSetQuery = graphql`
 `;
 
 type RootIntrusionSetProps = {
-  intrusionSetId: string;
-  queryRef: PreloadedQuery<RootIntrusionSetQuery>;
+  intrusionSetId: string
+  queryRef: PreloadedQuery<RootIntrusionSetQuery>
 };
 
 const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) => {
@@ -296,7 +296,7 @@ const RootIntrusionSet = ({ intrusionSetId, queryRef }: RootIntrusionSetProps) =
 };
 
 const Root = () => {
-  const { intrusionSetId } = useParams() as { intrusionSetId: string; };
+  const { intrusionSetId } = useParams() as { intrusionSetId: string };
   const queryRef = useQueryLoading<RootIntrusionSetQuery>(intrusionSetQuery, {
     id: intrusionSetId,
   });

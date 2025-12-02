@@ -10,8 +10,8 @@ import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface StixCoreObjectContentRootProps {
-  stixCoreObject: { id: string } & StixCoreObjectContent_stixCoreObject$key;
-  isContainer?: boolean;
+  stixCoreObject: { id: string } & StixCoreObjectContent_stixCoreObject$key
+  isContainer?: boolean
 }
 
 const StixCoreObjectContentRoot: FunctionComponent<StixCoreObjectContentRootProps> = ({

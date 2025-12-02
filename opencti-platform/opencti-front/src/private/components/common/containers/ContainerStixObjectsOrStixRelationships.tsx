@@ -26,12 +26,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ContainerStixObjectsOrStixRelationshipsComponentProps {
-  title?: string;
-  types?: string[];
-  isSupportParticipation: boolean;
-  container: ContainerStixObjectsOrStixRelationships_container$data;
-  variant?: string;
-  enableReferences: boolean;
+  title?: string
+  types?: string[]
+  isSupportParticipation: boolean
+  container: ContainerStixObjectsOrStixRelationships_container$data
+  variant?: string
+  enableReferences: boolean
 }
 
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
@@ -95,7 +95,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
         render={({
           props,
         }: {
-          props: ContainerStixObjectsOrStixRelationshipsLinesQuery$data;
+          props: ContainerStixObjectsOrStixRelationshipsLinesQuery$data
         }) => {
           if (props && props.container && props.container.objects) {
             return (

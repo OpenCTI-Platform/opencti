@@ -11,13 +11,13 @@ import { AlertLiveCreationActivityMutation$data } from './__generated__/AlertLiv
 import AlertDigestCreation from './AlertDigestCreation';
 
 interface TriggerCreationProps {
-  contextual?: boolean;
-  hideSpeedDial?: boolean;
-  open?: boolean;
-  handleClose?: () => void;
-  inputValue?: string;
-  paginationOptions?: AlertingPaginationQuery$variables;
-  creationCallback?: (data: AlertLiveCreationActivityMutation$data) => void;
+  contextual?: boolean
+  hideSpeedDial?: boolean
+  open?: boolean
+  handleClose?: () => void
+  inputValue?: string
+  paginationOptions?: AlertingPaginationQuery$variables
+  creationCallback?: (data: AlertLiveCreationActivityMutation$data) => void
 }
 
 const AlertCreation: FunctionComponent<TriggerCreationProps> = ({

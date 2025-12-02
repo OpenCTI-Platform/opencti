@@ -47,8 +47,8 @@ import BulkTextField from '../../../../components/fields/BulkTextField/BulkTextF
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 
 interface ErrorBadgeProps extends BadgeProps {
-  errors?: FormikErrors<ThreatActorIndividualAddInput>;
-  width?: number;
+  errors?: FormikErrors<ThreatActorIndividualAddInput>
+  width?: number
 }
 
 const ErrorBadge = styled(Badge)<ErrorBadgeProps>(
@@ -83,46 +83,46 @@ const ThreatActorIndividualMutation = graphql`
 const THREAT_ACTOR_INDIVIDUAL_TYPE = 'Threat-Actor-Individual';
 
 interface ThreatActorIndividualAddInput {
-  name: string;
-  threat_actor_types: string[];
-  confidence: number | null;
-  description: string;
-  createdBy: FieldOption | null;
-  objectMarking: FieldOption[];
-  objectLabel: FieldOption[];
-  externalReferences: { value: string }[];
-  first_seen: Date | null;
-  last_seen: Date | null;
-  goals: string | null;
-  sophistication: FieldOption | null;
-  resource_level: FieldOption | null;
-  roles: FieldOption[] | null;
-  primary_motivation: FieldOption | null;
-  secondary_motivations: FieldOption[] | null;
-  personal_motivations: FieldOption[] | null;
-  file: File | null;
-  bornIn: FieldOption | undefined;
-  ethnicity: FieldOption | undefined;
-  date_of_birth: Date | null;
-  gender: string | null;
-  marital_status: string | null;
-  job_title: string | undefined;
-  eye_color: string | null;
-  hair_color: string | null;
-  height: MeasureInput[];
-  weight: MeasureInput[];
+  name: string
+  threat_actor_types: string[]
+  confidence: number | null
+  description: string
+  createdBy: FieldOption | null
+  objectMarking: FieldOption[]
+  objectLabel: FieldOption[]
+  externalReferences: { value: string }[]
+  first_seen: Date | null
+  last_seen: Date | null
+  goals: string | null
+  sophistication: FieldOption | null
+  resource_level: FieldOption | null
+  roles: FieldOption[] | null
+  primary_motivation: FieldOption | null
+  secondary_motivations: FieldOption[] | null
+  personal_motivations: FieldOption[] | null
+  file: File | null
+  bornIn: FieldOption | undefined
+  ethnicity: FieldOption | undefined
+  date_of_birth: Date | null
+  gender: string | null
+  marital_status: string | null
+  job_title: string | undefined
+  eye_color: string | null
+  hair_color: string | null
+  height: MeasureInput[]
+  weight: MeasureInput[]
 }
 
 interface ThreatActorIndividualFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: { value: string; label: string };
-  defaultMarkingDefinitions?: { value: string; label: string }[];
-  defaultConfidence?: number;
-  inputValue?: string;
-  bulkModalOpen?: boolean;
-  onBulkModalClose: () => void;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number
+  inputValue?: string
+  bulkModalOpen?: boolean
+  onBulkModalClose: () => void
 }
 
 export const ThreatActorIndividualCreationForm: FunctionComponent<
@@ -689,7 +689,7 @@ ThreatActorIndividualFormProps
 const ThreatActorIndividualCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables;
+  paginationOptions: ThreatActorsIndividualCardsPaginationQuery$variables
 }) => {
   const { t_i18n } = useFormatter();
   const [bulkOpen, setBulkOpen] = useState(false);

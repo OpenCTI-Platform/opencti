@@ -20,13 +20,13 @@ import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory
 import ToggleButtonField from '../../../../components/fields/ToggleButtonField';
 
 interface DefaultValueFieldProps {
-  name: string,
+  name: string
   attribute: {
     name: string
     type: string
     multiple: boolean | null | undefined
-  },
-  setFieldValue: (field: string, value: string) => void,
+  }
+  setFieldValue: (field: string, value: string) => void
   entityType?: string
   disabled?: boolean
 }

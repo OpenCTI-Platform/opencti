@@ -81,13 +81,13 @@ interface OpinionAddInput {
 }
 
 interface OpinionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void;
-  onReset?: () => void;
-  onCompleted?: () => void;
-  defaultCreatedBy?: FieldOption;
-  defaultMarkingDefinitions?: FieldOption[];
-  defaultConfidence?: number;
-  inputValue?: string;
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: FieldOption
+  defaultMarkingDefinitions?: FieldOption[]
+  defaultConfidence?: number
+  inputValue?: string
 }
 
 const OPINION_TYPE = 'Opinion';

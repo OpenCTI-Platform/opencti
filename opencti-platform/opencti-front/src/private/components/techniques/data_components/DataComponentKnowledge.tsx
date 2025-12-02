@@ -16,8 +16,8 @@ const DataComponentKnowledgeFragment = graphql`
 `;
 
 interface DataComponentKnowledgeProps {
-  data: DataComponentKnowledge_dataComponent$key;
-  enableReferences: boolean;
+  data: DataComponentKnowledge_dataComponent$key
+  enableReferences: boolean
 }
 
 const DataComponentKnowledge: FunctionComponent<

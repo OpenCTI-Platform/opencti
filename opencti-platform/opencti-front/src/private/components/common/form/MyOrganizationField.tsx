@@ -7,12 +7,12 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { FieldOption } from '../../../../utils/field';
 
 interface MyOrganizationFieldProps {
-  name: string;
-  label: string;
-  disabled: boolean;
-  multiple: boolean;
-  style?: CSSProperties;
-  onChange?: (name: string, value: FieldOption) => void;
+  name: string
+  label: string
+  disabled: boolean
+  multiple: boolean
+  style?: CSSProperties
+  onChange?: (name: string, value: FieldOption) => void
 }
 
 const MyOrganizationField = (props: MyOrganizationFieldProps) => {
@@ -50,7 +50,7 @@ const MyOrganizationField = (props: MyOrganizationFieldProps) => {
       onChange={onChange}
       renderOption={(
         renderProps: React.HTMLAttributes<HTMLLIElement>,
-        option: { value: string; label: string },
+        option: { value: string, label: string },
       ) => (
         <li {...renderProps}>
           <div style={{ paddingTop: 4, display: 'inline-block' }}>

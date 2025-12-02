@@ -17,12 +17,12 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 
 interface AddThreatActorIndividualDemographicComponentProps {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
-  relType: string,
-  title: string,
-  queryRef: PreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>,
-  onSearch: (search: string) => void,
-  paginationOptions: AddThreatActorIndividualDemographicLinesQuery$variables,
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data
+  relType: string
+  title: string
+  queryRef: PreloadedQuery<AddThreatActorIndividualDemographicLinesQuery>
+  onSearch: (search: string) => void
+  paginationOptions: AddThreatActorIndividualDemographicLinesQuery$variables
 }
 
 const AddThreatActorIndividualDemographicComponent: FunctionComponent<
@@ -87,9 +87,9 @@ AddThreatActorIndividualDemographicComponentProps
 };
 
 interface AddThreatActorIndividualDemographicProps {
-  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data,
-  relType: string,
-  title: string,
+  threatActorIndividual: ThreatActorIndividual_ThreatActorIndividual$data
+  relType: string
+  title: string
 }
 
 const AddThreatActorIndividualDemographic: FunctionComponent<AddThreatActorIndividualDemographicProps> = (props) => {

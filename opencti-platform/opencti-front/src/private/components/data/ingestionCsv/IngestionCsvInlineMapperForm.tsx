@@ -37,9 +37,9 @@ const defaultCsvMapperValue: CsvMapperFormData = {
 };
 
 interface CsvMapperFormProps {
-  csvMapper?: CsvMapperAddInput;
+  csvMapper?: CsvMapperAddInput
   setCSVMapperFieldValue: (field: string, value: CsvMapperAddInput) => void
-  returnCSVFormat?: (field: string, value: CsvMapperAddInput) => void;
+  returnCSVFormat?: (field: string, value: CsvMapperAddInput) => void
 }
 
 const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, setCSVMapperFieldValue, returnCSVFormat }) => {
