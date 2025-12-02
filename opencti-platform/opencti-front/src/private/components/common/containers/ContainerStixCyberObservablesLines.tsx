@@ -109,8 +109,8 @@ interface ContainerStixCyberObservablesLinesProps {
   ) => void
   selectedElements: Record<string, ContainerStixCyberObservableLine_node$data>
   deSelectedElements: Record<
-  string,
-  ContainerStixCyberObservableLine_node$data
+    string,
+    ContainerStixCyberObservableLine_node$data
   >
   selectAll: boolean
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements']
@@ -122,7 +122,7 @@ interface ContainerStixCyberObservablesLinesProps {
 }
 
 const ContainerStixCyberObservablesLines: FunctionComponent<
-ContainerStixCyberObservablesLinesProps
+  ContainerStixCyberObservablesLinesProps
 > = ({
   dataColumns,
   paginationOptions,
@@ -136,8 +136,8 @@ ContainerStixCyberObservablesLinesProps
   enableReferences,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  ContainerStixCyberObservablesLinesQuery,
-  ContainerStixCyberObservablesLines_container$key
+    ContainerStixCyberObservablesLinesQuery,
+    ContainerStixCyberObservablesLines_container$key
   >({
     linesQuery: containerStixCyberObservablesLinesQuery,
     linesFragment: ContainerStixCyberObservablesLinesFragment,

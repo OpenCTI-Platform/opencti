@@ -60,7 +60,7 @@ interface MarkdownWithRedirectionWarningProps {
 }
 
 const MarkdownDisplay: FunctionComponent<
-MarkdownWithRedirectionWarningProps
+  MarkdownWithRedirectionWarningProps
 > = ({
   content,
   expand,
@@ -184,7 +184,7 @@ MarkdownWithRedirectionWarningProps
           setExternalLink={setExternalLink}
         />
       </>
-);
+    );
   }
   return emptyStringIfUndefined ? markdownDisplayContent : <FieldOrEmpty source={content}>{markdownDisplayContent}</FieldOrEmpty>;
 };

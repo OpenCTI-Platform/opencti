@@ -34,7 +34,7 @@ interface KillChainPhaseCreationProps {
   paginationOptions: PaginationOptions
 }
 const KillChainPhaseCreation: FunctionComponent<
-KillChainPhaseCreationProps
+  KillChainPhaseCreationProps
 > = ({
   paginationOptions,
 }) => {

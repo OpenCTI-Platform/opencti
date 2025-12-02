@@ -161,18 +161,18 @@ const defaultColumns: DataTableProps['dataColumns'] = {
             'Data-Component',
             'Data-Source',
           ].includes(entity_type) ? (
-            <Chip
-              classes={{ root: classes.chipNoLink }}
-              label={n(containersNumber.total)}
-            />
-            ) : (
-              <Chip
-                classes={{ root: classes.chip }}
-                label={n(containersNumber.total)}
-                component={Link}
-                to={linkAnalyses}
-              />
-            )}
+                <Chip
+                  classes={{ root: classes.chipNoLink }}
+                  label={n(containersNumber.total)}
+                />
+              ) : (
+                <Chip
+                  classes={{ root: classes.chip }}
+                  label={n(containersNumber.total)}
+                  component={Link}
+                  to={linkAnalyses}
+                />
+              )}
         </>
       );
     },
@@ -765,7 +765,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ number_observed }, { n }) => (
       <Tooltip title={number_observed}><>{n(number_observed)}</>
       </Tooltip>
-),
+    ),
   },
   objectAssignee: {
     id: 'objectAssignee',
@@ -864,7 +864,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       >
         <>{operatingSystem?.name ?? '-'}</>
       </Tooltip>
-),
+    ),
   },
   opinions_metrics_mean: {
     id: 'opinions_metrics_mean',

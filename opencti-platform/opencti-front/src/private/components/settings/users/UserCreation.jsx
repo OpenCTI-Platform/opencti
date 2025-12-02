@@ -97,9 +97,9 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
       email_template_id: email_template_id?.value?.id ?? null,
       user_confidence_level: user_confidence_level
         ? {
-          max_confidence: parseInt(user_confidence_level, 10),
-          overrides: [],
-        }
+            max_confidence: parseInt(user_confidence_level, 10),
+            overrides: [],
+          }
         : null,
     };
     // remove technical fields
@@ -268,7 +268,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                         <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
                       </Tooltip>
                     </div>
-)}
+                  )}
                   containerstyle={{ marginTop: 20 }}
                 />
                 <Field

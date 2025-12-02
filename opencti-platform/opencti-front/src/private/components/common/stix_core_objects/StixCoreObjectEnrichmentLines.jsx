@@ -125,10 +125,10 @@ const StixCoreObjectEnrichment = ({
   });
   const connectors = file && file.metaData
     ? R.filter(
-      (n) => R.includes(file.metaData.mimetype, n.connector_scope)
-        || n.connector_scope.length === 0,
-      connectorsForImport,
-    )
+        (n) => R.includes(file.metaData.mimetype, n.connector_scope)
+          || n.connector_scope.length === 0,
+        connectorsForImport,
+      )
     : [];
   const allConnectors = R.sortBy(R.prop('name'), [
     ...stixCoreObject.connectors,
@@ -140,13 +140,13 @@ const StixCoreObjectEnrichment = ({
         allConnectors.map((connector) => {
           const jobs = connector.connector_type === 'INTERNAL_IMPORT_FILE'
             ? R.filter(
-              (n) => n.connector.id === connector.id,
-              R.propOr([], 'works', file),
-            )
+                (n) => n.connector.id === connector.id,
+                R.propOr([], 'works', file),
+              )
             : R.filter(
-              (n) => n.connector && n.connector.id === connector.id,
-              R.propOr([], 'jobs', stixCoreObject),
-            );
+                (n) => n.connector && n.connector.id === connector.id,
+                R.propOr([], 'jobs', stixCoreObject),
+              );
           // eslint-disable-next-line max-len
           const isRefreshing = R.filter((node) => node.status !== 'complete', jobs).length > 0;
           return (
@@ -178,10 +178,10 @@ const StixCoreObjectEnrichment = ({
                 <ListItemButton classes={{ root: classes.item }}>
                   <Tooltip
                     title={
-                    connector.active
-                      ? t('This connector is active')
-                      : t('This connector is disconnected')
-                  }
+                      connector.active
+                        ? t('This connector is active')
+                        : t('This connector is disconnected')
+                    }
                   >
                     <ListItemIcon
                       style={{
@@ -205,13 +205,13 @@ const StixCoreObjectEnrichment = ({
                     <div>
                       {messages.length > 0
                         ? R.map(
-                          (message) => (
-                            <div key={message.message}>
-                              [{nsdt(message.timestamp)}] {message.message}
-                            </div>
-                          ),
-                          messages,
-                        )
+                            (message) => (
+                              <div key={message.message}>
+                                [{nsdt(message.timestamp)}] {message.message}
+                              </div>
+                            ),
+                            messages,
+                          )
                         : t(work.status)}
                     </div>
                   );
@@ -241,20 +241,20 @@ const StixCoreObjectEnrichment = ({
                         <ListItemButton classes={{ root: classes.nested }}>
                           <ListItemIcon>
                             {isFail && (
-                            <WarningOutlined
-                              style={{
-                                fontSize: 15,
-                                color: '#f44336',
-                              }}
-                            />
+                              <WarningOutlined
+                                style={{
+                                  fontSize: 15,
+                                  color: '#f44336',
+                                }}
+                              />
                             )}
                             {!isFail && work.status === 'complete' && (
-                            <CheckCircleOutlined
-                              style={{
-                                fontSize: 15,
-                                color: '#4caf50',
-                              }}
-                            />
+                              <CheckCircleOutlined
+                                style={{
+                                  fontSize: 15,
+                                  color: '#4caf50',
+                                }}
+                              />
                             )}
                             {((!isFail && work.status === 'wait')
                               || work.status === 'progress') && (

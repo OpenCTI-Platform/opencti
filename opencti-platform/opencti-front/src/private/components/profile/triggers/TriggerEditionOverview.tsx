@@ -144,14 +144,14 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     event_types:
       trigger.trigger_type === 'live'
         ? Yup.array()
-          .min(1, t_i18n('Minimum one event type'))
-          .required(t_i18n('This field is required'))
+            .min(1, t_i18n('Minimum one event type'))
+            .required(t_i18n('This field is required'))
         : Yup.array().nullable(),
     notifiers:
       trigger.trigger_type === 'digest'
         ? Yup.array()
-          .min(1, t_i18n('Minimum one notifier'))
-          .required(t_i18n('This field is required'))
+            .min(1, t_i18n('Minimum one notifier'))
+            .required(t_i18n('This field is required'))
         : Yup.array().nullable(),
     period:
       trigger.trigger_type === 'digest'
@@ -162,8 +162,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     trigger_ids:
       trigger.trigger_type === 'digest'
         ? Yup.array()
-          .min(1, t_i18n('Minimum one trigger'))
-          .required(t_i18n('This field is required'))
+            .min(1, t_i18n('Minimum one trigger'))
+            .required(t_i18n('This field is required'))
         : Yup.array().nullable(),
   });
 
@@ -489,38 +489,38 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               >
                 {!instanceTrigger
                   && (
-                  <Filters
-                    availableFilterKeys={stixFilters}
-                    helpers={helpers}
-                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
-                  />
-)
+                    <Filters
+                      availableFilterKeys={stixFilters}
+                      helpers={helpers}
+                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering'] }}
+                    />
+                  )
                 }
               </Box>
 
               {instanceTrigger
                 ? (
-                  <FilterIconButton
-                    filters={instanceTriggerFilters}
-                    helpers={{
-                      ...instanceTriggerFiltersHelpers,
-                      handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
-                    }}
-                    redirection
-                    entityTypes={['Instance']}
-                    filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
-                    styleNumber={2}
-                  />
-                ) : (
-                  <FilterIconButton
-                    filters={filters}
-                    helpers={helpers}
-                    redirection
-                    searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
-                    entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
-                    styleNumber={2}
-                  />
-)
+                    <FilterIconButton
+                      filters={instanceTriggerFilters}
+                      helpers={{
+                        ...instanceTriggerFiltersHelpers,
+                        handleSwitchLocalMode: () => undefined, // connectedToId filter can only have the 'or' local mode
+                      }}
+                      redirection
+                      entityTypes={['Instance']}
+                      filtersRestrictions={{ preventLocalModeSwitchingFor: ['connectedToId'], preventRemoveFor: ['connectedToId'] }}
+                      styleNumber={2}
+                    />
+                  ) : (
+                    <FilterIconButton
+                      filters={filters}
+                      helpers={helpers}
+                      redirection
+                      searchContext={{ entityTypes: ['Stix-Core-Object', 'stix-core-relationship'] }}
+                      entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Stix-Filtering']}
+                      styleNumber={2}
+                    />
+                  )
               }
             </span>
           )}

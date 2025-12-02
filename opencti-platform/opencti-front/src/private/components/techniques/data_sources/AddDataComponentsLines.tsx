@@ -83,12 +83,12 @@ interface AddDataComponentsLinesContainerProps {
 }
 
 const AddDataComponentsLines: FunctionComponent<
-AddDataComponentsLinesContainerProps
+  AddDataComponentsLinesContainerProps
 > = ({ dataSource, queryRef }) => {
   const classes = useStyles();
   const { data } = usePreloadedPaginationFragment<
-  AddDataComponentsLinesToDataSourceQuery,
-  AddDataComponentsLinesToDataSource_data$key
+    AddDataComponentsLinesToDataSourceQuery,
+    AddDataComponentsLinesToDataSource_data$key
   >({
     linesQuery: addDataComponentsLinesQuery,
     linesFragment: addDataComponentsLinesFragment,

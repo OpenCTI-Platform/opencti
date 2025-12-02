@@ -73,7 +73,7 @@ interface IntrusionSetFormProps {
 }
 
 export const IntrusionSetCreationForm: FunctionComponent<
-IntrusionSetFormProps
+  IntrusionSetFormProps
 > = ({
   updater,
   onReset,

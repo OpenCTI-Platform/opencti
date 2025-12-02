@@ -28,10 +28,10 @@ interface UserEditionConfidenceProps {
   user: UserEdition_user$data
   context:
     | readonly ({
-    readonly focusOn: string | null | undefined
-    readonly name: string
-  } | null)[]
-  | null | undefined
+      readonly focusOn: string | null | undefined
+      readonly name: string
+    } | null)[]
+    | null | undefined
 }
 
 const userConfidenceValidation = (t: (value: string) => string) => {

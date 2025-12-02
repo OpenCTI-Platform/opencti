@@ -184,12 +184,12 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
               label={(
                 <>
                   {t_i18n(
-                  'Automatically authorize this group to new marking definition',
-                )}
+                    'Automatically authorize this group to new marking definition',
+                  )}
                   <Tooltip
                     title={t_i18n(
-                    'The new marking definitions will also be shareable by this group.',
-                  )}
+                      'The new marking definitions will also be shareable by this group.',
+                    )}
                   >
                     <InformationOutline
                       fontSize="small"
@@ -198,7 +198,7 @@ const GroupEditionOverviewComponent: FunctionComponent<GroupEditionOverviewCompo
                     />
                   </Tooltip>
                 </>
-)}
+              )}
               containerstyle={{ marginTop: 20 }}
               onChange={editor.changeField}
             />

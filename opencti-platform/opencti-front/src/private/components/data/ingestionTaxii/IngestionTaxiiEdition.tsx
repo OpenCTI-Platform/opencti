@@ -49,31 +49,31 @@ export const initIngestionValue = (ingestionTaxiiData: IngestionTaxiiEditionFrag
     },
     ...(ingestionTaxiiData.authentication_type === BEARER_AUTH
       ? {
-        token: extractToken(ingestionTaxiiData.authentication_value),
-      }
+          token: extractToken(ingestionTaxiiData.authentication_value),
+        }
       : {
-        token: '',
-      }),
+          token: '',
+        }),
     ...(ingestionTaxiiData.authentication_type === BASIC_AUTH
       ? {
-        username: extractUsername(ingestionTaxiiData.authentication_value),
-        password: extractPassword(ingestionTaxiiData.authentication_value),
-      }
+          username: extractUsername(ingestionTaxiiData.authentication_value),
+          password: extractPassword(ingestionTaxiiData.authentication_value),
+        }
       : {
-        username: '',
-        password: '',
-      }),
+          username: '',
+          password: '',
+        }),
     ...(ingestionTaxiiData.authentication_type === CERT_AUTH
       ? {
-        cert: extractCert(ingestionTaxiiData.authentication_value),
-        key: extractKey(ingestionTaxiiData.authentication_value),
-        ca: extractCA(ingestionTaxiiData.authentication_value),
-      }
+          cert: extractCert(ingestionTaxiiData.authentication_value),
+          key: extractKey(ingestionTaxiiData.authentication_value),
+          ca: extractCA(ingestionTaxiiData.authentication_value),
+        }
       : {
-        cert: '',
-        key: '',
-        ca: '',
-      }),
+          cert: '',
+          key: '',
+          ca: '',
+        }),
   };
 };
 

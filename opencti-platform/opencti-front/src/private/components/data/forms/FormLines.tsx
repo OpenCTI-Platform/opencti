@@ -79,8 +79,8 @@ const FormLines: FunctionComponent<FormLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  FormLinesPaginationQuery,
-  FormLines_data$key>({
+    FormLinesPaginationQuery,
+    FormLines_data$key>({
     queryRef,
     linesQuery: formLinesQuery,
     linesFragment: formLinesFragment,

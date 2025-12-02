@@ -128,16 +128,16 @@ const AuthorizedMembersFieldListItem = ({
         authorizedMember.value !== me.id
         && !isGenericOption(authorizedMember.value)
       ) ? (
-        <IconButton
-          color="primary"
-          aria-label={t_i18n('Delete')}
-          onClick={() => onRemove?.()}
-        >
-          <Delete fontSize="small" />
-        </IconButton>
-        ) : (
-          <div style={{ width: 36 }}></div>
-        )}
+            <IconButton
+              color="primary"
+              aria-label={t_i18n('Delete')}
+              onClick={() => onRemove?.()}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          ) : (
+            <div style={{ width: 36 }}></div>
+          )}
     </ListItem>
   );
 };

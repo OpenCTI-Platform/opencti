@@ -334,86 +334,86 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
             </Tooltip>
             {node.context_data.external_references
               && node.context_data.external_references.length > 0 && (
-                <List>
-                  {node.context_data.external_references.map(
-                    (externalReference) => {
-                      const externalReferenceId = externalReference.external_id
-                        ? `(${externalReference.external_id})`
-                        : '';
-                      let externalReferenceSecondary = '';
-                      if (
-                        externalReference.url
-                        && externalReference.url.length > 0
-                      ) {
-                        externalReferenceSecondary = externalReference.url;
-                      } else if (
-                        externalReference.description
-                        && externalReference.description.length > 0
-                      ) {
-                        externalReferenceSecondary = externalReference.description;
-                      }
-                      if (externalReference.url) {
-                        return (
-                          <ListItem
-                            key={externalReference.id}
-                            dense={true}
-                            divider={true}
-                            secondaryAction={(
-                              <Tooltip title={t('Browse the link')}>
-                                <IconButton
-                                  onClick={this.handleOpenExternalLink.bind(
-                                    this,
-                                    externalReference.url,
-                                  )}
-                                  size="large"
-                                  color="primary"
-                                >
-                                  <OpenInBrowserOutlined />
-                                </IconButton>
-                              </Tooltip>
-                            )}
-                          >
-                            <ListItemButton
-                              component={Link}
-                              to={`/dashboard/analyses/external_references/${externalReference.id}`}
-                            >
-                              <ListItemIcon>
-                                <ItemIcon type="External-Reference" />
-                              </ListItemIcon>
-                              <ListItemText
-                                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                                secondary={truncate(
-                                  externalReferenceSecondary,
-                                  90,
-                                )}
-                              />
-                            </ListItemButton>
-                          </ListItem>
-                        );
-                      }
+              <List>
+                {node.context_data.external_references.map(
+                  (externalReference) => {
+                    const externalReferenceId = externalReference.external_id
+                      ? `(${externalReference.external_id})`
+                      : '';
+                    let externalReferenceSecondary = '';
+                    if (
+                      externalReference.url
+                      && externalReference.url.length > 0
+                    ) {
+                      externalReferenceSecondary = externalReference.url;
+                    } else if (
+                      externalReference.description
+                      && externalReference.description.length > 0
+                    ) {
+                      externalReferenceSecondary = externalReference.description;
+                    }
+                    if (externalReference.url) {
                       return (
-                        <ListItemButton
-                          component={Link}
+                        <ListItem
                           key={externalReference.id}
-                          to={`/dashboard/analyses/external_references/${externalReference.id}`}
                           dense={true}
                           divider={true}
+                          secondaryAction={(
+                            <Tooltip title={t('Browse the link')}>
+                              <IconButton
+                                onClick={this.handleOpenExternalLink.bind(
+                                  this,
+                                  externalReference.url,
+                                )}
+                                size="large"
+                                color="primary"
+                              >
+                                <OpenInBrowserOutlined />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         >
-                          <ListItemIcon>
-                            <ItemIcon type="External-Reference" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(
-                              externalReference.description,
-                              120,
-                            )}
-                          />
-                        </ListItemButton>
+                          <ListItemButton
+                            component={Link}
+                            to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                          >
+                            <ListItemIcon>
+                              <ItemIcon type="External-Reference" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={`${externalReference.source_name} ${externalReferenceId}`}
+                              secondary={truncate(
+                                externalReferenceSecondary,
+                                90,
+                              )}
+                            />
+                          </ListItemButton>
+                        </ListItem>
                       );
-                    },
-                  )}
-                </List>
+                    }
+                    return (
+                      <ListItemButton
+                        component={Link}
+                        key={externalReference.id}
+                        to={`/dashboard/analyses/external_references/${externalReference.id}`}
+                        dense={true}
+                        divider={true}
+                      >
+                        <ListItemIcon>
+                          <ItemIcon type="External-Reference" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${externalReference.source_name} ${externalReferenceId}`}
+                          secondary={truncate(
+                            externalReference.description,
+                            120,
+                          )}
+                        />
+                      </ListItemButton>
+                    );
+                  },
+                )}
+              </List>
             )}
           </Paper>
         </div>

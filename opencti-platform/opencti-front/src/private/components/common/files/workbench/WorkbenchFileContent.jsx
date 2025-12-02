@@ -1145,10 +1145,10 @@ const WorkbenchFileContentComponent = ({
     );
     const identity = values.createdBy?.entity
       ? {
-        ...values.createdBy.entity,
-        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
-        type: 'identity',
-      }
+          ...values.createdBy.entity,
+          id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+          type: 'identity',
+        }
       : null;
     const finalValues = {
       ...R.omit(
@@ -1326,10 +1326,10 @@ const WorkbenchFileContentComponent = ({
     );
     const identity = values.createdBy?.entity
       ? {
-        ...values.createdBy.entity,
-        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
-        type: 'identity',
-      }
+          ...values.createdBy.entity,
+          id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+          type: 'identity',
+        }
       : null;
     const finalValues = {
       ...R.omit(
@@ -1401,10 +1401,10 @@ const WorkbenchFileContentComponent = ({
     }
     const identity = values.createdBy?.entity
       ? {
-        ...values.createdBy.entity,
-        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
-        type: 'identity',
-      }
+          ...values.createdBy.entity,
+          id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+          type: 'identity',
+        }
       : null;
     let finalValues = {
       ...R.omit(
@@ -1518,10 +1518,10 @@ const WorkbenchFileContentComponent = ({
     );
     const identity = values.createdBy?.entity
       ? {
-        ...values.createdBy.entity,
-        id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
-        type: 'identity',
-      }
+          ...values.createdBy.entity,
+          id: values.createdBy.entity.standard_id || values.createdBy.entity.id,
+          type: 'identity',
+        }
       : null;
     const finalValues = {
       ...R.omit(
@@ -3147,18 +3147,18 @@ const WorkbenchFileContentComponent = ({
               if (props && props.markingDefinitions) {
                 return props.markingDefinitions.edges.length > 0
                   ? (
-                    <ItemBoolean
-                      variant="inList"
-                      status={true}
-                      label={t_i18n('Yes')}
-                    />
-                  ) : (
-                    <ItemBoolean
-                      variant="inList"
-                      status={false}
-                      label={t_i18n('No')}
-                    />
-                  );
+                      <ItemBoolean
+                        variant="inList"
+                        status={true}
+                        label={t_i18n('Yes')}
+                      />
+                    ) : (
+                      <ItemBoolean
+                        variant="inList"
+                        status={false}
+                        label={t_i18n('No')}
+                      />
+                    );
               }
               return (
                 <ItemBoolean
@@ -3192,18 +3192,18 @@ const WorkbenchFileContentComponent = ({
             if (props && props.stixDomainObjects) {
               return props.stixDomainObjects.edges.length > 0
                 ? (
-                  <ItemBoolean
-                    variant="inList"
-                    status={true}
-                    label={t_i18n('Yes')}
-                  />
-                ) : (
-                  <ItemBoolean
-                    variant="inList"
-                    status={false}
-                    label={t_i18n('No')}
-                  />
-                );
+                    <ItemBoolean
+                      variant="inList"
+                      status={true}
+                      label={t_i18n('Yes')}
+                    />
+                  ) : (
+                    <ItemBoolean
+                      variant="inList"
+                      status={false}
+                      label={t_i18n('No')}
+                    />
+                  );
             }
             return (
               <ItemBoolean
@@ -3579,18 +3579,18 @@ const WorkbenchFileContentComponent = ({
                               if (props && props.stixCyberObservables) {
                                 return props.stixCyberObservables.edges.length
                                   > 0 ? (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={true}
-                                      label={t_i18n('Yes')}
-                                    />
-                                  ) : (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={false}
-                                      label={t_i18n('No')}
-                                    />
-                                  );
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={true}
+                                        label={t_i18n('Yes')}
+                                      />
+                                    ) : (
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={false}
+                                        label={t_i18n('No')}
+                                      />
+                                    );
                               }
                               return (
                                 <ItemBoolean
@@ -3724,9 +3724,9 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                    (selectAll && !(object.id in (deSelectedElements || {})))
-                    || object.id in (selectedElements || {})
-                  }
+                      (selectAll && !(object.id in (deSelectedElements || {})))
+                      || object.id in (selectedElements || {})
+                    }
                     disableRipple
                   />
                 </ListItemIcon>
@@ -3878,9 +3878,9 @@ const WorkbenchFileContentComponent = ({
                   <Checkbox
                     edge="start"
                     checked={
-                    (selectAll && !(object.id in (deSelectedElements || {})))
-                    || object.id in (selectedElements || {})
-                  }
+                      (selectAll && !(object.id in (deSelectedElements || {})))
+                      || object.id in (selectedElements || {})
+                    }
                     disableRipple
                   />
                 </ListItemIcon>
@@ -4122,18 +4122,18 @@ const WorkbenchFileContentComponent = ({
                               if (props && props.stixDomainObjects) {
                                 return props.stixDomainObjects.edges.length
                                   > 0 ? (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={true}
-                                      label={t_i18n('Yes')}
-                                    />
-                                  ) : (
-                                    <ItemBoolean
-                                      variant="inList"
-                                      status={false}
-                                      label={t_i18n('No')}
-                                    />
-                                  );
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={true}
+                                        label={t_i18n('Yes')}
+                                      />
+                                    ) : (
+                                      <ItemBoolean
+                                        variant="inList"
+                                        status={false}
+                                        label={t_i18n('No')}
+                                      />
+                                    );
                               }
                               return (
                                 <ItemBoolean
@@ -4266,22 +4266,22 @@ const WorkbenchFileContentComponent = ({
               <DialogTitle>{t_i18n('Validate and send for import')}</DialogTitle>
               <DialogContent>
                 {!!file.metaData.entity_id && !!file.metaData.entity && (
-                <>
-                  <Alert severity="info" variant="outlined">
-                    <Typography>
-                      {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
-                    </Typography>
-                    <Typography>
-                      {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
-                    </Typography>
-                  </Alert>
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="refreshEntity"
-                    label={t_i18n('Refresh entity')}
-                  />
-                </>
+                  <>
+                    <Alert severity="info" variant="outlined">
+                      <Typography>
+                        {t_i18n('Having this checked means the last version of the entity linked to the workbench will be fetched from database before executing the workbench.')}
+                      </Typography>
+                      <Typography>
+                        {t_i18n('Because by default the workbench won\'t include the updates made on the entity after the creation of the workbench.')}
+                      </Typography>
+                    </Alert>
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="refreshEntity"
+                      label={t_i18n('Refresh entity')}
+                    />
+                  </>
                 )}
                 <Field
                   component={SelectField}

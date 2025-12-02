@@ -134,15 +134,15 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           <FileUploadOutlined fontSize="small" color="primary" />
         </ToggleButton>
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
-        <GradientButton
-          size="small"
-          sx={{ marginLeft: theme.spacing(1) }}
-          href={importFromHubUrl}
-          target="_blank"
-          title={t_i18n('Import from Hub')}
-        >
-          {t_i18n('Import from Hub')}
-        </GradientButton>
+          <GradientButton
+            size="small"
+            sx={{ marginLeft: theme.spacing(1) }}
+            href={importFromHubUrl}
+            target="_blank"
+            title={t_i18n('Import from Hub')}
+          >
+            {t_i18n('Import from Hub')}
+          </GradientButton>
         )}
         <CreateEntityControlledDial entityType="Dashboard" {...props} />
       </>

@@ -44,7 +44,7 @@ interface DataComponentDataSourcesProps {
 }
 
 const DataComponentDataSource: FunctionComponent<
-DataComponentDataSourcesProps
+  DataComponentDataSourcesProps
 > = ({ dataComponent }) => {
   const { t_i18n } = useFormatter();
 

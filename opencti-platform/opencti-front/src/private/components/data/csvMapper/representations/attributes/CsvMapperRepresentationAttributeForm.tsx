@@ -45,7 +45,7 @@ interface CsvMapperRepresentationAttributeFormProps
 }
 
 const CsvMapperRepresentationAttributeForm: FunctionComponent<
-CsvMapperRepresentationAttributeFormProps
+  CsvMapperRepresentationAttributeFormProps
 > = ({ form, field, schemaAttribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -130,14 +130,14 @@ CsvMapperRepresentationAttributeFormProps
         {
           (schemaAttribute.type === 'date' || schemaAttribute.multiple || schemaAttribute.editDefault)
           && (
-          <CsvMapperRepresentationDialogOption configuration={value}>
-            <CsvMapperRepresentationAttributeOptions
-              schemaAttribute={schemaAttribute}
-              attributeName={name}
-              form={form}
-            />
-          </CsvMapperRepresentationDialogOption>
-)
+            <CsvMapperRepresentationDialogOption configuration={value}>
+              <CsvMapperRepresentationAttributeOptions
+                schemaAttribute={schemaAttribute}
+                attributeName={name}
+                form={form}
+              />
+            </CsvMapperRepresentationDialogOption>
+          )
         }
       </div>
       <CsvMapperRepresentionAttributeSelectedConfigurations

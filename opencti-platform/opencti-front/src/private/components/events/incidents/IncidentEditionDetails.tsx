@@ -78,7 +78,7 @@ interface IncidentEditionDetailsFormValues {
   last_seen?: FieldOption
 }
 const IncidentEditionDetails: FunctionComponent<
-IncidentEditionDetailsProps
+  IncidentEditionDetailsProps
 > = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();

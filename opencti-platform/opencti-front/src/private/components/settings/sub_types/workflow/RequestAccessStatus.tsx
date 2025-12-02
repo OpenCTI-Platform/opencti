@@ -73,7 +73,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
               width: 100,
             }}
           />
-)}
+        )}
         { !requestAccessWorkflowDisabled && (
           <Chip
             key={approvedToRfiStatus?.id}
@@ -112,7 +112,7 @@ const RequestAccessStatus: FunctionComponent<RequestAccessStatusProps> = ({
               width: 100,
             }}
           />
-)}
+        )}
         { !requestAccessWorkflowDisabled && (
           <Chip
             key={declinedToRfiStatus?.id}

@@ -47,9 +47,9 @@ const FileImportMarkingSelectionPopup = ({ closePopup, handleUpload, isOpen, ent
             fullWidth={true}
             slotProps={{ paper: { elevation: 1 } }}
             onClose={() => {
-            resetForm();
-            closePopup();
-          }}
+              resetForm();
+              closePopup();
+            }}
           >
             <DialogTitle>{t_i18n('Select file marking definitions')}</DialogTitle>
             <DialogContent>

@@ -56,7 +56,7 @@ interface CsvMapperRepresentationAttributesFormProps {
 }
 
 const CsvMapperRepresentationAttributesForm: FunctionComponent<
-CsvMapperRepresentationAttributesFormProps
+  CsvMapperRepresentationAttributesFormProps
 > = ({ handleErrors, representation, representationName }) => {
   const { t_i18n } = useFormatter();
   const { schemaAttributes } = useCsvMappersData();

@@ -132,29 +132,29 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
     >
       {(!isGrantedToSettings || !isEnterpriseEdition)
         ? (
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-              display: 'table-cell',
-              verticalAlign: 'middle',
-              textAlign: 'center',
-            }}
-            >
-              {!isEnterpriseEdition
-              ? t_i18n('This feature is only available in OpenCTI Enterprise Edition.')
-              : t_i18n('You are not authorized to see this data.')}
-            </span>
-          </div>
-)
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {!isEnterpriseEdition
+                  ? t_i18n('This feature is only available in OpenCTI Enterprise Edition.')
+                  : t_i18n('You are not authorized to see this data.')}
+              </span>
+            </div>
+          )
         : (
-          <>
-            {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <AuditsListComponent queryRef={queryRef} />
-            </React.Suspense>
+            <>
+              {queryRef && (
+                <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                  <AuditsListComponent queryRef={queryRef} />
+                </React.Suspense>
+              )}
+            </>
           )}
-          </>
-)}
     </WidgetContainer>
   );
 };

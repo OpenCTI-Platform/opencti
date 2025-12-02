@@ -35,10 +35,10 @@ interface UserConfidenceLevelFieldProps {
   onFocus?: (name: string, value: string) => void
   editContext?:
     | readonly ({
-    readonly focusOn: string | null | undefined
-    readonly name: string
-  } | null)[]
-  | null
+      readonly focusOn: string | null | undefined
+      readonly name: string
+    } | null)[]
+    | null
   containerStyle?: Record<string, string | number>
   disabled?: boolean
   user?: UserEdition_user$data // only for edition

@@ -605,9 +605,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
       secondaryAction={data.is_inferred ? (
         <Tooltip
           title={
-              t_i18n('Inferred knowledge based on the rule ')
-              + (data.x_opencti_inferences?.[0]?.rule.name ?? '')
-            }
+            t_i18n('Inferred knowledge based on the rule ')
+            + (data.x_opencti_inferences?.[0]?.rule.name ?? '')
+          }
         >
           <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
         </Tooltip>

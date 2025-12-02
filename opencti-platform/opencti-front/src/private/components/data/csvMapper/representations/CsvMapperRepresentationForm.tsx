@@ -61,7 +61,7 @@ interface CsvMapperRepresentationFormProps
 }
 
 const CsvMapperRepresentationForm: FunctionComponent<
-CsvMapperRepresentationFormProps
+  CsvMapperRepresentationFormProps
 > = ({
   form,
   field,
@@ -182,11 +182,11 @@ CsvMapperRepresentationFormProps
             />
             <div style={{ marginTop: 20 }}>
               {field.name.startsWith('entity_representation') && (
-              <Field
-                component={CsvMapperConditionalEntityMapping}
-                representation={value}
-                representationName={name}
-              />
+                <Field
+                  component={CsvMapperConditionalEntityMapping}
+                  representation={value}
+                  representationName={name}
+                />
               )}
               <CsvMapperRepresentationAttributesForm
                 handleErrors={handleErrors}

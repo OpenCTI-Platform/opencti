@@ -39,7 +39,7 @@ interface ThreatActorIndividualDetailsChipsProps {
 }
 
 const ThreatActorIndividualDetailsChips: FunctionComponent<
-ThreatActorIndividualDetailsChipsProps
+  ThreatActorIndividualDetailsChipsProps
 > = ({
   data,
   relType,
@@ -80,18 +80,18 @@ ThreatActorIndividualDetailsChipsProps
       <div className="clearfix" />
       <FieldOrEmpty source={nodes}>
         {
-        nodes.map(({ id, to }) => (
-          <Button
-            key={id}
-            variant="outlined"
-            size="small"
-            href={`${path}/${to?.id}`}
-            style={{ margin: '0 5px 5px 0' }}
-          >
-            {to?.[field]}
-          </Button>
-        ))
-      }
+          nodes.map(({ id, to }) => (
+            <Button
+              key={id}
+              variant="outlined"
+              size="small"
+              href={`${path}/${to?.id}`}
+              style={{ margin: '0 5px 5px 0' }}
+            >
+              {to?.[field]}
+            </Button>
+          ))
+        }
       </FieldOrEmpty>
     </div>
   );

@@ -256,11 +256,11 @@ const GraphToolbarRemoveConfirm = ({
                       checked={andDelete}
                       onChange={() => setAndDelete((d) => !d)}
                     />
-                )}
+                  )}
                 />
               </FormGroup>
             </Alert>
-)
+          )
           }
 
           {totalToDelete > 0 && (

@@ -74,7 +74,7 @@ const dataSourceQuery = graphql`
 
 const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootDataSourcesSubscription>
+    GraphQLSubscriptionConfig<RootDataSourcesSubscription>
   >(
     () => ({
       subscription,

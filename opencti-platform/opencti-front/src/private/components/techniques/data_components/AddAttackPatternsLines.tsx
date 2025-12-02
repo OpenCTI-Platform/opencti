@@ -60,11 +60,11 @@ interface AddAttackPatternsLinesContainerProps {
 }
 
 const AddAttackPatternsLines: FunctionComponent<
-AddAttackPatternsLinesContainerProps
+  AddAttackPatternsLinesContainerProps
 > = ({ dataComponent, queryRef }) => {
   const { data } = usePreloadedPaginationFragment<
-  AddAttackPatternsLinesToDataComponentQuery,
-  AddAttackPatternsLinesToDataComponent_data$key
+    AddAttackPatternsLinesToDataComponentQuery,
+    AddAttackPatternsLinesToDataComponent_data$key
   >({
     linesQuery: addAttackPatternsLinesQuery,
     linesFragment: addAttackPatternsLinesFragment,

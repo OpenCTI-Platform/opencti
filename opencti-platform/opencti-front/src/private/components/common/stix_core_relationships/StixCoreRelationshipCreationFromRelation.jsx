@@ -471,10 +471,10 @@ class StixCoreRelationshipCreationFromRelation extends Component {
               }
               return !stixCoreObjectTypes
                 || stixCoreObjectTypes.length === 0 ? (
-                  this.renderFakeList()
-                ) : (
-                  <div> &nbsp; </div>
-                );
+                    this.renderFakeList()
+                  ) : (
+                    <div> &nbsp; </div>
+                  );
             }}
           />
           <StixDomainObjectCreation

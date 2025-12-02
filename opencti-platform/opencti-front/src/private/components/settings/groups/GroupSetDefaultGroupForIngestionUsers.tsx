@@ -52,7 +52,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
   const { t_i18n } = useFormatter();
   const [commitFieldPatch] = useApiMutation(groupSetDefaultGroupForIngestionUsersMutationFieldPatch);
   const [currentGroupForAutoIntegrationAssignation, setCurrentGroupForAutoIntegrationAssignation] = useState<
-  { id: string | undefined, name: string | undefined }>({ id: undefined, name: undefined });
+    { id: string | undefined, name: string | undefined }>({ id: undefined, name: undefined });
   const { setFieldValue } = useFormikContext();
   const { groups } = usePreloadedQuery(groupSetDefaultGroupForIngestionUsersQuery, queryRef);
 
@@ -101,10 +101,10 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
       </Typography>
       <Paper
         style={{
-      marginTop: 8,
-      padding: 20,
-      borderRadius: 4,
-    }}
+          marginTop: 8,
+          padding: 20,
+          borderRadius: 4,
+        }}
         className="paper-for-grid"
         variant="outlined"
       >
@@ -121,7 +121,7 @@ const GroupSetDefaultGroupForIngestionUsersComponent = ({ queryRef }: GroupSetDe
         />
       </Paper>
     </Grid>
-);
+  );
 };
 
 const GroupSetDefaultGroupForIngestionUsers = () => {

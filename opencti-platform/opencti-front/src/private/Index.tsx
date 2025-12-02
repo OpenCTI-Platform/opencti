@@ -109,10 +109,10 @@ const Index = ({ settings }: IndexProps) => {
               <Route
                 path="/"
                 element={draftContext?.id
-                ? (
-                  <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
-                )
-                : boundaryWrapper(Dashboard)}
+                  ? (
+                      <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
+                    )
+                  : boundaryWrapper(Dashboard)}
               />
               {/* Search need to be rework */}
               <Route path="/search/*" element={boundaryWrapper(RootSearch)} />

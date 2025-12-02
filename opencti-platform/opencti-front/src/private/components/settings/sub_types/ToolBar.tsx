@@ -103,7 +103,7 @@ const ToolBar: FunctionComponent<{
   const [value, setValue] = useState<boolean>(false);
   const [key, setKey] = useState<string>('');
   const [notAvailableSetting, setNotAvailableSetting] = useState<
-  EntitySetting[]
+    EntitySetting[]
   >([]);
   const [commit] = useApiMutation(entitySettingPatch);
   const handleOpen = () => setDisplay(true);
@@ -203,7 +203,7 @@ const ToolBar: FunctionComponent<{
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
                 === retrieveNotAvailableSetting('platform_entity_files_ref')
-                    .length
+                  .length
               }
               onClick={handleOpenFilesRef}
               color="primary"

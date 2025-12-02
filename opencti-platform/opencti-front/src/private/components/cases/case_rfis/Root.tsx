@@ -79,7 +79,7 @@ const caseRfiQuery = graphql`
 
 const RootCaseRfiComponent = ({ queryRef, caseId }) => {
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>
+    GraphQLSubscriptionConfig<RootCaseRfiCaseSubscription>
   >(
     () => ({
       subscription,
@@ -211,7 +211,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
           path="/knowledge"
           element={
             <Navigate to={`/dashboard/cases/rfis/${caseId}/knowledge/graph`} replace={true} />
-              }
+          }
         />
         <Route
           path="/content/*"

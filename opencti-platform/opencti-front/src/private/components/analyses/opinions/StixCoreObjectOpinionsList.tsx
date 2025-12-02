@@ -83,15 +83,15 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                 disablePadding
                 secondaryAction={opinion
                   && (
-                  <OpinionPopover
-                    opinion={opinion}
-                    variant="inList"
-                    onDelete={() => {
-                      onDelete();
-                      handleClose();
-                    }}
-                  />
-)
+                    <OpinionPopover
+                      opinion={opinion}
+                      variant="inList"
+                      onDelete={() => {
+                        onDelete();
+                        handleClose();
+                      }}
+                    />
+                  )
                 }
               >
                 <ListItemButton

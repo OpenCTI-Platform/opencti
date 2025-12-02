@@ -50,9 +50,9 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
   };
   const transition = theme.transitions?.create
     ? theme.transitions.create('width', {
-      easing: theme.transitions.easing?.sharp,
-      duration: theme.transitions.duration?.enteringScreen,
-    })
+        easing: theme.transitions.easing?.sharp,
+        duration: theme.transitions.duration?.enteringScreen,
+      })
     : undefined;
 
   const renderClassic = () => (

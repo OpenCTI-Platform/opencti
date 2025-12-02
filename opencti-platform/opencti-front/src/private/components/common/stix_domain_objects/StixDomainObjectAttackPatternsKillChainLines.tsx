@@ -69,11 +69,11 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
       .toLowerCase()
       .indexOf(searchTerm.toLowerCase()) !== -1
       || (n.x_mitre_id ?? '')
-      .toLowerCase()
-      .indexOf(searchTerm.toLowerCase()) !== -1
-      || (n.subattackPatterns_text ?? '')
-      .toLowerCase()
-      .indexOf(searchTerm.toLowerCase()) !== -1;
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1
+        || (n.subattackPatterns_text ?? '')
+          .toLowerCase()
+          .indexOf(searchTerm.toLowerCase()) !== -1;
 
   const killChainPhases = uniq((data.attackPatterns?.edges ?? [])
     .map((n) => (n.node.killChainPhases && n.node.killChainPhases.length > 0
@@ -131,10 +131,10 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                   >
                     {expandedLines[element.id]
                       === false ? (
-                        <ExpandMore />
-                      ) : (
-                        <ExpandLess />
-                      )}
+                          <ExpandMore />
+                        ) : (
+                          <ExpandLess />
+                        )}
                   </IconButton>
                 )}
               >
@@ -168,17 +168,17 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                 }}
                               >
                                 {coursesOfAction && (
-                                <IconButton
-                                  onClick={() => handleToggleLine(attackPattern.id)}
-                                  aria-haspopup="true"
-                                  size="large"
-                                >
-                                  {expandedLines[attackPattern.id] === false ? (
-                                    <ExpandMore />
-                                  ) : (
-                                    <ExpandLess />
-                                  )}
-                                </IconButton>
+                                  <IconButton
+                                    onClick={() => handleToggleLine(attackPattern.id)}
+                                    aria-haspopup="true"
+                                    size="large"
+                                  >
+                                    {expandedLines[attackPattern.id] === false ? (
+                                      <ExpandMore />
+                                    ) : (
+                                      <ExpandLess />
+                                    )}
+                                  </IconButton>
                                 )}
                               </div>
                             )}
@@ -208,17 +208,17 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                   </span>
                                 )}
                                 secondary={
-                                attackPattern.description
-                                && attackPattern.description.length > 0 ? (
-                                  <MarkdownDisplay
-                                    content={attackPattern.description}
-                                    remarkGfmPlugin={true}
-                                    commonmark={true}
-                                  />
-                                  ) : (
-                                    t_i18n('No description of this usage')
-                                  )
-                              }
+                                  attackPattern.description
+                                  && attackPattern.description.length > 0 ? (
+                                        <MarkdownDisplay
+                                          content={attackPattern.description}
+                                          remarkGfmPlugin={true}
+                                          commonmark={true}
+                                        />
+                                      ) : (
+                                        t_i18n('No description of this usage')
+                                      )
+                                }
                               />
                               <ItemMarkings
                                 variant="inList"
@@ -228,60 +228,60 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                             </ListItemButton>
                           </ListItem>
                           {coursesOfAction && (
-                          <Collapse
-                            in={expandedLines[attackPattern.id] !== false}
-                          >
-                            <List>
-                              {((attackPattern.coursesOfAction?.edges ?? [])
-                                .filter((n) => !!n) as NonNullableCoursesOfAction[])
-                                .map(
-                                  (courseOfActionEdge) => {
-                                    const courseOfAction = courseOfActionEdge.node;
-                                    const courseOfActionLink = `/dashboard/techniques/courses_of_action/${courseOfAction.id}`;
-                                    return (
-                                      <ListItemButton
-                                        key={courseOfAction.id}
-                                        style={{
-                                          paddingLeft: theme.spacing(8),
-                                        }}
-                                        divider={true}
-                                        dense={true}
-                                        component={Link}
-                                        to={courseOfActionLink}
-                                      >
-                                        <ListItemIcon>
-                                          <ProgressWrench
-                                            color="primary"
-                                            role="img"
+                            <Collapse
+                              in={expandedLines[attackPattern.id] !== false}
+                            >
+                              <List>
+                                {((attackPattern.coursesOfAction?.edges ?? [])
+                                  .filter((n) => !!n) as NonNullableCoursesOfAction[])
+                                  .map(
+                                    (courseOfActionEdge) => {
+                                      const courseOfAction = courseOfActionEdge.node;
+                                      const courseOfActionLink = `/dashboard/techniques/courses_of_action/${courseOfAction.id}`;
+                                      return (
+                                        <ListItemButton
+                                          key={courseOfAction.id}
+                                          style={{
+                                            paddingLeft: theme.spacing(8),
+                                          }}
+                                          divider={true}
+                                          dense={true}
+                                          component={Link}
+                                          to={courseOfActionLink}
+                                        >
+                                          <ListItemIcon>
+                                            <ProgressWrench
+                                              color="primary"
+                                              role="img"
+                                            />
+                                          </ListItemIcon>
+                                          <ListItemText
+                                            primary={courseOfAction.name}
+                                            secondary={
+                                              courseOfAction.description
+                                              && courseOfAction.description
+                                                .length > 0 ? (
+                                                    <MarkdownDisplay
+                                                      content={
+                                                        courseOfAction.description
+                                                      }
+                                                      remarkGfmPlugin={true}
+                                                      commonmark={true}
+                                                    >
+                                                    </MarkdownDisplay>
+                                                  ) : (
+                                                    t_i18n(
+                                                      'No description of this course of action',
+                                                    )
+                                                  )
+                                            }
                                           />
-                                        </ListItemIcon>
-                                        <ListItemText
-                                          primary={courseOfAction.name}
-                                          secondary={
-                                            courseOfAction.description
-                                            && courseOfAction.description
-                                              .length > 0 ? (
-                                                <MarkdownDisplay
-                                                  content={
-                                                      courseOfAction.description
-                                                    }
-                                                  remarkGfmPlugin={true}
-                                                  commonmark={true}
-                                                >
-                                                </MarkdownDisplay>
-                                              ) : (
-                                                t_i18n(
-                                                  'No description of this course of action',
-                                                )
-                                              )
-                                          }
-                                        />
-                                      </ListItemButton>
-                                    );
-                                  },
-                                )}
-                            </List>
-                          </Collapse>
+                                        </ListItemButton>
+                                      );
+                                    },
+                                  )}
+                              </List>
+                            </Collapse>
                           )}
                         </div>
                       );

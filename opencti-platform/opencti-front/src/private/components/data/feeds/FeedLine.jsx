@@ -116,12 +116,12 @@ class FeedLineLineComponent extends Component {
                 >
                   {isFilterGroupNotEmpty(filters)
                     ? (
-                      <FilterIconButton
-                        filters={filters}
-                        styleNumber={3}
-                        dataColumns={dataColumns}
-                      />
-)
+                        <FilterIconButton
+                          filters={filters}
+                          styleNumber={3}
+                          dataColumns={dataColumns}
+                        />
+                      )
                     : '-'}
                 </div>
               </>

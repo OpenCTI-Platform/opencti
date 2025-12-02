@@ -397,15 +397,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       {t_i18n('2FA state')}
                     </Typography>
                     {user.otp_activated && (
-                    <IconButton
-                      classes={{ root: classes.floatingButton }}
-                      color="primary"
-                      onClick={otpUserDeactivation}
-                      aria-label="Delete all"
-                      size="small"
-                    >
-                      <DeleteForeverOutlined fontSize="small" />
-                    </IconButton>
+                      <IconButton
+                        classes={{ root: classes.floatingButton }}
+                        color="primary"
+                        onClick={otpUserDeactivation}
+                        aria-label="Delete all"
+                        size="small"
+                      >
+                        <DeleteForeverOutlined fontSize="small" />
+                      </IconButton>
                     )}
                     <div className="clearfix" />
                     <pre style={{ margin: 0 }}>
@@ -422,14 +422,14 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     </Typography>
                     {user.user_service_account
                       ? (
-                        <Chip
-                          variant="outlined"
-                          label={t_i18n('Service account')}
-                          style={{
-                            borderRadius: 4,
-                            width: 150 }}
-                        />
-)
+                          <Chip
+                            variant="outlined"
+                            label={t_i18n('Service account')}
+                            style={{
+                              borderRadius: 4,
+                              width: 150 }}
+                          />
+                        )
                       : '-'}
                   </Grid>
                   <Grid item xs={4}>
@@ -531,20 +531,20 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </>
               )}
               {isServiceAccount && (
-              <>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Created by')}
-                  </Typography>
-                  { creatorName }
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t_i18n('Creation date')}
-                  </Typography>
-                  {creationDate || '-'}
-                </Grid>
-              </>
+                <>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Created by')}
+                    </Typography>
+                    { creatorName }
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {t_i18n('Creation date')}
+                    </Typography>
+                    {creationDate || '-'}
+                  </Grid>
+                </>
               )}
             </Grid>
           </Paper>
@@ -642,9 +642,9 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                                 ?? []
                               ).includes(user.id)
                                 ? (
-                                  theme.palette
-                                    .warning as SimplePaletteColorOptions
-                                ).main
+                                    theme.palette
+                                      .warning as SimplePaletteColorOptions
+                                  ).main
                                 : theme.palette.primary.main
                             }
                           />
@@ -719,11 +719,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 </FieldOrEmpty>
               </Grid>
               {!isServiceAccount && (
-              <Grid item xs={6}>
-                <HiddenTypesChipList
-                  hiddenTypes={user.default_hidden_types ?? []}
-                />
-              </Grid>
+                <Grid item xs={6}>
+                  <HiddenTypesChipList
+                    hiddenTypes={user.default_hidden_types ?? []}
+                  />
+                </Grid>
               )}
               <Grid item xs={6}>
                 <Typography
@@ -740,7 +740,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           </Paper>
         </Grid>
         {!isServiceAccount && (
-        <Triggers recipientId={user.id} filterKey="authorized_members.id" />
+          <Triggers recipientId={user.id} filterKey="authorized_members.id" />
         )}
         <Grid item xs={6} style={{ marginTop: 10 }}>
           <Typography variant="h4" gutterBottom={true} style={{ paddingBottom: '21px' }}>

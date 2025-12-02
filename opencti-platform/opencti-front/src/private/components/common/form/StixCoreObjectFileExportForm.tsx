@@ -280,178 +280,178 @@ const StixCoreObjectFileExportForm = ({
               </DialogTitle>
               <DialogContent>
                 {stepIndex === 0 && (
-                <Grid
-                  container={true}
-                  spacing={3}
-                  style={{ marginTop: 0, marginBottom: 0 }}
-                >
-                  {connectorScopes.map((scope) => (
-                    <Grid key={scope} item xs={4}>
-                      <Card
-                        variant="outlined"
-                        style={{
-                          height: 100,
-                          textAlign: 'center',
-                        }}
-                      >
-                        <CardActionArea
-                          onClick={() => selectFormat(setFieldValue, scope)}
-                          style={{ height: '100%' }}
-                          aria-label={t_i18n(scope)}
+                  <Grid
+                    container={true}
+                    spacing={3}
+                    style={{ marginTop: 0, marginBottom: 0 }}
+                  >
+                    {connectorScopes.map((scope) => (
+                      <Grid key={scope} item xs={4}>
+                        <Card
+                          variant="outlined"
+                          style={{
+                            height: 100,
+                            textAlign: 'center',
+                          }}
                         >
-                          <CardContent>
-                            {renderIcon(scope)}
-                            <Typography
-                              gutterBottom
-                              variant="body1"
-                              style={{ marginTop: 8 }}
-                            >
-                              {t_i18n(scope)}
-                            </Typography>
-                          </CardContent>
-                        </CardActionArea>
-                      </Card>
-                    </Grid>
-                  ))}
-                  {isContainer && fullyActive && (
-                    <Grid item xs={4}>
-                      <Card
-                        variant="outlined"
-                        style={{
-                          height: 100,
-                          textAlign: 'center',
-                        }}
-                      >
-                        <EETooltip forAi={true} title={t_i18n('Ask AI (multiple formats supported)')}>
                           <CardActionArea
-                            onClick={() => (isEnterpriseEdition && fullyActive ? selectFormat(setFieldValue, 'ai') : null)}
+                            onClick={() => selectFormat(setFieldValue, scope)}
                             style={{ height: '100%' }}
-                            aria-label={t_i18n('Ask AI')}
+                            aria-label={t_i18n(scope)}
                           >
                             <CardContent>
-                              {renderIcon('ai')}
+                              {renderIcon(scope)}
                               <Typography
                                 gutterBottom
                                 variant="body1"
                                 style={{ marginTop: 8 }}
                               >
-                                {t_i18n('Ask AI (multiple formats supported)')}
+                                {t_i18n(scope)}
                               </Typography>
                             </CardContent>
                           </CardActionArea>
-                        </EETooltip>
-                      </Card>
-                    </Grid>
-                  )}
-                </Grid>
+                        </Card>
+                      </Grid>
+                    ))}
+                    {isContainer && fullyActive && (
+                      <Grid item xs={4}>
+                        <Card
+                          variant="outlined"
+                          style={{
+                            height: 100,
+                            textAlign: 'center',
+                          }}
+                        >
+                          <EETooltip forAi={true} title={t_i18n('Ask AI (multiple formats supported)')}>
+                            <CardActionArea
+                              onClick={() => (isEnterpriseEdition && fullyActive ? selectFormat(setFieldValue, 'ai') : null)}
+                              style={{ height: '100%' }}
+                              aria-label={t_i18n('Ask AI')}
+                            >
+                              <CardContent>
+                                {renderIcon('ai')}
+                                <Typography
+                                  gutterBottom
+                                  variant="body1"
+                                  style={{ marginTop: 8 }}
+                                >
+                                  {t_i18n('Ask AI (multiple formats supported)')}
+                                </Typography>
+                              </CardContent>
+                            </CardActionArea>
+                          </EETooltip>
+                        </Card>
+                      </Grid>
+                    )}
+                  </Grid>
                 )}
                 {stepIndex === 1 && (
-                <>
-                  <Field
-                    component={AutocompleteField}
-                    name="connector"
-                    disabled={!values.format}
-                    fullWidth={true}
-                    style={fieldSpacingContainerStyle}
-                    options={connectors}
-                    getOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
-                    renderOption={(
-                      props: React.HTMLAttributes<HTMLLIElement>,
-                      option: FieldOption,
-                    ) => <li {...props}>{option.label}</li>}
-                    textfieldprops={{ label: t_i18n('Connector') }}
-                    optionLength={80}
-                  />
-                  {values.connector && (
                   <>
-                    {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && (
                     <Field
                       component={AutocompleteField}
-                      name="template"
+                      name="connector"
+                      disabled={!values.format}
                       fullWidth={true}
                       style={fieldSpacingContainerStyle}
-                      options={templates}
+                      options={connectors}
+                      getOptionDisabled={(option: ConnectorOption) => !isConnectorValid(option, values.format)}
                       renderOption={(
                         props: React.HTMLAttributes<HTMLLIElement>,
                         option: FieldOption,
                       ) => <li {...props}>{option.label}</li>}
-                      textfieldprops={{ label: t_i18n('Template') }}
+                      textfieldprops={{ label: t_i18n('Connector') }}
                       optionLength={80}
                     />
+                    {values.connector && (
+                      <>
+                        {values.connector.value === BUILT_IN_FROM_TEMPLATE.value && (
+                          <Field
+                            component={AutocompleteField}
+                            name="template"
+                            fullWidth={true}
+                            style={fieldSpacingContainerStyle}
+                            options={templates}
+                            renderOption={(
+                              props: React.HTMLAttributes<HTMLLIElement>,
+                              option: FieldOption,
+                            ) => <li {...props}>{option.label}</li>}
+                            textfieldprops={{ label: t_i18n('Template') }}
+                            optionLength={80}
+                          />
+                        )}
+                        {values.connector.value === BUILT_IN_HTML_TO_PDF.value && (
+                          <Field
+                            component={AutocompleteField}
+                            name="fileToExport"
+                            fullWidth={true}
+                            style={fieldSpacingContainerStyle}
+                            options={fileOptions}
+                            renderOption={(
+                              props: React.HTMLAttributes<HTMLLIElement>,
+                              option: FieldOption,
+                            ) => <li {...props}>{option.label}</li>}
+                            textfieldprops={{
+                              label: t_i18n('File to export'),
+                              helperText: t_i18n('A FINTEL export will contain extra information like markings and creation date'),
+                            }}
+                            optionLength={80}
+                          />
+                        )}
+                        {((values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
+                          || (values.connector.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/')))
+                        && (
+                          <FintelDesignField
+                            name="fintelDesign"
+                            label={t_i18n('Fintel design')}
+                            style={fieldSpacingContainerStyle}
+                          />
+                        )}
+                        {!isBuiltInConnector(values.connector.value) && (
+                          <Field
+                            component={SelectField}
+                            variant="standard"
+                            name="type"
+                            aria-label="TYPE"
+                            label={t_i18n('Export type')}
+                            fullWidth={true}
+                            containerstyle={fieldSpacingContainerStyle}
+                          >
+                            <MenuItem value="simple">
+                              {t_i18n('Simple export (just the entity)')}
+                            </MenuItem>
+                            <MenuItem value="full">
+                              {t_i18n('Full export (entity and first neighbours)')}
+                            </MenuItem>
+                          </Field>
+                        )}
+                        {isBuiltInConnector(values.connector.value) && (
+                          <Field
+                            component={TextField}
+                            variant="standard"
+                            name="exportFileName"
+                            label={t_i18n('Export file name')}
+                            style={fieldSpacingContainerStyle}
+                          />
+                        )}
+                        {values.connector.value !== BUILT_IN_HTML_TO_PDF.value && (
+                          <ObjectMarkingField
+                            name="contentMaxMarkings"
+                            label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
+                            style={fieldSpacingContainerStyle}
+                            setFieldValue={setFieldValue}
+                            limitToMaxSharing
+                            helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
+                          />
+                        )}
+                        <ObjectMarkingField
+                          name="fileMarkings"
+                          label={t_i18n('File marking definition levels')}
+                          style={fieldSpacingContainerStyle}
+                          setFieldValue={setFieldValue}
+                        />
+                      </>
                     )}
-                    {values.connector.value === BUILT_IN_HTML_TO_PDF.value && (
-                    <Field
-                      component={AutocompleteField}
-                      name="fileToExport"
-                      fullWidth={true}
-                      style={fieldSpacingContainerStyle}
-                      options={fileOptions}
-                      renderOption={(
-                        props: React.HTMLAttributes<HTMLLIElement>,
-                        option: FieldOption,
-                      ) => <li {...props}>{option.label}</li>}
-                      textfieldprops={{
-                        label: t_i18n('File to export'),
-                        helperText: t_i18n('A FINTEL export will contain extra information like markings and creation date'),
-                      }}
-                      optionLength={80}
-                    />
-                    )}
-                    {((values.connector.value === BUILT_IN_FROM_TEMPLATE.value && values.format === 'application/pdf')
-                      || (values.connector.value === BUILT_IN_HTML_TO_PDF.value && values.fileToExport?.value.startsWith('fromTemplate/')))
-                    && (
-                    <FintelDesignField
-                      name="fintelDesign"
-                      label={t_i18n('Fintel design')}
-                      style={fieldSpacingContainerStyle}
-                    />
-                      )}
-                    {!isBuiltInConnector(values.connector.value) && (
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="type"
-                      aria-label="TYPE"
-                      label={t_i18n('Export type')}
-                      fullWidth={true}
-                      containerstyle={fieldSpacingContainerStyle}
-                    >
-                      <MenuItem value="simple">
-                        {t_i18n('Simple export (just the entity)')}
-                      </MenuItem>
-                      <MenuItem value="full">
-                        {t_i18n('Full export (entity and first neighbours)')}
-                      </MenuItem>
-                    </Field>
-                    )}
-                    {isBuiltInConnector(values.connector.value) && (
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="exportFileName"
-                      label={t_i18n('Export file name')}
-                      style={fieldSpacingContainerStyle}
-                    />
-                    )}
-                    {values.connector.value !== BUILT_IN_HTML_TO_PDF.value && (
-                    <ObjectMarkingField
-                      name="contentMaxMarkings"
-                      label={t_i18n(CONTENT_MAX_MARKINGS_TITLE)}
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                      limitToMaxSharing
-                      helpertext={t_i18n(CONTENT_MAX_MARKINGS_HELPERTEXT)}
-                    />
-                    )}
-                    <ObjectMarkingField
-                      name="fileMarkings"
-                      label={t_i18n('File marking definition levels')}
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                    />
                   </>
-                  )}
-                </>
                 )}
               </DialogContent>
               <DialogActions>

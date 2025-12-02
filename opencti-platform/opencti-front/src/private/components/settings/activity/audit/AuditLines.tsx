@@ -96,8 +96,8 @@ const AuditLines: FunctionComponent<AuditLinesProps> = ({
   selectAll,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  AuditLinesPaginationQuery,
-  AuditLines_data$key
+    AuditLinesPaginationQuery,
+    AuditLines_data$key
   >({
     linesQuery: AuditLinesQuery,
     linesFragment: AuditLineFragment,

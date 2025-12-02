@@ -120,8 +120,8 @@ export const GraphProvider = ({
   useEffect(() => {
     const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
       ? objects.filter((o) => (
-        o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
-      ))
+          o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
+        ))
       : objects;
     // Rebuild graph data when input data has changed.
     setGraphData(context === 'correlation'

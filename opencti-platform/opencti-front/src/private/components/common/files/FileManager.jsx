@@ -376,7 +376,7 @@ const FileManager = ({
                           setFieldValue={setFieldValue}
                         />
                       </>
-                      )
+                    )
                   }
                 </DialogContent>
                 <DialogActions>

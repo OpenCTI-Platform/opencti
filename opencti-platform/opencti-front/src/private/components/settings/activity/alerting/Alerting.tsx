@@ -103,8 +103,8 @@ const AlertingLines: FunctionComponent<AlertingLinesProps> = ({
   onLabelClick,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  AlertingPaginationQuery,
-  AlertingLines_data$key
+    AlertingPaginationQuery,
+    AlertingLines_data$key
   >({
     linesQuery: alertingQuery,
     linesFragment: alertingFragment,

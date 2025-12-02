@@ -19,16 +19,16 @@ import { FilterSearchContext, useAvailableFilterKeysForEntityTypes } from '../..
 type DataTableInternalFiltersProps = Pick<DataTableProps,
   | 'additionalFilters'
   | 'entityTypes'> & {
-  hideSearch?: boolean
-  hideFilters?: boolean
-  availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
-  availableEntityTypes?: string[]
-  availableRelationshipTypes?: string[]
-  searchContextFinal?: FilterSearchContext
-  additionalHeaderButtons?: ReactNode[]
-  currentView?: string
-  exportContext?: { entity_type: string, entity_id?: string }
-};
+    hideSearch?: boolean
+    hideFilters?: boolean
+    availableRelationFilterTypes?: FilterIconButtonProps['availableRelationFilterTypes']
+    availableEntityTypes?: string[]
+    availableRelationshipTypes?: string[]
+    searchContextFinal?: FilterSearchContext
+    additionalHeaderButtons?: ReactNode[]
+    currentView?: string
+    exportContext?: { entity_type: string, entity_id?: string }
+  };
 
 const DataTableInternalFilters = ({
   additionalFilters,
@@ -193,12 +193,12 @@ type OCTIDataTableProps = Pick<DataTableProps,
   | 'selectOnLineClick'
   | 'createButton'
   | 'entityTypes'> & {
-  lineFragment: GraphQLTaggedNode
-  preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>
-  exportContext?: { entity_type: string, entity_id?: string }
-  globalSearch?: string
-  createButton?: ReactNode
-} & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
+    lineFragment: GraphQLTaggedNode
+    preloadedPaginationProps: UsePreloadedPaginationFragment<OperationType>
+    exportContext?: { entity_type: string, entity_id?: string }
+    globalSearch?: string
+    createButton?: ReactNode
+  } & DataTableInternalFiltersProps & DataTableInternalToolbarProps;
 
 const DataTable = (props: OCTIDataTableProps) => {
   const {
@@ -262,7 +262,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             exportContext={exportContext}
             searchContextFinal={computedSearchContextFinal}
           />
-      )}
+        )}
         dataTableToolBarComponent={(
           <DataTableInternalToolbar
             entityTypes={entityTypes}
@@ -274,7 +274,7 @@ const DataTable = (props: OCTIDataTableProps) => {
             removeFromDraftEnabled={removeFromDraftEnabled}
             markAsReadEnabled={markAsReadEnabled}
           />
-      )}
+        )}
       />
     </>
   );

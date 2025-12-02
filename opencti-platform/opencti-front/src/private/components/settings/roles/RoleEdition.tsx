@@ -72,10 +72,10 @@ const RoleEditionDrawer: FunctionComponent<RoleEditionDrawerProps> = ({
           </Box>
           {currentTab === 0 && <RoleEditionOverview role={role} context={role.editContext} />}
           {currentTab === 1 && queryRef && (
-          <RoleEditionCapabilities role={role} queryRef={queryRef} />
-        )}
+            <RoleEditionCapabilities role={role} queryRef={queryRef} />
+          )}
         </>
-)
+      )
         : (<Loader />)}
     </Drawer>
   );

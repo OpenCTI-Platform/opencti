@@ -126,7 +126,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
                         height={15}
                         style={{ marginBottom: 10 }}
                       />
-                  )}
+                    )}
                     secondary={(
                       <Skeleton
                         animation="wave"
@@ -134,12 +134,12 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
                         width="90%"
                         height={15}
                       />
-                  )}
+                    )}
                   />
                 </ListItem>
-            ))}
+              ))}
             </List>
-)}
+          )}
           >
             <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
               stixObjectOrStixRelationshipId={stixObjectOrStixRelationshipId}

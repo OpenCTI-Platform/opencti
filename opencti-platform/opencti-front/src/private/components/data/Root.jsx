@@ -240,10 +240,10 @@ const Root = () => {
           )}
         />
         {isRightMenuManagementEnable && (
-        <Route
-          path="/restriction"
-          element={<Navigate to="/dashboard/data/restriction/restricted" replace={true} />}
-        />
+          <Route
+            path="/restriction"
+            element={<Navigate to="/dashboard/data/restriction/restricted" replace={true} />}
+          />
         )}
         <Route
           path="/restriction/*"

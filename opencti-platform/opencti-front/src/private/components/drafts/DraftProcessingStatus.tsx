@@ -54,7 +54,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
             />
           </Badge>
         </Tooltip>
-)}
+      )}
       <Drawer
         title={t_i18n('Draft processes')}
         open={displayProcesses}

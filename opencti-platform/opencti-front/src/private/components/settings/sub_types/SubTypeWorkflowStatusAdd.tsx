@@ -46,7 +46,7 @@ interface SubTypeWorkflowStatusAddProps {
 }
 
 const SubTypeWorkflowStatusAdd: FunctionComponent<
-SubTypeWorkflowStatusAddProps
+  SubTypeWorkflowStatusAddProps
 > = ({ display, subTypeId, scope }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

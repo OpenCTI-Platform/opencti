@@ -250,14 +250,14 @@ const FileWorksComponent = ({
           <Tooltip
             title={messageToDisplay}
             slotProps={{
-            tooltip: {
-              sx: {
-                maxWidth: 'none',
-                minWidth: '400px',
-                overflow: 'auto',
+              tooltip: {
+                sx: {
+                  maxWidth: 'none',
+                  minWidth: '400px',
+                  overflow: 'auto',
+                },
               },
-            },
-          }}
+            }}
           >
             <Chip
               variant="outlined"
@@ -330,31 +330,31 @@ const FileWorksComponent = ({
 
       )}
       {!!displayDelete && (
-      <Dialog
-        open={!!displayDelete}
-        slotProps={{ paper: { elevation: 1 } }}
-        slots={{ transition: Transition }}
-        onClose={() => setDisplayDelete(undefined)}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t_i18n('Do you want to remove this job?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDisplayDelete(undefined)}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={() => deleteWork(displayDelete)}
-            disabled={deleting}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-)}
+        <Dialog
+          open={!!displayDelete}
+          slotProps={{ paper: { elevation: 1 } }}
+          slots={{ transition: Transition }}
+          onClose={() => setDisplayDelete(undefined)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t_i18n('Do you want to remove this job?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setDisplayDelete(undefined)}>
+              {t_i18n('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={() => deleteWork(displayDelete)}
+              disabled={deleting}
+            >
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </div>
   );
 };

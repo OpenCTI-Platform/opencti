@@ -38,8 +38,8 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
           variant="h3"
           gutterBottom
           sx={{
-          marginTop: '20px',
-        }}
+            marginTop: '20px',
+          }}
         >
           {t_i18n('Last used domains')}
         </Typography>
@@ -48,8 +48,8 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
           variant="h3"
           gutterBottom
           sx={{
-          marginTop: '20px',
-        }}
+            marginTop: '20px',
+          }}
         >
           {t_i18n('Last used infrastructures')}
         </Typography>

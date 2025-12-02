@@ -94,26 +94,26 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
         </List>
       )
         : (
-          <div
-            style={{
-              display: 'table',
-              height: '100%',
-              width: '100%',
-            }}
-          >
-            <span
+            <div
               style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
+                display: 'table',
+                height: '100%',
+                width: '100%',
               }}
             >
-              {isRelationLog
-                ? t_i18n('No relations history about this entity.')
-                : t_i18n('No history about this entity.')}
-            </span>
-          </div>
-        )}
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {isRelationLog
+                  ? t_i18n('No relations history about this entity.')
+                  : t_i18n('No history about this entity.')}
+              </span>
+            </div>
+          )}
     </Paper>
   );
 };

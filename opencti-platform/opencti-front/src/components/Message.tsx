@@ -124,7 +124,7 @@ const Message = () => {
           <Alert severity="error" onClose={() => handleCloseMessage()}>
             {text}
           </Alert>
-);
+        );
       case 'nlq':
         return (
           <Alert
@@ -134,19 +134,19 @@ const Message = () => {
           >
             {text}
           </Alert>
-);
+        );
       case 'message':
         return (
           <Alert severity="success" onClose={() => handleCloseMessage()}>
             {text}
           </Alert>
-);
+        );
       default:
         return (
           <Alert severity="success" onClose={() => handleCloseMessage()}>
             {text}
           </Alert>
-);
+        );
     }
   };
 
@@ -161,11 +161,11 @@ const Message = () => {
         {displayAlert()}
       </Snackbar>
       {isRequestAccessFeatureEnabled && (
-      <RequestAccessDialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        entitiesIds={entityIds}
-      />
+        <RequestAccessDialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          entitiesIds={entityIds}
+        />
       )}
     </>
   );

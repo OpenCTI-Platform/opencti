@@ -276,9 +276,9 @@ const StixDomainObjectEditionContainer = (props) => {
   const createdBy = R.pathOr(null, ['createdBy', 'name'], stixDomainObject) === null
     ? ''
     : {
-      label: R.pathOr(null, ['createdBy', 'name'], stixDomainObject),
-      value: R.pathOr(null, ['createdBy', 'id'], stixDomainObject),
-    };
+        label: R.pathOr(null, ['createdBy', 'name'], stixDomainObject),
+        value: R.pathOr(null, ['createdBy', 'id'], stixDomainObject),
+      };
   const objectMarking = convertMarkings(stixDomainObject);
   let initialValues = R.pipe(
     R.assoc('createdBy', createdBy),

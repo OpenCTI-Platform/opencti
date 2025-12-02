@@ -206,59 +206,59 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
             (labels ? R.take(12, labels) : []),
           )}
           {labels && labels.length > 12 && (
-          <Tooltip title={t_i18n('See more')}>
-            <Chip
-              variant="outlined"
-              classes={{ root: classes.labelMore }}
-              label="..."
-              onClick={handleOpenLabels}
-            />
-          </Tooltip>
+            <Tooltip title={t_i18n('See more')}>
+              <Chip
+                variant="outlined"
+                classes={{ root: classes.labelMore }}
+                label="..."
+                onClick={handleOpenLabels}
+              />
+            </Tooltip>
           )}
           {labels && labels.length > 12 && (
-          <Dialog
-            slotProps={{ paper: { elevation: 1 } }}
-            open={openLabels}
-            slots={{ transition: Transition }}
-            onClose={handleCloseLabels}
-            fullWidth={true}
-            maxWidth="md"
-          >
-            <DialogTitle>{t_i18n('All labels')}</DialogTitle>
-            <DialogContent>
-              {map(
-                (label) => (
-                  <Tooltip key={label.id} title={label.value}>
-                    <Chip
-                      variant="outlined"
-                      classes={{ root: classes.label }}
-                      label={truncate(label.value, 25)}
-                      style={{
-                        color: label.color,
-                        borderColor: label.color,
-                        backgroundColor: hexToRGB(label.color),
-                      }}
-                      onDelete={canUpdateKnowledge ? () => (enableReferences
-                        ? handleOpenCommitDelete(label)
-                        : handleRemoveLabel(label.id)) : undefined}
-                      deleteIcon={(
-                        <CancelOutlined
-                          className={classes.deleteIcon}
-                          style={{ color: label.color }}
-                        />
-                      )}
-                    />
-                  </Tooltip>
-                ),
-                labels,
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseLabels}>
-                {t_i18n('Close')}
-              </Button>
-            </DialogActions>
-          </Dialog>
+            <Dialog
+              slotProps={{ paper: { elevation: 1 } }}
+              open={openLabels}
+              slots={{ transition: Transition }}
+              onClose={handleCloseLabels}
+              fullWidth={true}
+              maxWidth="md"
+            >
+              <DialogTitle>{t_i18n('All labels')}</DialogTitle>
+              <DialogContent>
+                {map(
+                  (label) => (
+                    <Tooltip key={label.id} title={label.value}>
+                      <Chip
+                        variant="outlined"
+                        classes={{ root: classes.label }}
+                        label={truncate(label.value, 25)}
+                        style={{
+                          color: label.color,
+                          borderColor: label.color,
+                          backgroundColor: hexToRGB(label.color),
+                        }}
+                        onDelete={canUpdateKnowledge ? () => (enableReferences
+                          ? handleOpenCommitDelete(label)
+                          : handleRemoveLabel(label.id)) : undefined}
+                        deleteIcon={(
+                          <CancelOutlined
+                            className={classes.deleteIcon}
+                            style={{ color: label.color }}
+                          />
+                        )}
+                      />
+                    </Tooltip>
+                  ),
+                  labels,
+                )}
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseLabels}>
+                  {t_i18n('Close')}
+                </Button>
+              </DialogActions>
+            </Dialog>
           )}
         </FieldOrEmpty>
         {enableReferences && (

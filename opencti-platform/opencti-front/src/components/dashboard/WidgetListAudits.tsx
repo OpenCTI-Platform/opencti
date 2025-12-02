@@ -35,12 +35,12 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
     <div
       id="container"
       style={{
-      width: '100%',
-      height: '100%',
-      overflow: 'auto',
-      paddingBottom: 10,
-      marginBottom: 10,
-    }}
+        width: '100%',
+        height: '100%',
+        overflow: 'auto',
+        paddingBottom: 10,
+        marginBottom: 10,
+      }}
     >
       <List style={{ marginTop: -10 }}>
         {data.map((auditEdge) => {

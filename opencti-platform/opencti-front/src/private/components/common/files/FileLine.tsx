@@ -271,126 +271,126 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         secondaryAction={(
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {!isProgress && !isFail && !isOutdated && (
-            <ItemMarkings
-              variant="inList"
-              markingDefinitions={fileMarkings}
-              limit={1}
-            />
+              <ItemMarkings
+                variant="inList"
+                markingDefinitions={fileMarkings}
+                limit={1}
+              />
             )}
             {!disableImport && (
-            <Tooltip title={t_i18n('Launch an import of this file')}>
-              <span>
-                <IconButton
-                  disabled={isProgress || !isImportActive()}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    if (handleOpenImport && file) {
-                      handleOpenImport(file);
-                    }
-                  }}
-                  aria-haspopup="true"
-                  color={nested ? 'inherit' : 'primary'}
-                  size="small"
-                >
-                  <ProgressUpload fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-            )}
-            {!directDownload && !isFail && (
-            <>
-              <Tooltip title={t_i18n('Download this file')}>
+              <Tooltip title={t_i18n('Launch an import of this file')}>
                 <span>
                   <IconButton
-                    disabled={isProgress}
+                    disabled={isProgress || !isImportActive()}
                     onClick={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      if (isWarning) {
-                        handleOpen(event);
-                      } else {
-                        handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`);
+                      if (handleOpenImport && file) {
+                        handleOpenImport(file);
                       }
                     }}
                     aria-haspopup="true"
                     color={nested ? 'inherit' : 'primary'}
                     size="small"
                   >
-                    <GetAppOutlined fontSize="small" />
+                    <ProgressUpload fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                <MenuItem
-                  dense={true}
-                  onClick={() => handleLink(
-                    `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
-                  )
-                  }
+            )}
+            {!directDownload && !isFail && (
+              <>
+                <Tooltip title={t_i18n('Download this file')}>
+                  <span>
+                    <IconButton
+                      disabled={isProgress}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        if (isWarning) {
+                          handleOpen(event);
+                        } else {
+                          handleLink(`${APP_BASE_PATH}/storage/get/${encodedFilePath}`);
+                        }
+                      }}
+                      aria-haspopup="true"
+                      color={nested ? 'inherit' : 'primary'}
+                      size="small"
+                    >
+                      <GetAppOutlined fontSize="small" />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+                <Menu
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleClose}
                 >
-                  {t_i18n('Encrypted archive')}
-                </MenuItem>
-                <MenuItem
-                  dense={true}
-                  onClick={() => handleLink(
-                    `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
-                  )
-                  }
-                >
-                  {t_i18n('Raw file')}
-                </MenuItem>
-              </Menu>
-            </>
+                  <MenuItem
+                    dense={true}
+                    onClick={() => handleLink(
+                      `${APP_BASE_PATH}/storage/encrypted/${encodedFilePath}`,
+                    )
+                    }
+                  >
+                    {t_i18n('Encrypted archive')}
+                  </MenuItem>
+                  <MenuItem
+                    dense={true}
+                    onClick={() => handleLink(
+                      `${APP_BASE_PATH}/storage/get/${encodedFilePath}`,
+                    )
+                    }
+                  >
+                    {t_i18n('Raw file')}
+                  </MenuItem>
+                </Menu>
+              </>
             )}
             {!isExternalReferenceAttachment && (
-            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-              <>
-                {isFail || isOutdated ? (
-                  <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
-                    <span>
-                      <IconButton
-                        disabled={isProgress}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          if (fileDeleteDraftDisabled) {
-                            return;
-                          }
-                          handleOpenRemove();
-                        }}
-                        size="small"
-                      >
-                        <DeleteOutlined fontSize="small" color={deleteFileColor} />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                ) : (
-                  <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
-                    <span>
-                      <IconButton
-                        disabled={isProgress}
-                        onClick={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          if (fileDeleteDraftDisabled) {
-                            return;
-                          }
-                          handleOpenDelete();
-                        }}
-                        size="small"
-                      >
-                        <DeleteOutlined fontSize="small" color={deleteFileColor} />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
-                )}
-              </>
-            </Security>
+              <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                <>
+                  {isFail || isOutdated ? (
+                    <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
+                      <span>
+                        <IconButton
+                          disabled={isProgress}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            if (fileDeleteDraftDisabled) {
+                              return;
+                            }
+                            handleOpenRemove();
+                          }}
+                          size="small"
+                        >
+                          <DeleteOutlined fontSize="small" color={deleteFileColor} />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title={fileDeleteDraftDisabled ? t_i18n('Not available in draft') : t_i18n('Delete this file')}>
+                      <span>
+                        <IconButton
+                          disabled={isProgress}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            if (fileDeleteDraftDisabled) {
+                              return;
+                            }
+                            handleOpenDelete();
+                          }}
+                          size="small"
+                        >
+                          <DeleteOutlined fontSize="small" color={deleteFileColor} />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                </>
+              </Security>
             )}
           </div>
         )}

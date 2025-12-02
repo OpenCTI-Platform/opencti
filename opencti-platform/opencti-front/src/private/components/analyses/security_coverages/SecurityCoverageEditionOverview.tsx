@@ -314,24 +314,24 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             containerstyle={fieldSpacingContainerStyle}
           />
           {values.auto_enrichment_disable && (
-          <>
-            <CoverageInformationFieldEdit
-              id={securityCoverageData.id}
-              mode="entity"
-              name="coverage_information"
-              values={values.coverage_information}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="external_uri"
-              onSubmit={handleSubmitField}
-              label={t_i18n('Source external link')}
-              fullWidth={true}
-              style={fieldSpacingContainerStyle}
-            />
-          </>
-)}
+            <>
+              <CoverageInformationFieldEdit
+                id={securityCoverageData.id}
+                mode="entity"
+                name="coverage_information"
+                values={values.coverage_information}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="external_uri"
+                onSubmit={handleSubmitField}
+                label={t_i18n('Source external link')}
+                fullWidth={true}
+                style={fieldSpacingContainerStyle}
+              />
+            </>
+          )}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}

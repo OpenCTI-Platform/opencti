@@ -109,7 +109,7 @@ const Taxii = () => {
               dataColumns={dataColumns}
               initialLoading={props === null}
             />
-)}
+          )}
         />
       </ListLines>
     );
@@ -124,9 +124,9 @@ const Taxii = () => {
     <div data-testid="taxii-collections-page">
       <Box
         sx={{
-        margin: 0,
-        padding: '0 200px 50px 0',
-      }}
+          margin: 0,
+          padding: '0 200px 50px 0',
+        }}
         aria-label="TaxiiCollections"
       >
         <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('TAXII collections'), current: true }]} />

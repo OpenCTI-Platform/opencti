@@ -158,18 +158,18 @@ const DraftTasks: FunctionComponent<DraftTasksProps> = ({ draftId }) => {
   return (
     <span data-testid="draft-tasks-page">
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: DraftTasksLines_data$data) => data.backgroundTasks?.edges?.map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        preloadedPaginationProps={preloadedPaginationProps}
-        variant={DataTableVariant.inline}
-        hideSearch
-        disableNavigation
-        disableLineSelection
-        lineFragment={draftTaskLineFragment}
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftTasksLines_data$data) => data.backgroundTasks?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          preloadedPaginationProps={preloadedPaginationProps}
+          variant={DataTableVariant.inline}
+          hideSearch
+          disableNavigation
+          disableLineSelection
+          lineFragment={draftTaskLineFragment}
+        />
       )}
     </span>
   );

@@ -32,13 +32,13 @@ const JsonMapperRepresentationAttributeOption = ({
           placeholder={placeholder}
         />
         {tooltip && (
-        <Tooltip title={tooltip}>
-          <InformationOutline
-            fontSize="small"
-            color="primary"
-            style={{ cursor: 'default' }}
-          />
-        </Tooltip>
+          <Tooltip title={tooltip}>
+            <InformationOutline
+              fontSize="small"
+              color="primary"
+              style={{ cursor: 'default' }}
+            />
+          </Tooltip>
         )}
       </div>
       {info && <Alert style={{ marginTop: 8 }} severity="info">{info}</Alert>}

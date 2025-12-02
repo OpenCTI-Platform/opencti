@@ -152,7 +152,7 @@ const JsonMappers = () => {
                     </Button>
                   </>
                 </>
-                  )}
+              )}
             >
               <React.Suspense
                 fallback={<Loader variant={LoaderVariant.inElement} />}

@@ -407,8 +407,8 @@ const GraphContainerCorrelation = ({
     loadMore,
     isLoadingMore,
   } = usePreloadedPaginationFragment<
-  GraphContainerCorrelationObjectsQuery,
-  GraphContainerCorrelationObjects_fragment$key
+    GraphContainerCorrelationObjectsQuery,
+    GraphContainerCorrelationObjects_fragment$key
   >({
     linesQuery: graphContainerCorrelationObjectsQuery,
     linesFragment: graphContainerCorrelationObjectsFragment,

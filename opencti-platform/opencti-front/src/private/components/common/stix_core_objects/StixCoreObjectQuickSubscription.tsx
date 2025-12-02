@@ -95,7 +95,7 @@ interface StixCoreObjectQuickSubscriptionContentProps {
 }
 
 const StixCoreObjectQuickSubscription: FunctionComponent<
-StixCoreObjectQuickSubscriptionContentProps
+  StixCoreObjectQuickSubscriptionContentProps
 > = ({ triggerData, instanceId, paginationOptions, instanceName }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
@@ -243,27 +243,27 @@ StixCoreObjectQuickSubscriptionContentProps
     )?.values?.filter((id) => id !== instanceId) ?? [];
     const newInstanceFilters = filterGroup && newInstanceValues.length > 0
       ? {
-        ...filterGroup,
-        filters: [
-          ...filterGroup.filters.filter(
-            (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
-          ),
-          {
-            key: 'connectedToId',
-            values: newInstanceValues,
-            operator: 'eq',
-            mode: 'or',
-          },
-        ],
-      }
+          ...filterGroup,
+          filters: [
+            ...filterGroup.filters.filter(
+              (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
+            ),
+            {
+              key: 'connectedToId',
+              values: newInstanceValues,
+              operator: 'eq',
+              mode: 'or',
+            },
+          ],
+        }
       : {
-        mode: filterGroup?.mode ?? 'and',
-        filters:
+          mode: filterGroup?.mode ?? 'and',
+          filters:
               filterGroup?.filters.filter(
                 (f) => f.key !== 'connectedToId' || f.operator !== 'eq',
               ) ?? [],
-        filterGroups: filterGroup?.filterGroups ?? [],
-      };
+          filterGroups: filterGroup?.filterGroups ?? [],
+        };
     commitFieldPatch({
       variables: {
         id: triggerIdToUpdate,

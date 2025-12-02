@@ -80,8 +80,8 @@ const SupportPackageLines: FunctionComponent<SupportPackageLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  SupportPackageLinesPaginationQuery,
-  SupportPackageLines_data$key
+    SupportPackageLinesPaginationQuery,
+    SupportPackageLines_data$key
   >({
     linesQuery: supportPackageLinesQuery,
     linesFragment: supportPackageLinesFragment,
@@ -93,8 +93,8 @@ const SupportPackageLines: FunctionComponent<SupportPackageLinesProps> = ({
   const queryData = usePreloadedQuery(supportPackageLinesQuery, queryRef);
 
   const [_, refetch] = useRefetchableFragment<
-  SupportPackageLinesPaginationQuery,
-  SupportPackageLines_data$key
+    SupportPackageLinesPaginationQuery,
+    SupportPackageLines_data$key
   >(supportPackageLinesFragment, queryData);
 
   useEffect(() => {

@@ -72,10 +72,10 @@ const CsvMapperForm: FunctionComponent<CsvMapperFormProps> = ({ csvMapper, onSub
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<
-  RepresentationFormEntityOption[]
+    RepresentationFormEntityOption[]
   >([]);
   const [availableRelationshipTypes, setAvailableRelationshipTypes] = useState<
-  RepresentationFormEntityOption[]
+    RepresentationFormEntityOption[]
   >([]);
 
   // load the available types once in state

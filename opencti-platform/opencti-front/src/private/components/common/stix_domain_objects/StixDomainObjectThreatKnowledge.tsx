@@ -145,7 +145,7 @@ interface StixDomainObjectThreatKnowledgeProps {
 }
 
 const StixDomainObjectThreatKnowledge: FunctionComponent<
-StixDomainObjectThreatKnowledgeProps
+  StixDomainObjectThreatKnowledgeProps
 /*
   TODO
   we should reword the component to be able to manipulate data easier

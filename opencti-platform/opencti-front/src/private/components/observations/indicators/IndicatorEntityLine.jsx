@@ -90,14 +90,14 @@ class IndicatorEntityLineComponent extends Component {
             primary={(
               <div>
                 {displayRelation && (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
-                >
-                  <ItemEntityType
-                    entityType={node.relationship_type}
-                  />
-                </div>
+                  <div
+                    className={classes.bodyItem}
+                    style={{ width: dataColumns.relationship_type.width }}
+                  >
+                    <ItemEntityType
+                      entityType={node.relationship_type}
+                    />
+                  </div>
                 )}
                 <div
                   className={classes.bodyItem}

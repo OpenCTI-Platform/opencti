@@ -46,12 +46,12 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObje
   const notifySuccessMessage = (
     <span>
       {t_i18n(
-      'The background task has been executed. You can monitor it on',
-    )}{' '}
+        'The background task has been executed. You can monitor it on',
+      )}{' '}
       <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
       .
     </span>
-);
+  );
   const [deleteOrganization] = useApiMutation<StixCoreObjectSharingListDeleteMutation>(
     objectOrganizationDeleteMutation,
     undefined,

@@ -310,30 +310,30 @@ const StixCoreObjectsSuggestionsComponent = (props) => {
                     <ToggleButton
                       onClick={() => setDisplaySuggestions(true)}
                       disabled={
-                    suggestions.length === 0 || currentMode !== 'graph'
-                  }
+                        suggestions.length === 0 || currentMode !== 'graph'
+                      }
                       value="suggestion"
                       size="small"
                     >
                       <Badge
                         badgeContent={
-                      suggestions.filter(
-                        (n) => !appliedSuggestions.includes(n.type),
-                      ).length
-                    }
+                          suggestions.filter(
+                            (n) => !appliedSuggestions.includes(n.type),
+                          ).length
+                        }
                         color="secondary"
                       >
                         <AssistantOutlined
                           fontSize="small"
                           disabled={suggestions.length === 0}
                           color={
-                        // eslint-disable-next-line no-nested-ternary
-                        suggestions.length === 0
-                          ? 'disabled'
-                          : displaySuggestions
-                            ? 'secondary'
-                            : 'primary'
-                      }
+                            // eslint-disable-next-line no-nested-ternary
+                            suggestions.length === 0
+                              ? 'disabled'
+                              : displaySuggestions
+                                ? 'secondary'
+                                : 'primary'
+                          }
                         />
                       </Badge>
                     </ToggleButton>

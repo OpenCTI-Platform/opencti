@@ -129,10 +129,10 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                     >
                       {this.state.expandedLines[stixRelationship.id]
                         === false ? (
-                          <ExpandMore />
-                        ) : (
-                          <ExpandLess />
-                        )}
+                            <ExpandMore />
+                          ) : (
+                            <ExpandLess />
+                          )}
                     </IconButton>
                   )}
                 >
@@ -179,43 +179,43 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               <ListItemIcon className={classes.itemIcon}>
                                 <ItemIcon
                                   type={
-                                  !restricted
-                                    ? entityToDisplay.entity_type
-                                    : 'restricted'
-                                }
+                                    !restricted
+                                      ? entityToDisplay.entity_type
+                                      : 'restricted'
+                                  }
                                 />
                               </ListItemIcon>
                               <ListItemText
                                 primary={
                                 // eslint-disable-next-line no-nested-ternary
-                                !restricted ? (
-                                  entityToDisplay.entity_type
-                                  === 'Attack-Pattern' ? (
-                                    <span>
-                                      <strong>
-                                        {entityToDisplay.x_mitre_id}
-                                      </strong>{' '}
-                                      - {entityToDisplay.name}
-                                    </span>
-                                    ) : (
-                                      <span>{entityToDisplay.name}</span>
-                                    )
-                                ) : (
-                                  t('Restricted')
-                                )
-                              }
-                                secondary={
-                                stixDomainObject.description
-                                && stixDomainObject.description.length > 0 ? (
-                                  <MarkdownDisplay
-                                    content={stixDomainObject.description}
-                                    remarkGfmPlugin={true}
-                                    commonmark={true}
-                                  />
+                                  !restricted ? (
+                                    entityToDisplay.entity_type
+                                    === 'Attack-Pattern' ? (
+                                          <span>
+                                            <strong>
+                                              {entityToDisplay.x_mitre_id}
+                                            </strong>{' '}
+                                            - {entityToDisplay.name}
+                                          </span>
+                                        ) : (
+                                          <span>{entityToDisplay.name}</span>
+                                        )
                                   ) : (
-                                    t('No description of this usage')
+                                    t('Restricted')
                                   )
-                              }
+                                }
+                                secondary={
+                                  stixDomainObject.description
+                                  && stixDomainObject.description.length > 0 ? (
+                                        <MarkdownDisplay
+                                          content={stixDomainObject.description}
+                                          remarkGfmPlugin={true}
+                                          commonmark={true}
+                                        />
+                                      ) : (
+                                        t('No description of this usage')
+                                      )
+                                }
                               />
                               <ItemMarkings
                                 variant="inList"

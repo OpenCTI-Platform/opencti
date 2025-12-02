@@ -30,7 +30,7 @@ interface FilterValuesContentProps {
 }
 
 const FilterValuesContent: FunctionComponent<
-FilterValuesContentProps
+  FilterValuesContentProps
 > = ({ redirection, isFilterTooltip, filterKey, id, value, filterDefinition, filterOperator }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes } = useAttributes();
@@ -60,7 +60,7 @@ FilterValuesContentProps
           <InformationOutline color="primary" />
         </Tooltip>
       </div>
-);
+    );
   }
   const isRedirectableFilter = filterDefinition
     && filterType === 'id'

@@ -151,11 +151,11 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
                     <Divider
                       orientation="vertical"
                       style={{
-                      display: 'inline-block',
-                      verticalAlign: 'middle',
-                      height: '100%',
-                      margin: '0 20px',
-                    }}
+                        display: 'inline-block',
+                        verticalAlign: 'middle',
+                        height: '100%',
+                        margin: '0 20px',
+                      }}
                     />
                   </Grid>
                   <Grid item xs={6}>

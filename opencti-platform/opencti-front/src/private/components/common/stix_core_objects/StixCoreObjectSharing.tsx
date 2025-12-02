@@ -119,12 +119,12 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const notifySuccessMessage = (
     <span>
       {t_i18n(
-      'The background task has been executed. You can monitor it on',
-    )}{' '}
+        'The background task has been executed. You can monitor it on',
+      )}{' '}
       <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
       .
     </span>
-);
+  );
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
     return variant === 'header' ? (
@@ -241,35 +241,35 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
           {t_i18n('Organizations sharing')}
         </Typography>
         {!handleClose && (
-        <>
-          <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
-            <IconButton
-              color="primary"
-              aria-label="Label"
-              onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
-              style={{ float: 'left', margin: '-15px 0 0 -2px' }}
-              size="large"
-              disabled={disabled}
-            >
-              <BankPlus fontSize="small" color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'} />
-            </IconButton>
-          </EETooltip>
-          <div className="clearfix" />
-          {edges.map((edge) => (
-            <Tooltip key={edge.id} title={edge.name}>
-              <Chip
-                icon={<AccountBalanceOutlined />}
-                classes={{ root: classes.organization }}
+          <>
+            <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
+              <IconButton
                 color="primary"
-                variant="outlined"
-                label={truncate(edge.name, 15)}
-                onDelete={() => removeOrganization(edge.id)}
-                disabled={disabled || disabledInDraft}
-              />
-            </Tooltip>
-          ))}
-        </>
-)
+                aria-label="Label"
+                onClick={isEnterpriseEdition ? handleOpenSharing : () => {}}
+                style={{ float: 'left', margin: '-15px 0 0 -2px' }}
+                size="large"
+                disabled={disabled}
+              >
+                <BankPlus fontSize="small" color={!disabled && !disabledInDraft && isEnterpriseEdition ? 'primary' : 'disabled'} />
+              </IconButton>
+            </EETooltip>
+            <div className="clearfix" />
+            {edges.map((edge) => (
+              <Tooltip key={edge.id} title={edge.name}>
+                <Chip
+                  icon={<AccountBalanceOutlined />}
+                  classes={{ root: classes.organization }}
+                  color="primary"
+                  variant="outlined"
+                  label={truncate(edge.name, 15)}
+                  onDelete={() => removeOrganization(edge.id)}
+                  disabled={disabled || disabledInDraft}
+                />
+              </Tooltip>
+            ))}
+          </>
+        )
         }
         <div className="clearfix" />
         <Formik

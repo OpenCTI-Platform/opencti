@@ -130,26 +130,26 @@ const DecayRules = () => {
         )}
       >
         {queryRef && (
-        <React.Suspense
-          fallback={(
-            <>
-              {Array(20)
-                .fill(0)
-                .map((_, idx) => (
-                  <DecayRulesLineDummy
-                    key={idx}
-                    dataColumns={dataColumns}
-                  />
-                ))}
-            </>
-          )}
-        >
-          <DecayRulesLines
-            queryRef={queryRef}
-            paginationOptions={paginationOptions}
-            dataColumns={dataColumns}
-          />
-        </React.Suspense>
+          <React.Suspense
+            fallback={(
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((_, idx) => (
+                    <DecayRulesLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+            )}
+          >
+            <DecayRulesLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+            />
+          </React.Suspense>
         )}
       </ListLines>
     );

@@ -388,18 +388,18 @@ const DraftSightings: FunctionComponent<DraftSightingsProps> = ({ isReadOnly }) 
   return (
     <span data-testid="draft-relationships-page">
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: DraftSightingsLines_data$data) => data.draftWorkspaceSightingRelationships?.edges?.map((n) => n?.node)}
-        storageKey={LOCAL_STORAGE_KEY}
-        initialValues={initialValues}
-        toolbarFilters={toolbarFilters}
-        getComputeLink={getRedirectionLink}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={draftSightingsLineFragment}
-        entityTypes={['stix-sighting-relationship']}
-        removeFromDraftEnabled
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: DraftSightingsLines_data$data) => data.draftWorkspaceSightingRelationships?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          toolbarFilters={toolbarFilters}
+          getComputeLink={getRedirectionLink}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={draftSightingsLineFragment}
+          entityTypes={['stix-sighting-relationship']}
+          removeFromDraftEnabled
+        />
       )}
     </span>
   );

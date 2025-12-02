@@ -651,14 +651,14 @@ const SearchBulk = () => {
                               <>
                                 {['Note', 'Opinion', 'Course-Of-Action', 'Data-Component', 'Data-Source'].includes(entity.type) ? (
                                   <Chip classes={{ root: classes.chipNoLink }} label={n(entity.analyses)} />
-                                  ) : (
-                                    <Chip
-                                      classes={{ root: classes.chip }}
-                                      label={n(entity.analyses)}
-                                      component={Link}
-                                      to={linkAnalyses}
-                                    />
-                                  )}
+                                ) : (
+                                  <Chip
+                                    classes={{ root: classes.chip }}
+                                    label={n(entity.analyses)}
+                                    component={Link}
+                                    to={linkAnalyses}
+                                  />
+                                )}
                               </>
                             </div>
                             <div className={classes.bodyItem} style={inlineStyles.markings}>

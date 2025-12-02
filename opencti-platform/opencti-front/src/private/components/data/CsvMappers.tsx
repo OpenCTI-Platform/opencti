@@ -209,20 +209,20 @@ const CsvMappers = () => {
 
             {importedFileData
               ? (
-                <CsvMapperCreationContainer
-                  importedFileData={importedFileData}
-                  paginationOptions={paginationOptions}
-                  open={true}
-                  onClose={handleClose}
-                />
-)
+                  <CsvMapperCreationContainer
+                    importedFileData={importedFileData}
+                    paginationOptions={paginationOptions}
+                    open={true}
+                    onClose={handleClose}
+                  />
+                )
               : (
-                <CsvMapperCreationContainer
-                  paginationOptions={paginationOptions}
-                  open={open}
-                  onClose={handleClose}
-                />
-)
+                  <CsvMapperCreationContainer
+                    paginationOptions={paginationOptions}
+                    open={open}
+                    onClose={handleClose}
+                  />
+                )
             }
           </div>
         </CsvMappersProvider>

@@ -109,7 +109,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
                   timeLineDisplayRelationships
                     ? t_i18n('Do not display relationships')
                     : t_i18n('Display relationships')
-              }
+                }
               >
                 <span>
                   <IconButton
@@ -123,9 +123,9 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
               </Tooltip>
               <Tooltip
                 title={
-                    timeLineFunctionalDate
-                      ? t_i18n('Use technical dates')
-                      : t_i18n('Use functional dates')
+                  timeLineFunctionalDate
+                    ? t_i18n('Use technical dates')
+                    : t_i18n('Use functional dates')
                 }
               >
                 <span>
@@ -180,7 +180,7 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
             </div>
           </div>
         </Drawer>
-)}
+      )}
     </UserContext.Consumer>
   );
 };

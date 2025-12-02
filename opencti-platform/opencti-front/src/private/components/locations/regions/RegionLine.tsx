@@ -71,7 +71,7 @@ interface RegionLineComponentProps {
 }
 
 export const RegionLineComponent: FunctionComponent<
-RegionLineComponentProps
+  RegionLineComponentProps
 > = ({ dataColumns, node }) => {
   const classes = useStyles();
   const { fd } = useFormatter();

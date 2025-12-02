@@ -105,8 +105,8 @@ const ContainerStixCoreObjectsMappingLines = ({
       dataList={data?.container?.objects?.edges ?? []}
       paginationOptions={paginationOptions}
       globalCount={
-          data?.container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
-        }
+        data?.container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
       LineComponent={(
         <ContainerStixCoreObjectsMappingLine
           containerId={data?.container?.id ?? null}

@@ -81,8 +81,8 @@ const EventsLines: FunctionComponent<EventsLinesProps> = ({
   paginationOptions,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment <
-  EventsLinesPaginationQuery,
-  EventsLines_data$key
+    EventsLinesPaginationQuery,
+    EventsLines_data$key
   >({
     linesQuery: eventsLinesQuery,
     linesFragment: eventsLinesFragment,
@@ -99,8 +99,8 @@ const EventsLines: FunctionComponent<EventsLinesProps> = ({
       isLoading={isLoadingMore}
       dataList={data?.events?.edges ?? []}
       globalCount={
-          data?.events?.pageInfo?.globalCount ?? nbOfRowsToLoad
-        }
+        data?.events?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
       LineComponent={EventLine}
       DummyLineComponent={EventLineDummy}
       dataColumns={dataColumns}

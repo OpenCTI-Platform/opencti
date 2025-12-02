@@ -159,34 +159,34 @@ class TimeRange extends React.Component {
           </Tracks>
 
           {disabledIntervals?.length > 0 && (
-          <Tracks left={false} right={false}>
-            {({ getTrackProps }) => (
-              <>
-                {disabledIntervals.map(({ id, source, target }) => (
-                  <Track
-                    key={id}
-                    source={source}
-                    target={target}
-                    getTrackProps={getTrackProps}
-                    disabled
-                  />
-                ))}
-              </>
-            )}
-          </Tracks>
+            <Tracks left={false} right={false}>
+              {({ getTrackProps }) => (
+                <>
+                  {disabledIntervals.map(({ id, source, target }) => (
+                    <Track
+                      key={id}
+                      source={source}
+                      target={target}
+                      getTrackProps={getTrackProps}
+                      disabled
+                    />
+                  ))}
+                </>
+              )}
+            </Tracks>
           )}
 
           {showNow && (
-          <Tracks left={false} right={false}>
-            {({ getTrackProps }) => (
-              <Track
-                key={this.now?.id}
-                source={this.now?.source}
-                target={this.now?.target}
-                getTrackProps={getTrackProps}
-              />
-            )}
-          </Tracks>
+            <Tracks left={false} right={false}>
+              {({ getTrackProps }) => (
+                <Track
+                  key={this.now?.id}
+                  source={this.now?.source}
+                  target={this.now?.target}
+                  getTrackProps={getTrackProps}
+                />
+              )}
+            </Tracks>
           )}
 
           <Ticks values={this.getDateTicks()}>

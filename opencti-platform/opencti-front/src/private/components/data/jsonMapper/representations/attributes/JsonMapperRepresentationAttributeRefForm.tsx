@@ -56,7 +56,7 @@ interface JsonMapperRepresentationAttributeRefFormProps
 }
 
 const JsonMapperRepresentationAttributeRefForm: FunctionComponent<
-JsonMapperRepresentationAttributeRefFormProps
+  JsonMapperRepresentationAttributeRefFormProps
 > = ({ form, field, representation, schemaAttribute, label, handleErrors }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();

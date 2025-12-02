@@ -18,7 +18,7 @@ const StartTrialBanner = () => {
       {t_i18n('Explore the full potential of OpenCTI Enterprise Edition, start your 30 days free trial. ')}
       <strong><u><a href={freeTrialUrl} style={{ color: '#000000', marginLeft: '4px' }} target="_blank" rel="noreferrer">Learn more</a></u></strong>
     </>
-);
+  );
 
   const handleOpenLink = () => {
     window.open(createFreeTrialUrl, '_blank', 'noopener,noreferrer');

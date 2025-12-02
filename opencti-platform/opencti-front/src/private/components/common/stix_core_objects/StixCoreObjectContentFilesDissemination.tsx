@@ -150,16 +150,16 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
             />
           )}
           {!useFileContent && (
-          <Field
-            component={MarkdownField}
-            label={t_i18n('Email body')}
-            name="emailBody"
-            multiline
-            rows="4"
-            fullWidth
-            required
-            style={fieldSpacingContainerStyle}
-          />
+            <Field
+              component={MarkdownField}
+              label={t_i18n('Email body')}
+              name="emailBody"
+              multiline
+              rows="4"
+              fullWidth
+              required
+              style={fieldSpacingContainerStyle}
+            />
           )}
           <Field
             component={TextField}

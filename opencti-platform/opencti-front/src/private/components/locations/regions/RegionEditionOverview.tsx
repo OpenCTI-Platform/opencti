@@ -134,7 +134,7 @@ interface RegionEditionFormValues {
 }
 
 const RegionEditionOverviewComponent: FunctionComponent<
-RegionEdititionOverviewProps
+  RegionEdititionOverviewProps
 > = ({ regionRef, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const region = useFragment(regionEditionOverviewFragment, regionRef);

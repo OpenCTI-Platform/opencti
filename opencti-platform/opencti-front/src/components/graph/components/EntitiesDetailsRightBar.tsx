@@ -177,7 +177,7 @@ const EntitiesDetailsRightsBar = () => {
         )}
         {detailsPreviewSelected.parent_types.includes('stix-relationship')
           && detailsPreviewSelected.entity_type !== 'basic-relationship' && (
-            <RelationshipDetails relation={detailsPreviewSelected as GraphLink} />
+          <RelationshipDetails relation={detailsPreviewSelected as GraphLink} />
         )}
         {detailsPreviewSelected.parent_types.includes('Stix-Core-Object') && (
           <EntityDetails entity={detailsPreviewSelected as GraphNode} />

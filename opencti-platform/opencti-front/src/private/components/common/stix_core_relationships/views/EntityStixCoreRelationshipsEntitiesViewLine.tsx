@@ -221,7 +221,7 @@ interface EntityStixCoreRelationshipsEntitiesLineProps {
 }
 
 export const EntityStixCoreRelationshipsEntitiesViewLine: FunctionComponent<
-EntityStixCoreRelationshipsEntitiesLineProps
+  EntityStixCoreRelationshipsEntitiesLineProps
 > = ({
   node,
   dataColumns,

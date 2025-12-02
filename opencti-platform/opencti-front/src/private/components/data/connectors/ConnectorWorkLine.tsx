@@ -40,7 +40,7 @@ interface ConnectorWorkLineProps {
   readOnly?: boolean | undefined
 }
 const ConnectorWorkLine: FunctionComponent<
-ConnectorWorkLineProps
+  ConnectorWorkLineProps
 > = ({ workId, workName, workStatus, workReceivedTime, workEndTime, workExpectedNumber, workProcessedNumber, workErrors, readOnly }) => {
   const { t_i18n, nsdt } = useFormatter();
 
@@ -148,9 +148,9 @@ ConnectorWorkLineProps
                 style={{ borderRadius: 4, height: 10 }}
                 variant="determinate"
                 value={
-                    !!workExpectedNumber && !!workProcessedNumber
-                      ? Math.round((workProcessedNumber / workExpectedNumber) * 100)
-                      : 0
+                  !!workExpectedNumber && !!workProcessedNumber
+                    ? Math.round((workProcessedNumber / workExpectedNumber) * 100)
+                    : 0
                 }
               />
             </Grid>
@@ -166,17 +166,17 @@ ConnectorWorkLineProps
           {workErrors?.length} {t_i18n('errors')}
         </Button>
         {!readOnly && (
-        <Security needs={[MODULES_MODMANAGE]}>
-          <Button
-            variant="outlined"
-            style={{ position: 'absolute', right: 10, bottom: 10 }}
-            onClick={() => handleDeleteWork()}
-            size="small"
-            startIcon={<Delete />}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </Security>
+          <Security needs={[MODULES_MODMANAGE]}>
+            <Button
+              variant="outlined"
+              style={{ position: 'absolute', right: 10, bottom: 10 }}
+              onClick={() => handleDeleteWork()}
+              size="small"
+              startIcon={<Delete />}
+            >
+              {t_i18n('Delete')}
+            </Button>
+          </Security>
         )}
       </Grid>
       <Drawer

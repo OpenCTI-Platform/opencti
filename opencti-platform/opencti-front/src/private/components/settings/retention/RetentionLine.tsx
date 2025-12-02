@@ -147,16 +147,16 @@ export const RetentionLine: FunctionComponent<RetentionLineProps> = ({ dataColum
                 <span>{appliedOnContent}</span>
                 {data.scope !== 'knowledge'
                   && (
-                  <Tooltip
-                    title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
-                  >
-                    <InformationOutline
-                      fontSize="small"
-                      color="primary"
-                      style={{ position: 'absolute', marginLeft: 10 }}
-                    />
-                  </Tooltip>
-)
+                    <Tooltip
+                      title={`${t_i18n('Files contained in')} ${t_i18n('Data')}/${t_i18n('Import')}`}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ position: 'absolute', marginLeft: 10 }}
+                      />
+                    </Tooltip>
+                  )
                 }
               </div>
             )}

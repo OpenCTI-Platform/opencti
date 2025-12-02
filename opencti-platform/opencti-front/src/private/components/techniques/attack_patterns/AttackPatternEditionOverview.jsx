@@ -302,14 +302,14 @@ const AttackPatternEditionOverviewComponent = (props) => {
             onChange={editor.changeMarking}
           />
           {enableReferences && (
-          <CommitMessage
-            submitForm={submitForm}
-            disabled={isSubmitting || !isValid || !dirty}
-            setFieldValue={setFieldValue}
-            open={false}
-            values={values.references}
-            id={attackPattern.id}
-          />
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={attackPattern.id}
+            />
           )}
         </Form>
       )}

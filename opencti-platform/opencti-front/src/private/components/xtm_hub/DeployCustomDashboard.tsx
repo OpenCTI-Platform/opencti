@@ -65,6 +65,6 @@ const DeployCustomDashboard = () => {
       />
       <Loader />
     </>
-);
+  );
 };
 export default DeployCustomDashboard;

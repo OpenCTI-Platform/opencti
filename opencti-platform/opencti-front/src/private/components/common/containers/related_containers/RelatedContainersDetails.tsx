@@ -60,7 +60,7 @@ const RelatedContainersDetailsDistribution: React.FC<{
         legend={true}
       />
     </div>
-);
+  );
 };
 
 interface RelatedContainersDetailsProps {

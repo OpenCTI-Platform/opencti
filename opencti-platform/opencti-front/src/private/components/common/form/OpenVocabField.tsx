@@ -52,7 +52,7 @@ export const vocabularyQuery = graphql`
 `;
 
 const OpenVocabFieldComponent: FunctionComponent<
-Omit<OpenVocabProps, 'type'>
+  Omit<OpenVocabProps, 'type'>
 > = ({
   name,
   label,
@@ -85,17 +85,17 @@ Omit<OpenVocabProps, 'type'>
   if (onChange) {
     internalOnChange = (n: string, v: FieldOption | FieldOption[]) => (Array.isArray(v)
       ? onChange(
-        n,
-        v.map((nV) => nV?.value ?? nV),
-      )
+          n,
+          v.map((nV) => nV?.value ?? nV),
+        )
       : onChange(n, v?.value ?? v));
   }
   if (onSubmit) {
     internalOnSubmit = (n: string, v: FieldOption | FieldOption[]) => (Array.isArray(v)
       ? onSubmit?.(
-        n,
-        v.map((nV) => nV?.value ?? nV),
-      )
+          n,
+          v.map((nV) => nV?.value ?? nV),
+        )
       : onSubmit?.(n, v?.value ?? v));
   }
   const renderOption: RenderOption = (optionProps, { value, description }) => (

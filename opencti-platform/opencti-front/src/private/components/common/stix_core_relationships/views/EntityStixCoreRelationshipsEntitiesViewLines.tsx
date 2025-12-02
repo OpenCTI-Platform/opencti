@@ -89,7 +89,7 @@ export const entityStixCoreRelationshipsEntitiesQuery = graphql`
 `;
 
 const EntityStixCoreRelationshipsEntitiesComponent: FunctionComponent<
-EntityStixCoreRelationshipsEntitiesProps
+  EntityStixCoreRelationshipsEntitiesProps
 > = ({
   queryRef,
   dataColumns,
@@ -103,8 +103,8 @@ EntityStixCoreRelationshipsEntitiesProps
   setNumberOfElements,
 }) => {
   const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery,
-  EntityStixCoreRelationshipsEntitiesViewLines_data$key
+    EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery,
+    EntityStixCoreRelationshipsEntitiesViewLines_data$key
   >({
     queryRef,
     linesQuery: entityStixCoreRelationshipsEntitiesQuery,
@@ -139,7 +139,7 @@ EntityStixCoreRelationshipsEntitiesProps
 };
 
 const EntityStixCoreRelationshipsEntitiesViewLines: FunctionComponent<
-Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
+  Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
 > = (props) => {
   const queryRef = useQueryLoading<EntityStixCoreRelationshipsEntitiesViewLinesPaginationQuery>(
     entityStixCoreRelationshipsEntitiesQuery,
@@ -149,12 +149,12 @@ Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
     <React.Suspense fallback={(
       <>
         {Array(20)
-        .fill(0)
-        .map((_, idx) => (
-          <EntityStixCoreRelationshipsEntitiesLineDummy key={idx} dataColumns={props.dataColumns} />
-        ))}
+          .fill(0)
+          .map((_, idx) => (
+            <EntityStixCoreRelationshipsEntitiesLineDummy key={idx} dataColumns={props.dataColumns} />
+          ))}
       </>
-)}
+    )}
     >
       <EntityStixCoreRelationshipsEntitiesComponent
         {...props}

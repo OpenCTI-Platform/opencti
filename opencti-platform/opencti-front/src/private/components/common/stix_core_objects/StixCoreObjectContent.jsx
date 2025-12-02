@@ -569,10 +569,10 @@ class StixCoreObjectContentComponent extends Component {
             {currentFileType === 'text/html' && currentMode === 'content' && (
               <div
                 className={
-                      navOpen
-                        ? classes.documentContainerWithoutBarNavOpen
-                        : classes.documentContainerWithoutBar
-                    }
+                  navOpen
+                    ? classes.documentContainerWithoutBarNavOpen
+                    : classes.documentContainerWithoutBar
+                }
               >
                 <HtmlDisplay content={currentContent} />
               </div>
@@ -612,10 +612,10 @@ class StixCoreObjectContentComponent extends Component {
             {currentFileType === 'text/markdown' && currentMode === 'content' && (
               <div
                 className={
-                      navOpen
-                        ? classes.documentContainerWithoutBarNavOpen
-                        : classes.documentContainerWithoutBar
-                    }
+                  navOpen
+                    ? classes.documentContainerWithoutBarNavOpen
+                    : classes.documentContainerWithoutBar
+                }
               >
                 <MarkdownDisplay
                   content={currentContent}

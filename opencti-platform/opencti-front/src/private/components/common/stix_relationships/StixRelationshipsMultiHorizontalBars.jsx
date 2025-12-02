@@ -520,18 +520,18 @@ const StixRelationshipsMultiHorizontalBars = ({
             }
             const redirectionUtils = finalField === 'internal_id'
               ? props.stixRelationshipsDistribution.map((n) => ({
-                id: n.label,
-                entity_type: n.entity?.entity_type,
-                series: subSectionIdsOrder.map((subSectionId) => {
-                  const [entity] = n.entity[key]?.filter(
-                    (e) => e.label === subSectionId,
-                  ) ?? [];
-                  return {
-                    id: subSectionId,
-                    entity_type: entity ? entity.entity?.entity_type : null,
-                  };
-                }),
-              }))
+                  id: n.label,
+                  entity_type: n.entity?.entity_type,
+                  series: subSectionIdsOrder.map((subSectionId) => {
+                    const [entity] = n.entity[key]?.filter(
+                      (e) => e.label === subSectionId,
+                    ) ?? [];
+                    return {
+                      id: subSectionId,
+                      entity_type: entity ? entity.entity?.entity_type : null,
+                    };
+                  }),
+                }))
               : null;
             return (
               <WidgetHorizontalBars

@@ -84,7 +84,7 @@ const threatActorIndividualFragment = graphql`
 `;
 
 export const ThreatActorIndividualLine: FunctionComponent<
-ThreatActorIndividualLineProps
+  ThreatActorIndividualLineProps
 > = ({
   dataColumns,
   node,

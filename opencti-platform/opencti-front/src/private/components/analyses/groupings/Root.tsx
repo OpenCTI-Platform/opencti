@@ -87,7 +87,7 @@ const groupingQuery = graphql`
 const RootGrouping = () => {
   const { groupingId } = useParams() as { groupingId: string };
   const subConfig = useMemo<
-  GraphQLSubscriptionConfig<RootReportSubscription>
+    GraphQLSubscriptionConfig<RootReportSubscription>
   >(
     () => ({
       subscription,

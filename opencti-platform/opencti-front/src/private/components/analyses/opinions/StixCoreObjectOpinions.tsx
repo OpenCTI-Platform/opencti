@@ -155,13 +155,13 @@ const StixCoreObjectOpinions: FunctionComponent<Omit<StixCoreObjectOpinionsProps
   return (
     <div style={{ minHeight: '240px' }}>
       {queryRef && (
-      <React.Suspense fallback={<span />}>
-        <StixCoreObjectOpinionsComponent {...props} queryVocabulariesRef={queryRef} />
-      </React.Suspense>
-)
-    }
+        <React.Suspense fallback={<span />}>
+          <StixCoreObjectOpinionsComponent {...props} queryVocabulariesRef={queryRef} />
+        </React.Suspense>
+      )
+      }
     </div>
-);
+  );
 };
 
 export default StixCoreObjectOpinions;

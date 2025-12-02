@@ -81,7 +81,7 @@ interface JsonMapperRepresentationAttributesFormProps {
 }
 
 const JsonMapperRepresentationAttributesForm: FunctionComponent<
-JsonMapperRepresentationAttributesFormProps
+  JsonMapperRepresentationAttributesFormProps
 > = ({ handleErrors, representation, representationType, representationName }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -123,42 +123,42 @@ JsonMapperRepresentationAttributesFormProps
   return (
     <>
       {mutableSchemaAttributes.length > 0 && (
-      <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}` }}>
-        <div>
-          Entity path mapping <span className={classes.redStar}>*</span>
-        </div>
-        <div>
-          <Field
-            component={TextField}
-            label={t_i18n('JSON Path')}
-            required={true}
-            name={`${representationName}.target.path`}
-            variant="standard"
-            style={{ width: '100%' }}
-            onChange={(_event: React.SyntheticEvent, newValue: string) => {
-              handleErrors('target.path', isEmptyField(newValue) ? 'This field is required' : null);
-            }}
-          />
-        </div>
-        <div />
-        { representationType === 'entity' && (
-        <>
+        <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}` }}>
           <div>
-            Identifier
+            Entity path mapping <span className={classes.redStar}>*</span>
           </div>
           <div>
             <Field
               component={TextField}
               label={t_i18n('JSON Path')}
-              name={`${representationName}.identifier`}
+              required={true}
+              name={`${representationName}.target.path`}
               variant="standard"
               style={{ width: '100%' }}
+              onChange={(_event: React.SyntheticEvent, newValue: string) => {
+                handleErrors('target.path', isEmptyField(newValue) ? 'This field is required' : null);
+              }}
             />
           </div>
-        </>
-)}
-      </div>
-)}
+          <div />
+          { representationType === 'entity' && (
+            <>
+              <div>
+                Identifier
+              </div>
+              <div>
+                <Field
+                  component={TextField}
+                  label={t_i18n('JSON Path')}
+                  name={`${representationName}.identifier`}
+                  variant="standard"
+                  style={{ width: '100%' }}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      )}
       {[...mutableSchemaAttributes]
         .sort((a1, a2) => Number(a2.mandatory) - Number(a1.mandatory))
         .map((schemaAttribute) => {

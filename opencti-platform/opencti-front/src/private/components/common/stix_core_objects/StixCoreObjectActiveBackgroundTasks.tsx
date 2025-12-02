@@ -59,7 +59,7 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
             />
           </Badge>
         </Tooltip>
-)}
+      )}
     </div>
   );
 };

@@ -19,9 +19,9 @@ type OCTIDataTableProps = Pick<DataTableProps, 'dataColumns'
   | 'onLineClick'
   | 'isLocalStorageEnabled'
   | 'variant'> & {
-  data: unknown
-  globalCount: number
-};
+    data: unknown
+    globalCount: number
+  };
 
 const DataTableWithoutFragment = (props: OCTIDataTableProps) => {
   const { data } = props;

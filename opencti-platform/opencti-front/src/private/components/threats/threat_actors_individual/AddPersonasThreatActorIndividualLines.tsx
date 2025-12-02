@@ -59,7 +59,7 @@ interface AddPersonasThreatActorIndividualLineProps {
 }
 
 const AddPersonasThreatActorIndividualLine: FunctionComponent<
-AddPersonasThreatActorIndividualLineProps
+  AddPersonasThreatActorIndividualLineProps
 > = ({
   id,
   name,
@@ -91,7 +91,7 @@ interface AddPersonasThreatActorIndividualLinesProps {
 }
 
 const AddPersonasThreatActorIndividualLines: FunctionComponent<
-AddPersonasThreatActorIndividualLinesProps
+  AddPersonasThreatActorIndividualLinesProps
 > = ({
   threatActorIndividual,
   fragmentKey,

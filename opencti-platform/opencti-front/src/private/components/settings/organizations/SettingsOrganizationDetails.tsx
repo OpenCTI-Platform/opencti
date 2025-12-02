@@ -35,7 +35,7 @@ interface SettingsOrganizationDetailsProps {
 }
 
 const SettingsOrganizationDetails: FunctionComponent<
-SettingsOrganizationDetailsProps
+  SettingsOrganizationDetailsProps
 > = ({ settingsOrganization }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();

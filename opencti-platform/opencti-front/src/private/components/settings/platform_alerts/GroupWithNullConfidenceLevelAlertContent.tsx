@@ -42,26 +42,26 @@ const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidence
           )}
         </DialogContentText>
         { groupsExcerpt.length > 0 && (
-        <DialogContentText>
-          <Box component="span">{t_i18n('The following groups require your attention:')}</Box>
+          <DialogContentText>
+            <Box component="span">{t_i18n('The following groups require your attention:')}</Box>
           &nbsp;
-          {groupsExcerpt.map((user, index) => (
-            <Fragment key={`${user.id}-${index}`}>
-              <Link
-                to={`/dashboard/settings/accesses/groups/${user.id}`}
-                onClick={closeHandler}
-              >
-                {user.name}
-              </Link>
-              {index !== groupsExcerpt.length - 1 && <span>,&nbsp;</span>}
-            </Fragment>
-          ))}
-          { restCount > 0 && (
-            <Box component="span" sx={{ marginLeft: 0.5 }}>
-              { t_i18n('', { id: 'and ... more', values: { count: restCount } }) }
-            </Box>
-          )}
-        </DialogContentText>
+            {groupsExcerpt.map((user, index) => (
+              <Fragment key={`${user.id}-${index}`}>
+                <Link
+                  to={`/dashboard/settings/accesses/groups/${user.id}`}
+                  onClick={closeHandler}
+                >
+                  {user.name}
+                </Link>
+                {index !== groupsExcerpt.length - 1 && <span>,&nbsp;</span>}
+              </Fragment>
+            ))}
+            { restCount > 0 && (
+              <Box component="span" sx={{ marginLeft: 0.5 }}>
+                { t_i18n('', { id: 'and ... more', values: { count: restCount } }) }
+              </Box>
+            )}
+          </DialogContentText>
         )}
       </DialogContent>
       <DialogActions>

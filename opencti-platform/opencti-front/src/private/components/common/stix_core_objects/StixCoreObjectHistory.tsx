@@ -132,17 +132,17 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
           <div className="clearfix" />
           {objectsQueryRef
             && (
-            <React.Suspense
-              fallback={<Loader variant={LoaderVariant.inElement} />}
-            >
-              <StixCoreObjectHistoryLines
-                queryRef={objectsQueryRef}
-                isRelationLog={false}
-                paginationOptions={objectsPaginationOptions}
-              />
-            </React.Suspense>
-)
-            }
+              <React.Suspense
+                fallback={<Loader variant={LoaderVariant.inElement} />}
+              >
+                <StixCoreObjectHistoryLines
+                  queryRef={objectsQueryRef}
+                  isRelationLog={false}
+                  paginationOptions={objectsPaginationOptions}
+                />
+              </React.Suspense>
+            )
+          }
         </Grid>
         {!withoutRelations && (
           <Grid item xs={6}>
@@ -163,16 +163,16 @@ const StixCoreObjectHistory = ({ stixCoreObjectId, withoutRelations }: StixCoreO
             <div className="clearfix" />
             {relationsQueryRef
               && (
-              <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement} />}
-              >
-                <StixCoreObjectHistoryLines
-                  queryRef={relationsQueryRef}
-                  isRelationLog={true}
-                  paginationOptions={relationsPaginationOptions}
-                />
-              </React.Suspense>
-)
+                <React.Suspense
+                  fallback={<Loader variant={LoaderVariant.inElement} />}
+                >
+                  <StixCoreObjectHistoryLines
+                    queryRef={relationsQueryRef}
+                    isRelationLog={true}
+                    paginationOptions={relationsPaginationOptions}
+                  />
+                </React.Suspense>
+              )
             }
           </Grid>
         )}

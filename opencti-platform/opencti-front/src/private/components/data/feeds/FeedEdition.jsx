@@ -231,11 +231,11 @@ const FeedEditionContainer = (props) => {
         || !feedAttribute.mappings
         || R.values(feedAttribute.mappings).length !== selectedTypes.length
         || R.values(feedAttribute.mappings).filter(
-                  (m) => !m.attribute
-                    || !m.type
-                    || m.attribute.length === 0
-                    || m.type.length === 0,
-                ).length > 0
+          (m) => !m.attribute
+            || !m.type
+            || m.attribute.length === 0
+            || m.type.length === 0,
+        ).length > 0
       ) {
         return false;
       }

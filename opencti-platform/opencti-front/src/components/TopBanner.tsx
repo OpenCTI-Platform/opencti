@@ -51,26 +51,26 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
         {bannerText}
       </span>
       { buttonText && (
-      <Button
-        variant="contained"
-        onClick={onButtonClick}
-        sx={{
-          marginLeft: 1,
-          backgroundColor: '#ffffff',
-          color: '#000000',
-          padding: '1px 6px',
-          fontSize: '0.8rem',
-          textTransform: 'none',
-          lineHeight: 1.2,
-          '& .MuiButton-endIcon': {
-            marginLeft: '2px',
-          },
-        }}
-        endIcon={<ArrowForwardIcon />}
-      >
-        {buttonText}
-      </Button>
-)}
+        <Button
+          variant="contained"
+          onClick={onButtonClick}
+          sx={{
+            marginLeft: 1,
+            backgroundColor: '#ffffff',
+            color: '#000000',
+            padding: '1px 6px',
+            fontSize: '0.8rem',
+            textTransform: 'none',
+            lineHeight: 1.2,
+            '& .MuiButton-endIcon': {
+              marginLeft: '2px',
+            },
+          }}
+          endIcon={<ArrowForwardIcon />}
+        >
+          {buttonText}
+        </Button>
+      )}
     </div>
   );
 };

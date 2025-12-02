@@ -24,15 +24,15 @@ const ToolEdition: FunctionComponent<{ toolId: string }> = ({ toolId }) => {
   return (
     <>
       {queryRef && (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
-        <ToolEditionContainer
-          queryRef={queryRef}
-          handleClose={handleClose}
-          controlledDial={EditEntityControlledDial}
-        />
-      </React.Suspense>
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
+          <ToolEditionContainer
+            queryRef={queryRef}
+            handleClose={handleClose}
+            controlledDial={EditEntityControlledDial}
+          />
+        </React.Suspense>
       )
-        }
+      }
     </>
   );
 };

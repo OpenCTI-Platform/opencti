@@ -47,20 +47,20 @@ class SectorsLinesComponent extends Component {
       >
         {data
           ? map((sector) => {
-            const subSectors = pipe(
-              pathOr([], ['subSectors', 'edges']),
-              map((n) => n.node),
-              filter(filterByKeyword),
-              sortByNameCaseInsensitive,
-            )(sector);
-            return (
-              <SectorLine
-                key={sector.id}
-                node={sector}
-                subSectors={subSectors}
-              />
-            );
-          }, sectors)
+              const subSectors = pipe(
+                pathOr([], ['subSectors', 'edges']),
+                map((n) => n.node),
+                filter(filterByKeyword),
+                sortByNameCaseInsensitive,
+              )(sector);
+              return (
+                <SectorLine
+                  key={sector.id}
+                  node={sector}
+                  subSectors={subSectors}
+                />
+              );
+            }, sectors)
           : Array.from(Array(20), (e, i) => <SectorLineDummy key={i} />)}
       </List>
     );

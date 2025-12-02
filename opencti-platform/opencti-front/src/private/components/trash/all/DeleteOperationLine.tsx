@@ -108,8 +108,8 @@ export const DeleteOperationLine: React.FC<DeleteOperationLineComponentProps> = 
         <Checkbox
           edge="start"
           checked={
-              (selectAll && !(data.id in (deSelectedElements || {})))
-              || data.id in (selectedElements || {})
+            (selectAll && !(data.id in (deSelectedElements || {})))
+            || data.id in (selectedElements || {})
           }
           disableRipple={true}
         />

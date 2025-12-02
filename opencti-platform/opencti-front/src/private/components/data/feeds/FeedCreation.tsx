@@ -178,9 +178,9 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
 
   const feedAttributesInitialState = feed && feed.feed_attributes
     ? feed.feed_attributes.map((n) => ({
-      ...n,
-      mappings: R.indexBy(R.prop('type'), n.mappings),
-    }))
+        ...n,
+        mappings: R.indexBy(R.prop('type'), n.mappings),
+      }))
     : { 0: {} };
 
   // TODO: typing this state properly implies deep refactoring
@@ -282,11 +282,11 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
         || !feedAttribute.mappings
         || R.values(feedAttribute.mappings).length !== selectedTypes.length
         || R.values(feedAttribute.mappings).filter(
-                  (m) => !m.attribute
-                    || !m.type
-                    || m.attribute.length === 0
-                    || m.type.length === 0,
-                ).length > 0
+          (m) => !m.attribute
+            || !m.type
+            || m.attribute.length === 0
+            || m.type.length === 0,
+        ).length > 0
       ) {
         return false;
       }
@@ -596,8 +596,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                                                 style={{ width: 150 }}
                                                 value={feedAttributes[i]?.mappings
                                                   && feedAttributes[i]?.mappings?.[
-                                                      selectedType
-                                                    ]?.attribute}
+                                                    selectedType
+                                                  ]?.attribute}
                                                 onChange={(event) => handleChangeAttributeMapping(
                                                   i,
                                                   selectedType,

@@ -556,13 +556,13 @@ const PlaybookAddComponentsContent = ({
     });
     const initialValues = currentConfig
       ? {
-        name: selectedNode?.data?.component?.id === selectedComponent.id ? selectedNode?.data?.name : selectedComponent.name,
-        ...currentConfig,
-      }
+          name: selectedNode?.data?.component?.id === selectedComponent.id ? selectedNode?.data?.name : selectedComponent.name,
+          ...currentConfig,
+        }
       : {
-        name: selectedComponent.name,
-        ...defaultConfig,
-      };
+          name: selectedComponent.name,
+          ...defaultConfig,
+        };
 
     const entityTypes = componentId === 'PLAYBOOK_INTERNAL_DATA_CRON'
       ? ['Stix-Core-Object', 'stix-core-relationship']
@@ -1029,15 +1029,15 @@ const PlaybookAddComponents = ({
       {({ onClose }) => (
         <>
           {(selectedNode || selectedEdge) && (
-          <PlaybookAddComponentsContent
-            searchTerm={searchTerm}
-            playbookComponents={playbookComponents}
-            action={action}
-            selectedNode={selectedNode}
-            onConfigAdd={onConfigAdd}
-            onConfigReplace={onConfigReplace}
-            handleClose={onClose}
-          />
+            <PlaybookAddComponentsContent
+              searchTerm={searchTerm}
+              playbookComponents={playbookComponents}
+              action={action}
+              selectedNode={selectedNode}
+              onConfigAdd={onConfigAdd}
+              onConfigReplace={onConfigReplace}
+              handleClose={onClose}
+            />
           )}
         </>
       )}

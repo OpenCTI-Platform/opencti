@@ -94,8 +94,8 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent: Functio
   setNumberOfElements,
 }) => {
   const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery,
-  EntityStixCoreRelationshipsIndicatorsContextualViewLines_data$key
+    EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery,
+    EntityStixCoreRelationshipsIndicatorsContextualViewLines_data$key
   >({
     queryRef,
     linesQuery: contextualViewLinesQuery,
@@ -126,7 +126,7 @@ const EntityStixCoreRelationshipsIndicatorsContextualViewLinesComponent: Functio
 };
 
 const EntityStixCoreRelationshipsIndicatorsContextualViewLines: FunctionComponent<
-Omit<EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps, 'queryRef'>
+  Omit<EntityStixCoreRelationshipsIndicatorsContextualViewLinesProps, 'queryRef'>
 > = (props) => {
   const queryRef = useQueryLoading<EntityStixCoreRelationshipsIndicatorsContextualViewLinesQuery>(
     contextualViewLinesQuery,

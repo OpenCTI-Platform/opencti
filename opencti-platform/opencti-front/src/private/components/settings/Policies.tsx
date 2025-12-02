@@ -135,9 +135,9 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
   const [platformOrganization, setPlatformOrganization] = useState(
     settings.platform_organization
       ? {
-        label: settings.platform_organization?.name,
-        value: settings.platform_organization?.id,
-      }
+          label: settings.platform_organization?.name,
+          value: settings.platform_organization?.id,
+        }
       : null,
   );
 
@@ -410,8 +410,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     </Typography>
                     <Paper
                       style={{
-                      marginTop: 10,
-                    }}
+                        marginTop: 10,
+                      }}
                       classes={{ root: classes.paper }}
                       className="paper-for-grid"
                       variant="outlined"

@@ -240,10 +240,10 @@ const AISummaryContainers = ({ busId, isContainer, filters, loading, setLoading 
     }
     const finalFilters = isContainer || !startDate ? filters
       : {
-        mode: filters.mode,
-        filters: [...filters.filters, { key: 'created', values: [startDate], operator: 'gte' }],
-        filterGroups: filters.filterGroups,
-      };
+          mode: filters.mode,
+          filters: [...filters.filters, { key: 'created', values: [startDate], operator: 'gte' }],
+          filterGroups: filters.filterGroups,
+        };
     setLoading(true);
     fetchQuery(aISummaryContainersQuery, {
       busId,

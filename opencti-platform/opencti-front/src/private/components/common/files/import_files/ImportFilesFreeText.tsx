@@ -84,10 +84,10 @@ const ImportFilesFreeText = ({ onSumbit, onClose }: { onSumbit: (file: File) => 
               </Button>
             </Box>
           </Box>
-);
+        );
       }}
     </Formik>
-);
+  );
 };
 
 export default ImportFilesFreeText;

@@ -26,15 +26,15 @@ const WidgetListCoreObjects = ({
 
     return columns
       .reduce<Record<string, Partial<DataTableColumn>>>(
-      (acc, { attribute, label }) => {
-        if (!attribute) {
+        (acc, { attribute, label }) => {
+          if (!attribute) {
+            return acc;
+          }
+          acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
           return acc;
-        }
-        acc[attribute] = { percentWidth, isSortable: false, ...(label ? { label } : {}) };
-        return acc;
-      },
-      {},
-    );
+        },
+        {},
+      );
   }, [columns]);
 
   return (

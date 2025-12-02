@@ -153,14 +153,14 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                     primary={(
                       <div>
                         {displayRelation && (
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '10%' }}
-                        >
-                          <ItemEntityType
-                            entityType={node.relationship_type}
-                          />
-                        </div>
+                          <div
+                            className={classes.bodyItem}
+                            style={{ width: '10%' }}
+                          >
+                            <ItemEntityType
+                              entityType={node.relationship_type}
+                            />
+                          </div>
                         )}
                         <div
                           className={classes.bodyItem}

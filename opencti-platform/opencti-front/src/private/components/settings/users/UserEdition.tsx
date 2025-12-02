@@ -146,34 +146,34 @@ const UserEditionDrawer: FunctionComponent<UserEditionDrawerProps> = ({
               <Tab label={t_i18n('Groups')} />
               {hasSetAccess
                 && (
-                <Tab
-                  disabled={user.objectAssignedOrganization?.edges.length === 0}
-                  label={(
-                    <div style={{ alignItems: 'center', display: 'flex' }}>
-                      {t_i18n('Organizations admin')}<EEChip />
-                    </div>
-                )}
-                />
-)
-            }
+                  <Tab
+                    disabled={user.objectAssignedOrganization?.edges.length === 0}
+                    label={(
+                      <div style={{ alignItems: 'center', display: 'flex' }}>
+                        {t_i18n('Organizations admin')}<EEChip />
+                      </div>
+                    )}
+                  />
+                )
+              }
               {hasSetAccess && <Tab label={t_i18n('Confidences')} />}
             </Tabs>
           </Box>
           {currentTab === 0 && (
-          <UserEditionOverview user={user} context={user.editContext} />
-        )}
+            <UserEditionOverview user={user} context={user.editContext} />
+          )}
           {currentTab === 1 && (
-          <UserEditionPassword user={user} context={user.editContext} />
-        )}
+            <UserEditionPassword user={user} context={user.editContext} />
+          )}
           {currentTab === 2 && <UserEditionGroups user={user} />}
           {hasSetAccess && currentTab === 3 && (
-          <UserEditionOrganizationsAdmin user={user} />
-        )}
+            <UserEditionOrganizationsAdmin user={user} />
+          )}
           {hasSetAccess && currentTab === 4 && (
-          <UserEditionConfidence user={user} context={user.editContext} />
-        )}
+            <UserEditionConfidence user={user} context={user.editContext} />
+          )}
         </>
-)
+      )
         : (<Loader />)}
     </Drawer>
   );

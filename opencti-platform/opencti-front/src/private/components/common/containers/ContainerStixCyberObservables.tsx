@@ -60,7 +60,7 @@ interface ContainerStixCyberObservablesComponentProps {
 }
 
 const ContainerStixCyberObservablesComponent: FunctionComponent<
-ContainerStixCyberObservablesComponentProps
+  ContainerStixCyberObservablesComponentProps
 > = ({ container, enableReferences }) => {
   const { t_i18n } = useFormatter();
 

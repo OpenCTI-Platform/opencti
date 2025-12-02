@@ -190,7 +190,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
                     {t_i18n('There are processes still running that could impact the data of the draft. '
                       + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
                   </Alert>
-)}
+                )}
               </DialogContentText>
             </DialogContent>
             <DialogActions>

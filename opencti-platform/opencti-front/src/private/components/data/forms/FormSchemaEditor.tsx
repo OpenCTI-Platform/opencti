@@ -942,14 +942,14 @@ const FormSchemaEditor: FunctionComponent<FormSchemaEditorProps> = ({
 
                 const newMandatoryFields = shouldAddMandatoryFields
                   ? getInitialMandatoryFields(newEntityType, entityTypes, t_i18n)
-                    .map((field) => ({
-                      ...field,
-                      attributeMapping: {
-                        ...field.attributeMapping,
-                        entity: entity.id,
-                        mappingType: 'nested' as const,
-                      },
-                    }))
+                      .map((field) => ({
+                        ...field,
+                        attributeMapping: {
+                          ...field.attributeMapping,
+                          entity: entity.id,
+                          mappingType: 'nested' as const,
+                        },
+                      }))
                   : [];
 
                 // Remove old fields for this entity and add new mandatory fields

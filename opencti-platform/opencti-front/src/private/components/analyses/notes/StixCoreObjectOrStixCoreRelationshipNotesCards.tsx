@@ -326,7 +326,7 @@ const NoteForm = ({ defaultMarkings, onToggleWrite, onToggleMore, onSubmit }: No
 };
 
 const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipNotesCardsProps
+  StixCoreObjectOrStixCoreRelationshipNotesCardsProps
 > = ({
   id,
   marginTop = 0,
@@ -338,8 +338,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const { t_i18n } = useFormatter();
 
   const data = usePreloadedFragment<
-  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
-  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
+    StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+    StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
   >({
     queryDef: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
     fragmentDef: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,

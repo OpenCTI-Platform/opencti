@@ -281,16 +281,16 @@ const StixCoreObjectContentFiles: FunctionComponent<StixCoreObjectContentFilesPr
               {t_i18n('Generated finished intelligence')} {!isEnterpriseEdition && <EEChip />}
               {isEnterpriseEdition
                 && (
-                <Tooltip
-                  title={t_i18n('Files generated from a template')}
-                >
-                  <InformationOutline
-                    fontSize="small"
-                    color="primary"
-                    style={{ marginLeft: 5 }}
-                  />
-                </Tooltip>
-)}
+                  <Tooltip
+                    title={t_i18n('Files generated from a template')}
+                  >
+                    <InformationOutline
+                      fontSize="small"
+                      color="primary"
+                      style={{ marginLeft: 5 }}
+                    />
+                  </Tooltip>
+                )}
             </>
           )}
           actions={!draftContext && isEnterpriseEdition && (

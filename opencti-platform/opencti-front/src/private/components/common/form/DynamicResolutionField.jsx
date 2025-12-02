@@ -120,17 +120,17 @@ const DynamicResolutionField = ({
                 }
                 return currentValueIndexed[val]
                   ? {
-                    id: currentValueIndexed[val].id,
-                    type: currentValueIndexed[val].type,
-                    name: currentValueIndexed[val].name,
-                    in_platform: false,
-                  }
+                      id: currentValueIndexed[val].id,
+                      type: currentValueIndexed[val].type,
+                      name: currentValueIndexed[val].name,
+                      in_platform: false,
+                    }
                   : {
-                    id: `${convertToStixType(R.head(types))}--${uuid()}`,
-                    type: R.head(types),
-                    name: val.trim(),
-                    in_platform: false,
-                  };
+                      id: `${convertToStixType(R.head(types))}--${uuid()}`,
+                      type: R.head(types),
+                      name: val.trim(),
+                      in_platform: false,
+                    };
               });
           }),
       );
@@ -156,10 +156,10 @@ const DynamicResolutionField = ({
       field.name,
       field.value.map((n) => (n.id === id
         ? {
-          ...n,
-          id: `${convertToStixType(event.target.value)}--${uuid()}`,
-          type: event.target.value,
-        }
+            ...n,
+            id: `${convertToStixType(event.target.value)}--${uuid()}`,
+            type: event.target.value,
+          }
         : n)),
     );
   };

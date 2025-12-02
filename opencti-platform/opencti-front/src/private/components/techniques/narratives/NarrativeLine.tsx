@@ -126,7 +126,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, data, event)
           : onToggleEntity(data, event))
-          }
+        }
       >
         <Checkbox
           edge="start"

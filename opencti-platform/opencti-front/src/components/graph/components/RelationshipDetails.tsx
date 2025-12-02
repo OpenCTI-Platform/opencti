@@ -316,7 +316,7 @@ interface RelationshipDetailsComponentProps {
 }
 
 const RelationshipDetailsComponent: FunctionComponent<
-RelationshipDetailsComponentProps
+  RelationshipDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t_i18n, fldt } = useFormatter();
@@ -376,13 +376,13 @@ RelationshipDetailsComponentProps
         </Typography>
         {stixRelationship.description
           && stixRelationship.description.length > 0 ? (
-            <ExpandableMarkdown
-              source={stixRelationship.description}
-              limit={400}
-            />
-          ) : (
-            '-'
-          )}
+              <ExpandableMarkdown
+                source={stixRelationship.description}
+                limit={400}
+              />
+            ) : (
+              '-'
+            )}
         <Typography variant="h3" gutterBottom={true} className={classes.label}>
           {t_i18n('Confidence level')}
         </Typography>
@@ -532,23 +532,23 @@ RelationshipDetailsComponentProps
       />
       {!stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
-          <RelationShipFromAndTo
-            id={stixRelationship.from?.id}
-            direction="From"
-          />
+        <RelationShipFromAndTo
+          id={stixRelationship.from?.id}
+          direction="From"
+        />
       )}
       {stixRelationship.from?.relationship_type
         && stixRelationship.from?.id && (
-          <div>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              className={classes.label}
-            >
-              {t_i18n('Source')}
-            </Typography>
-            {stixRelationship.from?.relationship_type}
-          </div>
+        <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            className={classes.label}
+          >
+            {t_i18n('Source')}
+          </Typography>
+          {stixRelationship.from?.relationship_type}
+        </div>
       )}
       {!stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
         <RelationShipFromAndTo id={stixRelationship.to?.id} direction="To" />
@@ -594,7 +594,7 @@ interface RelationshipDetailsProps {
 }
 
 const RelationshipDetails: FunctionComponent<
-Omit<RelationshipDetailsProps, 'queryRef'>
+  Omit<RelationshipDetailsProps, 'queryRef'>
 > = ({ relation }) => {
   const queryRef = useQueryLoading<RelationshipDetailsQuery>(
     relationshipDetailsQuery,

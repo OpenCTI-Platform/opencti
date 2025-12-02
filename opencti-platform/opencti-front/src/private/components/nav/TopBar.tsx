@@ -315,47 +315,47 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
           )}
           <div className={classes.barRightContainer}>
             {!draftContext && (
-            <Security needs={[KNOWLEDGE]}>
-              <>
-                { ee.license_type === 'nfr' && <ItemBoolean variant="large" label="EE DEV LICENSE" status={false} /> }
-                <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-                  <UploadImport
-                    variant="icon"
-                    size="medium"
-                    fontSize="medium"
-                    color="inherit"
-                  />
-                </Security>
-                <Tooltip title={t_i18n('Triggers')}>
-                  <IconButton
-                    size="medium"
-                    aria-haspopup="true"
-                    component={Link}
-                    to="/dashboard/profile/triggers"
-                    color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
-                  >
-                    <AlarmOnOutlined fontSize="medium" />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title={t_i18n('Notifications')}>
-                  <IconButton
-                    size="medium"
-                    aria-haspopup="true"
-                    component={Link}
-                    to="/dashboard/profile/notifications"
-                    color={location.pathname === '/dashboard/profile/notifications' ? 'primary' : 'inherit'}
-                  >
-                    <Badge
-                      color="secondary"
-                      variant="dot"
-                      invisible={!isNewNotification}
+              <Security needs={[KNOWLEDGE]}>
+                <>
+                  { ee.license_type === 'nfr' && <ItemBoolean variant="large" label="EE DEV LICENSE" status={false} /> }
+                  <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+                    <UploadImport
+                      variant="icon"
+                      size="medium"
+                      fontSize="medium"
+                      color="inherit"
+                    />
+                  </Security>
+                  <Tooltip title={t_i18n('Triggers')}>
+                    <IconButton
+                      size="medium"
+                      aria-haspopup="true"
+                      component={Link}
+                      to="/dashboard/profile/triggers"
+                      color={location.pathname === '/dashboard/profile/triggers' ? 'primary' : 'inherit'}
                     >
-                      <NotificationsOutlined fontSize="medium" />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
-              </>
-            </Security>
+                      <AlarmOnOutlined fontSize="medium" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title={t_i18n('Notifications')}>
+                    <IconButton
+                      size="medium"
+                      aria-haspopup="true"
+                      component={Link}
+                      to="/dashboard/profile/notifications"
+                      color={location.pathname === '/dashboard/profile/notifications' ? 'primary' : 'inherit'}
+                    >
+                      <Badge
+                        color="secondary"
+                        variant="dot"
+                        invisible={!isNewNotification}
+                      >
+                        <NotificationsOutlined fontSize="medium" />
+                      </Badge>
+                    </IconButton>
+                  </Tooltip>
+                </>
+              </Security>
             )}
             <IconButton
               color="inherit"

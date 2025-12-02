@@ -236,18 +236,18 @@ const EntityStixCoreRelationshipsIndicatorsEntitiesView: FunctionComponent<Entit
   return (
     <>
       {queryRef && (
-      <DataTable
-        dataColumns={dataColumns}
-        resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) => (data.indicators?.edges ?? []).map((n) => n?.node)}
-        storageKey={localStorageKey}
-        initialValues={initialValues}
-        toolbarFilters={contextFilters}
-        additionalFilters={contextFilters}
-        preloadedPaginationProps={preloadedPaginationProps}
-        lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
-        exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
-        additionalHeaderButtons={[...viewButtons]}
-      />
+        <DataTable
+          dataColumns={dataColumns}
+          resolvePath={(data: EntityStixCoreRelationshipsIndicatorsEntitiesView_data$data) => (data.indicators?.edges ?? []).map((n) => n?.node)}
+          storageKey={localStorageKey}
+          initialValues={initialValues}
+          toolbarFilters={contextFilters}
+          additionalFilters={contextFilters}
+          preloadedPaginationProps={preloadedPaginationProps}
+          lineFragment={entityStixCoreRelationshipsIndicatorsEntitiesViewLineFragment}
+          exportContext={{ entity_id: entityId, entity_type: 'Indicator' }}
+          additionalHeaderButtons={[...viewButtons]}
+        />
       )}
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity

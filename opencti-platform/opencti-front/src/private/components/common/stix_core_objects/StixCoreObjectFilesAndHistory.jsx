@@ -359,27 +359,27 @@ const StixCoreObjectFilesAndHistory = ({
                 )}
                 {selectedConnector?.configurations?.length > 0
                   ? (
-                    <Field
-                      component={SelectField}
-                      variant="standard"
-                      name="configuration"
-                      label={t_i18n('Configuration')}
-                      fullWidth={true}
-                      containerstyle={{ marginTop: 20, width: '100%' }}
-                      onChange={(_, value) => onCsvMapperSelection(value)}
-                    >
-                      {selectedConnector.configurations.map((config) => {
-                      return (
-                        <MenuItem
-                          key={config.id}
-                          value={config.configuration}
-                        >
-                          {config.name}
-                        </MenuItem>
-                      );
-                    })}
-                    </Field>
-) : <ManageImportConnectorMessage name={selectedConnector?.name} />
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="configuration"
+                        label={t_i18n('Configuration')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                        onChange={(_, value) => onCsvMapperSelection(value)}
+                      >
+                        {selectedConnector.configurations.map((config) => {
+                          return (
+                            <MenuItem
+                              key={config.id}
+                              value={config.configuration}
+                            >
+                              {config.name}
+                            </MenuItem>
+                          );
+                        })}
+                      </Field>
+                    ) : <ManageImportConnectorMessage name={selectedConnector?.name} />
                 }
                 {selectedConnector?.name === 'ImportCsv'
                   && hasUserChoiceCsvMapper

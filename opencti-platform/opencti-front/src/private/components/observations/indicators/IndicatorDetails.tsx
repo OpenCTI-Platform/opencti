@@ -105,34 +105,34 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 <ItemScore score={indicator.x_opencti_score} />
               </Grid>
               {indicator.decay_applied_rule && (
-              <Grid item xs={8}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={openLifecycleDialog}
-                  startIcon={<TroubleshootOutlined />}
-                  sx={{ marginTop: '22px' }}
-                >
-                  {t_i18n('Lifecycle')}
-                </Button>
-                <Dialog
-                  slotProps={{ paper: { elevation: 1 } }}
-                  open={isLifecycleOpen}
-                  keepMounted={true}
-                  slots={{ transition: Transition }}
-                  onClose={onDecayLifecycleClose}
-                  fullWidth
-                  maxWidth="lg"
-                >
-                  <DialogTitle>{t_i18n('Lifecycle details')}</DialogTitle>
-                  <DecayDialogContent indicator={indicator} />
-                  <DialogActions>
-                    <Button onClick={onDecayLifecycleClose}>
-                      {t_i18n('Close')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Grid>
+                <Grid item xs={8}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={openLifecycleDialog}
+                    startIcon={<TroubleshootOutlined />}
+                    sx={{ marginTop: '22px' }}
+                  >
+                    {t_i18n('Lifecycle')}
+                  </Button>
+                  <Dialog
+                    slotProps={{ paper: { elevation: 1 } }}
+                    open={isLifecycleOpen}
+                    keepMounted={true}
+                    slots={{ transition: Transition }}
+                    onClose={onDecayLifecycleClose}
+                    fullWidth
+                    maxWidth="lg"
+                  >
+                    <DialogTitle>{t_i18n('Lifecycle details')}</DialogTitle>
+                    <DecayDialogContent indicator={indicator} />
+                    <DialogActions>
+                      <Button onClick={onDecayLifecycleClose}>
+                        {t_i18n('Close')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </Grid>
               )}
             </Grid>
             <Typography
@@ -217,13 +217,13 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 {indicator.x_mitre_platforms?.map((platform) => (
                   platform
                   && (
-                  <ListItem key={platform} dense={true} divider={true}>
-                    <ListItemIcon>
-                      <SettingsApplications />
-                    </ListItemIcon>
-                    <ListItemText primary={platform} />
-                  </ListItem>
-)
+                    <ListItem key={platform} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <SettingsApplications />
+                      </ListItemIcon>
+                      <ListItemText primary={platform} />
+                    </ListItem>
+                  )
                 ))}
               </List>
             </FieldOrEmpty>

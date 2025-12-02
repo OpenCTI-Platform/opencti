@@ -122,21 +122,21 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
           )}
           {result
             && (
-            <Box
-              sx={{
-                paddingTop: '8px',
-                marginLeft: '12px',
-                fontSize: '1rem',
-                gap: '8px',
-                justifyContent: 'center',
-                display: 'flex',
-              }}
-            >
-              <span>{t_i18n('Objects found')} : </span>
-              <span><strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
-              <span><strong>{result?.ingestionJsonTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
-            </Box>
-)
+              <Box
+                sx={{
+                  paddingTop: '8px',
+                  marginLeft: '12px',
+                  fontSize: '1rem',
+                  gap: '8px',
+                  justifyContent: 'center',
+                  display: 'flex',
+                }}
+              >
+                <span>{t_i18n('Objects found')} : </span>
+                <span><strong>{result?.ingestionJsonTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
+                <span><strong>{result?.ingestionJsonTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
+              </Box>
+            )
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>

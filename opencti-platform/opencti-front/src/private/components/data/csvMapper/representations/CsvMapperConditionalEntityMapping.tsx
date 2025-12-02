@@ -21,7 +21,7 @@ interface CsvMapperConditionalEntityMappingProps
 }
 
 const CsvMapperConditionalEntityMapping: FunctionComponent<
-CsvMapperConditionalEntityMappingProps
+  CsvMapperConditionalEntityMappingProps
 > = ({ form, representationName, representation }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();

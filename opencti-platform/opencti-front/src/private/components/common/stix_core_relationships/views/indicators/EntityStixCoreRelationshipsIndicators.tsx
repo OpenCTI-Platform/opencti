@@ -51,32 +51,32 @@ const EntityStixCoreRelationshipsIndicators: FunctionComponent<EntityStixCoreRel
       <div className={classes.container}>
         {view === 'entities'
           && (
-          <EntityStixCoreRelationshipsIndicatorsEntitiesView
-            entityId={entityId}
-            relationshipTypes={relationshipTypes}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-            localStorage={localStorage}
-            isRelationReversed
-            currentView={view}
-          />
-)}
+            <EntityStixCoreRelationshipsIndicatorsEntitiesView
+              entityId={entityId}
+              relationshipTypes={relationshipTypes}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+              localStorage={localStorage}
+              isRelationReversed
+              currentView={view}
+            />
+          )}
 
         {view === 'relationships'
           && (
-          <EntityStixCoreRelationshipsRelationshipsView
-            entityId={entityId}
-            entityLink={entityLink}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-            localStorage={localStorage}
-            relationshipTypes={relationshipTypes}
-            stixCoreObjectTypes={entityTypes}
-            isRelationReversed
-            currentView={view}
-            enableContextualView
-          />
-)}
+            <EntityStixCoreRelationshipsRelationshipsView
+              entityId={entityId}
+              entityLink={entityLink}
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+              localStorage={localStorage}
+              relationshipTypes={relationshipTypes}
+              stixCoreObjectTypes={entityTypes}
+              isRelationReversed
+              currentView={view}
+              enableContextualView
+            />
+          )}
 
         {view === 'contextual' && (
           <EntityStixCoreRelationshipsIndicatorsContextualView

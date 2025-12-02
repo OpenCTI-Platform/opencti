@@ -843,18 +843,18 @@ class DataTableToolBar extends Component {
     const finalActions = taskScope === 'USER'
       ? this.getUserDatatableFinalActions(actions)
       : R.map(
-        (n) => ({
-          type: n.type,
-          context: n.context
-            ? {
-              ...n.context,
-              values: R.map((o) => o.id || o.value || o, n.context.values),
-            }
-            : null,
-          containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
-        }),
-        actions,
-      );
+          (n) => ({
+            type: n.type,
+            context: n.context
+              ? {
+                  ...n.context,
+                  values: R.map((o) => o.id || o.value || o, n.context.values),
+                }
+              : null,
+            containerId: n.type === 'PROMOTE' && promoteToContainer && container?.id ? container.id : null,
+          }),
+          actions,
+        );
 
     if (selectAll) {
       commitMutation({
@@ -2214,13 +2214,13 @@ class DataTableToolBar extends Component {
                 .filter((name) => name !== keptElement.name);
               const aliases = keptElement.aliases !== null
                 ? selectedElementsList
-                  .map((el) => el.aliases)
-                  .flat()
-                  .filter((alias) => alias !== null && alias !== undefined)
+                    .map((el) => el.aliases)
+                    .flat()
+                    .filter((alias) => alias !== null && alias !== undefined)
                 : selectedElementsList
-                  .map((el) => el.x_opencti_aliases)
-                  .flat()
-                  .filter((alias) => alias !== null && alias !== undefined);
+                    .map((el) => el.x_opencti_aliases)
+                    .flat()
+                    .filter((alias) => alias !== null && alias !== undefined);
 
               newAliases = names.concat(aliases).filter((o) => o && o.length > 0);
             }
@@ -2355,32 +2355,32 @@ class DataTableToolBar extends Component {
                       />
                     )}
                     {!removeAuthMembersEnabled && !removeFromDraftEnabled && !isInDraft && !isUserDatatable && (
-                    <UserContext.Consumer>
-                      {({ platformModuleHelpers }) => {
-                        const label = platformModuleHelpers.isRuleEngineEnable()
-                          ? 'Rule rescan'
-                          : 'Rule rescan (engine is disabled)';
-                        const buttonDisable = typesAreNotScannable
-                          || !platformModuleHelpers.isRuleEngineEnable()
-                          || numberOfSelectedElements === 0
-                          || this.state.processing;
-                        return typesAreNotScannable ? undefined : (
-                          <Tooltip title={t(label)}>
-                            <span>
-                              <IconButton
-                                aria-label="update"
-                                disabled={buttonDisable}
-                                onClick={this.handleOpenRescan.bind(this)}
-                                color="primary"
-                                size="small"
-                              >
-                                <AutoFixHighOutlined fontSize="small" />
-                              </IconButton>
-                            </span>
-                          </Tooltip>
-                        );
-                      }}
-                    </UserContext.Consumer>
+                      <UserContext.Consumer>
+                        {({ platformModuleHelpers }) => {
+                          const label = platformModuleHelpers.isRuleEngineEnable()
+                            ? 'Rule rescan'
+                            : 'Rule rescan (engine is disabled)';
+                          const buttonDisable = typesAreNotScannable
+                            || !platformModuleHelpers.isRuleEngineEnable()
+                            || numberOfSelectedElements === 0
+                            || this.state.processing;
+                          return typesAreNotScannable ? undefined : (
+                            <Tooltip title={t(label)}>
+                              <span>
+                                <IconButton
+                                  aria-label="update"
+                                  disabled={buttonDisable}
+                                  onClick={this.handleOpenRescan.bind(this)}
+                                  color="primary"
+                                  size="small"
+                                >
+                                  <AutoFixHighOutlined fontSize="small" />
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          );
+                        }}
+                      </UserContext.Consumer>
                     )}
                     {this.props.handleCopy && (
                       <Tooltip title={titleCopy}>
@@ -2560,8 +2560,8 @@ class DataTableToolBar extends Component {
                           onClick={this.handleLaunchRemoveFromDraft.bind(this)}
                           size="small"
                           disabled={
-                              numberOfSelectedElements === 0
-                              || this.state.processing
+                            numberOfSelectedElements === 0
+                            || this.state.processing
                           }
                         >
                           <DeleteSweepOutlined fontSize="small" color="primary" />
@@ -2699,15 +2699,15 @@ class DataTableToolBar extends Component {
                               <span>
                                 {mergingElement
                                   ? truncate(
-                                    R.join(', ', [
-                                      getMainRepresentative(mergingElement),
-                                    ]),
-                                    80,
-                                  )
+                                      R.join(', ', [
+                                        getMainRepresentative(mergingElement),
+                                      ]),
+                                      80,
+                                    )
                                   : truncate(
-                                    selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
-                                    80,
-                                  )}
+                                      selectedElementsList.map((o) => getMainRepresentative(o)).join(', '),
+                                      80,
+                                    )}
                               </span>
                             )}
                           </TableCell>
@@ -2904,10 +2904,10 @@ class DataTableToolBar extends Component {
                         secondaryAction={(
                           <Radio
                             checked={
-                                      keptEntityId
-                                        ? keptEntityId === element.id
-                                        : R.head(selectedElementsList).id === element.id
-                                  }
+                              keptEntityId
+                                ? keptEntityId === element.id
+                                : R.head(selectedElementsList).id === element.id
+                            }
                             onChange={this.handleChangeKeptEntityId.bind(
                               this,
                               element.id,

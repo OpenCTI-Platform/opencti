@@ -317,23 +317,23 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
       />
 
       {allowCreation && (
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <StixCoreRelationshipCreationFromEntity
-          entityId={entityId}
-          allowedRelationshipTypes={relationshipTypes}
-          isRelationReversed={reversedRelation}
-          handleReverseRelation={handleReverseRelation}
-          targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
-          targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
-          defaultStartTime={defaultStartTime}
-          defaultStopTime={defaultStopTime}
-          paginationOptions={paginationOptions}
-          paddingRight={paddingRightButtonAdd ?? 220}
-          currentView={finalView}
-          isCoverage={isCoverage}
-        />
-      </Security>
-)}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <StixCoreRelationshipCreationFromEntity
+            entityId={entityId}
+            allowedRelationshipTypes={relationshipTypes}
+            isRelationReversed={reversedRelation}
+            handleReverseRelation={handleReverseRelation}
+            targetStixDomainObjectTypes={computeTargetStixDomainObjectTypes(stixCoreObjectTypes)}
+            targetStixCyberObservableTypes={computeTargetStixCyberObservableTypes(stixCoreObjectTypes)}
+            defaultStartTime={defaultStartTime}
+            defaultStopTime={defaultStopTime}
+            paginationOptions={paginationOptions}
+            paddingRight={paddingRightButtonAdd ?? 220}
+            currentView={finalView}
+            isCoverage={isCoverage}
+          />
+        </Security>
+      )}
     </>
   );
 };

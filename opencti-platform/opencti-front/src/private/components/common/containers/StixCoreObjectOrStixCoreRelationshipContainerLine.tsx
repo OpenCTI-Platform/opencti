@@ -58,7 +58,7 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps {
 }
 
 export const StixCoreObjectOrStixCoreRelationshipContainerLineComponent: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
+  StixCoreObjectOrStixCoreRelationshipContainerLineComponentProps
 > = ({ node, dataColumns, onLabelClick, redirectionMode }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
@@ -397,7 +397,7 @@ interface StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps {
 }
 
 export const StixCoreObjectOrStixCoreRelationshipContainerLineDummy: FunctionComponent<
-StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
+  StixCoreObjectOrStixCoreRelationshipContainerLineDummyProps
 > = ({ dataColumns }) => {
   const classes = useStyles();
 

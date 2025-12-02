@@ -48,7 +48,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
             <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?H=filters#operators">
               {t_i18n('our documentation')}
             </Link>
-),
+          ),
         },
       });
     }
@@ -86,13 +86,13 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
     <div style={{ display: 'flex' }}>
       {isDatePickerOpen
         && (
-        <DateTimePicker
-          open={true}
-          onClose={() => setIsDatePickerOpen(false)}
-          sx={{ display: 'none' }}
-          onChange={handleChangeAbsoluteDateFilter}
-        />
-)
+          <DateTimePicker
+            open={true}
+            onClose={() => setIsDatePickerOpen(false)}
+            sx={{ display: 'none' }}
+            onChange={handleChangeAbsoluteDateFilter}
+          />
+        )
       }
       <TextField
         variant="outlined"
@@ -119,18 +119,18 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
               <Button
                 size="small"
                 sx={{
-                marginLeft: -1,
-                marginRight: -3,
-                color: theme.palette.text.primary,
-                ':hover': {
-                  backgroundColor: 'transparent',
-                },
-              }}
+                  marginLeft: -1,
+                  marginRight: -3,
+                  color: theme.palette.text.primary,
+                  ':hover': {
+                    backgroundColor: 'transparent',
+                  },
+                }}
                 onClick={() => setIsDatePickerOpen(true)}
               >
                 <DateRangeOutlined />
               </Button>
-),
+            ),
           },
         }}
       />

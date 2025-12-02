@@ -274,7 +274,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       containerstyle={fieldSpacingContainerStyle}
                       renderValue={(value) => streams.filter((stream) => stream.value === value).at(0)
                         .name
-                            }
+                      }
                     >
                       {streams.map(
                         ({ value, label, name, description, filters }) => {
@@ -321,7 +321,7 @@ const SyncCreation = ({ paginationOptions }) => {
                         variant="contained"
                         color="secondary"
                         onClick={() => handleGetStreams(values, setErrors, errors)
-                              }
+                        }
                         disabled={isSubmitting}
                         classes={{ root: classes.button }}
                       >

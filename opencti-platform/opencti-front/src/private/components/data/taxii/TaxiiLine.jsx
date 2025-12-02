@@ -131,12 +131,12 @@ class TaxiiLineLineComponent extends Component {
                 >
                   {isFilterGroupNotEmpty(filters)
                     ? (
-                      <FilterIconButton
-                        filters={filters}
-                        dataColumns={dataColumns}
-                        styleNumber={3}
-                      />
-)
+                        <FilterIconButton
+                          filters={filters}
+                          dataColumns={dataColumns}
+                          styleNumber={3}
+                        />
+                      )
                     : '-'}
                 </div>
               </>

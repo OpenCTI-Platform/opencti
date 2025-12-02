@@ -115,18 +115,18 @@ const WorkspaceHeader = ({
           />
           <WorkspaceKebabMenu data={workspace} />
           {variant === 'dashboard' && (
-          <>
-            <Security
-              needs={[EXPLORE_EXUPDATE]}
-              hasAccess={canEdit}
-            >
-              <WorkspaceWidgetConfig
-                onComplete={handleAddWidget}
-                handleImportWidget={handleImportWidget}
-              />
-            </Security>
-          </>
-)}
+            <>
+              <Security
+                needs={[EXPLORE_EXUPDATE]}
+                hasAccess={canEdit}
+              >
+                <WorkspaceWidgetConfig
+                  onComplete={handleAddWidget}
+                  handleImportWidget={handleImportWidget}
+                />
+              </Security>
+            </>
+          )}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
             <Button
               variant="contained"

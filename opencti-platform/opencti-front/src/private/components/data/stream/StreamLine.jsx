@@ -144,13 +144,13 @@ class StreamLineLineComponent extends Component {
                 >
                   {isFilterGroupNotEmpty(filters)
                     ? (
-                      <FilterIconButton
-                        filters={filters}
-                        dataColumns={dataColumns}
-                        styleNumber={3}
-                        entityTypes={['Stix-Filtering']}
-                      />
-)
+                        <FilterIconButton
+                          filters={filters}
+                          dataColumns={dataColumns}
+                          styleNumber={3}
+                          entityTypes={['Stix-Filtering']}
+                        />
+                      )
                     : '-'}
                 </div>
               </>

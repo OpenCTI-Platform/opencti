@@ -48,10 +48,10 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
   // extracting available entities and relationships types from schema
   const { schema } = useAuth();
   const [availableEntityTypes, setAvailableEntityTypes] = useState<
-  RepresentationFormEntityOption[]
+    RepresentationFormEntityOption[]
   >([]);
   const [availableRelationshipTypes, setAvailableRelationshipTypes] = useState<
-  RepresentationFormEntityOption[]
+    RepresentationFormEntityOption[]
   >([]);
 
   // load the available types once in state
@@ -310,9 +310,9 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                     {values.relationship_representations.map((_, idx) => (
                       <Box
                         sx={{
-                        marginTop: 2.5,
-                        display: 'flex',
-                      }}
+                          marginTop: 2.5,
+                          display: 'flex',
+                        }}
                         key={`relationship-${idx}`}
                       >
                         <Field

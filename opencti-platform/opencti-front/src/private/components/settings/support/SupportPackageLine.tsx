@@ -165,28 +165,28 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
         secondaryAction={(
           <>
             {!isReady && (
-            <Tooltip title={t_i18n('Force download on this support package')}>
-              <span>
-                <IconButton disabled={!isTooLong} onClick={handleForceZip}>
-                  <DownloadingOutlined fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-)}
+              <Tooltip title={t_i18n('Force download on this support package')}>
+                <span>
+                  <IconButton disabled={!isTooLong} onClick={handleForceZip}>
+                    <DownloadingOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
             {isReady && (
-            <Tooltip title={t_i18n('Download this support package')}>
-              <span>
-                <IconButton
-                  disabled={!data.package_url}
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                    data.package_url || '',
-                  )}`}
-                >
-                  <GetAppOutlined fontSize="small" />
-                </IconButton>
-              </span>
-            </Tooltip>
-)}
+              <Tooltip title={t_i18n('Download this support package')}>
+                <span>
+                  <IconButton
+                    disabled={!data.package_url}
+                    href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                      data.package_url || '',
+                    )}`}
+                  >
+                    <GetAppOutlined fontSize="small" />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
             <Tooltip title={t_i18n('Delete this support package')}>
               <span>
                 <IconButton
@@ -210,9 +210,9 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
             />
           )}
           {isProgress && isTimeout && (
-          <FileOutline
-            color="inherit"
-          />
+            <FileOutline
+              color="inherit"
+            />
           )}
           {!isProgress && (
             <FileOutline

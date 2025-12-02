@@ -131,17 +131,17 @@ const useGraphParser = () => {
       // List of other hashes to display (without duplicating the observable_value)
       const hashesList = data.hashes && Array.isArray(data.hashes)
         ? data.hashes
-          .filter((hashObj) => hashObj.hash !== displayValue)
-          .map((hashObj) => `${hashObj.algorithm}: ${hashObj.hash}`)
-          .join('\n')
+            .filter((hashObj) => hashObj.hash !== displayValue)
+            .map((hashObj) => `${hashObj.algorithm}: ${hashObj.hash}`)
+            .join('\n')
         : '';
       // Add name (observableName) if available and different from observable_value
       const additionalInfo = (data.observableName && data.observableName !== displayValue) ? `\nName: ${data.observableName}` : '';
       // Add additional_names if available and different from `observableName`.
       const additionalNames = data.x_opencti_additional_names && Array.isArray(data.x_opencti_additional_names)
         ? data.x_opencti_additional_names
-          .filter((additionalName) => additionalName !== data.observableName)
-          .join(', ')
+            .filter((additionalName) => additionalName !== data.observableName)
+            .join(', ')
         : '';
       const additionalNamesString = additionalNames ? `\n${t_i18n('Additional Names')}: ${additionalNames}` : '';
       return `${label}: ${displayValue}${hashesList ? `\n${hashesList}` : ''}${additionalInfo}${additionalNamesString}\n${dateFormat(defaultDate(data))}`;

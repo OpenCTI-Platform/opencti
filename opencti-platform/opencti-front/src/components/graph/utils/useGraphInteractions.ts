@@ -380,8 +380,8 @@ const useGraphInteractions = () => {
   const rebuildGraphData = (objects: ObjectToParse[], resetPositions = false) => {
     const filteredObjects = context === 'correlation' && graphState.correlationMode === 'observables'
       ? objects.filter((o) => (
-        o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
-      ))
+          o.entity_type === 'Indicator' || o.parent_types.includes('Stix-Cyber-Observable')
+        ))
       : objects;
     setRawObjects(filteredObjects);
     setGraphData(context === 'correlation'

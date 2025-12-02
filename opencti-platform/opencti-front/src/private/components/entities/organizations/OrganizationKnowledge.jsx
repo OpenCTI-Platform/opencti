@@ -64,7 +64,7 @@ const OrganizationKnowledgeComponent = ({
               stixDomainObjectType="Organization"
             />
           ))
-            }
+          }
         />
         <Route
           path="/all"

@@ -49,13 +49,13 @@ const DecayRulePopover = ({ decayRule }: DecayRulePopoverProps) => {
               {!decayRule.active ? t_i18n('Activate') : t_i18n('Deactivate')}
             </MenuItem>
             {canDelete && (
-            <MenuItem onClick={() => {
-              handleOpenDelete();
-              closeMenu();
-            }}
-            >
-              {t_i18n('Delete')}
-            </MenuItem>
+              <MenuItem onClick={() => {
+                handleOpenDelete();
+                closeMenu();
+              }}
+              >
+                {t_i18n('Delete')}
+              </MenuItem>
             )}
           </Box>
         )}

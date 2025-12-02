@@ -141,8 +141,8 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({
   const { t_i18n } = useFormatter();
   const classes = useStyles();
   const data = usePreloadedFragment<
-  PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery,
-  PositionDetails_positionRelationships$key
+    PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery,
+    PositionDetails_positionRelationships$key
   >({
     queryDef: positionDetailsLocationRelationshipsLinesQuery,
     fragmentDef: positionDetailsRelationshipsFragment,

@@ -35,7 +35,7 @@ interface ContainerStixObjectsOrStixRelationshipsComponentProps {
 }
 
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
-ContainerStixObjectsOrStixRelationshipsComponentProps
+  ContainerStixObjectsOrStixRelationshipsComponentProps
 > = ({ container, isSupportParticipation = false, types, title, variant, enableReferences }) => {
   const { t_i18n } = useFormatter();
   const classes = useStyles();

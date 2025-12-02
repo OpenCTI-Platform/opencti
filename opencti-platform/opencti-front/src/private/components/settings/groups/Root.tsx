@@ -113,21 +113,21 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
             <div style={{ display: 'flex' }}>
               <div style={{ marginRight: theme.spacing(0.5) }}>
                 {canDelete && (
-                <PopoverMenu>
-                  {({ closeMenu }) => (
-                    <Box>
-                      <MenuItem
-                        disabled={!isAllowed && isSensitive}
-                        onClick={() => {
-                          handleOpenDelete();
-                          closeMenu();
-                        }}
-                      >
-                        {t_i18n('Delete')}
-                      </MenuItem>
-                    </Box>
-                  )}
-                </PopoverMenu>
+                  <PopoverMenu>
+                    {({ closeMenu }) => (
+                      <Box>
+                        <MenuItem
+                          disabled={!isAllowed && isSensitive}
+                          onClick={() => {
+                            handleOpenDelete();
+                            closeMenu();
+                          }}
+                        >
+                          {t_i18n('Delete')}
+                        </MenuItem>
+                      </Box>
+                    )}
+                  </PopoverMenu>
                 )}
               </div>
               <GroupDeletionDialog

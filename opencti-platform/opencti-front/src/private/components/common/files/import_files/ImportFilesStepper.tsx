@@ -14,12 +14,12 @@ const ImportFilesStepper = () => {
     // we decrease 'activeStep' by 1 to adjust the stepper and skip the first step.
     <Stepper nonLinear activeStep={canSelectImportMode ? activeStep : activeStep - 1} sx={{ marginInline: 10 }}>
       {canSelectImportMode && (
-      <Step key="import_mode">
-        <StepButton color="inherit" onClick={() => setActiveStep(0)}>
-          {t_i18n('Import mode')}
-        </StepButton>
-      </Step>
-)}
+        <Step key="import_mode">
+          <StepButton color="inherit" onClick={() => setActiveStep(0)}>
+            {t_i18n('Import mode')}
+          </StepButton>
+        </Step>
+      )}
       <Step key="select_file_or_form" disabled={!importMode}>
         <StepButton color="inherit" onClick={() => setActiveStep(1)}>
           {importMode === 'form' ? t_i18n('Select form') : t_i18n('Select files')}

@@ -107,11 +107,11 @@ const PirCriteriaDisplay = ({ criteria, ...props }: PirCriteriaDisplayProps) => 
   );
 
   return filtersRepresentativesQueryRef && (
-  <PirCriteriaDisplayComponent
-    {...props}
-    criteria={criteria}
-    queryRef={filtersRepresentativesQueryRef}
-  />
+    <PirCriteriaDisplayComponent
+      {...props}
+      criteria={criteria}
+      queryRef={filtersRepresentativesQueryRef}
+    />
   );
 };
 

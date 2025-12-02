@@ -153,42 +153,42 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
       <Fragment key={id}>
         {filterOperator === 'within'
           ? (
-            <>
-              {filterValues[0] === id && <span>[</span>}
-              <FilterValuesContent
-                isFilterTooltip={!!tooltip}
-                filterKey={filterKey}
-                id={id}
-                value={value}
-                filterDefinition={filterDefinition}
-                filterOperator={filterOperator}
-              />
-              <span>
-                {last(filterValues) === id ? ']' : ', '}
-              </span>
-            </>
-)
+              <>
+                {filterValues[0] === id && <span>[</span>}
+                <FilterValuesContent
+                  isFilterTooltip={!!tooltip}
+                  filterKey={filterKey}
+                  id={id}
+                  value={value}
+                  filterDefinition={filterDefinition}
+                  filterOperator={filterOperator}
+                />
+                <span>
+                  {last(filterValues) === id ? ']' : ', '}
+                </span>
+              </>
+            )
           : (
-            <>
-              <FilterValuesContent
-                redirection={tooltip ? false : redirection}
-                isFilterTooltip={!!tooltip}
-                filterKey={filterKey}
-                id={id}
-                value={value}
-                filterDefinition={filterDefinition}
-                filterOperator={filterOperator}
-              />
-              {last(filterValues) !== id && isRegardingOfFilter && (
-              <div className={classes.regardingOfOperatorReadOnly} onClick={operatorOnClick}>,</div>
-            )}
-              {last(filterValues) !== id && !isRegardingOfFilter && (
-              <div className={operatorClassName} onClick={operatorOnClick}>
-                {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
-              </div>
-            )}
-            </>
-)
+              <>
+                <FilterValuesContent
+                  redirection={tooltip ? false : redirection}
+                  isFilterTooltip={!!tooltip}
+                  filterKey={filterKey}
+                  id={id}
+                  value={value}
+                  filterDefinition={filterDefinition}
+                  filterOperator={filterOperator}
+                />
+                {last(filterValues) !== id && isRegardingOfFilter && (
+                  <div className={classes.regardingOfOperatorReadOnly} onClick={operatorOnClick}>,</div>
+                )}
+                {last(filterValues) !== id && !isRegardingOfFilter && (
+                  <div className={operatorClassName} onClick={operatorOnClick}>
+                    {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
+                  </div>
+                )}
+              </>
+            )
         }
       </Fragment>
     );
@@ -211,7 +211,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                   <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=regarding#the-regardingof-filter-key">
                     {t_i18n('read documentation')}
                   </Link>
-),
+                ),
               },
             })
           }

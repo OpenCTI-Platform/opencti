@@ -62,7 +62,7 @@ const StixSightingRelationshipLabelsView = (props) => {
       mutationRelationDelete={stixSightingRelationshipMutationRelationsDelete}
       enableReferences={useIsEnforceReference('stix-sighting-relationship')}
     />
-);
+  );
 };
 
 StixSightingRelationshipLabelsView.propTypes = {

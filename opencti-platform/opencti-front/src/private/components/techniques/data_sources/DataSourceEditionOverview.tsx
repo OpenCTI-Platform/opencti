@@ -123,10 +123,10 @@ interface DataSourceEditionOverviewProps {
   data: DataSourceEditionOverview_dataSource$key
   context:
     | readonly ({
-    readonly focusOn: string | null | undefined
-    readonly name: string
-  } | null)[]
-  | null | undefined
+      readonly focusOn: string | null | undefined
+      readonly name: string
+    } | null)[]
+    | null | undefined
   enableReferences?: boolean
   handleClose: () => void
 }
@@ -145,7 +145,7 @@ interface DataSourceEditionFormValues {
 }
 
 const DataSourceEditionOverview: FunctionComponent<
-DataSourceEditionOverviewProps
+  DataSourceEditionOverviewProps
 > = ({ data, context, enableReferences = false, handleClose }) => {
   const { t_i18n } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);

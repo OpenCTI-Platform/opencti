@@ -197,18 +197,18 @@ const RelatedContainers: React.FC<RelatedContainersProps> = ({
               </div>
             )}
           />
-) : (
-  <div style={{
-              display: 'flex',
-              height: '100%',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-  >
-    <span>
-      {t_i18n('No correlated containers has been found.')}
-    </span>
-  </div>
+        ) : (
+          <div style={{
+            display: 'flex',
+            height: '100%',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+          >
+            <span>
+              {t_i18n('No correlated containers has been found.')}
+            </span>
+          </div>
         )}
       </div>
       <Drawer

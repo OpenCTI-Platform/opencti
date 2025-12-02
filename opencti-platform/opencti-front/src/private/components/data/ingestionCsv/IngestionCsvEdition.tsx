@@ -81,31 +81,31 @@ export const initIngestionValue = (ingestionCsvData: IngestionCsvEditionFragment
     },
     ...(ingestionCsvData.authentication_type === BEARER_AUTH
       ? {
-        token: extractToken(ingestionCsvData.authentication_value),
-      }
+          token: extractToken(ingestionCsvData.authentication_value),
+        }
       : {
-        token: '',
-      }),
+          token: '',
+        }),
     ...(ingestionCsvData.authentication_type === BASIC_AUTH
       ? {
-        username: extractUsername(ingestionCsvData.authentication_value),
-        password: extractPassword(ingestionCsvData.authentication_value),
-      }
+          username: extractUsername(ingestionCsvData.authentication_value),
+          password: extractPassword(ingestionCsvData.authentication_value),
+        }
       : {
-        username: '',
-        password: '',
-      }),
+          username: '',
+          password: '',
+        }),
     ...(ingestionCsvData.authentication_type === CERT_AUTH
       ? {
-        cert: extractCert(ingestionCsvData.authentication_value),
-        key: extractKey(ingestionCsvData.authentication_value),
-        ca: extractCA(ingestionCsvData.authentication_value),
-      }
+          cert: extractCert(ingestionCsvData.authentication_value),
+          key: extractKey(ingestionCsvData.authentication_value),
+          ca: extractCA(ingestionCsvData.authentication_value),
+        }
       : {
-        cert: '',
-        key: '',
-        ca: '',
-      }),
+          cert: '',
+          key: '',
+          ca: '',
+        }),
   };
 };
 
@@ -512,13 +512,13 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
               />
               {ingestionCsvData.user?.name === 'SYSTEM'
                 && (
-                <IngestionCsvEditionUserHandling
-                  key={values.name}
-                  feedName={values.name}
-                  onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
-                  ingestionCsvDataId={ingestionCsvData.id}
-                />
-)
+                  <IngestionCsvEditionUserHandling
+                    key={values.name}
+                    feedName={values.name}
+                    onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
+                    ingestionCsvDataId={ingestionCsvData.id}
+                  />
+                )
               }
               <Box sx={{
                 marginTop: 2,
@@ -533,50 +533,50 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 />
               </Box>
               {
-                  values.csv_mapper_type && queryRef && (
-                    <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
-                      <Box sx={{ width: '100%', marginTop: 5 }}>
-                        <Alert
-                          severity="info"
-                          variant="outlined"
-                          style={{ padding: '0px 10px 0px 10px' }}
-                        >
-                          {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
-                          <br />
-                          {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
-                        </Alert>
-                      </Box>
-                      <CsvMapperField
-                        name="csv_mapper_id"
-                        isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
-                        onChange={async (_, option) => {
-                          handleSubmitField('csv_mapper_id', option);
-                          await updateCsvMapper(setFieldValue, option);
-                          const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option as CsvMapperFieldOption);
-                          await updateObjectMarkingField(setFieldValue, values, hasUserChoiceCsvMapperRepresentations);
-                        }}
-                        queryRef={queryRef}
-                      />
-                    </React.Suspense>
-                  )
-                }
-              {
-                  hasUserChoiceCsvMapper && (
-                    <ObjectMarkingField
-                      name="markings"
+                values.csv_mapper_type && queryRef && (
+                  <React.Suspense fallback={<Loader variant={LoaderVariant.inline} />}>
+                    <Box sx={{ width: '100%', marginTop: 5 }}>
+                      <Alert
+                        severity="info"
+                        variant="outlined"
+                        style={{ padding: '0px 10px 0px 10px' }}
+                      >
+                        {t_i18n('Depending on the selected CSV mapper configurations, marking definition levels can be set in the dedicated field.')}<br />
+                        <br />
+                        {t_i18n('If the CSV mapper is configured with "Use default markings definitions of the user", the default markings of the user responsible for data creation are applied to the ingested entities. Otherwise, you can choose markings to apply.')}<br />
+                      </Alert>
+                    </Box>
+                    <CsvMapperField
+                      name="csv_mapper_id"
                       isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
-                      label={t_i18n('Marking definition levels')}
-                      style={fieldSpacingContainerStyle}
-                      allowedMarkingOwnerId={isGranted ? creatorId : undefined}
-                      setFieldValue={setFieldValue}
-                      onChange={(name, value) => {
-                        if (value.length) {
-                          handleSubmitField(name, value.map((marking) => marking.value));
-                        }
+                      onChange={async (_, option) => {
+                        handleSubmitField('csv_mapper_id', option);
+                        await updateCsvMapper(setFieldValue, option);
+                        const hasUserChoiceCsvMapperRepresentations = resolveHasUserChoiceCsvMapper(option as CsvMapperFieldOption);
+                        await updateObjectMarkingField(setFieldValue, values, hasUserChoiceCsvMapperRepresentations);
                       }}
+                      queryRef={queryRef}
                     />
-                  )
-                }
+                  </React.Suspense>
+                )
+              }
+              {
+                hasUserChoiceCsvMapper && (
+                  <ObjectMarkingField
+                    name="markings"
+                    isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
+                    label={t_i18n('Marking definition levels')}
+                    style={fieldSpacingContainerStyle}
+                    allowedMarkingOwnerId={isGranted ? creatorId : undefined}
+                    setFieldValue={setFieldValue}
+                    onChange={(name, value) => {
+                      if (value.length) {
+                        handleSubmitField(name, value.map((marking) => marking.value));
+                      }
+                    }}
+                  />
+                )
+              }
               <Field
                 component={SelectField}
                 variant="standard"

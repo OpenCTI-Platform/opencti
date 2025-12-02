@@ -32,10 +32,10 @@ const LocationDetails: FunctionComponent<LocationDetailsProps> = ({ locationData
       </Typography>
       <Paper
         style={{
-        marginTop: theme.spacing(1),
-        padding: '15px',
-        borderRadius: 4,
-      }}
+          marginTop: theme.spacing(1),
+          padding: '15px',
+          borderRadius: 4,
+        }}
         className="paper-for-grid"
         variant="outlined"
       >

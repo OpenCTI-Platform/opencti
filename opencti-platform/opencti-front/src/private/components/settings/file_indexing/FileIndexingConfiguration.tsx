@@ -64,7 +64,7 @@ interface FileIndexingConfigurationFormValues {
 }
 
 const FileIndexingConfiguration: FunctionComponent<
-FileIndexingConfigurationProps
+  FileIndexingConfigurationProps
 > = ({ managerConfiguration }) => {
   const { t_i18n } = useFormatter();
   const { stixCoreObjectTypes: availableEntityTypes } = useAttributes();

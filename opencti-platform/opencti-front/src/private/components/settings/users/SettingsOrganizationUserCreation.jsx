@@ -135,21 +135,21 @@ const SettingsOrganizationUserCreation = ({
     <>
       {variant === 'controlledDial'
         ? (
-          <CreateOrgUserControlledDial
-            onOpen={() => setOpenAddUser(true)}
-            onClose={() => setOpenAddUser(false)}
-          />
-        ) : (
-          <IconButton
-            color="primary"
-            aria-label="Add"
-            onClick={() => setOpenAddUser(true)}
-            classes={{ root: classes.createButton }}
-            size="large"
-          >
-            <Add fontSize="small" />
-          </IconButton>
-        )
+            <CreateOrgUserControlledDial
+              onOpen={() => setOpenAddUser(true)}
+              onClose={() => setOpenAddUser(false)}
+            />
+          ) : (
+            <IconButton
+              color="primary"
+              aria-label="Add"
+              onClick={() => setOpenAddUser(true)}
+              classes={{ root: classes.createButton }}
+              size="large"
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          )
       }
       <Drawer
         open={openAddUser}
@@ -167,11 +167,11 @@ const SettingsOrganizationUserCreation = ({
             confirmation: '',
             objectOrganization: organization
               ? [
-                {
-                  label: organization.name,
-                  value: organization.id,
-                },
-              ]
+                  {
+                    label: organization.name,
+                    value: organization.id,
+                  },
+                ]
               : [],
             account_status: 'Active',
             account_lock_after_date: null,

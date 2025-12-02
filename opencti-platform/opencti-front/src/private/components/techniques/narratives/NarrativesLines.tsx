@@ -103,8 +103,8 @@ const NarrativesLines: FunctionComponent<NarrativesLinesProps> = ({
   onLabelClick,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  NarrativesLinesPaginationQuery,
-  NarrativesLines_data$key
+    NarrativesLinesPaginationQuery,
+    NarrativesLines_data$key
   >({
     linesQuery: narrativesLinesQuery,
     linesFragment: narrativesLinesFragment,

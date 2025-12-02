@@ -93,7 +93,7 @@ const FintelTemplateForm = ({
                     />
                   </Tooltip>
                 </>
-)}
+              )}
               containerstyle={{ marginTop: 20 }}
               onChange={onUpdate}
             />
