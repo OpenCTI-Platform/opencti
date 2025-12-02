@@ -69,6 +69,10 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
 }): ReactElement => {
   const { t_i18n } = useFormatter();
 
+  const disabledOptions = values
+    ?.map((v) => v.coverage_name)
+    .filter((coverageName) => coverageName !== '');
+
   return (
     <div style={{ ...fieldSpacingContainerStyle, ...containerStyle }}>
       <Typography variant="h4" gutterBottom>
@@ -102,6 +106,7 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
                     onChange={(__, value) => {
                       arrayHelpers.replace(index, { ...values[index], coverage_name: value.toString() });
                     }}
+                    disabledOptions={disabledOptions}
                     containerStyle={{ marginTop: 3, width: '100%' }}
                     multiple={false}
                   />
