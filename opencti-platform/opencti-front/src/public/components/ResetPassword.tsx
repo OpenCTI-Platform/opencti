@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { Alert, Button } from '@mui/material';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
@@ -90,9 +90,23 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
   const [otp, setOtp] = useState('');
   const [otpError, setOtpError] = useState(false);
   const [changePasswordError, setChangePasswordError] = useState(false);
-  const [, setResendOtp] = useState(false);
+  const [resendCodeDisabled, setResendCodeDisabled] = useState(false);
+
+  const [showResendCode, setShowResendCode] = useState(false);
+  const [hasRequestNewCode, setHasRequestNewCode] = useState(false);
+
+  const resendTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const flashError = cookies[FLASH_COOKIE] || '';
   removeCookie(FLASH_COOKIE);
+
+  useEffect(() => {
+    return () => {
+      if (resendTimeoutRef.current) {
+        clearTimeout(resendTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const [askSentOtpCommitMutation] = useApiMutation<ResetPasswordAskSendOtpMutation>(
     AskSendOtpMutation,
@@ -111,22 +125,56 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
     undefined,
   );
 
+  const handleTimeoutResetDelay = () => {
+    setResendCodeDisabled(true);
+
+    resendTimeoutRef.current = setTimeout(() => {
+      setOtpError(false);
+      setResendCodeDisabled(false);
+    }, 5000);
+  };
+
   const handleResendOtp = () => {
     if (!email) return;
-    setOtpError(false);
-    setResendOtp(true);
+
+    setResendCodeDisabled(true);
+
     askSentOtpCommitMutation({
       variables: { input: { email } },
       onCompleted: (response) => {
+        console.log('ONCOMPLETED');
         setTransactionId(response.askSendOtp ?? '');
+
+        if (resendTimeoutRef.current) {
+          clearTimeout(resendTimeoutRef.current);
+        }
+
+        resendTimeoutRef.current = setTimeout(() => {
+          setOtpError(false);
+          setResendCodeDisabled(false);
+        }, 5000);
+
       },
+      onError: () => {
+        setHasRequestNewCode(true);
+
+        if (resendTimeoutRef.current) {
+          clearTimeout(resendTimeoutRef.current);
+        }
+        
+        resendTimeoutRef.current = setTimeout(() => {
+          setOtpError(false);
+          setResendCodeDisabled(false);
+        }, 5000);
+      }
     });
   };
 
   const onSubmitAskOtp: FormikConfig<ResetFormValues>['onSubmit'] = (
     values,
-    { resetForm, setErrors },
+    { resetForm, setErrors, setSubmitting },
   ) => {
+    console.log('onSubmitAskOtponSubmitAskOtp');
     askSentOtpCommitMutation({
       variables: {
         input: {
@@ -140,14 +188,17 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         setStep(Step.VALIDATE_OTP);
       },
       onError: (error) => {
+        setOtpError(true);
         handleErrorInForm(error, setErrors);
-      },
+        setSubmitting(false);
+        handleTimeoutResetDelay();
+      }
     });
   };
 
   const onSubmitValidateOtp: FormikConfig<ValidateOtpFormValues>['onSubmit'] = (
     values,
-    { resetForm, setErrors },
+    { resetForm, setErrors, setSubmitting },
   ) => {
     verifyOtpCommitMutation({
       variables: {
@@ -166,6 +217,8 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setOtpError(true);
+        setShowResendCode(true);
+        setSubmitting(false);
       },
     });
   };
@@ -197,6 +250,30 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
     setStep(Step.RESET_PASSWORD);
   };
 
+  const renderOtpMessage = () => {
+    if (hasRequestNewCode) {
+      return (
+        <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
+          {t_i18n('The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.')}
+        </Alert>
+      );
+    }
+
+    if (otpError) {
+      return (
+        <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
+          {t_i18n('The reset code you entered is invalid or has expired. You can request a new code.')}
+        </Alert>
+      );
+    }
+
+    return (
+      <Alert severity="info" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
+        {t_i18n('If the email address you entered is associated with an account, you will receive a confirmation email with a reset code shortly.')}
+      </Alert>
+    );    
+  };
+
   return (
     <>
       {step === Step.ASK_RESET && (
@@ -206,30 +283,39 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
           validationSchema={resetValidation(t_i18n)}
           onSubmit={onSubmitAskOtp}
         >
-          {({ isSubmitting, isValid }) => (
-            <Form>
-              <Field
-                component={TextField}
-                name="email"
-                label={t_i18n('Email address')}
-                fullWidth={true}
-                onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
+          {({ isSubmitting, isValid }) => {
+            return (
+              <Form>
+                {
+                  otpError && (
+                    <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
+                      {t_i18n('You have already requested a new code to reset your password. You can request a new code after a delay of 30 seconds.')}
+                    </Alert>
+                  )
+                }
+                <Field
+                  component={TextField}
+                  name="email"
+                  label={t_i18n('Email address')}
+                  fullWidth={true}
+                  onBlur={(e: React.KeyboardEvent<HTMLInputElement>) => {
                   setEmail(e.currentTarget.value);
                 }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={isSubmitting || !isValid}
-                style={{ marginTop: theme.spacing(3) }}
-              >
-                {t_i18n('Send reset code')}
-              </Button>
-            </Form>
-          )}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={isSubmitting || !isValid || resendCodeDisabled}
+                  style={{ marginTop: theme.spacing(3) }}
+                >
+                  {t_i18n('Send reset code')}
+                </Button>
+              </Form>
+          );}}
         </Formik>
       )}
+
       {step === Step.VALIDATE_OTP && (
         <Formik
           onSubmit={onSubmitValidateOtp}
@@ -240,15 +326,7 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         >
           {({ isSubmitting, isValid }) => (
             <Form>
-              {otpError ? (
-                <Alert severity="error" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
-                  {t_i18n('The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.')}
-                </Alert>
-              ) : (
-                <Alert severity="info" variant="outlined" style={{ marginBottom: theme.spacing(2), textAlign: 'justify' }}>
-                  {t_i18n('If the email address you entered is associated with an account, you will receive a confirmation email with a reset code shortly.')}
-                </Alert>
-              )}
+              {renderOtpMessage()}
               <Field
                 component={TextField}
                 name="otp"
@@ -268,9 +346,11 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
           )}
         </Formik>
       )}
+
       {step === Step.MFA && (
         <OTPForm variant="resetPassword" transactionId={transactionId} onCompleted={onCompletedVerifyMfa} />
       )}
+
       {step === Step.RESET_PASSWORD && (
         <Formik
           onSubmit={onSubmitValidatePassword}
@@ -318,11 +398,13 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
           )}
         </Formik>
       )}
-      <div style={{
-        marginTop: theme.spacing(2),
-        display: 'flex',
-        justifyContent: otpError ? 'space-between' : 'center',
-      }}
+
+      <div 
+        style={{
+          marginTop: theme.spacing(2),
+          display: 'flex',
+          justifyContent: showResendCode ? 'space-between' : 'center',
+        }}
       >
         <a
           style={{ cursor: 'pointer' }}
@@ -330,9 +412,13 @@ const ResetPassword: FunctionComponent<ResetProps> = ({ onCancel, email, setEmai
         >
           {t_i18n('Back to login')}
         </a>
-        {otpError && (
+        {showResendCode && (
           <a
-            style={{ cursor: 'pointer' }}
+            style={{ 
+              cursor: resendCodeDisabled ? 'not-allowed' : 'pointer',
+              opacity: resendCodeDisabled ? 0.5 : 1,
+              pointerEvents: resendCodeDisabled ? 'none' : 'auto',
+            }}
             onClick={handleResendOtp}
           >
             {t_i18n('Resend code')}

@@ -2,7 +2,7 @@ import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { findById, getUserByEmail, userEditField } from '../../domain/user';
-import { AuthenticationFailure, UnsupportedError } from '../../config/errors';
+import { AuthenticationFailure, FunctionalError, UnsupportedError } from '../../config/errors';
 import { sendMail, smtpComputeFrom } from '../../database/smtp';
 import type { AuthContext } from '../../types/user';
 import type { AskSendOtpInput, ChangePasswordInput, VerifyMfaInput, VerifyOtpInput } from '../../generated/graphql';
@@ -56,7 +56,11 @@ export const askSendOtp = async (context: AuthContext, input: AskSendOtpInput) =
   // Don't generate new redis key under 30-second delay
   const previousKey = await redisGetForgotPasswordOtpPointer(input.email);
   const isTooRecent = previousKey.ttl > (OTP_TTL - 30);
-  if (isTooRecent) return transactionId;
+  console.log('isTooRecent ?? ', isTooRecent, '--- previousKey.ttl',  previousKey.ttl, ' OTP_TTL - 30', OTP_TTL - 30);
+  if (isTooRecent) {
+    // return transactionId;
+    throw FunctionalError('remaining time too recent', { ttl: previousKey.ttl });
+  } 
 
   // Delete the previous OTP if it exists based on the pointer
   if (previousKey.id) await redisDelForgotPassword(previousKey.id, email);
