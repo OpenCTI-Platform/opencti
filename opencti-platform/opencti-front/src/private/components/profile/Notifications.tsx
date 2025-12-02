@@ -465,7 +465,9 @@ const Notifications: FunctionComponent = () => {
         <DigestNotificationDrawer
           notification={notificationDigestToOpen}
           open={!!notificationDigestToOpen}
-          onClose={() => { setNotificationDigestToOpen(undefined); }}
+          onClose={() => {
+            setNotificationDigestToOpen(undefined);
+          }}
         />
       )}
     </div>

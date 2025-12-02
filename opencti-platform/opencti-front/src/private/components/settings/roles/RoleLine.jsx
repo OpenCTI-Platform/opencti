@@ -96,7 +96,8 @@ const RoleLineComponent = ({ fd, classes, dataColumns, node }) => {
                   <div
                     className={classes.bodyItem}
                     style={{ width: dataColumns.groups.width }}
-                  ></div>
+                  >
+                  </div>
                 );
               }}
             />

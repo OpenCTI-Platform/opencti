@@ -188,7 +188,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
               <EntitySettingAttributes
                 entitySettingsData={subType.settings}
                 searchTerm={searchTerm}
-              ></EntitySettingAttributes>
+              >
+              </EntitySettingAttributes>
             </Paper>
           </Grid>
         )}

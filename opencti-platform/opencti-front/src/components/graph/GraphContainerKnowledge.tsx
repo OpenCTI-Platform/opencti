@@ -571,7 +571,9 @@ const GraphContainerKnowledge = ({
 
   // Use a debounce to avoid spamming too quickly the backend.
   const debounceFetchMore = useDebounceCallback(
-    () => { loadMore(pageSize); },
+    () => {
+      loadMore(pageSize);
+    },
     REFETCH_DEBOUNCE_MS,
   );
   // When finishing fetching a page, get the next if any.

@@ -122,7 +122,8 @@ const ReportDeletion: FunctionComponent<ReportDeletionProps> = ({
               </Alert>
             );
           }}
-        ></QueryRenderer>
+        >
+        </QueryRenderer>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseDelete} disabled={deleting}>

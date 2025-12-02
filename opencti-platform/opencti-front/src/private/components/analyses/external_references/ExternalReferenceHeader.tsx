@@ -76,7 +76,8 @@ const ExternalReferenceHeaderComponent = ({
             <ExternalReferenceDeletion id={externalReference.id} isOpen={openDelete} handleClose={handleCloseDelete} />
           </Security>
         </div>
-      </div></div>
+      </div>
+    </div>
   );
 };
 

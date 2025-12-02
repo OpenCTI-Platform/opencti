@@ -153,7 +153,8 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
         title: t_i18n('Import a CSV Feed'),
         button: t_i18n('Create'),
       }}
-      /></>
+      />
+    </>
 );
 };
 
