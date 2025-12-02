@@ -1,7 +1,7 @@
 import React, { FormEvent, FunctionComponent } from 'react';
 import { Disposable, graphql, RecordSourceSelectorProxy } from 'relay-runtime';
 import { IconButton, Tooltip } from '@mui/material';
-import { FileUpload } from '@mui/icons-material';
+import { FileUploadOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import VisuallyHiddenInput from '../../common/VisuallyHiddenInput';
@@ -72,7 +72,7 @@ const ThemeImporter: FunctionComponent<ThemeImporterProps> = ({
         onChange={handleImport}
         data-testid='import-theme-btn'
       >
-        <FileUpload fontSize="small" />
+        <FileUploadOutlined fontSize="small" />
         <VisuallyHiddenInput type="file" accept={'application/json'} onClick={handleClick} />
       </IconButton>
     </Tooltip>
