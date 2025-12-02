@@ -203,8 +203,8 @@ const widgetVisualizationTypes = [
   },
 ] as const;
 
-export type WidgetVisualizationTypes =
-  (typeof widgetVisualizationTypes)[number]['key'];
+export type WidgetVisualizationTypes
+  = (typeof widgetVisualizationTypes)[number]['key'];
 
 export const RELATIONSHIP_WIDGETS_TYPES = ['Stix-Core-Relationship', 'stix-sighting-relationship', 'object', 'object-label'];
 

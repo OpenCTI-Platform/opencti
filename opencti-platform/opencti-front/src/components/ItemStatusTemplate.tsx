@@ -41,7 +41,7 @@ const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => 
     );
   }
 
-  const statusByOrder = Object.values(Object.groupBy(statuses, (({ order }) => order)));
+  const statusByOrder = Object.values(Object.groupBy(statuses, ({ order }) => order));
   return (
     <div style={{
       display: 'inline-flex',

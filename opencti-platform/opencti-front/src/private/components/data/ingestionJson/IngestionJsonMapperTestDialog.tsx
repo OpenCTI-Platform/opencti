@@ -74,7 +74,7 @@ const IngestionJsonMapperTestDialog: FunctionComponent<IngestionJsonMapperTestDi
         },
       },
       onCompleted: (data) => {
-        const resultTest = (data as IngestionJsonMapperTestDialogMutation$data);
+        const resultTest = data as IngestionJsonMapperTestDialogMutation$data;
         if (resultTest) {
           setResult(resultTest);
           if (setIsCreateDisabled) {
