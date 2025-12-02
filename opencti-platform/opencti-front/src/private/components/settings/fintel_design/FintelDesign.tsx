@@ -150,7 +150,8 @@ const FintelDesignComponent: FunctionComponent<FintelDesignComponentProps> = ({
           </div>
         </FintelDesignHeader>
         <Grid
-          container spacing={3}
+          container
+          spacing={3}
           sx={{ marginTop: 2 }}
         >
           <Grid size={{ xs: 4 }}>

@@ -103,7 +103,7 @@ NotifierConnectorFieldProps
           option: { label: string },
         ) => (
           <li {...props}>
-            <div className={classes.icon }>
+            <div className={classes.icon}>
               <ItemIcon type="Notifier" />
             </div>
             <div className={classes.text}>{option.label}</div>

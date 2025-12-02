@@ -79,7 +79,8 @@ export const CoverageInformationFieldAdd: FunctionComponent<CoverageInformationF
         {t_i18n('Coverage Information')}
       </Typography>
       <FieldArray
-        name={name} render={(arrayHelpers) => (
+        name={name}
+        render={(arrayHelpers) => (
           <>
             <div>
               {values?.map((_, index) => (

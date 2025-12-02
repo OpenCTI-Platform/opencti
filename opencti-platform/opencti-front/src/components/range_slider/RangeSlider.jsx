@@ -112,7 +112,7 @@ class TimeRange extends React.Component {
     const { disabledIntervals } = this;
 
     return (
-      <div className={containerClassName || 'react_time_range__time_range_container' }>
+      <div className={containerClassName || 'react_time_range__time_range_container'}>
         <Slider
           mode={mode}
           step={step}

@@ -204,7 +204,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
             />
             <Route
               path="/analytics"
-              element={ (
+              element={(
                 <UserAnalytics data={data} refetch={refetch} />
               )}
             />

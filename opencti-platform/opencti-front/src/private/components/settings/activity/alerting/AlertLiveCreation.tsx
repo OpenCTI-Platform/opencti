@@ -164,9 +164,11 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: FieldOption[]) => void) => {
     return <>
       <ObjectMembersField
-        label={'Recipients'} style={fieldSpacingContainerStyle}
+        label={'Recipients'}
+        style={fieldSpacingContainerStyle}
         onChange={setFieldValue}
-        multiple={true} name={'recipients'}
+        multiple={true}
+        name={'recipients'}
       />
       <span>
         <Box

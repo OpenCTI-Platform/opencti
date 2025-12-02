@@ -369,7 +369,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
 
                           >
                             <Typography
-                              variant="h3" gutterBottom={true} sx={{
+                              variant="h3"
+                              gutterBottom={true}
+                              sx={{
                               width: 100,
                             }}
                             >
@@ -409,7 +411,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
 
                           >
                             <Typography
-                              variant="h3" gutterBottom={true} sx={{
+                              variant="h3"
+                              gutterBottom={true}
+                              sx={{
                               width: 100,
                             }}
                             >
@@ -429,7 +433,9 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
 
                         >
                           <Typography
-                            variant="h3" gutterBottom={true} sx={{
+                            variant="h3"
+                            gutterBottom={true}
+                            sx={{
                             width: 100,
                           }}
                           >

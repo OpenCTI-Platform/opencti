@@ -443,7 +443,7 @@ const IngestionJsonEdition: FunctionComponent<IngestionJsonEditionProps> = ({
                 </Box>
                 <JsonMapperField
                   name="json_mapper_id"
-                  isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value }
+                  isOptionEqualToValue={(option: FieldOption, value: FieldOption) => option.value === value.value}
                   onChange={async (_, option) => {
                     await updateJsonMapper(setFieldValue, option);
                     const hasUserChoiceJsonMapperRepresentations = resolveHasUserChoiceJsonMapper(option as JsonMapperFieldOption);

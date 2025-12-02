@@ -372,7 +372,7 @@ const Notifications: FunctionComponent = () => {
 
     return (
       <div style={{ marginLeft: -40 }}>
-        <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read') }>
+        <Tooltip title={data.is_read ? t_i18n('Mark as unread') : t_i18n('Mark as read')}>
           <IconButton
             disabled={updating}
             onClick={(event) => {

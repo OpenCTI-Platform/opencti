@@ -36,7 +36,8 @@ const LocationDetails: FunctionComponent<LocationDetailsProps> = ({ locationData
         padding: '15px',
         borderRadius: 4,
       }}
-        className={'paper-for-grid'} variant="outlined"
+        className={'paper-for-grid'}
+        variant="outlined"
       >
         <Grid container={true} spacing={3}>
           <Grid item xs={12}>

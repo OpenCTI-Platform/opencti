@@ -716,7 +716,7 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
       classes={{ root: classes.item }}
       divider={true}
       secondaryAction={
-        <IconButton classes={classes.itemIconDisabled } disabled={true} aria-haspopup="true" size="large">
+        <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true" size="large">
           <MoreVert />
         </IconButton>
         }

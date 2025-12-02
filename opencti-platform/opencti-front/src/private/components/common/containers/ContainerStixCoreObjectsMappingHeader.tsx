@@ -119,7 +119,7 @@ const ContainerStixCoreObjectsMappingHeader: FunctionComponent<ContainerStixCore
               <Switch
                 checked={inSuggestedMode}
                 onChange={() => { setInSuggestedMode(!inSuggestedMode); }}
-                disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete' }
+                disabled={askingSuggestion || validating || suggestedMappingData.stixCoreObjectAnalysis?.analysisStatus !== 'complete'}
               />
               }
             label={t_i18n('Show suggested mapping')}

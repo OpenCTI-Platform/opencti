@@ -300,7 +300,8 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 label={'Recipients'}
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
-                multiple={true} name={'recipients'}
+                multiple={true}
+                name={'recipients'}
               />
             </Form>
           )}

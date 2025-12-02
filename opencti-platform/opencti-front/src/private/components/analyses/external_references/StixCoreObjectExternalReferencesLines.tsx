@@ -579,7 +579,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                         </MenuItem>
                       );
                     })}
-                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name }/>
+                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name}/>
                 }
                 {selectedConnector?.name === 'ImportCsv'
                     && hasUserChoiceCsvMapper

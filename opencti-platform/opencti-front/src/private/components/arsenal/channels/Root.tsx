@@ -252,7 +252,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/files"
-                element={ (
+                element={(
                   <FileManager
                     id={channelId}
                     connectorsImport={connectorsForImport}
@@ -263,7 +263,7 @@ const RootChannel = ({ queryRef, channelId }: RootChannelProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={channelId}
                   />

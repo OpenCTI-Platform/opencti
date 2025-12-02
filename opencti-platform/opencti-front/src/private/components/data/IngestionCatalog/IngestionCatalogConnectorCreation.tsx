@@ -253,7 +253,7 @@ const IngestionCatalogConnectorCreation = ({
       onClose={onClose}
       header={
         <div style={{ position: 'absolute', right: theme.spacing(1) }}>
-          <Tooltip title={ `${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
+          <Tooltip title={`${deploymentCount} ${t_i18n('instances are already deployed with the manager. If you have already deployed this connector without the manager, it will not be counted.')}`}>
             <Button
               variant="outlined"
               component={Link}

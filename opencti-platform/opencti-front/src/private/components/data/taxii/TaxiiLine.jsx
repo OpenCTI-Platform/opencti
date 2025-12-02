@@ -178,7 +178,7 @@ class TaxiiDummyComponent extends Component {
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
-        secondaryAction={<MoreVert classes={classes.itemIconDisabled } />}
+        secondaryAction={<MoreVert classes={classes.itemIconDisabled} />}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Skeleton

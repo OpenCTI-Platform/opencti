@@ -275,7 +275,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               />
               <Route
                 path="/files"
-                element={ (
+                element={(
                   <FileManager
                     id={eventId}
                     connectorsImport={connectorsForImport}
@@ -286,7 +286,7 @@ const RootEvent = ({ eventId, queryRef }: RootEventProps) => {
               />
               <Route
                 path="/history"
-                element={ (
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={eventId}
                   />

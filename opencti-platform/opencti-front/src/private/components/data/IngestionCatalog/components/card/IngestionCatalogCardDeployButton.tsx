@@ -12,7 +12,7 @@ const IngestionCatalogCardDeployButton = ({ deploymentCount, onClick }: Ingestio
   const { t_i18n } = useFormatter();
 
   return (
-    <Tooltip title={deploymentCount ? `${deploymentCount} deployments` : '' }>
+    <Tooltip title={deploymentCount ? `${deploymentCount} deployments` : ''}>
       <Badge badgeContent={deploymentCount} color={'warning'}>
         <Button
           variant="contained"

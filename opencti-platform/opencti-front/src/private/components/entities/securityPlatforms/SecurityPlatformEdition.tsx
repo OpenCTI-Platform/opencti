@@ -41,7 +41,7 @@ const SecurityPlatformEdition : FunctionComponent<SecurityPlatformEditionProps> 
           return (
             <SecurityPlatformEditionContainer
               securityPlatform={props.securityPlatform}
-              handleClose={ handleClose}
+              handleClose={handleClose}
               controlledDial={EditEntityControlledDial}
             />
           );

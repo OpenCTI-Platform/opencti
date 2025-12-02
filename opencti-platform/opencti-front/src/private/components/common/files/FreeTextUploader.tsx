@@ -165,7 +165,8 @@ const FreeTextUploader = ({ color, entityId, onUploadSuccess, size }: FreeTextUp
               </DialogContent>
               <DialogActions>
                 <Button
-                  disabled={isSubmitting} onClick={() => {
+                  disabled={isSubmitting}
+                  onClick={() => {
                   handleReset();
                   handleClose();
                 }}

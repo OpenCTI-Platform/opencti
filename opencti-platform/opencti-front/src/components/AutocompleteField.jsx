@@ -76,7 +76,7 @@ const AutocompleteField = (props) => {
         selectOnFocus={true}
         autoHighlight={true}
         handleHomeEndKeys={true}
-        getOptionLabel={ getOptionLabel || defaultGetOptionLabel }
+        getOptionLabel={getOptionLabel || defaultGetOptionLabel}
         noOptionsText={noOptionsText}
         {...fieldProps}
         renderOption={renderOption}
@@ -95,7 +95,7 @@ const AutocompleteField = (props) => {
             required={required}
             fullWidth={true}
             error={showError}
-            helperText={showError ? meta.error : textfieldprops?.helperText }
+            helperText={showError ? meta.error : textfieldprops?.helperText}
           />
         )}
         onChange={internalOnChange}

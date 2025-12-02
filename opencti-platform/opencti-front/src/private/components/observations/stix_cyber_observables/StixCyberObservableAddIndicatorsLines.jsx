@@ -14,7 +14,7 @@ class StixCyberObservableAddIndicatorsLinesContainer extends Component {
         relationshipType={'based-on'}
         availableDatas={data?.indicators}
         existingDatas={stixCyberObservableIndicators}
-        updaterOptions={ { path: '__Pagination_stixCyberObservables_indicators_connection' } }
+        updaterOptions={{ path: '__Pagination_stixCyberObservables_indicators_connection' }}
         isRelationReversed={true}
       />
     );
