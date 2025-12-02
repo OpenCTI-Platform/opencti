@@ -79,7 +79,7 @@ const PlaybookFlow = ({ dataPlaybookComponents, dataPlaybook }: PlaybookFlowProp
   const initialNodes = computeNodes(
     definition.nodes ?? [],
     playbookComponents,
-    setAction as React.Dispatch<React.SetStateAction<string | null>>,
+    setAction as React.Dispatch<React.SetStateAction<string | null>>, // TODO : remove set casts when useManipulateComponents is in ts
     setSelectedNode as React.Dispatch<React.SetStateAction<string | null>>,
   );
   const initialEdges = computeEdges(
