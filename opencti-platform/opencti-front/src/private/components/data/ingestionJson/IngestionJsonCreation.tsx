@@ -156,7 +156,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
     {
       setFieldValue,
       values,
-    }:{
+    }: {
       setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionJsonAddInput>>);
       values: IngestionJsonAddInput
     },

@@ -4,7 +4,7 @@ type DataTableEmptyStateProps = {
   message: string
 };
 
-const DataTableEmptyState = ({ message } : DataTableEmptyStateProps) => {
+const DataTableEmptyState = ({ message }: DataTableEmptyStateProps) => {
   return (
     <div style={{
       display: 'table',

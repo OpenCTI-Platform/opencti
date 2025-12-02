@@ -19,7 +19,7 @@ interface DecayChartProps {
   reactionPoints?: number[],
 }
 
-const DecayChart : FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
+const DecayChart: FunctionComponent<DecayChartProps> = ({ currentScore, decayCurvePoint, decayLiveScore, revokeScore, reactionPoints }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
 

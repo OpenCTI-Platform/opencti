@@ -189,7 +189,7 @@ const IngestionCsvCreation: FunctionComponent<IngestionCsvCreationProps> = ({ pa
     {
       setFieldValue,
       values,
-    }:{
+    }: {
       setFieldValue: ((field: string, value: FieldOption[], shouldValidate?: boolean) => Promise<void | FormikErrors<IngestionCsvAddInput>>);
       values: IngestionCsvAddInput
     },

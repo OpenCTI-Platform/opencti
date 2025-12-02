@@ -28,7 +28,7 @@ type autocompleteOptionsType = {
   groupOrder: number;
 };
 
-const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
+const BulkSelectRawLineData: FunctionComponent<BulkSelectRawLineDataProps> = ({
   entity,
   entityIndex,
   entityList,

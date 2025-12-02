@@ -10,8 +10,8 @@ interface GraphToolbarOptionsListProps<T> {
   onClose: () => void
   onSelect: (o: T) => void
   options: T[]
-  getOptionKey: (o:T) => string
-  getOptionText: (o:T) => string
+  getOptionKey: (o: T) => string
+  getOptionText: (o: T) => string
   isOptionSelected?: (o: T) => boolean
   anchorEl?: Element
   isMultiple?: boolean

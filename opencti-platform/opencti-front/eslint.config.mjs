@@ -100,11 +100,7 @@ export default defineConfig([
     },
     rules: {
       '@stylistic/jsx-wrap-multilines': 'off',
-      '@stylistic/eol-last': 'off',
       '@stylistic/no-mixed-operators': 'off',
-      '@stylistic/type-annotation-spacing': 'off',
-      '@stylistic/type-generic-spacing': 'off',
-      '@stylistic/no-trailing-spaces': 'off',
       '@stylistic/arrow-parens': 'off',
       '@stylistic/brace-style': 'off',
       '@stylistic/indent': 'off',

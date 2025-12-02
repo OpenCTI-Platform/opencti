@@ -60,7 +60,7 @@ const ingestionTaxiiCollectionLineFragment = graphql`
     }
 `;
 
-export const IngestionTaxiiCollectionLineLineComponent : FunctionComponent<IngestionTaxiiCollectionLineProps> = ({
+export const IngestionTaxiiCollectionLineLineComponent: FunctionComponent<IngestionTaxiiCollectionLineProps> = ({
   dataColumns,
   node,
   paginationOptions,

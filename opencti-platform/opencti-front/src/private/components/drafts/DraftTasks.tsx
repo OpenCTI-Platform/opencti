@@ -97,7 +97,7 @@ interface DraftTasksProps {
   draftId: string;
 }
 
-const DraftTasks : FunctionComponent<DraftTasksProps> = ({ draftId }) => {
+const DraftTasks: FunctionComponent<DraftTasksProps> = ({ draftId }) => {
   const initialValues = {
     filters: {
       ...emptyFilterGroup,

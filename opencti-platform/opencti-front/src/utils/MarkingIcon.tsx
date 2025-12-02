@@ -6,7 +6,7 @@ interface MarkingIconProps {
   color: string | undefined | null;
   theme: Theme
 }
-const MarkingIcon = ({ color, theme }: MarkingIconProps) : React.ReactNode => {
+const MarkingIcon = ({ color, theme }: MarkingIconProps): React.ReactNode => {
   if (color === 'transparent') {
     const transparentColor = theme.palette.mode === 'light' ? '#2b2b2b' : '#ffffff';
     return (

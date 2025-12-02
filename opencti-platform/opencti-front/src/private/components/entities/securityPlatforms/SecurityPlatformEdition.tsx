@@ -19,7 +19,7 @@ interface SecurityPlatformEditionProps {
   securityPlatformId: string
 }
 
-const SecurityPlatformEdition : FunctionComponent<SecurityPlatformEditionProps> = ({
+const SecurityPlatformEdition: FunctionComponent<SecurityPlatformEditionProps> = ({
   securityPlatformId,
 }) => {
   const handleClose = () => {

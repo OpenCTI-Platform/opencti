@@ -75,7 +75,7 @@ interface LocationCreationFormProps {
   contextual?: boolean
   onCompleted?: () => void;
   inputValue: string
-  creationCallback?: (data:LocationCreationMutation$data) => void;
+  creationCallback?: (data: LocationCreationMutation$data) => void;
   onlyAuthors?: boolean
 }
 

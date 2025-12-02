@@ -63,7 +63,7 @@ const ingestionTaxiiLineFragment = graphql`
     }
 `;
 
-export const IngestionTaxiiLineLineComponent : FunctionComponent<IngestionTaxiiLineProps> = ({
+export const IngestionTaxiiLineLineComponent: FunctionComponent<IngestionTaxiiLineProps> = ({
   dataColumns,
   node,
   paginationOptions,
