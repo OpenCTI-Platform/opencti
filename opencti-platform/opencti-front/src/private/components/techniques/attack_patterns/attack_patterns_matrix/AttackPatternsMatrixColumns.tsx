@@ -343,11 +343,11 @@ const AttackPatternsMatrixColumns = ({
                     to={`/dashboard/techniques/attack_patterns/${selectedAttackPattern?.attack_pattern_id}`}
                     target="_blank"
                   >
-                    <ListItemIcon><InfoOutlined fontSize="small"/></ListItemIcon>
+                    <ListItemIcon><InfoOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>View</ListItemText>
                   </MenuItem>
                   <MenuItem onClick={() => handleAddAttackPattern(selectedAttackPattern)}>
-                    <ListItemIcon><AddCircleOutlineOutlined fontSize="small"/></ListItemIcon>
+                    <ListItemIcon><AddCircleOutlineOutlined fontSize="small" /></ListItemIcon>
                     <ListItemText>Add</ListItemText>
                   </MenuItem>
                 </>

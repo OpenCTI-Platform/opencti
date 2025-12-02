@@ -118,7 +118,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 style={{ width: dataColumns.value.width }}
               >
                 {node.representative?.main}
-                {node.draftVersion && (<DraftChip/>)}
+                {node.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}

@@ -125,7 +125,7 @@ const StixCoreObjectContentFilesDissemination: FunctionComponent<StixCoreObjectC
               }
             label={t_i18n('Use OpenCTI template')}
           />
-          <DisseminationListField/>
+          <DisseminationListField />
           <Field
             component={TextField}
             label={t_i18n('Email subject')}

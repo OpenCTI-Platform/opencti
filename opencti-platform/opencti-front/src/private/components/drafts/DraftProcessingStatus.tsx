@@ -43,7 +43,7 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
           >
             <CircularProgress
               onClick={() => { forceRefetch(); setDisplayProcesses(true); }}
-              variant={'indeterminate'}
+              variant="indeterminate"
               size={25}
               style={{ cursor: 'pointer' }}
             />
@@ -60,8 +60,8 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
             <Tab label={t_i18n('Works')} value="Works" />
             <Tab label={t_i18n('Tasks')} value="Tasks" />
           </Tabs>
-          {tabValue === 'Works' && (<DraftWorks draftId={currentDraftId}/>)}
-          {tabValue === 'Tasks' && (<DraftTasks draftId={currentDraftId}/>)}
+          {tabValue === 'Works' && (<DraftWorks draftId={currentDraftId} />)}
+          {tabValue === 'Tasks' && (<DraftTasks draftId={currentDraftId} />)}
         </>
       </Drawer>
     </div>

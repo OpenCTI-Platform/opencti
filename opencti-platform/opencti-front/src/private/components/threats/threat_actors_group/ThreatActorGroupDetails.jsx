@@ -55,7 +55,7 @@ class ThreatActorGroupDetailsComponent extends Component {
         <Typography variant="h4">
           {t('Details')}
         </Typography>
-        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
           <Grid container={true} spacing={3}>
             <Grid item xs={hasImages ? 7 : 6}>
               <Grid container={true} spacing={3}>

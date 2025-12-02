@@ -23,7 +23,7 @@ const StartTrialBanner = () => {
   };
 
   return (
-    <TopBanner bannerColor="gradient_blue" bannerText={text} buttonText={t_i18n('Start your free trial')} onButtonClick={handleOpenLink}/>);
+    <TopBanner bannerColor="gradient_blue" bannerText={text} buttonText={t_i18n('Start your free trial')} onButtonClick={handleOpenLink} />);
 };
 
 export default StartTrialBanner;

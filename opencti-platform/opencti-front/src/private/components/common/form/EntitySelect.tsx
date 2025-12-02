@@ -102,7 +102,7 @@ const EntitySelectComponent = ({
               checked={!!(value as EntityOption[]).find((v) => option.value === v.value)}
             />
           )}
-          <ItemIcon type={option.type}/>
+          <ItemIcon type={option.type} />
           <span style={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',

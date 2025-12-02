@@ -73,7 +73,7 @@ AddDataComponentsLinesContainerProps
   return (
     <StixCoreRelationshipCreationFromEntityList
       entity={attackPattern}
-      relationshipType={'detects'}
+      relationshipType="detects"
       availableDatas={data.dataComponents}
       existingDatas={attackPattern.dataComponents?.edges}
       updaterOptions={{ path: 'dataComponents' }}

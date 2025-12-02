@@ -110,7 +110,7 @@ const Tasks = () => {
       percentWidth: 15,
       isSortable: true,
       render: (task: TasksLine_node$data) => (
-        <ItemDueDate due_date={task.due_date} variant={'inList'} />
+        <ItemDueDate due_date={task.due_date} variant="inList" />
       ),
     },
     objectAssignee: { percentWidth: 20 },

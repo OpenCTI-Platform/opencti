@@ -46,7 +46,7 @@ const DashboardTimeFilters: React.FC<DashboardTimeFiltersProps> = ({
       needs={[EXPLORE_EXUPDATE, INVESTIGATION_INUPDATE]}
       hasAccess={canEdit}
     >
-      <div style={{ display: 'flex', marginLeft: 20 }} >
+      <div style={{ display: 'flex', marginLeft: 20 }}>
         <FormControl
           size="small"
           style={{ width: 194, marginRight: 8 }}

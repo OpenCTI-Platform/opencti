@@ -39,7 +39,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
     const name = entity.representative?.main;
 
     const displayStandardId = (isCopyable ? (
-      <pre><ItemCopy content={entity.standard_id ?? ''} variant={'wrap'} /></pre>
+      <pre><ItemCopy content={entity.standard_id ?? ''} variant="wrap" /></pre>
     ) : (
       <div>{entity.standard_id}</div>
     ));
@@ -61,7 +61,7 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
           {error.isParsed && error.parsedError.doc_code ? (
             <a href={`https://docs.opencti.io/latest/deployment/troubleshooting/#${error.parsedError.doc_code.toLowerCase()}`} target="_blank" rel="noreferrer">{error.parsedError.doc_code}</a>
           ) : (
-            <a href={'https://docs.opencti.io/latest/deployment/troubleshooting'} target="_blank" rel="noreferrer">{t_i18n('Unknown')}</a>
+            <a href="https://docs.opencti.io/latest/deployment/troubleshooting" target="_blank" rel="noreferrer">{t_i18n('Unknown')}</a>
           )}
         </TableCell>
         <TableCell>{error.isParsed ? error.parsedError.message : error.rawError.message ?? '-'}</TableCell>
@@ -136,11 +136,11 @@ const ConnectorWorksErrorLine: FunctionComponent<ConnectorWorksErrorLineProps> =
                 </div>
                 <div>
                   <Typography variant="h3" gutterBottom={true}>{t_i18n('Message')}</Typography>
-                  <pre><ItemCopy content={error.rawError.message ?? '-'} variant={'wrap'} /></pre>
+                  <pre><ItemCopy content={error.rawError.message ?? '-'} variant="wrap" /></pre>
                 </div>
                 <div>
                   <Typography variant="h3" gutterBottom={true}>{t_i18n('Source')}</Typography>
-                  <pre><ItemCopy content={error.rawError.source ?? '-'} variant={'wrap'} /></pre>
+                  <pre><ItemCopy content={error.rawError.source ?? '-'} variant="wrap" /></pre>
                 </div>
               </div>
             </Paper>

@@ -134,7 +134,7 @@ export const FormLineDummy: FunctionComponent<{ dataColumns: DataColumns }> = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={<MoreVert className={classes.itemIconDisabled}/>}
+      secondaryAction={<MoreVert className={classes.itemIconDisabled} />}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Skeleton

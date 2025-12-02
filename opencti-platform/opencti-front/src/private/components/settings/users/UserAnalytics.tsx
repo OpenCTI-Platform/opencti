@@ -56,7 +56,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
   const userServiceAccount = user.user_service_account;
   const isEnterpriseEdition = useEnterpriseEdition();
   if (!isEnterpriseEdition) {
-    return <EnterpriseEdition feature={'User activity'} />;
+    return <EnterpriseEdition feature="User activity" />;
   }
   return (
     <>
@@ -195,7 +195,7 @@ const UserAnalytics: FunctionComponent<UserAnalyticsProps> = ({ data }) => {
         )}
         <Grid item xs={4}>
           <AuditsDonut
-            variant={''}
+            variant=""
             startDate={undefined}
             endDate={undefined}
             height={350}

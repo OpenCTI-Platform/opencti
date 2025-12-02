@@ -99,7 +99,7 @@ const FintelTemplatesGrid = ({ data }: FintelTemplatesGridProps) => {
       <VisuallyHiddenInput
         ref={inputFileRef}
         type="file"
-        accept={'application/JSON'}
+        accept="application/JSON"
         onChange={onUpload}
       />
       <Grid item xs={6}>

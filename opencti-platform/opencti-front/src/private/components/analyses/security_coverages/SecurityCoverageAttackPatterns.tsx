@@ -137,9 +137,9 @@ const SecurityCoverageAttackPatterns = ({
           <StixCoreRelationshipCreationFromEntity
             entityId={securityCoverage.id}
             objectId={securityCoverage.id}
-            connectionKey={'Pagination_attPatterns'}
+            connectionKey="Pagination_attPatterns"
             targetEntities={targetEntities}
-            currentView={'relationships'}
+            currentView="relationships"
             allowedRelationshipTypes={['has-covered']}
             targetStixDomainObjectTypes={['Attack-Pattern']}
             paginationOptions={paginationOptions}
@@ -175,10 +175,10 @@ const SecurityCoverageAttackPatterns = ({
             }}
           >
             <ToggleButton value="matrix" aria-label="matrix view">
-              <ViewModuleOutlined fontSize="small"/>
+              <ViewModuleOutlined fontSize="small" />
             </ToggleButton>
             <ToggleButton value="lines" aria-label="lines view">
-              <ViewListOutlined fontSize="small"/>
+              <ViewListOutlined fontSize="small" />
             </ToggleButton>
           </ToggleButtonGroup>
           {showKillChainSelector && viewMode === 'matrix' && (
@@ -240,7 +240,7 @@ const SecurityCoverageAttackPatterns = ({
                       secondaryAction={
                         <StixCoreRelationshipPopover
                           objectId={securityCoverage.id}
-                          connectionKey={'Pagination_attPatterns'}
+                          connectionKey="Pagination_attPatterns"
                           stixCoreRelationshipId={attackPatternEdge.node.id}
                           paginationOptions={paginationOptions}
                           isCoverage={true}

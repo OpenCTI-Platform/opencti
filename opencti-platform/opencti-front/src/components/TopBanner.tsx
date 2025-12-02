@@ -65,7 +65,7 @@ const TopBanner = ({ bannerText, bannerColor = 'gradient_blue', buttonText, onBu
             marginLeft: '2px',
           },
         }}
-        endIcon={<ArrowForwardIcon/>}
+        endIcon={<ArrowForwardIcon />}
                       >
         {buttonText}
       </Button>}

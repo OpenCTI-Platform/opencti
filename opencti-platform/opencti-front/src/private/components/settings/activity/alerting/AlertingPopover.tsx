@@ -88,7 +88,7 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         style={{ marginTop: 3 }}
         color="primary"
       >
-        <MoreVert/>
+        <MoreVert />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleDisplayEdit}>{t_i18n('Update')}</MenuItem>
@@ -108,9 +108,9 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         onClose={() => setDisplayEdit(false)}
                       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-            {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)}/>}
-            {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)}/>}
+          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            {isLiveEdition && <AlertLiveEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
+            {isDigestEdition && <AlertDigestEdition queryRef={queryRef} paginationOptions={paginationOptions} handleClose={() => setDisplayEdit(false)} />}
           </React.Suspense>
         )}
       </Drawer>}

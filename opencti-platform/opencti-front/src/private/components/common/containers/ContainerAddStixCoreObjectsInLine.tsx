@@ -32,7 +32,7 @@ const ControlledDial = ({ onOpen, title }: ControlledDialProps) => {
       variant="contained"
       style={{ marginLeft: theme.spacing(0.5) }}
       aria-label={title}
-      size={'small'}
+      size="small"
       onClick={() => onOpen()}
     >
       {title}
@@ -50,7 +50,7 @@ const GraphControlledDial = ({ onOpen }: { onOpen: () => void }) => {
         aria-label={t_i18n('Add')}
         onClick={() => onOpen()}
       >
-        <Add/>
+        <Add />
       </IconButton>
     </Tooltip>
   );
@@ -263,7 +263,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
       </div>
       <StixDomainObjectCreation
         display={true}
-        inputValue={''}
+        inputValue=""
         speeddial={true}
         open={openCreateEntity}
         handleClose={() => setOpenCreateEntity(false)}
@@ -274,14 +274,14 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
         stixDomainObjectTypes={targetStixCoreObjectTypes}
-        paginationKey={'Pagination_stixCoreObjects'}
+        paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
       />
       <StixCyberObservableCreation
         display={true}
         contextual={true}
-        inputValue={''}
-        paginationKey={'Pagination_stixCoreObjects'}
+        inputValue=""
+        paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         speeddial={true}
         open={openCreateObservable}
@@ -298,7 +298,7 @@ const ContainerAddStixCoreObjectsInLine: FunctionComponent<ContainerAddStixCoreO
 
   return (
     <Drawer
-      title={''} // Defined in custom header prop
+      title="" // Defined in custom header prop
       controlledDial={knowledgeGraph ? GraphControlledDial : Dial}
       header={<Header />}
       ref={setRef}

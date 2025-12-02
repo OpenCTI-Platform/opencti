@@ -106,7 +106,7 @@ SubTypeWorkflowStatusAddProps
                 <StatusTemplateField
                   name="template"
                   setFieldValue={setFieldValue}
-                  helpertext={''}
+                  helpertext=""
                 />
                 <Field
                   component={TextField}

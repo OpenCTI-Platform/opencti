@@ -169,7 +169,7 @@ const Vocabularies = () => {
           toolbarFilters={contextFilters}
           lineFragment={vocabFragment}
           disableNavigation
-          taskScope={'SETTINGS'}
+          taskScope="SETTINGS"
           preloadedPaginationProps={preloadedPaginationProps}
           actions={(vocab) => <VocabularyPopover vocab={vocab} paginationOptions={queryPaginationOptions} />}
           searchContextFinal={{ entityTypes: ['Vocabulary'] }}

@@ -96,9 +96,9 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         >
           <CustomFileUploader
             setFieldValue={(field, v) => onChange(field, v)}
-            label={'Your testing file limited to 100 lines (CSV only, max 1MB)'}
+            label="Your testing file limited to 100 lines (CSV only, max 1MB)"
             // we also accept application/vnd.ms-excel type because that's how csv's seem to be seen as under WindowsOS + Firefox browser
-            acceptMimeTypes={'text/csv,application/vnd.ms-excel'}
+            acceptMimeTypes="text/csv,application/vnd.ms-excel"
             // we limit the file size so the upload does not take too long for a simple test
             sizeLimit={1000000}
           />
@@ -127,7 +127,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
           </Button>
           {loading && (
             <Box sx={{ marginLeft: '8px' }}>
-              <Loader variant={LoaderVariant.inElement}/>
+              <Loader variant={LoaderVariant.inElement} />
             </Box>
           )}
         </Box>
@@ -149,7 +149,7 @@ const CsvMapperTestDialog: FunctionComponent<CsvMapperTestDialogProps> = ({
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
             code={result?.csvMapperTest?.objects || t_i18n('You will find here the result in JSON format.')}
-            language={'json'}
+            language="json"
           />
         </Box>
       </DialogContent>

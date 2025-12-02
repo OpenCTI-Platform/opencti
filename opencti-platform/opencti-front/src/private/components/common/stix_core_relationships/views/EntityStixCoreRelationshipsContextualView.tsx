@@ -313,11 +313,11 @@ const EntityStixCoreRelationshipsContextualView: FunctionComponent<Omit<EntitySt
   );
 
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-      <EntityStixCoreRelationshipsContextualViewComponent {...props} queryRef={queryRef}/>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <EntityStixCoreRelationshipsContextualViewComponent {...props} queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

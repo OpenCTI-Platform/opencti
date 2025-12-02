@@ -35,7 +35,7 @@ interface FintelTemplateProps {
 
 const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
   const { fintelTemplate, entitySettingByType } = usePreloadedQuery(fintelTemplateQuery, queryRef);
-  if (!fintelTemplate || !entitySettingByType) return <ErrorNotFound/>;
+  if (!fintelTemplate || !entitySettingByType) return <ErrorNotFound />;
 
   return (
     <FintelTemplateProvider>
@@ -71,7 +71,7 @@ const FintelTemplateComponent = ({ queryRef }: FintelTemplateProps) => {
 
 const FintelTemplate = () => {
   const { templateId, subTypeId } = useParams<{ templateId?: string, subTypeId?: string }>();
-  if (!templateId || !subTypeId) return <ErrorNotFound/>;
+  if (!templateId || !subTypeId) return <ErrorNotFound />;
 
   const templateRef = useQueryLoading<FintelTemplateQuery>(
     fintelTemplateQuery,

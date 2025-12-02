@@ -297,11 +297,11 @@ const AlertDigestEdition: FunctionComponent<AlertDigestEditionProps> = ({ queryR
                 onChange={(name, v) => handleSubmitField(name, v.map(({ value }) => value))}
               />
               <ObjectMembersField
-                label={'Recipients'}
+                label="Recipients"
                 style={fieldSpacingContainerStyle}
                 onChange={handleSubmitFieldOptions}
                 multiple={true}
-                name={'recipients'}
+                name="recipients"
               />
             </Form>
           )}

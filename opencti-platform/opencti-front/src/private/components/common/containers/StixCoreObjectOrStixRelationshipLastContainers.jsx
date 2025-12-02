@@ -355,7 +355,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                             }`}
                           >
                             <ListItemIcon>
-                              <ItemIcon type={container.entity_type}/>
+                              <ItemIcon type={container.entity_type} />
                             </ListItemIcon>
                             <ListItemText
                               primary={
@@ -364,7 +364,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
                                     className={classes.bodyItem}
                                     style={{ width: '12%' }}
                                   >
-                                    <ItemEntityType entityType={container.entity_type}/>
+                                    <ItemEntityType entityType={container.entity_type} />
                                   </div>
                                   <Tooltip title={container.name}>
                                     <div className={classes.bodyItem} style={{ width: '37%' }}>

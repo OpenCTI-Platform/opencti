@@ -380,7 +380,7 @@ const PlaybookAddComponentsContent = ({
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
-            type={'case_severity_ov'}
+            type="case_severity_ov"
             containerStyle={fieldSpacingContainerStyle}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
@@ -391,7 +391,7 @@ const PlaybookAddComponentsContent = ({
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
-            type={'indicator_type_ov'}
+            type="indicator_type_ov"
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
             onChange={(_, value) => {
@@ -411,7 +411,7 @@ const PlaybookAddComponentsContent = ({
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
-            type={'platforms_ov'}
+            type="platforms_ov"
             containerStyle={fieldSpacingContainerStyle}
             multiple={true}
             onChange={(_, value) => {
@@ -431,7 +431,7 @@ const PlaybookAddComponentsContent = ({
         return (
           <OpenVocabField
             name={`actions-${i}-value`}
-            type={'case_priority_ov'}
+            type="case_priority_ov"
             containerStyle={fieldSpacingContainerStyle}
             onChange={(_, value) => handleChangeActionInput(i, 'value', [
               { label: value, value, patch_value: value },
@@ -530,7 +530,7 @@ const PlaybookAddComponentsContent = ({
                 onClick={() => setComponentId(component.id)}
               >
                 <ListItemIcon>
-                  <ItemIcon type={component.icon}/>
+                  <ItemIcon type={component.icon} />
                 </ListItemIcon>
                 <ListItemText
                   primary={t_i18n(component.name)}
@@ -628,7 +628,7 @@ const PlaybookAddComponentsContent = ({
                         key={k}
                         name="organizations"
                         style={{ marginTop: 20, width: '100%' }}
-                        label={'Target organizations'}
+                        label="Target organizations"
                         multiple={true}
                         alert={false}
                       />

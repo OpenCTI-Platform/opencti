@@ -152,7 +152,7 @@ const IngestionCsvEditionUserHandling: FunctionComponent<IngestionCsvEditionUser
                 <Box sx={{ margin: '20px 70px 0' }}>
                   <ConfidenceField
                     name="confidence_level"
-                    entityType={'User'}
+                    entityType="User"
                     containerStyle={fieldSpacingContainerStyle}
                     showAlert={false}
                   />

@@ -51,9 +51,9 @@ const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillCha
                 classes={{ root: classes.killChainPhaseItem }}
               >
                 <ListItemIcon>
-                  <ItemIcon type={killChainPhase.entity_type}/>
+                  <ItemIcon type={killChainPhase.entity_type} />
                 </ListItemIcon>
-                <ListItemText primary={killChainPhase.phase_name}/>
+                <ListItemText primary={killChainPhase.phase_name} />
               </ListItem>
             );
           })}

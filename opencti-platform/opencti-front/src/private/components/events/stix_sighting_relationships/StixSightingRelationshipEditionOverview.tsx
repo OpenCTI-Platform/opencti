@@ -336,7 +336,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (
-                    <SubscriptionFocus context={editContext} fieldName="first_seen"/>
+                    <SubscriptionFocus context={editContext} fieldName="first_seen" />
                   ),
                 }}
                 disabled={inferred}
@@ -353,7 +353,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
                   fullWidth: true,
                   style: { marginTop: 20 },
                   helperText: (
-                    <SubscriptionFocus context={editContext} fieldName="last_seen"/>
+                    <SubscriptionFocus context={editContext} fieldName="last_seen" />
                   ),
                 }}
                 disabled={inferred}

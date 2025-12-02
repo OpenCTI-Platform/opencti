@@ -181,7 +181,7 @@ const ExclusionListCreationForm: FunctionComponent<ExclusionListCreationFormProp
             label={t_i18n('Upload file')}
           />
           {isUploadFileChecked ? (
-            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} required={isUploadFileChecked} acceptMimeTypes={'text/plain'} />
+            <CustomFileUploader setFieldValue={setFieldValue} formikErrors={errors} required={isUploadFileChecked} acceptMimeTypes="text/plain" />
           ) : (
             <Field
               style={fieldSpacingContainerStyle}

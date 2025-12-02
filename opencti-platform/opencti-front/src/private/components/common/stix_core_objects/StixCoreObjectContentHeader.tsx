@@ -36,7 +36,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             component={Link}
             to=""
             selected={currentMode === 'content'}
-            value={'content'}
+            value="content"
           >
             <NewspaperOutlined
               fontSize="small"
@@ -51,7 +51,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             component={Link}
             to="editor"
             selected={currentMode === 'editor'}
-            value={'editor'}
+            value="editor"
             disabled={disableEditor}
           >
             <DriveFileRenameOutlineOutlined
@@ -67,7 +67,7 @@ const StixCoreObjectContentHeader: FunctionComponent<StixCoreObjectContentHeader
             component={Link}
             to="mapping"
             selected={currentMode === 'mapping'}
-            value={'mapping'}
+            value="mapping"
             disabled={disableMapping || !!draftContext}
           >
             <DifferenceOutlined

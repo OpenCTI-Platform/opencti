@@ -412,7 +412,7 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 <CoverageInformationFieldEdit
                   id={stixCoreRelationship.id}
                   name="coverage_information"
-                  mode={'relation'}
+                  mode="relation"
                   values={values.coverage_information ?? []}
                   containerStyle={fieldSpacingContainerStyle}
                 />

@@ -235,7 +235,7 @@ const ExternalReferenceEnrichment = (props) => {
                               onClick={() => deleteWork(work.id)}
                               size="large"
                             >
-                              <Delete/>
+                              <Delete />
                             </IconButton>
                           </div>
                       }

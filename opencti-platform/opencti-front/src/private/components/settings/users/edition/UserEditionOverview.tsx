@@ -194,7 +194,7 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="name"/>
+              <SubscriptionFocus context={context} fieldName="name" />
                 }
           />
           <Field
@@ -208,7 +208,7 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="user_email"/>
+              <SubscriptionFocus context={context} fieldName="user_email" />
                 }
           />
           <Field
@@ -221,7 +221,7 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="firstname"/>
+              <SubscriptionFocus context={context} fieldName="firstname" />
                 }
           />
           <Field
@@ -234,7 +234,7 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="lastname"/>
+              <SubscriptionFocus context={context} fieldName="lastname" />
                 }
           />
           <Field
@@ -248,7 +248,7 @@ UserEditionOverviewComponentProps
             onFocus={handleChangeFocus}
             onSubmit={handleSubmitField}
             helperText={
-              <SubscriptionFocus context={context} fieldName="description"/>
+              <SubscriptionFocus context={context} fieldName="description" />
                 }
           />
           <Field
@@ -268,7 +268,7 @@ UserEditionOverviewComponentProps
             <MenuItem value="fr">Français</MenuItem>
           </Field>
           <FormHelperText>
-            <SubscriptionFocus context={context} fieldName="language"/>
+            <SubscriptionFocus context={context} fieldName="language" />
           </FormHelperText>
           <ObjectOrganizationField
             name="objectOrganization"
@@ -290,7 +290,7 @@ UserEditionOverviewComponentProps
             onSubmit={handleSubmitField}
             style={{ marginTop: 20 }}
             helperText={
-              <SubscriptionFocus context={context} fieldName="api_token"/>
+              <SubscriptionFocus context={context} fieldName="api_token" />
               }
           />
           <Field
@@ -308,7 +308,7 @@ UserEditionOverviewComponentProps
             })}
           </Field>
           <FormHelperText>
-            <SubscriptionFocus context={context} fieldName="account_status"/>
+            <SubscriptionFocus context={context} fieldName="account_status" />
           </FormHelperText>
           <Field
             component={DateTimePickerField}

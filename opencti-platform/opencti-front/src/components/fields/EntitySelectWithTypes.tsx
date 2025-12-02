@@ -55,11 +55,11 @@ const EntitySelectWithTypes: FunctionComponent<EntitySelectWithTypesProps> = ({
               ...paramsInput.InputProps,
               sx: { gap: 1 },
               startAdornment: value
-                ? <ItemIcon type={value.type} color={value.color}/>
+                ? <ItemIcon type={value.type} color={value.color} />
                 : null,
               endAdornment: (
                 <SearchScopeElement
-                  name={'id'}
+                  name="id"
                   disabled={disabled}
                   searchScope={searchScope}
                   setSearchScope={setSearchScope}

@@ -205,7 +205,7 @@ IncidentEditionDetailsProps
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="first_seen"/>
+                <SubscriptionFocus context={context} fieldName="first_seen" />
               ),
             }}
           />
@@ -223,7 +223,7 @@ IncidentEditionDetailsProps
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="last_seen"/>
+                <SubscriptionFocus context={context} fieldName="last_seen" />
               ),
             }}
           />

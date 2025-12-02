@@ -56,7 +56,7 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
       </Grid>
 
       <Grid item xs={12}>
-        <ImportFilesList connectorsForImport={connectorsForImport}/>
+        <ImportFilesList connectorsForImport={connectorsForImport} />
       </Grid>
     </Grid>
   );

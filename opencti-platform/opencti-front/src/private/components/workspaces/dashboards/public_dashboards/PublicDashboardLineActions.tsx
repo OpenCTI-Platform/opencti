@@ -91,7 +91,7 @@ const PublicDashboardLineActions = ({ publicDashboard, paginationOptions }: Publ
         onClick={(event) => setAnchor(event.currentTarget)}
         color="primary"
       >
-        <MoreVert/>
+        <MoreVert />
       </IconButton>
 
       <Menu

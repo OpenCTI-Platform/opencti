@@ -90,7 +90,7 @@ const Index = ({ settings }: IndexProps) => {
       {featureFlagFreeTrials && <StartTrialBanner />}
       {(settings.platform_session_idle_timeout ?? 0) > 0 && <TimeoutLock />}
       <SettingsMessagesBanner />
-      <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts}/>
+      <PlatformCriticalAlertDialog alerts={settings.platform_critical_alerts} />
       <Box
         sx={{
           display: 'flex',
@@ -110,7 +110,7 @@ const Index = ({ settings }: IndexProps) => {
                 path="/"
                 element={draftContext?.id
                 ? (
-                  <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true}/>
+                  <Navigate to={`/dashboard/data/import/draft/${draftContext.id}/`} replace={true} />
                 )
                 : boundaryWrapper(Dashboard)}
               />
@@ -125,19 +125,19 @@ const Index = ({ settings }: IndexProps) => {
               <Route path="/arsenal/*" element={boundaryWrapper(RootArsenal)} />
               <Route path="/techniques/*" element={boundaryWrapper(RootTechnique)} />
               {/* Need to refactor below */}
-              <Route path="/entities/*" element={boundaryWrapper(RootEntities)}/>
-              <Route path="/locations/*" element={boundaryWrapper(RootLocation)}/>
-              <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)}/>
-              <Route path="/data/*" element={boundaryWrapper(RootData)}/>
-              {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)}/>)}
-              <Route path="/pirs/*" element={boundaryWrapper(RootPir)}/>
-              <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)}/>
-              <Route path="/settings/*" element={boundaryWrapper(RootSettings)}/>
-              <Route path="/audits/*" element={boundaryWrapper(RootAudit)}/>
-              <Route path="/profile/*" element={boundaryWrapper(RootProfile)}/>
-              <Route path="/observations/*" element={boundaryWrapper(RootObservations)}/>
-              <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)}/>
-              <Route path="/*" element={<NoMatch/>}/>
+              <Route path="/entities/*" element={boundaryWrapper(RootEntities)} />
+              <Route path="/locations/*" element={boundaryWrapper(RootLocation)} />
+              <Route path="/data/import/draft/*" element={boundaryWrapper(RootDrafts)} />
+              <Route path="/data/*" element={boundaryWrapper(RootData)} />
+              {isTrashEnable() && (<Route path="/trash/*" element={boundaryWrapper(RootTrash)} />)}
+              <Route path="/pirs/*" element={boundaryWrapper(RootPir)} />
+              <Route path="/workspaces/*" element={boundaryWrapper(RootWorkspaces)} />
+              <Route path="/settings/*" element={boundaryWrapper(RootSettings)} />
+              <Route path="/audits/*" element={boundaryWrapper(RootAudit)} />
+              <Route path="/profile/*" element={boundaryWrapper(RootProfile)} />
+              <Route path="/observations/*" element={boundaryWrapper(RootObservations)} />
+              <Route path="/xtm-hub/*" element={boundaryWrapper(RootXTMHub)} />
+              <Route path="/*" element={<NoMatch />} />
             </Routes>
           </Suspense>
         </Box>

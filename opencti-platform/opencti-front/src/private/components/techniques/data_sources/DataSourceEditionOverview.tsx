@@ -338,7 +338,7 @@ DataSourceEditionOverviewProps
             type="platforms_ov"
             name="x_mitre_platforms"
             required={(mandatoryAttributes.includes('x_mitre_platforms'))}
-            variant={'edit'}
+            variant="edit"
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}
@@ -350,7 +350,7 @@ DataSourceEditionOverviewProps
             type="collection_layers_ov"
             name="collection_layers"
             required={(mandatoryAttributes.includes('collection_layers'))}
-            variant={'edit'}
+            variant="edit"
             onSubmit={handleSubmitField}
             onChange={setFieldValue}
             containerStyle={fieldSpacingContainerStyle}

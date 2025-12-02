@@ -154,7 +154,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                   }}
                 >
                   {!restricted ? getMainRepresentative(node.from) : t('Restricted')}
-                  {node.from?.draftVersion && (<DraftChip/>)}
+                  {node.from?.draftVersion && (<DraftChip />)}
                 </div>
                 {dataColumns.x_mitre_id && (
                   <div
@@ -631,7 +631,7 @@ class EntityStixCoreRelationshipLineToDummyComponent extends Component {
         divider={true}
         secondaryAction={
           <Box sx={{ root: classes.itemIconDisabled }}>
-            <MoreVertOutlined/>
+            <MoreVertOutlined />
           </Box>
         }
       >

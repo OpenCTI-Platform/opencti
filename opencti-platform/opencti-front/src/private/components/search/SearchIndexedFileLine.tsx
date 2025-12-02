@@ -164,7 +164,7 @@ export const SearchIndexedFileLineDummy = ({
       divider={true}
       secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
       }
     >

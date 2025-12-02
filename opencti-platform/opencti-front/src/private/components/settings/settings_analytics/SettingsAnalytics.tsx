@@ -58,7 +58,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
             <>
               {t_i18n('If needed, you can set a')}{' '}
               <Link
-                to={'/dashboard/settings/accesses/policies'}
+                to="/dashboard/settings/accesses/policies"
                 target="_blank"
               >
                 {t_i18n('consent message')}
@@ -71,7 +71,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
         </Tooltip>
       </div>
       <div className="clearfix" />
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <Formik
           onSubmit={() => {}}
           enableReinitialize={true}

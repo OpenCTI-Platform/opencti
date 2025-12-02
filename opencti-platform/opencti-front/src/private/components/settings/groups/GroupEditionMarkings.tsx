@@ -266,7 +266,7 @@ const GroupEditionMarkingsComponent = ({
                         }
                       >
                         <ListItemIcon>
-                          <MarkingIcon theme={theme} color={markingDefinition.x_opencti_color}/>
+                          <MarkingIcon theme={theme} color={markingDefinition.x_opencti_color} />
                         </ListItemIcon>
                         <ListItemText primary={markingDefinition.definition} />
                       </ListItem>
@@ -304,7 +304,7 @@ const GroupEditionMarkingsComponent = ({
                       <Field
                         component={AutocompleteField}
                         style={fieldSpacingContainerStyle}
-                        name={'defaultMarkings'}
+                        name="defaultMarkings"
                         multiple={true}
                         textfieldprops={{
                           variant: 'standard',
@@ -321,7 +321,7 @@ const GroupEditionMarkingsComponent = ({
                               className={classes.icon}
                               style={{ color: option.color }}
                             >
-                              <MarkingIcon theme={theme} color={option.color}/>
+                              <MarkingIcon theme={theme} color={option.color} />
                             </div>
                             <div className={classes.text}>{option.label}</div>
                           </li>

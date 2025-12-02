@@ -212,7 +212,7 @@ const PirKnowledgeEntities = ({ pirId, localStorage, initialValues, additionalHe
         });
         return (
           <PirCriteriaDisplay criteria={criteria}>
-            <PirRadialScore value={pirInformation.pir_score}/>
+            <PirRadialScore value={pirInformation.pir_score} />
           </PirCriteriaDisplay>
         );
       },

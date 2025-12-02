@@ -72,7 +72,7 @@ const SectorSubSectorsComponent = ({ sector }) => {
                   <LinkOff />
                 </IconButton>
               </Security>
-            ) : <AutoFix fontSize="small" style={{ marginRight: 13 }}/>}
+            ) : <AutoFix fontSize="small" style={{ marginRight: 13 }} />}
           >
             <ListItemButton
               component={Link}

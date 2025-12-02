@@ -125,7 +125,7 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
           </Button>
           {loading && (
             <Box sx={{ marginLeft: '8px' }}>
-              <Loader variant={LoaderVariant.inElement}/>
+              <Loader variant={LoaderVariant.inElement} />
             </Box>
           )}
           {result
@@ -148,7 +148,7 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
         <Box sx={{ marginTop: '8px' }}>
           <CodeBlock
             code={result?.ingestionCsvTester?.objects || t_i18n('You will find here the result in JSON format.')}
-            language={'json'}
+            language="json"
           />
         </Box>
       </DialogContent>

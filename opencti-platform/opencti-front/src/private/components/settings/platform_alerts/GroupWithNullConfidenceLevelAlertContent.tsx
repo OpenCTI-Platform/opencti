@@ -35,8 +35,8 @@ const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidence
             {
               id: `alert_${alert.type}`,
               values: {
-                link_blogpost: <a href={'https://blog.filigran.io/d10d7eb4407e'}>{t_i18n('this blogpost')}</a>,
-                link_slack: <a href={'https://filigran-community.slack.com'}>{t_i18n('our Slack channel')}</a>,
+                link_blogpost: <a href="https://blog.filigran.io/d10d7eb4407e">{t_i18n('this blogpost')}</a>,
+                link_slack: <a href="https://filigran-community.slack.com">{t_i18n('our Slack channel')}</a>,
               },
             },
           )}
@@ -65,7 +65,7 @@ const GroupWithNullConfidenceLevelAlertContent: React.FC<GroupWithNullConfidence
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={goToSettingsHandler} color={'secondary'} >
+        <Button onClick={goToSettingsHandler} color="secondary">
           {t_i18n('Open Settings')}
         </Button>
       </DialogActions>

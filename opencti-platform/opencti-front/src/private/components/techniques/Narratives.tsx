@@ -180,7 +180,7 @@ const Narratives: FunctionComponent = () => {
             toolbarFilters={contextFilters}
             additionalHeaderButtons={[
               (
-                <Tooltip key={'lines'} title={t_i18n('Lines view')}>
+                <Tooltip key="lines" title={t_i18n('Lines view')}>
                   <ToggleButton
                     value="lines"
                     aria-label="lines"
@@ -190,7 +190,7 @@ const Narratives: FunctionComponent = () => {
                 </Tooltip>
               ),
               (
-                <Tooltip key={'subEntityLines'} title={t_i18n('Sub entity lines view')}>
+                <Tooltip key="subEntityLines" title={t_i18n('Sub entity lines view')}>
                   <ToggleButton
                     value="subEntityLines"
                     aria-label="subEntityLines"

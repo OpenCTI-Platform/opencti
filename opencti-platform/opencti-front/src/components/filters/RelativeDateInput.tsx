@@ -123,7 +123,7 @@ const RelativeDateInput: FunctionComponent<RelativeDateInputProps> = ({
               }}
               onClick={() => setIsDatePickerOpen(true)}
                           >
-              <DateRangeOutlined/>
+              <DateRangeOutlined />
             </Button>,
           },
         }}

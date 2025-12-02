@@ -55,7 +55,7 @@ const SecurityCoverageVulnerabilitiesComponent: FunctionComponent<SecurityCovera
                 secondaryAction={
                   <StixCoreRelationshipPopover
                     objectId={securityCoverage.id}
-                    connectionKey={'Pagination_vulnerabilities'}
+                    connectionKey="Pagination_vulnerabilities"
                     stixCoreRelationshipId={vulnerabilityEdge.node.id}
                     paginationOptions={paginationOptions}
                     isCoverage={true}

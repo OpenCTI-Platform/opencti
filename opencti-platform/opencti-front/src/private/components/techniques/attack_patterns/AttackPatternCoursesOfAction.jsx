@@ -70,7 +70,7 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                     onClick={() => removeCourseOfAction(courseOfActionEdge)}
                     size="large"
                   >
-                    <LinkOff/>
+                    <LinkOff />
                   </IconButton>
                   }
               >
@@ -80,10 +80,10 @@ const AttackPatternCoursesOfActionComponent = ({ attackPattern }) => {
                 >
                   <ListItemIcon>
                     <ListItemIcon>
-                      <ProgressWrench color="primary"/>
+                      <ProgressWrench color="primary" />
                     </ListItemIcon>
                   </ListItemIcon>
-                  <ListItemText primary={courseOfAction.name}/>
+                  <ListItemText primary={courseOfAction.name} />
                 </ListItemButton>
               </ListItem>
             );

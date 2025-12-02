@@ -268,7 +268,7 @@ export const TriggerLineDummy = ({
       divider={true}
       secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVert/>
+          <MoreVert />
         </Box>
       }
     >

@@ -162,7 +162,7 @@ const IngestionCsv = () => {
         <Alert severity="info">
           {t_i18n(platformModuleHelpers.generateDisableMessage(INGESTION_MANAGER))}
         </Alert>
-        <IngestionMenu/>
+        <IngestionMenu />
       </div>
     );
   }
@@ -170,7 +170,7 @@ const IngestionCsv = () => {
   return (
     <div className={classes.container} data-testid="csv-feeds-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('CSV feeds'), current: true }]} />
-      <IngestionMenu/>
+      <IngestionMenu />
       {renderLines()}
     </div>
   );

@@ -53,7 +53,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
     }}
     >
       {queryRef && (
-        <React.Suspense fallback={<Loader/>}>
+        <React.Suspense fallback={<Loader />}>
           <AttackPatternsMatrixColumns
             queryRef={queryRef}
             attackPatternIdsToOverlap={attackPatternIdsToOverlap}

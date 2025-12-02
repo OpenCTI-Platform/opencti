@@ -232,7 +232,7 @@ const RootThreatActorIndividualComponent = ({
               <Route
                 path="/"
                 element={
-                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual}/>
+                  <ThreatActorIndividual threatActorIndividualData={threatActorIndividual} />
                   }
               />
               <Route

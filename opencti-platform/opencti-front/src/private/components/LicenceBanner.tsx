@@ -68,7 +68,7 @@ const LicenceBanner = () => {
   if (!bannerInfo) return <></>;
 
   return (
-    <TopBanner bannerColor={bannerInfo.bannerColor} bannerText={bannerInfo.message} buttonText={bannerInfo.buttonText} onButtonClick={() => {}}/>
+    <TopBanner bannerColor={bannerInfo.bannerColor} bannerText={bannerInfo.message} buttonText={bannerInfo.buttonText} onButtonClick={() => {}} />
   );
 };
 

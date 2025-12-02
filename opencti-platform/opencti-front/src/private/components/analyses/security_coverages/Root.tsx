@@ -155,7 +155,7 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             </Tabs>
             {isOverview && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                <AIInsights id={securityCoverage.id}/>
+                <AIInsights id={securityCoverage.id} />
               </div>
             )}
           </Box>

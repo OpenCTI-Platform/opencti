@@ -57,7 +57,7 @@ const StixCyberObservableEdition: FunctionComponent<StixCyberObservableEditionPr
 
   const renderClassic = () => (
     <>
-      <EditEntityControlledDial onOpen={handleOpen} onClose={() => {}}/>
+      <EditEntityControlledDial onOpen={handleOpen} onClose={() => {}} />
       <Drawer
         open={open}
         anchor="right"

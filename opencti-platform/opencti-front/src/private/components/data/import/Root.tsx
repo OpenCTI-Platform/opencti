@@ -10,7 +10,7 @@ const Root = () => {
     <Routes>
       <Route
         path="/"
-        element={<Navigate to="/dashboard/data/import/file" replace/>}
+        element={<Navigate to="/dashboard/data/import/file" replace />}
       />
       <Route
         path="/workbench/:fileId"
@@ -18,15 +18,15 @@ const Root = () => {
       />
       <Route
         path="/file"
-        element={<ImportFilesContent/>}
+        element={<ImportFilesContent />}
       />
       <Route
         path="/draft"
-        element={<Drafts/>}
+        element={<Drafts />}
       />
       <Route
         path="/workbench"
-        element={<ImportWorkbenchesContent/>}
+        element={<ImportWorkbenchesContent />}
       />
     </Routes>
   );

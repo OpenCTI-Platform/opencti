@@ -283,7 +283,7 @@ FilterIconButtonContainerProps
             {truncate(filterLabel, 20)}
             {!isOperatorDisplayed && (
               <Box
-                component={'span'}
+                component="span"
                 sx={{ padding: '0 4px', fontWeight: 'normal' }}
               >
                 {t_i18n(filterOperator)}

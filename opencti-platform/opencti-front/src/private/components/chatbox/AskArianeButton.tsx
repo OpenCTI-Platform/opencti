@@ -179,7 +179,7 @@ const AskArianeButton = React.forwardRef((props, ref) => {
       ) : null}
 
       {openValidateTermsOfUse && (
-        <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)}/>
+        <ValidateTermsOfUseDialog open={openValidateTermsOfUse} onClose={() => setOpenValidateTermsOfUse(false)} />
       )}
     </>
   );

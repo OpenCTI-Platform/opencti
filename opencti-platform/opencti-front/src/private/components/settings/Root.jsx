@@ -417,7 +417,7 @@ const Root = () => {
               </Security>
             }
           />
-          <Route path="/vocabularies" element={<Navigate to={generateTaxonomyLink()} />}/>
+          <Route path="/vocabularies" element={<Navigate to={generateTaxonomyLink()} />} />
           <Route
             path="/vocabularies/labels"
             element={

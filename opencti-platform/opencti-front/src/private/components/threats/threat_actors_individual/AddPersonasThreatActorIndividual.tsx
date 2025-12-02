@@ -77,7 +77,7 @@ AddPersonaThreatActorIndividualComponentProps
               marginLeft: '10px',
               marginTop: '5px',
             }}
-            inputValue={''}
+            inputValue=""
             defaultCreatedBy={undefined}
           />
         </div>

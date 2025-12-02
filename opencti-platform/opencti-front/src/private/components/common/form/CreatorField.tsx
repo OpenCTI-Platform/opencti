@@ -138,14 +138,14 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
           props: React.HTMLAttributes<HTMLLIElement>,
           option: CreatorOption,
         ) => (
-          <li {...props} >
+          <li {...props}>
             <div
               style={{
                 paddingTop: 4,
                 color: option.color,
               }}
             >
-              <ItemIcon type="user"/>
+              <ItemIcon type="user" />
             </div>
             <div
               style={{

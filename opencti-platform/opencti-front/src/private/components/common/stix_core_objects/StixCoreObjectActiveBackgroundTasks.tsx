@@ -53,7 +53,7 @@ const StixCoreObjectBackgroundTasksComponent: FunctionComponent<StixCoreObjectBa
             color="warning"
           >
             <CircularProgress
-              variant={'indeterminate'}
+              variant="indeterminate"
               size={25}
               style={{ cursor: 'pointer' }}
             />

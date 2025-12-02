@@ -20,7 +20,7 @@ class StixSightingRelationshipHistoryLinesComponent extends Component {
     const { t, classes, data, isRelationLog } = this.props;
     const logs = pathOr([], ['logs', 'edges'], data);
     return (
-      <Paper classes={{ root: classes.paperHistory }} className={'paper-for-grid'} variant="outlined">
+      <Paper classes={{ root: classes.paperHistory }} className="paper-for-grid" variant="outlined">
         {logs.length > 0 ? (
           logs.map((logEdge) => {
             const log = logEdge.node;

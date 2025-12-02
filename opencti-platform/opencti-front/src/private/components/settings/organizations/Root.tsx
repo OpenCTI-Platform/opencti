@@ -59,7 +59,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
     <Security needs={[SETTINGS_SETACCESSES, VIRTUAL_ORGANIZATION_ADMIN]}>
       {organization ? (
         <>
-          <AccessesMenu/>
+          <AccessesMenu />
           <Breadcrumbs elements={[
             { label: t_i18n('Settings') },
             { label: t_i18n('Security') },
@@ -71,7 +71,7 @@ const RootSettingsOrganizationComponent: FunctionComponent<RootSettingsOrganizat
             <Route
               path="/"
               element={
-                <SettingsOrganization organizationData={organization}/>
+                <SettingsOrganization organizationData={organization} />
             }
             />
           </Routes>
@@ -89,7 +89,7 @@ const RootSettingsOrganization = () => {
     <div>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <RootSettingsOrganizationComponent queryRef={queryRef} organizationId={organizationId}/>
+          <RootSettingsOrganizationComponent queryRef={queryRef} organizationId={organizationId} />
         </React.Suspense>
       ) : (
         <Loader variant={LoaderVariant.inElement} />

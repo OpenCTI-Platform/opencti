@@ -150,7 +150,7 @@ const SupportPackages = () => {
           </Button>
         </span>
       </Tooltip>
-      <div className="clearfix"/>
+      <div className="clearfix" />
       <Paper
         className="paper-for-grid"
         variant="outlined"

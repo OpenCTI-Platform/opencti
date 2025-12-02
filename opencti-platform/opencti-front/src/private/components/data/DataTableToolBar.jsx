@@ -1742,7 +1742,7 @@ class DataTableToolBar extends Component {
             renderOption={(props, option) => (
               <li {...props}>
                 <div className={classes.icon}>
-                  <ItemIcon type={option.type}/>
+                  <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
               </li>
@@ -1778,7 +1778,7 @@ class DataTableToolBar extends Component {
             renderOption={(props, option) => (
               <li {...props}>
                 <div className={classes.icon}>
-                  <ItemIcon type={option.type}/>
+                  <ItemIcon type={option.type} />
                 </div>
                 <div className={classes.text}>{option.label}</div>
               </li>
@@ -2318,7 +2318,7 @@ class DataTableToolBar extends Component {
                             || this.state.processing
                           }
                         >
-                          <LockOpenOutlined fontSize="small" color={'primary'} />
+                          <LockOpenOutlined fontSize="small" color="primary" />
                         </IconButton>
                       </Tooltip>
                     </Security>
@@ -2559,7 +2559,7 @@ class DataTableToolBar extends Component {
                               || this.state.processing
                           }
                         >
-                          <DeleteSweepOutlined fontSize="small" color={'primary'} />
+                          <DeleteSweepOutlined fontSize="small" color="primary" />
                         </IconButton>
                       </Tooltip>
                     </Security>

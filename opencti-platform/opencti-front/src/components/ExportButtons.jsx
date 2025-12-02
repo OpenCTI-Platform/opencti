@@ -181,14 +181,14 @@ class ExportButtons extends Component {
             <div className={classes.exportButtons} id="export-buttons">
               <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
                 <Tooltip title={t('Export to image')}>
-                  <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value={'Export-to-image'} style={{ marginRight: 3 }}>
+                  <ToggleButton size="small" onClick={this.handleOpenImage.bind(this)} value="Export-to-image" style={{ marginRight: 3 }}>
                     <ImageOutlined fontSize="small" color="primary" />
                   </ToggleButton>
                 </Tooltip>
               </Security>
               <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
                 <Tooltip title={t('Export to PDF')}>
-                  <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value={'Export-to-PDF'} style={{ marginRight: 3 }}>
+                  <ToggleButton size="small" onClick={this.handleOpenPdf.bind(this)} value="Export-to-PDF" style={{ marginRight: 3 }}>
                     <FilePdfBox fontSize="small" color="primary" />
                   </ToggleButton>
                 </Tooltip>
@@ -198,7 +198,7 @@ class ExportButtons extends Component {
                 <ToggleButton
                   size="small"
                   onClick={handleExportDashboard.bind(this)}
-                  value={'Export-to-JSON'}
+                  value="Export-to-JSON"
                   style={{ marginRight: 3 }}
                 >
                   <FileExportOutline fontSize="small" color="primary" />
@@ -223,14 +223,14 @@ class ExportButtons extends Component {
               )}
               {type === 'investigation' && (
               <Tooltip title={t('Download as STIX report')}>
-                <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value={'Download-as-STIX-report'} style={{ marginRight: 3 }}>
+                <ToggleButton size="small" onClick={handleDownloadAsStixReport.bind(this)} value="Download-as-STIX-report" style={{ marginRight: 3 }}>
                   <GetAppOutlined fontSize="small" color="primary" />
                 </ToggleButton>
               </Tooltip>
               )}
               {csvData && (
               <Tooltip title={t('Export to CSV')}>
-                <ToggleButton size="small" onClick={() => this.csvLink.current.link.click()} value={'Export-to-CSV'} style={{ marginRight: 3 }}>
+                <ToggleButton size="small" onClick={() => this.csvLink.current.link.click()} value="Export-to-CSV" style={{ marginRight: 3 }}>
                   <FileDelimitedOutline fontSize="small" color="primary" />
                 </ToggleButton>
               </Tooltip>

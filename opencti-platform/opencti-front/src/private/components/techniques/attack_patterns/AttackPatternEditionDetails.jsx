@@ -161,7 +161,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
             label={t_i18n('Platforms')}
             type="platforms_ov"
             name="x_mitre_platforms"
-            variant={'edit'}
+            variant="edit"
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}

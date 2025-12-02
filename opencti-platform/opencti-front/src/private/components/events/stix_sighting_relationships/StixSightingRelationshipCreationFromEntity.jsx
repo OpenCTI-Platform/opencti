@@ -400,7 +400,7 @@ const StixSightingRelationshipCreationFromEntity = ({
               onSubmit={handleSearch}
             />
           </div>
-          <div className="clearfix"/>
+          <div className="clearfix" />
           {renderSearchResults()}
         </div>
       </div>

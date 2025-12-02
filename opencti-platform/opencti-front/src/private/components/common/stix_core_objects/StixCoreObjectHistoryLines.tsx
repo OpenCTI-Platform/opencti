@@ -76,7 +76,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
         padding: '0 15px',
         borderRadius: 4,
       }}
-      className={'paper-for-grid'}
+      className="paper-for-grid"
       variant="outlined"
     >
       {logs.length > 0 ? (

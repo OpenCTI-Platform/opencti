@@ -534,7 +534,7 @@ RelationshipDetailsComponentProps
         && stixRelationship.from?.id && (
           <RelationShipFromAndTo
             id={stixRelationship.from?.id}
-            direction={'From'}
+            direction="From"
           />
       )}
       {stixRelationship.from?.relationship_type
@@ -551,7 +551,7 @@ RelationshipDetailsComponentProps
           </div>
       )}
       {!stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
-        <RelationShipFromAndTo id={stixRelationship.to?.id} direction={'To'} />
+        <RelationShipFromAndTo id={stixRelationship.to?.id} direction="To" />
       )}
       {stixRelationship.to?.relationship_type && stixRelationship.to?.id && (
         <div>

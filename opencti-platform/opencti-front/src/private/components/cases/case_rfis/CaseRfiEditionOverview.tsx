@@ -287,7 +287,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
         dirty,
       }) => (
         <Form>
-          <AlertConfidenceForEntity entity={caseData}/>
+          <AlertConfidenceForEntity entity={caseData} />
           <Field
             component={TextField}
             variant="standard"
@@ -313,7 +313,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created"/>
+                <SubscriptionFocus context={context} fieldName="created" />
               ),
               style: { marginTop: 20 },
             }}
@@ -403,7 +403,7 @@ const CaseRfiEditionOverview: FunctionComponent<CaseRfiEditionOverviewProps> = (
               setFieldValue={setFieldValue}
               style={fieldSpacingContainerStyle}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id"/>
+                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
               }
             />
           )}

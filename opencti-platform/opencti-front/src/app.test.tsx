@@ -55,7 +55,7 @@ describe('App', () => {
           <AppIntlProvider settings={{ platform_language: 'auto', platform_translations: '{}' }}>
             <ThemeProvider theme={createTheme()}>
               <UserContext.Provider value={UserContextValue}>
-                <Profile/>
+                <Profile />
               </UserContext.Provider>
             </ThemeProvider>
           </AppIntlProvider>

@@ -160,7 +160,7 @@ Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
       />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

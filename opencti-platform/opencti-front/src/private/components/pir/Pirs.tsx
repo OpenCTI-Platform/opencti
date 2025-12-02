@@ -213,7 +213,7 @@ const Pirs = () => {
           entityTypes={['Pir']}
           searchContextFinal={{ entityTypes: ['Pir'] }}
           createButton={(
-            <Security needs={[PIRAPI_PIRUPDATE]} >
+            <Security needs={[PIRAPI_PIRUPDATE]}>
               <PirCreation paginationOptions={queryPaginationOptions} />
             </Security>
           )}

@@ -174,7 +174,7 @@ const CampaignEditionDetailsComponent = (props) => {
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="first_seen"/>
+                <SubscriptionFocus context={context} fieldName="first_seen" />
               ),
             }}
           />
@@ -189,7 +189,7 @@ const CampaignEditionDetailsComponent = (props) => {
               fullWidth: true,
               style: { marginTop: 20 },
               helperText: (
-                <SubscriptionFocus context={context} fieldName="last_seen"/>
+                <SubscriptionFocus context={context} fieldName="last_seen" />
               ),
             }}
           />

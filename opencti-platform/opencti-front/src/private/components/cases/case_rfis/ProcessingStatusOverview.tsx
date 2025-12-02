@@ -124,7 +124,7 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
         </Button>
       </div>)}
     </div>
-    <Divider style={{ marginTop: 20 }}/>
+    <Divider style={{ marginTop: 20 }} />
   </Grid>;
 };
 

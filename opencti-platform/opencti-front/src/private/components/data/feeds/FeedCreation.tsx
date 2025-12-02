@@ -422,7 +422,7 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         />
                         {!values.feed_public && (
                           <ObjectMembersField
-                            label={'Accessible for'}
+                            label="Accessible for"
                             style={fieldSpacingContainerStyle}
                             onChange={setFieldValue}
                             multiple={true}
@@ -476,8 +476,8 @@ const FeedCreation: FunctionComponent<FeedCreationFormProps> = (props) => {
                         multiple={false}
                         containerstyle={{ width: '100%', marginTop: 20 }}
                       >
-                        <MenuItem key={'created_at'} value={'created_at'}>{t_i18n('Creation date')}</MenuItem>
-                        <MenuItem key={'updated_at'} value={'updated_at'}>{t_i18n('Update date')}</MenuItem>
+                        <MenuItem key="created_at" value="created_at">{t_i18n('Creation date')}</MenuItem>
+                        <MenuItem key="updated_at" value="updated_at">{t_i18n('Update date')}</MenuItem>
                       </Field>
                       <Field
                         component={SelectField}

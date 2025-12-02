@@ -183,7 +183,7 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
           <Routes>
             <Route
               path="/"
-              element={(<Indicator indicatorData={indicator}/>)}
+              element={(<Indicator indicatorData={indicator} />)}
             />
             <Route
               path="/content/*"

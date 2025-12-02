@@ -37,7 +37,7 @@ const JsonMapperRepresentationDialogOption: FunctionComponent<JsonMapperRepresen
         size="large"
       >
         <Badge color="secondary" variant="dot" invisible={!visible}>
-          <CogOutline/>
+          <CogOutline />
         </Badge>
       </IconButton>
       <Dialog

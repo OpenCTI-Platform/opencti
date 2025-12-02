@@ -25,7 +25,7 @@ class AddCoursesOfActionLinesContainer extends Component {
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={attackPattern}
-        relationshipType={'mitigates'}
+        relationshipType="mitigates"
         availableDatas={data?.coursesOfAction}
         existingDatas={attackPatternCoursesOfAction}
         updaterOptions={{ path: 'coursesOfAction' }}

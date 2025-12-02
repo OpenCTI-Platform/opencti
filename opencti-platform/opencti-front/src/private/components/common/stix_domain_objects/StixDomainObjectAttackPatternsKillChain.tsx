@@ -249,7 +249,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
       <ToggleButton
         aria-label="matrix"
         onClick={() => handleChangeView('matrix')}
-        value={'matrix'}
+        value="matrix"
       >
         <ViewColumnOutlined
           fontSize="small"
@@ -260,29 +260,29 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
   );
   const matrixInLineViewButton = (
     <Tooltip title={t_i18n('Matrix in line view')} key="matrix-in-line">
-      <ToggleButton value={'matrix-in-line'} aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
+      <ToggleButton value="matrix-in-line" aria-label="matrix-in-line" onClick={() => handleChangeView('matrix-in-line')}>
         <FiligranIcon icon={ListViewIcon} size="small" color={currentView === 'matrix-in-line' ? 'secondary' : 'primary'} />
       </ToggleButton>
     </Tooltip>
   );
   const killChainViewButton = (
     <Tooltip title={t_i18n('Kill chain view')} key="list">
-      <ToggleButton value={'list'} aria-label="list" onClick={() => handleChangeView('list')}>
-        <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'}/>
+      <ToggleButton value="list" aria-label="list" onClick={() => handleChangeView('list')}>
+        <FiligranIcon icon={SublistViewIcon} size="small" color={currentView === 'list' ? 'secondary' : 'primary'} />
       </ToggleButton>
     </Tooltip>
   );
   const courseOfActionView = (
     <Tooltip title={t_i18n('Courses of action view')} key="courses-of-action">
-      <ToggleButton value={'courses-of-action'} aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
-        <ProgressWrench fontSize="small" color={currentView === 'courses-of-action' ? 'secondary' : 'primary'}/>
+      <ToggleButton value="courses-of-action" aria-label="courses-of-action" onClick={() => handleChangeView('courses-of-action')}>
+        <ProgressWrench fontSize="small" color={currentView === 'courses-of-action' ? 'secondary' : 'primary'} />
       </ToggleButton>
     </Tooltip>
   );
   const relationshipsView = (
     <Tooltip title={t_i18n('Relationships view')} key="relationships">
       <ToggleButton value="relationships" aria-label="relationships" onClick={() => handleChangeView('relationships')}>
-        <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'}/>
+        <RelationManyToMany fontSize="small" color={currentView === 'relationships' ? 'secondary' : 'primary'} />
       </ToggleButton>
     </Tooltip>
   );
@@ -389,7 +389,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                     onClick={() => setIsModeOnlyActive((value) => !value)}
                     size="large"
                   >
-                    <VisibilityOutlined/>
+                    <VisibilityOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -463,7 +463,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                 />
               </div>
             </div>)}
-          <div className="clearfix"/>
+          <div className="clearfix" />
         </div>
       )}
       <div
@@ -518,7 +518,7 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             currentView={currentView}
             viewButtons={viewButtons}
             targetTypes={['Attack-Pattern']}
-            direction={'fromEntity'}
+            direction="fromEntity"
             relationshipTypes={['uses', 'should-cover']}
             storageKey={storageKey}
             defaultStartTime={defaultStartTime}

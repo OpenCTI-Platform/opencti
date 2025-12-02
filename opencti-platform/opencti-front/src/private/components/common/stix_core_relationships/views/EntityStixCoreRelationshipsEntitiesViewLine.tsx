@@ -284,7 +284,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
               }}
             >
               {getMainRepresentative(stixCoreObject)}
-              {stixCoreObject.draftVersion && (<DraftChip/>)}
+              {stixCoreObject.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}

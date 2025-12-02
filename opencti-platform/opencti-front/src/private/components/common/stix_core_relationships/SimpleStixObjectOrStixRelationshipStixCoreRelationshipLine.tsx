@@ -656,7 +656,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 style={{ width: dataColumns.name.width }}
               >
                 {element.representative?.main}
-                {element.draftVersion && (<DraftChip/>)}
+                {element.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -702,7 +702,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
       divider={true}
       secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined/>
+          <MoreVertOutlined />
         </Box>
         }
     >

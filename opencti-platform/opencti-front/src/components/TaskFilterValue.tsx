@@ -91,7 +91,7 @@ const TaskFilterValue = ({
                   <strong>{label}</strong>
                   {!isOperatorDisplayed && (
                     <Box
-                      component={'span'}
+                      component="span"
                       sx={{ padding: '0 4px', fontWeight: 'normal' }}
                     >
                       {t_i18n(currentFilter.operator)}

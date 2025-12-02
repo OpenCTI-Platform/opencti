@@ -327,7 +327,7 @@ const IndicatorEditionOverviewComponent = ({
             type="platforms_ov"
             name="x_mitre_platforms"
             required={(mandatoryAttributes.includes('x_mitre_platforms'))}
-            variant={'edit'}
+            variant="edit"
             onSubmit={handleSubmitField}
             onChange={(name, value) => setFieldValue(name, value)}
             containerStyle={fieldSpacingContainerStyle}

@@ -80,7 +80,7 @@ const ConnectorsStatusFilters: React.FC<ConnectorsStatusFiltersProps> = ({
       {
         isEnterpriseEdition && showManagedFilters && (
           <>
-            <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement={'top'} >
+            <Tooltip title={t_i18n('Apply filter to managed deployments only')} placement="top">
               <Autocomplete
                 size="small"
                 sx={{ width: INPUT_WIDTH, backgroundColor: theme.palette.background.paper }}

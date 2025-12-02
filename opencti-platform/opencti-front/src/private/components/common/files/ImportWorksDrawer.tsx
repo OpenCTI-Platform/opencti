@@ -301,7 +301,7 @@ const FileWorksComponent = ({
                     onClick={() => work.draft_context && navigateToDraft(work.draft_context)}
                     size="large"
                   >
-                    <ArchitectureOutlined fontSize="small"/>
+                    <ArchitectureOutlined fontSize="small" />
                   </IconButton>
                 </Tooltip>
               )}
@@ -309,11 +309,11 @@ const FileWorksComponent = ({
               <Tooltip title={t_i18n('Delete this work')}>
                 <IconButton
                   disabled={work?.status === 'deleting'}
-                  color={'primary'}
+                  color="primary"
                   onClick={() => setDisplayDelete(work?.id)}
                   size="large"
                 >
-                  <DeleteOutlined fontSize="small"/>
+                  <DeleteOutlined fontSize="small" />
                 </IconButton>
               </Tooltip>
             </div>
@@ -444,7 +444,7 @@ const ImportWorksDrawer = ({
         <>
           <Alert severity="info">{t_i18n('This page lists the most recent works.')}</Alert>
           {queryRef && (
-            <Suspense fallback={<Loader variant={LoaderVariant.container}/>}>
+            <Suspense fallback={<Loader variant={LoaderVariant.container} />}>
               <FileWorksComponent
                 isWorkbench={isWorkbench}
                 queryRef={queryRef}

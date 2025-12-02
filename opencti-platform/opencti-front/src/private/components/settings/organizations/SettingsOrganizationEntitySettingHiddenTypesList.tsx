@@ -36,8 +36,8 @@ const SettingsOrganizationEntitySettingHiddenTypesListComponent: FunctionCompone
       targetType={targetType}
       nodes={organizations}
       label={t_i18n('Hidden in organizations')}
-      link={'/dashboard/settings/accesses/organizations/'}
-      entityType={'Organization'}
+      link="/dashboard/settings/accesses/organizations/"
+      entityType="Organization"
     />
   );
 };

@@ -280,10 +280,10 @@ const SettingsOrganizationEdition = ({
                 context={context}
               />
               <SettingsOrganizationHiddenTypesField organizationData={organization} />
-              <EEField featureLabel={'Organization sharing'}>
+              <EEField featureLabel="Organization sharing">
                 <GroupField
                   name="grantable_groups"
-                  label={'Grantable groups by Organization administrators'}
+                  label="Grantable groups by Organization administrators"
                   multiple={true}
                   onChange={editor.changeGrantableGroups}
                   style={{ marginTop: 20 }}

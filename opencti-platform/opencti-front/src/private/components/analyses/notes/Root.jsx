@@ -95,7 +95,7 @@ const RootNote = () => {
                         container={props.note}
                         EditComponent={
                           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
-                            <NoteEdition noteId={note.id}/>
+                            <NoteEdition noteId={note.id} />
                           </CollaborativeSecurity>
                         }
                         DeleteComponent={({ isOpen, onClose }) => (
@@ -114,7 +114,7 @@ const RootNote = () => {
                       container={note}
                       EditComponent={
                         <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
-                          <NoteEdition noteId={note.id}/>
+                          <NoteEdition noteId={note.id} />
                         </CollaborativeSecurity>
                       }
                       DeleteComponent={({ isOpen, onClose }) => (
@@ -153,7 +153,7 @@ const RootNote = () => {
                   <Routes>
                     <Route
                       path="/"
-                      element={<Note noteFragment={note} enableReferences={false}/>}
+                      element={<Note noteFragment={note} enableReferences={false} />}
                     />
                     <Route
                       path="/files"
@@ -168,19 +168,19 @@ const RootNote = () => {
                     />
                     <Route
                       path="/history"
-                      element={<StixCoreObjectHistory stixCoreObjectId={noteId} withoutRelations/>}
+                      element={<StixCoreObjectHistory stixCoreObjectId={noteId} withoutRelations />}
                     />
                     <Route
                       path="/knowledge/relations/:relationId"
-                      element={<StixCoreRelationship entityId={note.id}/>}
+                      element={<StixCoreRelationship entityId={note.id} />}
                     />
                   </Routes>
                 </>
               );
             }
-            return <ErrorNotFound/>;
+            return <ErrorNotFound />;
           }
-          return <Loader/>;
+          return <Loader />;
         }}
       />
     </>

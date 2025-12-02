@@ -198,7 +198,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = (props) =
             color: theme.palette.primary.main,
           }}
           >
-            <ItemIcon type={option.type} color={option.color}/>
+            <ItemIcon type={option.type} color={option.color} />
           </div>
           <div style={{
             display: 'inline-block',

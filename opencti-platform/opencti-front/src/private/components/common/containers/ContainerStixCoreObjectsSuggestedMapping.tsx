@@ -148,9 +148,9 @@ ContainerStixCoreObjectsSuggestedMappingProps
   });
 
   return (
-    <div ref={ref} >
+    <div ref={ref}>
       {askingSuggestion
-        ? <Loader variant={LoaderVariant.inElement}/>
+        ? <Loader variant={LoaderVariant.inElement} />
         : (
           <ListLines
             helpers={helpers}

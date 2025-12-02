@@ -34,7 +34,7 @@ const SavedFiltersAutocomplete = ({ isDisabled, value, inputValue, onChange, onI
           <Typography>{option.label}</Typography>
           <Tooltip title={t_i18n('Delete this saved filter')}>
             <IconButton
-              color={'primary'}
+              color="primary"
               onClick={handleDelete(option.value)}
               size="small"
             >

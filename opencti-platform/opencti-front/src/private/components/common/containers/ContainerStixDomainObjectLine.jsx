@@ -156,7 +156,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
                 {node.x_mitre_id
                   ? `[${node.x_mitre_id}] ${node.name}`
                   : getMainRepresentative(node)}
-                {node.draftVersion && (<DraftChip/>)}
+                {node.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}

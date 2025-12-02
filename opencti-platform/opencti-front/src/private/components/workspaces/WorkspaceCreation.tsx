@@ -131,7 +131,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
           data-testid="ImportDashboard"
           title={t_i18n('Import dashboard')}
         >
-          <FileUploadOutlined fontSize="small" color={'primary'} />
+          <FileUploadOutlined fontSize="small" color="primary" />
         </ToggleButton>
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
         <GradientButton
@@ -151,7 +151,7 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
 
   return (
     <>
-      <VisuallyHiddenInput type="file" accept={'application/JSON'} ref={inputRef} onChange={handleImport} />
+      <VisuallyHiddenInput type="file" accept="application/JSON" ref={inputRef} onChange={handleImport} />
       <Drawer
         title={t_i18n(`Create ${type}`)}
         controlledDial={(type === 'dashboard')

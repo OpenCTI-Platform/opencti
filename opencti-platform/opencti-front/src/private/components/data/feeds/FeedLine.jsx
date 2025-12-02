@@ -77,7 +77,7 @@ class FeedLineLineComponent extends Component {
           classes={{ root: classes.item }}
           component="a"
           href={`/feeds/${node.id}`}
-          target={'_blank'} // open in new tab
+          target="_blank" // open in new tab
 
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>

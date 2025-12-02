@@ -316,7 +316,7 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
           {values.auto_enrichment_disable && <>
             <CoverageInformationFieldEdit
               id={securityCoverageData.id}
-              mode={'entity'}
+              mode="entity"
               name="coverage_information"
               values={values.coverage_information}
             />

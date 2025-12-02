@@ -461,11 +461,11 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       classes={{ root: classes.floatingButton }}
                       size="small"
                     >
-                      <RefreshOutlined fontSize="small"/>
+                      <RefreshOutlined fontSize="small" />
                     </IconButton>
                   </Tooltip>
                 </Security>
-                <div className="clearfix"/>
+                <div className="clearfix" />
                 <pre
                   style={{
                     margin: 0,
@@ -492,7 +492,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                     onClick={() => setShowToken((value) => !value)}
                     aria-label={showToken ? t_i18n('Hide') : t_i18n('Show')}
                   >
-                    {showToken ? <VisibilityOff/> : <Visibility/>}
+                    {showToken ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </pre>
               </Grid>
@@ -551,7 +551,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Permissions')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+          <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -731,7 +731,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 >
                   {t_i18n('Max Confidence Level')}
                 </Typography>
-                <div className="clearfix"/>
+                <div className="clearfix" />
                 <UserConfidenceLevel user={user} />
               </Grid>
             </Grid>
@@ -748,7 +748,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
             classes={{ root: classes.paper }}
             variant="outlined"
             style={{ minHeight: 500 }}
-            className={'paper-for-grid'}
+            className="paper-for-grid"
           >
             {!isEnterpriseEdition ? (
               <div style={{ display: 'table', height: '100%', width: '100%' }}>
@@ -833,7 +833,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <Paper
                   classes={{ root: classes.paper }}
                   variant="outlined"
-                  className={'paper-for-grid'}
+                  className="paper-for-grid"
                 >
                   <span
                     style={{

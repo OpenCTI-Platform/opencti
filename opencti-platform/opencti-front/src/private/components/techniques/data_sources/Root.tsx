@@ -150,7 +150,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             <Route
               path="/"
               element={
-                <DataSource dataSourceData={dataSource}/>
+                <DataSource dataSourceData={dataSource} />
               }
             />
             <Route
@@ -186,13 +186,13 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
             <Route
               path="/history"
               element={
-                <StixCoreObjectHistory stixCoreObjectId={dataSourceId}/>
+                <StixCoreObjectHistory stixCoreObjectId={dataSourceId} />
               }
             />
           </Routes>
         </div>
       ) : (
-        <ErrorNotFound/>
+        <ErrorNotFound />
       )}
     </>
   );

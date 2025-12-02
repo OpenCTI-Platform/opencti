@@ -260,7 +260,7 @@ const IngestionCatalogConnectorCreation = ({
               size="small"
               to={buildConnectorsUrl()}
               startIcon={<HubOutlined />}
-              color={'warning'}
+              color="warning"
               disabled={deploymentCount === 0}
             >
               {`${deploymentCount} ${t_i18n('instances deployed')}`}
@@ -386,7 +386,7 @@ const IngestionCatalogConnectorCreation = ({
                               data={configDefaults}
                               schema={requiredProperties}
                               renderers={customRenderers}
-                              validationMode={'NoValidation'}
+                              validationMode="NoValidation"
                               onChange={async ({ data }) => {
                                 await setValues({ ...values, ...data });
                               }}
@@ -406,7 +406,7 @@ const IngestionCatalogConnectorCreation = ({
                                 data={configDefaults}
                                 schema={optionalProperties}
                                 renderers={customRenderers}
-                                validationMode={'NoValidation'}
+                                validationMode="NoValidation"
                                 onChange={({ data }) => setValues({ ...values, ...data })}
                               />
                             </AccordionDetails>

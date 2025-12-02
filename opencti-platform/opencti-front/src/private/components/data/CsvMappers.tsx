@@ -115,9 +115,9 @@ const CsvMappers = () => {
       isSortable: false,
       render: (data: CsvMapperLine_csvMapper$data) => {
         return data.errors === null ? (
-          <CheckCircleOutlined fontSize="small" color="success"/>
+          <CheckCircleOutlined fontSize="small" color="success" />
         ) : (
-          <CancelOutlined fontSize="small" color="error"/>
+          <CancelOutlined fontSize="small" color="error" />
         );
       },
     },
@@ -146,7 +146,7 @@ const CsvMappers = () => {
 
   return queryRefMappers && queryRefSchemaAttributes
     && (
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <CsvMappersProvider
           mappersQueryRef={queryRefMappers}
           schemaAttributesQueryRef={queryRefSchemaAttributes}
@@ -177,7 +177,7 @@ const CsvMappers = () => {
                       data-testid="ImporCsvMapper"
                       title={t_i18n('Import a CSV mapper')}
                     >
-                      <FileUploadOutlined fontSize="small" color={'primary'} />
+                      <FileUploadOutlined fontSize="small" color="primary" />
                     </ToggleButton>
                     <Button
                       variant="contained"
@@ -192,7 +192,7 @@ const CsvMappers = () => {
               )}
             >
               <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement}/>}
+                fallback={<Loader variant={LoaderVariant.inElement} />}
               >
                 <CsvMapperLines
                   paginationOptions={paginationOptions}
@@ -203,7 +203,7 @@ const CsvMappers = () => {
             <VisuallyHiddenInput
               ref={inputFileRef}
               type="file"
-              accept={'application/JSON'}
+              accept="application/JSON"
               onChange={handleFileImport}
             />
 

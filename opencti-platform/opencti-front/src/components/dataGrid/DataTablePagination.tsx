@@ -206,7 +206,7 @@ const DataTablePagination = ({
               border: 'none',
             },
           }}
-          menuButtonChildren={<TableTuneIcon/>}
+          menuButtonChildren={<TableTuneIcon />}
           options={nestedMenuOptions}
           menuLevels={2}
         />

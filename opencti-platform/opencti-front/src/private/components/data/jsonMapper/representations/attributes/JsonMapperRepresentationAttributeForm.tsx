@@ -115,7 +115,7 @@ JsonMapperRepresentationAttributeFormProps
             </JsonMapperRepresentationDialogOption>
         }
       </div>
-      <JsonMapperRepresentionAttributeSelectedConfigurations configuration={value?.attr_path?.configuration}/>
+      <JsonMapperRepresentionAttributeSelectedConfigurations configuration={value?.attr_path?.configuration} />
     </div>
   );
 };

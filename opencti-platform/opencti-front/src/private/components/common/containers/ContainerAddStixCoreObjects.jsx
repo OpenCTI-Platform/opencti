@@ -211,7 +211,7 @@ const ContainerAddStixCoreObjects = (props) => {
         <SpeedDial
           className={classes.createButton}
           ariaLabel="Create"
-          icon={<SpeedDialIcon/>}
+          icon={<SpeedDialIcon />}
           onClose={() => setOpenSpeedDial(false)}
           onOpen={() => setOpenSpeedDial(true)}
           open={openSpeedDial}
@@ -221,7 +221,7 @@ const ContainerAddStixCoreObjects = (props) => {
         >
           <SpeedDialAction
             title={t_i18n('Create an observable')}
-            icon={<HexagonOutline/>}
+            icon={<HexagonOutline />}
             tooltipTitle={t_i18n('Create an observable')}
             onClick={() => handleOpenCreateObservable()}
             FabProps={{
@@ -230,7 +230,7 @@ const ContainerAddStixCoreObjects = (props) => {
           />
           <SpeedDialAction
             title={t_i18n('Create an entity')}
-            icon={<GlobeModel/>}
+            icon={<GlobeModel />}
             tooltipTitle={t_i18n('Create an entity')}
             onClick={() => handleOpenCreateEntity()}
             FabProps={{
@@ -392,7 +392,7 @@ const ContainerAddStixCoreObjects = (props) => {
             onClick={() => setOpen(true)}
             size="large"
           >
-            <Add/>
+            <Add />
           </IconButton>
         </Tooltip>
       );
@@ -406,7 +406,7 @@ const ContainerAddStixCoreObjects = (props) => {
           classes={{ root: classes.createButtonSimple }}
           size="large"
         >
-          <Add fontSize="small"/>
+          <Add fontSize="small" />
         </IconButton>
       );
     }
@@ -417,7 +417,7 @@ const ContainerAddStixCoreObjects = (props) => {
         aria-label="Add"
         className={withPadding ? classes.createButtonWithPadding : classes.createButton}
       >
-        <Add/>
+        <Add />
       </Fab>
     );
   };

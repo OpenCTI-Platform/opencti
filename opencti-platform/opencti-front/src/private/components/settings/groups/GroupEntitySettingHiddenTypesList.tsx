@@ -36,8 +36,8 @@ const GroupHiddenTypesListComponent: FunctionComponent<{
       targetType={targetType}
       nodes={groups}
       label={t_i18n('Hidden in groups')}
-      link={'/dashboard/settings/accesses/groups/'}
-      entityType={'Group'}
+      link="/dashboard/settings/accesses/groups/"
+      entityType="Group"
     />
   );
 };

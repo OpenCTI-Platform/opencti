@@ -92,7 +92,7 @@ class StreamLineLineComponent extends Component {
           classes={{ root: classes.item }}
           component="a"
           href={`/stream/${node.id}`}
-          target={'_blank'}
+          target="_blank"
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
             <Stream />

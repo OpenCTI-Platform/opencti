@@ -83,7 +83,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
   return (
     <Security needs={[SETTINGS_SETACCESSES]}>
       <>
-        <AccessesMenu/>
+        <AccessesMenu />
         <Breadcrumbs
           isSensitive={isSensitive}
           elements={[
@@ -102,7 +102,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
             >
               {role.name}
             </Typography>
-            <div className="clearfix"/>
+            <div className="clearfix" />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', paddingRight: 200 }}>
             <div style={{ display: 'flex' }}>
@@ -137,7 +137,7 @@ const RootRoleComponent: FunctionComponent<RootRoleComponentProps> = ({ queryRef
             </div>
           </div>
         </RoleHeader>
-        <div className="clearfix"/>
+        <div className="clearfix" />
         <>
           {groupsQueryRef ? (
             <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>

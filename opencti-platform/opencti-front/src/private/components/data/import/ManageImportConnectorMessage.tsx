@@ -18,7 +18,7 @@ const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessa
   switch (name) {
     case 'ImportCsv':
       return <Box sx={{ paddingTop: '18px' }}>
-        <WarningText >{t_i18n('There are not any configurations set yet')}</WarningText>
+        <WarningText>{t_i18n('There are not any configurations set yet')}</WarningText>
         <div>
           {
             isCsvMapperUpdater

@@ -223,7 +223,7 @@ const RootVulnerability = ({ queryRef, vulnerabilityId }: RootVulnerabilityProps
                 path="/knowledge/*"
                 element={
                   <div key={forceUpdate}>
-                    <VulnerabilityKnowledge vulnerabilityData={vulnerability}/>
+                    <VulnerabilityKnowledge vulnerabilityData={vulnerability} />
                   </div>
                 }
               />

@@ -112,7 +112,7 @@ const UserHistoryLines: FunctionComponent<UserHistoryLinesProps> = ({
       classes={{ root: classes.paper }}
       variant="outlined"
       style={{ marginTop: 0 }}
-      className={'paper-for-grid'}
+      className="paper-for-grid"
     >
       {audits.length > 0 ? (
         audits.map((auditEdge) => {

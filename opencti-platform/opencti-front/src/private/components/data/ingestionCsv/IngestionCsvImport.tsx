@@ -132,12 +132,12 @@ const IngestionCsvImport: FunctionComponent<IngestionCsvImportProps> = ({ pagina
       title={t_i18n('Import a CSV Feed')}
       onClick={() => inputFileRef?.current?.click()}
     >
-      <FileUploadOutlined fontSize="small" color={'primary'}/>
+      <FileUploadOutlined fontSize="small" color="primary" />
     </ToggleButton>
     <VisuallyHiddenInput
       ref={inputFileRef}
       type="file"
-      accept={'application/JSON'}
+      accept="application/JSON"
       onChange={fileImport}
     />
     <IngestionCsvCreationContainer

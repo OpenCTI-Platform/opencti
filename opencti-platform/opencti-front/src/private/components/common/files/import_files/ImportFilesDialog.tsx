@@ -431,7 +431,7 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
                 color="secondary"
                 onClick={() => handleClose()}
                 component={Link}
-                to={'/dashboard/data/import/file'}
+                to="/dashboard/data/import/file"
               >
                 {t_i18n('Navigate to import')}
               </Button>
@@ -483,25 +483,25 @@ const ImportFiles = ({ open, handleClose }: ImportFilesDialogProps) => {
           size="large"
           color="primary"
         >
-          <Close fontSize="small" color="primary"/>
+          <Close fontSize="small" color="primary" />
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ paddingInline: 20, marginBlock: 10 }}>
         {!uploadStatus ? (
           <>
-            <ImportFilesStepper/>
+            <ImportFilesStepper />
             {/* Remove stepper height (25px) */}
             <Box sx={{ paddingBlock: 5, height: 'calc(100% - 25px)' }}>
-              {activeStep === 0 && (<ImportFilesToggleMode/>)}
+              {activeStep === 0 && (<ImportFilesToggleMode />)}
               {activeStep === 1 && (
                 importMode === 'form'
                   ? <ImportFilesFormSelector />
-                  : <ImportFilesUploader connectorsForImport={connectorsForImport}/>
+                  : <ImportFilesUploader connectorsForImport={connectorsForImport} />
               )}
               {activeStep === 2 && (
                 importMode === 'form'
                   ? <ImportFilesFormView onSuccess={handleClose} />
-                  : <ImportFilesOptions optionsFormikContext={optionsContext} draftContext={draftContext}/>
+                  : <ImportFilesOptions optionsFormikContext={optionsContext} draftContext={draftContext} />
               )}
             </Box>
           </>

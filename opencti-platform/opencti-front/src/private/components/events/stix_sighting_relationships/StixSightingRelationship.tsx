@@ -112,7 +112,7 @@ StixSightingRelationshipProps
               />
             </>);
           }
-          return <Loader/>;
+          return <Loader />;
         }}
       />
     </div>

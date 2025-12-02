@@ -200,7 +200,7 @@ const FileWorkComponent = (props) => {
                       disabled={work.status === 'deleting'}
                       size="small"
                     >
-                      <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'}/>
+                      <DeleteOutlined fontSize="small" color={isCurrentContextWork ? 'primary' : 'disabled'} />
                     </IconButton>
                   </span>
                 </Tooltip>

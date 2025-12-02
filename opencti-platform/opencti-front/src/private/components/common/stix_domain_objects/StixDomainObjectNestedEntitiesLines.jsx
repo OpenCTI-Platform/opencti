@@ -110,7 +110,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                           style={{ width: '40%' }}
                         >
                           {getMainRepresentative(stixCoreObject)}
-                          {stixCoreObject.draftVersion && (<DraftChip/>)}
+                          {stixCoreObject.draftVersion && (<DraftChip />)}
                         </div>
                         <div className={classes.bodyItem}>
                           {fsd(node.start_time)}

@@ -172,7 +172,7 @@ CsvMapperRepresentationFormProps
               renderOption={(props, option) => (
                 <li {...props}>
                   <div className={classes.icon}>
-                    <ItemIcon type={option.label}/>
+                    <ItemIcon type={option.label} />
                   </div>
                   <div className={classes.text}>
                     {t_i18n(`${prefixLabel}${option.label}`)}

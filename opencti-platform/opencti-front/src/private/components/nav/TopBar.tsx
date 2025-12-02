@@ -311,13 +311,13 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
         )}
         <div className={classes.barRight}>
           {!!draftContext && (
-            <DraftContextBanner/>
+            <DraftContextBanner />
           )}
           <div className={classes.barRightContainer}>
             {!draftContext && (
             <Security needs={[KNOWLEDGE]}>
               <>
-                { ee.license_type === 'nfr' && <ItemBoolean variant="large" label={'EE DEV LICENSE'} status={false}/> }
+                { ee.license_type === 'nfr' && <ItemBoolean variant="large" label="EE DEV LICENSE" status={false} /> }
                 <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
                   <UploadImport
                     variant="icon"
@@ -350,7 +350,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                       variant="dot"
                       invisible={!isNewNotification}
                     >
-                      <NotificationsOutlined fontSize="medium"/>
+                      <NotificationsOutlined fontSize="medium" />
                     </Badge>
                   </IconButton>
                 </Tooltip>
@@ -365,7 +365,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
               id="xtm-menu-button"
               onClick={handleOpenXtm}
             >
-              <AppsOutlined fontSize="medium"/>
+              <AppsOutlined fontSize="medium" />
             </IconButton>
             <Popover
               anchorEl={xtmOpen.anchorEl}
@@ -435,7 +435,7 @@ const TopBarComponent: FunctionComponent<TopBarProps> = ({
                   : 'inherit'
               }
             >
-              <AccountCircleOutlined fontSize="medium"/>
+              <AccountCircleOutlined fontSize="medium" />
             </IconButton>
             <Menu
               id="menu-appbar"

@@ -29,7 +29,7 @@ const FormEditionContainer: FunctionComponent<FormEditionContainerProps> = ({
   const { form } = usePreloadedQuery(formEditionContainerQuery, queryRef);
 
   if (!form) {
-    return <div/>;
+    return <div />;
   }
 
   return (

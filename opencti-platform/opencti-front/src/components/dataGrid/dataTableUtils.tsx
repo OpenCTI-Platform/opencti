@@ -104,7 +104,7 @@ export const defaultRender: NonNullable<DataTableColumn['render']> = (data, disp
       <Tooltip title={data}>
         <div style={{ maxWidth: '100%', display: 'flex' }}>
           <Truncate>{data}</Truncate>
-          {displayDraftChip && (<DraftChip/>)}
+          {displayDraftChip && (<DraftChip />)}
         </div>
       </Tooltip>
     </FieldOrEmpty>
@@ -347,7 +347,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     id: 'due_date',
     label: 'Due Date',
     percentWidth: 15,
-    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant={'inList'} />,
+    render: ({ due_date }) => <ItemDueDate due_date={due_date} variant="inList" />,
   },
   effective_confidence_level: {
     id: 'effective_confidence_level',

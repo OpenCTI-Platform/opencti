@@ -174,9 +174,9 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                                   size="large"
                                 >
                                   {expandedLines[attackPattern.id] === false ? (
-                                    <ExpandMore/>
+                                    <ExpandMore />
                                   ) : (
-                                    <ExpandLess/>
+                                    <ExpandLess />
                                   )}
                                 </IconButton>
                                 )}
@@ -196,7 +196,7 @@ const StixDomainObjectAttackPatternsKillChainLines: FunctionComponent<StixDomain
                               }
                             >
                               <ListItemIcon>
-                                <LockPattern color="primary" role="img"/>
+                                <LockPattern color="primary" role="img" />
                               </ListItemIcon>
                               <ListItemText
                                 primary={

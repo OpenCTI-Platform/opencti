@@ -215,7 +215,7 @@ const RootIncidentComponent = ({ queryRef }) => {
               </Tabs>
               {isOverview && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                  <AIInsights id={incident.id}/>
+                  <AIInsights id={incident.id} />
                   <StixCoreObjectSecurityCoverage id={incident.id} coverage={incident.securityCoverage} />
                 </div>
               )}

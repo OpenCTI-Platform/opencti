@@ -165,13 +165,13 @@ class RootCourseOfAction extends Component {
                       <Route
                         path="/"
                         element={
-                          <CourseOfAction courseOfActionData={props.courseOfAction}/>
+                          <CourseOfAction courseOfActionData={props.courseOfAction} />
                         }
                       />
                       <Route
                         path="/knowledge/*"
                         element={
-                          <CourseOfActionKnowledge courseOfAction={props.courseOfAction}/>
+                          <CourseOfActionKnowledge courseOfAction={props.courseOfAction} />
                         }
                       />
                       <Route
@@ -196,7 +196,7 @@ class RootCourseOfAction extends Component {
                       <Route
                         path="/history"
                         element={
-                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId}/>
+                          <StixCoreObjectHistory stixCoreObjectId={courseOfActionId} />
                         }
                       />
                     </Routes>

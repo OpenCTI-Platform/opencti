@@ -159,7 +159,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
                 style={{ width: dataColumns.observable_value.width }}
               >
                 {renderObservableValue(node)}
-                {node.draftVersion && (<DraftChip/>)}
+                {node.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}

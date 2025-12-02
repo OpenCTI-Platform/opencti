@@ -136,7 +136,7 @@ const Stream = () => {
   return (
     <div className={classes.container} data-testid="sharing-streams-page">
       <Breadcrumbs elements={[{ label: t_i18n('Data') }, { label: t_i18n('Data sharing') }, { label: t_i18n('Live streams'), current: true }]} />
-      <SharingMenu/>
+      <SharingMenu />
       {streamState.view === 'lines' ? renderLines(paginationOptions) : ''}
     </div>
   );

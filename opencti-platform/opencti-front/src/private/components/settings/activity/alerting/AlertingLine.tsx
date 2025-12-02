@@ -206,7 +206,7 @@ export const AlertingLineComponent: FunctionComponent<AlertingLineProps> = ({
                 }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
-        <AlertingPopover data={data} paginationOptions={paginationOptions}/>
+        <AlertingPopover data={data} paginationOptions={paginationOptions} />
       </ListItemIcon>
     </ListItem>
   );
@@ -225,13 +225,13 @@ export const AlertingLineDummy = ({
       secondaryAction={
         <Box sx={{ root: classes.itemIconDisabled }}>
           <IconButton disabled={true} aria-haspopup="true" size="large">
-            <MoreVert/>
+            <MoreVert />
           </IconButton>
         </Box>
       }
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton animation="wave" variant="circular" width={30} height={30}/>
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

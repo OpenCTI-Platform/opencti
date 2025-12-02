@@ -249,7 +249,7 @@ const ObjectMarkingField: FunctionComponent<ObjectMarkingFieldProps> = ({
   const renderOption: RenderOption = (props, option) => (
     <li {...props} key={option.value}>
       <div className={classes.icon} style={{ color: option.color }}>
-        <MarkingIcon theme={theme} color={option.color}/>
+        <MarkingIcon theme={theme} color={option.color} />
       </div>
       <div className={classes.text}>{option.label}</div>
     </li>

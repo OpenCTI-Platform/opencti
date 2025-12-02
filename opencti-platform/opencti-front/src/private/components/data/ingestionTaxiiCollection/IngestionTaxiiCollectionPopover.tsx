@@ -151,7 +151,7 @@ const IngestionTaxiiPopover: FunctionComponent<IngestionTaxiiPopoverProps> = ({
   };
 
   return (
-    <div style={{ margin: 0 }} >
+    <div style={{ margin: 0 }}>
       <IconButton
         onClick={handleOpen}
         aria-haspopup="true"

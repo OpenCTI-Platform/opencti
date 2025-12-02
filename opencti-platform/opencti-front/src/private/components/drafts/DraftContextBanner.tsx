@@ -146,10 +146,10 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
     <div style={{ padding: '0 12px', flex: 1 }}>
       <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
         <div style={{ padding: '0 12px' }}>
-          <DraftProcessingStatus forceRefetch={refetch}/>
+          <DraftProcessingStatus forceRefetch={refetch} />
         </div>
         <div style={{ padding: '0 12px', flex: 1 }}>
-          <DraftBlock body={truncate(name, 40)}/>
+          <DraftBlock body={truncate(name, 40)} />
         </div>
         <div>
           <Button
@@ -185,7 +185,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
               <DialogContentText>
                 {t_i18n('Do you want to approve this draft and send it to ingestion?')}
                 {currentlyProcessing && (
-                  <Alert style={{ marginTop: 10 }} severity={'warning'}>
+                  <Alert style={{ marginTop: 10 }} severity="warning">
                     <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
                     {t_i18n('There are processes still running that could impact the data of the draft. '
                       + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}

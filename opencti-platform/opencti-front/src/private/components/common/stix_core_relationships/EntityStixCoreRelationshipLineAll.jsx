@@ -158,7 +158,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                   }}
                 >
                   {!restricted ? getMainRepresentative(remoteNode) : t('Restricted')}
-                  {remoteNode.draftVersion && (<DraftChip/>)}
+                  {remoteNode.draftVersion && (<DraftChip />)}
                 </div>
                 {isCoverage && dataColumns.coverage_information && (
                   <div

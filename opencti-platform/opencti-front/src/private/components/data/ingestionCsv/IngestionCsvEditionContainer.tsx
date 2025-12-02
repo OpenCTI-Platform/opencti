@@ -30,7 +30,7 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
   const { ingestionCsv } = usePreloadedQuery(ingestionCsvEditionContainerQuery, queryRef);
 
   if (!ingestionCsv) {
-    return <div/>;
+    return <div />;
   }
   return (
     <Drawer

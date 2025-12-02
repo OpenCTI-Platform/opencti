@@ -686,7 +686,7 @@ const StixNestedRefRelationshipCreationFromEntity = ({
               onClick={() => handleNextStep()}
             >
               {t_i18n('Continue')}
-              <ChevronRightOutlined/>
+              <ChevronRightOutlined />
             </Fab>
           )}
         </div>

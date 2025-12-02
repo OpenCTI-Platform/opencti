@@ -125,7 +125,7 @@ const CsvMapperCreation: FunctionComponent<CsvMapperCreationFormProps> = ({
     );
   }
 
-  return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated}/>;
+  return <CsvMapperForm csvMapper={initialValues} onSubmit={onSubmit} isDuplicated={isDuplicated} />;
 };
 
 export default CsvMapperCreation;

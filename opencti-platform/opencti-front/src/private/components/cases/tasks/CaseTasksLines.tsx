@@ -154,7 +154,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           classes={{ root: classes.createButton }}
           size="large"
         >
-          <AddOutlined fontSize="small"/>
+          <AddOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
       <Tooltip title={t_i18n('Apply a new case template')}>
@@ -165,7 +165,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           classes={{ root: classes.applyButton }}
           size="large"
         >
-          <ContentPasteGoOutlined fontSize="small"/>
+          <ContentPasteGoOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
       <Dialog
@@ -247,8 +247,8 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           defaultMarkings={defaultMarkings}
         />
       </Drawer>
-      <div className="clearfix"/>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <div className="clearfix" />
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}

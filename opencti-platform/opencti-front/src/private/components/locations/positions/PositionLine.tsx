@@ -95,7 +95,7 @@ export const PositionLine: FunctionComponent<PositionLineProps> = ({
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}

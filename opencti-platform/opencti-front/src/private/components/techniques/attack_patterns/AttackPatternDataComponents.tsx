@@ -51,8 +51,8 @@ const AttackPatternDataComponentsComponent: FunctionComponent<{
         <Typography variant="h3" gutterBottom={true}>
           {t_i18n('Data components')}
         </Typography>
-        <AddDataComponents attackPattern={attackPattern}/>
-        <div className="clearfix"/>
+        <AddDataComponents attackPattern={attackPattern} />
+        <div className="clearfix" />
       </div>
       <List style={{ marginTop: -10, paddingTop: 0 }}>
         <FieldOrEmpty source={attackPattern.dataComponents?.edges}>

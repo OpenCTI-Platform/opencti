@@ -18,9 +18,9 @@ const AddSecurityPlatforms: FunctionComponent<AddSecurityPlatformsProps> = ({ se
     <StixCoreRelationshipCreationFromEntity
       entityId={securityCoverage.id}
       objectId={securityCoverage.id}
-      connectionKey={'Pagination_securityPlatforms'}
+      connectionKey="Pagination_securityPlatforms"
       targetEntities={targetEntities}
-      currentView={'relationships'}
+      currentView="relationships"
       allowedRelationshipTypes={['has-covered']}
       targetStixDomainObjectTypes={['SecurityPlatform']}
       paginationOptions={paginationOptions}

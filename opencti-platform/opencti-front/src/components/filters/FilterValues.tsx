@@ -211,7 +211,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
           }
           >
             <WarningOutlined
-              color={'inherit'}
+              color="inherit"
               style={{ fontSize: 20, color: '#f44336', marginRight: 4 }}
             />
           </Tooltip>
@@ -235,7 +235,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               if (subKey === 'dynamic') {
                 const [dynamicValue] = val.values;
                 if (!isFilterGroupNotEmpty(dynamicValue)) {
-                  return <div key={val.key}/>;
+                  return <div key={val.key} />;
                 }
                 return (
                   <FilterValuesForDynamicSubKey

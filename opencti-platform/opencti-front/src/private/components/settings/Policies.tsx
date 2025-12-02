@@ -202,26 +202,26 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                 <Grid container={true} spacing={3}>
                   <Grid item xs={6}>
                     <DangerZoneBlock
-                      type={'platform_organization'}
+                      type="platform_organization"
                       title={(
                         <>
                           {t_i18n('Platform main organization')} <EEChip />
                         </>
                       )}
                       component={({ disabled, style }) => (
-                        <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined" style={style}>
+                        <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined" style={style}>
                           <Alert severity="info" variant="outlined">
                             {t_i18n('When you set a platform organization you enable the organization sharing and segregation feature.')}
-                            <br/>
+                            <br />
                             {t_i18n('Therefore all pieces of knowledge which are not explicitly shared with any organization won\'t be accessible to user(s) not member of the platform organization.')}
-                            <br/>
+                            <br />
                             {t_i18n('Service Account will automatically be part of the Platform Main Organization, but will not be listed in the list of users of this organisation')}
                           </Alert>
                           <EETooltip>
                             <ObjectOrganizationField
                               name="platform_organization"
                               disabled={disabled || !isEnterpriseEdition}
-                              label={'Platform organization'}
+                              label="Platform organization"
                               onChange={() => setOpenPlatformOrganizationChanges(true)}
                               style={{ width: '100%', marginTop: 20 }}
                               multiple={false}
@@ -277,13 +277,13 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       )}
                     />
                   </Grid>
-                  <GroupSetDefaultGroupForIngestionUsers/>
+                  <GroupSetDefaultGroupForIngestionUsers />
 
                   <Grid item xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Local password policies')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+                    <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
                       <Field
                         component={TextField}
                         type="number"
@@ -413,7 +413,7 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                       marginTop: 10,
                     }}
                       classes={{ root: classes.paper }}
-                      className={'paper-for-grid'}
+                      className="paper-for-grid"
                       variant="outlined"
                     >
                       <List style={{ marginTop: -20 }}>

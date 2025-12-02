@@ -313,7 +313,7 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         search={searchTerm}
         handleClearSelectedElements={handleClearSelectedElements}
         variant="medium"
-        type={'stix-core-relationship'}
+        type="stix-core-relationship"
       />
 
       {allowCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>

@@ -137,13 +137,13 @@ class ListCards extends Component {
                     size="small"
                   >
                     {orderAsc ? (
-                      <ArrowDownward fontSize="small"/>
+                      <ArrowDownward fontSize="small" />
                     ) : (
-                      <ArrowUpward fontSize="small"/>
+                      <ArrowUpward fontSize="small" />
                     )}
                   </IconButton>
                 </div>
-                <div className={classes.filler}/>
+                <div className={classes.filler} />
                 <div style={{ display: 'flex' }}>
                   {numberOfElements && (
                   <div style={{ marginRight: '8px', alignSelf: 'center' }}>
@@ -169,14 +169,14 @@ class ListCards extends Component {
                       {typeof handleChangeView === 'function' && (
                         <ToggleButton value="cards" aria-label="cards">
                           <Tooltip title={t('Cards view')}>
-                            <ViewModuleOutlined fontSize="small"/>
+                            <ViewModuleOutlined fontSize="small" />
                           </Tooltip>
                         </ToggleButton>
                       )}
                       {typeof handleChangeView === 'function' && (
                         <ToggleButton value="lines" aria-label="lines">
                           <Tooltip title={t('Lines view')}>
-                            <ViewListOutlined color="primary" fontSize="small"/>
+                            <ViewListOutlined color="primary" fontSize="small" />
                           </Tooltip>
                         </ToggleButton>
                       )}
@@ -207,7 +207,7 @@ class ListCards extends Component {
                                 aria-label="export"
                                 disabled={true}
                               >
-                                <FileDownloadOutlined fontSize="small"/>
+                                <FileDownloadOutlined fontSize="small" />
                               </ToggleButton>
                             </span>
                           </Tooltip>

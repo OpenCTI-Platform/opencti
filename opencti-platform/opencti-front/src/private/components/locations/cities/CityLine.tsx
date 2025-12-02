@@ -95,7 +95,7 @@ export const CityLine: FunctionComponent<CityLineComponentProps> = ({
               style={{ width: dataColumns.name.width }}
             >
               {data.name}
-              {data.draftVersion && (<DraftChip/>)}
+              {data.draftVersion && (<DraftChip />)}
             </div>
             <div
               className={classes.bodyItem}

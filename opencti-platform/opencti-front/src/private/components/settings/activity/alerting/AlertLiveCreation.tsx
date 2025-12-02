@@ -164,11 +164,11 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: FieldOption[]) => void) => {
     return <>
       <ObjectMembersField
-        label={'Recipients'}
+        label="Recipients"
         style={fieldSpacingContainerStyle}
         onChange={setFieldValue}
         multiple={true}
-        name={'recipients'}
+        name="recipients"
       />
       <span>
         <Box
@@ -190,7 +190,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             searchContext={{ entityTypes: ['History'] }}
           />
         </Box>
-        <div className="clearfix"/>
+        <div className="clearfix" />
       </span>
     </>;
   };
@@ -243,7 +243,7 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
             size="large"
             color="primary"
           >
-            <Close fontSize="small" color="primary"/>
+            <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t_i18n('Create a live activity trigger')}</Typography>
         </div>

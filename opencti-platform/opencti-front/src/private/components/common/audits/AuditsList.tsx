@@ -146,8 +146,8 @@ const AuditsList: FunctionComponent<AuditsListProps> = ({
         </div>
         : <>
           {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-              <AuditsListComponent queryRef={queryRef}/>
+            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+              <AuditsListComponent queryRef={queryRef} />
             </React.Suspense>
           )}
         </>}

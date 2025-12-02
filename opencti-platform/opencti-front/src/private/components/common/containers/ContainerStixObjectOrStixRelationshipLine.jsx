@@ -108,7 +108,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
                 style={{ width: dataColumns.name.width }}
               >
                 {getMainRepresentative(node)}
-                {node.draftVersion && (<DraftChip/>)}
+                {node.draftVersion && (<DraftChip />)}
               </div>
               <div
                 className={classes.bodyItem}
