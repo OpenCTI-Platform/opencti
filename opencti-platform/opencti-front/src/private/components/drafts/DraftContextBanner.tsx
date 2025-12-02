@@ -25,6 +25,7 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { truncate } from '../../../utils/String';
 import { TEN_SECONDS } from '../../../utils/Time';
 import { useGetCurrentUserAccessRight, authorizedMembersToOptions } from '../../../utils/authorizedMembers';
+import useGranted, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 
 const interval$ = interval(TEN_SECONDS * 3);
 
@@ -228,7 +229,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             {t_i18n('Exit draft')}
           </Button>
         </div>
-        {currentAccessRight.canEdit && (
+        {useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]) && currentAccessRight.canEdit && (
           <div style={{ padding: '0 12px' }}>
             <Button
               variant="contained"
