@@ -77,7 +77,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
     <>
       <ListItem classes={{ root: classes.item }} divider>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type='Notifier' />
+          <ItemIcon type="Notifier" />
         </ListItemIcon>
         <ListItemText
           primary={

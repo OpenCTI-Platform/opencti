@@ -117,13 +117,13 @@ const PlaybookCreation = ({ paginationOptions }) => {
         size="small"
         onClick={() => inputRef.current?.click()}
         sx={{ marginLeft: theme.spacing(1) }}
-        data-testid='ImporPlaybook'
+        data-testid="ImporPlaybook"
         title={t_i18n('Import playbook')}
       >
         <FileUploadOutlined fontSize="small" color={'primary'} />
       </ToggleButton>
       <CreateEntityControlledDial
-        entityType='Playbook'
+        entityType="Playbook"
         {...props}
       />
     </>

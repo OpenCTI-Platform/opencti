@@ -247,7 +247,8 @@ const FileWorksComponent = ({
           return theme.palette.success.main;
         }, [isError, status]);
         return (
-          <Tooltip title={messageToDisplay} slotProps={{
+          <Tooltip
+            title={messageToDisplay} slotProps={{
             tooltip: {
               sx: {
                 maxWidth: 'none',

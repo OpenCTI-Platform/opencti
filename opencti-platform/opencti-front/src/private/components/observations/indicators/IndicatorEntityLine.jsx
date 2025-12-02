@@ -109,7 +109,7 @@ class IndicatorEntityLineComponent extends Component {
                       ? element.parent_types[0]
                       : element.entity_type}
                     isRestricted={restricted}
-                    size='large'
+                    size="large"
                     showIcon
                   />
                 </div>
@@ -155,7 +155,7 @@ class IndicatorEntityLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.confidence.width }}
                 >
-                  <ItemConfidence confidence={node.confidence} entityType='stix-core-relationship' variant="inList" />
+                  <ItemConfidence confidence={node.confidence} entityType="stix-core-relationship" variant="inList" />
                 </div>
               </div>
           }

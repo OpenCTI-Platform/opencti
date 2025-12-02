@@ -45,7 +45,8 @@ const ImportFilesUploader = ({ connectorsForImport }: ImportFilesUploaderProps) 
             openFreeText={() => setIsTextView(true)}
           />
         ) : (
-          <ImportFilesFreeText onSumbit={(file) => {
+          <ImportFilesFreeText
+            onSumbit={(file) => {
             updateFiles([file]);
             setIsTextView(false);
           }}

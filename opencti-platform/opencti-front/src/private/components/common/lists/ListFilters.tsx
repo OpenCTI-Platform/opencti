@@ -79,19 +79,19 @@ const ListFilters = ({
   const getParameters = (relationshipType?: string): ParametersType => {
     switch (relationshipType) {
       case 'from': return {
-        icon: <RayStartArrow fontSize='medium' />,
+        icon: <RayStartArrow fontSize="medium" />,
         tooltip: t_i18n('Dynamic source filters'),
         placeholder: t_i18n('Dynamic source filters'),
         color: 'warning',
       };
       case 'to': return {
-        icon: <RayEndArrow fontSize='medium' />,
+        icon: <RayEndArrow fontSize="medium" />,
         tooltip: t_i18n('Dynamic target filters'),
         placeholder: t_i18n('Dynamic target filters'),
         color: 'success',
       };
       default: return {
-        icon: <FilterListOutlined fontSize='medium' />,
+        icon: <FilterListOutlined fontSize="medium" />,
         tooltip: t_i18n('Filters'),
         placeholder: t_i18n('Add filter'),
         color: 'primary',
@@ -199,10 +199,10 @@ const ListFilters = ({
             <IconButton
               color={color}
               onClick={handleClearFilters}
-              size='small'
+              size="small"
               disabled={disabled}
             >
-              <FilterListOffOutlined fontSize='small' />
+              <FilterListOffOutlined fontSize="small" />
             </IconButton>
           </Tooltip>
           {isDatatable && variant === 'default' && (

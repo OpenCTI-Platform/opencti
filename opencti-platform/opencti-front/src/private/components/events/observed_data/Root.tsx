@@ -112,7 +112,7 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
               <ObservedDataDeletion id={observedData.id} isOpen={isOpen} handleClose={onClose} />
             </Security>
           )}
-          redirectToContent = {false}
+          redirectToContent={false}
           disableAuthorizedMembers={true}
           enableEnricher={false}
         />

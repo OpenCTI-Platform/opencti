@@ -155,7 +155,7 @@ class ReportKnowledgeComponent extends Component {
           height: '100%',
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
-        data-testid='report-knowledge'
+        data-testid="report-knowledge"
       >
         {mode !== 'graph' && (
         <ContainerHeader

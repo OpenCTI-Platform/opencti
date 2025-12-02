@@ -265,7 +265,8 @@ const SyncEditionContainer = ({ synchronizer }) => {
               <Typography>{t_i18n('Advanced options')}</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Alert icon={false}
+              <Alert
+                icon={false}
                 classes={{ root: classes.alert, message: classes.message }}
                 severity="error"
                 variant="outlined"

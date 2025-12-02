@@ -175,7 +175,8 @@ const ChannelEditionOverviewComponent = (props) => {
     ]),
   )(channel);
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={validator}
       validateOnChange={true}

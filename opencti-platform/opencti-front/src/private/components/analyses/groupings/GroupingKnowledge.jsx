@@ -54,7 +54,7 @@ class GroupingKnowledgeComponent extends Component {
           height: '100%',
         }}
         id={location.pathname.includes('matrix') ? 'parent' : 'container'}
-        data-testid='groupings-knowledge'
+        data-testid="groupings-knowledge"
       >
         {mode !== 'graph' && (
           <ContainerHeader

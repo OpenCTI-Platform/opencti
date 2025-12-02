@@ -278,7 +278,7 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
     'courseOfActionAdd',
   );
   const CreateCourseOfActionControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Course-Of-Action' {...props} />
+    <CreateEntityControlledDial entityType="Course-Of-Action" {...props} />
   );
   const CreateCourseOfActionControlledDialContextual = CreateCourseOfActionControlledDial({
     onOpen: handleOpen,

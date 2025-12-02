@@ -121,7 +121,7 @@ const DraftCreation = ({ paginationOptions }: { paginationOptions: DraftsLinesPa
     'draftWorkspaceAdd',
   );
   const CreateDraftControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='DraftWorkspace' {...props} />
+    <CreateEntityControlledDial entityType="DraftWorkspace" {...props} />
   );
   return (
     <Drawer

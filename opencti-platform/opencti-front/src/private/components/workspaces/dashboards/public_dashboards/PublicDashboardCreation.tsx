@@ -8,7 +8,7 @@ import CreateEntityControlledDial from '../../../../../components/CreateEntityCo
 import { insertNode } from '../../../../../utils/store';
 
 const PublicDashboardCreateDial = (props: DrawerControlledDialProps) => (
-  <CreateEntityControlledDial entityType='Public-Dashboard' {...props} />
+  <CreateEntityControlledDial entityType="Public-Dashboard" {...props} />
 );
 
 interface PublicDashboardCreationProps {

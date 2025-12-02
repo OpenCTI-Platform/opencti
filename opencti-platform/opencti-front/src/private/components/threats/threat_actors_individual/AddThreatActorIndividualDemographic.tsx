@@ -47,7 +47,7 @@ AddThreatActorIndividualDemographicComponentProps
 
   return (<div>
     <IconButton
-      color='primary'
+      color="primary"
       onClick={handleOpen}
     >
       <Add fontSize="small" />
@@ -68,7 +68,7 @@ AddThreatActorIndividualDemographicComponentProps
           }}
         >
           <SearchInput
-            variant='inDrawer'
+            variant="inDrawer"
             onSubmit={onSearch}
           />
           <CountryCreation

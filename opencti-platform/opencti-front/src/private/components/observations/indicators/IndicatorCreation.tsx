@@ -425,7 +425,7 @@ const IndicatorCreation: FunctionComponent<IndicatorCreationProps> = ({ paginati
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
   const CreateIndicatorControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Indicator' {...props} />
+    <CreateEntityControlledDial entityType="Indicator" {...props} />
   );
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,

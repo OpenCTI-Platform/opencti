@@ -216,7 +216,7 @@ const EntityStixSightingRelationships: FunctionComponent<EntityStixSightingRelat
               noPadding={noPadding}
               paginationOptions={finalPaginationOptions}
               stixCoreObjectTypes={stixCoreObjectTypes}
-              variant='controlledDial'
+              variant="controlledDial"
             />
           )}
         >

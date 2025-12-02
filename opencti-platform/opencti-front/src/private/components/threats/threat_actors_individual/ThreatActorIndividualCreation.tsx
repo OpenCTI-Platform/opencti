@@ -702,7 +702,7 @@ const ThreatActorIndividualCreation = ({
   );
 
   const CreateThreatActorIndividualControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Threat-Actor-Individual' {...props} />
+    <CreateEntityControlledDial entityType="Threat-Actor-Individual" {...props} />
   );
 
   return (

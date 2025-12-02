@@ -346,7 +346,7 @@ const NarrativeCreation: FunctionComponent<NarrativeCreationProps> = ({
   );
 
   const CreateNarrativeControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Narrative' {...props} />
+    <CreateEntityControlledDial entityType="Narrative" {...props} />
   );
   const CreateNarrativeControlledDialContextual = CreateNarrativeControlledDial({
     onOpen: handleOpen,

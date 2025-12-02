@@ -160,17 +160,18 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
 
   return (
     <>
-      <CardLabel style={{ marginTop: 20 }} action={(
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IconButton
-            color="primary"
-            aria-label={t_i18n('Add new labels')}
-            title={t_i18n('Add new labels')}
-            onClick={handleOpenAdd}
-          >
-            <Add fontSize="small" />
-          </IconButton>
-        </Security>
+      <CardLabel
+        style={{ marginTop: 20 }} action={(
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IconButton
+              color="primary"
+              aria-label={t_i18n('Add new labels')}
+              title={t_i18n('Add new labels')}
+              onClick={handleOpenAdd}
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Security>
         )}
       >
         {t_i18n('Labels')}
@@ -208,7 +209,7 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
             <Chip
               variant="outlined"
               classes={{ root: classes.labelMore }}
-              label='...'
+              label="..."
               onClick={handleOpenLabels}
             />
           </Tooltip>

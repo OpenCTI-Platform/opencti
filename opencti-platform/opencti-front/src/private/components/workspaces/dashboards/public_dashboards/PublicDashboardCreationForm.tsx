@@ -194,7 +194,7 @@ const PublicDashboardCreationFormComponent = ({
             helpertext={t_i18n('Disabled dashboard...')}
           />
           <ObjectMarkingField
-            name='max_markings'
+            name="max_markings"
             label={t_i18n('Max level markings')}
             helpertext={t_i18n('To prevent people seeing all the data...')}
             style={fieldSpacingContainerStyle}

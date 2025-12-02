@@ -62,7 +62,7 @@ const StixCyberObservable: React.FC<StixCyberObservableProps> = ({
     stixCyberObservableData,
   );
   return (
-    <div data-testid='observable-details-page'>
+    <div data-testid="observable-details-page">
       <Grid
         container={true}
         spacing={3}

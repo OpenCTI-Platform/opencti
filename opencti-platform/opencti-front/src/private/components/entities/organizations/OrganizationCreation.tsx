@@ -360,7 +360,7 @@ const OrganizationCreation = ({ paginationOptions }: {
     'organizationAdd',
   );
   const CreateOrganizationControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Organization' {...props} />
+    <CreateEntityControlledDial entityType="Organization" {...props} />
   );
 
   return (

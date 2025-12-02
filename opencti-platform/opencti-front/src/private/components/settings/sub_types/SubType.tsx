@@ -148,7 +148,8 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
               {hasRequestAccessConfig && (
                 <>
                   <Grid item>
-                    <Divider orientation="vertical" style={{
+                    <Divider
+                      orientation="vertical" style={{
                       display: 'inline-block',
                       verticalAlign: 'middle',
                       height: '100%',

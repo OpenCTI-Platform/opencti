@@ -77,14 +77,14 @@ ThreatActorIndividualDetailsChipsProps
       >
         {title}
       </CardLabel>
-      <div className='clearfix'/>
+      <div className="clearfix"/>
       <FieldOrEmpty source={nodes}>
         {
         nodes.map(({ id, to }) => (
           <Button
             key={id}
-            variant='outlined'
-            size='small'
+            variant="outlined"
+            size="small"
             href={`${path}/${to?.id}`}
             style={{ margin: '0 5px 5px 0' }}
           >

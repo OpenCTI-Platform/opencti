@@ -119,7 +119,7 @@ const EntitiesDetailsRightsBar = () => {
       PaperProps={{ variant: 'outlined' }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
-      <Typography variant='h3' sx={{ marginBottom: 3 }}>
+      <Typography variant="h3" sx={{ marginBottom: 3 }}>
         {t_i18n('', {
           id: 'objects selected',
           values: {

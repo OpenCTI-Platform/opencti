@@ -89,7 +89,7 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
 
 const CreateTaxiiCollectionControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='TaxiiCollection'
+    entityType="TaxiiCollection"
     {...props}
   />
 );

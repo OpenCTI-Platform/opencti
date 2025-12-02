@@ -42,7 +42,7 @@ import useDeletion from '../../../../utils/hooks/useDeletion';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
-  <Slide direction='up' ref={ref} {...otherProps}>{children}</Slide>
+  <Slide direction="up" ref={ref} {...otherProps}>{children}</Slide>
 ));
 Transition.displayName = 'TransitionSlide';
 

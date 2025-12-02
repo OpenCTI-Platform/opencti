@@ -99,7 +99,8 @@ const AlertingPopover = ({ data, paginationOptions }: { data: AlertingLine_node$
         submitDelete={submitDelete}
         message={t_i18n('Do you want to delete this trigger?')}
       />
-      {displayEdit && <Drawer open={true}
+      {displayEdit && <Drawer
+        open={true}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}

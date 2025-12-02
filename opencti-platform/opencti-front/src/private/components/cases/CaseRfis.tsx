@@ -203,7 +203,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Case-Rfi' />
+                <StixCoreObjectForms entityType="Case-Rfi" />
                 <CaseRfiCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

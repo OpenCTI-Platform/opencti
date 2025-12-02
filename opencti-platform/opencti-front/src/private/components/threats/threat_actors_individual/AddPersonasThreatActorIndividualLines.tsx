@@ -75,7 +75,7 @@ AddPersonasThreatActorIndividualLineProps
       <ListItemIcon>
         {currentTargets.includes(id)
           ? <CheckCircle style={{ color: theme.palette.primary.main }} />
-          : <ItemIcon type='Individual' />
+          : <ItemIcon type="Individual" />
         }
       </ListItemIcon>
       <ListItemText

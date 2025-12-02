@@ -786,7 +786,7 @@ const StixCyberObservableCreation = ({
                                 key={attribute.value}
                                 fullWidth={true}
                                 style={{ marginTop: 20 }}
-                                bulkType='observables'
+                                bulkType="observables"
                               />
                             );
                           }
@@ -800,7 +800,7 @@ const StixCyberObservableCreation = ({
                                   label={t_i18n('hash_md5')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
-                                  bulkType='observables'
+                                  bulkType="observables"
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-1') ? BulkTextField : TextField}
@@ -809,7 +809,7 @@ const StixCyberObservableCreation = ({
                                   label={t_i18n('hash_sha-1')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
-                                  bulkType='observables'
+                                  bulkType="observables"
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-256') ? BulkTextField : TextField}
@@ -818,7 +818,7 @@ const StixCyberObservableCreation = ({
                                   label={t_i18n('hash_sha-256')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
-                                  bulkType='observables'
+                                  bulkType="observables"
                                 />
                                 <Field
                                   component={isFieldInBulk('hashes_SHA-512') ? BulkTextField : TextField}
@@ -827,7 +827,7 @@ const StixCyberObservableCreation = ({
                                   label={t_i18n('hash_sha-512')}
                                   fullWidth={true}
                                   style={{ marginTop: 20 }}
-                                  bulkType='observables'
+                                  bulkType="observables"
                                 />
                               </div>
                             );

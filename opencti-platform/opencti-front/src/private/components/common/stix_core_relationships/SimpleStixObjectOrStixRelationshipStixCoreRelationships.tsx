@@ -99,7 +99,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationships = ({
       <Typography variant="h4" gutterBottom={true}>
         {t_i18n('Latest created relationships')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         {queryRef && (
           <React.Suspense fallback={<List>
             {Array.from(Array(5), (e, i) => (

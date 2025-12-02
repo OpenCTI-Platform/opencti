@@ -99,11 +99,6 @@ export default defineConfig([
       },
     },
     rules: {
-      '@stylistic/jsx-first-prop-new-line': 'off',
-      '@stylistic/jsx-one-expression-per-line': 'off',
-      '@stylistic/jsx-quotes': 'off',
-      '@stylistic/jsx-indent-props': 'off',
-      '@stylistic/jsx-equals-spacing': 'off',
       '@stylistic/jsx-curly-newline': 'off',
       '@stylistic/jsx-curly-spacing': 'off',
       '@stylistic/jsx-max-props-per-line': 'off',
@@ -135,6 +130,7 @@ export default defineConfig([
 
       // =========
 
+      '@stylistic/jsx-one-expression-per-line': 'off',
       '@stylistic/space-before-blocks': 'error',
       '@stylistic/quote-props': ['error', 'as-needed'],
       '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],

@@ -140,7 +140,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                     <ItemEntityType
                       entityType={node.from?.entity_type}
                       isRestricted={!node.from}
-                      size='large'
+                      size="large"
                       showIcon
                     />
                   </div>

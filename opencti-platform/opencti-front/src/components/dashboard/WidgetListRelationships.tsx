@@ -54,7 +54,7 @@ const WidgetListRelationships = ({
         globalCount={data.length}
         variant={DataTableVariant.widget}
         getComputeLink={getRedirectionLink}
-        pageSize='50'
+        pageSize="50"
         disableNavigation={publicWidget}
         rootRef={rootRef}
         icon={(stixRelationship: { is_inferred: boolean, entity_type: string }) => (

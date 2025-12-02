@@ -272,7 +272,7 @@ const WidgetAttributesInput: FunctionComponent<WidgetCreationAttributesProps> = 
                           <Select
                             label={t_i18n('Attribute')}
                             sx={{ flex: 1 }}
-                            value=''
+                            value=""
                             disabled={!config.widget.dataSelection[0].instance_id}
                             onChange={({ target }) => {
                               const attribute = findAttribute(target.value as string);

@@ -163,7 +163,8 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
 
   const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: FieldOption[]) => void) => {
     return <>
-      <ObjectMembersField label={'Recipients'} style={fieldSpacingContainerStyle}
+      <ObjectMembersField
+        label={'Recipients'} style={fieldSpacingContainerStyle}
         onChange={setFieldValue}
         multiple={true} name={'recipients'}
       />
@@ -288,12 +289,14 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   );
 
   const renderContextual = () => (
-    <Dialog disableRestoreFocus={true}
+    <Dialog
+      disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
       slotProps={{ paper: { elevation: 1 } }}
     >
-      <Formik initialValues={liveInitialValues}
+      <Formik
+        initialValues={liveInitialValues}
         validationSchema={liveActivityTriggerValidation(t_i18n)}
         onSubmit={onLiveSubmit}
         onReset={onReset}

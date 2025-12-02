@@ -317,7 +317,7 @@ const IntrusionSetCreation = ({
   );
 
   const CreateIntrusionSetControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Intrusion-Set' {...props} />
+    <CreateEntityControlledDial entityType="Intrusion-Set" {...props} />
   );
 
   return (

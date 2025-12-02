@@ -96,7 +96,7 @@ const IntrusionSets = () => {
         createButton={(
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <div style={{ display: 'flex' }}>
-              <StixCoreObjectForms entityType='Intrusion-Set' />
+              <StixCoreObjectForms entityType="Intrusion-Set" />
               <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
             </div>
           </Security>
@@ -180,7 +180,7 @@ const IntrusionSets = () => {
             createButton={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <div style={{ display: 'flex' }}>
-                  <StixCoreObjectForms entityType='Intrusion-Set' />
+                  <StixCoreObjectForms entityType="Intrusion-Set" />
                   <IntrusionSetCreation paginationOptions={queryPaginationOptions} />
                 </div>
               </Security>

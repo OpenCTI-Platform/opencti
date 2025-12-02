@@ -368,7 +368,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             divider={true}
 
                           >
-                            <Typography variant="h3" gutterBottom={true} sx={{
+                            <Typography
+                              variant="h3" gutterBottom={true} sx={{
                               width: 100,
                             }}
                             >
@@ -407,7 +408,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                             divider={true}
 
                           >
-                            <Typography variant="h3" gutterBottom={true} sx={{
+                            <Typography
+                              variant="h3" gutterBottom={true} sx={{
                               width: 100,
                             }}
                             >
@@ -426,7 +428,8 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                           divider={true}
 
                         >
-                          <Typography variant="h3" gutterBottom={true} sx={{
+                          <Typography
+                            variant="h3" gutterBottom={true} sx={{
                             width: 100,
                           }}
                           >

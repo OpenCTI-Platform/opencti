@@ -569,7 +569,7 @@ const IngestionJsonCreation: FunctionComponent<IngestionJsonCreationProps> = ({ 
 
 const CreateIngestionJsonControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='IngestionJson'
+    entityType="IngestionJson"
     {...props}
   />
 );

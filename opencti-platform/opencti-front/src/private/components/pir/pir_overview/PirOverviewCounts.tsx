@@ -87,7 +87,7 @@ const PirOverviewCount = ({ label, value, value24h }: PirOverviewCountProps) => 
           >
             {t_i18n(`entity_${label}`)}
           </Typography>
-          <ItemIcon type={label} size='large' />
+          <ItemIcon type={label} size="large" />
         </div>
 
         <div style={{

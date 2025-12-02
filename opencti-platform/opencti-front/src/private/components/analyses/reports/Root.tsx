@@ -189,7 +189,7 @@ const RootReport = () => {
                     </Tabs>
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <AIInsights id={report.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+                        <AIInsights id={report.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={report.id} coverage={report.securityCoverage} />
                       </div>
                     )}

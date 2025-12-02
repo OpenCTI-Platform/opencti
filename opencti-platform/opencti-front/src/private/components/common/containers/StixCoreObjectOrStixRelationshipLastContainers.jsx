@@ -326,7 +326,7 @@ const StixCoreObjectOrStixRelationshipLastContainers = (props) => {
       <Typography variant="h4">
         {authorId ? t_i18n('Latest containers authored by this entity') : t_i18n('Latest containers about the object')}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className='paper-for-grid' variant="outlined">
+      <Paper classes={{ root: classes.paper }} className="paper-for-grid" variant="outlined">
         <QueryRenderer
           query={stixCoreObjectOrStixRelationshipLastContainersQuery}
           variables={{

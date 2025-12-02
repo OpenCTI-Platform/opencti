@@ -45,7 +45,7 @@ const ingestionTaxiiCollectionCreationValidation = (t) => Yup.object().shape({
 
 const CreateIngestionTaxiiCollectionControlledDial = (props) => (
   <CreateEntityControlledDial
-    entityType='IngestionTaxiiCollection'
+    entityType="IngestionTaxiiCollection"
     {...props}
   />
 );

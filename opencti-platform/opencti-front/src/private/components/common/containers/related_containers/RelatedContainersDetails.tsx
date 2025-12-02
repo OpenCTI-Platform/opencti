@@ -55,7 +55,7 @@ const RelatedContainersDetailsDistribution: React.FC<{
       series={series}
       distributed={false}
       stacked
-      stackType='100%'
+      stackType="100%"
       legend={true}
     />
   </div>);

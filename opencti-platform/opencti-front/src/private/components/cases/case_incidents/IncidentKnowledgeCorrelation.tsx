@@ -54,7 +54,7 @@ const IncidentKnowledgeCorrelation = ({
         queryObjectsRef={queryObjectsRef}
         pageSize={PAGE_SIZE}
         containerId={id}
-        containerType='caseIncident'
+        containerType="caseIncident"
         dataPositions={data}
         onPositionsChanged={savePositions}
       />

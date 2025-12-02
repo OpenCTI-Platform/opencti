@@ -146,10 +146,10 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ marginTop: 0.5 }}>
             <Stack direction="row" spacing={1}>
               <Stack direction="row" spacing={0.5} sx={{ textTransform: 'none' }}>
-                <Typography variant='body2' sx={{ fontWeight: 800 }}>
+                <Typography variant="body2" sx={{ fontWeight: 800 }}>
                   {authorLink ? <Link to={authorLink}>{authorName}</Link> : t_i18n('Unknown')}
                 </Typography>
-                <Typography variant='body2' sx={{ color: theme.palette.text?.secondary }}>
+                <Typography variant="body2" sx={{ color: theme.palette.text?.secondary }}>
                   {t_i18n('added a note')} {t_i18n('on')} {nsdt(note.created)}
                 </Typography>
               </Stack>

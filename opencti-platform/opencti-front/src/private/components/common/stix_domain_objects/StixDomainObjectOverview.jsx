@@ -147,7 +147,7 @@ const StixDomainObjectOverview = ({
           padding: '15px',
           borderRadius: 4,
         }}
-        className='paper-for-grid'
+        className="paper-for-grid"
         variant="outlined"
       >
         <Grid container={false} spacing={3}>
@@ -269,7 +269,7 @@ const StixDomainObjectOverview = ({
               </>
             )}
             {displayAssignees && (
-              <div data-testid='sdo-overview-assignees'>
+              <div data-testid="sdo-overview-assignees">
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography
                     variant="h3"
@@ -295,7 +295,7 @@ const StixDomainObjectOverview = ({
               </div>
             )}
             {displayParticipants && (
-              <div data-testid='sdo-overview-participants'>
+              <div data-testid="sdo-overview-participants">
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                   <Typography
                     variant="h3"

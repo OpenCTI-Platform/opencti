@@ -73,7 +73,7 @@ const PirCreation = ({ paginationOptions }: PirCreationProps) => {
   return (
     <>
       <CreateEntityControlledDial
-        entityType='Pir'
+        entityType="Pir"
         onOpen={handleOpenDialog}
       />
 

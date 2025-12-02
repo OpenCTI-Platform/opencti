@@ -2064,7 +2064,7 @@ class DataTableToolBar extends Component {
             onChange={this.handleChangeDate.bind(this, i)}
             onAccept={this.handleAcceptDate.bind(this, i)}
             views={['year', 'month', 'day', 'hours', 'minutes', 'seconds']}
-            format='yyyy-MM-dd hh:mm:ss a'
+            format="yyyy-MM-dd hh:mm:ss a"
           />
         );
       default:
@@ -2253,7 +2253,7 @@ class DataTableToolBar extends Component {
           // endregion
           return (
             <>
-              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid='opencti-toolbar'>
+              <Toolbar style={{ minHeight: 40, display: 'flex', justifyContent: 'space-between', height: '100%', paddingRight: 12, paddingLeft: 8 }} data-testid="opencti-toolbar">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Typography
                     className={classes.title}

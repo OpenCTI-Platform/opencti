@@ -137,7 +137,7 @@ const BulkSelectRawLineData : FunctionComponent<BulkSelectRawLineDataProps> = ({
         />
       </Box>
       <Box>
-        <IconButton disabled={isSubmitting} key={`${entity.representative}`} size='small' sx={{ height: '28px', width: '28px' }} onClick={handleDeleteEntity}>
+        <IconButton disabled={isSubmitting} key={`${entity.representative}`} size="small" sx={{ height: '28px', width: '28px' }} onClick={handleDeleteEntity}>
           <DeleteOutlined />
         </IconButton>
       </Box>

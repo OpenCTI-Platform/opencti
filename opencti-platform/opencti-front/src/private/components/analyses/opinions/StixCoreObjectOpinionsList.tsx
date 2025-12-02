@@ -84,7 +84,7 @@ const StixCoreObjectOpinionsList: FunctionComponent<StixCoreObjectOpinionsListPr
                 secondaryAction={opinion
                   && <OpinionPopover
                     opinion={opinion}
-                    variant='inList'
+                    variant="inList"
                     onDelete={() => {
                       onDelete();
                       handleClose();

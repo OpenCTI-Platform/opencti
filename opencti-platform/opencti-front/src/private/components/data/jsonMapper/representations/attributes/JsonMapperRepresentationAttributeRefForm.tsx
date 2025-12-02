@@ -264,7 +264,7 @@ JsonMapperRepresentationAttributeRefFormProps
           component={TextField}
           label={t_i18n('JSON Path')}
           name={`${name}.identifier`}
-          variant='standard'
+          variant="standard"
           style={{ width: '100%' }}
           value={value?.based_on?.identifier ?? ''}
           onChange={(val: SelectChangeEvent) => onIdentifierValueChange(val)}

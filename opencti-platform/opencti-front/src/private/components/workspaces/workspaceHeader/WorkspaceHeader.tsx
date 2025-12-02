@@ -127,7 +127,7 @@ const WorkspaceHeader = ({
           </>)}
           <Security needs={[EXPLORE_EXUPDATE]} hasAccess={canEdit}>
             <Button
-              variant='contained'
+              variant="contained"
               disableElevation
               sx={{ marginLeft: 1 }}
               onClick={handleOpenEdit}

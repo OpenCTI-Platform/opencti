@@ -187,7 +187,7 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
               <span>
                 <IconButton
                   disabled={!isReady && !isTooLong}
-                  color='inherit'
+                  color="inherit"
                   onClick={handleOpenDelete}
                   size="small"
                 >
@@ -202,17 +202,17 @@ const SupportPackageLine: FunctionComponent<SupportPackageLineProps> = ({
           {isProgress && !isTimeout && (
             <CircularProgress
               size={20}
-              color='inherit'
+              color="inherit"
             />
           )}
           {isProgress && isTimeout && (
           <FileOutline
-            color='inherit'
+            color="inherit"
           />
           )}
           {!isProgress && (
             <FileOutline
-              color='inherit'
+              color="inherit"
             />
           )}
         </ListItemIcon>

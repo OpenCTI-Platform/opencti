@@ -121,7 +121,8 @@ const Taxii = () => {
   };
   return (
     <div data-testid="taxii-collections-page">
-      <Box sx={{
+      <Box
+        sx={{
         margin: 0,
         padding: '0 200px 50px 0',
       }}

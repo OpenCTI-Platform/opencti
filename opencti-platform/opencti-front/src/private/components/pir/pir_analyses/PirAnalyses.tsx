@@ -268,7 +268,7 @@ const PirAnalyses = ({ data }: PirAnalysesProps) => {
             )}
           >
             <Chip
-              size='small'
+              size="small"
               label={countLabel}
               sx={{ width: 100, borderRadius: 1 }}
             />

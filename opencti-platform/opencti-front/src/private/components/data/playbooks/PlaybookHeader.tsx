@@ -144,7 +144,7 @@ const PlaybookHeaderComponent = ({
               badgeContent={(playbook.last_executions ?? []).length}
               color="secondary"
             >
-              <ManageHistoryOutlined fontSize='small' color="primary" />
+              <ManageHistoryOutlined fontSize="small" color="primary" />
             </Badge>
           </Tooltip>
         </ToggleButton>

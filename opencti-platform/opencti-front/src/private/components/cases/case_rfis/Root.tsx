@@ -180,7 +180,7 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         </Tabs>
         {!isKnowledgeOrContent && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-            <AIInsights id={caseData.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+            <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
           </div>
         )}
       </Box>
@@ -225,7 +225,8 @@ const RootCaseRfiComponent = ({ queryRef, caseId }) => {
         <Route
           path="/knowledge/*"
           element={
-            <CaseRfiKnowledge caseData={caseData}
+            <CaseRfiKnowledge
+              caseData={caseData}
               enableReferences={enableReferences}
             />
               }

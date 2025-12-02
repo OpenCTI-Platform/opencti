@@ -330,7 +330,7 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && !enableEntitiesView && currentView !== 'relationships' && currentView !== 'entities' && (
                     <Tooltip title={t('Lines view')}>
                       <ToggleButton value="lines" aria-label="lines">
-                        <FiligranIcon icon={ListViewIcon} color='secondary' size='small'/>
+                        <FiligranIcon icon={ListViewIcon} color="secondary" size="small"/>
                       </ToggleButton>
                     </Tooltip>
                   )}
@@ -369,7 +369,7 @@ class ListLines extends Component {
                   {typeof handleChangeView === 'function' && enableSubEntityLines && (
                     <Tooltip title={t('Sub entity lines view')}>
                       <ToggleButton value="subEntityLines" aria-label="subEntityLines">
-                        <FiligranIcon icon={SublistViewIcon} color='primary' size='small'/>
+                        <FiligranIcon icon={SublistViewIcon} color="primary" size="small"/>
                       </ToggleButton>
                     </Tooltip>
                   )}
@@ -464,7 +464,8 @@ class ListLines extends Component {
             </Alert>
           </div>
           )}
-          <List classes={{ root: bottomNav ? classes.linesContainerBottomNav : classes.linesContainer }}
+          <List
+            classes={{ root: bottomNav ? classes.linesContainerBottomNav : classes.linesContainer }}
             style={!handleToggleSelectAll ? { marginTop: 10 } : null}
           >
             {!noHeaders && (

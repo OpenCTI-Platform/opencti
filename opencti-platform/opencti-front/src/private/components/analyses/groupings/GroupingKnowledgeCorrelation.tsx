@@ -54,7 +54,7 @@ const GroupingKnowledgeCorrelation = ({
         queryObjectsRef={queryObjectsRef}
         pageSize={PAGE_SIZE}
         containerId={id}
-        containerType='grouping'
+        containerType="grouping"
         dataPositions={data}
         onPositionsChanged={savePositions}
       />

@@ -329,7 +329,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                   <Tooltip title={t('Entities view')}>
                     <LibraryBooksOutlined
                       fontSize="small"
-                      color= 'primary'
+                      color="primary"
                     />
                   </Tooltip>
                 </ToggleButton>

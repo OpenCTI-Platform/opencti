@@ -54,7 +54,7 @@ const CaseRfiKnowledgeCorrelation = ({
         queryObjectsRef={queryObjectsRef}
         pageSize={PAGE_SIZE}
         containerId={id}
-        containerType='caseRfi'
+        containerType="caseRfi"
         dataPositions={data}
         onPositionsChanged={savePositions}
       />

@@ -75,7 +75,7 @@ const userValidation = (t) => Yup.object().shape({
 
 const CreateUserControlledDial = (props) => (
   <CreateEntityControlledDial
-    entityType='User'
+    entityType="User"
     {...props}
   />
 );
@@ -196,7 +196,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   label={t_i18n('Email address')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  data-testid='user-creation-email-address-input'
+                  data-testid="user-creation-email-address-input"
                 />
                 <Field
                   component={TextField}
@@ -232,7 +232,7 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   type="password"
                   style={{ marginTop: 20 }}
                   fullWidth={true}
-                  data-testid='user-creation-password-input'
+                  data-testid="user-creation-password-input"
                 />
                 <Field
                   component={TextField}

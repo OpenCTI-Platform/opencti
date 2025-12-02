@@ -49,7 +49,7 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
           <Security needs={[EXPLORE_EXUPDATE]}>
             <>
               <Button
-                variant='outlined'
+                variant="outlined"
                 disableElevation
                 sx={{ marginLeft: 1 }}
                 onClick={handleImportWidgetButtonClick}
@@ -57,7 +57,7 @@ const WorkspaceWidgetConfig = ({ widget, onComplete, closeMenu, handleImportWidg
                 {t_i18n('Import Widget')}
               </Button>
               <Button
-                variant='outlined'
+                variant="outlined"
                 disableElevation
                 sx={{ marginLeft: 1 }}
                 onClick={handleOpenWidgetConfig}

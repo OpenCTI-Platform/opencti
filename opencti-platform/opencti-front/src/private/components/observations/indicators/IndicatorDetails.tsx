@@ -86,7 +86,8 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography variant="h3" gutterBottom={true}>
               {t_i18n('Valid from')}
             </Typography>
-            <Chip classes={{ root: classes.chip }}
+            <Chip
+              classes={{ root: classes.chip }}
               label={fldt(indicator.valid_from)}
             />
             <Grid container columnSpacing={1} sx={{ marginTop: '20px' }}>
@@ -121,7 +122,7 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                   slots={{ transition: Transition }}
                   onClose={onDecayLifecycleClose}
                   fullWidth
-                  maxWidth='lg'
+                  maxWidth="lg"
                 >
                   <DialogTitle>{t_i18n('Lifecycle details')}</DialogTitle>
                   <DecayDialogContent indicator={indicator} />

@@ -308,7 +308,8 @@ const IngestionCsvInlineMapperForm: FunctionComponent<CsvMapperFormProps> = ({ c
                 render={(arrayHelpers) => (
                   <>
                     {values.relationship_representations.map((_, idx) => (
-                      <Box sx={{
+                      <Box
+                        sx={{
                         marginTop: 2.5,
                         display: 'flex',
                       }}

@@ -255,7 +255,7 @@ const WorkbenchCreation = ({
   const { t_i18n } = useFormatter();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_uploadedFiles', paginationOptions, 'uploadPending');
   const CreateWorkbenchControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Workbench' {...props} />
+    <CreateEntityControlledDial entityType="Workbench" {...props} />
   );
 
   return (

@@ -50,7 +50,8 @@ const ItemStatusTemplate = ({ statuses, disabled }: ItemStatusTemplateProps) => 
     }}
     >
       {statusByOrder.map((statusesForIndex, order) => (
-        <div key={`statuses-order-${order}`}
+        <div
+          key={`statuses-order-${order}`}
           style={{ display: 'inline-flex', alignItems: 'center', marginBottom: 8 }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

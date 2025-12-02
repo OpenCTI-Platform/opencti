@@ -646,7 +646,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
               >
                 <ItemEntityType
                   entityType={element.entity_type ?? ''}
-                  size='large'
+                  size="large"
                   showIcon
                   isRestricted={!row}
                 />

@@ -151,7 +151,8 @@ const SupportPackages = () => {
         </span>
       </Tooltip>
       <div className="clearfix"/>
-      <Paper className="paper-for-grid" variant="outlined" sx={{
+      <Paper
+        className="paper-for-grid" variant="outlined" sx={{
         height: '100%',
         maxHeight: '600px',
         overflowY: 'auto',

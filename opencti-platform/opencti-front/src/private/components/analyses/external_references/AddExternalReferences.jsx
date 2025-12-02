@@ -73,11 +73,12 @@ const AddExternalReferences = ({
               variant="inDrawer"
               onSubmit={handleSearch}
             />
-            <Button sx={{ margin: '5px 0 0 5px' }}
+            <Button
+              sx={{ margin: '5px 0 0 5px' }}
               onClick={() => setDialogOpen(true)}
-              color='primary'
-              size='small'
-              variant='contained'
+              color="primary"
+              size="small"
+              variant="contained"
             >
               {t_i18n('Create')} {t_i18n('entity_External-Reference')}
             </Button>

@@ -408,7 +408,8 @@ const PoliciesComponent: FunctionComponent<PoliciesComponentProps> = ({
                     <Typography variant="h4" gutterBottom={true}>
                       {t_i18n('Authentication strategies')}
                     </Typography>
-                    <Paper style={{
+                    <Paper
+                      style={{
                       marginTop: 10,
                     }} classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined"
                     >

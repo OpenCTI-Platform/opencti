@@ -55,7 +55,8 @@ const stixCoreRelationshipMutationRelationsDelete = graphql`
 `;
 
 const StixCoreRelationshipLabelsView = (props) => {
-  return <StixCoreObjectOrCoreRelationshipLabelsView {...props}
+  return <StixCoreObjectOrCoreRelationshipLabelsView
+    {...props}
     mutationRelationsAdd={stixCoreRelationshipMutationRelationsAdd}
     mutationRelationDelete={stixCoreRelationshipMutationRelationsDelete}
     enableReferences={useIsEnforceReference('stix-core-relationship')}

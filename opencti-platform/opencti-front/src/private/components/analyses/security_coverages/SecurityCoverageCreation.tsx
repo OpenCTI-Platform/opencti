@@ -860,7 +860,7 @@ const SecurityCoverageCreation: FunctionComponent<SecurityCoverageCreationProps>
   );
 
   const CreateSecurityCoverageControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Security-Coverage' {...props} />
+    <CreateEntityControlledDial entityType="Security-Coverage" {...props} />
   );
 
   return (

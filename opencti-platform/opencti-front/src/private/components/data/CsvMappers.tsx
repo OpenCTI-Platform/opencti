@@ -174,13 +174,13 @@ const CsvMappers = () => {
                       size="small"
                       onClick={() => inputFileRef.current?.click()}
 
-                      data-testid='ImporCsvMapper'
+                      data-testid="ImporCsvMapper"
                       title={t_i18n('Import a CSV mapper')}
                     >
                       <FileUploadOutlined fontSize="small" color={'primary'} />
                     </ToggleButton>
                     <Button
-                      variant='contained'
+                      variant="contained"
                       disableElevation
                       sx={{ marginLeft: 1 }}
                       onClick={() => setOpen(true)}

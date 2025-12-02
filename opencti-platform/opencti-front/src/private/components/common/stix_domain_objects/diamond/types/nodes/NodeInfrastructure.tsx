@@ -34,14 +34,16 @@ const NodeInfrastructure = ({ data }: NodeProps) => {
           {t_i18n('Last used IP addresses')}
         </Typography>
         {emptyFilled(usedIPs)}
-        <Typography variant="h3" gutterBottom sx={{
+        <Typography
+          variant="h3" gutterBottom sx={{
           marginTop: '20px',
         }}
         >
           {t_i18n('Last used domains')}
         </Typography>
         {emptyFilled(usedDomains)}
-        <Typography variant="h3" gutterBottom sx={{
+        <Typography
+          variant="h3" gutterBottom sx={{
           marginTop: '20px',
         }}
         >

@@ -84,7 +84,7 @@ const sharedUpdater = (store: RecordSourceSelectorProxy, userId: string, paginat
 
 const CreateStreamCollectionControlledDial = (props: DrawerControlledDialProps) => (
   <CreateEntityControlledDial
-    entityType='StreamCollection'
+    entityType="StreamCollection"
     {...props}
   />
 );

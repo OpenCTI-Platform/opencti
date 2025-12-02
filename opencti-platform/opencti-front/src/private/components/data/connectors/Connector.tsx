@@ -272,7 +272,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Basic information')}
           </Typography>
-          <Paper style={{
+          <Paper
+            style={{
             marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 4,
@@ -522,7 +523,8 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           <Typography variant="h4" gutterBottom={true}>
             {t_i18n('Details')}
           </Typography>
-          <Paper style={{
+          <Paper
+            style={{
             marginTop: theme.spacing(1),
             padding: '15px',
             borderRadius: 4,

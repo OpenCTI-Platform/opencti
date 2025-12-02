@@ -169,7 +169,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                           <ItemEntityType
                             entityType={targetEntityType}
                             isRestricted={restricted}
-                            size='large'
+                            size="large"
                             showIcon
                           />
                         </div>

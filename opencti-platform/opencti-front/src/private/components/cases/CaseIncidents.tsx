@@ -207,7 +207,7 @@ const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
           createButton={(
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <div style={{ display: 'flex' }}>
-                <StixCoreObjectForms entityType='Case-Incident' />
+                <StixCoreObjectForms entityType="Case-Incident" />
                 <CaseIncidentCreation paginationOptions={queryPaginationOptions} />
               </div>
             </Security>

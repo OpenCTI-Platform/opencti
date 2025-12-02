@@ -511,7 +511,8 @@ const IngestionCsvEdition: FunctionComponent<IngestionCsvEditionProps> = ({
                 showConfidence
               />
               {ingestionCsvData.user?.name === 'SYSTEM'
-                && <IngestionCsvEditionUserHandling key={values.name}
+                && <IngestionCsvEditionUserHandling
+                  key={values.name}
                   feedName={values.name}
                   onAutoUserCreated={() => setFieldValue('user_id', `[F] ${values.name}`)}
                   ingestionCsvDataId={ingestionCsvData.id}

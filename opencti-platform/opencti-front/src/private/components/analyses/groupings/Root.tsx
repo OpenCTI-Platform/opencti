@@ -190,7 +190,7 @@ const RootGrouping = () => {
                     </Tabs>
                     {!isKnowledgeOrContent && (
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
-                        <AIInsights id={grouping.id} tabs={['containers']} defaultTab='containers' isContainer={true} />
+                        <AIInsights id={grouping.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
                         <StixCoreObjectSecurityCoverage id={grouping.id} coverage={grouping.securityCoverage} />
                       </div>
                     )}

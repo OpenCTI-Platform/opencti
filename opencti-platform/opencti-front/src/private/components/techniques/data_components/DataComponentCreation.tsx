@@ -333,7 +333,7 @@ const DataComponentCreation: FunctionComponent<{
     'dataComponentAdd',
   );
   const CreateDataComponentControlledDial = (props: DrawerControlledDialProps) => (
-    <CreateEntityControlledDial entityType='Data-Component' {...props} />
+    <CreateEntityControlledDial entityType="Data-Component" {...props} />
   );
   const CreateDataComponentControlledDialContextual = CreateDataComponentControlledDial({
     onOpen: handleOpen,

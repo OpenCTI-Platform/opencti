@@ -455,13 +455,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                 <Security needs={[SETTINGS_SETACCESSES]}>
                   <Tooltip title={t_i18n('Revoke token')}>
                     <IconButton
-                      color='primary'
+                      color="primary"
                       aria-label={t_i18n('Revoke token')}
                       onClick={handleOpenRenewToken}
                       classes={{ root: classes.floatingButton }}
-                      size='small'
+                      size="small"
                     >
-                      <RefreshOutlined fontSize='small'/>
+                      <RefreshOutlined fontSize="small"/>
                     </IconButton>
                   </Tooltip>
                 </Security>
