@@ -120,7 +120,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
       classes={{ root: classes.item }}
       color="primary"
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <>
           <Tooltip
             title={t_i18n(
@@ -141,13 +141,13 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
             </span>
           </Tooltip>
         </>
-      }
+      )}
     >
       <ListItemIcon>
         <ItemIcon type="streamcollection" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -159,7 +159,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

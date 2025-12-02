@@ -141,12 +141,12 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                   <ItemIcon type="User" />
                 </ListItemIcon>
                 <ListItemText
-                  primary={
+                  primary={(
                     <div>
                       <div className={classes.name}>{user.name}</div>
                       <div className={classes.email}>{user.email}</div>
                     </div>
-                  }
+                  )}
                 />
                 <ListItemIcon classes={{ root: classes.goIcon }}>
                   &nbsp;
@@ -158,7 +158,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                     key={userSession.id}
                     classes={{ root: classes.itemNested }}
                     divider={true}
-                    secondaryAction={
+                    secondaryAction={(
                       <IconButton
                         aria-label="Kill"
                         onClick={() => handleOpenKillSession(userSession.id)}
@@ -167,13 +167,13 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                       >
                         <DeleteOutlined />
                       </IconButton>
-                    }
+                    )}
                   >
                     <ListItemIcon>
                       <ItemIcon type="Session" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={
+                      primary={(
                         <div>
                           <div className={classes.created}>
                             {nsdt(userSession.created)}
@@ -184,7 +184,7 @@ const SessionsListComponent = ({ relay, data, keyword }) => {
                             {Math.round(userSession.originalMaxAge / 60)}
                           </div>
                         </div>
-                      }
+                      )}
                     />
                   </ListItem>
                 ))}

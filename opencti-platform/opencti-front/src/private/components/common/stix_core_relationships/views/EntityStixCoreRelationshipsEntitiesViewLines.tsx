@@ -146,13 +146,15 @@ Omit<EntityStixCoreRelationshipsEntitiesProps, 'queryRef'>
     { count: 25, ...props.paginationOptions },
   );
   return queryRef ? (
-    <React.Suspense fallback={<>
-      {Array(20)
+    <React.Suspense fallback={(
+      <>
+        {Array(20)
         .fill(0)
         .map((_, idx) => (
           <EntityStixCoreRelationshipsEntitiesLineDummy key={idx} dataColumns={props.dataColumns} />
         ))}
-    </>}
+      </>
+)}
     >
       <EntityStixCoreRelationshipsEntitiesComponent
         {...props}

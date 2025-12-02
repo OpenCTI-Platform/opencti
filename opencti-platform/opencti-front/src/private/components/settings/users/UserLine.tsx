@@ -67,7 +67,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
         {!userServiceAccount && (external ? <AccountCircleOutlined /> : <PersonOutlined />)}
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -122,7 +122,7 @@ const UserLineComponent: React.FC<UserLineComponentProps> = (props) => {
               {fd(node.created_at)}
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -167,7 +167,7 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -247,7 +247,7 @@ export const UserLineDummy: React.FC<Pick<UserLineComponentProps, 'dataColumns'>
               />
             </div>
           </div>
-          }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />

@@ -166,12 +166,12 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
             key={indicatorEdge.node.id}
             divider={true}
             disablePadding
-            secondaryAction={
+            secondaryAction={(
               <StixCyberObservableIndicatorPopover
                 observableId={stixCyberObservable.id}
                 indicatorId={indicatorEdge.node.id}
               />
-            }
+            )}
           >
             <ListItemButton
               aria-label="stix cyber observable indicators item"
@@ -183,7 +183,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                 <ItemIcon type={indicatorEdge.node.entity_type} />
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div>
                     <div style={{ ...inlineStyles.pattern_type, ...inlineStyles.bodyItem }}>
                       <ItemPatternType
@@ -198,7 +198,7 @@ const StixCyberObservableIndicatorsComponent = ({ stixCyberObservable }) => {
                       {fd(indicatorEdge.node.created_at)}
                     </div>
                   </div>
-                }
+                )}
               />
             </ListItemButton>
           </ListItem>

@@ -57,7 +57,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
         <Stack direction="row" gap={1}>
           <EEChip />
           <Tooltip
-            title={
+            title={(
               <>
                 {t_i18n('If needed, you can set a')}{' '}
                 <Link
@@ -68,7 +68,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                 </Link>{' '}
                 {t_i18n('on user login.')}
               </>
-          }
+            )}
           >
             <InformationOutline fontSize="small" color="primary" />
           </Tooltip>
@@ -100,12 +100,12 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                     }
                     disabled={!isEnterpriseEdition}
                     variant="standard"
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="analytics_google_analytics_v4"
                       />
-                    }
+                    )}
                   />
                 </span>
               </EETooltip>

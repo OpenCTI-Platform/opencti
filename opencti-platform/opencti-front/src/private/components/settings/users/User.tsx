@@ -425,13 +425,15 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       {t_i18n('Account type')}
                     </Typography>
                     {user.user_service_account
-                      ? <Chip
+                      ? (
+                        <Chip
                           variant="outlined"
                           label={t_i18n('Service account')}
                           style={{
                             borderRadius: 4,
                             width: 150 }}
                         />
+)
                       : '-'}
                   </Grid>
                   <Grid item xs={4}>
@@ -687,7 +689,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                           key={session.id}
                           dense={true}
                           divider={true}
-                          secondaryAction={
+                          secondaryAction={(
                             <IconButton
                               aria-label="Kill"
                               onClick={() => handleOpenKillSession(session.id)}
@@ -695,13 +697,13 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                             >
                               <DeleteOutlined fontSize="small" />
                             </IconButton>
-                          }
+                          )}
                         >
                           <ListItemIcon>
                             <ItemIcon type="Session" />
                           </ListItemIcon>
                           <ListItemText
-                            primary={
+                            primary={(
                               <>
                                 <div style={{ float: 'left', width: '50%' }}>
                                   {nsdt(session.created)}
@@ -713,7 +715,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                                   {t_i18n('minutes')}
                                 </div>
                               </>
-                            }
+                            )}
                           />
                         </ListItem>
                       ))}

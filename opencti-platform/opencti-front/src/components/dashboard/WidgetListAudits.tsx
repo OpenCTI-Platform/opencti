@@ -81,7 +81,7 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
                 />
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <>
                     <div
                       style={{ ...bodyItemStyle, width: '15%' }}
@@ -118,7 +118,7 @@ const WidgetListAudits = ({ data }: WidgetListAuditsProps) => {
                       </span>
                     </div>
                   </>
-                }
+                )}
               />
             </ListItemButton>
           );

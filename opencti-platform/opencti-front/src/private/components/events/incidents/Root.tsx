@@ -119,7 +119,7 @@ const RootIncidentComponent = ({ queryRef }) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -137,7 +137,7 @@ const RootIncidentComponent = ({ queryRef }) => {
                   data={incident}
                   attribution={['Threat-Actor-Individual', 'Threat-Actor-Group', 'Intrusion-Set', 'Campaign']}
                 />
-              }
+              )}
             />
           </Routes>
           <div
@@ -246,19 +246,19 @@ const RootIncidentComponent = ({ queryRef }) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <IncidentKnowledge incidentData={incident} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={incident}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"

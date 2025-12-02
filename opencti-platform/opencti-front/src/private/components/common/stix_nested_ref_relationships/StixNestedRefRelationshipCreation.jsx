@@ -472,14 +472,16 @@ class StixNestedRefRelationshipCreation extends Component {
                 <div className={classes.middle} style={{ paddingTop: 25 }}>
                   <ArrowRightAlt fontSize="large" />
                   <br />
-                  {canReverseRelation && <Button
+                  {canReverseRelation && (
+                  <Button
                     variant="outlined"
                     onClick={this.handleReverseRelation.bind(this)}
                     color="secondary"
                     size="small"
-                                         >
-                      {t('Reverse')}
-                    </Button>}
+                  >
+                    {t('Reverse')}
+                  </Button>
+)}
                 </div>
                 <div
                   className={classes.item}
@@ -852,13 +854,14 @@ class StixNestedRefRelationshipCreation extends Component {
           ? this.renderLoader()
           : ''}
         {step === 1 ? this.renderSelectRelation() : ''}
-        {step === 2 ? <QueryRenderer
-          query={stixNestedRefRelationshipCreationResolveQuery}
-          variables={{
+        {step === 2 ? (
+          <QueryRenderer
+            query={stixNestedRefRelationshipCreationResolveQuery}
+            variables={{
             id: this.props.fromObjects[0].id,
             toType: this.props.toObjects[0].entity_type,
           }}
-          render={({ props }) => {
+            render={({ props }) => {
             if (props && props.stixSchemaRefRelationships) {
               if (props.stixSchemaRefRelationships.from.length === 0 && props.stixSchemaRefRelationships.to.length > 0) {
                 this.handleReverseRelation();
@@ -872,7 +875,8 @@ class StixNestedRefRelationshipCreation extends Component {
             }
             return this.renderLoader();
           }}
-                      />
+          />
+)
           : ''}
       </Drawer>
     );

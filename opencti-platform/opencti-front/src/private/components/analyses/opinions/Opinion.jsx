@@ -27,12 +27,12 @@ const OpinionComponent = ({ opinion, enableReferences }) => {
       <CollaborativeSecurity
         data={opinion}
         needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
-        placeholder={
+        placeholder={(
           <ContainerHeader
             container={opinion}
             disableAuthorizedMembers={true}
           />
-        }
+        )}
       >
         <ContainerHeader
           container={opinion}

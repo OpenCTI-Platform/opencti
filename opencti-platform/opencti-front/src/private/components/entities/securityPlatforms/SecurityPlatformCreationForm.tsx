@@ -132,15 +132,16 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
     },
   );
 
-  return <Formik<SecurityPlatformCreationFormData>
-    initialValues={initialValues}
-    validationSchema={securityPlatformValidator}
-    validateOnChange={false}
-    validateOnBlur={false}
-    onSubmit={onSubmit}
-    onReset={onReset}
-         >
-    {({
+  return (
+    <Formik<SecurityPlatformCreationFormData>
+      initialValues={initialValues}
+      validationSchema={securityPlatformValidator}
+      validateOnChange={false}
+      validateOnBlur={false}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({
       submitForm,
       handleReset,
       isSubmitting,
@@ -248,7 +249,8 @@ const SecurityPlatformCreationForm: FunctionComponent<SecurityPlatformCreationFo
         </Form>
       </>
     )}
-  </Formik>;
+    </Formik>
+);
 };
 
 export default SecurityPlatformCreationForm;

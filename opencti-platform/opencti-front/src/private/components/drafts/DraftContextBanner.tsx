@@ -230,7 +230,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             {t_i18n('Exit draft')}
           </Button>
         </div>
-        
+
         <div style={{ padding: '0 12px' }}>
           <Tooltip title={(!canDeleteKnowledge || !currentAccessRight.canEdit) ? t_i18n('You do not have the access rights to approve a draft') : ''}>
             <span>
@@ -263,7 +263,8 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
                   <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
                   {t_i18n('There are processes still running that could impact the data of the draft. '
                     + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-                </Alert>)}
+                </Alert>
+)}
               </DialogContentText>
             </DialogContent>
             <DialogActions>
@@ -276,7 +277,7 @@ const DraftContextBannerComponent: FunctionComponent<DraftContextBannerComponent
             </DialogActions>
           </Dialog>
         </div>
-      
+
       </div>
     </div>
   );

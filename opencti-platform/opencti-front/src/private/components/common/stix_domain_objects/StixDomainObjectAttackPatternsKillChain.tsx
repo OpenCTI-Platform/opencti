@@ -348,7 +348,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               searchContext={{ entityTypes: ['Attack-Pattern'] }}
             />
           </Box>
-          {currentView === 'matrix' && (<>
+          {currentView === 'matrix' && (
+          <>
             <Box
               style={{
                 float: 'left',
@@ -402,33 +403,34 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
               </Tooltip>
             </Box>
 
-              {!isSecurityPlatform && (
-                <Box
-                  style={{
+            {!isSecurityPlatform && (
+            <Box
+              style={{
                     float: 'left',
                     display: 'flex',
                     paddingInline: 10,
                   }}
-                >
-                  <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300, maxWidth: 500 }}>
-                    <EntitySelect
-                      multiple
-                      variant="outlined"
-                      size="small"
-                      value={selectedSecurityPlatforms}
-                      label={t_i18n('Compare with my security posture')}
-                      types={['SecurityPlatform']}
-                      onChange={(newSelectedSecurityPlatforms) => {
+            >
+              <FormControl style={{ display: 'flex', paddingInlineEnd: 10, minWidth: 300, maxWidth: 500 }}>
+                <EntitySelect
+                  multiple
+                  variant="outlined"
+                  size="small"
+                  value={selectedSecurityPlatforms}
+                  label={t_i18n('Compare with my security posture')}
+                  types={['SecurityPlatform']}
+                  onChange={(newSelectedSecurityPlatforms) => {
                         handleSecurityPlatformsChange(newSelectedSecurityPlatforms as EntityOption[]);
                       }}
-                    />
-                  </FormControl>
-                </Box>
+                />
+              </FormControl>
+            </Box>
               )}
-            </>
+          </>
           )}
           {displayButtons
-            && (<div style={{ float: 'right', margin: 0 }} id="container-view-buttons">
+            && (
+            <div style={{ float: 'right', margin: 0 }} id="container-view-buttons">
               <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
                 {[...viewButtons]}
                 {typeof handleToggleExports === 'function' && (
@@ -469,7 +471,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
                   csvFileName={`${t_i18n('Attack pattern courses of action')}.csv`}
                 />
               </div>
-            </div>)}
+            </div>
+)}
           <div className="clearfix" />
         </div>
       )}
@@ -547,7 +550,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             />
           </Security>
         )}
-        {currentView !== 'matrix-in-line' && <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+        {currentView !== 'matrix-in-line' && (
+        <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
           <StixCoreObjectsExports
             open={openExports}
             exportType="simple"
@@ -555,7 +559,8 @@ const StixDomainObjectAttackPatternsKillChain: FunctionComponent<StixDomainObjec
             paginationOptions={paginationOptionsForExport}
             exportContext={exportContextWithEntityType}
           />
-        </Security>}
+        </Security>
+)}
       </div>
     </>
   );

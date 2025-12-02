@@ -111,7 +111,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -133,7 +133,7 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
                   ]}
                   data={threatActorGroup}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -239,22 +239,22 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <ThreatActorGroupKnowledge
                       threatActorGroupData={threatActorGroup}
                       relatedRelationshipTypes={THREAT_ACTOR_GROUP_RELATED_RELATIONSHIP_TYPES}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={threatActorGroup}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -264,14 +264,14 @@ const RootThreatActorGroup = ({ queryRef, threatActorGroupId }: RootThreatActorG
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={threatActorGroupId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={threatActorGroup}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"

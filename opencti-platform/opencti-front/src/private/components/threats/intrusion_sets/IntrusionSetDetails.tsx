@@ -136,7 +136,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
                         <BullseyeArrow />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <pre style={{
                             display: 'inline-block',
                             margin: 0,
@@ -146,7 +146,7 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
                           >
                             {goal}
                           </pre>
-                        }
+                        )}
                       />
                     </ListItem>
                   ))}
@@ -176,12 +176,12 @@ const IntrusionSetDetailsComponent = ({ intrusionSet }: IntrusionSetDetailsProps
                         <ArmFlexOutline />
                       </ListItemIcon>
                       <ListItemText
-                        primary={
+                        primary={(
                           <ItemOpenVocab
                             type="attack-motivation-ov"
                             value={secondaryMotivation}
                           />
-                        }
+                        )}
                       />
                     </ListItem>
                   ),

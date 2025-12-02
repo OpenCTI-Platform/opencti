@@ -74,7 +74,7 @@ const IncidentKnowledge = ({
         />
         <Route
           path="/all"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={incident.id}
@@ -84,7 +84,7 @@ const IncidentKnowledge = ({
               defaultStopTime={incident.stopTime}
               allDirections
             />
-          }
+          )}
         />
         <Route
           path="/related"
@@ -219,14 +219,14 @@ const IncidentKnowledge = ({
         />
         <Route
           path="/indicators"
-          element={
+          element={(
             <EntityStixCoreRelationshipsIndicators
               entityId={incident.id}
               entityLink={link}
               defaultStartTime={incident.first_seen}
               defaultStopTime={incident.last_seen}
             />
-          }
+          )}
         />
         <Route
           path="/observables"

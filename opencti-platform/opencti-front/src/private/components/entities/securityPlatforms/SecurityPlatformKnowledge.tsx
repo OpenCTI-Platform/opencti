@@ -38,25 +38,25 @@ const SecurityPlatformKnowledgeComponent = ({
       <Routes>
         <Route
           path="/relations/:relationId"
-          element={
+          element={(
             <StixCoreRelationship
               entityId={securityPlatform.id}
               paddingRight={true}
             />
-        }
+          )}
         />
         <Route
           path="/overview"
-          element={
+          element={(
             <StixDomainObjectKnowledge
               stixDomainObjectId={securityPlatform.id}
               stixDomainObjectType="SecurityPlatform"
             />
-        }
+          )}
         />
         <Route
           path="/all"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={securityPlatform.id}
@@ -67,11 +67,11 @@ const SecurityPlatformKnowledgeComponent = ({
               enableContextualView={false}
               isRelationReversed={true}
             />
-        }
+          )}
         />
         <Route
           path="/related"
-          element={
+          element={(
             <EntityStixCoreRelationships
               key={location.pathname}
               entityId={securityPlatform.id}
@@ -82,17 +82,17 @@ const SecurityPlatformKnowledgeComponent = ({
               enableContextualView={false}
               isRelationReversed={true}
             />
-         }
+          )}
         />
         <Route
           path="/attack_patterns"
-          element={
+          element={(
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={securityPlatform.id}
               disableExport={false}
               entityType={securityPlatform.entity_type}
             />
-        }
+          )}
         />
       </Routes>
     </div>

@@ -80,7 +80,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
           <ItemIcon type="Notifier" />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
                 <Chip
@@ -97,7 +97,7 @@ export const NotifierLine: FunctionComponent<NotifierLineProps> = ({
                 {data.description}
               </div>
             </div>
-          }
+          )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           <NotifierPopover data={data} paginationOptions={paginationOptions} />
@@ -115,7 +115,7 @@ export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns })
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div className={classes.bodyItem} style={{ width: dataColumns.connector.width }}>
               <Skeleton
@@ -142,7 +142,7 @@ export const NotifierLineDummy = ({ dataColumns }: { dataColumns: DataColumns })
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

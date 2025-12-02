@@ -152,13 +152,16 @@ const StixCoreObjectOpinions: FunctionComponent<Omit<StixCoreObjectOpinionsProps
   const queryRef = useQueryLoading<StixCoreObjectOpinionsOpenVocabQuery>(stixCoreObjectOpinionsOpenVocabQuery, {
     category: typeToCategory('opinion-ov'),
   });
-  return <div style={{ minHeight: '240px' }}>
-    {queryRef && (
+  return (
+    <div style={{ minHeight: '240px' }}>
+      {queryRef && (
       <React.Suspense fallback={<span />}>
         <StixCoreObjectOpinionsComponent {...props} queryVocabulariesRef={queryRef} />
-      </React.Suspense>)
+      </React.Suspense>
+)
     }
-  </div>;
+    </div>
+);
 };
 
 export default StixCoreObjectOpinions;

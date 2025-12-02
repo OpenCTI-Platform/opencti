@@ -519,7 +519,7 @@ class ListLines extends Component {
                 </ListItemIcon>
               )}
               <ListItemText
-                primary={
+                primary={(
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
                       dataColumn[0],
@@ -528,7 +528,7 @@ class ListLines extends Component {
                       dataColumn[1].isSortable,
                     ))}
                   </Box>
-                }
+                )}
               />
             </ListItem>
             )}

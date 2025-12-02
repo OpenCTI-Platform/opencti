@@ -136,9 +136,11 @@ ConfigurationComponentProps
     <div data-testid="configuration-page">
       <Security
         needs={[SETTINGS_SECURITYACTIVITY]}
-        placeholder={<span>{t_i18n(
+        placeholder={(
+          <span>{t_i18n(
         'You do not have any access to the audit activity of this OpenCTI instance.',
-      )}</span>}
+      )}</span>
+)}
       >
         <div className={classes.container}>
           <ActivityMenu />
@@ -227,7 +229,7 @@ ConfigurationComponentProps
                       <React.Fragment key={listener.id}>
                         <ListItem
                           divider={true}
-                          secondaryAction={
+                          secondaryAction={(
                             <IconButton
                               aria-label="Kill"
                               onClick={() => {
@@ -245,7 +247,7 @@ ConfigurationComponentProps
                             >
                               <Delete />
                             </IconButton>
-                        }
+                          )}
                         >
                           <ListItemButton
                             classes={{ root: classes.item }}
@@ -254,11 +256,11 @@ ConfigurationComponentProps
                               <ItemIcon type={listener.entity_type} />
                             </ListItemIcon>
                             <ListItemText
-                              primary={
+                              primary={(
                                 <div>
                                   <div className={classes.name}>{listener.name}</div>
                                 </div>
-                        }
+                              )}
                             />
                           </ListItemButton>
                         </ListItem>

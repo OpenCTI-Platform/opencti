@@ -103,7 +103,7 @@ const Retention = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -111,7 +111,7 @@ const Retention = () => {
                     <RetentionLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <RetentionLines
               queryRef={queryRef}

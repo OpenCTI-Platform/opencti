@@ -368,12 +368,12 @@ const StixDomainObjectEditionContainer = (props) => {
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
-                  helperText={
+                  helperText={(
                     <SubscriptionFocus
                       context={editContext}
                       fieldName="aliases"
                     />
-                  }
+                  )}
                 />
               )}
               {'x_opencti_aliases' in stixDomainObject && stixDomainObject.x_opencti_aliases !== undefined && (
@@ -386,12 +386,12 @@ const StixDomainObjectEditionContainer = (props) => {
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
-                  helperText={
+                  helperText={(
                     <SubscriptionFocus
                       context={editContext}
                       fieldName="x_opencti_aliases"
                     />
-                  }
+                  )}
                 />
               )}
               <ConfidenceField
@@ -414,35 +414,35 @@ const StixDomainObjectEditionContainer = (props) => {
                   style={{ marginTop: 20 }}
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
-                  helperText={
+                  helperText={(
                     <SubscriptionFocus
                       context={editContext}
                       fieldName="description"
                     />
-                  }
+                  )}
                 />
               )}
               <CreatedByField
                 name="createdBy"
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="createdBy"
                   />
-                }
+                )}
                 onChange={handleChangeCreatedBy}
               />
               <ObjectMarkingField
                 name="objectMarking"
                 style={fieldSpacingContainerStyle}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldname="objectMarking"
                   />
-                }
+                )}
                 setFieldValue={setFieldValue}
                 onChange={handleChangeObjectMarking}
               />

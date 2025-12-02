@@ -129,7 +129,8 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
             </Box>
           )}
           {result
-            && <Box
+            && (
+            <Box
               sx={{
                 paddingTop: '8px',
                 marginLeft: '12px',
@@ -138,11 +139,12 @@ const IngestionCsvFeedTestDialog: FunctionComponent<ingestionCsvFeedTestDialogPr
                 justifyContent: 'center',
                 display: 'flex',
               }}
-               >
+            >
               <span>{t_i18n('Objects found')} : </span>
               <span><strong>{result?.ingestionCsvTester?.nbEntities} </strong> {t_i18n('Entities')}</span>
               <span><strong>{result?.ingestionCsvTester?.nbRelationships}</strong> {t_i18n('Relationships')}</span>
             </Box>
+)
           }
         </Box>
         <Box sx={{ marginTop: '8px' }}>

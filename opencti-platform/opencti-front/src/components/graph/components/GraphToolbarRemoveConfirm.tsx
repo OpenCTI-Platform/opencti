@@ -259,7 +259,8 @@ const GraphToolbarRemoveConfirm = ({
                 )}
                 />
               </FormGroup>
-            </Alert>)
+            </Alert>
+)
           }
 
           {totalToDelete > 0 && (

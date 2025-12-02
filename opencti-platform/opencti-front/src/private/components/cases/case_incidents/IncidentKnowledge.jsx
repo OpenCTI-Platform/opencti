@@ -173,7 +173,7 @@ class IncidentKnowledgeComponent extends Component {
         <Routes>
           <Route
             path="/graph"
-            element={
+            element={(
               <QueryRenderer
                 query={incidentKnowledgeGraphQuery}
                 variables={{ id: caseData.id }}
@@ -195,11 +195,12 @@ class IncidentKnowledgeComponent extends Component {
                     />
                   );
                 }}
-              />}
+              />
+            )}
           />
           <Route
             path="/timeline"
-            element={
+            element={(
               <>
                 <ContentKnowledgeTimeLineBar
                   handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
@@ -243,11 +244,12 @@ class IncidentKnowledgeComponent extends Component {
                     );
                   }}
                 />
-              </>}
+              </>
+            )}
           />
           <Route
             path="/correlation"
-            element={
+            element={(
               <QueryRenderer
                 query={incidentKnowledgeCorrelationQuery}
                 variables={{ id: caseData.id }}
@@ -267,26 +269,27 @@ class IncidentKnowledgeComponent extends Component {
                     />
                   );
                 }}
-              />}
+              />
+            )}
           />
           <Route
             path="/matrix"
-            element={
+            element={(
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={caseData.id}
                 defaultStartTime={caseData.first_seen}
                 defaultStopTime={caseData.last_seen}
                 entityType={caseData.entity_type}
               />
-            }
+            )}
           />
           <Route
             path="/relations/:relationId"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={caseData.id}
               />
-            }
+            )}
           />
         </Routes>
       </div>

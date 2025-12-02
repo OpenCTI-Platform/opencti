@@ -103,7 +103,7 @@ const Campaigns = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <Grid
                 container={true}
                 spacing={3}
@@ -121,7 +121,7 @@ const Campaigns = () => {
                     </Grid>
                   ))}
               </Grid>
-            }
+            )}
           >
             <CampaignsCards
               queryRef={queryRef}

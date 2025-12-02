@@ -344,13 +344,13 @@ ThreatActorIndividualFormProps
               <Tabs value={currentTab} onChange={handleChangeTab}>
                 <Tab
                   id="create-overview"
-                  label={
+                  label={(
                     <ErrorBadge
                       badgeContent={Object.keys(errors).length}
                     >
                       {t_i18n('Overview')}
                     </ErrorBadge>
-                  }
+                  )}
                 />
                 <Tab id="threat-details" label={t_i18n('Details')} />
                 <Tab id="threat-demographics" label={t_i18n('Demographics')} />

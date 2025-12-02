@@ -200,48 +200,52 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
         />
         <Route
           path="/entities"
-          element={
+          element={(
             <ContainerStixDomainObjects
               container={caseData}
               enableReferences={enableReferences}
-            />}
+            />
+          )}
         />
         <Route
           path="/observables"
-          element={
+          element={(
             <ContainerStixCyberObservables
               container={caseData}
               enableReferences={enableReferences}
-            />}
+            />
+          )}
         />
         <Route
           path="/knowledge"
-          element={
+          element={(
             <Navigate
               replace={true}
               to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
-            />}
+            />
+          )}
         />
         <Route
           path="/content/*"
-          element={
+          element={(
             <StixCoreObjectContentRoot
               stixCoreObject={caseData}
               isContainer={true}
             />
-          }
+          )}
         />
         <Route
           path="/knowledge/*"
-          element={
+          element={(
             <IncidentKnowledge
               caseData={caseData}
               enableReferences={enableReferences}
-            />}
+            />
+          )}
         />
         <Route
           path="/files"
-          element={
+          element={(
             <StixCoreObjectFilesAndHistory
               id={caseId}
               connectorsExport={connectorsForExport}
@@ -249,7 +253,8 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               entity={caseData}
               withoutRelations={true}
               bypassEntityId={true}
-            />}
+            />
+          )}
         />
       </Routes>
     </div>

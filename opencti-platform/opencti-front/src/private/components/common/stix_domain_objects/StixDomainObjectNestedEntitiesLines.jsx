@@ -69,12 +69,12 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                 key={stixCoreObject.id}
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <StixNestedRefRelationshipPopover
                     stixNestedRefRelationshipId={node.id}
                     paginationOptions={paginationOptions}
                   />
-              }
+                )}
               >
                 <ListItemButton
                   classes={{ root: classes.item }}
@@ -85,7 +85,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                     <ItemIcon type={stixCoreObject.entity_type} />
                   </ListItemIcon>
                   <ListItemText
-                    primary={
+                    primary={(
                       <div>
                         <div
                           className={classes.bodyItem}
@@ -116,7 +116,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                           {fsd(node.start_time)}
                         </div>
                       </div>
-                  }
+                    )}
                   />
                 </ListItemButton>
               </ListItem>

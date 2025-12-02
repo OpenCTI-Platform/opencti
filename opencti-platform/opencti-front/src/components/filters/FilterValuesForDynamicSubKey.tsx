@@ -47,11 +47,11 @@ const FilterValuesForDynamicSubKeyContainer = ({
   return (
     <Fragment>
       <Tooltip
-        title={
+        title={(
           <TasksFilterValueContainer
             filters={filterValue}
           />
-        }
+        )}
       >
         <Box
           sx={{

@@ -277,11 +277,12 @@ export const CoverageInformationFieldEdit: FunctionComponent<CoverageInformation
                           });
                         }
                       }}
-                      helperText={
+                      helperText={(
                         <SubscriptionFocus
                           context={editContext}
                           fieldName={`${name}.${index}.coverage_score`}
-                        />}
+                        />
+                      )}
                     />
                   </div>
                   {(values?.length ?? 0) > 0 && (

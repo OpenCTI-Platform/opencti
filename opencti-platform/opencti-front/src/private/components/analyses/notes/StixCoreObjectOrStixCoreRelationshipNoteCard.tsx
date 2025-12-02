@@ -131,7 +131,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
         style={{
           borderBottom: `1px solid ${theme.palette.divider}`,
         }}
-        action={
+        action={(
           <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE]}>
             <NotePopover
               id={note.id}
@@ -141,8 +141,8 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               paginationOptions={paginationOptions}
             />
           </CollaborativeSecurity>
-        }
-        title={
+        )}
+        title={(
           <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1} sx={{ marginTop: 0.5 }}>
             <Stack direction="row" spacing={1}>
               <Stack direction="row" spacing={0.5} sx={{ textTransform: 'none' }}>
@@ -177,7 +177,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               limit={1}
             />
           </Stack>
-        }
+        )}
       />
 
       <CardContent sx={{ position: 'relative' }}>

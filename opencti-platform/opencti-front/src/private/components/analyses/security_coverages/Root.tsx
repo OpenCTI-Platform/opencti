@@ -168,48 +168,48 @@ const RootSecurityCoverage = ({ queryRef, securityCoverageId }: RootSecurityCove
             />
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <div>
                   <SecurityCoverageKnowledge
                     securityCoverageData={securityCoverage}
                   />
                 </div>
-              }
+              )}
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={securityCoverage}
                 />
-              }
+              )}
             />
             <Route
               path="/files"
-              element={
+              element={(
                 <FileManager
                   id={securityCoverageId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={securityCoverage}
                 />
-               }
+              )}
             />
             <Route
               path="/history"
-              element={
+              element={(
                 <StixCoreObjectHistory
                   stixCoreObjectId={securityCoverageId}
                 />
-               }
+              )}
             />
             <Route
               path="/relations/:relationId"
-              element={
+              element={(
                 <StixCoreRelationship
                   entityId={securityCoverageId}
                 />
-                  }
+              )}
             />
           </Routes>
         </div>

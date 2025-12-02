@@ -92,11 +92,11 @@ const Feed = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={feedState.searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <FeedCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={FeedLinesQuery}

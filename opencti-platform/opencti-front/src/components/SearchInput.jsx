@@ -174,9 +174,11 @@ const SearchInput = (props) => {
           endAdornment: variant === 'topBar' && (
           <InputAdornment position="end">
             {isNLQActivated && isNLQLoading
-              && <div>
+              && (
+              <div>
                 <Loader variant="inline" />
               </div>
+)
             }
             <Tooltip title={t_i18n('Advanced search')}>
               <IconButton

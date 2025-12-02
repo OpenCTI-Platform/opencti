@@ -67,11 +67,11 @@ class FeedLineLineComponent extends Component {
       <ListItem
         divider={true}
         disablePadding
-        secondaryAction={
+        secondaryAction={(
           <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
             <FeedPopover feedId={node.id} paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <ListItemButton
           classes={{ root: classes.item }}
@@ -84,7 +84,7 @@ class FeedLineLineComponent extends Component {
             <FileDelimitedOutline />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 <div
                   className={classes.bodyItem}
@@ -115,15 +115,17 @@ class FeedLineLineComponent extends Component {
                   style={{ width: dataColumns.filters.width }}
                 >
                   {isFilterGroupNotEmpty(filters)
-                    ? <FilterIconButton
+                    ? (
+                      <FilterIconButton
                         filters={filters}
                         styleNumber={3}
                         dataColumns={dataColumns}
                       />
+)
                     : '-'}
                 </div>
               </>
-            }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -185,7 +187,7 @@ class FeedDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 className={classes.bodyItem}
@@ -243,7 +245,7 @@ class FeedDummyComponent extends Component {
                 />
               </div>
             </>
-          }
+          )}
         />
       </ListItem>
     );

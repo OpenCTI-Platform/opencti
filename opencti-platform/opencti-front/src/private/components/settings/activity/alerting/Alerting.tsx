@@ -194,7 +194,7 @@ const Alerting: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array.from(Array(20).keys()).map((idx) => (
                   <AlertingLineDummy
@@ -203,7 +203,7 @@ const Alerting: FunctionComponent = () => {
                   />
                 ))}
               </>
-            }
+            )}
           >
             <AlertingLines
               queryRef={queryRef}

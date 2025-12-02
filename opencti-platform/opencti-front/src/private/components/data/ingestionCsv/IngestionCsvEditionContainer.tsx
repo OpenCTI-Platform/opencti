@@ -39,11 +39,13 @@ const IngestionCsvEditionContainer: FunctionComponent<IngestionCsvEditionContain
       onClose={handleClose}
       open={open}
     >
-      {({ onClose }) => <IngestionCsvEdition
-        ingestionCsv={ingestionCsv}
-        enableReferences={useIsEnforceReference('IngestionCsv')}
-        handleClose={onClose}
-                        />
+      {({ onClose }) => (
+        <IngestionCsvEdition
+          ingestionCsv={ingestionCsv}
+          enableReferences={useIsEnforceReference('IngestionCsv')}
+          handleClose={onClose}
+        />
+)
       }
     </Drawer>
   );

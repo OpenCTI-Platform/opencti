@@ -117,7 +117,7 @@ const ContainerStixCoreObjectsMapping = ({
       >
         {queryRef && (
         <React.Suspense
-          fallback={
+          fallback={(
             <>
               {Array(20)
                 .fill(0)
@@ -128,7 +128,7 @@ const ContainerStixCoreObjectsMapping = ({
                   />
                 ))}
             </>
-                  }
+          )}
         >
           <ContainerStixCoreObjectsMappingLines
             container={container}

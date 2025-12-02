@@ -129,7 +129,7 @@ const DecayRules = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -140,7 +140,7 @@ const DecayRules = () => {
                     />
                   ))}
               </>
-            }
+            )}
           >
             <DecayRulesLines
               queryRef={queryRef}

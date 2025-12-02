@@ -97,7 +97,7 @@ const WidgetDistributionList = ({
                 />
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div
                     style={{
                       whiteSpace: 'nowrap',
@@ -108,7 +108,7 @@ const WidgetDistributionList = ({
                   >
                     {label}
                   </div>
-                }
+                )}
               />
               <div
                 style={{

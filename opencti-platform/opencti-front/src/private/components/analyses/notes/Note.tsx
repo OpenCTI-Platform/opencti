@@ -129,7 +129,8 @@ const NoteComponent: FunctionComponent<NoteComponentProps> = ({
       }
       </Grid>
 
-    </div>);
+    </div>
+);
 };
 
 export default NoteComponent;

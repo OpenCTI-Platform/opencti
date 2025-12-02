@@ -189,12 +189,12 @@ const AttackPatternEditionDetailsComponent = (props) => {
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
+            helperText={(
               <SubscriptionFocus
                 context={context}
                 fieldName="x_mitre_detection"
               />
-            }
+            )}
           />
           {enableReferences && (
             <CommitMessage

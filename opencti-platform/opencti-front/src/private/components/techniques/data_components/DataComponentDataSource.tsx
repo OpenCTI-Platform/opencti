@@ -80,7 +80,7 @@ DataComponentDataSourcesProps
             dense={true}
             divider={true}
             disablePadding={true}
-            secondaryAction={
+            secondaryAction={(
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <IconButton
                   aria-label="Remove"
@@ -90,7 +90,7 @@ DataComponentDataSourcesProps
                   <LinkOff />
                 </IconButton>
               </Security>
-            }
+            )}
           >
             <ListItemButton
               component={Link}

@@ -120,25 +120,33 @@ const Message = () => {
     }
     switch (type) {
       case 'error':
-        return <Alert severity="error" onClose={() => handleCloseMessage()}>
-          {text}
-        </Alert>;
+        return (
+          <Alert severity="error" onClose={() => handleCloseMessage()}>
+            {text}
+          </Alert>
+);
       case 'nlq':
-        return <Alert
-          icon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
-          style={{ backgroundColor: theme.palette.ai.background, color: theme.palette.ai.light }}
-          onClose={() => handleCloseMessage()}
-               >
-          {text}
-        </Alert>;
+        return (
+          <Alert
+            icon={<FiligranIcon icon={LogoXtmOneIcon} size="small" color="ai" />}
+            style={{ backgroundColor: theme.palette.ai.background, color: theme.palette.ai.light }}
+            onClose={() => handleCloseMessage()}
+          >
+            {text}
+          </Alert>
+);
       case 'message':
-        return <Alert severity="success" onClose={() => handleCloseMessage()}>
-          {text}
-        </Alert>;
+        return (
+          <Alert severity="success" onClose={() => handleCloseMessage()}>
+            {text}
+          </Alert>
+);
       default:
-        return <Alert severity="success" onClose={() => handleCloseMessage()}>
-          {text}
-        </Alert>;
+        return (
+          <Alert severity="success" onClose={() => handleCloseMessage()}>
+            {text}
+          </Alert>
+);
     }
   };
 

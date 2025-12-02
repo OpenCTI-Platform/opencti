@@ -87,7 +87,7 @@ AdministrativeAreaLineComponentProps
         <ItemIcon type="Administrative-Area" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -109,7 +109,7 @@ AdministrativeAreaLineComponentProps
               {fd(data.modified)}
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -130,7 +130,7 @@ export const AdministrativeAreaLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div
               className={classes.bodyItem}
@@ -166,7 +166,7 @@ export const AdministrativeAreaLineDummy = ({
               />
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined color="disabled" />

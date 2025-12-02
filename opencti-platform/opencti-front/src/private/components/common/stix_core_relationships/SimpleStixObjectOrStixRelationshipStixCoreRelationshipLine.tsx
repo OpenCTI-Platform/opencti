@@ -630,7 +630,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
           <ItemIcon type={data.entity_type} isReversed={isReversed} color={data.draftVersion ? draftColor : null} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <>
               <div
                 className={classes.bodyItem}
@@ -685,7 +685,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine = ({
                 />
               </div>
             </>
-          }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -700,11 +700,11 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
           <MoreVertOutlined />
         </Box>
-        }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton
@@ -715,7 +715,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -773,7 +773,7 @@ export const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy = (
               />
             </div>
           </div>
-          }
+        )}
       />
     </ListItem>
   );

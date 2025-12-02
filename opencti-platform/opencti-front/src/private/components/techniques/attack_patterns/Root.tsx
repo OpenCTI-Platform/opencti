@@ -109,7 +109,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -126,7 +126,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                   ]}
                   data={attackPattern}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -221,19 +221,19 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <AttackPatternKnowledge attackPatternData={attackPattern} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={attackPattern}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses"
@@ -243,14 +243,14 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={attackPatternId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={attackPattern}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"

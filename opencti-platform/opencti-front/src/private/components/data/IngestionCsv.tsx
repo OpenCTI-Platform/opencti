@@ -103,7 +103,7 @@ const IngestionCsv = () => {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         keyword={searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <>
               <IngestionCsvImport
@@ -131,11 +131,11 @@ const IngestionCsv = () => {
               />
             </>
           </Security>
-        }
+        )}
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -143,7 +143,7 @@ const IngestionCsv = () => {
                     <IngestionCsvLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <IngestionCsvLines
               queryRef={queryRef}

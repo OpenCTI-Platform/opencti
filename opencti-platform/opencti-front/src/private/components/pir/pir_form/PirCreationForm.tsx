@@ -95,13 +95,15 @@ const PirCreationForm = ({ onCancel, onSubmit }: PirCreationFormProps) => {
               />
 
               <Form>
-                {step === 0 && <>
+                {step === 0 && (
+                <>
                   {redisQueryRef && (
-                    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                      <PirCreationFormGeneralSettings redisQueryRef={redisQueryRef} />
-                    </React.Suspense>
+                  <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                    <PirCreationFormGeneralSettings redisQueryRef={redisQueryRef} />
+                  </React.Suspense>
                   )}
-                </>}
+                </>
+)}
                 {step === 1 && <PirCreationFormCriteria />}
               </Form>
             </DialogContent>

@@ -51,7 +51,8 @@ const DraftProcessingStatus: FunctionComponent<DraftProcessingStatusProps> = ({ 
               style={{ cursor: 'pointer' }}
             />
           </Badge>
-        </Tooltip>)}
+        </Tooltip>
+)}
       <Drawer
         title={t_i18n('Draft processes')}
         open={displayProcesses}

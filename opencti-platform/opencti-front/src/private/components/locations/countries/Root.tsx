@@ -105,7 +105,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -125,7 +125,7 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
                   ]}
                   data={country}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -235,49 +235,49 @@ const RootCountryComponent = ({ queryRef, countryId }) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <CountryKnowledge countryData={country} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/analyses"
-                element={
+                element={(
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={country.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={countryId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={country}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"

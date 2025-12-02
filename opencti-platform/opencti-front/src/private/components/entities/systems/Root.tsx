@@ -246,53 +246,53 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
             <Routes>
               <Route
                 path="/"
-                element={
+                element={(
                   <System
                     systemData={system}
                     viewAs={viewAs}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge"
-                element={
+                element={(
                   <Navigate
                     replace={true}
                     to={`/dashboard/entities/systems/${systemId}/knowledge/overview`}
                   />
-                }
+                )}
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <SystemKnowledge
                       systemData={system}
                       viewAs={viewAs}
                     />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={system}
                   />
-                }
+                )}
               />
               <Route
                 path="/analyses/*"
-                element={
+                element={(
                   <SystemAnalysis
                     system={system}
                     viewAs={viewAs}
                   />
-                }
+                )}
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={system.id}
                     entityLink={link}
@@ -309,26 +309,26 @@ const RootSystem = ({ systemId, queryRef }: RootSystemProps) => {
                       'System',
                     ]}
                   />
-                }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={systemId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={system}
                   />
-                }
+                )}
               />
               <Route
                 path="/history"
-                element={
+                element={(
                   <StixCoreObjectHistory
                     stixCoreObjectId={systemId}
                   />
-                }
+                )}
               />
             </Routes>
           </div>

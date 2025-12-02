@@ -140,7 +140,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
         <ItemIcon type={nodeSubType.id} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -173,7 +173,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               {renderOptionIcon('platform_hidden_type')}
             </div>
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRightOutlined />
@@ -204,7 +204,7 @@ export const SubTypeLineDummy = ({
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -221,7 +221,7 @@ export const SubTypeLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

@@ -141,7 +141,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
         <ItemIcon type="Narrative" />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <Tooltip title={data.name}>
               <div style={commonTextStyle(theme, dataColumns.name.width)}>
@@ -165,7 +165,7 @@ export const NarrativeLine: FunctionComponent<NarrativeLineProps> = ({
               {fd(data.modified)}
             </div>
           </>
-            }
+        )}
       />
       <ListItemIcon style={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined />
@@ -192,7 +192,7 @@ export const NarrativeLineDummy = ({
         />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <>
             <div style={commonTextStyle(theme, dataColumns.name.width)}>
               <Skeleton
@@ -227,7 +227,7 @@ export const NarrativeLineDummy = ({
               />
             </div>
           </>
-        }
+        )}
       />
       <ListItemIcon style={{ position: 'absolute', right: -10 }}>
         <KeyboardArrowRightOutlined color="disabled" />

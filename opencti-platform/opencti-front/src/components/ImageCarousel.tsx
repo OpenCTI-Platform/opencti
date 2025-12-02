@@ -126,7 +126,7 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
               <ImageListItemBar
                 sx={{ background: 'none' }}
                 position="top"
-                actionIcon={
+                actionIcon={(
                   <IconButton
                     sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
                     aria-label={`info about ${file.altText}`}
@@ -135,7 +135,7 @@ const ImageCarousel: FunctionComponent<ImageCarouselProps> = ({ data }) => {
                   >
                     <ZoomOutMapOutlined fontSize="small" />
                   </IconButton>
-                }
+                )}
               />
             </ImageListItem>
           ))

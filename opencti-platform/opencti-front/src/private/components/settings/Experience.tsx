@@ -324,20 +324,22 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
                 {isGrantedToParameters && (
                   <ListItem divider={true}>
                     <ListItemText
-                      primary={<div style={{ display: 'flex', alignItems: 'center' }}>
-                        <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
-                        <Tooltip title={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}>
-                          <Chip
-                            label={t_i18n('Preview')}
-                            color="primary"
-                            variant="outlined"
-                            size="small"
-                            style={{
+                      primary={(
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <span>{t_i18n('Agentic AI (Ariane Assistant)')}</span>
+                          <Tooltip title={t_i18n('This feature is in preview and will improve over time with user\'s feedback.')}>
+                            <Chip
+                              label={t_i18n('Preview')}
+                              color="primary"
+                              variant="outlined"
+                              size="small"
+                              style={{
                               marginLeft: theme.spacing(1),
                             }}
-                          />
-                        </Tooltip>
-                      </div>}
+                            />
+                          </Tooltip>
+                        </div>
+)}
                     />
                     {filigran_chatbot_ai_cgu_status === CGUStatus.pending ? (
                       <Button

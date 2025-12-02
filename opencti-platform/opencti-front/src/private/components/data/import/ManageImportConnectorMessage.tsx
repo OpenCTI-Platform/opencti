@@ -17,16 +17,18 @@ const ManageImportConnectorMessage: FunctionComponent<ManageImportConnectorMessa
   const isCsvMapperUpdater = useGranted([CSVMAPPERS]);
   switch (name) {
     case 'ImportCsv':
-      return <Box sx={{ paddingTop: '18px' }}>
-        <WarningText>{t_i18n('There are not any configurations set yet')}</WarningText>
-        <div>
-          {
+      return (
+        <Box sx={{ paddingTop: '18px' }}>
+          <WarningText>{t_i18n('There are not any configurations set yet')}</WarningText>
+          <div>
+            {
             isCsvMapperUpdater
               ? <Link to="/dashboard/data/processing/csv_mapper">{t_i18n('Create a CSV Mapper configuration')}</Link>
               : <WarningText>{t_i18n('Please contact an administrator')}</WarningText>
           }
-        </div>
-      </Box>;
+          </div>
+        </Box>
+);
     case undefined: // In case there isn't any connector selected
       return null;
     default:

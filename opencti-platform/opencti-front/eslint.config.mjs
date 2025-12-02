@@ -99,8 +99,6 @@ export default defineConfig([
       },
     },
     rules: {
-      '@stylistic/jsx-wrap-multilines': 'off',
-      '@stylistic/no-mixed-operators': 'off',
       '@stylistic/multiline-ternary': 'off',
 
       // =========

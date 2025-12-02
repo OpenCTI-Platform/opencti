@@ -107,11 +107,11 @@ const ContainerStixCoreObjectsMappingLines = ({
       globalCount={
           data?.container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
         }
-      LineComponent={
+      LineComponent={(
         <ContainerStixCoreObjectsMappingLine
           containerId={data?.container?.id ?? null}
         />
-        }
+      )}
       DummyLineComponent={<ContainerStixCoreObjectsMappingLineDummy />}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}

@@ -308,12 +308,12 @@ const TasksList = ({ data, options }) => {
                     <span>
                       <Chip
                         classes={{ root: classes.filter }}
-                        label={
+                        label={(
                           <div>
                             <strong>{t_i18n('Search')}</strong>:{' '}
                             {task.task_search}
                           </div>
-                            }
+                        )}
                       />
                       <Chip
                         classes={{ root: classes.operator }}
@@ -323,19 +323,21 @@ const TasksList = ({ data, options }) => {
                     )}
                     {task.type !== 'RULE'
                       && (isFilterGroupNotEmpty(filters)
-                          ? <TasksFilterValueContainer
+                          ? (
+                            <TasksFilterValueContainer
                               filters={filters}
                               entityTypes={['Stix-Core-Object', 'stix-core-relationship', 'Notification', 'User']}
                             />
+)
                           : (
                             <Chip
                               classes={{ root: classes.filter }}
-                              label={
+                              label={(
                                 <div>
                                   <strong>{t_i18n('List of entities')}</strong>:{' '}
                                   {listIds}
                                 </div>
-                              }
+                              )}
                             />
                           )
                         )
@@ -368,7 +370,7 @@ const TasksList = ({ data, options }) => {
                               {action.context && (
                                 <Chip
                                   classes={{ root: classes.filter }}
-                                  label={
+                                  label={(
                                     <div>
                                       {action.context.field && (
                                         <span>
@@ -386,7 +388,7 @@ const TasksList = ({ data, options }) => {
                                         80,
                                       )}
                                     </div>
-                                  }
+                                  )}
                                 />
                               )}
                             </div>
@@ -421,12 +423,14 @@ const TasksList = ({ data, options }) => {
                     {nsdt(lastTaskExecutionDate)}
                   </Grid>
                   {(task.scope ?? task.type)
-                    && <Grid item xs={2}>
+                    && (
+                    <Grid item xs={2}>
                       <Typography variant="h3" gutterBottom={true}>
                         {t_i18n('Scope')}
                       </Typography>
                       <TaskScope scope={task.scope ?? task.type} label={t_i18n(task.scope ?? task.type)} />
-                      </Grid>
+                    </Grid>
+)
                   }
                   <Grid item xs={2}>
                     <Typography variant="h3" gutterBottom={true}>
@@ -458,16 +462,7 @@ const TasksList = ({ data, options }) => {
                 {taskErrors.length} {t_i18n('errors')}
               </Button>
               {task.scope // if task.scope exists = it is list task or a query task
-                ? <Button
-                    style={{ position: 'absolute', right: 10, bottom: 10 }}
-                    variant="outlined"
-                    onClick={() => handleDeleteTask(task.id)}
-                    size="small"
-                  >
-                  <Delete fontSize="small" />
-                  &nbsp;&nbsp;{t_i18n('Delete')}
-                </Button>
-                : <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                ? (
                   <Button
                     style={{ position: 'absolute', right: 10, bottom: 10 }}
                     variant="outlined"
@@ -475,9 +470,22 @@ const TasksList = ({ data, options }) => {
                     size="small"
                   >
                     <Delete fontSize="small" />
-                    &nbsp;&nbsp;{t_i18n('Delete')}
+                  &nbsp;&nbsp;{t_i18n('Delete')}
                   </Button>
-                </Security>
+)
+                : (
+                  <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+                    <Button
+                      style={{ position: 'absolute', right: 10, bottom: 10 }}
+                      variant="outlined"
+                      onClick={() => handleDeleteTask(task.id)}
+                      size="small"
+                    >
+                      <Delete fontSize="small" />
+                    &nbsp;&nbsp;{t_i18n('Delete')}
+                    </Button>
+                  </Security>
+)
               }
             </Grid>
           </Paper>

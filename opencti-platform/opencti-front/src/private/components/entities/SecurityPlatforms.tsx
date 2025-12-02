@@ -139,9 +139,11 @@ const SecurityPlatforms = () => {
         preloadedPaginationProps={preloadedPaginationProps}
         lineFragment={securityPlatformFragment}
         exportContext={{ entity_type: 'SecurityPlatform' }}
-        createButton={<SecurityPlatformCreation
-          paginationOptions={queryPaginationOptions}
-                      />}
+        createButton={(
+          <SecurityPlatformCreation
+            paginationOptions={queryPaginationOptions}
+          />
+)}
       />
       )}
     </div>

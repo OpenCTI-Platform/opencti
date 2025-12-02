@@ -224,7 +224,8 @@ const RootDraftComponent = ({ draftId, queryRef, refetch }) => {
             to={`/dashboard/data/import/draft/${draftId}/files`}
             value={`/dashboard/data/import/draft/${draftId}/files`}
             label={t_i18n('Files')}
-          />)}
+          />
+)}
         </Tabs>
       </Box>
       <Routes>

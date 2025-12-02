@@ -594,24 +594,29 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                       <Typography variant="body1" gutterBottom={true}>
                         {nsdt(connector.connector_info?.last_run_datetime)}
                       </Typography>
-                    </>) : (connector.connector_state
-                      && connectorStateConverted !== null
-                      && checkLastRunExistingInState && checkLastRunIsNumber ? (<>
+                    </>
+) : (connector.connector_state
+  && connectorStateConverted !== null
+  && checkLastRunExistingInState && checkLastRunIsNumber ? (
+    <>
+      <Typography variant="h3" gutterBottom={true}>
+        {t_i18n('Last run (from State)')}
+      </Typography>
+      <Typography variant="body1" gutterBottom={true}>
+        {nsdt(lastRunConverted)}
+      </Typography>
+    </>
+)
+                    : (
+                      <>
                         <Typography variant="h3" gutterBottom={true}>
-                          {t_i18n('Last run (from State)')}
+                          {t_i18n('Last run')}
                         </Typography>
                         <Typography variant="body1" gutterBottom={true}>
-                          {nsdt(lastRunConverted)}
+                          {t_i18n('Not provided')}
                         </Typography>
-                      </>)
-                    : (<>
-                      <Typography variant="h3" gutterBottom={true}>
-                        {t_i18n('Last run')}
-                      </Typography>
-                      <Typography variant="body1" gutterBottom={true}>
-                        {t_i18n('Not provided')}
-                      </Typography>
-                    </>)
+                      </>
+)
                   )
                 )}
               </Grid>
@@ -691,9 +696,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   const ConnectorLogs = () => {
     // calculating the full viewport height minus some space for elements above
     const logsContainerHeight = 'calc(100vh - 280px)';
-    return (<Box sx={{ marginBottom: '20px', height: logsContainerHeight }}>
-      <pre
-        style={{
+    return (
+      <Box sx={{ marginBottom: '20px', height: logsContainerHeight }}>
+        <pre
+          style={{
           height: '100%',
           overflowX: 'scroll',
           overflowY: 'auto',
@@ -703,10 +709,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
           borderRadius: 4,
           border: `1px solid ${theme.palette.divider}`,
         }}
-      >
-        {connector.manager_connector_logs?.join('\n') || t_i18n('No logs available')}
-      </pre>
-    </Box>
+        >
+          {connector.manager_connector_logs?.join('\n') || t_i18n('No logs available')}
+        </pre>
+      </Box>
     );
   };
 

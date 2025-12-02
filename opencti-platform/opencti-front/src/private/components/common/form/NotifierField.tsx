@@ -102,12 +102,13 @@ const NotifierField: FunctionComponent<NotifierFieldProps> = ({
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
           option: FieldOption,
-        ) => (<li {...props} key={option.value}>
-          <div className={classes.icon}>
-            <ItemIcon type="Notifier" />
-          </div>
-          <div className={classes.text}>{option.label}</div>
-        </li>
+        ) => (
+          <li {...props} key={option.value}>
+            <div className={classes.icon}>
+              <ItemIcon type="Notifier" />
+            </div>
+            <div className={classes.text}>{option.label}</div>
+          </li>
         )}
         classes={{ clearIndicator: classes.autoCompleteIndicator }}
       />

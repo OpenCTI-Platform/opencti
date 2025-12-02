@@ -179,7 +179,8 @@ const ContentKnowledgeTimeLineBar: FunctionComponent<ContentKnowledgeTimeLineBar
               </div>
             </div>
           </div>
-        </Drawer>)}
+        </Drawer>
+)}
     </UserContext.Consumer>
   );
 };

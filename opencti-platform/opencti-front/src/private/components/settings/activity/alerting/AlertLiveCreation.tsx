@@ -162,37 +162,39 @@ const TriggerActivityLiveCreation: FunctionComponent<TriggerLiveCreationProps> =
   };
 
   const renderActivityTrigger = (values: TriggerActivityLiveAddInput, setFieldValue: (name: string, value: FieldOption[]) => void) => {
-    return <>
-      <ObjectMembersField
-        label="Recipients"
-        style={fieldSpacingContainerStyle}
-        onChange={setFieldValue}
-        multiple={true}
-        name="recipients"
-      />
-      <span>
-        <Box
-          sx={{
+    return (
+      <>
+        <ObjectMembersField
+          label="Recipients"
+          style={fieldSpacingContainerStyle}
+          onChange={setFieldValue}
+          multiple={true}
+          name="recipients"
+        />
+        <span>
+          <Box
+            sx={{
             display: 'flex',
             gap: 1,
             marginTop: '20px',
           }}
-        >
-          <Filters
-            availableFilterKeys={[
+          >
+            <Filters
+              availableFilterKeys={[
               'event_type',
               'event_scope',
               'members_user',
               'members_group',
               'members_organization',
             ]}
-            helpers={helpers}
-            searchContext={{ entityTypes: ['History'] }}
-          />
-        </Box>
-        <div className="clearfix" />
-      </span>
-    </>;
+              helpers={helpers}
+              searchContext={{ entityTypes: ['History'] }}
+            />
+          </Box>
+          <div className="clearfix" />
+        </span>
+      </>
+);
   };
 
   const liveFields = (setFieldValue: (field: string, value: unknown, shouldValidate?: boolean | undefined) => void, values: TriggerActivityLiveAddInput) => (

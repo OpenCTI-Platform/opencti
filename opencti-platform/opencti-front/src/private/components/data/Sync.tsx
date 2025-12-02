@@ -95,7 +95,7 @@ const Sync = () => {
           elements={[{ label: t_i18n('Data') }, { label: t_i18n('Ingestion') }, { label: t_i18n('OpenCTI Streams'), current: true }]}
         />
         <Alert
-          content={
+          content={(
             <>
               {t_i18n('You can configure your platform to consume OpenCTI Streams. A list of public and commercial native feeds is available in the')}{' '}
               <a
@@ -108,7 +108,7 @@ const Sync = () => {
               </a>
               .
             </>
-        }
+          )}
           style={{ marginBottom: theme.spacing(2) }}
         />
         <ListLines
@@ -120,11 +120,11 @@ const Sync = () => {
           displayImport={false}
           secondaryAction={true}
           keyword={viewStorage.searchTerm}
-          createButton={
+          createButton={(
             <Security needs={[INGESTION_SETINGESTIONS]}>
               <SyncCreation paginationOptions={paginationOptions} />
             </Security>
-          }
+          )}
         >
           <QueryRenderer
             query={SyncLinesQuery}

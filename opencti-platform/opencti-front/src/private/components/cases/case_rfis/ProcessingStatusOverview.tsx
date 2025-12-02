@@ -67,65 +67,70 @@ const ProcessingStatusOverview = ({ data }: CaseRfiRequestAccessOverviewProps) =
 
   const userCanAction = data.requestAccessConfiguration?.isUserCanAction;
   const disabledTooltip = draftContext ? t_i18n('Not available in draft') : t_i18n('You need to be able to edit the RFI and share knowledge');
-  return <Grid item xs={12} style={{ marginBottom: 20 }}>
-    <Typography
-      variant="h3"
-      gutterBottom={true}
-      style={{ marginTop: 0 }}
-    >
-      {t_i18n('Processing status')}
-    </Typography>
-    <div style={{
+  return (
+    <Grid item xs={12} style={{ marginBottom: 20 }}>
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        style={{ marginTop: 0 }}
+      >
+        {t_i18n('Processing status')}
+      </Typography>
+      <div style={{
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
     }}
-    >
-      <ItemStatus
-        status={data.status}
-        disabled={!data.workflowEnabled && !requestAccessData}
-      />
-      {!userCanAction && <Tooltip title={disabledTooltip}>
+      >
+        <ItemStatus
+          status={data.status}
+          disabled={!data.workflowEnabled && !requestAccessData}
+        />
+        {!userCanAction && (
+        <Tooltip title={disabledTooltip}>
+          <div>
+            <Button
+              color="primary"
+              disabled
+              variant="contained"
+              style={{ marginRight: 10 }}
+            >
+              {t_i18n('Validate')}
+            </Button>
+            <Button
+              color="primary"
+              disabled
+              variant="contained"
+            >
+              {t_i18n('Decline')}
+            </Button>
+          </div>
+        </Tooltip>
+)}
+        {isDecisionNotTaken && userCanAction && (
         <div>
           <Button
             color="primary"
-            disabled
-            variant="contained"
-            style={{ marginRight: 10 }}
+            variant="outlined"
+            style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
+            onClick={onSubmitValidateRequestAccess}
           >
             {t_i18n('Validate')}
           </Button>
           <Button
             color="primary"
-            disabled
-            variant="contained"
+            variant="outlined"
+            style={{ color: declineButtonColor, borderColor: declineButtonColor }}
+            onClick={onSubmitDeclineRequestAccess}
           >
             {t_i18n('Decline')}
           </Button>
         </div>
-      </Tooltip>}
-      {isDecisionNotTaken && userCanAction && (
-      <div>
-        <Button
-          color="primary"
-          variant="outlined"
-          style={{ marginRight: 10, color: approvedButtonColor, borderColor: approvedButtonColor }}
-          onClick={onSubmitValidateRequestAccess}
-        >
-          {t_i18n('Validate')}
-        </Button>
-        <Button
-          color="primary"
-          variant="outlined"
-          style={{ color: declineButtonColor, borderColor: declineButtonColor }}
-          onClick={onSubmitDeclineRequestAccess}
-        >
-          {t_i18n('Decline')}
-        </Button>
-      </div>)}
-    </div>
-    <Divider style={{ marginTop: 20 }} />
-  </Grid>;
+)}
+      </div>
+      <Divider style={{ marginTop: 20 }} />
+    </Grid>
+);
 };
 
 export default ProcessingStatusOverview;

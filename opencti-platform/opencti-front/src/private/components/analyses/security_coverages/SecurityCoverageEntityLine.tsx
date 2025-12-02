@@ -73,7 +73,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
         <ItemIcon type={entity.entity_type} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -114,7 +114,7 @@ const SecurityCoverageEntityLine: React.FC<SecurityCoverageEntityLineProps> = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItemButton>
   );

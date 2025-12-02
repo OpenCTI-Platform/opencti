@@ -207,21 +207,21 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         />
         <Route
           path="/content/*"
-          element={
+          element={(
             <StixCoreObjectContentRoot
               stixCoreObject={caseData}
               isContainer={true}
             />
-              }
+          )}
         />
         <Route
           path="/knowledge"
-          element={
+          element={(
             <Navigate
               replace={true}
               to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
             />
-                }
+          )}
         />
         <Route
           path="/knowledge/*"
@@ -247,10 +247,11 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
         />
         <Route
           path="/history"
-          element={
+          element={(
             <StixCoreObjectHistory
               stixCoreObjectId={caseId}
-            />}
+            />
+          )}
         />
       </Routes>
     </div>

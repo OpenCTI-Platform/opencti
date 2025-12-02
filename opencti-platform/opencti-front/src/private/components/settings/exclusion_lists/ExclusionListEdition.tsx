@@ -197,14 +197,14 @@ const ExclusionListEdition: FunctionComponent<ExclusionListEditionComponentProps
                 <div style={{ display: 'flex' }}>
                   <FormControlLabel
                     style={fieldSpacingContainerStyle}
-                    control={
+                    control={(
                       <Switch
                         checked={isUploadFileChecked}
                         onChange={(_, isChecked) => {
                           setIsUploadFileChecked(isChecked);
                         }}
                       />
-                  }
+                    )}
                     disabled={isContentFieldDisable}
                     label={isContentFieldDisable
                       ? t_i18n('This exclusion list is too large to be displayed')

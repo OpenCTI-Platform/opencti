@@ -68,7 +68,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
     <ListItem
       divider={true}
       disablePadding
-      secondaryAction={
+      secondaryAction={(
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerStixCoreObjectPopover
             containerId={containerId}
@@ -80,7 +80,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
             enableReferences={enableReferences}
           />
         </Security>
-          }
+      )}
     >
       <ListItemButton
         component={Link}
@@ -92,7 +92,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
           <ItemIcon type={node.entity_type} />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               <div
                 className={classes.bodyItem}
@@ -142,7 +142,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
                 />
               </div>
             </div>
-        }
+          )}
         />
       </ListItemButton>
     </ListItem>
@@ -715,17 +715,17 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
     <ListItem
       classes={{ root: classes.item }}
       divider={true}
-      secondaryAction={
+      secondaryAction={(
         <IconButton classes={classes.itemIconDisabled} disabled={true} aria-haspopup="true" size="large">
           <MoreVert />
         </IconButton>
-        }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -794,7 +794,7 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

@@ -173,7 +173,7 @@ class CaseRfiKnowledgeComponent extends Component {
         <Routes>
           <Route
             path="/graph"
-            element={
+            element={(
               <QueryRenderer
                 query={caseRfiKnowledgeGraphQuery}
                 variables={{ id: caseData.id }}
@@ -196,11 +196,11 @@ class CaseRfiKnowledgeComponent extends Component {
                   );
                 }}
               />
-          }
+            )}
           />
           <Route
             path="/timeline"
-            element={
+            element={(
               <>
                 <ContentKnowledgeTimeLineBar
                   handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
@@ -245,11 +245,11 @@ class CaseRfiKnowledgeComponent extends Component {
                   }}
                 />
               </>
-          }
+            )}
           />
           <Route
             path="/correlation"
-            element={
+            element={(
               <QueryRenderer
                 query={caseRfiKnowledgeCorrelationQuery}
                 variables={{ id: caseData.id }}
@@ -270,24 +270,24 @@ class CaseRfiKnowledgeComponent extends Component {
                   );
                 }}
               />
-          }
+            )}
           />
           <Route
             path="/matrix"
-            element={
+            element={(
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={caseData.id}
                 entityType={caseData.entity_type}
               />
-            }
+            )}
           />
           <Route
             path="/relations/:relationId"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={caseData.id}
               />
-            }
+            )}
           />
         </Routes>
       </div>

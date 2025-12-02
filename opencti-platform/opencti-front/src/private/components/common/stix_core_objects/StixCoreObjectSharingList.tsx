@@ -43,13 +43,15 @@ const StixCoreObjectSharingList = ({ data, disabled, inContainer }: StixCoreObje
   const { t_i18n } = useFormatter();
   const disabledInDraft = !!draftContext;
   const fullyDisabled = disabled || disabledInDraft;
-  const notifySuccessMessage = (<span>
-    {t_i18n(
+  const notifySuccessMessage = (
+    <span>
+      {t_i18n(
       'The background task has been executed. You can monitor it on',
     )}{' '}
-    <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
-    .
-  </span>);
+      <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
+      .
+    </span>
+);
   const [deleteOrganization] = useApiMutation<StixCoreObjectSharingListDeleteMutation>(
     objectOrganizationDeleteMutation,
     undefined,

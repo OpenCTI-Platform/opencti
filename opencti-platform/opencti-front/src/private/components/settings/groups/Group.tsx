@@ -378,26 +378,32 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                               {truncate(type, 40)}
                             </Typography>
                             {isMarkingAllowed
-                              ? <>
-                                <ListItemIcon>
-                                  <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
-                                </ListItemIcon>
+                              ? (
+                                <>
+                                  <ListItemIcon>
+                                    <MarkingIcon theme={theme} color={marking?.x_opencti_color} />
+                                  </ListItemIcon>
+                                  <ListItemText
+                                    primary={truncate(marking.definition, 40)}
+                                  />
+                                </>
+)
+                              : (
                                 <ListItemText
-                                  primary={truncate(marking.definition, 40)}
-                                />
-                              </>
-                              : <ListItemText
                                   primary={t_i18n('No restrictions')}
                                 />
+)
                             }
                             {!isMarkingAllowed
-                              && <Tooltip
+                              && (
+                              <Tooltip
                                 title={t_i18n(
                                   'The maximum shareable marking set for this definition type is not allowed for this group, so users can only share their allowed markings independently from the maximum shareable marking set.',
                                 )}
-                                 >
+                              >
                                 <WarningOutlined color="warning" />
                               </Tooltip>
+)
                             }
                           </ListItem>
                         );

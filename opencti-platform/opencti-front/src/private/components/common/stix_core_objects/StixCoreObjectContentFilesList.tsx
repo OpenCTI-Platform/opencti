@@ -140,7 +140,7 @@ const StixCoreObjectContentFilesList = ({
                 dense={true}
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <>
                     {canDisseminate && (
                       <Security needs={[KNOWLEDGE_KNDISSEMINATION]}>
@@ -168,7 +168,7 @@ const StixCoreObjectContentFilesList = ({
                       <MoreVert />
                     </IconButton>
                   </>
-                }
+                )}
               >
                 <ListItemButton
                   selected={file.id === currentFileId}

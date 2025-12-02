@@ -160,25 +160,25 @@ const RoleEditionCapabilitiesComponent: FunctionComponent<RoleEditionCapabilitie
             key="sensitive"
             divider={true}
             style={{ paddingLeft: 0 }}
-            secondaryAction={
+            secondaryAction={(
               <Checkbox
                 onChange={(event) => handleSensitiveToggle(event)}
                 checked={!!role.can_manage_sensitive_config}
                 style={{ color: theme.palette.dangerZone.main }}
                 disabled={false}
               />
-            }
+            )}
           >
             <ListItemIcon style={{ minWidth: 32 }}>
               <LocalPoliceOutlined fontSize="small" />
             </ListItemIcon>
             <ListItemText
-              primary={
+              primary={(
                 <>
                   {t_i18n('Allow modification of sensitive configuration')}
                   <DangerZoneChip />
                 </>
-              }
+              )}
             />
           </ListItem>
         )}

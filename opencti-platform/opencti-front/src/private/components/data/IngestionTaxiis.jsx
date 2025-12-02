@@ -97,11 +97,11 @@ const IngestionTaxii = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
-        createButton={
+        createButton={(
           <Security needs={[INGESTION_SETINGESTIONS]}>
             <IngestionTaxiiCreation paginationOptions={paginationOptions} />
           </Security>
-        }
+        )}
       >
         <QueryRenderer
           query={IngestionTaxiiLinesQuery}

@@ -292,7 +292,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
         )}
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -334,7 +334,7 @@ export const StixNestedRefRelationshipCreationFromEntityLine: FunctionComponent<
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );
@@ -360,7 +360,7 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             <div
               className={classes.bodyItem}
@@ -418,7 +418,7 @@ export const StixNestedRefRelationshipCreationFromEntityLineDummy = ({
               />
             </div>
           </div>
-        }
+        )}
       />
     </ListItem>
   );

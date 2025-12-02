@@ -118,7 +118,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                 <ListItem
                   divider={true}
                   disablePadding
-                  secondaryAction={
+                  secondaryAction={(
                     <IconButton
                       onClick={this.handleToggleLine.bind(
                         this,
@@ -134,7 +134,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                           <ExpandLess />
                         )}
                     </IconButton>
-                }
+                  )}
                 >
                   <ListItemButton
                     onClick={this.handleToggleLine.bind(
@@ -163,13 +163,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             divider={true}
                             dense={true}
                             disablePadding
-                            secondaryAction={
+                            secondaryAction={(
                               <StixCoreRelationshipPopover
                                 stixCoreRelationshipId={stixDomainObject.id}
                                 paginationOptions={paginationOptions}
                                 onDelete={this.props.relay.refetch.bind(this)}
                               />
-                          }
+                            )}
                           >
                             <ListItemButton
                               classes={{ root: classes.nested }}

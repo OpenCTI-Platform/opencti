@@ -109,8 +109,8 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 </Typography>
                 <ItemScore score={indicator.x_opencti_score} />
               </Grid>
-              {(indicator.decay_applied_rule ||
-                !!indicator.decay_exclusion_applied_rule) && (
+              {(indicator.decay_applied_rule
+                || !!indicator.decay_exclusion_applied_rule) && (
                 <Grid item xs={8}>
                   <Button
                     size="small"

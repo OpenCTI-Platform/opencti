@@ -51,7 +51,7 @@ const EntityStixCoreRelationshipsContextualViewLineDummy = ({ dataColumns }: { d
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -68,7 +68,7 @@ const EntityStixCoreRelationshipsContextualViewLineDummy = ({ dataColumns }: { d
               </div>
             ))}
           </div>
-        }
+        )}
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <KeyboardArrowRight />

@@ -106,15 +106,17 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {attribute.name === INPUT_AUTHORIZED_MEMBERS
-            ? <LockPersonOutlined
+            ? (
+              <LockPersonOutlined
                 fontSize="small"
                 color={!needEE ? 'warning' : 'ee'}
               />
+)
             : <ShortTextOutlined />
           }
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               {Object.values(dataColumns ?? {}).map((value, i) => (
                 <div
@@ -127,7 +129,7 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
                 </div>
               ))}
             </div>
-          }
+          )}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
           {!needEE && !nothingToUpdate && <NorthEastOutlined />}
@@ -155,17 +157,17 @@ export const EntitySettingAttributeLineDummy = ({
     <ListItem
       divider={true}
       classes={{ root: classes.item }}
-      secondaryAction={
+      secondaryAction={(
         <Box sx={{ root: classes.itemIconDisabled }}>
           <NorthEastOutlined />
         </Box>
-      }
+      )}
     >
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
         <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
-        primary={
+        primary={(
           <div>
             {Object.values(dataColumns).map((value) => (
               <div
@@ -182,7 +184,7 @@ export const EntitySettingAttributeLineDummy = ({
               </div>
             ))}
           </div>
-        }
+        )}
       />
     </ListItem>
   );

@@ -259,14 +259,16 @@ const UserCreation = ({ paginationOptions, defaultGroupsQueryRef }) => {
                   component={SwitchField}
                   type="checkbox"
                   name="prevent_default_groups"
-                  label={<div style={{ display: 'flex' }}>
-                    <>{t_i18n('Don\'t add the user to the default groups')}</>
-                    <Tooltip
-                      title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
-                    >
-                      <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
-                    </Tooltip>
-                  </div>}
+                  label={(
+                    <div style={{ display: 'flex' }}>
+                      <>{t_i18n('Don\'t add the user to the default groups')}</>
+                      <Tooltip
+                        title={`${t_i18n('The default groups are:')} ${defaultGroups.edges.map((g) => g.node.name)}`}
+                      >
+                        <InformationOutline style={{ marginLeft: 8 }} fontSize="small" color="primary" />
+                      </Tooltip>
+                    </div>
+)}
                   containerstyle={{ marginTop: 20 }}
                 />
                 <Field

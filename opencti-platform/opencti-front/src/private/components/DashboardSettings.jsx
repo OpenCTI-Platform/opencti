@@ -95,7 +95,7 @@ const DashboardSettings = () => {
   return (
     <Security
       needs={[EXPLORE]}
-      placeholder={
+      placeholder={(
         <FormControl style={{ width: '100%' }}>
           <InputLabel id="timeField">{t_i18n('Date reference')}</InputLabel>
           <Select
@@ -109,7 +109,7 @@ const DashboardSettings = () => {
             <MenuItem value="functional">{t_i18n('Functional date')}</MenuItem>
           </Select>
         </FormControl>
-            }
+      )}
     >
       <QueryRenderer
         query={dashboardSettingsDashboardsQuery}

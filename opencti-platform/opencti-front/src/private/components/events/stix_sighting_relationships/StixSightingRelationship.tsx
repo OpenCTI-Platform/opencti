@@ -74,43 +74,45 @@ StixSightingRelationshipProps
         render={(result: { props: StixSightingRelationshipQuery$data }) => {
           if (result.props && result.props.stixSightingRelationship) {
             const headerName = result.props.stixSightingRelationship.from?.representative?.main ?? t_i18n('Restricted');
-            return (<>
-              <Breadcrumbs elements={[
+            return (
+              <>
+                <Breadcrumbs elements={[
                 { label: t_i18n('Events') },
                 { label: t_i18n('Sightings'), link: '/dashboard/events/sightings' },
                 { label: t_i18n('Sighting'), current: true },
               ]}
-              />
-              <StixSightingRelationshipHeader
-                headerName={headerName}
-                onOpenEdit={handleOpenEdit}
-                onOpenDelete={handleOpenDelete}
-              />
-              <StixSightingRelationshipOverview
-                entityId={entityId}
-                stixSightingRelationship={result.props.stixSightingRelationship}
-                paddingRight={paddingRight}
-              />
-              {/* Edition Drawer, hidden by default */}
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <StixSightingRelationshipEdition
-                  open={editOpen}
-                  stixSightingRelationshipId={sightingId}
-                  // inferred={result.props.stixSightingRelationship.x_opencti_inferences !== null}
-                  inferred={false}
-                  handleClose={handleCloseEdit}
-                  noStoreUpdate={undefined}
-                  inGraph={undefined}
                 />
-              </Security>
-              <DeleteDialog
-                deletion={deletion}
-                isOpen={openDelete}
-                onClose={handleCloseDelete}
-                submitDelete={submitDelete}
-                message={t_i18n('Do you want to delete this sighting?')}
-              />
-            </>);
+                <StixSightingRelationshipHeader
+                  headerName={headerName}
+                  onOpenEdit={handleOpenEdit}
+                  onOpenDelete={handleOpenDelete}
+                />
+                <StixSightingRelationshipOverview
+                  entityId={entityId}
+                  stixSightingRelationship={result.props.stixSightingRelationship}
+                  paddingRight={paddingRight}
+                />
+                {/* Edition Drawer, hidden by default */}
+                <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <StixSightingRelationshipEdition
+                    open={editOpen}
+                    stixSightingRelationshipId={sightingId}
+                  // inferred={result.props.stixSightingRelationship.x_opencti_inferences !== null}
+                    inferred={false}
+                    handleClose={handleCloseEdit}
+                    noStoreUpdate={undefined}
+                    inGraph={undefined}
+                  />
+                </Security>
+                <DeleteDialog
+                  deletion={deletion}
+                  isOpen={openDelete}
+                  onClose={handleCloseDelete}
+                  submitDelete={submitDelete}
+                  message={t_i18n('Do you want to delete this sighting?')}
+                />
+              </>
+);
           }
           return <Loader />;
         }}

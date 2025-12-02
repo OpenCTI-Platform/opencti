@@ -108,7 +108,7 @@ const FintelDesignField = ({ ...props }: FintelDesignFieldProps) => {
   const queryRef = useQueryLoading<FintelDesignFieldQuery>(fintelDesignFieldQuery);
   const { name, label } = props;
   return queryRef ? (
-    <React.Suspense fallback={
+    <React.Suspense fallback={(
       <Field
         component={AutocompleteField}
         name={name}
@@ -120,7 +120,7 @@ const FintelDesignField = ({ ...props }: FintelDesignFieldProps) => {
           label,
         }}
       />
-      }
+    )}
     >
       <FintelDesignFieldComponent {...props} queryRef={queryRef} />
     </React.Suspense>

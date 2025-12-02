@@ -65,11 +65,11 @@ const RootDashboard = () => {
                 <Routes>
                   <Route
                     path="/"
-                    element={
+                    element={(
                       <Dashboard
                         data={props.workspace}
                       />
-                    }
+                    )}
                   />
                 </Routes>
               );

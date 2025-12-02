@@ -194,12 +194,12 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                   onDelete={canUpdateKnowledge ? () => (enableReferences
                     ? handleOpenCommitDelete(label)
                     : handleRemoveLabel(label.id)) : undefined}
-                  deleteIcon={
+                  deleteIcon={(
                     <CancelOutlined
                       className={classes.deleteIcon}
                       style={{ color: label.color }}
                     />
-                  }
+                  )}
                 />
               </Tooltip>
             ),
@@ -241,12 +241,12 @@ const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
                       onDelete={canUpdateKnowledge ? () => (enableReferences
                         ? handleOpenCommitDelete(label)
                         : handleRemoveLabel(label.id)) : undefined}
-                      deleteIcon={
+                      deleteIcon={(
                         <CancelOutlined
                           className={classes.deleteIcon}
                           style={{ color: label.color }}
                         />
-                    }
+                      )}
                     />
                   </Tooltip>
                 ),

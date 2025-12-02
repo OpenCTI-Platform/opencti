@@ -124,7 +124,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
             <ItemIcon type={node.entity_type} isReversed={isReversed} color={node.draftVersion ? getDraftModeColor(theme) : null} />
           </ListItemIcon>
           <ListItemText
-            primary={
+            primary={(
               <>
                 {dataColumns.relationship_type && (
                   <div
@@ -226,7 +226,7 @@ class EntityStixCoreRelationshipLineAllComponent extends Component {
                   />
                 </div>
               </>
-          }
+            )}
           />
         </ListItemButton>
       </ListItem>
@@ -603,7 +603,7 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
           />
         </ListItemIcon>
         <ListItemText
-          primary={
+          primary={(
             <div>
               {dataColumns.relationship_type && (
                 <div
@@ -756,7 +756,7 @@ class EntityStixCoreRelationshipLineAllDummyComponent extends Component {
                 </div>
               )}
             </div>
-          }
+          )}
         />
       </ListItem>
     );

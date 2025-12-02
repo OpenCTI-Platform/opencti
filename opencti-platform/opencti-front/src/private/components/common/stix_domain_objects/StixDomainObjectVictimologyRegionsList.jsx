@@ -278,7 +278,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <IconButton
                     onClick={this.handleToggleLine.bind(this, region.id)}
                     aria-haspopup="true"
@@ -290,7 +290,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                       <ExpandMore />
                     )}
                   </IconButton>
-                }
+                )}
               >
                 <ListItemButton
                   onClick={this.handleToggleLine.bind(this, region.id)}
@@ -393,7 +393,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                         <ListItem
                           divider={true}
                           disablePadding
-                          secondaryAction={
+                          secondaryAction={(
                             <IconButton
                               onClick={this.handleToggleLine.bind(
                                 this,
@@ -408,7 +408,7 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                 <ExpandMore />
                               )}
                             </IconButton>
-                          }
+                          )}
                         >
                           <ListItemButton
                             classes={{ root: classes.nested }}

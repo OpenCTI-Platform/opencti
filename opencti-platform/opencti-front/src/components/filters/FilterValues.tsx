@@ -140,50 +140,58 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
     return (
       <Fragment key={id}>
         {filterOperator === 'within'
-          ? <>
-            {filterValues[0] === id && <span>[</span>}
-            <FilterValuesContent
-              isFilterTooltip={!!tooltip}
-              filterKey={filterKey}
-              id={id}
-              value={value}
-              filterDefinition={filterDefinition}
-              filterOperator={filterOperator}
-            />
-            <span>
-              {last(filterValues) === id ? ']' : ', '}
-            </span>
-          </>
-          : <>
-            <FilterValuesContent
-              redirection={tooltip ? false : redirection}
-              isFilterTooltip={!!tooltip}
-              filterKey={filterKey}
-              id={id}
-              value={value}
-              filterDefinition={filterDefinition}
-              filterOperator={filterOperator}
-            />
-            {last(filterValues) !== id && isRegardingOfFilter &&
-              <div
-                style={{
+          ? (
+            <>
+              {filterValues[0] === id && <span>[</span>}
+              <FilterValuesContent
+                isFilterTooltip={!!tooltip}
+                filterKey={filterKey}
+                id={id}
+                value={value}
+                filterDefinition={filterDefinition}
+                filterOperator={filterOperator}
+              />
+              <span>
+                {last(filterValues) === id ? ']' : ', '}
+              </span>
+            </>
+)
+          : (
+            <>
+              <FilterValuesContent
+                redirection={tooltip ? false : redirection}
+                isFilterTooltip={!!tooltip}
+                filterKey={filterKey}
+                id={id}
+                value={value}
+                filterDefinition={filterDefinition}
+                filterOperator={filterOperator}
+              />
+              {last(filterValues) !== id && isRegardingOfFilter
+                && (
+                <div
+                  style={{
                   display: 'inline-block',
                   height: '100%',
                   borderRadius: 0,
                   margin: '0 2px 0 0',
                   fontFamily: 'Consolas, monaco, monospace',
                 }}
-                onClick={operatorOnClick}
-              >
-                ,
-              </div>
+                  onClick={operatorOnClick}
+                >
+                  ,
+                </div>
+)
             }
-            {last(filterValues) !== id && !isRegardingOfFilter &&
-              <div style={localModeStyle} onClick={operatorOnClick}>
-                {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
-              </div>
+              {last(filterValues) !== id && !isRegardingOfFilter
+                && (
+                <div style={localModeStyle} onClick={operatorOnClick}>
+                  {t_i18n((currentFilter.mode ?? 'or').toUpperCase())}
+                </div>
+)
             }
-          </>
+            </>
+)
         }
       </Fragment>
     );
@@ -202,9 +210,11 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
             t_i18n('', {
               id: 'All the results may not be displayed for these filter values, read documentation for more information.',
               values: {
-                link: <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=regarding#the-regardingof-filter-key">
-                  {t_i18n('read documentation')}
-                </Link>,
+                link: (
+                  <Link target="_blank" to="https://docs.opencti.io/latest/reference/filters/?h=regarding#the-regardingof-filter-key">
+                    {t_i18n('read documentation')}
+                  </Link>
+),
               },
             })
           }
@@ -247,7 +257,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
               return (
                 <Fragment key={val.key}>
                   <Tooltip
-                    title={
+                    title={(
                       <FilterValues
                         label={keyLabel}
                         tooltip={true}
@@ -255,7 +265,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                         currentFilter={val}
                         filtersRepresentativesMap={filtersRepresentativesMap}
                       />
-                    }
+                    )}
                   >
                     <Box
                       sx={{
@@ -264,7 +274,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                       }}
                     >
                       <Chip
-                        label={
+                        label={(
                           <FilterValues
                             label={keyLabel}
                             tooltip={false}
@@ -274,7 +284,7 @@ const FilterValues: FunctionComponent<FilterValuesProps> = ({
                             redirection
                             noLabelDisplay={true}
                           />
-                        }
+                        )}
                         color={chipColor}
                       />
                     </Box>

@@ -69,7 +69,7 @@ const AuthorizedMembersFieldListItem = ({
       </ListItemIcon>
 
       <ListItemText
-        primary={
+        primary={(
           <>
             {authorizedMember.label && authorizedMember.type ? (
               authorizedMember.label
@@ -101,7 +101,7 @@ const AuthorizedMembersFieldListItem = ({
               </>
             )}
           </>
-        }
+        )}
       />
 
       <Field

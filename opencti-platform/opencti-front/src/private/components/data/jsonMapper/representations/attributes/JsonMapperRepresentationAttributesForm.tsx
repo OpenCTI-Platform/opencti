@@ -122,7 +122,8 @@ JsonMapperRepresentationAttributesFormProps
 
   return (
     <>
-      {mutableSchemaAttributes.length > 0 && <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}` }}>
+      {mutableSchemaAttributes.length > 0 && (
+      <div className={classes.container} style={{ border: `1px solid ${theme.palette.divider}` }}>
         <div>
           Entity path mapping <span className={classes.redStar}>*</span>
         </div>
@@ -140,7 +141,8 @@ JsonMapperRepresentationAttributesFormProps
           />
         </div>
         <div />
-        { representationType === 'entity' && <>
+        { representationType === 'entity' && (
+        <>
           <div>
             Identifier
           </div>
@@ -153,8 +155,10 @@ JsonMapperRepresentationAttributesFormProps
               style={{ width: '100%' }}
             />
           </div>
-        </>}
-      </div>}
+        </>
+)}
+      </div>
+)}
       {[...mutableSchemaAttributes]
         .sort((a1, a2) => Number(a2.mandatory) - Number(a1.mandatory))
         .map((schemaAttribute) => {

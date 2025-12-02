@@ -312,7 +312,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                 />
               </ListItemIcon>
               <ListItemText
-                primary={
+                primary={(
                   <div style={{
                     display: 'grid',
                     gridTemplateColumns: gridColumns,
@@ -326,7 +326,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                     <SortConnectorsHeader field="updated_at" label="Modified" isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                     <SortConnectorsHeader field="is_managed" label={t_i18n('Manager deployment')} isSortable orderAsc={orderAsc} sortBy={sortBy} reverseBy={reverseBy} />
                   </div>
-                }
+                )}
               />
             </ListItem>
 
@@ -350,7 +350,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                       key={connector.id}
                       divider={true}
                       disablePadding
-                      secondaryAction={
+                      secondaryAction={(
                         <Security needs={[MODULES_MODMANAGE]}>
                           <>
                             {!isSensitive && (
@@ -388,7 +388,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                             </Tooltip>
                           </>
                         </Security>
-                      }
+                      )}
                     >
                       <ListItemButton
                         component={Link}
@@ -400,7 +400,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                         </ListItemIcon>
 
                         <ListItemText
-                          primary={
+                          primary={(
                             <div
                               style={{
                                 display: 'grid',
@@ -441,7 +441,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                                 />
                               </div>
                             </div>
-                          }
+                          )}
                         />
                       </ListItemButton>
                     </ListItem>

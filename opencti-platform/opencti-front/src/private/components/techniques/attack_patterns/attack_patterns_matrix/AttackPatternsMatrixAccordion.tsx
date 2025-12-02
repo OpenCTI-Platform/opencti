@@ -129,7 +129,7 @@ const AccordionAttackPattern = ({
     >
       <MuiAccordionSummary
         onClick={(e) => handleOpen(attackPattern, e)}
-        expandIcon={
+        expandIcon={(
           <IconButton onClick={(event) => {
             event.stopPropagation();
             setExpanded(!expanded);
@@ -140,7 +140,7 @@ const AccordionAttackPattern = ({
             }}
             />
           </IconButton>
-        }
+        )}
         sx={{
           minHeight: 0,
           paddingLeft: 0,

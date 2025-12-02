@@ -401,12 +401,12 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 style={{ marginTop: 20 }}
                 onFocus={editor.changeFocus}
                 onSubmit={editor.changeField}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="description"
                   />
-                }
+                )}
               />
               {isCoverage && (
                 <CoverageInformationFieldEdit
@@ -421,12 +421,12 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                 name="killChainPhases"
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="killChainPhases"
                   />
-                }
+                )}
                 onChange={editor.changeKillChainPhases}
               />
               {stixCoreRelationship.workflowEnabled && (
@@ -437,35 +437,35 @@ Omit<StixCoreRelationshipEditionOverviewProps, 'queryRef'>
                   onChange={editor.changeField}
                   setFieldValue={setFieldValue}
                   style={{ marginTop: 20 }}
-                  helpertext={
+                  helpertext={(
                     <SubscriptionFocus
                       context={editContext}
                       fieldName="x_opencti_workflow_id"
                     />
-                  }
+                  )}
                 />
               )}
               <CreatedByField
                 name="createdBy"
                 style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="createdBy"
                   />
-                }
+                )}
                 onChange={editor.changeCreated}
               />
               <ObjectMarkingField
                 name="objectMarking"
                 style={fieldSpacingContainerStyle}
-                helpertext={
+                helpertext={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldname="objectMarking"
                   />
-                }
+                )}
                 setFieldValue={setFieldValue}
                 onChange={editor.changeMarking}
               />

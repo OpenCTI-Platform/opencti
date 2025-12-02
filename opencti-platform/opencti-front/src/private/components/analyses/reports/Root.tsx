@@ -203,21 +203,21 @@ const RootReport = () => {
                     />
                     <Route
                       path="/entities"
-                      element={
+                      element={(
                         <ContainerStixDomainObjects
                           container={report}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/observables"
-                      element={
+                      element={(
                         <ContainerStixCyberObservables
                           container={report}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/knowledge"
@@ -230,25 +230,25 @@ const RootReport = () => {
                     />
                     <Route
                       path="/content/*"
-                      element={
+                      element={(
                         <StixCoreObjectContentRoot
                           stixCoreObject={report}
                           isContainer={true}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/knowledge/*"
-                      element={
+                      element={(
                         <ReportKnowledge
                           report={report}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/files"
-                      element={
+                      element={(
                         <StixCoreObjectFilesAndHistory
                           id={reportId}
                           connectorsExport={props.connectorsForExport}
@@ -257,7 +257,7 @@ const RootReport = () => {
                           withoutRelations={true}
                           bypassEntityId={true}
                         />
-                      }
+                      )}
                     />
                   </Routes>
                 </div>

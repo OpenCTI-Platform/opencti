@@ -743,11 +743,13 @@ const ContainerHeader = (props) => {
               </Security>
             )}
             {displayEnrollPlaybook
-              && <StixCoreObjectEnrollPlaybook
+              && (
+              <StixCoreObjectEnrollPlaybook
                 stixCoreObjectId={container.id}
                 open={openEnrollPlaybook}
                 handleClose={displayEnrollPlaybookButton ? undefined : handleCloseEnrollPlaybook}
-                 />
+              />
+)
             }
             {displayPopoverMenu && (
               <>

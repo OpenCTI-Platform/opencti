@@ -302,7 +302,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                         dense={true}
                         divider={true}
                         disablePadding
-                        secondaryAction={
+                        secondaryAction={(
                           <>
                             <Tooltip title={t_i18n('Browse the link')}>
                               <IconButton
@@ -339,7 +339,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                               />
                             </Security>
                           </>
-                        }
+                        )}
                       >
                         <ListItemButton
                           component={Link}
@@ -390,7 +390,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       dense={true}
                       divider={true}
                       disablePadding
-                      secondaryAction={
+                      secondaryAction={(
                         <>
                           {!isFileAttached && (
                             <Security needs={[KNOWLEDGE_KNUPLOAD]}>
@@ -413,7 +413,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                             />
                           </Security>
                         </>
-                      }
+                      )}
                     >
                       <ListItemButton
                         component={Link}
@@ -560,7 +560,8 @@ StixCoreObjectExternalReferencesLinesContainerProps
                   })}
                 </Field>
                 {(selectedConnector?.configurations?.length ?? 0) > 0
-                  ? <Field
+                  ? (
+                    <Field
                       component={SelectField}
                       variant="standard"
                       name="configuration"
@@ -569,7 +570,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                       containerstyle={{ marginTop: 20, width: '100%' }}
                       onChange={(_: string, option: CsvMapperFieldOption) => onCsvMapperSelection(option)}
                     >
-                    {(selectedConnector?.configurations ?? []).map((config) => {
+                      {(selectedConnector?.configurations ?? []).map((config) => {
                       return (
                         <MenuItem
                           key={config.id}
@@ -579,7 +580,8 @@ StixCoreObjectExternalReferencesLinesContainerProps
                         </MenuItem>
                       );
                     })}
-                  </Field> : <ManageImportConnectorMessage name={selectedConnector?.name} />
+                    </Field>
+) : <ManageImportConnectorMessage name={selectedConnector?.name} />
                 }
                 {selectedConnector?.name === 'ImportCsv'
                   && hasUserChoiceCsvMapper

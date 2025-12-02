@@ -41,20 +41,21 @@ AddIndividualsThreatActorIndividualComponentProps
     queryRef,
   );
 
-  return (<div>
-    <IconButton
-      color="primary"
-      onClick={handleOpen}
-    >
-      <Add fontSize="small" />
-    </IconButton>
-    <Drawer
-      open={open}
-      onClose={handleClose}
-      title={t_i18n('Add individual')}
-      header={
-        <div
-          style={{
+  return (
+    <div>
+      <IconButton
+        color="primary"
+        onClick={handleOpen}
+      >
+        <Add fontSize="small" />
+      </IconButton>
+      <Drawer
+        open={open}
+        onClose={handleClose}
+        title={t_i18n('Add individual')}
+        header={(
+          <div
+            style={{
             marginLeft: 'auto',
             marginRight: '20px',
             display: 'flex',
@@ -62,24 +63,25 @@ AddIndividualsThreatActorIndividualComponentProps
             justifyContent: 'flex-end',
             alignItems: 'flex-end',
           }}
-        >
-          <SearchInput
-            variant="inDrawer"
-            onSubmit={onSearch}
-          />
-          <div style={{ height: 5 }} />
-          <IndividualCreation
-            paginationOptions={paginationOptions}
-          />
-        </div>
-      }
-    >
-      <AddIndividualsThreatActorIndividualLines
-        threatActorIndividual={threatActorIndividual}
-        fragmentKey={data}
-      />
-    </Drawer>
-  </div>);
+          >
+            <SearchInput
+              variant="inDrawer"
+              onSubmit={onSearch}
+            />
+            <div style={{ height: 5 }} />
+            <IndividualCreation
+              paginationOptions={paginationOptions}
+            />
+          </div>
+      )}
+      >
+        <AddIndividualsThreatActorIndividualLines
+          threatActorIndividual={threatActorIndividual}
+          fragmentKey={data}
+        />
+      </Drawer>
+    </div>
+);
 };
 
 interface AddIndividualsThreatActorIndividualProps {

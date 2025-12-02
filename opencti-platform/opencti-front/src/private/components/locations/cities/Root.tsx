@@ -101,7 +101,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
           <Routes>
             <Route
               path="/knowledge/*"
-              element={
+              element={(
                 <StixCoreObjectKnowledgeBar
                   stixCoreObjectLink={link}
                   availableSections={[
@@ -121,7 +121,7 @@ const RootCityComponent = ({ queryRef, cityId }) => {
                   ]}
                   data={city}
                 />
-              }
+              )}
             />
           </Routes>
           <div style={{ paddingRight }}>
@@ -223,19 +223,19 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               />
               <Route
                 path="/knowledge/*"
-                element={
+                element={(
                   <div key={forceUpdate}>
                     <CityKnowledge cityData={city} />
                   </div>
-                }
+                )}
               />
               <Route
                 path="/content/*"
-                element={
+                element={(
                   <StixCoreObjectContentRoot
                     stixCoreObject={city}
                   />
-              }
+                )}
               />
               <Route
                 path="/analyses"
@@ -245,25 +245,25 @@ const RootCityComponent = ({ queryRef, cityId }) => {
               />
               <Route
                 path="/sightings"
-                element={
+                element={(
                   <EntityStixSightingRelationships
                     entityId={city.id}
                     entityLink={link}
                     noPadding={true}
                     isTo={true}
                   />
-              }
+                )}
               />
               <Route
                 path="/files"
-                element={
+                element={(
                   <FileManager
                     id={cityId}
                     connectorsImport={connectorsForImport}
                     connectorsExport={connectorsForExport}
                     entity={city}
                   />
-              }
+                )}
               />
               <Route
                 path="/history"

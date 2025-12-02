@@ -371,7 +371,8 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
             label={t_i18n('Force manual coverage (prevent enrichment connectors from running)')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          {values.auto_enrichment_disable && <>
+          {values.auto_enrichment_disable && (
+          <>
             <CoverageInformationFieldEdit
               id={securityCoverageData.id}
               mode="entity"
@@ -387,7 +388,8 @@ const SecurityCoverageEditionOverview: FunctionComponent<SecurityCoverageEdition
               fullWidth={true}
               style={fieldSpacingContainerStyle}
             />
-          </>}
+          </>
+)}
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}

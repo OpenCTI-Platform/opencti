@@ -154,7 +154,7 @@ const StixCoreObjectEnrichment = ({
               <ListItem
                 divider={true}
                 disablePadding
-                secondaryAction={
+                secondaryAction={(
                   <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                     <div style={{ right: 0 }}>
                       <Tooltip
@@ -173,7 +173,7 @@ const StixCoreObjectEnrichment = ({
                       </Tooltip>
                     </div>
                   </Security>
-                }
+                )}
               >
                 <ListItemButton classes={{ root: classes.item }}>
                   <Tooltip
@@ -225,7 +225,7 @@ const StixCoreObjectEnrichment = ({
                         dense={true}
                         divider={true}
                         disablePadding
-                        secondaryAction={
+                        secondaryAction={(
                           <Security needs={[KNOWLEDGE_KNENRICHMENT]}>
                             <div style={{ right: 0 }}>
                               <IconButton
@@ -236,7 +236,7 @@ const StixCoreObjectEnrichment = ({
                               </IconButton>
                             </div>
                           </Security>
-                        }
+                        )}
                       >
                         <ListItemButton classes={{ root: classes.nested }}>
                           <ListItemIcon>

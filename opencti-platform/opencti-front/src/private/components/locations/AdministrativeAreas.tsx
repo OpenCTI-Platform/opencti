@@ -93,7 +93,7 @@ const AdministrativeAreas: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -104,7 +104,7 @@ const AdministrativeAreas: FunctionComponent = () => {
                     />
                   ))}
               </>
-            }
+            )}
           >
             <AdministrativeAreasLines
               queryRef={queryRef}

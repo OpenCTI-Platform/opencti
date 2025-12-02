@@ -80,7 +80,7 @@ StixCoreObjectContentBarProps
           {handleSave && (
           <FormGroup>
             <FormControlLabel
-              control={
+              control={(
                 <IconButton
                   color="primary"
                   onClick={handleSave}
@@ -90,7 +90,7 @@ StixCoreObjectContentBarProps
                 >
                   <SaveOutlined />
                 </IconButton>
-                  }
+              )}
               label={changed
                 ? (
                   <span style={{ color: theme.palette.warn.main }}>

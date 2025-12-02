@@ -116,13 +116,15 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const [displaySharing, setDisplaySharing] = useState(false);
   const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
   const isEnterpriseEdition = useEnterpriseEdition();
-  const notifySuccessMessage = (<span>
-    {t_i18n(
+  const notifySuccessMessage = (
+    <span>
+      {t_i18n(
       'The background task has been executed. You can monitor it on',
     )}{' '}
-    <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
-    .
-  </span>);
+      <Link to="/dashboard/data/processing/tasks">{t_i18n('the dedicated page')}</Link>
+      .
+    </span>
+);
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
     return variant === 'header' ? (
@@ -238,7 +240,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t_i18n('Organizations sharing')}
         </Typography>
-        {!handleClose && <>
+        {!handleClose && (
+        <>
           <EETooltip title={disabledInDraft ? t_i18n('Not available in draft') : t_i18n('Share with an organization')}>
             <IconButton
               color="primary"
@@ -265,7 +268,8 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
               />
             </Tooltip>
           ))}
-          </>
+        </>
+)
         }
         <div className="clearfix" />
         <Formik

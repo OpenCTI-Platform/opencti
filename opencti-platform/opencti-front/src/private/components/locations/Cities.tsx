@@ -90,7 +90,7 @@ const Cities: FunctionComponent = () => {
       >
         {queryRef && (
           <React.Suspense
-            fallback={
+            fallback={(
               <>
                 {Array(20)
                   .fill(0)
@@ -98,7 +98,7 @@ const Cities: FunctionComponent = () => {
                     <CityLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
-            }
+            )}
           >
             <CitiesLines
               queryRef={queryRef}

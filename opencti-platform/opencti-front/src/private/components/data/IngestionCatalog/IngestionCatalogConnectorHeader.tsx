@@ -61,12 +61,12 @@ const IngestionCatalogConnectorHeader = ({ connector, isEnterpriseEdition, onCli
               connector.verified && (
                 <ItemBoolean
                   status
-                  label={
+                  label={(
                     <Stack direction="row" alignItems="center" gap={theme.spacing(1)}>
                       <VerifiedOutlined color="success" fontSize="small" />
                       {t_i18n('Verified')}
                     </Stack>
-                  }
+                  )}
                 />
               )
             }

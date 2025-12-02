@@ -348,12 +348,12 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
             required={(mandatoryAttributes.includes('killChainPhases'))}
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
-            helpertext={
+            helpertext={(
               <SubscriptionFocus
                 context={context}
                 fieldName="killChainPhases"
               />
-            }
+            )}
             onChange={editor.changeKillChainPhases}
           />
           <Field
@@ -379,12 +379,12 @@ const InfrastructureEditionOverviewComponent: FunctionComponent<InfrastructureEd
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
+              helpertext={(
                 <SubscriptionFocus
                   context={context}
                   fieldName="x_opencti_workflow_id"
                 />
-              }
+              )}
             />
           )}
           <CreatedByField

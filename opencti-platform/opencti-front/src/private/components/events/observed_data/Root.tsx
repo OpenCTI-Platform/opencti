@@ -179,14 +179,14 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
           />
           <Route
             path="/files"
-            element={
+            element={(
               <FileManager
                 id={observedDataId}
                 connectorsExport={connectorsForExport}
                 connectorsImport={connectorsForImport}
                 entity={observedData}
               />
-                      }
+            )}
           />
           <Route
             path="/history"
@@ -196,11 +196,11 @@ const RootObservedData = ({ queryRef, observedDataId }: RootObservedDataProps) =
           />
           <Route
             path="/knowledge/relations/:relationId/"
-            element={
+            element={(
               <StixCoreRelationship
                 entityId={observedData.id}
               />
-                      }
+            )}
           />
         </Routes>
       </div>

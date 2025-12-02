@@ -510,12 +510,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     fullWidth
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_title"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -526,12 +526,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     style={{ marginTop: 20 }}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_favicon"
                       />
-                      }
+                    )}
                   />
                   <Field
                     component={TextField}
@@ -543,12 +543,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     style={{ marginTop: 20 }}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={
+                    helperText={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_email"
                       />
-                      }
+                    )}
                   />
 
                   <Field
@@ -562,12 +562,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onChange={(name: string, value: string) => {
                       handleSubmitField(name, value);
                     }}
-                    helpertext={
+                    helpertext={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_theme"
                       />
-                    }
+                    )}
                   >
                     {themes?.edges?.filter((node) => !!node).map(({ node }) => (
                       <MenuItem
@@ -589,12 +589,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                    helpertext={
+                    helpertext={(
                       <SubscriptionFocus
                         context={editContext}
                         fieldName="platform_language"
                       />
-                      }
+                    )}
                   >
                     <MenuItem value="auto">
                       <em>{t_i18n('Automatic')}</em>
@@ -693,7 +693,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       <ItemBoolean
                         variant="large"
                         label={
-                             
+
                             !settings.platform_ai_enabled ? t_i18n('Disabled') : settings.platform_ai_has_token
                               ? settings.platform_ai_type : `${settings.platform_ai_type} - ${t_i18n('Missing token')}`}
                         status={settings.platform_ai_enabled && settings.platform_ai_has_token}
@@ -702,12 +702,12 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     </ListItem>
                     <ListItem divider={true}>
                       <ListItemText
-                        primary={
+                        primary={(
                           <>
                             {t_i18n('Remove Filigran logos')}
                             <EEChip />
                           </>
-                        }
+                        )}
                       />
                       <Field
                         component={Switch}

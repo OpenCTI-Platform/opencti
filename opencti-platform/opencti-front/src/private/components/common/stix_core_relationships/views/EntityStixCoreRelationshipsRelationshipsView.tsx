@@ -343,7 +343,8 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
         type="stix-core-relationship"
       />
 
-      {allowCreation && <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      {allowCreation && (
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
           allowedRelationshipTypes={relationshipTypes}
@@ -358,7 +359,8 @@ const EntityStixCoreRelationshipsRelationshipsView: FunctionComponent<EntityStix
           currentView={finalView}
           isCoverage={isCoverage}
         />
-      </Security>}
+      </Security>
+)}
     </>
   );
 };

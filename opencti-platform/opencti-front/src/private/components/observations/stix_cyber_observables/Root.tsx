@@ -174,43 +174,43 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
           <Routes>
             <Route
               path="/"
-              element={
+              element={(
                 <StixCyberObservable
                   stixCyberObservableData={stixCyberObservable}
                 />
-              }
+              )}
             />
             <Route
               path="/knowledge"
-              element={
+              element={(
                 <div key={forceUpdate}>
                   <StixCyberObservableKnowledge
                     stixCyberObservable={stixCyberObservable}
                   />
                 </div>
-              }
+              )}
             />
             <Route
               path="/content/*"
-              element={
+              element={(
                 <StixCoreObjectContentRoot
                   stixCoreObject={stixCyberObservable}
                 />
-              }
+              )}
             />
             <Route
               path="/analyses"
-              element={
+              element={(
                 <StixCoreObjectOrStixCoreRelationshipContainers
                   stixDomainObjectOrStixCoreRelationship={
                     stixCyberObservable
                   }
                 />
-              }
+              )}
             />
             <Route
               path="/sightings"
-              element={
+              element={(
                 <EntityStixSightingRelationships
                   entityId={observableId}
                   entityLink={link}
@@ -227,43 +227,43 @@ const RootStixCyberObservable = ({ observableId, queryRef }: RootStixCyberObserv
                     'System',
                   ]}
                 />
-              }
+              )}
             />
             <Route
               path="/files"
-              element={
+              element={(
                 <FileManager
                   id={observableId}
                   connectorsImport={connectorsForImport}
                   connectorsExport={connectorsForExport}
                   entity={stixCyberObservable}
                 />
-              }
+              )}
             />
             <Route
               path="/history"
-              element={
+              element={(
                 <StixCoreObjectHistory
                   stixCoreObjectId={observableId}
                 />
-              }
+              )}
             />
             <Route
               path="/knowledge/relations/:relationId"
-              element={
+              element={(
                 <StixCoreRelationship
                   entityId={observableId}
                 />
-              }
+              )}
             />
             <Route
               path="/sightings/:sightingId"
-              element={
+              element={(
                 <StixSightingRelationship
                   entityId={observableId}
                   paddingRight
                 />
-              }
+              )}
             />
           </Routes>
         </div>

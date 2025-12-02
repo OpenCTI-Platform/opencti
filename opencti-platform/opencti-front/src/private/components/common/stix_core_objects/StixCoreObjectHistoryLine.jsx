@@ -198,13 +198,13 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
               lineHeight: 2,
               padding: 10,
             }}
-            title={
+            title={(
               <MarkdownDisplay
                 content={`\`${data.user.name}\` ${data.context_data.message}`}
                 remarkGfmPlugin={true}
                 commonmark={true}
               />
-            }
+            )}
           >
             <div style={{
               height: '100%',
@@ -247,7 +247,7 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
                           dense={true}
                           divider={true}
                           disablePadding
-                          secondaryAction={
+                          secondaryAction={(
                             <Tooltip title={t_i18n('Browse the link')}>
                               <IconButton
                                 onClick={() => handleOpenExternalLink(externalReference.url)}
@@ -257,7 +257,7 @@ const StixCoreObjectHistoryLine = ({ node, isRelation }) => {
                                 <OpenInBrowserOutlined />
                               </IconButton>
                             </Tooltip>
-                          }
+                          )}
                         >
                           <ListItemButton
                             component={Link}

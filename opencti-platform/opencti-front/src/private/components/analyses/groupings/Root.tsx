@@ -204,51 +204,52 @@ const RootGrouping = () => {
                     />
                     <Route
                       path="/entities"
-                      element={
+                      element={(
                         <ContainerStixDomainObjects
                           container={grouping}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/observables"
-                      element={
+                      element={(
                         <ContainerStixCyberObservables
                           container={grouping}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/content/*"
-                      element={
+                      element={(
                         <StixCoreObjectContentRoot
                           stixCoreObject={grouping}
                           isContainer={true}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/knowledge"
-                      element={
+                      element={(
                         <Navigate
                           replace={true}
                           to={`/dashboard/analyses/groupings/${groupingId}/knowledge/graph`}
-                        />}
+                        />
+                      )}
                     />
                     <Route
                       path="/knowledge/*"
-                      element={
+                      element={(
                         <GroupingKnowledge
                           grouping={grouping}
                           enableReferences={enableReferences}
                         />
-                      }
+                      )}
                     />
                     <Route
                       path="/files"
-                      element={
+                      element={(
                         <StixCoreObjectFilesAndHistory
                           id={groupingId}
                           connectorsExport={props.connectorsForExport}
@@ -257,7 +258,7 @@ const RootGrouping = () => {
                           withoutRelations={true}
                           bypassEntityId={true}
                         />
-                      }
+                      )}
                     />
                   </Routes>
                 </div>

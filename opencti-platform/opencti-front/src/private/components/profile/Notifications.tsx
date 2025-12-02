@@ -244,9 +244,10 @@ const Notifications: FunctionComponent = () => {
           delete: t_i18n('Deletion'),
           none: t_i18n('Unknown'),
         };
-        return (<div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
-          <Chip
-            style={{ fontSize: 12,
+        return (
+          <div style={{ height: 20, fontSize: 13, float: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: 10 }}>
+            <Chip
+              style={{ fontSize: 12,
               height: 20,
               float: 'left',
               width: 150,
@@ -256,13 +257,14 @@ const Notifications: FunctionComponent = () => {
               color: colors[firstOperation] ?? indigo[500],
               border: `1px solid ${colors[firstOperation] ?? indigo[500]}`,
             }}
-            label={
+              label={
               events.length > 1
                 ? t_i18n('Multiple')
                 : (eventTypes[firstOperation] ?? firstOperation)
             }
-          />
-        </div>);
+            />
+          </div>
+);
       },
     },
     message: {
@@ -286,7 +288,8 @@ const Notifications: FunctionComponent = () => {
                 </span>
               </Tooltip>
             )}
-          </div>);
+          </div>
+);
       },
     },
     created: {

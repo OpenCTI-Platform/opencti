@@ -122,12 +122,12 @@ class KillChainPhaseEditionContainer extends Component {
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="kill_chain_name"
                   />
-                }
+                )}
               />
               <Field
                 component={TextField}
@@ -138,12 +138,12 @@ class KillChainPhaseEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="phase_name"
                   />
-                }
+                )}
               />
               <Field
                 component={TextField}
@@ -155,12 +155,12 @@ class KillChainPhaseEditionContainer extends Component {
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
+                helperText={(
                   <SubscriptionFocus
                     context={editContext}
                     fieldName="x_opencti_order"
                   />
-                }
+                )}
               />
             </Form>
           )}
