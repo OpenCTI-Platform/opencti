@@ -16,39 +16,18 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import { v4 as uuidv4 } from 'uuid';
 import type { FileHandle } from 'fs/promises';
 import { BUS_TOPICS } from '../../config/conf';
-import {
-  createEntity,
-  deleteElementById,
-  patchAttribute,
-  stixLoadById,
-  updateAttribute
-} from '../../database/middleware';
-import {
-  type EntityOptions,
-  internalFindByIds,
-  pageEntitiesConnection,
-  storeLoadById
-} from '../../database/middleware-loader';
+import { createEntity, deleteElementById, patchAttribute, stixLoadById, updateAttribute } from '../../database/middleware';
+import { type EntityOptions, internalFindByIds, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { notify } from '../../database/redis';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
-import {
-  type EditInput,
-  FilterMode,
-  type PlaybookAddInput,
-  type PlaybookAddLinkInput,
-  type PlaybookAddNodeInput,
-  type PositionInput
-} from '../../generated/graphql';
+import { type EditInput, FilterMode, type PlaybookAddInput, type PlaybookAddLinkInput, type PlaybookAddNodeInput, type PositionInput } from '../../generated/graphql';
 import type { BasicStoreEntityPlaybook, ComponentDefinition } from './playbook-types';
 import { ENTITY_TYPE_PLAYBOOK } from './playbook-types';
 import { PLAYBOOK_COMPONENTS, type SharingConfiguration, type StreamConfiguration } from './playbook-components';
 import { FunctionalError, UnsupportedError } from '../../config/errors';
-import {
-  type BasicStoreEntityOrganization,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION
-} from '../organization/organization-types';
+import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { registerConnectorQueues, unregisterConnector } from '../../database/rabbitmq';
 import { getEntitiesListFromCache } from '../../database/cache';
@@ -221,7 +200,7 @@ export const playbookReplaceNode = async (
   }
   const oldComponent = PLAYBOOK_COMPONENTS[oldComponentId];
   if (oldComponent.ports.length > relatedComponent.ports.length) {
-    // eslint-disable-next-line no-plusplus
+     
     for (let i = oldComponent.ports.length - 1; i >= relatedComponent.ports.length; i--) {
       // Find all links to the port
       const linksToDelete = definition.links.filter((n) => n.from.id === nodeId && n.from.port === oldComponent.ports[i].id);
