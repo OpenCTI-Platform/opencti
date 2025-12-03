@@ -152,39 +152,39 @@ import { extractEntityRepresentativeName, extractRepresentative } from './entity
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 import { addFilter, checkAndConvertFilters, extractFiltersFromGroup, isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 import {
-ALIAS_FILTER,
-BULK_SEARCH_KEYWORDS_FILTER,
+  ALIAS_FILTER,
+  BULK_SEARCH_KEYWORDS_FILTER,
   BULK_SEARCH_KEYWORDS_FILTER_KEYS,COMPUTED_RELIABILITY_FILTER,
-IDS_FILTER,
-INSTANCE_DYNAMIC_REGARDING_OF,
-INSTANCE_REGARDING_OF,
-INSTANCE_REGARDING_OF_DIRECTION_FORCED,
-INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
-INSTANCE_RELATION_FILTER,
-INSTANCE_RELATION_TYPES_FILTER,
-IS_INFERRED_FILTER,
-isComplexConversionFilterKey,
-LAST_PIR_SCORE_DATE_FILTER_PREFIX,
-PIR_SCORE_FILTER_PREFIX,
-RELATION_DYNAMIC_SUBFILTER,
-RELATION_DYNAMIC_FROM_FILTER,
-RELATION_DYNAMIC_TO_FILTER,
-RELATION_FROM_FILTER,
-RELATION_FROM_ROLE_FILTER,
-RELATION_FROM_TYPES_FILTER,
-RELATION_TO_FILTER,
-RELATION_TO_ROLE_FILTER,
-RELATION_TO_SIGHTING_FILTER,
-RELATION_TO_TYPES_FILTER,
-RELATION_TYPE_FILTER,
-SOURCE_RELIABILITY_FILTER,
-TYPE_FILTER,
-USER_SERVICE_ACCOUNT_FILTER,
-WORKFLOW_FILTER,
-X_OPENCTI_WORKFLOW_ID,
-ID_SUBFILTER,
-RELATION_TYPE_SUBFILTER,
-RELATION_INFERRED_SUBFILTER
+  IDS_FILTER,
+  INSTANCE_DYNAMIC_REGARDING_OF,
+  INSTANCE_REGARDING_OF,
+  INSTANCE_REGARDING_OF_DIRECTION_FORCED,
+  INSTANCE_REGARDING_OF_DIRECTION_REVERSE,
+  INSTANCE_RELATION_FILTER,
+  INSTANCE_RELATION_TYPES_FILTER,
+  IS_INFERRED_FILTER,
+  isComplexConversionFilterKey,
+  LAST_PIR_SCORE_DATE_FILTER_PREFIX,
+  PIR_SCORE_FILTER_PREFIX,
+  RELATION_DYNAMIC_SUBFILTER,
+  RELATION_DYNAMIC_FROM_FILTER,
+  RELATION_DYNAMIC_TO_FILTER,
+  RELATION_FROM_FILTER,
+  RELATION_FROM_ROLE_FILTER,
+  RELATION_FROM_TYPES_FILTER,
+  RELATION_TO_FILTER,
+  RELATION_TO_ROLE_FILTER,
+  RELATION_TO_SIGHTING_FILTER,
+  RELATION_TO_TYPES_FILTER,
+  RELATION_TYPE_FILTER,
+  SOURCE_RELIABILITY_FILTER,
+  TYPE_FILTER,
+  USER_SERVICE_ACCOUNT_FILTER,
+  WORKFLOW_FILTER,
+  X_OPENCTI_WORKFLOW_ID,
+  ID_SUBFILTER,
+  RELATION_TYPE_SUBFILTER,
+  RELATION_INFERRED_SUBFILTER,
 } from '../utils/filtering/filtering-constants';
 import { type Filter, type FilterGroup, FilterMode, FilterOperator } from '../generated/graphql';
 import {
@@ -2637,6 +2637,7 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
   const idParameter = filter.values.find((i) => i.key === ID_SUBFILTER);
   const typeParameter = filter.values.find((i) => i.key === RELATION_TYPE_SUBFILTER);
   const dynamicParameter = filter.values.find((i) => i.key === RELATION_DYNAMIC_SUBFILTER);
+  const inferredParameter = filter.values.find((i) => i.key === RELATION_INFERRED_SUBFILTER);
   // Check parameters
   if (!idParameter && !dynamicParameter && !typeParameter) {
     throw UnsupportedError('Id or dynamic or relationship type are needed for this filtering key', { key: filterKey });
@@ -2697,18 +2698,33 @@ export const adaptFilterToRegardingOfFilterKey = async (context: AuthContext, us
   // Construct and push the final regarding of filter
   const mode = (filter.operator === 'eq' || isEmptyField(filter.operator)) ? FilterMode.Or : FilterMode.And;
   if (isEmptyField(ids)) {
-    const keys = isEmptyField(types) ? buildRefRelationKey('*', '*')
-      : types.map((t: string) => buildRefRelationKey(t, '*'));
+    const keys = isEmptyField(types)
+      ? buildRefRelationKey('*', '*')
+      : types.map((t: string) => {
+        if (inferredParameter) {
+          const isInferred = inferredParameter.values.includes('true');
+          return isInferred ? buildRefRelationKey(t, ID_INFERRED) : buildRefRelationKey(t, ID_INTERNAL); // keep only inferred or not inferred ids
+        } else {
+          return buildRefRelationKey(t, '*');
+        }
+      });
     keys.forEach((relKey: string) => {
       regardingFilters.push({ key: [relKey], operator: filter.operator, values: ['EXISTS'] });
     });
   } else {
     const keys = isEmptyField(types)
       ? buildRefRelationKey('*', '*')
-      : types.flatMap((t: string) => [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)]);
+      : types.flatMap((t: string) => {
+        if (inferredParameter) {
+          const isInferred = inferredParameter.values.includes('true');
+          return isInferred ? buildRefRelationKey(t, ID_INFERRED) : buildRefRelationKey(t, ID_INTERNAL); // keep only inferred or not inferred ids
+        } else {
+          return [buildRefRelationKey(t, ID_INTERNAL), buildRefRelationKey(t, ID_INFERRED)];
+        }
+      });
     regardingFilters.push({ key: keys, operator: filter.operator, mode, values: ids });
   }
-  return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };;
+  return { newFilterGroup: { mode, filters: regardingFilters, filterGroups: [] } };
 };
 
 export const adaptFilterToIdsFilterKey = (filter: Filter) => {
