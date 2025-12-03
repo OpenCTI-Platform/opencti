@@ -867,6 +867,7 @@ const attributePathMapping: any = {
   },
   severity: {
     [ENTITY_TYPE_CONTAINER_CASE]: '/severity',
+    [ENTITY_TYPE_INCIDENT]: '/severity',
   },
   priority: {
     [ENTITY_TYPE_CONTAINER_CASE]: '/priority',
