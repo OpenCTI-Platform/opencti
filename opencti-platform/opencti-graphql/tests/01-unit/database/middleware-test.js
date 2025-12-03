@@ -119,8 +119,6 @@ describe('middleware upsertElement test', () => {
       }];
       const inputs = mergeUpsertInputs(indicator1, updatePatch, updatePatchInput, indicatorUpsertOperations);
 
-      console.log('inputs', inputs);
-
       expect(inputs.length).toEqual(2);
       expect(inputs.find((n) => n.key === 'description')).toEqual({ operation: 'replace', key: 'description', value: ['indicator new description'] });
       expect(inputs.find((n) => n.key === 'indicator_types')).toEqual({ operation: 'remove', key: 'indicator_types', value: ['active-directory'] });
@@ -139,11 +137,14 @@ describe('middleware upsertElement test', () => {
       };
       const elementCurrentValue = ['indicator-type-to-remove', 'indicator-type-current'];
       const upsertCurrentValue = ['indicator-type-current', 'indicator-type-to-add'];
-      const inputs = mergeUpsertInput(elementCurrentValue, upsertCurrentValue, updatePatchInput, upsertOperation);
+      const input = mergeUpsertInput(elementCurrentValue, upsertCurrentValue, updatePatchInput, upsertOperation);
 
-      // TODO inputs should be 'replace', ['indicator-type-current', 'indicator-type-to-add']
-
-      // console.log('inputs', inputs);
+      // inputs should be operation: 'replace', value: ['indicator-type-current', 'indicator-type-to-add']
+      expect(input.key).toEqual('indicator_types');
+      expect(input.operation).toEqual('replace');
+      expect(input.value.length).toEqual(2);
+      expect(input.value.includes('indicator-type-current')).toBe(true);
+      expect(input.value.includes('indicator-type-to-add')).toBe(true);
     });
 
     it('should mergeUpsertInputs with indicator : upsert adds back the same type that was removed, not in DB', () => {
@@ -160,11 +161,14 @@ describe('middleware upsertElement test', () => {
       };
       const elementCurrentValue = ['indicator-type-current'];
       const upsertCurrentValue = ['indicator-type-1', 'indicator-type-current'];
-      const inputs = mergeUpsertInput(elementCurrentValue, upsertCurrentValue, updatePatchInput, upsertOperation);
+      const input = mergeUpsertInput(elementCurrentValue, upsertCurrentValue, updatePatchInput, upsertOperation);
 
-      // TODO inputs should be 'replace', ['indicator-type-1', 'indicator-type-current']
-
-      // console.log('inputs', inputs);
+      // input should be operation: 'replace', value: ['indicator-type-1', 'indicator-type-current']
+      expect(input.key).toEqual('indicator_types');
+      expect(input.operation).toEqual('replace');
+      expect(input.value.length).toEqual(2);
+      expect(input.value.includes('indicator-type-current')).toBe(true);
+      expect(input.value.includes('indicator-type-1')).toBe(true);
     });
 
     it('should mergeUpsertInputs with indicator : upsert adds back the same type that was removed, already in DB', () => {

@@ -185,9 +185,35 @@ const generateFileInputsForUpsert = async (context, user, resolvedElement, updat
   return [];
 };
 
-export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchInput, _upsertOperation) => {
+export const mergeUpsertInput = (elementCurrentValue, upsertValue, updatePatchInput, upsertOperation) => {
   // TODO
-  return updatePatchInput;
+  const finalPatchInput = { ...updatePatchInput };
+  // we need to first apply the upsertOperation on element then the updatePatchInput
+  if (updatePatchInput.operation === 'add') {
+    // for now we only handle 'add' operations coming from updatePatchInput for multiple attributes
+    if (!upsertOperation.operation || upsertOperation === 'replace') { // replace
+      // TODO handle replace case
+    } else if (upsertOperation.operation === 'remove') {
+      let currentValueArray = elementCurrentValue ?? [];
+      currentValueArray = Array.isArray(currentValueArray) ? currentValueArray : [currentValueArray];
+      let finalPatchValue = [...currentValueArray];
+      if (upsertOperation.value?.length > 0) {
+        // filter values to remove from current values in DB
+        finalPatchValue = finalPatchValue.filter((e) => !upsertOperation.value.includes(e));
+        // add updatePatchInput values coming from upsert
+        if (updatePatchInput.value?.length > 0) {
+          finalPatchValue.push(...updatePatchInput.value);
+        }
+        finalPatchValue = Array.from(new Set(finalPatchValue)); // keep only unique values
+        // we replace current values
+        finalPatchInput.value = finalPatchValue;
+        finalPatchInput.operation = 'replace';
+      } else {
+        // TODO if value is empty, does it mean we should remove everything?
+      }
+    }
+  }
+  return finalPatchInput;
 };
 
 /**
