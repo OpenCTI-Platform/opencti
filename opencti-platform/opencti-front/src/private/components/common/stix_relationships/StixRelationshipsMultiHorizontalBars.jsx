@@ -432,7 +432,7 @@ const StixRelationshipsMultiHorizontalBars = ({
         }
         variables={variables}
         render={({ props }) => {
-          const key = subSelection.perspective === 'entities'
+          const distributionKey = subSelection.perspective === 'entities'
             ? 'stixCoreObjectsDistribution'
             : 'stixCoreRelationshipsDistribution';
           if (
@@ -442,17 +442,28 @@ const StixRelationshipsMultiHorizontalBars = ({
           ) {
             const categories = props.stixRelationshipsDistribution.map((n) => getMainRepresentative(n.entity, t_i18n('Restricted')));
             const entitiesMapping = {};
+            const getDistributionKey = (distribution) => {
+                  let distributionKey;
+                  if(finalSubDistributionField === 'internal_id') {
+                    distributionKey = getMainRepresentative(distribution.entity, t_i18n('Restricted'))
+                  } else if(distribution.entity) {
+                    distributionKey = 
+                    distribution.entity.name 
+                    ? distribution.entity.name
+                    : distribution.entity.representative
+                      ? getMainRepresentative(distribution.entity, t_i18n('Restricted'))
+                      : distribution.entity.label
+                        ? distribution.entity.label 
+                        : ''
+                  } else {
+                    distributionKey = distribution.label
+                  }
+                  return distributionKey;
+                  }
             for (const distrib of props.stixRelationshipsDistribution) {
-              for (const subDistrib of distrib.entity[key]) {
-                entitiesMapping[
-                  finalSubDistributionField === 'internal_id'
-                    ? getMainRepresentative(subDistrib.entity, t_i18n('Restricted'))
-                    : subDistrib.label
-                ] = (entitiesMapping[
-                  finalSubDistributionField === 'internal_id'
-                    ? getMainRepresentative(subDistrib.entity, t_i18n('Restricted'))
-                    : subDistrib.label
-                ] || 0) + subDistrib.value;
+              for (const subDistrib of distrib.entity[distributionKey]) {
+                const subDistributionKey = getDistributionKey(subDistrib);
+                entitiesMapping[subDistributionKey] = (entitiesMapping[subDistributionKey] || 0) + subDistrib.value;
               }
             }
             const sortedEntityMapping = R.take(
@@ -463,10 +474,8 @@ const StixRelationshipsMultiHorizontalBars = ({
             for (const distrib of props.stixRelationshipsDistribution) {
               for (const sortedEntity of sortedEntityMapping) {
                 const entityData = R.head(
-                  distrib.entity?.[key].filter(
-                    (n) => (finalSubDistributionField === 'internal_id'
-                      ? getMainRepresentative(n.entity)
-                      : n.label) === sortedEntity[0],
+                  distrib.entity?.[distributionKey].filter(
+                    (entityDistrib) => getDistributionKey(entityDistrib) === sortedEntity[0],
                   ),
                 );
                 let value = 0;
@@ -493,12 +502,15 @@ const StixRelationshipsMultiHorizontalBars = ({
               }
             }
             sortedEntityMapping.push(['Others', 0]);
-            const chartData = sortedEntityMapping.map((n, k) => {
+            const chartData = sortedEntityMapping.map((sortedEntity, index) => {
               return {
-                name: n[0],
-                data: Object.entries(categoriesValues).map((o) => o[1][k]),
+              name: sortedEntity[0],
+              data: Object.entries(categoriesValues).map((category) => category[1][index])
               };
-            });
+            })
+            // To avoid displaying empty categories - especially for 'Others' category
+            .filter(entity => entity.data.some(data => data > 0))
+
             let subSectionIdsOrder = [];
             if (
               finalField === 'internal_id'
@@ -506,7 +518,7 @@ const StixRelationshipsMultiHorizontalBars = ({
             ) {
               // find subbars orders for entity subbars redirection
               for (const distrib of props.stixRelationshipsDistribution) {
-                for (const subDistrib of distrib.entity[key]) {
+                for (const subDistrib of distrib.entity[distributionKey]) {
                   subSectionIdsOrder[subDistrib.label] = (subSectionIdsOrder[subDistrib.label] || 0)
                     + subDistrib.value;
                 }
@@ -523,7 +535,7 @@ const StixRelationshipsMultiHorizontalBars = ({
                 id: n.label,
                 entity_type: n.entity?.entity_type,
                 series: subSectionIdsOrder.map((subSectionId) => {
-                  const [entity] = n.entity[key]?.filter(
+                  const [entity] = n.entity[distributionKey]?.filter(
                     (e) => e.label === subSectionId,
                   ) ?? [];
                   return {
