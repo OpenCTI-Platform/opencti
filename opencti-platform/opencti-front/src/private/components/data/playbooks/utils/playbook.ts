@@ -11,20 +11,22 @@ interface LinkDefinition {
     id: string
   }
 }
+
 interface ComputedNodesReturns {
-    id: string;
-    type: string;
-    position: { x: number, y: number };
-    data: {
-        name: string;
-        configuration: string; // json
-        component?: PlaybookComponent | null;
-        openConfig: (nodeId: string) => void;
-        openReplace: (nodeId: string) => void;
-        openAddSibling: (nodeId: string) => void;
-        openDelete: (nodeId: string) => void;
-    };
+  id: string;
+  type: string;
+  position: { x: number, y: number };
+  data: {
+    name: string;
+    configuration: string; // json
+    component?: PlaybookComponent | null;
+    openConfig: (nodeId: string) => void;
+    openReplace: (nodeId: string) => void;
+    openAddSibling: (nodeId: string) => void;
+    openDelete: (nodeId: string) => void;
+  };
 }
+
 interface ComputeNodeDefinition {
   id: string,
   name: string,
@@ -35,10 +37,10 @@ interface ComputeNodeDefinition {
 
 export const computeNodes = (
   playbookNodes: ComputeNodeDefinition[],
-  playbookComponents:readonly (PlaybookComponent | null | undefined)[],
+  playbookComponents: readonly (PlaybookComponent | null | undefined)[],
   setAction: React.Dispatch<React.SetStateAction<string | null>>,
   setSelectedNode: React.Dispatch<React.SetStateAction<string | null>>,
-):ComputedNodesReturns[] => {
+): ComputedNodesReturns[] => {
   return playbookNodes.map((node) => {
     const component = playbookComponents
       .filter((playbookComponent) => playbookComponent?.id === node?.component_id)
@@ -73,7 +75,7 @@ export const computeNodes = (
 };
 
 export const computeEdges = (
-  playbookEdges:LinkDefinition[], 
+  playbookEdges: LinkDefinition[], 
   setAction: React.Dispatch<React.SetStateAction<string | null>>, 
   setSelectedEdge: React.Dispatch<React.SetStateAction<string | null>>
 ): Edge[] => {
@@ -95,7 +97,7 @@ export const computeEdges = (
 };
 
 export const addPlaceholders = (
-  nodes:ComputedNodesReturns[], 
+  nodes: ComputedNodesReturns[], 
   edges: Edge[], 
   setAction:React.Dispatch<React.SetStateAction<string | null>>, 
   setSelectedNode:React.Dispatch<React.SetStateAction<string | null>>
