@@ -30,7 +30,7 @@ export interface LabelledDecayHistory {
   style: SxProps<Theme>
 }
 
-const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indicator, onClose }) => {
+const DecayDialogContent: FunctionComponent<DecayDialogContentProps> = ({ indicator, onClose }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, mhd, rd } = useFormatter();
 
@@ -128,47 +128,47 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
   return (
     <>
       <DialogTitle>{t_i18n('Lifecycle details')}</DialogTitle>
-    <DialogContent>
-      <Grid
-        container={true}
-        spacing={3}
-        style={{ borderColor: 'white', borderWidth: 1 }}
-      >
-        <Grid item xs={7}>
-          <DecayChart
-            currentScore={indicator.x_opencti_score || 0}
-            revokeScore={indicator.decay_applied_rule?.decay_revoke_score || 0}
-            reactionPoints={chartDecayReactionPoints}
-            decayCurvePoint={chartCurvePoints || []}
-            decayLiveScore={indicator.decayLiveDetails?.live_score}
-          />
+      <DialogContent>
+        <Grid
+          container={true}
+          spacing={3}
+          style={{ borderColor: 'white', borderWidth: 1 }}
+        >
+          <Grid item xs={7}>
+            <DecayChart
+              currentScore={indicator.x_opencti_score || 0}
+              revokeScore={indicator.decay_applied_rule?.decay_revoke_score || 0}
+              reactionPoints={chartDecayReactionPoints}
+              decayCurvePoint={chartCurvePoints || []}
+              decayLiveScore={indicator.decayLiveDetails?.live_score}
+            />
+          </Grid>
+          <Grid item xs={5}>
+            <TableContainer component={Paper}>
+              <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>{t_i18n('Information')}</TableCell>
+                    <TableCell>{t_i18n('Score')}</TableCell>
+                    <TableCell>{t_i18n('Date')}</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {labelledHistoryList.map((history, index) => {
+                    return (
+                      <TableRow key={index}>
+                        <TableCell sx={history.style}>{t_i18n(history.label)}</TableCell>
+                        <TableCell sx={history.style}>{history.score}</TableCell>
+                        <TableCell sx={history.style}>{history.updated_at}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
         </Grid>
-        <Grid item xs={5}>
-          <TableContainer component={Paper}>
-            <Table sx={{ maxHeight: 440 }} size="small" aria-label="lifecycle history">
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t_i18n('Information')}</TableCell>
-                  <TableCell>{t_i18n('Score')}</TableCell>
-                  <TableCell>{t_i18n('Date')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {labelledHistoryList.map((history, index) => {
-                  return (
-                    <TableRow key={index}>
-                      <TableCell sx={history.style}>{t_i18n(history.label)}</TableCell>
-                      <TableCell sx={history.style}>{history.score}</TableCell>
-                      <TableCell sx={history.style}>{history.updated_at}</TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-      </Grid>
-    </DialogContent>
+      </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>
           {t_i18n('Close')}
