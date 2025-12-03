@@ -2059,7 +2059,7 @@ export const generateUpdateMessage = async (context, user, entityType, inputs) =
 };
 
 const buildAttribute = (array) => {
-  return array.map((item) => (typeof item === 'string' ? item : (item && extractEntityRepresentativeName(item, 250))))
+  return array.map((item) => (typeof item === 'object' ? (item && extractEntityRepresentativeName(item, 250)): item))
   .filter((item) => item !== null && item !== undefined);
 };
 

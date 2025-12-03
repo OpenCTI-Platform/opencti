@@ -376,4 +376,11 @@ describe('buildChanges standard behavior', async () => {
     const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
     expect(changes).toEqual([{field:'Markings',previous:['PAP:GREEN', 'TLP:GREEN'],added:[],removed:['PAP:GREEN']}]);
   });
+
+  it('should build changes for integer (like confidence level)', async () => {
+    const inputs = [{'key':'confidence','previous':[58],'value':[52]}];
+    const changes = buildChanges(ENTITY_TYPE_CONTAINER_REPORT, inputs);
+    expect(changes).toEqual([{field:'Confidence',previous:[58], new: [52]}]);
+  });
+
 });
