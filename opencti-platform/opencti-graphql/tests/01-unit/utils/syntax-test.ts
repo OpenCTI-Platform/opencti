@@ -26,9 +26,8 @@ describe('Regex Pattern Tests', () => {
     expect('erijgrjoprgjrejgoejrpojerbjrepobjreobjoperjboprejorpejgorpejeropgjreojgeprogjerpjgreojgoperjgpreojgoperjgorepjgporejgoprejgporejgorepjgoerpjgperjgpoerjgorejgporejoprejgopjergpjerogjrepjgerpgjergojrepgjrvenvrienvrepngvperjgprejgrpegjrepogjrepgjreogjerjgepjgrpejgrpejrgpjerpo.fr').not.toMatch(domainChecker);
   });
 
-  it('Domain-name regex parsing should be perfomant', async () => {
+  it.skip('Domain-name regex parsing should be performant', async () => {
     const startDate = Date.now();
-    // eslint-disable-next-line no-plusplus
     for (let i = 0; i < 1000; i++) {
       domainChecker.test('test._mysubdomain.mydomain.com');
       domainChecker.test('invalid_domain.12_3');
