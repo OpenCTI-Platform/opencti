@@ -3371,6 +3371,10 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   if (!element) {
     throw AlreadyDeletedError({ id });
   }
+  
+  if (!(await validateUserAccessOperation(context, user, element, 'delete'))) {
+    throw ForbiddenAccess();
+  }
 
   if (getDraftContext(context, user)) {
     return draftInternalDeleteElement(context, user, element);
@@ -3391,9 +3395,6 @@ export const internalDeleteElementById = async (context, user, id, type, opts = 
   // Prevent organization deletion if platform orga or has members
   if (element.entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION) {
     await verifyCanDeleteOrganization(context, user, element);
-  }
-  if (!(await validateUserAccessOperation(context, user, element, 'delete'))) {
-    throw ForbiddenAccess();
   }
   // Check inference operation
   checkIfInferenceOperationIsValid(user, element);
