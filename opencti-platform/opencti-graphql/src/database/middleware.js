@@ -3108,6 +3108,11 @@ const createEntityRaw = async (context, user, rawInput, type, opts = {}) => {
   }
   delete input.authorized_members; // always remove authorized_members input, even if empty
   // endregion
+
+  // validate user access to create the entity in draft
+  if (!(await validateUserAccessOperation(context, user, input, 'edit'))) {
+    throw ForbiddenAccess();
+  }
   // validate authorized members access (when creating a new entity with authorized members)
   if (input.restricted_members?.length > 0) {
     if (!(await validateUserAccessOperation(context, user, input, 'manage-access'))) {
