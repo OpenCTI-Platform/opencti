@@ -245,7 +245,7 @@ class Indicator:
         x_opencti_workflow_id = kwargs.get("x_opencti_workflow_id", None)
         x_opencti_modified_at = kwargs.get("x_opencti_modified_at", None)
         update = kwargs.get("update", False)
-        upsert_operations = kwargs.get('opencti_upsert_operations', None)
+        upsert_operations = kwargs.get("opencti_upsert_operations", None)
 
         if (
             name is not None
@@ -592,7 +592,7 @@ class Indicator:
                     stix_object["opencti_upsert_operations"]
                     if "opencti_upsert_operations" in stix_object
                     else None
-                )
+                ),
             )
         else:
             self.opencti.app_logger.error(
