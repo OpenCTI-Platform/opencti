@@ -2770,6 +2770,52 @@ describe('Complex filters regarding of for elastic queries', () => {
     notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, [targetAttack.internal_id, malwareAnalysis.internal_id], 'not_eq') } });
     expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(0);
   });
+  it('should list entities using regarding of filter with inferred subfilter', async () => {
+    const generateFilters = (withRegardingOf = true, regardingOfOperator = 'eq', isInferredSubFilterValue = false) => {
+      return {
+        mode: 'and',
+        filters: [
+          {
+            key: 'entity_type',
+            values: ['Malware', 'Intrusion-Set'],
+            operator: 'eq',
+            mode: 'or'
+          }
+        ],
+        filterGroups: [
+          {
+            mode: 'and',
+            filters: withRegardingOf ? [
+              {
+                key: 'regardingOf',
+                operator: regardingOfOperator,
+                values: [
+                  {
+                    key: 'relationship_type',
+                    values: ['uses']
+                  },
+                  {
+                    key: 'inferred',
+                    values: [isInferredSubFilterValue ? 'true' : 'false']
+                  },
+                ],
+                mode: 'or'
+              }
+            ] : [],
+            filterGroups: []
+          }
+        ]
+      };
+    };
+    // with inferred subfilter value = false
+    const eqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'eq', false) } });
+    expect(eqQueryResult.data.globalSearch.edges.length).toEqual(2);
+    expect(eqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('intrusion-set--d12c5319-f308-5fef-9336-20484af42084');
+    expect(eqQueryResult.data.globalSearch.edges[1].node.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
+    const notEqQueryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { filters: generateFilters(true, 'not_eq', false) } });
+    expect(notEqQueryResult.data.globalSearch.edges.length).toEqual(1);
+    expect(notEqQueryResult.data.globalSearch.edges[0].node.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
+  });
 });
 
 describe('User filter tests', () => {
