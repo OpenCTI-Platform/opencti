@@ -14,9 +14,13 @@ import { useTheme } from '@mui/styles';
 import { IndicatorDetails_indicator$data } from '@components/observations/indicators/__generated__/IndicatorDetails_indicator.graphql';
 import DecayChart, { DecayHistory } from '@components/settings/decay/DecayChart';
 import { useFormatter } from '../../../../components/i18n';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 
 interface DecayDialogContentProps {
   indicator: IndicatorDetails_indicator$data,
+  onClose: () => void;
 }
 
 export interface LabelledDecayHistory {
@@ -26,7 +30,7 @@ export interface LabelledDecayHistory {
   style: SxProps<Theme>
 }
 
-const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indicator }) => {
+const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indicator, onClose }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, mhd, rd } = useFormatter();
 
@@ -122,6 +126,8 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
   }
 
   return (
+    <>
+      <DialogTitle>{t_i18n('Lifecycle details')}</DialogTitle>
     <DialogContent>
       <Grid
         container={true}
@@ -161,9 +167,14 @@ const DecayDialogContent : FunctionComponent<DecayDialogContentProps> = ({ indic
             </Table>
           </TableContainer>
         </Grid>
-
       </Grid>
     </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>
+          {t_i18n('Close')}
+        </Button>
+      </DialogActions>
+    </>
   );
 };
 

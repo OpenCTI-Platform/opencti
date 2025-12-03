@@ -16,9 +16,9 @@ import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DecayDialogContent from '@components/observations/indicators/DecayDialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogTitle from '@mui/material/DialogTitle';
+import DecayDialogContent from './DecayDialogContent';
+import DecayExclusionDialogContent from './DecayExclusionDialogContent';
+
 import Box from '@mui/material/Box';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
@@ -67,35 +67,41 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
   const openLifecycleDialog = () => {
     setIsLifecycleOpen(true);
   };
+
   return (
-    <Box sx={{ height: '100%' }} className="break">
+    <Box sx={{ height: "100%" }} className="break">
       <Typography variant="h4" gutterBottom={true}>
-        {t_i18n('Details')}
+        {t_i18n("Details")}
       </Typography>
-      <Paper classes={{ root: classes.paper }} className={'paper-for-grid'} variant="outlined">
+      <Paper
+        classes={{ root: classes.paper }}
+        className={"paper-for-grid"}
+        variant="outlined"
+      >
         <Typography variant="h3" gutterBottom={true}>
-          {t_i18n('Indicator pattern')}
+          {t_i18n("Indicator pattern")}
         </Typography>
-        <ExpandablePre source={indicator.pattern ?? ''} limit={300} />
-        <Grid
-          container={true}
-          spacing={3}
-          sx={{ marginTop: '10px' }}
-        >
+        <ExpandablePre source={indicator.pattern ?? ""} limit={300} />
+        <Grid container={true} spacing={3} sx={{ marginTop: "10px" }}>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Valid from')}
+              {t_i18n("Valid from")}
             </Typography>
-            <Chip classes={{ root: classes.chip }}
+            <Chip
+              classes={{ root: classes.chip }}
               label={fldt(indicator.valid_from)}
             />
-            <Grid container columnSpacing={1} sx={{ marginTop: '20px' }}>
+            <Grid container columnSpacing={1} sx={{ marginTop: "20px" }}>
               <Grid item xs={4}>
                 <Typography variant="h3" gutterBottom={true}>
-                  <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                    <span>{t_i18n('Score')}</span>
+                  <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                    <span>{t_i18n("Score")}</span>
                     {indicator.decay_applied_rule && (
-                      <Tooltip title={t_i18n('This score is updated with the decay rule applied to this indicator.')}>
+                      <Tooltip
+                        title={t_i18n(
+                          "This score is updated with the decay rule applied to this indicator.",
+                        )}
+                      >
                         <InformationOutline fontSize="small" color="primary" />
                       </Tooltip>
                     )}
@@ -103,49 +109,59 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
                 </Typography>
                 <ItemScore score={indicator.x_opencti_score} />
               </Grid>
-              {indicator.decay_applied_rule && (
-              <Grid item xs={8}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={openLifecycleDialog}
-                  startIcon={<TroubleshootOutlined />}
-                  sx={{ marginTop: '22px' }}
-                >
-                  {t_i18n('Lifecycle')}
-                </Button>
-                <Dialog
-                  slotProps={{ paper: { elevation: 1 } }}
-                  open={isLifecycleOpen}
-                  keepMounted={true}
-                  slots={{ transition: Transition }}
-                  onClose={onDecayLifecycleClose}
-                  fullWidth
-                  maxWidth='lg'
-                >
-                  <DialogTitle>{t_i18n('Lifecycle details')}</DialogTitle>
-                  <DecayDialogContent indicator={indicator} />
-                  <DialogActions>
-                    <Button onClick={onDecayLifecycleClose}>
-                      {t_i18n('Close')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </Grid>
+              {(indicator.decay_applied_rule ||
+                !!indicator.decay_exclusion_applied_rule) && (
+                <Grid item xs={8}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={openLifecycleDialog}
+                    startIcon={<TroubleshootOutlined />}
+                    sx={{ marginTop: "22px" }}
+                    color={!!indicator.decay_exclusion_applied_rule ? 'warning' : "primary"}
+                  >
+                    {t_i18n("Lifecycle")}
+                  </Button>
+                  <Dialog
+                    slotProps={{ paper: { elevation: 1 } }}
+                    open={isLifecycleOpen}
+                    keepMounted={true}
+                    slots={{ transition: Transition }}
+                    onClose={onDecayLifecycleClose}
+                    fullWidth
+                    maxWidth="lg"
+                  >
+                    {!!indicator.decay_exclusion_applied_rule ? (
+                      <DecayExclusionDialogContent
+                        indicator={indicator}
+                        onClose={onDecayLifecycleClose}
+                      />
+                    ) : (
+                      <DecayDialogContent
+                        indicator={indicator}
+                        onClose={onDecayLifecycleClose}
+                      />
+                    )}
+                  </Dialog>
+                </Grid>
               )}
             </Grid>
             <Typography
               variant="h3"
               gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+              sx={{ marginTop: "20px" }}
             >
-              {t_i18n('Description')}
+              {t_i18n("Description")}
             </Typography>
-            <ExpandableMarkdown source={indicator.description} limit={400} removeLinks />
+            <ExpandableMarkdown
+              source={indicator.description}
+              limit={400}
+              removeLinks
+            />
           </Grid>
           <Grid item xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t_i18n('Valid until')}
+              {t_i18n("Valid until")}
             </Typography>
             <Chip
               classes={{ root: classes.chip }}
@@ -154,29 +170,29 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography
               variant="h3"
               gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+              sx={{ marginTop: "20px" }}
             >
-              {t_i18n('Detection')}
+              {t_i18n("Detection")}
             </Typography>
             <ItemBoolean
-              label={indicator.x_opencti_detection ? t_i18n('Yes') : t_i18n('No')}
+              label={
+                indicator.x_opencti_detection ? t_i18n("Yes") : t_i18n("No")
+              }
               status={indicator.x_opencti_detection}
             />
-            <StixCoreObjectKillChainPhasesView killChainPhases={indicator.killChainPhases ?? []} />
+            <StixCoreObjectKillChainPhasesView
+              killChainPhases={indicator.killChainPhases ?? []}
+            />
           </Grid>
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          sx={{ marginBottom: '10px' }}
-        >
+        <Grid container={true} spacing={3} sx={{ marginBottom: "10px" }}>
           <Grid item xs={4}>
             <Typography
               variant="h3"
               gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+              sx={{ marginTop: "20px" }}
             >
-              {t_i18n('Indicator types')}
+              {t_i18n("Indicator types")}
             </Typography>
             <FieldOrEmpty source={indicator.indicator_types}>
               {indicator.indicator_types?.map((indicatorType) => (
@@ -192,9 +208,9 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography
               variant="h3"
               gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+              sx={{ marginTop: "20px" }}
             >
-              {t_i18n('Main observable type')}
+              {t_i18n("Main observable type")}
             </Typography>
             <FieldOrEmpty source={indicator.x_opencti_main_observable_type}>
               <Chip
@@ -207,21 +223,23 @@ const IndicatorDetailsComponent: FunctionComponent<IndicatorDetailsComponentProp
             <Typography
               variant="h3"
               gutterBottom={true}
-              sx={{ marginTop: '20px' }}
+              sx={{ marginTop: "20px" }}
             >
-              {t_i18n('Platforms')}
+              {t_i18n("Platforms")}
             </Typography>
             <FieldOrEmpty source={indicator.x_mitre_platforms}>
               <List>
-                {indicator.x_mitre_platforms?.map((platform) => (
-                  platform
-                  && <ListItem key={platform} dense={true} divider={true}>
-                    <ListItemIcon>
-                      <SettingsApplications />
-                    </ListItemIcon>
-                    <ListItemText primary={platform} />
-                  </ListItem>
-                ))}
+                {indicator.x_mitre_platforms?.map(
+                  (platform) =>
+                    platform && (
+                      <ListItem key={platform} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <SettingsApplications />
+                        </ListItemIcon>
+                        <ListItemText primary={platform} />
+                      </ListItem>
+                    ),
+                )}
               </List>
             </FieldOrEmpty>
           </Grid>
@@ -251,6 +269,9 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       decay_history {
         score
         updated_at
+      }
+      decay_exclusion_applied_rule {
+        decay_exclusion_name
       }
       decay_applied_rule {
         decay_rule_id
