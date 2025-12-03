@@ -15,16 +15,21 @@ import { useTheme } from '@mui/styles';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
+import { StixCoreRelationshipHistoryFragment } from '@components/common/stix_core_relationships/StixCoreRelationshipHistoryLine';
 
 interface HistoryDrawerProps {
   open: boolean
   onClose: () => void
   title: string
   node: StixCoreObjectHistoryLine_node$key | undefined
+  isRelation: boolean
 }
 
-const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, node }) => {
-  const data = useFragment(StixCoreObjectHistoryFragment, node);
+const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, title, node, isRelation }) => {
+  const drawerFragment = isRelation ?
+    StixCoreRelationshipHistoryFragment
+    : StixCoreObjectHistoryFragment;
+  const data = useFragment(drawerFragment, node);
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const changes = data?.context_data?.changes;
@@ -89,7 +94,7 @@ const HistoryDrawer: FunctionComponent<HistoryDrawerProps> = ({ open, onClose, t
                       ))
                         ) : (
                           <TableRow>
-                            <TableCell align="center" colSpan={3}>
+                            <TableCell align="center" colSpan={5}>
                               {t_i18n('No changes')}
                             </TableCell>
                           </TableRow>

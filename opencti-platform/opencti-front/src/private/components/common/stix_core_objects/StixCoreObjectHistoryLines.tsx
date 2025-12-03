@@ -88,7 +88,6 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
     <Paper
       style={{
         borderRadius: 4,
-        overflowY: 'auto',
       }}
       className={'paper-for-grid'}
       variant="outlined"
@@ -132,6 +131,7 @@ const StixCoreObjectHistoryLines: FunctionComponent<StixCoreObjectHistoryLinesPr
                     onClose={handleClose}
                     title={t_i18n('Knowledge log details')}
                     node={selectedLog}
+                    isRelation={false}
                   />
                 </ListItem>
               </React.Fragment>
